@@ -17,7 +17,7 @@ Defaults are selected to make a first project usable while keeping user-owned co
 | Area | Default | Consequence | Override |
 |---|---|---|---|
 | Response language | Saved language, otherwise system language; `en` fallback | Install detects the language without prompting. Regional locales map to a supported base language, such as `ko_KR.UTF-8` → `ko`; unsupported locales use `en`. The user's prompt language takes priority over this setting. | `language` in `.agents/oma-config.yaml` or `.cue` |
-| Model routing ([model preset](./glossary.md#model-preset)) | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `default_cli` when set. | `model_preset`, `default_cli`, or `agents.<id>` |
+| Model routing ([model preset](./glossary.md#model-preset)) | `auto` | The current runtime's native agent configuration is used. Unknown runtimes fall back to `agents.default.cli` when set. | `model_preset`, `agents.default.cli`, or `agents.<id>` |
 | Skill content ([skill preset](./glossary.md#skill-preset)) | Interactive selection; `all` for unattended setup unless `--preset` is given | A preset selects skills. Shared files, all workflow and agent definitions, hooks, and provider setup remain part of the runtime install; other existing skills are retained. | `oma install --preset <name>`; see [preset limits](./installation.md#presets) |
 | Code intelligence ([capability provider](./glossary.md#capability-provider)) | `serena` | A fresh install tries to install Serena and wires its MCP configuration. | `providers.code_intelligence: gortex` or `serena` |
 | Code-search guard | `block` | While a code-intelligence provider is configured, a PreToolUse hook denies native `Grep`/`Glob` and recursive shell search (`rg`, `grep -r`, `find -name`) and points the agent at the provider's tools. Searches confined to confirmed exclusions or paths outside the project are allowed. The hook does not advertise a bypass for project source. | `providers.code_intelligence_guard: off` |
@@ -46,15 +46,15 @@ after file loading. Invalid local configuration stops loading.
 
 Model routing has two special cases before the fixed-preset order:
 
-- With `model_preset: auto`, the current runtime's native agent/model configuration is used. Explicit `agents.<id>` overrides still take precedence; an unknown runtime can use `default_cli`.
-- With `model_preset: free`, child spawns use the local FreeLLMAPI gateway. `free.model` selects the gateway model and replaces per-agent model pins; when it is omitted, `FREELLM_MODEL` or the provider fallback `auto` is used.
+- With `model_preset: auto`, the current runtime's native agent/model configuration is used. Explicit `agents.<id>` overrides still take precedence; an unknown runtime can use `agents.default.cli`.
+- With `model_preset: free` (or any other `providers.<name>` LLM provider), child spawns use that gateway. `providers.free.default_model` selects the gateway model and replaces per-agent model pins; when it is omitted, `FREELLM_MODEL` or the provider fallback `auto` is used.
 
 For a fixed or custom preset, the effective order is:
 
 1. `agents.<id>` explicit override.
 2. The matching `model_preset` entry, built-in or `custom_presets`.
 3. The preset's `orchestrator` entry when a role has no entry.
-4. `default_cli` as the vendor fallback when the earlier levels do not resolve a plan.
+4. `agents.default.cli` as the vendor fallback when the earlier levels do not resolve a plan.
 
 The `free` preset supplies defaults for all three provider settings: `base_url` is `http://127.0.0.1:31415/v1`, `api_key_env` is `FREELLM_API_KEY` (with `FREELLMAPI_API_KEY` accepted as its compatibility alias), and `model` is `auto`. A usable API key in the selected environment variable is still required; there is no vendor fallback. Set these values in `oma-config.local.yaml` when they should stay machine-local, or use `FREELLM_BASE_URL` and `FREELLM_MODEL` for process-level overrides.
 

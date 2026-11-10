@@ -10,7 +10,7 @@
 #
 # Contents
 #   1. Global preferences        language, date/time, telemetry
-#   2. Model selection           model_preset, free, default_cli, agents, models, custom_presets
+#   2. Model selection           model_preset, agents, models, custom_presets
 #   3. Vendor selection & pi     vendors
 #   4. Agent execution budgets  session.quota_cap, session.execution
 #   5. Memory garbage collection memory.gc
@@ -81,11 +81,22 @@ telemetry: false
 # `model_preset: <name>` (every role → default_model) or per role with
 # `agents.<id>.model: <name>/<model-id>`. Transport decides the child CLI:
 # chat_completions → codex | qwen, responses → codex, anthropic_messages →
-# claude, multi (a gateway serving all) → codex | claude | qwen. `free` is the
-# built-in FreeLLMAPI gateway (see section 2).
+# claude, multi (a gateway serving all) → codex | claude | qwen.
+#
+# `free` is the built-in provider for a local FreeLLMAPI gateway: every field
+# has a default (http://127.0.0.1:31415/v1, FREELLM_API_KEY, model auto), so
+# `model_preset: free` alone works once the server and key are ready; set
+# `providers.free` only to change them. Tip: keep the shared file on
+# `model_preset: auto` and opt in from .agents/oma-config.local.yaml.
+#
+# Credential sections for the selectors live here too (`providers.brave`,
+# `providers.exa` for `web`; `providers.honcho` for `semantic_memory`).
 providers:
   code_intelligence: serena
   # code_intelligence_guard: block
+  # web: brave
+  # brave: { api_key_env: BRAVE_SEARCH_API_KEY }
+  # free: { default_model: auto:coding }
   # exaone:
   #   base_url: https://api.exaone.ai/v1
   #   api_key_env: EXAONE_API_KEY
@@ -101,29 +112,14 @@ providers:
 #   1. agents.<id>            — explicit per-agent override
 #   2. model_preset entry     — built-in or custom_presets[model_preset]
 #   3. preset.orchestrator    — fallback when an agent is missing from the preset
-#   4. default_cli            — vendor-only fallback when none of the above resolve
+#   4. agents.default.cli     — vendor-only fallback when none of the above resolve
 
 # auto follows the current runtime's agent/model settings without pinning a model.
-# Explicit agents overrides still win; unknown runtimes use default_cli.
+# Explicit agents overrides still win; unknown runtimes use agents.default.cli.
 # Fixed presets: free | antigravity | claude | codex | qwen | cursor | kiro | mixed
 # (custom_presets entries and `providers.<name>` LLM providers are also valid;
 # a provider preset sends every role to that provider's default_model)
 model_preset: auto
-
-# FreeLLMAPI gateway settings (used when model_preset: free).
-# Routes child spawns through a local FreeLLMAPI server. Never commit API keys
-# directly; reference the environment variable name in `api_key_env`.
-# Tip: keep `model_preset: auto` in this shared file and configure `model_preset: free`
-# + `free:` in `.agents/oma-config.local.yaml` to avoid breaking team workflows.
-# free:
-#   base_url: http://127.0.0.1:31415/v1
-#   api_key_env: FREELLM_API_KEY
-#   model: auto
-
-# Fallback CLI vendor for `oma agent spawn`, used only when steps 1-3 above
-# resolve nothing. This is the only place it can be set — cli-config.yaml's
-# `active_vendor:` is no longer read. Omit for "claude".
-# default_cli: claude
 
 # Per-agent override (optional) — shallow-merged on top of the preset entry.
 # Agent ids: orchestrator, architecture, qa, pm, backend, frontend, mobile,
@@ -140,8 +136,9 @@ model_preset: auto
 #   memory:   user | project | local                (per-agent memory tier)
 #
 # `default` is a reserved entry: its effort / thinking / memory apply to every
-# role that sets none of its own (it carries no model), e.g.
-#   default: { effort: medium }
+# role that sets none of its own (it carries no model), and its `cli` is the
+# vendor used when steps 1-3 above resolve nothing (omit for "claude"), e.g.
+#   default: { effort: medium, cli: codex }
 #
 # `eval` below pins skill-eval dispatch (`oma skill eval --live`) to claude:
 # antigravity external dispatch is unreliable in this environment (prompts do
@@ -156,10 +153,6 @@ agents:
 # built-in registry. `cli_model` must be the exact id the CLI itself accepts:
 # for antigravity that is an `agy models` display name, not a slug
 # (`gemini-3.8-flash` is rejected).
-#
-# Replaces `.agents/config/models.yaml`, which `oma uninstall` deletes along
-# with the rest of `.agents/config/`. That file is no longer read; `oma update`
-# folds its entries in here automatically (migration 022).
 # Example:
 # models:
 #   my-fast:
@@ -529,11 +522,9 @@ scm:
 #   auto     — archify (tt-a1i/archify) whenever it can be resolved, else Mermaid
 #   archify  — require archify; `oma diagram resolve` exits 1 when unresolvable
 #   mermaid  — never call archify
-# archify is ALWAYS the latest release: oma keeps its own copy under
-# ~/.cache/oma-diagram/archify/<tag>/ and re-checks GitHub before use (throttled
-# by check_interval_min; a failed check falls back to the cached copy, never to
-# Mermaid). Resolution order: archify.path → ARCHIFY_HOME → managed latest →
-# user-installed skill dirs (.agents/.claude/.codex/.cursor/.qwen/.kiro/skills).
+# archify is installed through the skills CLI (`oma diagram update` installs or
+# updates it). Resolution order: archify.path → ARCHIFY_HOME → user-installed
+# skill dirs (.agents/.claude/.codex/.cursor/.qwen/.kiro/skills).
 # Mermaid stays the text SSOT inside ADR / recommendation Markdown either way;
 # archify adds a sibling `<name>.archify.json` + `<name>.archify.html`.
 # Inspect with `oma diagram resolve --json`; force a refresh with
@@ -543,28 +534,21 @@ scm:
 #   engine: auto
 #   explain_sidecar: false          # /explain also writes an archify sidecar
 #   archify:
-#     managed: true                 # false = only use path / ARCHIFY_HOME / skill dirs
-#     channel: stable               # stable (latest GitHub Release) | main (HEAD)
-#     check_interval_min: 60        # minutes between remote checks; 0 = every call
-#     path: null                    # explicit install dir (pin; disables auto-latest)
+#     path: null                    # explicit install dir (pin)
 #     quality: showcase             # showcase | standard (validate/deliver --quality)
 #     open: false                   # pass --open to deliver for a local preview
 
 # ── market (oma-market) ──────────────────────────────────────────────────────
-# Community-signal research runs on the upstream mvanhorn/last30days engine.
-# oma keeps an ALWAYS-LATEST managed copy under ~/.cache/oma-market/last30days/
-# <tag>/ and re-checks GitHub Releases before use (throttled; cached copy on
-# network failure). Resolution order: market.path → LAST30DAYS_HOME → managed
-# latest → user-installed skill dirs / Claude plugin cache. Engine config and
+# Community-signal research runs on the upstream mvanhorn/last30days engine,
+# installed through the skills CLI (`oma market update` installs or updates it).
+# Resolution order: market.path → LAST30DAYS_HOME → user-installed skill dirs /
+# Claude plugin cache. Engine config and
 # API keys live in ~/.config/last30days/ (owned by the upstream setup wizard).
 # Inspect with `oma market resolve --json`; force a refresh with
 # `oma market update`. Defaults: DEFAULT_MARKET_CONFIG in
 # cli/commands/market/resolve.ts.
 # market:
-#   managed: true                   # false = only use path / LAST30DAYS_HOME / skill dirs
-#   channel: stable                 # stable (latest GitHub Release) | main (HEAD)
-#   check_interval_min: 60          # minutes between remote checks; 0 = every call
-#   path: null                      # explicit engine dir (pin; disables auto-latest)
+#   path: null                      # explicit engine dir (pin)
 #   python: null                    # Python ≥ 3.12 interpreter; else LAST30DAYS_PYTHON,
 #                                   # PATH ladder (python3.14…python3), then `uv python find`
 #   save_dir: .agents/results/market/raw   # engine --save-dir default

@@ -27,7 +27,7 @@ A skill preset is the bundle of skills that the installer adds to a project, suc
 
 ### Model preset
 
-The model preset is the `model_preset` value in `.agents/oma-config.yaml` (or `.cue`). It decides which vendor and model each agent uses. `auto`, the default for new installs, follows the current runtime's own agent and model settings; fixed presets such as `claude`, `codex`, or `mixed` pin them. `agents.<id>` overrides take priority over the preset, except under `free`, where `free.model` replaces per-agent model pins. See [Built-in presets](../guide/per-agent-models.md#built-in-presets).
+The model preset is the `model_preset` value in `.agents/oma-config.yaml` (or `.cue`). It decides which vendor and model each agent uses. `auto`, the default for new installs, follows the current runtime's own agent and model settings; fixed presets such as `claude`, `codex`, or `mixed` pin them. `agents.<id>` overrides take priority over the preset, except under `free` or another `providers.<name>` LLM provider, where the provider's `default_model` replaces per-agent model pins. See [Built-in presets](../guide/per-agent-models.md#built-in-presets).
 
 ## Workflow execution
 

@@ -178,6 +178,10 @@ function getOmaConfigDeepPaths(): Set<string> {
     "docs.auto_verify",
     "docs.check_urls",
     "default_cli",
+    "providers",
+    "agents.default",
+    "agents.default.cli",
+    "agents.default.effort",
     "agents.orchestrator",
     "agents.architecture",
     "agents.qa",
@@ -207,7 +211,11 @@ const OMA_CONFIG_PATHS = getOmaConfigDeepPaths();
 
 // Namespaces whose sub-keys are user-defined maps: any child path is valid
 // by construction (`custom_presets.user`, `vendors.gemini`, ...).
-const MAP_TYPED_NAMESPACES = new Set(["custom_presets", "vendors"]);
+const MAP_TYPED_NAMESPACES = new Set([
+  "custom_presets",
+  "vendors",
+  "providers",
+]);
 
 export function resolveConfig(target: string): {
   ok: boolean;

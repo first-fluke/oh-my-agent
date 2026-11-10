@@ -8,7 +8,9 @@ import {
   ExaConfigSchema,
   HonchoConfigSchema,
   llmProviderEntries,
+  loadBraveConfig,
   loadExaConfig,
+  loadHonchoConfig,
   loadProviders,
   ProvidersSchema,
   resolveProviders,
@@ -192,5 +194,61 @@ describe("LLM provider entries under providers:", () => {
       code_intelligence: "serena",
     });
     expect(Object.keys(loadProviders(root))).not.toContain("local");
+  });
+});
+
+describe("credential sections under providers:", () => {
+  it("reads providers.brave and providers.honcho, falling back to the legacy top-level blocks", () => {
+    const nested = project(
+      [
+        "model_preset: auto",
+        "providers:",
+        "  web: brave",
+        "  brave: { api_key_env: TEAM_BRAVE_KEY }",
+        "  semantic_memory: honcho",
+        "  honcho: { base_url: https://honcho.example.com, workspace_id: team }",
+        "",
+      ].join("\n"),
+    );
+    expect(loadBraveConfig(nested)).toEqual({ api_key_env: "TEAM_BRAVE_KEY" });
+    expect(loadHonchoConfig(nested)).toEqual({
+      base_url: "https://honcho.example.com",
+      workspace_id: "team",
+    });
+    expect(
+      Object.keys(
+        llmProviderEntries({
+          web: "brave",
+          brave: {},
+          honcho: {},
+          x: { base_url: "https://x/v1" },
+        }),
+      ),
+    ).toEqual(["x"]);
+
+    const legacy = project(
+      [
+        "model_preset: auto",
+        "brave: { api_key_env: OLD_KEY }",
+        "honcho: { workspace_id: old }",
+        "",
+      ].join("\n"),
+    );
+    expect(loadBraveConfig(legacy)).toEqual({ api_key_env: "OLD_KEY" });
+    expect(loadHonchoConfig(legacy)).toEqual({ workspace_id: "old" });
+
+    const both = project(
+      [
+        "model_preset: auto",
+        "brave: { api_key_env: OLD_KEY }",
+        "providers:",
+        "  brave: { api_key_env: NEW_KEY }",
+        "",
+      ].join("\n"),
+    );
+    expect(loadBraveConfig(both)).toEqual({ api_key_env: "NEW_KEY" });
+    expect(
+      ProvidersSchema.safeParse({ brave: { api_key: "plaintext" } }).success,
+    ).toBe(false);
   });
 });

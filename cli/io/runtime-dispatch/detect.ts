@@ -100,7 +100,7 @@ export function resolveAutoVendor(
     .toLowerCase();
   if (!SUPPORTED_RUNTIME_VENDORS.has(vendor as RuntimeVendor)) {
     throw new ConfigError(
-      `Unsupported auto dispatch vendor "${vendor}". Set default_cli to a supported CLI vendor.`,
+      `Unsupported auto dispatch vendor "${vendor}". Set agents.default.cli to a supported CLI vendor.`,
     );
   }
   return vendor as Exclude<RuntimeVendor, "unknown">;

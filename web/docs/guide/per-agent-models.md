@@ -74,10 +74,10 @@ Values in parentheses are the preset's `effort` (Codex) or `thinking: true` (Qwe
 
 | `model_preset` | `agents.<id>` set? | Model sent to the CLI | CLI that runs the agent |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | Model ignored; `effort`, `thinking`, `memory` apply | `FREELLM_MODEL`, else `free.model`, else `auto` (every role) | `--vendor`, else `OMA_RUNTIME_VENDOR`, else the detected runtime if it is Codex, Claude, or Qwen, else `default_cli`, else `codex`. Only `codex`, `claude`, and `qwen` are accepted. |
-| A `providers.<name>` LLM provider | Model ignored; `effort`, `thinking`, `memory` apply | The provider's `default_model` (every role); missing is an error | `--vendor`, else `OMA_RUNTIME_VENDOR`, else the detected runtime, else `default_cli`, else the first CLI the provider's `transport` allows (`chat_completions` → Codex or Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` → any of the three). |
+| `free` | Model ignored; `effort`, `thinking`, `memory` apply | `FREELLM_MODEL`, else `providers.free.default_model`, else `auto` (every role) | `--vendor`, else `OMA_RUNTIME_VENDOR`, else the detected runtime if it is Codex, Claude, or Qwen, else `agents.default.cli`, else `codex`. Only `codex`, `claude`, and `qwen` are accepted. |
+| A `providers.<name>` LLM provider | Model ignored; `effort`, `thinking`, `memory` apply | The provider's `default_model` (every role); missing is an error | `--vendor`, else `OMA_RUNTIME_VENDOR`, else the detected runtime, else `agents.default.cli`, else the first CLI the provider's `transport` allows (`chat_completions` → Codex or Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` → any of the three). |
 | Any | `model` is `<provider>/<model-id>` for a `providers.<name>` entry | `<model-id>`, passed to the CLI as-is | The vendor rule of the row above; the registry is not consulted |
-| `auto` | No | None. The vendor's own agent and session settings apply. | `--vendor`, else a supported `OMA_RUNTIME_VENDOR`, else the detected runtime, else `default_cli`, else `claude`. An unsupported value is an error. |
+| `auto` | No | None. The vendor's own agent and session settings apply. | `--vendor`, else a supported `OMA_RUNTIME_VENDOR`, else the detected runtime, else `agents.default.cli`, else `claude`. An unsupported value is an error. |
 | `auto` | Yes | The override's `model` | That model's `cli`, then the vendor override rule below |
 | Built-in, alias, or custom | No | The preset's entry for the role, else the preset's `orchestrator` entry | That model's `cli`, then the vendor override rule below |
 | Built-in, alias, or custom | Yes | The preset entry shallow-merged with the override (override fields win) | That model's `cli`, then the vendor override rule below |
@@ -88,7 +88,7 @@ How the remaining pieces fit in:
 - **Model lookup.** A slug is looked up in `models:` first, then in the built-in registry. An unknown slug, or a spec with `api_only: true`, stops dispatch.
 - **Vendor override rule.** When `--vendor` or `OMA_RUNTIME_VENDOR` names a vendor for a model-backed row, `pi` always takes over (real-provider models only; see [Dispatching through pi](#dispatching-through-pi-transport-runtime)). Any other vendor takes over only if it is listed in the model's `supports.native_dispatch_from`. Otherwise OMA warns and keeps the model's own `cli`.
 - **Effort.** `effort` is dropped, with a warning, for models whose CLI has no effort flag (Claude Code). It is kept for pi, which maps it to `--thinking`.
-- **Defaults.** `agents.default` supplies `effort`, `thinking`, and `memory` to every role that sets none of its own, in every row above. It never supplies a model.
+- **Defaults.** `agents.default` supplies `effort`, `thinking`, and `memory` to every role that sets none of its own, in every row above, and its `cli` is the vendor fallback the rows call `agents.default.cli` (the older top-level `default_cli` is still read). It never supplies a model.
 
 ## Auto dispatch
 
@@ -111,10 +111,10 @@ Keep `model_preset: auto` in the shared file and opt in locally:
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
 
@@ -123,11 +123,14 @@ The equivalent YAML file is:
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
+
+The older top-level `free:` block (with `model` instead of `default_model`) is still read, and `oma update` rewrites it into this form.
 
 Start FreeLLMAPI separately and export its unified key as `FREELLM_API_KEY`. OMA also accepts upstream's `FREELLMAPI_API_KEY` when the default key variable is selected; the canonical variable wins when both are set. A custom `api_key_env` reads only that variable. Never put the key itself in the config. `OMA_MODEL_PRESET` overrides the preset. `FREELLM_BASE_URL` and `FREELLM_MODEL` override the respective file settings. The values in the example are the defaults, so `model_preset: free` alone is enough when the server and key are ready.
 
@@ -136,7 +139,7 @@ oma doctor --profile
 oma agent spawn backend "Review the API error handling" free-review --vendor codex --read-only
 ```
 
-Free mode uses `free.model` for every OMA-dispatched role, including roles with existing `agents.*.model` pins. It does not resolve those pins into paid subscriptions. Choose `auto`, a gateway model ID, or a named gateway chain such as `auto:coding` (create that chain in FreeLLMAPI first).
+Free mode uses `providers.free.default_model` for every OMA-dispatched role, including roles with existing `agents.*.model` pins. It does not resolve those pins into paid subscriptions. Choose `auto`, a gateway model ID, or a named gateway chain such as `auto:coding` (create that chain in FreeLLMAPI first).
 
 The transport follows the `free` row in [How OMA resolves an agent's model and CLI](#how-oma-resolves-an-agents-model-and-cli). Only Codex, Claude and Qwen transports are supported. An explicitly selected unsupported transport is an error.
 
@@ -180,7 +183,7 @@ Two ways to use a provider:
 - **Route every role**: `model_preset: exaone`. Each role runs `default_model`; per-role `model` pins are ignored (they would escape the route) while per-role `effort`, `thinking`, and `memory` still apply. A provider without `default_model` cannot be a preset. Children inherit `OMA_MODEL_PRESET=<name>` so nested spawns keep the route.
 - **Route one role**: `agents.<id>.model: <name>/<model-id>`. The model id is passed to the CLI as-is; the registry and `models:` are not consulted. Nested spawns of that child are not re-routed.
 
-`transport` picks the child CLI, because each CLI speaks one protocol: `chat_completions` → Codex (as a `wire_api = "chat"` provider) or Qwen; `responses` → Codex; `anthropic_messages` → Claude; `multi` → any of the three (FreeLLMAPI serves all). `--vendor`, `OMA_RUNTIME_VENDOR`, the detected runtime, and `default_cli` choose among the allowed CLIs in that order; a CLI the transport cannot serve is an error, never a silent fallback to the CLI's own account. The child receives the endpoint and the key from `api_key_env` in its own environment and arguments only (Codex: a complete `model_providers.oma_<name>` table; Claude: `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN`; Qwen: `--openai-base-url` and `OPENAI_*`); the parent environment and the vendor settings files are untouched, and conflicting Claude or Qwen settings are reported before execution. Spawn and review run the same authenticated `GET /models` readiness check as `free` where the transport has a model list; an endpoint that answers 404 to it is not treated as unavailable.
+`transport` picks the child CLI, because each CLI speaks one protocol: `chat_completions` → Codex (as a `wire_api = "chat"` provider) or Qwen; `responses` → Codex; `anthropic_messages` → Claude; `multi` → any of the three (FreeLLMAPI serves all). `--vendor`, `OMA_RUNTIME_VENDOR`, the detected runtime, and `agents.default.cli` choose among the allowed CLIs in that order; a CLI the transport cannot serve is an error, never a silent fallback to the CLI's own account. The child receives the endpoint and the key from `api_key_env` in its own environment and arguments only (Codex: a complete `model_providers.oma_<name>` table; Claude: `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN`; Qwen: `--openai-base-url` and `OPENAI_*`); the parent environment and the vendor settings files are untouched, and conflicting Claude or Qwen settings are reported before execution. Spawn and review run the same authenticated `GET /models` readiness check as `free` where the transport has a model list; an endpoint that answers 404 to it is not treated as unavailable.
 
 Sampling parameters (`temperature`, `top_p`) are not part of the provider entry: the vendor CLIs do not accept them per request, so declaring them here would be silently ignored.
 
@@ -188,7 +191,7 @@ Sampling parameters (`temperature`, `top_p`) are not part of the provider entry:
 
 ## Overriding individual agents
 
-Use the `agents:` map to override specific agents on top of the active preset. Only agents you list are affected; the rest follow the vendor settings in auto mode or the selected fixed preset defaults. The reserved `agents.default` entry carries `effort`, `thinking`, and `memory` for every role that sets none of its own; it never carries a model.
+Use the `agents:` map to override specific agents on top of the active preset. Only agents you list are affected; the rest follow the vendor settings in auto mode or the selected fixed preset defaults. The reserved `agents.default` entry carries `effort`, `thinking`, and `memory` for every role that sets none of its own, plus `cli`, the vendor used when nothing else selects one; it never carries a model.
 
 ```yaml
 # .agents/oma-config.yaml

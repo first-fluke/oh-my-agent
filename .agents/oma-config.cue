@@ -26,8 +26,10 @@ package config
 	memory?:   "user" | "project" | "local"
 }
 
-// agents.default — tuning for every role that sets none of its own (no model).
+// agents.default — tuning for every role that sets none of its own (no model),
+// plus cli: the vendor used when nothing else selects one.
 #AgentDefaults: {
+	cli?:      string
 	effort?:   #EffortLevel
 	thinking?: bool
 	memory?:   "user" | "project" | "local"
@@ -307,7 +309,7 @@ package config
 // agents.<id>.model: "<name>/<model-id>". "free" is the built-in FreeLLMAPI
 // gateway; its legacy top-level free: block is read as providers.free.
 #LlmProviderConfig: {
-	base_url:       string
+	base_url?:      string // required except for the built-in free gateway
 	api_key_env?:   string & =~"^[A-Za-z_][A-Za-z0-9_]*$"
 	transport?:     "chat_completions" | "responses" | "anthropic_messages" | "multi"
 	default_model?: string
@@ -321,8 +323,12 @@ package config
 	// while a code-intelligence provider is configured. Default: block.
 	code_intelligence_guard?: "block" | "off"
 	semantic_memory?:         "agentmemory" | "honcho" | "none"
+	// Credential / connection sections for the selectors above.
+	brave?:  {api_key_env?: string, api_key_vault?: string}
+	exa?:    {api_key_env?: string, api_key_vault?: string}
+	honcho?: _
 	// Every other key is an LLM provider.
-	[!~"^(docs|web|code_intelligence|code_intelligence_guard|semantic_memory)$"]: #LlmProviderConfig
+	[!~"^(docs|web|code_intelligence|code_intelligence_guard|semantic_memory|brave|exa|honcho)$"]: #LlmProviderConfig
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -334,8 +340,8 @@ package config
 
 	// 2. Model selection
 	model_preset:    "auto" | "free" | "antigravity" | "claude" | "codex" | "qwen" | "cursor" | "kiro" | "mixed" | string
-	default_cli?:    string
-	free?:           #FreeConfig
+	default_cli?:    string      // legacy: agents.default.cli
+	free?:           #FreeConfig // legacy: providers.free
 	agents?: {
 		default?: #AgentDefaults
 		[!="default"]: #AgentSpec
@@ -384,8 +390,9 @@ package config
 
 	// Provider integrations
 	providers?: #ProvidersConfig
-	honcho?:    _
-	brave?:     _
+	honcho?:    _ // legacy: providers.honcho
+	brave?:     _ // legacy: providers.brave
+	exa?:       _ // legacy: providers.exa
 
 	// Open-ended for additional skill/hook extensions
 	...

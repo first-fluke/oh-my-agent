@@ -135,7 +135,7 @@ export interface OmaConfig {
   language: string;
   /** "auto" inherits vendor agent settings; otherwise a built-in or custom preset key. */
   model_preset: string;
-  /** Local FreeLLMAPI connection; credentials are referenced by env name only. */
+  /** Legacy spelling of `providers.free` (still read; migration 033 moves it). */
   free?: { base_url?: string; api_key_env?: string; model?: string };
   date_format?: "ISO" | "US" | "EU";
   timezone?: string;
@@ -178,7 +178,7 @@ export interface OmaConfig {
   pdf?: SkillOverrideSection;
   /** `base_url` only; the rest of scholar-config.yaml is protocol shape. */
   scholar?: SkillOverrideSection;
-  // Legacy fields for backward-compat during migration grace window
+  /** Legacy spelling of `agents.default.cli` (still read; migration 033 moves it). */
   default_cli?: string;
 }
 

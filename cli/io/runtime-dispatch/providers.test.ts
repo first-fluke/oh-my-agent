@@ -173,6 +173,39 @@ describe("providers.<name> LLM providers", () => {
     ).toThrow(/needs providers\.exaone\.default_model/);
   });
 
+  it("uses agents.default.cli as the vendor fallback, over the legacy default_cli", () => {
+    const auto = resolveAgentPlanFromConfig(
+      "qa",
+      {
+        model_preset: "auto",
+        agents: { default: { cli: "codex" } },
+        default_cli: "cursor",
+      },
+      undefined,
+      {},
+    );
+    expect(auto.cli).toBe("codex");
+    const legacy = resolveAgentPlanFromConfig(
+      "qa",
+      { model_preset: "auto", default_cli: "cursor" },
+      undefined,
+      {},
+    );
+    expect(legacy.cli).toBe("cursor");
+    // A provider route honours the same fallback when the transport allows it.
+    const routed = resolveAgentPlanFromConfig(
+      "qa",
+      {
+        model_preset: "exaone",
+        providers: { exaone: EXAONE },
+        agents: { default: { cli: "qwen" } },
+      },
+      undefined,
+      {},
+    );
+    expect(routed.cli).toBe("qwen");
+  });
+
   it("fills effort, thinking and memory from agents.default for registry and auto plans", () => {
     const registry = resolveAgentPlanFromConfig(
       "backend",

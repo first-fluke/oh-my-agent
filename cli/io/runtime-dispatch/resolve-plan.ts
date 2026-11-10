@@ -1,3 +1,4 @@
+import { resolveDefaultCli } from "../../platform/agent-config/default-cli.js";
 import {
   type AgentId,
   type AgentSpec,
@@ -250,7 +251,9 @@ export function resolveAgentPlanFromConfig(
 
   if (modelPreset === "auto" && !override) {
     return withAgentDefaults(
-      { cli: resolveAutoVendor(config.default_cli, vendorOverride, env) },
+      {
+        cli: resolveAutoVendor(resolveDefaultCli(config), vendorOverride, env),
+      },
       config,
     );
   }

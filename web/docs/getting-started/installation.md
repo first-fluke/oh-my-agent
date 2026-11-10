@@ -387,9 +387,8 @@ agents:
 |-------|------|----------|-------------|
 | `language` | string | Yes | Response language code. Supports en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
 | `model_preset` | string | Yes | Active [model preset](./glossary.md#model-preset) key. `auto` follows the current runtime; fixed keys include `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro`, and `mixed`. Custom preset keys are also valid. See [Per-Agent Models](../guide/per-agent-models.md). |
-| `default_cli` | string | No | Fallback CLI for `oma agent spawn` when explicit agent settings and the selected preset do not resolve a vendor. |
-| `free` | map | No | FreeLLMAPI gateway settings used when `model_preset: free`; keep API keys in environment variables. |
-| `providers` | map | No | Capability providers: `code_intelligence` (`serena` or `gortex`), `code_intelligence_guard` (`block` or `off`), `docs` (`context7`), `web` (`native` or `brave`), and `semantic_memory` (`agentmemory`, `honcho`, or `none`). |
+| `agents` | map | No | Per-role model overrides; `agents.default` holds `cli` (the fallback CLI for `oma agent spawn` when explicit agent settings and the selected preset do not resolve a vendor) plus default `effort`, `thinking`, and `memory`. |
+| `providers` | map | No | Capability providers: `code_intelligence` (`serena` or `gortex`), `code_intelligence_guard` (`block` or `off`), `docs` (`context7`), `web` (`native` or `brave`), and `semantic_memory` (`agentmemory`, `honcho`, or `none`); their credential sections (`brave`, `exa`, `honcho`); and named LLM providers such as `free` (the FreeLLMAPI gateway used by `model_preset: free`). Keep API keys in environment variables. |
 | `date_format` | string | No | Timestamp format (`ISO`, `US`, `EU`). Default: `ISO`. |
 | `timezone` | string | No | Timezone identifier (for example, `Asia/Seoul`). Omitted values use the host system timezone. |
 | `auto_update_cli` | boolean | No | Whether routine CLI checks may update in the background. Default: `true` (opt out with `false`). |
@@ -405,7 +404,7 @@ agents:
 
 ### Vendor resolution
 
-When spawning an agent, the CLI resolves settings in this order: `agents.<id>`, the selected `model_preset`, the preset orchestrator fallback, then `default_cli`. With `model_preset: auto`, the current runtime's native configuration supplies the model; an unknown runtime falls back to `default_cli`. See [Per-Agent Models](../guide/per-agent-models.md) for the full matrix.
+When spawning an agent, the CLI resolves settings in this order: `agents.<id>`, the selected `model_preset`, the preset orchestrator fallback, then `agents.default.cli`. With `model_preset: auto`, the current runtime's native configuration supplies the model; an unknown runtime falls back to `agents.default.cli`. See [Per-Agent Models](../guide/per-agent-models.md) for the full matrix.
 
 ---
 

@@ -26,6 +26,7 @@
  */
 
 import { detectRuntimeVendor } from "../io/runtime-dispatch/detect.js";
+import { resolveDefaultCli } from "../platform/agent-config/default-cli.js";
 import type { OmaConfig } from "../platform/agent-config/types.js";
 import { llmProviderEntries } from "./providers.js";
 import { isRecord } from "./type-guards.js";
@@ -240,7 +241,7 @@ export function resolveFreeProvider(
 /**
  * The child CLI for a provider route: `--vendor`, then `OMA_RUNTIME_VENDOR`,
  * then the detected runtime when the provider's transport allows it, then
- * `default_cli`, then the first vendor the transport allows.
+ * `agents.default.cli`, then the first vendor the transport allows.
  */
 export function resolveProviderVendor(
   provider: LlmProvider,
@@ -255,7 +256,7 @@ export function resolveProviderVendor(
     env.OMA_RUNTIME_VENDOR ??
     (allowed.includes(runtime as ProviderVendor)
       ? runtime
-      : (config.default_cli ?? allowed[0]));
+      : (resolveDefaultCli(config) ?? allowed[0]));
   if (!allowed.includes(vendor as ProviderVendor)) {
     const list =
       allowed.length === 1
@@ -263,8 +264,8 @@ export function resolveProviderVendor(
         : `${allowed.slice(0, -1).join(", ")} and ${allowed[allowed.length - 1]}`;
     throw new FreeProviderError(
       provider.name === FREE_PROVIDER_NAME
-        ? "The free preset supports codex, claude and qwen only. Select one with --vendor or default_cli."
-        : `${providerLabel(provider.name)} speaks ${provider.transport}, which oma can route through ${list} only. Select one with --vendor or default_cli.`,
+        ? "The free preset supports codex, claude and qwen only. Select one with --vendor or agents.default.cli."
+        : `${providerLabel(provider.name)} speaks ${provider.transport}, which oma can route through ${list} only. Select one with --vendor or agents.default.cli.`,
     );
   }
   return vendor as ProviderVendor;

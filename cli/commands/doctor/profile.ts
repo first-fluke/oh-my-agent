@@ -8,6 +8,7 @@
 import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { resolveAutoVendor } from "../../io/runtime-dispatch/detect.js";
 import { detectRuntimeVendor } from "../../io/runtime-dispatch.js";
+import { resolveDefaultCli } from "../../platform/agent-config/default-cli.js";
 import type {
   AgentId,
   AgentSpec,
@@ -321,7 +322,7 @@ export async function collectProfileReport(
     const typedRole = role as AgentId;
     const override = agentsOverride[typedRole];
     if (profileName === "auto" && !override) {
-      const cli = resolveAutoVendor(config?.default_cli);
+      const cli = resolveAutoVendor(resolveDefaultCli(config));
       return {
         role,
         model: "(vendor agent default)",

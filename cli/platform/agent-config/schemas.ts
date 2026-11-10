@@ -39,6 +39,8 @@ export type AgentSpec = z.infer<typeof AgentSpecSchema>;
  */
 const AgentDefaultsSchema = z
   .object({
+    /** Vendor used when nothing else selects one (was top-level `default_cli`). */
+    cli: z.string().min(1).optional(),
     effort: EffortLevelSchema.optional(),
     thinking: z.boolean().optional(),
     memory: MemoryTierSchema.optional(),
@@ -150,6 +152,7 @@ export const OmaConfigSchema = z
     hwp: SkillSectionSchema,
     pdf: SkillSectionSchema,
     scholar: SkillSectionSchema,
+    // Legacy spelling of `agents.default.cli`; still read, migrated by 033.
     default_cli: z.string().optional(),
   })
   .passthrough();

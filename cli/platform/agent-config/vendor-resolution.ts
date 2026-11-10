@@ -12,6 +12,7 @@ import {
 import { getModelSpec, ownerToVendor } from "../model-registry.js";
 import { AGENT_CONFIG_ALIASES, AGENT_IDS } from "./agent-ids.js";
 import { readCliConfig } from "./config-io.js";
+import { resolveDefaultCli } from "./default-cli.js";
 import type { AgentSpec } from "./schemas.js";
 import type {
   AgentId,
@@ -100,7 +101,7 @@ export function resolveVendor(
 
   const parsedConfig = loadOmaConfig(cwd);
   const agentsOverride = parsedConfig?.agents;
-  const defaultCli = parsedConfig?.default_cli;
+  const defaultCli = resolveDefaultCli(parsedConfig);
   if (
     parsedConfig &&
     isLlmProviderName(parsedConfig.model_preset, parsedConfig)

@@ -51,15 +51,14 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `auto_update_cli` | boolean | `true` | Background CLI version checks; opt out with `false`. |
 | `telemetry` | boolean | `false` | Vendor telemetry opt-in used by install, update, and link reconciliation. |
 | `model_preset` | non-empty string | `auto` in new templates | Built-in or custom model preset. `OMA_MODEL_PRESET` overrides it for one process. |
-| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | FreeLLMAPI settings when the preset is `free`; the legacy spelling of `providers.free`. `FREELLM_BASE_URL` and `FREELLM_MODEL` override file values, and the key name never contains the secret. See [Per-agent model configuration](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`, plus any `<name>` → LLM provider object | `context7`, `native`, `serena`, `block`, `agentmemory`; no LLM providers | Select documentation, search, code-intelligence, and semantic-memory providers, and declare LLM endpoints agents can be routed through. See [Providers](#providers). |
-| `brave` | `api_key_env` or `api_key_vault` | unset | Brave search credential reference. |
-| `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | See [Honcho details](#honcho-semantic-memory) | Honcho semantic-memory connection settings. |
-| `agents` | agent ID → `model`, optional `effort`, `thinking`, `memory`; `default` → `effort`, `thinking`, `memory` | preset resolution | Per-agent overrides applied over the selected preset. Effort is `none`, `low`, `medium`, `high`, or `xhigh`; memory is `user`, `project`, or `local`. `agents.default` fills those fields for every role that sets none; a `<provider>/<model-id>` model routes the role through that LLM provider. |
+| `free` | `base_url`, `api_key_env`, `model` | unset | Legacy spelling of `providers.free` (`model` is `default_model` there); still read, and `oma update` moves it. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`; `brave`, `exa`, `honcho` credential sections; any other `<name>` → LLM provider object | `context7`, `native`, `serena`, `block`, `agentmemory`; no credentials or LLM providers | Select documentation, search, code-intelligence, and semantic-memory providers, hold their credential references, and declare LLM endpoints agents can be routed through. See [Providers](#providers). |
+| `brave`, `exa`, `honcho` | as under `providers` | unset | Legacy top-level spellings of `providers.brave`, `providers.exa`, and `providers.honcho`; still read, and `oma update` moves them. |
+| `agents` | agent ID → `model`, optional `effort`, `thinking`, `memory`; `default` → `cli`, `effort`, `thinking`, `memory` | preset resolution; `default.cli` falls back to `claude` (`codex` for a provider route) | Per-agent overrides applied over the selected preset. Effort is `none`, `low`, `medium`, `high`, or `xhigh`; memory is `user`, `project`, or `local`. `agents.default` fills those fields for every role that sets none, and its `cli` (one of `claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) is the vendor used when nothing else selects one: an undetected runtime under `auto`, or a provider route after `--vendor`, `OMA_RUNTIME_VENDOR`, and the detected runtime. A `<provider>/<model-id>` model routes the role through that LLM provider. |
 | `models` | model slug → CLI mapping | unset | Inline model definitions for supported vendor CLIs. |
 | `custom_presets` | preset → description, optional `extends`, `agent_defaults` | unset | User-defined presets; `extends` may inherit a built-in. |
 | `vendors` | `string[]` of selected vendor IDs (YAML and CUE) | absent: `oma link` uses every linkable vendor, `oma update` uses vendors whose project directories exist | Selects which vendor integrations `oma install` and `oma update` project. The dispatch capability map lives in the managed orchestration config; see [Vendor selection and dispatch metadata](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | vendor ID (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` for the `free` transport | Vendor used when nothing else selects one: an undetected runtime under `auto`, or the `free` transport after `--vendor`, `OMA_RUNTIME_VENDOR`, and the detected runtime. See [How OMA resolves an agent's model and CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
+| `default_cli` | vendor ID | unset | Legacy spelling of `agents.default.cli`; still read, and `oma update` moves it. |
 | `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | each omitted dimension is uncapped | Recorded token usage and spawn limits checked before the next agent spawn; see [Session quota caps](#session-quota-caps). |
 | `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | automatic for supported terminal hosts, `false`, `1400` | Compare Serena diagnostics before and after native file edits; see [Diagnostic feedback](#diagnostic-feedback). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | `oma docs verify` behavior and scan exclusions. |
@@ -71,8 +70,8 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `hwp` | `format`, `version.*`, `output.*` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc format, version channel, and output location. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#extract-pdf-content) | PDF extraction, OCR, image, and overwrite settings. |
 | `scholar` | `base_url` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Knows endpoint host; protocol shape remains skill-owned. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.*` | skill default; see [Diagram Engine](/docs/guide/diagram-engine) | Mermaid/archify selection and archify pin/quality settings (`archify.managed|channel|check_interval_min` are deprecated and ignored). |
-| `market` | `path`, `python`, `save_dir` (`managed`, `channel`, `check_interval_min` deprecated and ignored) | skill default; see [Market Research](/docs/guide/market-research) | last30days engine pin, interpreter, and result location. |
+| `diagram` | `engine`, `explain_sidecar`, `archify.path`, `archify.quality`, `archify.open` | skill default; see [Diagram Engine](/docs/guide/diagram-engine) | Mermaid/archify selection and archify pin/quality settings. The retired `archify.managed`, `archify.channel`, and `archify.check_interval_min` are ignored with a notice, and `oma update` removes them. |
+| `market` | `path`, `python`, `save_dir` | skill default; see [Market Research](/docs/guide/market-research) | last30days engine pin, interpreter, and result location. The retired `managed`, `channel`, and `check_interval_min` are ignored with a notice, and `oma update` removes them. |
 
 The shipped template also contains consumer-owned blocks. Their current keys and defaults are:
 
@@ -99,12 +98,14 @@ These blocks are accepted through the configuration passthrough and are interpre
 | `code_intelligence_guard` | `block`, `off` | `block` |
 | `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
 
+Three reserved keys hold the credential or connection section for a selector: `providers.brave` and `providers.exa` (`api_key_env` or `api_key_vault`) for `web`, and `providers.honcho` for `semantic_memory` (see [Honcho semantic memory](#honcho-semantic-memory)). Their legacy top-level spellings are still read.
+
 Any other key under `providers` is an **LLM provider**: an OpenAI- or Anthropic-compatible endpoint that `oma agent spawn` can route a child CLI through instead of that CLI's own account. The value is an object:
 
 | Field | Accepted values | Required | Purpose |
 | --- | --- | --- | --- |
 | `base_url` | absolute HTTP(S) URL without credentials, query, or fragment; `/v1` is appended when missing | yes | The endpoint. |
-| `api_key_env` | environment-variable name | yes (except `free`, which defaults to `FREELLM_API_KEY`) | Where the key is read from; the file never holds the key. |
+| `api_key_env` | environment-variable name | yes (except `free`, which defaults to `FREELLM_API_KEY`) | Where the key is read from; the file never holds the key. `base_url` is likewise optional only for `free` (`http://127.0.0.1:31415/v1`). |
 | `transport` | `chat_completions` (default), `responses`, `anthropic_messages`, `multi` | no | The wire protocol the endpoint speaks. It selects the child CLI: `chat_completions` → Codex or Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` (a gateway serving all three) → Codex, Claude, or Qwen. |
 | `default_model` | model ID | when the provider is used as `model_preset` | The model every role uses under `model_preset: <name>`. |
 
@@ -121,7 +122,7 @@ agents:
   backend: { model: exaone/k-exaone_v2.5 }
 ```
 
-`free` is the built-in provider for a local FreeLLMAPI gateway and keeps its defaults, environment overrides, and the legacy top-level `free:` block; see [Custom LLM providers](/docs/guide/per-agent-models#custom-llm-providers).
+`free` is the built-in provider for a local FreeLLMAPI gateway: every field has a default, `FREELLM_BASE_URL` and `FREELLM_MODEL` override the file, and the legacy top-level `free:` block is still read (its `model` is `default_model` here); see [Custom LLM providers](/docs/guide/per-agent-models#custom-llm-providers).
 
 `code_intelligence_guard` controls the PreToolUse search guard. Native searches confined to confirmed provider exclusions or paths outside the project are allowed without a bypass. The guard reads Serena exclusions and enabled gitignore rules, or Gortex's exclusion listing; it does not infer dependencies from directory names.
 
@@ -129,7 +130,7 @@ The hook does not name `OMA_CI_ALLOW_NATIVE`. A shell search prefixed with `OMA_
 
 ### Honcho semantic memory
 
-The `honcho` map is validated by `HonchoConfigSchema`. The key names and effective runtime behavior are:
+The `providers.honcho` map (legacy top-level `honcho`, still read) is validated by `HonchoConfigSchema`. The key names and effective runtime behavior are:
 
 | Key | Shape | Effective default or constraint |
 | --- | --- | --- |

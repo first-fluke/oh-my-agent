@@ -38,6 +38,8 @@ const OMA_CONFIG_TOP_KEYS = new Set([
   "session",
   "docs",
   "default_cli",
+  "providers",
+  "free",
 ]);
 
 // ---------------------------------------------------------------------------
