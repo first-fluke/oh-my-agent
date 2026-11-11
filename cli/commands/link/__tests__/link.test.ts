@@ -86,6 +86,7 @@ vi.mock("../../../utils/config.js", () => ({
 
 vi.mock("../../../vendors/antigravity/hud.js", () => ({
   installAntigravityHud: vi.fn(() => agyInstalledResult),
+  refreshProjectAgyHooks: vi.fn(() => undefined),
 }));
 
 vi.mock("../../../vendors/claude/mcp.js", () => ({

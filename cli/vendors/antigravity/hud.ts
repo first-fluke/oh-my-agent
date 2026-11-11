@@ -330,6 +330,38 @@ function buildAgyHooksDoc(
   return doc;
 }
 
+/**
+ * Rewrite the `oma-*` entries of an existing project `.agents/hooks.json` to
+ * the path-free project form, for projects that do not select antigravity.
+ *
+ * The file is committed and agy auto-loads it, but `installAntigravityHud`
+ * only runs when antigravity is a configured vendor. Without this, entries
+ * written by an earlier install (absolute HOME wrapper paths such as
+ * `bun C:\Users\me\.gemini\antigravity-cli\hooks\keyword-detector.ts`) were
+ * never refreshed and kept churning between teammates' machines. User hooks
+ * are preserved, HOME is not touched, and an unchanged file is not rewritten.
+ *
+ * Returns the path when the file was rewritten.
+ */
+export function refreshProjectAgyHooks(
+  projectRoot: string,
+  dryRun = false,
+): string | undefined {
+  const hooksJsonPath = join(projectRoot, PROJECT_HOOKS_JSON);
+  if (!existsSync(hooksJsonPath)) return undefined;
+  if (!existsSync(join(projectRoot, PROJECT_CORE_HOOKS))) return undefined;
+  const existing = readJsonRecord(hooksJsonPath);
+  if (!existing || !Object.keys(existing).some(isOmaHookName)) return undefined;
+
+  const next = mergeAgyHooksDoc(
+    existing,
+    buildAgyHooksDoc(null, readAntigravityVariant(projectRoot)),
+  );
+  if (JSON.stringify(next) === JSON.stringify(existing)) return undefined;
+  if (!dryRun) safeWriteJson(hooksJsonPath, next);
+  return hooksJsonPath;
+}
+
 interface AgyInstallResult {
   installed: boolean;
   reason?: string;

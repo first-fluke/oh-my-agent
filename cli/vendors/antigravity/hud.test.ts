@@ -11,6 +11,7 @@ import {
   HUD_GLOBAL_LAUNCHER,
   hudLauncherSource,
   installAntigravityHud,
+  refreshProjectAgyHooks,
 } from "./hud.js";
 
 const FAKE_HOME = "/tmp/fake-home";
@@ -573,5 +574,96 @@ describe("agyScriptCommand", () => {
     expect(agyScriptCommand(spaced, "win32", () => undefined)).toBe(
       `bun "${spaced}"`,
     );
+  });
+});
+
+describe("refreshProjectAgyHooks", () => {
+  // Shape a pre-20.40.2 install left in agent-valley's committed hooks.json.
+  const staleDoc = {
+    "user-custom-hook": {
+      PreInvocation: [{ type: "command", command: "whoami" }],
+    },
+    "oma-keyword-detector": {
+      PreInvocation: [
+        {
+          type: "command",
+          command:
+            "bun C:Users\remote.geminiantigravity-clihookskeyword-detector.ts",
+          timeout: 5,
+        },
+      ],
+    },
+  };
+
+  function mockProject(projectHooksJson: string | undefined) {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        const norm = toPosix(p);
+        if (norm.includes(".agents/hooks/core")) return true;
+        if (norm.includes(".agents/hooks/variants/antigravity.json"))
+          return true;
+        if (norm === toPosix(PROJECT_HOOKS_JSON))
+          return projectHooksJson !== undefined;
+        return false;
+      },
+    );
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (p: string) => {
+        const norm = toPosix(String(p));
+        if (norm.includes(".agents/hooks/variants/antigravity.json"))
+          return variantJson;
+        if (norm === toPosix(PROJECT_HOOKS_JSON) && projectHooksJson)
+          return projectHooksJson;
+        return "{}";
+      },
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("rewrites stale machine paths to path-free commands and keeps user hooks", () => {
+    mockProject(JSON.stringify(staleDoc));
+
+    expect(refreshProjectAgyHooks("/repo")).toBe(PROJECT_HOOKS_JSON);
+
+    const call = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(([p]) => p === PROJECT_HOOKS_JSON);
+    const written = call?.[1] as string;
+    expect(written).not.toMatch(/antigravity-cli|Users/);
+    const doc = JSON.parse(written);
+    expect(doc["user-custom-hook"]).toEqual(staleDoc["user-custom-hook"]);
+    expect(doc["oma-keyword-detector"].PreInvocation[0].command).toBe(
+      "oma hook script --vendor antigravity --script keyword-detector.ts",
+    );
+    // HOME is not touched without antigravity consent.
+    expect(fs.cpSync).not.toHaveBeenCalled();
+  });
+
+  it("does not rewrite an already path-free file", () => {
+    mockProject(JSON.stringify(staleDoc));
+    refreshProjectAgyHooks("/repo");
+    const call = (
+      fs.writeFileSync as unknown as ReturnType<typeof vi.fn>
+    ).mock.calls.find(([p]) => p === PROJECT_HOOKS_JSON);
+    vi.clearAllMocks();
+    mockProject(call?.[1] as string);
+
+    expect(refreshProjectAgyHooks("/repo")).toBeUndefined();
+    expect(fs.writeFileSync).not.toHaveBeenCalled();
+  });
+
+  it("leaves files without oma entries, unparseable files, and dry runs alone", () => {
+    mockProject(JSON.stringify({ "user-custom-hook": {} }));
+    expect(refreshProjectAgyHooks("/repo")).toBeUndefined();
+    mockProject("{ not json");
+    expect(refreshProjectAgyHooks("/repo")).toBeUndefined();
+    mockProject(undefined);
+    expect(refreshProjectAgyHooks("/repo")).toBeUndefined();
+    mockProject(JSON.stringify(staleDoc));
+    expect(refreshProjectAgyHooks("/repo", true)).toBe(PROJECT_HOOKS_JSON);
+    expect(fs.writeFileSync).not.toHaveBeenCalled();
   });
 });

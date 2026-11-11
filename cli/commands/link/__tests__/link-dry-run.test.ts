@@ -54,6 +54,7 @@ vi.mock("../../../vendors/qwen/hook-approvals.js", () => ({
 }));
 
 vi.mock("../../../vendors/antigravity/hud.js", () => ({
+  refreshProjectAgyHooks: () => undefined,
   installAntigravityHud: (...args: unknown[]) =>
     homeWriters.agyHud(...(args as [])),
 }));

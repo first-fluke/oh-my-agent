@@ -19,7 +19,10 @@ import {
   warnUnmergeable,
 } from "../../../utils/merge-read.js";
 import { safeWriteJson } from "../../../utils/safe-write.js";
-import { installAntigravityHud } from "../../../vendors/antigravity/hud.js";
+import {
+  installAntigravityHud,
+  refreshProjectAgyHooks,
+} from "../../../vendors/antigravity/hud.js";
 import { applyAntigravityMcpConfig } from "../../../vendors/antigravity/mcp.js";
 import type { ClaudeMcpServer } from "../../../vendors/claude/mcp.js";
 import {
@@ -383,6 +386,17 @@ export function syncVendorSettings(
       }
     } catch {
       // getInstallMode may not be set in some test contexts — skip silently.
+    }
+  } else if (safeGetInstallMode() === "project") {
+    // Not selected, but a committed .agents/hooks.json may still carry oma-*
+    // entries from an earlier install with machine-specific paths. Normalize
+    // them to the path-free form; HOME is left alone without consent.
+    const refreshed = refreshProjectAgyHooks(root, dryRun);
+    if (refreshed) {
+      record(refreshed, "write", "refreshProjectAgyHooks (path-free oma-*)");
+      if (!dryRun && !quiet) {
+        console.log(`${pc.green("✓")} agy hooks.json: path-free oma hooks`);
+      }
     }
   }
 
