@@ -5,14 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-09 · 1 unstarred
+## 2026-11-11 · 1 unstarred
 
-- **@yqecea** · Yusuf · Kazakhstan, Astana · 86 repos · 3 followers
-  - 15 y.o Data Science,Student
+- **@blastronautdev** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1377)
+## Current (1378)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -154,7 +153,7 @@ summaries to spot which persona is churning.
 - @bini2007 — 2026-02-20
 - @bj9421 — 2026-04-05
 - @bjorn-supernomic — 2026-09-03
-- @blastronautdev — 2026-03-29
+- @blastronautgg — 2026-03-29
 - @blazepsyki — 2026-04-28
 - @blueme1982 — 2026-10-14
 - @blueNmad — 2026-03-16
@@ -182,6 +181,7 @@ summaries to spot which persona is churning.
 - @buluktaev — 2026-02-03
 - @business4wangyi — 2026-06-26
 - @Busy6ee — 2026-04-23
+- @bwcummings1 — 2026-11-10
 - @ByounghoLee — 2026-04-12
 - @Byun-jinyoung — 2026-06-22
 - @Byuntil — 2026-03-16
