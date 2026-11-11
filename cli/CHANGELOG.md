@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.40.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.5...cli-v20.40.6) (2026-11-11)
+
+
+### Documentation
+
+* add claude.md with commands and architecture ([e7ac17c](https://github.com/first-fluke/oh-my-agent/commit/e7ac17c0c604bcd834c49c689b9e62dbf3c1af40))
+
 ## [20.40.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.4...cli-v20.40.5) (2026-11-10)
 
 
