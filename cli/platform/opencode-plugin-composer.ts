@@ -92,6 +92,15 @@ export function opencodeFamilyConfigPath(
  *  1. Install generated Bun handler entries that dispatch through the CLI,
  *     with supporting files such as `filter-test-output.sh`.
  *  2. Copy the bridge `oma.ts` as the plugin entry point.
+ *  3. opencode only: copy the package entry as `index.ts`. OpenCode 2.x
+ *     ignores the configured `./plugins/oma/oma.ts` ("configured plugin path
+ *     must be a directory") and the V1 function export; it auto-discovers
+ *     `plugins/<dir>/` and loads its `server` / `index` module, which this
+ *     entry serves as the `{ id, setup }` definition over the same bridge.
+ *     OpenCode 1.x auto-discovers only flat `plugins/*.ts`, so it keeps
+ *     loading `oma.ts` once through the config entry. Kilo is not given the
+ *     entry: its loader was not verified to skip nested directories, and a
+ *     second load would run every hook twice.
  *
  * Idempotent: tracked handler entries are reconciled by their fingerprints;
  * modified entries are preserved. The managed bridge is re-written.
@@ -120,6 +129,15 @@ export function installOpencodePlugin(
   const shimSrc = join(sourceDir, OPENCODE_BRIDGE_SOURCE);
   if (existsSync(shimSrc)) {
     cpSync(shimSrc, join(pluginDir, "oma.ts"), {
+      force: true,
+      dereference: true,
+    });
+  }
+
+  // 3. The OpenCode 2.x directory-plugin entry (opencode only).
+  const entrySrc = join(sourceDir, OPENCODE_PACKAGE_ENTRY_SOURCE);
+  if (host === "opencode" && existsSync(entrySrc)) {
+    cpSync(entrySrc, join(pluginDir, "index.ts"), {
       force: true,
       dereference: true,
     });

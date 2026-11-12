@@ -46,6 +46,27 @@ describe("installOpencodePlugin", () => {
     rmSync(target, { recursive: true, force: true });
   });
 
+  it("adds the OpenCode 2.x directory entry for opencode but not for Kilo", () => {
+    // OpenCode 2.x skips the configured oma.ts file path and loads the
+    // auto-discovered plugins/oma/ directory through its index module.
+    installOpencodePlugin(REPO_ROOT, target);
+    const entry = join(target, OPENCODE_PLUGIN_DIR, "index.ts");
+    expect(existsSync(entry)).toBe(true);
+    const src = readFileSync(entry, "utf-8");
+    expect(src).toContain('id: "oh-my-agent"');
+    expect(src).toContain("async setup(");
+    expect(src).toContain('import legacy from "./oma.ts"');
+
+    installOpencodePlugin(REPO_ROOT, target, "kilo");
+    expect(existsSync(join(target, ".kilo", "plugins", "oma", "oma.ts"))).toBe(
+      true,
+    );
+    expect(
+      existsSync(join(target, ".kilo", "plugins", "oma", "index.ts")),
+    ).toBe(false);
+    rmSync(target, { recursive: true, force: true });
+  });
+
   it("copies bridge to correct dir: .opencode/plugins/oma/oma.ts", () => {
     installOpencodePlugin(REPO_ROOT, target);
     const bridgePath = join(target, OPENCODE_PLUGIN_DIR, "oma.ts");

@@ -3,8 +3,11 @@
  *
  * SSOT source. `oma emit --target opencode-package` ships this file as the
  * package `main`/`exports` next to the bridge (`./oma.ts`) and the handler
- * entries it spawns. It is NOT part of the per-project install, which keeps
- * registering `./plugins/oma/oma.ts` directly.
+ * entries it spawns. The opencode per-project / global install also copies it
+ * to `plugins/oma/index.ts`: OpenCode 2.x rejects the configured
+ * `./plugins/oma/oma.ts` file path and loads that auto-discovered directory
+ * through this entry instead, while 1.x keeps loading `oma.ts` (its
+ * discovery is flat, so the nested entry is never loaded twice).
  *
  * Two plugin contracts coexist in the family, and a package plugin must
  * satisfy whichever host imports it:
