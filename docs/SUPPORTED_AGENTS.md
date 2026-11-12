@@ -102,8 +102,8 @@ Most hosts hold a project's hooks back until the user trusts the folder, and `-p
 
 | Host | What oma records |
 |---|---|
-| Claude Code | `projects[<root>].hasTrustDialogAccepted` in `~/.claude.json` |
-| Qwen Code | the approval of oma's project hooks in `~/.qwen/hookApprovals.json` |
+| Claude Code | `projects[<root>].hasTrustDialogAccepted` in `.claude.json` (in `$CLAUDE_CONFIG_DIR` when set, else `~`) |
+| Qwen Code | the approval of oma's project hooks in `~/.qwen/hookApprovals.json`, and `TRUST_FOLDER` in `~/.qwen/trustedFolders.json` (needed once `security.folderTrust.enabled` is on) |
 | Codex | `[projects."<root>"] trust_level = "trusted"` plus a `[hooks.state."…"] trusted_hash` for each oma hook in `$CODEX_HOME/config.toml` (global installs: the hook hashes only). Hooks you disabled are left alone |
 | cursor-agent | the `.workspace-trusted` marker under `~/.cursor/projects/<slug>/` |
 | Copilot CLI | the project in `trustedFolders` of `~/.copilot/config.json` |
@@ -113,7 +113,7 @@ Most hosts hold a project's hooks back until the user trusts the folder, and `-p
 | Command Code | the `~/.commandcode/projects/<slug>` directory |
 | pi (0.79+) | `"<root>": true` in `~/.pi/agent/trust.json` |
 
-opencode, Kilo and Kimi load hooks and plugins without a trust gate. Trust is recorded for project installs only, except Codex's per-hook hashes, which global hooks need too.
+opencode, Kilo and Kimi load hooks and plugins without a trust gate. Grok, Cursor and Copilot CLI also run the `.claude/settings.json` hooks; when the host has its own oma hooks, the Claude copy steps aside so oma runs once. Trust is recorded for project installs only, except Codex's per-hook hashes, which global hooks need too.
 
 ## Current Design Principle
 

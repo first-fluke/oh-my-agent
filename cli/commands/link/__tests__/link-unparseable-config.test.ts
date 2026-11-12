@@ -23,6 +23,7 @@ vi.mock("../../../vendors/host-trust.js", () => ({
   hostTrustSteps: vi.fn(() => []),
 }));
 vi.mock("../../../vendors/claude/trust.js", () => ({
+  claudeJsonPath: () => "/nonexistent/.claude.json",
   ensureClaudeWorkspaceTrust: vi.fn(() => ({
     changed: false,
     alreadyTrusted: true,

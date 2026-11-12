@@ -58,9 +58,14 @@ export interface ClaudeTrustResult {
   reason?: string;
 }
 
-/** Absolute path to the Claude Code user-level config (`~/.claude.json`). */
-export function claudeJsonPath(): string {
-  return join(homedir(), ".claude.json");
+/**
+ * Absolute path to the Claude Code user-level config: `.claude.json` in
+ * `$CLAUDE_CONFIG_DIR` when set (Claude Code 2.1: `join(CLAUDE_CONFIG_DIR ||
+ * homedir(), ".claude.json")`), else `~/.claude.json`. A profile manager
+ * that points `CLAUDE_CONFIG_DIR` elsewhere never reads `~/.claude.json`.
+ */
+export function claudeJsonPath(env: NodeJS.ProcessEnv = process.env): string {
+  return join(env.CLAUDE_CONFIG_DIR?.trim() || homedir(), ".claude.json");
 }
 
 /**

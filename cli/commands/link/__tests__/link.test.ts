@@ -107,6 +107,7 @@ vi.mock("../../../vendors/host-trust.js", () => ({
   hostTrustSteps: vi.fn(() => []),
 }));
 vi.mock("../../../vendors/claude/trust.js", () => ({
+  claudeJsonPath: () => "/nonexistent/.claude.json",
   ensureClaudeWorkspaceTrust: vi.fn(() => ({
     changed: false,
     alreadyTrusted: true,
@@ -155,6 +156,7 @@ import * as safeWrite from "../../../utils/safe-write.js";
 import * as antigravity from "../../../vendors/antigravity/hud.js";
 import * as claudeMcp from "../../../vendors/claude/mcp.js";
 import * as grok from "../../../vendors/grok/settings.js";
+import * as hostTrust from "../../../vendors/host-trust.js";
 import * as qwen from "../../../vendors/qwen/settings.js";
 import { link } from "../run.js";
 
@@ -746,6 +748,51 @@ describe("link kernel", () => {
       const logged = logSpy.mock.calls.map((c) => String(c[0])).join("\n");
       expect(logged).toContain("Codex hooks installed/updated");
       expect(logged).toContain("/hooks");
+      logSpy.mockRestore();
+    });
+
+    it("stays quiet when link recorded Codex trust for the hooks", () => {
+      const projectDir = makeProject(["codex"]);
+      process.chdir(projectDir);
+      writeCodexHooksOnInstall('{"hooks":{}}');
+      vi.mocked(hostTrust.hostTrustSteps).mockReturnValueOnce([
+        {
+          vendor: "codex",
+          label: "codex: trusted oma hooks",
+          target: "/nonexistent/config.toml",
+          apply: () => ({ changed: true }),
+        },
+      ]);
+      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      link({ quiet: true });
+
+      const logged = logSpy.mock.calls.map((c) => String(c[0])).join("\n");
+      expect(logged).not.toContain("Codex hooks installed/updated");
+      logSpy.mockRestore();
+    });
+
+    it("names the reason when Codex trust could not be recorded", () => {
+      const projectDir = makeProject(["codex"]);
+      process.chdir(projectDir);
+      writeCodexHooksOnInstall('{"hooks":{}}');
+      vi.mocked(hostTrust.hostTrustSteps).mockReturnValueOnce([
+        {
+          vendor: "codex",
+          label: "codex: trusted oma hooks",
+          target: "/nonexistent/config.toml",
+          apply: () => ({
+            changed: false,
+            reason: "config.toml: not valid TOML",
+          }),
+        },
+      ]);
+      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+      link({ quiet: true });
+
+      const logged = logSpy.mock.calls.map((c) => String(c[0])).join("\n");
+      expect(logged).toContain("not trusted (config.toml: not valid TOML)");
       logSpy.mockRestore();
     });
 

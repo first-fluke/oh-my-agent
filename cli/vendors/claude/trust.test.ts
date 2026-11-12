@@ -2,7 +2,11 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensureClaudeWorkspaceTrust, trustClaudeWorkspace } from "./trust.js";
+import {
+  claudeJsonPath,
+  ensureClaudeWorkspaceTrust,
+  trustClaudeWorkspace,
+} from "./trust.js";
 
 const tempRoots: string[] = [];
 
@@ -122,8 +126,11 @@ describe("ensureClaudeWorkspaceTrust", () => {
     const originalHome = process.env.HOME;
     // os.homedir() reads USERPROFILE on Windows.
     const originalUserProfile = process.env.USERPROFILE;
+    // A Claude profile manager's CLAUDE_CONFIG_DIR would win over HOME.
+    const originalConfigDir = process.env.CLAUDE_CONFIG_DIR;
     process.env.HOME = root;
     process.env.USERPROFILE = root;
+    delete process.env.CLAUDE_CONFIG_DIR;
     try {
       const result = ensureClaudeWorkspaceTrust("/work/my-app");
       expect(result.changed).toBe(true);
@@ -136,6 +143,21 @@ describe("ensureClaudeWorkspaceTrust", () => {
       else process.env.HOME = originalHome;
       if (originalUserProfile === undefined) delete process.env.USERPROFILE;
       else process.env.USERPROFILE = originalUserProfile;
+      if (originalConfigDir !== undefined) {
+        process.env.CLAUDE_CONFIG_DIR = originalConfigDir;
+      }
     }
+  });
+});
+
+describe("claudeJsonPath", () => {
+  it("follows CLAUDE_CONFIG_DIR like Claude Code does", () => {
+    expect(claudeJsonPath({ CLAUDE_CONFIG_DIR: "/profiles/a" })).toBe(
+      join("/profiles/a", ".claude.json"),
+    );
+    expect(
+      claudeJsonPath({ CLAUDE_CONFIG_DIR: "  " }).endsWith(".claude.json"),
+    ).toBe(true);
+    expect(claudeJsonPath({})).not.toContain("/profiles/a");
   });
 });

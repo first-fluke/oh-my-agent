@@ -39,7 +39,10 @@ import {
   claudeAttributionEnabled,
   needsClaudeSettingsUpdate,
 } from "../../../vendors/claude/settings.js";
-import { ensureClaudeWorkspaceTrust } from "../../../vendors/claude/trust.js";
+import {
+  claudeJsonPath,
+  ensureClaudeWorkspaceTrust,
+} from "../../../vendors/claude/trust.js";
 import {
   applyCodexSettings,
   needsCodexSettingsUpdate,
@@ -91,6 +94,8 @@ export interface VendorSettingsContext {
 export interface VendorSettingsResult {
   agyInstalled: boolean;
   agySkipReason?: string;
+  /** Outcome of each host-trust step that ran (step 6), by vendor. */
+  hostTrust: Partial<Record<CliVendor, HostTrustOutcome>>;
 }
 
 /**
@@ -147,17 +152,13 @@ export function syncVendorSettings(
     configuredVendors.includes("claude") &&
     safeGetInstallMode() === "project"
   ) {
-    record(
-      join(homedir(), ".claude.json"),
-      "write",
-      "ensureClaudeWorkspaceTrust",
-    );
+    record(claudeJsonPath(), "write", "ensureClaudeWorkspaceTrust");
     if (!dryRun) {
       const trust = ensureClaudeWorkspaceTrust(root);
       if (!quiet) {
         if (trust.changed) {
           console.log(
-            `${pc.green("✓")} claude: trusted workspace (~/.claude.json)`,
+            `${pc.green("✓")} claude: trusted workspace (${claudeJsonPath()})`,
           );
         } else if (trust.reason) {
           console.log(`${pc.yellow("⚠")} claude trust: ${trust.reason}`);
@@ -515,18 +516,21 @@ export function syncVendorSettings(
   //    host's own "trust" answer does. Explicit "untrusted" decisions are
   //    kept, and a host that was never run is skipped. Claude (4b) and Qwen
   //    (4c) are handled above; opencode, Kilo and Kimi have no gate.
-  syncHostTrust(ctx);
+  const hostTrust = syncHostTrust(ctx);
 
-  return { agyInstalled, agySkipReason };
+  return { agyInstalled, agySkipReason, hostTrust };
 }
 
-function syncHostTrust(ctx: VendorSettingsContext): void {
+function syncHostTrust(
+  ctx: VendorSettingsContext,
+): Partial<Record<CliVendor, HostTrustOutcome>> {
   const { root, nativeRoot, configuredVendors, dryRun, quiet, record } = ctx;
   const steps = hostTrustSteps({
     root,
     nativeRoot,
     project: safeGetInstallMode() === "project",
   });
+  const outcomes: Partial<Record<CliVendor, HostTrustOutcome>> = {};
   for (const step of steps) {
     if (!configuredVendors.includes(step.vendor)) continue;
     record(step.target, "write", `${step.vendor} hook trust`);
@@ -541,6 +545,7 @@ function syncHostTrust(ctx: VendorSettingsContext): void {
         reason: error instanceof Error ? error.message : String(error),
       };
     }
+    outcomes[step.vendor] = outcome;
     if (quiet) continue;
     if (outcome.changed) {
       console.log(`${pc.green("✓")} ${step.label}`);
@@ -548,4 +553,5 @@ function syncHostTrust(ctx: VendorSettingsContext): void {
       console.log(`${pc.yellow("⚠")} ${step.vendor} trust: ${outcome.reason}`);
     }
   }
+  return outcomes;
 }

@@ -475,20 +475,16 @@ export function link(opts: LinkOptions = {}): LinkResult {
     installVendorAdaptations(root, nativeRoot, hookVendors);
   }
 
-  // Codex hook-trust notice: printed even in quiet mode because untrusted hooks
-  // silently do not run — install/update (quiet) callers must surface it too.
-  if (codexConfigured && !dryRun) {
-    const codexHooksAfter = existsSync(codexHooksPath)
-      ? readFileSync(codexHooksPath, "utf-8")
-      : null;
-    if (codexHooksAfter !== null && codexHooksAfter !== codexHooksBefore) {
-      console.log(
-        `${pc.yellow("⚠")} Codex hooks installed/updated — run ${pc.cyan("codex")} and use ${pc.cyan("/hooks")} to trust them (untrusted hooks do not run).`,
-      );
-    }
-  }
+  // Codex runs a hook only once its declaration hash is trusted. Link records
+  // that trust for oma's hooks (vendor-settings step 6); when it could not,
+  // changed hooks would silently not run, so say so even in quiet mode.
+  const codexHooksChanged =
+    codexConfigured &&
+    !dryRun &&
+    existsSync(codexHooksPath) &&
+    readFileSync(codexHooksPath, "utf-8") !== codexHooksBefore;
 
-  const { agyInstalled, agySkipReason } = syncVendorSettings({
+  const { agyInstalled, agySkipReason, hostTrust } = syncVendorSettings({
     root,
     nativeRoot,
     configuredVendors,
@@ -497,6 +493,13 @@ export function link(opts: LinkOptions = {}): LinkResult {
     quiet,
     record,
   });
+
+  const codexTrust = hostTrust.codex;
+  if (codexHooksChanged && (!codexTrust || codexTrust.reason)) {
+    console.log(
+      `${pc.yellow("⚠")} Codex hooks installed/updated but not trusted${codexTrust?.reason ? ` (${codexTrust.reason})` : ""} — run ${pc.cyan("codex")} and use ${pc.cyan("/hooks")} to trust them (untrusted hooks do not run).`,
+    );
+  }
 
   syncBrowsers();
   syncProviders();

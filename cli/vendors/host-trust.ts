@@ -12,9 +12,11 @@
  *   kiro        — workspace-roots/<id>/permissions.yaml          (kiro/trust.ts)
  *   commandcode — ~/.commandcode/projects/<slug>                 (commandcode/trust.ts)
  *   pi          — ~/.pi/agent/trust.json                         (pi/trust.ts)
+ *   qwen        — ~/.qwen/trustedFolders.json                    (qwen/folder-trust.ts)
  *
  * Claude workspace trust and Qwen hook approval predate this list and run in
- * their own link steps. opencode, Kilo and Kimi load hooks / plugins without
+ * their own link steps; Qwen's folder trust (needed once the user enables
+ * `security.folderTrust`) is listed here. opencode, Kilo and Kimi load hooks / plugins without
  * a gate.
  *
  * Every target is HOME-scoped, so tests that link for real mock this module.
@@ -34,6 +36,10 @@ import { cursorDataDir, ensureCursorWorkspaceTrust } from "./cursor/trust.js";
 import { ensureGrokFolderTrust, grokHome } from "./grok/trust.js";
 import { ensureKiroWorkspaceTrust, kiroHome } from "./kiro/trust.js";
 import { ensurePiProjectTrust, piAgentHome } from "./pi/trust.js";
+import {
+  ensureQwenFolderTrust,
+  qwenTrustedFoldersPath,
+} from "./qwen/folder-trust.js";
 
 export interface HostTrustOutcome {
   changed: boolean;
@@ -119,6 +125,12 @@ export function hostTrustSteps(options: HostTrustOptions): HostTrustStep[] {
       label: "pi: trusted project",
       target: join(piAgentHome(), "trust.json"),
       apply: () => ensurePiProjectTrust(root),
+    },
+    {
+      vendor: "qwen",
+      label: "qwen: trusted folder",
+      target: qwenTrustedFoldersPath(),
+      apply: () => ensureQwenFolderTrust(root),
     },
   );
   return steps;

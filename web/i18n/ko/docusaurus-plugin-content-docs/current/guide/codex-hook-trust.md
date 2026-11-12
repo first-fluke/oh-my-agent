@@ -1,81 +1,69 @@
 ---
 title: "가이드: Codex 훅 신뢰"
 sidebar_label: Codex 훅 신뢰 설정
-description: Codex 훅을 한 번 검토하기 전까지 실행하지 않는 이유, 업데이트 동작, oh-my-agent가 생성한 Codex 서브프로세스에 자동으로 적용하는 처리를 설명합니다.
+description: Codex가 훅을 신뢰 절차 뒤에 두는 방식, oh-my-agent가 자기 훅을 실행시키려고 기록하는 내용, 직접 훅을 검토해야 하는 경우를 설명합니다.
 ---
 
 # 가이드: Codex 훅 신뢰
 
-oh-my-agent를 프로젝트에 설치하면 벤더 네이티브 훅 설정을 작성하는데, Codex CLI용 `.codex/hooks.json`도 여기에 포함됩니다. Claude Code와 달리 Codex는 이 훅을 자동으로 실행하지 않습니다. 관리 대상이 아닌 모든 명령 훅을 TOFU(Trust-On-First-Use) 뒤에 두기 때문에, 한 번 검토하고 활성화해야만 훅이 동작합니다.
+oh-my-agent를 프로젝트에 설치하면 벤더 네이티브 훅 설정을 작성하며, Codex CLI용 `.codex/hooks.json`도 여기에 포함됩니다. Codex는 훅이 설정돼 있다는 것만으로 실행하지 않습니다. 두 가지 승인이 모두 있어야 하고, 둘 다 사용자 설정(`$CODEX_HOME/config.toml`, 기본값 `~/.codex/config.toml`)에 저장됩니다. 프로젝트가 자기 훅을 스스로 승인할 수는 없습니다.
 
-이는 oh-my-agent의 한계가 아니라 Codex 쪽 안전장치입니다.
+1. **프로젝트 신뢰.** 프로젝트의 `.codex/` 폴더(`config.toml`, `hooks.json`)는 신뢰된 프로젝트에서만 로드됩니다: `[projects."<path>"] trust_level = "trusted"`.
+2. **훅별 신뢰.** 프로젝트 범위든 사용자 범위든, 관리 대상이 아닌 모든 훅에는 `[hooks.state."<hooks.json 경로>:<event>:<group>:<handler>"]` 항목이 있어야 하고, 그 `trusted_hash`가 훅의 현재 선언(명령, timeout, matcher, async 여부, status message)과 일치해야 합니다.
+
+새로 생기거나 바뀐 훅이 있으면 Codex TUI는 "Hooks need review"를 띄우고, `codex exec`는 그 훅을 조용히 빼고 실행합니다.
 
 ---
 
-## 한 번만 하면 되는 단계: Codex에서 훅 검토
+## oh-my-agent가 대신 기록하는 것
 
-`oma`(설치), `oma link`, `oma update`가 Codex가 본 적 없는 프로젝트에 `.codex/hooks.json`(전역 설치라면 `~/.codex/hooks.json`)을 쓰고 나면, 훅은 아직 실행되지 **않습니다**. Codex를 열고 한 번 검토해야 합니다.
+`oma install`, `oma update`, `oma link`는 **oh-my-agent 자신의 훅**에 대해 두 승인을 모두 기록합니다. 대상은 이름이 `oma-hook-*`이거나 `oma-hook.sh` 래퍼로 실행되는 훅입니다. 해시는 Codex에서 "Trust all and continue"를 골랐을 때 Codex가 계산하는 값과 같습니다. 그래서 첫 Codex 세션부터 `/hooks` 단계 없이 훅이 실행됩니다. 이후 oh-my-agent 릴리스가 훅 명령을 바꿔도 `oma update`가 새 해시를 기록하므로 훅은 계속 켜져 있습니다.
 
-1. Codex CLI에서 프로젝트를 엽니다.
-2. `/hooks`를 실행해 훅 브라우저(TUI)를 엽니다.
-3. 나열된 훅을 검토하고 활성화합니다.
+oh-my-agent는 `config.toml`에서 해당 테이블만 고칩니다. 고친 결과를 다시 읽어서 다른 내용이 하나라도 달라지면 파일을 건드리지 않습니다. 다음은 절대 하지 않습니다.
 
-이 과정을 거치기 전까지 훅은 신뢰되지 않은 상태로 남아 조용히 건너뛰어집니다. 그래서 oh-my-agent는 `.codex/hooks.json`을 만들거나 바꿀 때마다 다음과 같이 안내합니다.
+- 같은 `hooks.json`에 사용자가 직접 추가한 훅 승인
+- `trust_level = "untrusted"`로 표시한 프로젝트 신뢰
+- 사용자가 끈 훅(`enabled = false`) 다시 켜기
+- Codex가 홈 디렉터리를 만들기 전의 Codex 설정 변경
+
+전역 설치(`~/.codex/hooks.json`)에는 신뢰할 프로젝트가 없으므로 훅별 항목만 기록합니다.
+
+---
+
+## 직접 훅을 검토해야 하는 경우
+
+oh-my-agent가 신뢰를 기록하지 못하면 안내 메시지와 함께 이유를 출력합니다.
 
 ```text
-⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
+⚠ Codex hooks installed/updated but not trusted (<reason>) — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
-Codex를 열기 전에 생성된 파일을 확인합니다.
-
-```bash
-test -s .codex/hooks.json && echo "Codex hooks are installed"
-oma link codex
-```
-
-예상 결과는 설치·업데이트 안내가 출력된 뒤 Codex의 `/hooks` 브라우저에 훅이 나타나는 것입니다. `oma link codex`는 생성된 파일을 다시 맞추지만, 최초 신뢰 결정 자체를 대신하지는 않습니다.
-
-**참고:** 여기서 `--dangerously-bypass-hook-trust`는 도움이 되지 않습니다. 이 플래그의 경고("Enabled hooks may run without review")가 뜻하는 바는 이미 활성화된 훅에 한해 검토를 건너뛴다는 것이며, 한 번도 검토하지 않은 훅은 실행하지 않습니다. 훅을 처음 활성화하는 방법은 `/hooks` 브라우저뿐입니다.
-
-내부적으로 Codex는 사용자의 결정을 `~/.codex/config.toml`의 `[hooks.state]` 항목에 저장합니다. 키는 훅 파일 경로, 이벤트, 블록, 훅으로 구성되며, `enabled` 플래그와 명령 문자열의 `trusted_hash`가 함께 기록됩니다.
+주로 `config.toml`을 파싱할 수 없거나, 프로젝트를 untrusted로 표시했거나, Codex를 아직 한 번도 실행하지 않은 경우입니다. 이때는 Codex에서 프로젝트를 열고 `/hooks`를 실행해 훅을 한 번 활성화하세요. 그다음 `oma link codex`를 실행하면 이후 업데이트에서도 신뢰가 유지됩니다.
 
 ---
 
-## 업데이트할 때 벌어지는 일
+## oh-my-agent가 실행하는 Codex 프로세스
 
-한 번 훅을 신뢰하고 나면 업데이트할 때마다 이 단계를 반복할 필요가 없습니다.
-
-- **`oma link`나 `oma update`를 다시 실행해도 신뢰가 유지됩니다.** 훅 명령 문자열이 그대로인 한 그렇습니다. Codex는 저장된 해시를 현재 명령과 비교하고, 일치하면 훅을 계속 신뢰합니다.
-- **이후 oh-my-agent 버전이 훅 명령 문자열을 바꾸면** 해시가 더 이상 맞지 않아 해당 훅이 조용히 신뢰되지 않은 상태로 돌아갑니다. 설치 안내가 다시 뜨고, `/hooks`로 다시 신뢰해야 합니다.
-
-즉 검토 단계는 처음 한 번, 그리고 훅 명령이 실제로 바뀐 릴리스 이후에만 필요합니다.
+oh-my-agent가 Codex 서브프로세스를 직접 실행할 때(예: `oma agent spawn`)는 `--dangerously-bypass-hook-trust`도 함께 넘깁니다. 이 플래그는 활성화된 훅을 해시 검사 없이 실행하게 하지만, 프로젝트 신뢰는 풀어 주지 않습니다. oh-my-agent가 시작한 프로세스에만 적용되며 설정 파일에는 기록되지 않습니다.
 
 ---
 
-## oh-my-agent가 자동으로 처리하는 것
+## `[features] hooks` 플래그는 필요 없음
 
-oh-my-agent가 직접 Codex 서브프로세스를 스폰할 때, 예를 들어 `oma agent spawn`으로 다른 벤더 에이전트를 디스패치할 때는 `--dangerously-bypass-hook-trust`를 자동으로 붙입니다. 덕분에 자체 검증한 훅이 업데이트 후에도 수동 재신뢰 없이 동작합니다.
-
-이 플래그는 oh-my-agent가 스폰하는 Codex 프로세스에**만** 적용됩니다. `~/.codex/config.toml`이나 프로젝트 설정에는 절대 기록되지 않으므로, 사용자가 직접 시작한 Codex 세션에는 영향을 주지 않습니다.
-
----
-
-## `[features] hooks` 플래그는 필요 없습니다
-
-예전 oh-my-agent 릴리스는 Codex 설정에 `[features] codex_hooks = true`를 기록했습니다. Codex 0.124에서 이 플래그의 이름이 `hooks`로 바뀌었고 훅이 기본으로 켜지는 안정 기능이 되었으므로 이제 플래그가 필요 없습니다. oh-my-agent는 두 키 모두 기록하지 않으며, `[features]` 테이블에서 사용 중단된 `codex_hooks`와 `child_agents_md` 플래그를 발견하면 제거합니다.
+예전 oh-my-agent 릴리스는 Codex 설정에 `[features] codex_hooks = true`를 썼습니다. Codex 0.124에서 이 플래그 이름이 `hooks`로 바뀌었고, 훅은 기본으로 켜진 안정 기능이 되어 플래그가 필요 없습니다. oh-my-agent는 두 키 모두 쓰지 않고, `[features]` 테이블에서 지원 중단된 `codex_hooks`와 `child_agents_md` 플래그를 발견하면 제거합니다.
 
 ---
 
 ## 요약
 
-| 상황 | 해야 할 일 |
+| 상황 | 할 일 |
 |:----------|:------------|
-| 최초 설치 또는 프로젝트의 첫 `.codex/hooks.json` | Codex를 열고 `/hooks`를 실행해 훅을 한 번 활성화 |
-| 훅 명령이 그대로인 `oma update` | 없음. 신뢰가 유지됩니다 |
-| 훅 명령이 바뀐 `oma update` | `/hooks`를 다시 실행해 재신뢰 (설치 프로그램이 안내를 출력합니다) |
-| oh-my-agent가 스폰한 Codex 서브프로세스 | 없음. 우회가 자동으로 적용됩니다 |
+| 프로젝트에 처음 설치 | 없음. 설치 프로그램이 신뢰를 기록합니다 |
+| 훅 명령이 바뀌는 `oma update` | 없음. 새 해시가 기록됩니다 |
+| 설치 프로그램이 "not trusted (…)"를 출력 | 이유를 해결하거나, Codex에서 `/hooks`를 한 번 실행 |
+| `.codex/hooks.json`에 직접 추가한 훅 | `/hooks`에서 직접 검토 |
 
 ## 함께 보기
 
-- [기존 프로젝트 통합](./integration.md): 설치 프로그램이 벤더별로 기록하는 파일
-- [전역 설치](./global-install.md): `~/.codex/`에 기록하는 사용자 전역 설치
+- [기존 프로젝트 통합](./integration.md): 설치 프로그램이 벤더별로 작성하는 파일
+- [전역 설치](./global-install.md): `~/.codex/`에 쓰는 사용자 전체 설치
