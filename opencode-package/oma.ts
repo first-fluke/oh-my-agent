@@ -49,6 +49,10 @@
  *       Known upstream caveat: plugin hooks do not intercept subagent tool
  *       calls (anomalyco/opencode#5894), so the guard covers the primary
  *       agent only.
+ *   tool.execute.after                  ← PostToolUse (skill-route)
+ *       Observation only: records a skill load (`skill` tool, or a SKILL.md
+ *       read through `read` / `bash`). Needs `input.args` (opencode 1.1.62+,
+ *       Kilo); never mutates the output.
  *   event: "session.idle"               ← Stop (BEST-EFFORT / re-entrant)
  *       Runs persistent-mode. If it returns a block decision, the workflow is
  *       still active: re-enter the loop by posting the block reason as a new
@@ -67,6 +71,12 @@ import { fileURLToPath } from "node:url";
  * never kills the hook mid-gate — the other core scripts keep 5s.
  */
 const PERSISTENT_MODE_TIMEOUT_MS = 30_000;
+
+/**
+ * Tools that can load a skill: the native `skill` tool, `read`, and the shell
+ * (`bash` on opencode 1.x / Kilo, `shell` on opencode 2.x).
+ */
+const SKILL_LOAD_TOOLS = new Set(["skill", "read", "bash", "shell"]);
 
 /** Absolute path to a core script copied next to this bridge at install time. */
 function corePath(script: string): string {
@@ -401,6 +411,50 @@ export default (async ({
       if (updated && output.args) {
         output.args.command = updated;
       }
+    },
+
+    /**
+     * tool.execute.after ← PostToolUse (skill-route, observation only)
+     *
+     * Records which skill the model loaded: the native `skill` tool, or a
+     * SKILL.md opened through `read` / `bash` (`shell` on opencode 2.x).
+     * Spawns only for those tools when the arguments can name a skill, since
+     * every tool call passes through here. Fail-open and never mutates output.
+     */
+    "tool.execute.after": async (input: {
+      tool?: string;
+      sessionID?: string;
+      args?: unknown;
+    }): Promise<void> => {
+      const tool = input.tool;
+      if (!tool || !SKILL_LOAD_TOOLS.has(tool)) return;
+      const args = input.args;
+      if (!args || typeof args !== "object" || Array.isArray(args)) return;
+      if (tool !== "skill") {
+        let serialized = "";
+        try {
+          serialized = JSON.stringify(args);
+        } catch {
+          return;
+        }
+        if (
+          !serialized.includes("SKILL.md") &&
+          !serialized.includes("skill://")
+        ) {
+          return;
+        }
+      }
+      runCore(
+        "skill-route.ts",
+        {
+          tool_name: tool,
+          tool_input: args,
+          cwd,
+          sessionId: input.sessionID ?? "",
+          hook_event_name: "PostToolUse",
+        },
+        cwd,
+      );
     },
 
     /**

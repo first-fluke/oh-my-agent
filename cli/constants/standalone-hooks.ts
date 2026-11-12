@@ -24,6 +24,7 @@ export const STANDALONE_HOOK_SCRIPTS = {
   "code-intelligence-guard.ts": ["pre_tool"],
   "test-filter.ts": ["pre_tool"],
   "refactor-guard.ts": ["post_tool", "stop"],
+  "skill-route.ts": ["post_tool"],
   "persistent-mode.ts": ["stop"],
 } as const;
 

@@ -23,6 +23,20 @@ import {
   RECOMMENDED_KIRO_MCP,
 } from "./settings.js";
 
+/** refactor-guard (fs_write) plus one skill-route entry per read/shell/skill tool id. */
+function kiroPostToolUse(wrapper: string) {
+  return [
+    "fs_write",
+    "fs_read",
+    "read_file",
+    "execute_bash",
+    "disclose_context",
+  ].map((matcher) => ({
+    matcher,
+    command: `${wrapper} --vendor kiro --event postToolUse --matcher ${matcher}`,
+  }));
+}
+
 describe("kiro settings", () => {
   const roots: string[] = [];
 
@@ -130,13 +144,9 @@ describe("kiro settings", () => {
       command:
         "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher fs_write",
     });
-    expect(installed.hooks.postToolUse).toEqual([
-      {
-        matcher: "fs_write",
-        command:
-          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher fs_write",
-      },
-    ]);
+    expect(installed.hooks.postToolUse).toEqual(
+      kiroPostToolUse("bash .kiro/hooks/oma-hook.sh"),
+    );
     expect(needsKiroOmaHooksAgentUpdate(root)).toBe(false);
 
     applyKiroOmaHooksAgent(root);
@@ -157,13 +167,9 @@ describe("kiro settings", () => {
 
     const repairedText = readFileSync(path, "utf-8");
     const repaired = JSON.parse(repairedText);
-    expect(repaired.hooks.postToolUse).toEqual([
-      {
-        matcher: "fs_write",
-        command:
-          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher fs_write",
-      },
-    ]);
+    expect(repaired.hooks.postToolUse).toEqual(
+      kiroPostToolUse("bash .kiro/hooks/oma-hook.sh"),
+    );
     expect(needsKiroOmaHooksAgentUpdate(root)).toBe(false);
 
     applyKiroOmaHooksAgent(root);
@@ -179,12 +185,9 @@ describe("kiro settings", () => {
     const agent = JSON.parse(
       readFileSync(join(root, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH), "utf-8"),
     );
-    expect(agent.hooks.postToolUse).toEqual([
-      {
-        matcher: "fs_write",
-        command: `bash '${join(root, ".kiro", "hooks", "oma-hook.sh")}' --vendor kiro --event postToolUse --matcher fs_write`,
-      },
-    ]);
+    expect(agent.hooks.postToolUse).toEqual(
+      kiroPostToolUse(`bash '${join(root, ".kiro", "hooks", "oma-hook.sh")}'`),
+    );
     expect(needsKiroOmaHooksAgentUpdate(root)).toBe(false);
   });
 });

@@ -45,8 +45,13 @@
     "PostToolUse": [
       {
         "hook": "refactor-guard.ts",
-        "matcher": "WriteFile|StrReplaceFile",
+        "matcher": "Write|Edit",
         "timeout": 5
+      },
+      {
+        "hook": "skill-route.ts",
+        "matcher": "Skill|Read|Bash",
+        "timeout": 3
       }
     ],
     "Stop": [

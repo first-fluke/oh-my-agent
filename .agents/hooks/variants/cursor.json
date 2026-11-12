@@ -48,6 +48,13 @@
         "timeout": 5
       }
     ],
+    "postToolUse": [
+      {
+        "hook": "skill-route.ts",
+        "matcher": "Read|Shell",
+        "timeout": 3
+      }
+    ],
     "stop": [
       {
         "hook": "persistent-mode.ts",

@@ -79,7 +79,26 @@ afterEach(() => {
 
 describe("knownSkillNames", () => {
   it("lists skill directories with a SKILL.md, excluding _shared", () => {
-    expect([...knownSkillNames(projectDir)].sort()).toEqual([...KNOWN].sort());
+    expect([...knownSkillNames(projectDir, null)].sort()).toEqual(
+      [...KNOWN].sort(),
+    );
+  });
+
+  it("includes skills of a global install under OMA_HOME", () => {
+    const globalRoot = mkdtempSync(join(tmpdir(), "oma-global-home-"));
+    try {
+      const dir = join(globalRoot, ".agents", "skills", "oma-video");
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, "SKILL.md"), "---\nname: oma-video\n---\n");
+      const empty = mkdtempSync(join(tmpdir(), "oma-no-skills-"));
+      try {
+        expect([...knownSkillNames(empty, globalRoot)]).toEqual(["oma-video"]);
+      } finally {
+        rmSync(empty, { recursive: true, force: true });
+      }
+    } finally {
+      rmSync(globalRoot, { recursive: true, force: true });
+    }
   });
 });
 
@@ -165,6 +184,180 @@ describe("detectSkillLoad", () => {
       detectSkillLoad(
         "Bash",
         { command: "git add .agents/skills/oma-image/SKILL.md" },
+        KNOWN,
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("detectSkillLoad vendor shapes", () => {
+  // Tool names and argument keys verified against each vendor's installed
+  // build or docs (Qwen 0.27, Kimi Code 0.29, Grok 1.0.77, agy 1.5.5,
+  // Cursor 2026.10, Copilot 1.0.107, Kiro 2.x/V3, pi 0.78.1, Command Code
+  // 1.88.5, opencode 1.19 / 2.2, Kilo 7.8).
+  const cases: Array<[string, string, Record<string, unknown>, string]> = [
+    ["qwen skill tool", "skill", { skill: "oma-design" }, "oma-design"],
+    ["kimi Skill tool", "Skill", { skill: "oma-image" }, "oma-image"],
+    [
+      "kiro V3 disclose_context",
+      "disclose_context",
+      { name: "oma-translation" },
+      "oma-translation",
+    ],
+    [
+      "qwen read_file",
+      "read_file",
+      { file_path: "/repo/.agents/skills/oma-design/SKILL.md" },
+      "oma-design",
+    ],
+    [
+      "kimi Read (relative path)",
+      "Read",
+      { path: ".agents/skills/oma-image/SKILL.md" },
+      "oma-image",
+    ],
+    [
+      "grok read_file (target_file)",
+      "read_file",
+      { target_file: "/repo/.agents/skills/oma-image/SKILL.md" },
+      "oma-image",
+    ],
+    [
+      "grok hashline_read",
+      "hashline_read",
+      { path: "/repo/.agents/skills/oma-image/SKILL.md" },
+      "oma-image",
+    ],
+    [
+      "antigravity read_file (Path)",
+      "read_file",
+      { Path: "/repo/.agents/skills/oma-design/SKILL.md" },
+      "oma-design",
+    ],
+    [
+      "kiro 2.x fs_read operations",
+      "fs_read",
+      {
+        operations: [
+          { mode: "Line", path: "/repo/.kiro/skills/oma-translation/SKILL.md" },
+        ],
+      },
+      "oma-translation",
+    ],
+    [
+      "kiro V3 read_file paths[]",
+      "read_file",
+      { paths: ["/repo/.kiro/skills/oma-design/SKILL.md"] },
+      "oma-design",
+    ],
+    [
+      "grok run_terminal_command",
+      "run_terminal_command",
+      { command: "cat .agents/skills/oma-design/SKILL.md" },
+      "oma-design",
+    ],
+    [
+      "grok run_terminal_cmd (internal id)",
+      "run_terminal_cmd",
+      { command: "head -n 80 .agents/skills/oma-design/SKILL.md" },
+      "oma-design",
+    ],
+    [
+      "antigravity run_command (CommandLine)",
+      "run_command",
+      { CommandLine: "cat .agents/skills/oma-image/SKILL.md" },
+      "oma-image",
+    ],
+    [
+      "kiro execute_bash",
+      "execute_bash",
+      { command: "cat .kiro/skills/oma-image/SKILL.md" },
+      "oma-image",
+    ],
+    [
+      "command code activate_skill",
+      "activate_skill",
+      { name: "oma-design", arguments: "landing page" },
+      "oma-design",
+    ],
+    [
+      "command code read_multiple_files",
+      "read_multiple_files",
+      { paths: ["README.md", ".agents/skills/oma-image/SKILL.md"] },
+      "oma-image",
+    ],
+    [
+      "command code shell_command with args",
+      "shell_command",
+      { command: "cat", args: [".agents/skills/oma-translation/SKILL.md"] },
+      "oma-translation",
+    ],
+    [
+      "pi read (@-prefixed path)",
+      "read",
+      { path: "@.agents/skills/oma-design/SKILL.md" },
+      "oma-design",
+    ],
+    [
+      "opencode 1.x / kilo skill (name)",
+      "skill",
+      { name: "oma-image" },
+      "oma-image",
+    ],
+    [
+      "opencode 1.x / kilo read (filePath)",
+      "read",
+      { filePath: "/repo/.agents/skills/oma-image/SKILL.md" },
+      "oma-image",
+    ],
+    ["opencode 2.x skill (id)", "skill", { id: "oma-design" }, "oma-design"],
+    [
+      "opencode 2.x read skill:// URI",
+      "read",
+      { path: "skill://oma-translation" },
+      "oma-translation",
+    ],
+    [
+      "opencode 2.x read skill:// SKILL.md",
+      "read",
+      { path: "skill://oma-translation/SKILL.md" },
+      "oma-translation",
+    ],
+    [
+      "opencode 2.x shell",
+      "shell",
+      { command: "cat .agents/skills/oma-design/SKILL.md" },
+      "oma-design",
+    ],
+    [
+      "cursor Shell",
+      "Shell",
+      { command: "sed -n 1,120p .cursor/skills/oma-image/SKILL.md", cwd: "/r" },
+      "oma-image",
+    ],
+  ];
+
+  it.each(cases)("detects %s", (_label, tool, input, expected) => {
+    expect(detectSkillLoad(tool, input, KNOWN)).toBe(expected);
+  });
+
+  it("ignores names a broad vendor matcher admits but are not read tools", () => {
+    // Kimi/Cursor matchers are unanchored regexes: `Read` admits ReadMediaFile.
+    expect(
+      detectSkillLoad(
+        "ReadMediaFile",
+        { path: ".agents/skills/oma-image/SKILL.md" },
+        KNOWN,
+      ),
+    ).toBeNull();
+    expect(
+      detectSkillLoad("disclose_context", { name: "steering-doc" }, KNOWN),
+    ).toBeNull();
+    // A skill resource opened by URI is not a skill load.
+    expect(
+      detectSkillLoad(
+        "read",
+        { path: "skill://oma-design/resources/guide.md" },
         KNOWN,
       ),
     ).toBeNull();
@@ -422,6 +615,34 @@ describe("skill-route run (post_tool)", () => {
         source: "model-description",
         stage: "loaded",
         via: "Read",
+      },
+    ]);
+  });
+
+  it("prefilters nested inputs (Kiro operations[].path) without dropping them", async () => {
+    await run(
+      {
+        kind: "post_tool",
+        toolName: "fs_read",
+        toolInput: {
+          operations: [
+            {
+              mode: "Line",
+              path: join(projectDir, ".agents/skills/oma-image/SKILL.md"),
+            },
+          ],
+        },
+        cwd: projectDir,
+      },
+      { vendor: "kiro", cwd: projectDir, sid: "kiro-1" },
+    );
+    const sid = readIndex(projectDir).active[ROUTING_CATEGORY] as string;
+    expect(routedEvents(sid).map((e) => e.payload)).toEqual([
+      {
+        skill: "oma-image",
+        source: "model-description",
+        stage: "loaded",
+        via: "fs_read",
       },
     ]);
   });

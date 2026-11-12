@@ -17,6 +17,7 @@
  * Event mapping (see README.md):
  *   before_agent_start  ← UserPromptSubmit  (keyword-detector + skill-injector)
  *   tool_call (bash)    ← PreToolUse        (scm-guard + test-filter)
+ *   tool_result         ← PostToolUse       (skill-route, observation only)
  *   agent_settled       ← Stop              (persistent-mode + re-entry)
  *
  * tool_call blocking: a handler that returns `{ block: true, reason }` blocks
@@ -204,6 +205,38 @@ export default function omaHooks(pi: ExtensionAPI): void {
     if (updated && input) input.command = updated;
     return undefined;
   });
+
+  // tool_result ← PostToolUse. skill-route records a skill load: pi has no
+  // skill tool, so the model loads a skill body by `read` (or `bash`) on its
+  // SKILL.md. Observation only — the result is never altered. Spawns only when
+  // the input names a SKILL.md, since every tool call passes through here.
+  try {
+    pi.on("tool_result", async (event, ctx) => {
+      try {
+        if (event.isError) return undefined;
+        if (event.toolName !== "read" && event.toolName !== "bash") {
+          return undefined;
+        }
+        const input = event.input as Record<string, unknown> | undefined;
+        if (!input || !JSON.stringify(input).includes("SKILL.md")) {
+          return undefined;
+        }
+        const sessionId = sessionIdOf(ctx);
+        runCore("skill-route.ts", {
+          tool_name: event.toolName,
+          tool_input: input,
+          cwd: process.cwd(),
+          hook_event_name: "PostToolUse",
+          ...(sessionId ? { sessionId } : {}),
+        });
+      } catch {
+        // Observation only: never fail a tool result.
+      }
+      return undefined;
+    });
+  } catch {
+    // pi build without `tool_result` — skill loads are not recorded there.
+  }
 
   // agent_settled ← Stop. Persistent-mode re-entry: after a run fully settles,
   // ask persistent-mode.ts whether a workflow is still active; if so, re-enter

@@ -36,6 +36,8 @@
  *                                  a throw rejects the call, as in v1)
  *   session "experimental.idle"  → event session.idle (persistent-mode re-entry
  *                                  through ctx.session.prompt)
+ *   tool "execute.after"         → "tool.execute.after" (skill-route; completed
+ *                                  calls only, `input` passed as `args`)
  */
 
 import legacy from "./oma.ts";
@@ -119,6 +121,15 @@ export default {
         { tool: typeof event.tool === "string" ? event.tool : undefined },
         { args: input as { command?: string } },
       );
+    });
+
+    await ctx.tool.hook("execute.after", async (event) => {
+      if (event.status !== "completed") return;
+      await hooks["tool.execute.after"]({
+        tool: typeof event.tool === "string" ? event.tool : undefined,
+        sessionID: sessionIDOf(event),
+        args: event.input,
+      });
     });
 
     await ctx.session.hook("experimental.idle", async (event) => {

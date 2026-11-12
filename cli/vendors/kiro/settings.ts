@@ -70,6 +70,16 @@ const OMA_KIRO_HOOKS_AGENT = {
         command:
           "bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher fs_write",
       },
+      // skill-route: skill loads. One exact tool id per entry so a Kiro 2.x
+      // build (exact-name/glob matchers) and V3 (regex/tag matchers) both
+      // fire once: fs_read (2.x), read_file (V3), execute_bash (both),
+      // disclose_context (V3 skill activation).
+      ...["fs_read", "read_file", "execute_bash", "disclose_context"].map(
+        (matcher) => ({
+          matcher,
+          command: `bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher ${matcher}`,
+        }),
+      ),
     ],
     stop: [
       { command: "bash .kiro/hooks/oma-hook.sh --vendor kiro --event stop" },

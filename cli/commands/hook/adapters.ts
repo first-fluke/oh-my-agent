@@ -289,6 +289,7 @@ export function extractSessionId(
  *   grok        : env GROK_WORKSPACE_ROOT → payload.cwd → ""
  *   kiro        : env KIRO_PROJECT_DIR → payload.cwd → ""
  *   qwen        : env QWEN_PROJECT_DIR → payload.cwd → ""
+ *   cursor      : payload.cwd → workspace_roots[0] → env CURSOR_PROJECT_DIR → ""
  *   others      : payload.cwd → ""
  */
 function resolveCwd(vendor: Vendor, payload: Record<string, unknown>): string {
@@ -334,8 +335,24 @@ function resolveCwd(vendor: Vendor, payload: Record<string, unknown>): string {
         ""
       );
     }
+    case "cursor": {
+      // Cursor's base payload carries workspace_roots[]; top-level cwd is
+      // present only on server-requested tool calls (postToolUse for local
+      // Read/Shell may omit it).
+      const roots = payload.workspace_roots;
+      const root =
+        Array.isArray(roots) && typeof roots[0] === "string"
+          ? roots[0]
+          : undefined;
+      return (
+        (payload.cwd as string | undefined) ||
+        root ||
+        process.env.CURSOR_PROJECT_DIR ||
+        ""
+      );
+    }
     default: {
-      // claude, codex, cursor, pi
+      // claude, codex, pi
       return (payload.cwd as string | undefined) || "";
     }
   }

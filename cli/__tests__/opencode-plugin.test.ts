@@ -90,6 +90,22 @@ describe("opencode bridge source — locked event names", () => {
     expect(bridgeSrc).toContain('"tool.execute.before"');
   });
 
+  it("bridge source records skill loads in tool.execute.after without mutating output", () => {
+    const bridgeSrc = readFileSync(
+      join(REPO_ROOT, ".agents", "hooks", "variants", "opencode", "oma.ts"),
+      "utf-8",
+    );
+    const start = bridgeSrc.indexOf('"tool.execute.after"');
+    expect(start).toBeGreaterThan(-1);
+    const body = bridgeSrc.slice(
+      start,
+      bridgeSrc.indexOf("event: async", start),
+    );
+    expect(body).toContain('"skill-route.ts"');
+    // Observation only: the handler takes no output argument.
+    expect(body).not.toContain("output");
+  });
+
   it("bridge source contains session.idle handler", () => {
     const bridgeSrc = readFileSync(
       join(REPO_ROOT, ".agents", "hooks", "variants", "opencode", "oma.ts"),

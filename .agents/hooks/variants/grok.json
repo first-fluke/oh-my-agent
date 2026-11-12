@@ -44,8 +44,13 @@
     "PostToolUse": [
       {
         "hook": "refactor-guard.ts",
-        "matcher": "hashline_edit|apply_patch|create_file|write_file|edit_file|str_replace",
+        "matcher": "search_replace|write|hashline_edit|apply_patch|create_file|write_file|edit_file|str_replace",
         "timeout": 5
+      },
+      {
+        "hook": "skill-route.ts",
+        "matcher": "read_file|hashline_read|run_terminal_command|run_terminal_cmd",
+        "timeout": 3
       }
     ],
     "Stop": [

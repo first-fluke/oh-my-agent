@@ -128,12 +128,21 @@ describe("commandcode bridge source — locked hook names", () => {
       "appendSystemPrompt",
       "onSessionStart",
       "beforeToolCall",
+      "afterToolCall",
       "onStop",
     ]) {
       expect(src, hook).toContain(`${hook}:`);
     }
     // onRunEnd cannot force-continue; persistent-mode must ride onStop.
     expect(src).not.toContain("onRunEnd:");
+  });
+
+  it("records skill loads after tool calls without altering the result", () => {
+    const start = src.indexOf("afterToolCall:");
+    const body = src.slice(start, src.indexOf("onStop:", start));
+    expect(body).toContain('"skill-route.ts"');
+    expect(body).toContain('"activate_skill"');
+    expect(body).not.toMatch(/return\s*\{/);
   });
 
   it("dispatches through the oma CLI with the commandcode identity", () => {

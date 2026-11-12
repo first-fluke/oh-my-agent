@@ -76,10 +76,13 @@ describe("installKimiHooks", () => {
     }
     // Include native edits before execution for diagnostic baselines.
     const preTool = hooks.find((h) => h.event === "PreToolUse");
-    expect(preTool?.matcher).toBe("Bash|WriteFile|StrReplaceFile|Edit|Write");
-    // PostToolUse carries the kimi file-edit tool matcher (refactor-guard).
+    expect(preTool?.matcher).toBe("Bash|Write|Edit|WriteFile|StrReplaceFile");
+    // PostToolUse carries the kimi file-edit tools (refactor-guard) and the
+    // skill-load tools (skill-route); legacy names stay for older builds.
     const postTool = hooks.find((h) => h.event === "PostToolUse");
-    expect(postTool?.matcher).toBe("WriteFile|StrReplaceFile|Edit|Write");
+    expect(postTool?.matcher).toBe(
+      "Write|Edit|Skill|Read|Bash|WriteFile|StrReplaceFile",
+    );
   });
 
   it("is idempotent — re-running does not duplicate oma-managed hooks", () => {

@@ -21,6 +21,11 @@
         "hook": "refactor-guard.ts",
         "matcher": "write|edit",
         "timeout": 5
+      },
+      {
+        "hook": "skill-route.ts",
+        "matcher": "activate_skill|read|shell",
+        "timeout": 3
       }
     ],
     "Stop": [

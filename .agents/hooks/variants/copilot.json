@@ -57,6 +57,11 @@
         "hook": "refactor-guard.ts",
         "matcher": "Edit|Write",
         "timeout": 5
+      },
+      {
+        "hook": "skill-route.ts",
+        "matcher": "skill|Read|Bash",
+        "timeout": 3
       }
     ],
     "Stop": [

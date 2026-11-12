@@ -241,13 +241,15 @@ Required payload fields:
 
 - `skill`: skill directory name under `.agents/skills/`.
 - `source`: `user-explicit` (the user named `/<skill>` or `$<skill>`), `hook-trigger` (a `triggers.json` keyword matched), or `model-description` (the model loaded a skill the hook never suggested, routing from the skill description).
-- `stage`: `suggested` (hook injected the suggestion) or `loaded` (the skill was actually loaded: Claude `Skill` tool, or a SKILL.md read).
+- `stage`: `suggested` (hook injected the suggestion) or `loaded` (the skill was actually loaded: a native skill tool, or a SKILL.md read through a file-read tool or a file-reading shell command).
 
 Optional payload fields:
 
 - `matchedTriggers`: matched trigger keywords (hook-trigger). The prompt text is never recorded.
 - `score`
 - `via`: tool that loaded the skill.
+
+Loads are detected by a post-tool hook on each vendor's skill, file-read, and shell tools: Claude `Skill`/`Read`; Codex shell; Qwen `skill`/`read_file`/`run_shell_command`; Kimi `Skill`/`Read`/`Bash`; Copilot `skill`/`view`/`bash`; Cursor `Read`/`Shell`; Grok `read_file`/`hashline_read`/`run_terminal_command`; Antigravity `read_file`/`run_command`; Kiro `fs_read`/`read_file`/`execute_bash`/`disclose_context`; pi `read`/`bash`; Command Code `activate_skill`/`read_file`/`shell_command`; opencode and Kilo `skill`/`read`/`bash` (`shell`, `skill://<id>` on opencode 2.x). A skill injected without a tool call (a user-typed slash command on Cursor, Grok, Kimi, Antigravity, pi, or Command Code, or an Antigravity preloaded skill) has no load record; its `user-explicit` record comes from the prompt hook where the vendor has one.
 
 Records go to the active main workflow session when it was created by the same vendor session or has non-boundary activity within two hours; otherwise to a per-vendor-session `skill-routing` session. Each skill is recorded once per stage per vendor session.
 

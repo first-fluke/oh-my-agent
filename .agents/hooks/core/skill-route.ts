@@ -29,7 +29,8 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { agyConversationId, agyProjectDir, isAgyInput } from "./agy-input.ts";
+import { agyConversationId, agyProjectDir } from "./agy-input.ts";
+import { omaHome } from "./oma-home.ts";
 import { emitEvent as appendStateEvent } from "./state-core.ts";
 import {
   createSessionId,
@@ -44,7 +45,7 @@ import {
   readIndex,
 } from "./state-marker.ts";
 import type { HandlerCtx, HandlerResult, HookInput, Vendor } from "./types.ts";
-import { getProjectDir } from "./vendor-detect.ts";
+import { detectVendorFromInput, getProjectDir } from "./vendor-detect.ts";
 
 export type SkillRouteSource =
   | "user-explicit"
@@ -353,23 +354,40 @@ export async function recordSkillRoutes(
 
 // ── Load detection ───────────────────────────────────────────
 
-/**
- * Skill names under `.agents/skills/` that have a SKILL.md. Same discovery
- * rule as skill-injector's discoverSkills (kept local to avoid an import
- * cycle: skill-injector records its suggestions through this module).
- */
-export function knownSkillNames(projectDir: string): Set<string> {
-  const names = new Set<string>();
-  const skillsDir = join(projectDir, ".agents", "skills");
+function globalSkillsRoot(): string | null {
   try {
-    for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory() || entry.name.startsWith("_")) continue;
-      if (existsSync(join(skillsDir, entry.name, "SKILL.md"))) {
-        names.add(entry.name);
-      }
-    }
+    return omaHome();
   } catch {
-    // No skills directory — nothing to attribute.
+    return null;
+  }
+}
+
+/**
+ * Skill names that have a SKILL.md under the project's `.agents/skills/` or,
+ * for a global install (`oma install --global`), under `<OMA_HOME>/.agents/
+ * skills/`. Same discovery rule as skill-injector's discoverSkills (kept local
+ * to avoid an import cycle: skill-injector records its suggestions through
+ * this module). Symlinked skill directories count.
+ */
+export function knownSkillNames(
+  projectDir: string,
+  globalRoot: string | null = globalSkillsRoot(),
+): Set<string> {
+  const names = new Set<string>();
+  const roots = [projectDir, ...(globalRoot ? [globalRoot] : [])];
+  for (const root of roots) {
+    const skillsDir = join(root, ".agents", "skills");
+    try {
+      for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
+        if (entry.name.startsWith("_")) continue;
+        if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+        if (existsSync(join(skillsDir, entry.name, "SKILL.md"))) {
+          names.add(entry.name);
+        }
+      }
+    } catch {
+      // No skills directory here — nothing to attribute from this root.
+    }
   }
   return names;
 }
@@ -399,27 +417,80 @@ export function explicitSkillMentions(
 const SKILL_FILE_PATTERN = /skills\/([A-Za-z0-9_.-]+)\/SKILL\.md\b/g;
 
 /**
+ * Native skill-activation tools (lowercased): Claude / Kimi `Skill`, Qwen /
+ * Copilot / opencode / Kilo `skill`, Kiro V3 `disclose_context`, Command
+ * Code `activate_skill`.
+ */
+const SKILL_TOOLS = new Set(["skill", "disclose_context", "activate_skill"]);
+
+/**
+ * Argument keys a skill tool names the skill under (`id`: opencode 2.x
+ * `skill`). Only values that are known skill names count.
+ */
+const SKILL_ARG_KEYS = ["skill", "name", "skill_name", "skillName", "id"];
+
+/** opencode 2.x `read` can open a skill by URI: `skill://<id>[/<file>]`. */
+const SKILL_URI_PATTERN = /^skill:\/\/([A-Za-z0-9_.-]+)(?:\/(SKILL\.md))?$/;
+
+/**
  * File-read tools across vendors (lowercased). The post_tool settings matcher
  * is a union across the whole handler chain, so edit tools reach this handler
  * too — writing a doc that mentions a SKILL.md path is not a skill load.
+ *
+ *   read          Claude, Cursor (`file_path`), Kimi (`path`), Copilot
+ *                 (`view` → Read, `path` → file_path), pi (`path`), opencode
+ *                 1.x / Kilo (`filePath`), opencode 2.x (`path`, or
+ *                 `skill://<id>`)
+ *   read_file     Qwen (`file_path`), Grok (`target_file`), Antigravity CLI
+ *                 (`Path`), Kiro V3, Command Code (`file_path` / `paths[]`)
+ *   read_multiple_files  Command Code (`paths[]`)
+ *   hashline_read Grok hashline toolset
+ *   view_file     other Antigravity builds (`AbsolutePath`)
+ *   fs_read       Kiro V2 (`operations[].path`)
  */
 const READ_TOOLS = new Set([
   "read",
   "read_file",
   "readfile",
+  "hashline_read",
+  "read_multiple_files",
   "view",
   "view_file",
   "fs_read",
 ]);
 
-/** Shell tools across vendors (lowercased). */
+/** Argument keys a file-read tool carries its path under, across vendors. */
+const READ_PATH_KEYS = [
+  "file_path",
+  "filePath",
+  "path",
+  "absolute_path",
+  "target_file",
+  "Path",
+  "AbsolutePath",
+];
+
+/**
+ * Shell tools across vendors (lowercased): Claude / Kimi / Copilot `Bash`,
+ * Cursor `Shell` (opencode 2.x `shell`), Qwen `run_shell_command`, Antigravity `run_command`, Codex
+ * `exec_command`, Grok `run_terminal_command` (internal id
+ * `run_terminal_cmd`), Kiro `execute_bash`, Command Code `shell_command`
+ * (`command` plus optional `args[]`).
+ */
 const SHELL_TOOLS = new Set([
   "bash",
   "shell",
   "run_shell_command",
   "run_command",
   "exec_command",
+  "run_terminal_command",
+  "run_terminal_cmd",
+  "execute_bash",
+  "shell_command",
 ]);
+
+/** Argument keys a shell tool carries its command under, across vendors. */
+const SHELL_COMMAND_KEYS = ["command", "cmd", "CommandLine"];
 
 /** A shell command only loads a skill when a file reader opens the SKILL.md. */
 const SHELL_READ_PATTERN =
@@ -436,11 +507,37 @@ function firstKnownSkillPath(
   return null;
 }
 
+/** String path candidates of a read tool, including Kiro's nested forms. */
+function readPathCandidates(toolInput: Record<string, unknown>): string[] {
+  const paths: string[] = [];
+  for (const key of READ_PATH_KEYS) {
+    const value = toolInput[key];
+    if (typeof value === "string") paths.push(value);
+  }
+  // Kiro: `paths[]` (V3) and `operations[].path` (V2 fs_read).
+  const list = toolInput.paths;
+  if (Array.isArray(list)) {
+    for (const value of list) if (typeof value === "string") paths.push(value);
+  }
+  const operations = toolInput.operations;
+  if (Array.isArray(operations)) {
+    for (const op of operations) {
+      if (op && typeof op === "object" && !Array.isArray(op)) {
+        const value = (op as Record<string, unknown>).path;
+        if (typeof value === "string") paths.push(value);
+      }
+    }
+  }
+  return paths;
+}
+
 /**
- * Identify the OMA skill a tool call loads, or null. Claude's `Skill` tool
+ * Identify the OMA skill a tool call loads, or null. A native skill tool
  * names the skill directly (optionally plugin-prefixed, `plugin:skill`);
- * other vendors load a skill by reading `skills/<name>/SKILL.md` through a
- * file-read tool or a file-reading shell command.
+ * otherwise a skill is loaded by reading `skills/<name>/SKILL.md` through a
+ * file-read tool or a file-reading shell command. Tool names are compared
+ * case-insensitively against exact sets, so a broad vendor matcher (Cursor's
+ * unanchored `Read` also admits `ReadMediaFile`-style names) never counts.
  */
 export function detectSkillLoad(
   toolName: string,
@@ -448,30 +545,46 @@ export function detectSkillLoad(
   knownSkills: ReadonlySet<string>,
 ): string | null {
   const tool = toolName.toLowerCase();
-  if (tool === "skill") {
-    const raw = toolInput.skill ?? toolInput.name;
-    if (typeof raw !== "string") return null;
-    const name = raw.trim().replace(/^\//, "").split(":").pop() ?? "";
-    return knownSkills.has(name) ? name : null;
+  if (SKILL_TOOLS.has(tool)) {
+    for (const key of SKILL_ARG_KEYS) {
+      const raw = toolInput[key];
+      if (typeof raw !== "string") continue;
+      const name = raw.trim().replace(/^\//, "").split(":").pop() ?? "";
+      if (knownSkills.has(name)) return name;
+    }
+    return null;
   }
   if (READ_TOOLS.has(tool)) {
-    for (const key of ["file_path", "path", "absolute_path", "target_file"]) {
-      const value = toolInput[key];
-      if (typeof value !== "string") continue;
+    for (const value of readPathCandidates(toolInput)) {
+      const uri = SKILL_URI_PATTERN.exec(value.trim());
+      if (uri) {
+        // `skill://<id>` or `skill://<id>/SKILL.md` loads the skill body;
+        // other files under the skill are resources, not a load.
+        if (uri[1] && knownSkills.has(uri[1])) return uri[1];
+        continue;
+      }
       const name = firstKnownSkillPath(value, knownSkills);
       if (name) return name;
     }
     return null;
   }
   if (SHELL_TOOLS.has(tool)) {
-    const command = toolInput.command ?? toolInput.cmd;
-    const text = Array.isArray(command)
-      ? command.filter((part) => typeof part === "string").join(" ")
-      : command;
-    if (typeof text !== "string") return null;
-    const normalized = text.replace(/\\/g, "/");
-    if (!SHELL_READ_PATTERN.test(normalized)) return null;
-    return firstKnownSkillPath(normalized, knownSkills);
+    const extraArgs = Array.isArray(toolInput.args)
+      ? toolInput.args.filter((part) => typeof part === "string").join(" ")
+      : "";
+    for (const key of SHELL_COMMAND_KEYS) {
+      const command = toolInput[key];
+      const base = Array.isArray(command)
+        ? command.filter((part) => typeof part === "string").join(" ")
+        : command;
+      if (typeof base !== "string") continue;
+      const text = extraArgs ? `${base} ${extraArgs}` : base;
+      const normalized = text.replace(/\\/g, "/");
+      if (!SHELL_READ_PATTERN.test(normalized)) continue;
+      const name = firstKnownSkillPath(normalized, knownSkills);
+      if (name) return name;
+    }
+    return null;
   }
   return null;
 }
@@ -491,18 +604,18 @@ export async function run(
   if (!projectDir) return null;
   // Cheap pre-filter before touching the filesystem.
   const tool = input.toolName.toLowerCase();
-  if (tool !== "skill") {
+  if (!SKILL_TOOLS.has(tool)) {
     if (!READ_TOOLS.has(tool) && !SHELL_TOOLS.has(tool)) return null;
-    const toolInput = input.toolInput ?? {};
-    const hasSkillFile = Object.values(toolInput).some(
-      (value) =>
-        (typeof value === "string" && value.includes("SKILL.md")) ||
-        (Array.isArray(value) &&
-          value.some(
-            (part) => typeof part === "string" && part.includes("SKILL.md"),
-          )),
-    );
-    if (!hasSkillFile) return null;
+    // Nested inputs (Kiro `operations[].path`) are covered by serializing.
+    let serialized: string;
+    try {
+      serialized = JSON.stringify(input.toolInput ?? {});
+    } catch {
+      return null;
+    }
+    if (!serialized.includes("SKILL.md") && !serialized.includes("skill://")) {
+      return null;
+    }
   }
 
   const known = knownSkillNames(projectDir);
@@ -538,8 +651,14 @@ async function main() {
   const toolCall = parsed.toolCall as
     | { name?: unknown; args?: unknown }
     | undefined;
-  const isAgy = isAgyInput(parsed) || typeof toolCall?.name === "string";
-  const vendor: Vendor = isAgy ? "antigravity" : "claude";
+  // Bridges spawn this script directly (pi from `.pi/extensions/oma/`); the
+  // shared detector maps script path, payload shape, and env to the vendor.
+  const vendor: Vendor = detectVendorFromInput(
+    parsed,
+    "tool",
+    import.meta.filename,
+  );
+  const isAgy = vendor === "antigravity";
   const projectDir = isAgy
     ? agyProjectDir(parsed) || ((parsed.cwd as string | undefined) ?? "")
     : getProjectDir(vendor, parsed);

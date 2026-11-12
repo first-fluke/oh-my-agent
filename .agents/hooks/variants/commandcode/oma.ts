@@ -39,6 +39,11 @@
  *       scm-guard first: a deny becomes `{block: true, additionalContext}`
  *       (the reason becomes the tool result the model sees). Then test-filter
  *       rewrites test-runner invocations via `{input: {...input, command}}`.
+ *   afterToolCall         ← PostToolUse (skill-route, observation only)
+ *       Records a skill load: `activate_skill`, or a SKILL.md read through
+ *       `read_file` / `read_multiple_files` / `shell_command`. Never alters the
+ *       result. A project whose settings-file PostToolUse hook also runs
+ *       skill-route records the load once: routes dedup per vendor session.
  *   onStop                ← Stop (persistent-mode)
  *       Runs persistent-mode; a block decision becomes `{continue: true,
  *       reason}` — Command Code's documented force-continue channel (capped at
@@ -56,6 +61,14 @@ const DEFAULT_TIMEOUT_MS = 5_000;
 
 /** Command Code's shell tool (`cmd mods inspect` and the bundled examples). */
 const SHELL_TOOLS = new Set(["shell_command", "bash"]);
+
+/** Tools that can load a skill: the native skill tool, file reads, shell. */
+const SKILL_LOAD_TOOLS = new Set([
+  "activate_skill",
+  "read_file",
+  "read_multiple_files",
+  ...SHELL_TOOLS,
+]);
 
 // ── Structural ModApi subset ──────────────────────────────────
 
@@ -90,6 +103,13 @@ interface OmaModHooks {
     | BeforeToolCallResult
     | undefined
     | Promise<BeforeToolCallResult | undefined>;
+  afterToolCall?: (args: {
+    toolCallId?: string;
+    toolName: string;
+    input: Record<string, unknown>;
+    isError?: boolean;
+    state?: unknown;
+  }) => undefined | Promise<undefined>;
   onStop?: (args: {
     state?: unknown;
     stopReason?: string;
@@ -321,6 +341,32 @@ export default function omaMod(cmd: OmaModApi): void {
       if (typeof rewritten === "string" && rewritten && rewritten !== command) {
         return { input: { ...input, command: rewritten } };
       }
+      return undefined;
+    },
+
+    afterToolCall: ({ toolName, input, isError }) => {
+      if (isError || !SKILL_LOAD_TOOLS.has(toolName)) return undefined;
+      // Spawn only for a skill tool or an input that names a SKILL.md.
+      if (toolName !== "activate_skill") {
+        try {
+          if (!JSON.stringify(input ?? {}).includes("SKILL.md")) {
+            return undefined;
+          }
+        } catch {
+          return undefined;
+        }
+      }
+      runCore(
+        "skill-route.ts",
+        {
+          tool_name: toolName,
+          tool_input: input ?? {},
+          cwd,
+          sessionId: sessionId(),
+          hook_event_name: "PostToolUse",
+        },
+        cwd,
+      );
       return undefined;
     },
 

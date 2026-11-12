@@ -47,6 +47,11 @@
         "hook": "refactor-guard.ts",
         "matcher": "write_file|edit_file|write_to_file|replace_file_content|notebook_edit",
         "timeout": 5
+      },
+      {
+        "hook": "skill-route.ts",
+        "matcher": "read_file|run_command",
+        "timeout": 3
       }
     ],
     "Stop": [

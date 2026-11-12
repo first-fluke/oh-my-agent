@@ -134,6 +134,14 @@ describe("pi bridge handlers", () => {
       input: { command: string };
     }) => Promise<{ block?: boolean; reason?: string } | undefined>;
     agent_settled: (input: object, ctx: unknown) => Promise<void>;
+    tool_result: (
+      event: {
+        toolName: string;
+        input: Record<string, unknown>;
+        isError?: boolean;
+      },
+      ctx: unknown,
+    ) => Promise<undefined>;
   }
 
   let target: string;
@@ -265,6 +273,47 @@ describe("pi bridge handlers", () => {
       rmSync(target, { recursive: true, force: true });
     },
   );
+
+  it("tool_result forwards a SKILL.md read to skill-route and never alters the result", async () => {
+    const capture = join(target, "skill-route-stdin.json");
+    writeFileSync(
+      join(extDir, "skill-route.ts"),
+      `import { readFileSync, writeFileSync } from "node:fs";\nwriteFileSync(${JSON.stringify(capture)}, readFileSync(0, "utf8"));\n`,
+    );
+    const out = await handlers.tool_result(
+      {
+        toolName: "read",
+        input: { path: ".agents/skills/oma-design/SKILL.md" },
+      },
+      ctx(),
+    );
+    expect(out).toBeUndefined();
+    expect(JSON.parse(readFileSync(capture, "utf-8"))).toMatchObject({
+      tool_name: "read",
+      tool_input: { path: ".agents/skills/oma-design/SKILL.md" },
+      hook_event_name: "PostToolUse",
+      sessionId: "sess-1",
+    });
+    rmSync(target, { recursive: true, force: true });
+  });
+
+  it("tool_result skips tools and inputs that cannot load a skill", async () => {
+    const capture = join(target, "skill-route-stdin.json");
+    writeFileSync(
+      join(extDir, "skill-route.ts"),
+      `import { writeFileSync } from "node:fs";\nwriteFileSync(${JSON.stringify(capture)}, "called");\n`,
+    );
+    await handlers.tool_result(
+      { toolName: "read", input: { path: "src/index.ts" } },
+      ctx(),
+    );
+    await handlers.tool_result(
+      { toolName: "edit", input: { path: ".agents/skills/x/SKILL.md" } },
+      ctx(),
+    );
+    expect(existsSync(capture)).toBe(false);
+    rmSync(target, { recursive: true, force: true });
+  });
 
   it("registers an agent_settled handler", () => {
     expect(typeof handlers.agent_settled).toBe("function");

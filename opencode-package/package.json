@@ -32,6 +32,7 @@
     "code-intelligence-guard.ts",
     "test-filter.ts",
     "refactor-guard.ts",
+    "skill-route.ts",
     "persistent-mode.ts",
     "filter-test-output.sh",
     "README.md"

@@ -250,3 +250,42 @@ describe("nativeEventToKind — SessionStart is vendor-scoped", () => {
     expect(canceledStop).toBeNull();
   });
 });
+
+describe("normalizeInput — cursor post_tool cwd", () => {
+  it("falls back to workspace_roots[0] when a local tool call omits cwd", () => {
+    // Cursor sets top-level cwd only on server-requested tool calls; the base
+    // payload always carries workspace_roots.
+    const input = normalizeInput(
+      "cursor",
+      "postToolUse",
+      JSON.stringify({
+        hook_event_name: "postToolUse",
+        session_id: "cursor-1",
+        workspace_roots: ["/tmp/cursor-project"],
+        tool_name: "Read",
+        tool_input: {
+          file_path: "/tmp/cursor-project/.agents/skills/x/SKILL.md",
+        },
+      }),
+    );
+    expect(input).toMatchObject({
+      kind: "post_tool",
+      toolName: "Read",
+      cwd: "/tmp/cursor-project",
+    });
+  });
+
+  it("prefers an explicit cwd over workspace_roots", () => {
+    const input = normalizeInput(
+      "cursor",
+      "postToolUse",
+      JSON.stringify({
+        cwd: "/tmp/explicit",
+        workspace_roots: ["/tmp/root"],
+        tool_name: "Shell",
+        tool_input: { command: "ls" },
+      }),
+    );
+    expect(input).toMatchObject({ cwd: "/tmp/explicit" });
+  });
+});

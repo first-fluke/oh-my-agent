@@ -107,6 +107,7 @@ describe("emitOpencodePackage", () => {
       '"prompt"',
       '"context"',
       '"execute.before"',
+      '"execute.after"',
       '"experimental.idle"',
     ]) {
       expect(entry, hook).toContain(hook);
