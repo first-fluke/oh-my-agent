@@ -1,5 +1,14 @@
 # Changelog
 
+## [20.42.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.1...cli-v20.42.2) (2026-11-12)
+
+
+### Bug Fixes
+
+* **hooks:** run oma once when copilot loads claude hooks ([ee6e966](https://github.com/first-fluke/oh-my-agent/commit/ee6e966f245a3cd5d72f3f686117a6729690a7ed))
+* **link:** close host trust gaps found in a live install ([0aa2399](https://github.com/first-fluke/oh-my-agent/commit/0aa23994e90431252837b13c75d617d73eec27bb))
+* **link:** record host trust so gated vendors run oma hooks ([200c4ad](https://github.com/first-fluke/oh-my-agent/commit/200c4ad7f194a57e5c5ed9ed7a36ef0b09a70119))
+
 ## [20.42.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.0...cli-v20.42.1) (2026-11-12)
 
 
