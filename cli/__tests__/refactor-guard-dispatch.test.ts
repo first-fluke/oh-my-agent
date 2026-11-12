@@ -101,4 +101,20 @@ describe("refactor-guard edit tool coverage", () => {
     );
     expect((await stop("claude"))?.type).toBe("block");
   });
+
+  it.each(["str_replace", "fs_append"])(
+    "records Kiro V3 %s edits (path argument)",
+    async (toolName) => {
+      await run(
+        {
+          kind: "post_tool",
+          toolName,
+          toolInput: { path: join(projectDir, "src", "big.ts") },
+          cwd: projectDir,
+        },
+        { vendor: "kiro", cwd: projectDir, sid: "sid-1" },
+      );
+      expect((await stop("claude"))?.type).toBe("block");
+    },
+  );
 });

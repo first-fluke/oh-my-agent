@@ -35,6 +35,14 @@ export const RECOMMENDED_KIRO_MCP = {
 
 export const OMA_KIRO_HOOKS_AGENT_NAME = "oma-hooks";
 
+/**
+ * Kiro tools that edit a file: `fs_write` (2.x and V3), plus V3's
+ * `str_replace` and `fs_append` (kiro.dev/docs/tools; `delete_file` only
+ * shrinks the tree, so it is not tracked). One exact id per hook entry, so a
+ * 2.x exact-name matcher and a V3 regex/tag matcher both fire once.
+ */
+export const KIRO_EDIT_TOOLS = ["fs_write", "str_replace", "fs_append"];
+
 const OMA_KIRO_HOOKS_AGENT = {
   name: OMA_KIRO_HOOKS_AGENT_NAME,
   description: "Default Kiro CLI agent with oh-my-agent hook context enabled.",
@@ -58,18 +66,18 @@ const OMA_KIRO_HOOKS_AGENT = {
         command:
           "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher shell",
       },
-      {
-        matcher: "fs_write",
-        command:
-          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher fs_write",
-      },
+      // diagnostic-feedback baselines: every edit tool (KIRO_EDIT_TOOLS).
+      ...KIRO_EDIT_TOOLS.map((matcher) => ({
+        matcher,
+        command: `bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher ${matcher}`,
+      })),
     ],
     postToolUse: [
-      {
-        matcher: "fs_write",
-        command:
-          "bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher fs_write",
-      },
+      // refactor-guard / diagnostic-feedback: every edit tool.
+      ...KIRO_EDIT_TOOLS.map((matcher) => ({
+        matcher,
+        command: `bash .kiro/hooks/oma-hook.sh --vendor kiro --event postToolUse --matcher ${matcher}`,
+      })),
       // skill-route: skill loads. One exact tool id per entry so a Kiro 2.x
       // build (exact-name/glob matchers) and V3 (regex/tag matchers) both
       // fire once: fs_read (2.x), read_file (V3), execute_bash (both),

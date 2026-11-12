@@ -7,7 +7,7 @@ const EDIT_MATCHERS: Readonly<Record<string, string>> = {
   commandcode: "write|edit",
   kimi: "Write|Edit|WriteFile|StrReplaceFile",
   grok: "search_replace|write|hashline_edit|apply_patch|create_file|write_file|edit_file|str_replace",
-  kiro: "fs_write",
+  kiro: "fs_write|str_replace|fs_append",
 };
 
 /** Keep installer matchers and the bundled router aligned without rewriting definitions. */

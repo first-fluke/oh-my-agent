@@ -23,10 +23,15 @@ import {
   RECOMMENDED_KIRO_MCP,
 } from "./settings.js";
 
-/** refactor-guard (fs_write) plus one skill-route entry per read/shell/skill tool id. */
+/**
+ * refactor-guard / diagnostic-feedback (every edit tool) plus one skill-route
+ * entry per read/shell/skill tool id.
+ */
 function kiroPostToolUse(wrapper: string) {
   return [
     "fs_write",
+    "str_replace",
+    "fs_append",
     "fs_read",
     "read_file",
     "execute_bash",
@@ -139,11 +144,12 @@ describe("kiro settings", () => {
     const path = join(root, KIRO_PROJECT_OMA_HOOKS_AGENT_PATH);
     const installedText = readFileSync(path, "utf-8");
     const installed = JSON.parse(installedText);
-    expect(installed.hooks.preToolUse).toContainEqual({
-      matcher: "fs_write",
-      command:
-        "bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher fs_write",
-    });
+    for (const tool of ["fs_write", "str_replace", "fs_append"]) {
+      expect(installed.hooks.preToolUse).toContainEqual({
+        matcher: tool,
+        command: `bash .kiro/hooks/oma-hook.sh --vendor kiro --event preToolUse --matcher ${tool}`,
+      });
+    }
     expect(installed.hooks.postToolUse).toEqual(
       kiroPostToolUse("bash .kiro/hooks/oma-hook.sh"),
     );

@@ -29,6 +29,7 @@ const EDIT_TOOLS = new Set([
   "edit_file",
   "replace",
   "fs_write",
+  "fs_append",
   "str_replace_editor",
   "str_replace",
   "multiedit",

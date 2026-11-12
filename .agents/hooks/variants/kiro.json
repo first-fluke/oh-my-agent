@@ -45,7 +45,7 @@
     "postToolUse": [
       {
         "hook": "refactor-guard.ts",
-        "matcher": "fs_write",
+        "matcher": "fs_write|str_replace|fs_append",
         "timeout": 5
       },
       {

@@ -97,6 +97,7 @@ const EDIT_TOOLS = new Set([
   "str_replace", // grok
   "search_replace", // grok standard toolset (Edit/Write alias target)
   "fs_write", // kiro
+  "fs_append", // kiro V3
 ]);
 
 /** Extensions the guard treats as refactorable source code. */

@@ -37,7 +37,11 @@ describe("diagnostic hook routing", () => {
   it("uses Kiro's native event names and skips editor hosts", () => {
     const result = withDiagnosticFeedbackHookEvents(variant("kiro"));
     expect(result.events.preToolUse).toEqual([
-      { hook: "diagnostic-feedback.ts", matcher: "fs_write", timeout: 11 },
+      {
+        hook: "diagnostic-feedback.ts",
+        matcher: "fs_write|str_replace|fs_append",
+        timeout: 11,
+      },
     ]);
     for (const vendor of ["cursor", "antigravity", "pi"]) {
       const original = variant(vendor);
