@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.20.3](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.2...web-v11.20.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* **link:** close host trust gaps found in a live install ([0aa2399](https://github.com/first-fluke/oh-my-agent/commit/0aa23994e90431252837b13c75d617d73eec27bb))
+
 ## [11.20.2](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.1...web-v11.20.2) (2026-11-11)
 
 
