@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.41.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.41.0...cli-v20.41.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **hooks:** end idle skill-routing sessions so archive collects them ([6a78141](https://github.com/first-fluke/oh-my-agent/commit/6a7814122465d34a83bc815863e0bd3b841d62d2))
+
 ## [20.41.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.6...cli-v20.41.0) (2026-11-12)
 
 
