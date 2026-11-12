@@ -1,5 +1,22 @@
 # Changelog
 
+## [20.42.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.41.1...cli-v20.42.0) (2026-11-12)
+
+
+### Features
+
+* **hooks:** detect skill loads on every hooked vendor ([6f8bed2](https://github.com/first-fluke/oh-my-agent/commit/6f8bed2612d679c93c82f9553c748827658b9eb9))
+
+
+### Bug Fixes
+
+* **hooks:** discover skills of a global install in skill-injector ([3bdecf2](https://github.com/first-fluke/oh-my-agent/commit/3bdecf228cf27c81c04d3b89cb84b0bb092968e4))
+* **hooks:** match grok's standard-toolset edit tools ([7d19496](https://github.com/first-fluke/oh-my-agent/commit/7d194966fc85c6db534404bf6a336794748c8fd9))
+* **hooks:** record the real host for claude-dialect vendors ([272ddfe](https://github.com/first-fluke/oh-my-agent/commit/272ddfee955bf7dedc7c6f6a424f1b808a626c95))
+* **hooks:** run oma once when grok or cursor load claude hooks ([c0d493d](https://github.com/first-fluke/oh-my-agent/commit/c0d493d75e1fb5b2a522e491d90de9d89d63cc16))
+* **hooks:** track kiro v3 str_replace and fs_append edits ([f98eb5d](https://github.com/first-fluke/oh-my-agent/commit/f98eb5dea0f7072f3fc86a056bd789540947214d))
+* **opencode:** load the oma plugin on opencode 2.x installs ([e8937a3](https://github.com/first-fluke/oh-my-agent/commit/e8937a3f9f0525272afc1560ec2fbb1b771d51cb))
+
 ## [20.41.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.41.0...cli-v20.41.1) (2026-11-12)
 
 
