@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.42.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.0...cli-v20.42.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **claude:** re-approve the code-intelligence mcp server after esc ([534c397](https://github.com/first-fluke/oh-my-agent/commit/534c397ce2395e6cddca127263ea5cceddf662a1))
+
 ## [20.42.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.41.1...cli-v20.42.0) (2026-11-12)
 
 
