@@ -38,6 +38,7 @@ describe("detectCompatHost", () => {
     expect(detectCompatHost({ cursor_version: "2026.10.22" }, {})).toBe(
       "cursor",
     );
+    expect(detectCompatHost({}, { COPILOT_HOOK_DEPTH: "1" })).toBe("copilot");
     expect(detectCompatHost({ session_id: "s" }, {})).toBeNull();
   });
 });
@@ -98,6 +99,42 @@ describe("shouldYieldToHostRegistration", () => {
         home,
       }),
     ).toBe(true);
+  });
+
+  it("drops a Claude hook Copilot ran when Copilot has its own oma hooks", () => {
+    const copilotEnv = { COPILOT_HOOK_DEPTH: "1" };
+    expect(
+      shouldYieldToHostRegistration({
+        vendor: "claude",
+        rawStdin: claudePrompt(project),
+        cwd: project,
+        env: copilotEnv,
+        home,
+      }),
+    ).toBe(false);
+    write(
+      project,
+      ".github/hooks/oma.json",
+      `{"hooks":{"UserPromptSubmit":[{"type":"command","bash":"'.github/hooks/oma-hook.sh' --vendor 'copilot' --event 'UserPromptSubmit'"}]}}`,
+    );
+    expect(
+      shouldYieldToHostRegistration({
+        vendor: "claude",
+        rawStdin: claudePrompt(project),
+        cwd: project,
+        env: copilotEnv,
+        home,
+      }),
+    ).toBe(true);
+    expect(
+      shouldYieldToHostRegistration({
+        vendor: "copilot",
+        rawStdin: claudePrompt(project),
+        cwd: project,
+        env: copilotEnv,
+        home,
+      }),
+    ).toBe(false);
   });
 
   it("keeps the foreign registration when the host has no oma hooks of its own", () => {

@@ -10,6 +10,10 @@
 //           `~/.claude/settings.json`, mapping Claude event names onto its
 //           own (cursor-agent 2026.10 `claudeProjectHooks` /
 //           `claudeUserHooks`).
+//   Copilot runs the `.claude/settings.json` hooks next to its own
+//           `.github/hooks/*.json` (observed with Copilot CLI 1.0.109: one
+//           `copilot -p` fired SessionStart / UserPromptSubmit / Stop once
+//           as `--vendor copilot` and once as `--vendor claude`).
 //
 // When oma registered hooks for both the host and the foreign vendor, one
 // prompt or tool call then runs the oma chain twice — once as the host and
@@ -29,18 +33,20 @@ import { resolveProjectRoot } from "../../../.agents/hooks/core/fs-utils.js";
 import type { Vendor } from "./types.js";
 
 /** Hosts known to load another vendor's hook settings files. */
-export type CompatHost = "grok" | "cursor";
+export type CompatHost = "grok" | "cursor" | "copilot";
 
 /**
  * The host that actually launched this hook run, when it can load foreign
- * hook files. Grok injects `GROK_HOOK_*` into every hook it spawns; Cursor's
- * payload always carries `cursor_version`.
+ * hook files. Grok injects `GROK_HOOK_*` and Copilot `COPILOT_HOOK_DEPTH`
+ * into every hook they spawn; Cursor's payload always carries
+ * `cursor_version`.
  */
 export function detectCompatHost(
   payload: Record<string, unknown>,
   env: NodeJS.ProcessEnv = process.env,
 ): CompatHost | null {
   if (env.GROK_HOOK_EVENT || env.GROK_HOOK_NAME) return "grok";
+  if (env.COPILOT_HOOK_DEPTH) return "copilot";
   if (typeof payload.cursor_version === "string") return "cursor";
   return null;
 }
@@ -51,6 +57,14 @@ function hostHookFiles(
   projectRoot: string,
   home: string,
 ): string[] {
+  if (host === "copilot") {
+    // Repository hooks, then the user-level copy a global install writes.
+    const copilotHome = process.env.COPILOT_HOME || join(home, ".copilot");
+    return [
+      join(projectRoot, ".github", "hooks", "oma.json"),
+      join(copilotHome, "hooks", "oma.json"),
+    ];
+  }
   const rel =
     host === "grok"
       ? join(".grok", "hooks", "oma-hooks.json")
