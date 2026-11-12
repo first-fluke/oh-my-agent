@@ -85,3 +85,20 @@ describe("refactor-guard direct dispatch (non-blocking-stop vendors)", () => {
     expect(spawnMock).not.toHaveBeenCalled();
   });
 });
+
+describe("refactor-guard edit tool coverage", () => {
+  it("records Grok's standard-toolset search_replace edits", async () => {
+    // Grok 1.0.77 edits through `search_replace` / `write` (`Edit`/`Write`
+    // alias onto them); the guard used to list only the hashline toolset.
+    await run(
+      {
+        kind: "post_tool",
+        toolName: "search_replace",
+        toolInput: { file_path: join(projectDir, "src", "big.ts") },
+        cwd: projectDir,
+      },
+      { vendor: "grok", cwd: projectDir, sid: "sid-1" },
+    );
+    expect((await stop("claude"))?.type).toBe("block");
+  });
+});

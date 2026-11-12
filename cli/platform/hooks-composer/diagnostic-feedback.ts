@@ -6,7 +6,7 @@ const EDIT_MATCHERS: Readonly<Record<string, string>> = {
   qwen: "write_file|edit|replace|edit_file",
   commandcode: "write|edit",
   kimi: "WriteFile|StrReplaceFile|Edit|Write",
-  grok: "hashline_edit|apply_patch|create_file|write_file|edit_file|str_replace",
+  grok: "search_replace|write|hashline_edit|apply_patch|create_file|write_file|edit_file|str_replace",
   kiro: "fs_write",
 };
 

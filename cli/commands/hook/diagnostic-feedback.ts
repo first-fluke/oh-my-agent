@@ -36,6 +36,7 @@ const EDIT_TOOLS = new Set([
   "strreplacefile",
   "create_file",
   "hashline_edit",
+  "search_replace",
 ]);
 const TERMINAL_HOSTS = new Set([
   "claude",

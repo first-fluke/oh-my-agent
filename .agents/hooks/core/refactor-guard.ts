@@ -95,6 +95,7 @@ const EDIT_TOOLS = new Set([
   "hashline_edit", // grok (args.path)
   "create_file", // grok
   "str_replace", // grok
+  "search_replace", // grok standard toolset (Edit/Write alias target)
   "fs_write", // kiro
 ]);
 
