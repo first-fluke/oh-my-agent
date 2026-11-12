@@ -185,6 +185,9 @@ the suggested revision only when warranted, and the evidence for each finding.
      `resources/anti-ai-patterns.md` and the target profile.
    Short independent UI strings with established siblings need protected-syntax and
    sibling checks; they do not require an external prose-style pass.
+   When a prose-style route is selected, record it with subject
+   `translation.route-selection` per `../_shared/runtime/route-selection.md`
+   (style skill, target subtag that selected it, and `translation_voice`).
 3. Infer meaning, register, terminology, and figurative-language handling.
 4. Draft in natural target order and project style.
 5. Apply the selected style implementation to the draft, preserving review-only mode

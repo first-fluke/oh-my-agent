@@ -154,6 +154,8 @@ The coverage matrix has four layers (L3, L4, mesh, L7), four boundaries (multi-t
 | `tune` | `resources/transport/` (4 files: UDP/MTU, OTLP, topology, sampling) | `resources/meta-observability.md` (cardinality guardrails) |
 | `route` | `resources/boundaries/multi-tenant.md` + `resources/transport/collector-topology.md` | `resources/boundaries/cross-application.md` (data residency) |
 
+Record the selected intent route, and any vendor category chosen for `setup`, with subject `observability.route-selection` per `../_shared/runtime/route-selection.md`.
+
 ### Invocation and loading
 For example: `/oma-observability --investigate "5xx spike in checkout"`.
 Other skills pass the intent, system boundary, and evidence; the result returns guidance, checks, and any vendor handoff.

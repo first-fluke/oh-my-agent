@@ -70,7 +70,7 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 - If interaction or hooks are needed, mark the boundary as Client Component.
 - If backend contracts are missing, coordinate with backend/API planning.
 - For a new or substantially changed admin console, dashboard, SaaS product UI, or internal tool, recommend a post-implementation `oma-design` review through `../oma-design/resources/product-interface-review.md`. This review is advisory unless the task explicitly requires design approval.
-- For a requested GPU effect, video-scroll scene, or selected GSAP implementation, use the matching conditional extension.
+- For a requested GPU effect, video-scroll scene, or selected GSAP implementation, use the matching conditional extension, and record it with subject `frontend.route-selection` per `../_shared/runtime/route-selection.md`.
 
 ### Failure and recovery
 - If design tokens or i18n sources are missing, state assumptions and follow existing local patterns.

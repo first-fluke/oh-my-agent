@@ -143,6 +143,10 @@ provides context only; it never automates login or starts a recorder. Without
 3. Sound effects or soundtrack listening on either path: load
    `resources/sound-design.md`. earshot supplies the sounds and the listening
    evidence; OMA keeps cue times, placement in the composition, and delivery.
+4. For an existing-media or sound-design route, record the selected upstream
+   skill and operation with subject `video.route-selection` per
+   `../_shared/runtime/route-selection.md`. Creation runs keep recording
+   `video.mode-selection` through the video workflow instead.
 
 ```bash
 # Plan or create the asset bus. Supply --script whenever an agent authored it.

@@ -65,6 +65,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 ### Transitions
 - If native dispatch is available for current runtime/vendor, use it.
 - If vendors differ or native path is unavailable, use fallback spawn.
+- Record the dispatch path per target vendor with subject `orchestration.route-selection` per `../_shared/runtime/route-selection.md` (native or `oma agent spawn`, and the vendor match or unavailability that decided it).
 - If verify or QA fails, feed feedback back to the implementation agent.
 - If recovery limits are exceeded, preserve review history and return `partial` or `failed`; never force completion.
 - If recovery shows that a required domain reference was missing, update the task's reference selection without changing its frozen acceptance contract, and supply it through the supported context mechanism.

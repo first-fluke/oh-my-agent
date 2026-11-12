@@ -74,6 +74,7 @@ Convert PDF files into structured Markdown or another requested extraction forma
 - If the PDF is scanned or image-based, start or reuse the hybrid OCR server and convert with hybrid mode.
 - If conversion fails because the PDF is encrypted, stop and ask for the password or an unlocked copy.
 - If conversion hits memory or size limits, process smaller page ranges into distinct output directories (or append `--to-stdout`) so repeated runs do not overwrite the same basename.
+- When a transition above leaves standard conversion, record the selected mode with subject `pdf.route-selection` per `../_shared/runtime/route-selection.md` (mode, and the probe or output defect that required it).
 
 ### Failure and recovery
 | Failure | Recovery |

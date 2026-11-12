@@ -148,7 +148,7 @@ Use the configured code-intelligence provider for structure, symbols, references
 3. Inspect architecture-relevant modules, ownership, and integration points within the selected scope.
 ```
 
-Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or ADR mode before writing the artifact.
+Then choose Diagnostic, Recommendation, Design-Twice, ATAM-style, CBAM-style, or ADR mode before writing the artifact. Record the mode with subject `architecture.route-selection` per `../_shared/runtime/route-selection.md` (the lightest sufficient method and why heavier ones were not needed).
 
 ### Resource scope
 | Scope | Resource target |

@@ -79,6 +79,7 @@ Existing backend/scope/spend authorization persists. A key, login, or installed 
 | Bounded source/local reproduction | Cloudflare validation method | No external network or deployment traffic |
 
 A general repository scan selects source; do not add skill/MCP/runtime scans by implication.
+Record the selected target and engine with subject `security.route-selection` per `../_shared/runtime/route-selection.md` (table row or user-named engine). The consequential-run `security.execution-scope` record in `resources/findings-contract.md` still applies.
 A full source-plus-runtime audit includes ARTEX when a concrete web test deployment is provided; absent deployment leaves that stage pending.
 Use the user-named engine within its supported target/mode. No failed or empty result automatically selects another engine, model, backend, or paid analyzer.
 Cloudflare is a validation procedure, not evidence of superior detection accuracy.

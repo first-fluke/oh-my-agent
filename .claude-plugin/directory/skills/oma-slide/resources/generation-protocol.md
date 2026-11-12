@@ -26,6 +26,9 @@ Call direction is one-way: **skill calls CLI. CLI never calls skill.**
    | Narrated PPTX or MP4 authored from a deck | `native-pptx` |
    | Web, animated, or HTML deck; Canva; no format preference | HTML (steps 1–6) |
 
+   Record the selected route with subject `slide.route-selection` per
+   `../../_shared/runtime/route-selection.md` (route, the deliverable row that
+   selected it, and the route not chosen).
    `native-pptx` follows `resources/native-pptx.md` and leaves this protocol.
    When the format is unknown and changes the route, add it to the single Phase 1
    question instead of asking separately.

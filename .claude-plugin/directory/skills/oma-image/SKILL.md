@@ -63,6 +63,7 @@ Generate images and visual assets through authenticated multi-vendor routing whi
 - If the subject or intended result cannot be inferred, clarify that missing input; otherwise proceed with reasonable defaults.
 - If `--vendor all` is requested, require every requested vendor to be available.
 - If the request is reference-guided regeneration and the selected vendor supports references, pass it automatically.
+- When the vendor is chosen by the agent (not fixed by an explicit `--vendor`), record it with subject `image.route-selection` per `../_shared/runtime/route-selection.md`: vendor/model, and the auth, reference-support, or cost fact that decided it.
 - If the request requires pixel, mask, crop, resize, or format editing, stop before generation and name the unsupported operation and an appropriate editor route.
 - If estimated cost exceeds guardrail, require confirmation unless bypassed.
 

@@ -33,6 +33,12 @@ native surface, use an applicable Impeccable reference and hand implementation
 to `oma-mobile`; do not import web requirements into a native app. An unsupported
 operation remains an explicit capability gap.
 
+Record the choice before loading the supplier, with subject
+`design.route-selection`, per
+[route-selection.md](../references/_shared/runtime/route-selection.md): the supplier and
+operation, the table row or explicit request that selected it, and the
+suppliers not chosen.
+
 ## Resolve the complete bundle
 
 1. Check the runtime skill catalog for the selected exact skill name and its

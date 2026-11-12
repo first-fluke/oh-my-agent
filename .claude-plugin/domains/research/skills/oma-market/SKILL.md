@@ -63,7 +63,7 @@ outputs:
 1. Run `oma market detect-trap "<topic>"`. Exit 2 → surface the REFUSE reason and reframe suggestion, stop.
 2. Run `oma market resolve --json`. `ok: false` → report `reason` (missing engine → ask the user, then `oma market update`; missing Python → the install hint) and stop. Never fall back to WebSearch-only synthesis and present it as market research.
 3. Read the upstream contract at `engine.skillMd` **top to bottom**. It is long by design; do not skim. Treat `engine.root` as its `SKILL_DIR`.
-4. Classify intent per `resources/intent-rules.md`; map to engine flags and framework set.
+4. Classify intent per `resources/intent-rules.md`; map to engine flags and framework set. Record the intent, flags, and frameworks with subject `market.route-selection` per `../_shared/runtime/route-selection.md` (explicit flag, `--vs`, or the keyword score that decided it).
 
 ### Scenes
 1. **PREPARE**: detect-trap, resolve, read upstream SKILL.md, classify intent.

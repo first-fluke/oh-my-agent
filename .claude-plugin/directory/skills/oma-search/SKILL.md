@@ -79,6 +79,9 @@ verify an individual claim.
 1. Resolve the requested outcome and constraints. Hand pure local-code requests
    directly to configured code intelligence. For external work, select one primary
    route; use `resources/intent-rules.md` only when selection is unclear.
+   Record the route and web provider with subject `search.route-selection` per
+   `../_shared/runtime/route-selection.md` (explicit flag or the outcome that
+   decided it). Record an added route the same way when the evidence gap needs it.
 2. Execute that route using `resources/execution-protocol.md`. Resolve the web
    provider from configuration or the request override. Add another route only
    when the remaining evidence gap needs it; do not fan out by default.

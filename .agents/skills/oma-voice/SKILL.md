@@ -60,7 +60,7 @@ Generate and transcribe speech through a local speech backend (the Voicebox app,
 
 ### Entry
 1. Detect the requested mode: notification, asset TTS, transcription, or existing-audio processing. For processing, follow `resources/audio-processing.md` directly, before any Voicebox health, profile, or model lookup.
-2. Resolve `voice.backend` (`auto` tries Voicebox, then VoiceStudio). For VoiceStudio, follow `resources/voicestudio.md` from here; the steps below describe Voicebox. Verify Voicebox is reachable via MCP handshake or `GET /health`.
+2. Resolve `voice.backend` (`auto` tries Voicebox, then VoiceStudio). For VoiceStudio, follow `resources/voicestudio.md` from here; the steps below describe Voicebox. Verify Voicebox is reachable via MCP handshake or `GET /health`. When `auto` resolves the backend, or an engine/profile is chosen by use case, record it with subject `voice.route-selection` per `../_shared/runtime/route-selection.md` (backend, engine/profile, and the health or language fact that decided it).
 3. On the first run only, call MCP `tools/list` and cache the resolved tool names.
 4. For notification or asset TTS, resolve the target voice profile id. For transcription,
    validate the audio input and continue without a profile.
