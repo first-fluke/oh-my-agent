@@ -117,4 +117,43 @@ describe("getInstallationInfo", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("runs the npm update for an npm global prefix", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-self-update-"));
+    const cli = join(
+      root,
+      "AppData",
+      "Roaming",
+      "npm",
+      "node_modules",
+      "oh-my-agent",
+      "bin",
+      "cli.js",
+    );
+    mkdirSync(dirname(cli), { recursive: true });
+    writeFileSync(cli, "#!/usr/bin/env node\n");
+
+    try {
+      expect(getInstallationInfo(cli, "14.8.0").updateCommand).toBe(
+        "npm install -g oh-my-agent@14.8.0",
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("does not run a package manager for an install layout it cannot place", () => {
+    const root = mkdtempSync(join(tmpdir(), "oma-self-update-"));
+    const cli = join(root, "workspace", "oh-my-agent", "cli", "bin", "cli.js");
+    mkdirSync(dirname(cli), { recursive: true });
+    writeFileSync(cli, "#!/usr/bin/env node\n");
+
+    try {
+      const info = getInstallationInfo(cli, "14.8.0");
+      expect(info.packageManager).toBe("unknown");
+      expect(info.updateCommand).toBeUndefined();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });

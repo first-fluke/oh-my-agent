@@ -131,12 +131,24 @@ export function getInstallationInfo(
       updateMessage: "Installed via bun. Updating in background...",
     };
   }
+  if (realPath.includes(`/node_modules/${PACKAGE_NAME}/`)) {
+    return {
+      packageManager: "npm",
+      isGlobal: true,
+      updateCommand: `npm install -g ${packageTarget}`,
+      updateMessage: "Installed via npm. Updating in background...",
+    };
+  }
 
+  // Nothing matched: a source checkout, an `npm link` target, or a
+  // version-manager shim. Guessing a package manager here is how a second
+  // global copy lands in a prefix that PATH resolves before the working one —
+  // an upgrade must not install anything the user did not ask for.
   return {
-    packageManager: "npm",
-    isGlobal: true,
-    updateCommand: `npm install -g ${packageTarget}`,
-    updateMessage: "Installed via npm. Updating in background...",
+    packageManager: "unknown",
+    isGlobal: false,
+    updateMessage:
+      "Cannot tell how this copy was installed; update it with the command you used to install it.",
   };
 }
 
