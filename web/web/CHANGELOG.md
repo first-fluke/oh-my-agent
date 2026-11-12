@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.20.4](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.3...web-v11.20.4) (2026-11-12)
+
+
+### Bug Fixes
+
+* detect PATH-shadowing oma installs and stop creating them ([#1015](https://github.com/first-fluke/oh-my-agent/issues/1015)) ([f90b56d](https://github.com/first-fluke/oh-my-agent/commit/f90b56d2c3f0910ee7ccaf491adb0137a79a69b9))
+
 ## [11.20.3](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.2...web-v11.20.3) (2026-11-12)
 
 
