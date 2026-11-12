@@ -30,6 +30,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { agyConversationId, agyProjectDir, isAgyInput } from "./agy-input.ts";
+import { emitEvent as appendStateEvent } from "./state-core.ts";
 import {
   createSessionId,
   emitEvent,
@@ -111,12 +112,16 @@ function writeRouteState(projectDir: string, state: RouteState): void {
   }
 }
 
-function pruneRouteState(state: RouteState, now: number): void {
+/** Drop expired entries; returns the routing sessions they owned. */
+function pruneRouteState(state: RouteState, now: number): string[] {
+  const expired: string[] = [];
   for (const [id, entry] of Object.entries(state.sessions)) {
     if (!entry || now - entry.timestamp > ROUTE_STATE_TTL_MS) {
+      if (entry?.routeSid) expired.push(entry.routeSid);
       delete state.sessions[id];
     }
   }
+  return expired;
 }
 
 // ── Session resolution ───────────────────────────────────────
@@ -157,10 +162,39 @@ function isUsableRoutingSession(projectDir: string, sid: string): boolean {
   return events.length > 0 && !isEnded(events);
 }
 
+/**
+ * End an idle `skill-routing` session. Nothing else ends these sessions, and
+ * `oma state archive` skips open ones, so without this they accumulate.
+ * Recently active and workflow sessions are never touched. Written through
+ * state-core directly: closing is bookkeeping, not a memory observation.
+ */
+export function closeRoutingSession(
+  projectDir: string,
+  sid: string,
+  now: number = Date.now(),
+): boolean {
+  try {
+    const events = readEvents(projectDir, sid);
+    if (events.length === 0 || isEnded(events)) return false;
+    // Still receiving events (e.g. CLI emits without a vendor sid): keep open.
+    if (isMainSessionForRouting(events, undefined, now)) return false;
+    const created = events.find((event) => event.kind === "session.created");
+    if (created?.payload?.workflow !== ROUTING_WORKFLOW) return false;
+    appendStateEvent(projectDir, sid, {
+      kind: "session.ended",
+      payload: { status: "completed", reason: "routing session idle" },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function createRoutingSession(
   projectDir: string,
   vendor: string | undefined,
   vendorSid: string | undefined,
+  now: number,
 ): Promise<string> {
   const sid = createSessionId();
   await emitEvent(projectDir, sid, {
@@ -174,9 +208,18 @@ async function createRoutingSession(
     },
   });
   // Lets `oma state emit --category routing` find it without a vendor sid.
-  claimActiveSession(projectDir, ROUTING_CATEGORY, sid, (existing) =>
-    isMainSessionForRouting(readEvents(projectDir, existing), undefined),
+  const previous = readIndex(projectDir).active[ROUTING_CATEGORY];
+  const claimed = claimActiveSession(
+    projectDir,
+    ROUTING_CATEGORY,
+    sid,
+    (existing) =>
+      isMainSessionForRouting(readEvents(projectDir, existing), undefined, now),
   );
+  // The claim only replaces a stale holder; end it so it can be archived.
+  if (claimed && previous && previous !== sid) {
+    closeRoutingSession(projectDir, previous, now);
+  }
   return sid;
 }
 
@@ -224,7 +267,7 @@ export async function resolveRouteSid(
     }
   }
 
-  return createRoutingSession(projectDir, vendor, vendorSid);
+  return createRoutingSession(projectDir, vendor, vendorSid, now);
 }
 
 // ── Recording ────────────────────────────────────────────────
@@ -254,7 +297,9 @@ export async function recordSkillRoutes(
     // dedup and source memory would leak across unrelated sessions.
     const tracked = key !== "unknown";
     const state = readRouteState(ctx.projectDir);
-    pruneRouteState(state, now);
+    for (const expired of pruneRouteState(state, now)) {
+      closeRoutingSession(ctx.projectDir, expired, now);
+    }
     const entry: RouteSessionState = (tracked && state.sessions[key]) || {
       suggested: [],
       loaded: [],

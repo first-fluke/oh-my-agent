@@ -168,7 +168,7 @@ Optional payload fields:
 
 - `trigger`: why the workflow was routed — `{ "source": "keyword", "matchedKeyword": "..." }` or `{ "source": "user-explicit", ... }`. Never the prompt text.
 
-A `skill-routing` session (category `routing`) is created on demand to hold routing records when no workflow session owns the work; see `skill.routed`.
+A `skill-routing` session (category `routing`) is created on demand to hold routing records when no workflow session owns the work; see `skill.routed`. It is ended as `completed` (reason `routing session idle`) once it has had no non-boundary event for two hours and is either replaced in the `routing` slot or its vendor session's route memory expires (12 hours), so `oma state archive` can collect it.
 
 ### `workflow.phase`
 

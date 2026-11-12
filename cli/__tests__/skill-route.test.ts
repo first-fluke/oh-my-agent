@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { validateEventPayload } from "../../.agents/hooks/core/event-contract.ts";
 import {
+  closeRoutingSession,
   detectSkillLoad,
   explicitSkillMentions,
   isMainSessionForRouting,
@@ -330,6 +331,70 @@ describe("resolveRouteSid", () => {
     const first = await resolveRouteSid(projectDir, { vendor: "claude" });
     const second = await resolveRouteSid(projectDir, {});
     expect(second).toBe(first);
+  });
+});
+
+describe("routing session lifecycle", () => {
+  const HOUR = 60 * 60 * 1000;
+  const ended = (sid: string) =>
+    readEvents(projectDir, sid).filter((e) => e.kind === "session.ended");
+
+  it("ends an idle routing session but never a recent or workflow session", async () => {
+    const routing = await resolveRouteSid(projectDir, { vendor: "claude" });
+    expect(closeRoutingSession(projectDir, routing)).toBe(false);
+
+    const main = createSessionId();
+    await emitEvent(projectDir, main, {
+      kind: "session.created",
+      payload: { workflow: "work", category: "main" },
+    });
+    const later = Date.now() + 3 * HOUR;
+    expect(closeRoutingSession(projectDir, main, later)).toBe(false);
+    expect(ended(main)).toEqual([]);
+
+    expect(closeRoutingSession(projectDir, routing, later)).toBe(true);
+    expect(ended(routing).map((e) => e.payload)).toEqual([
+      { status: "completed", reason: "routing session idle" },
+    ]);
+    // Idempotent: an ended session is not ended again.
+    expect(closeRoutingSession(projectDir, routing, later)).toBe(false);
+    expect(readIndex(projectDir).active[ROUTING_CATEGORY]).toBeUndefined();
+  });
+
+  it("ends the stale routing slot holder it replaces", async () => {
+    const first = await resolveRouteSid(projectDir, {});
+    const second = await resolveRouteSid(projectDir, {
+      now: Date.now() + 3 * HOUR,
+    });
+    expect(second).not.toBe(first);
+    expect(ended(first)).toHaveLength(1);
+    expect(readIndex(projectDir).active[ROUTING_CATEGORY]).toBe(second);
+  });
+
+  it("ends a vendor session's routing session once its route memory expires", async () => {
+    const load = {
+      skill: "oma-image",
+      source: "model-description" as const,
+      stage: "loaded" as const,
+    };
+    await recordSkillRoutes(
+      { projectDir, vendor: "claude", vendorSid: "vendor-1" },
+      [load],
+    );
+    const first = readIndex(projectDir).active[ROUTING_CATEGORY] as string;
+    await recordSkillRoutes(
+      {
+        projectDir,
+        vendor: "claude",
+        vendorSid: "vendor-2",
+        now: Date.now() + 13 * HOUR,
+      },
+      [load],
+    );
+    expect(ended(first)).toHaveLength(1);
+    const second = readIndex(projectDir).active[ROUTING_CATEGORY];
+    expect(second).toBeTruthy();
+    expect(second).not.toBe(first);
   });
 });
 
