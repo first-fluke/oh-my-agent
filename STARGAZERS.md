@@ -5,18 +5,20 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-11 · 1 unstarred
+## 2026-11-12 · 2 unstarred
 
-- **@blastronautdev** · 0 repos · 0 followers
+- **@designoz** · 0 repos · 0 followers
+- **@xiray-xia** · xiray · 1 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1378)
+## Current (1379)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
 - @0cherry — 2026-04-02
 - @0dot77 — 2026-05-22
+- @0x1101L — 2026-05-18
 - @0xSeb — 2026-04-30
 - @1-Vast — 2026-07-11
 - @1wos — 2026-04-15
@@ -277,7 +279,6 @@ summaries to spot which persona is churning.
 - @DenisBalan — 2026-04-25
 - @DennisToma — 2026-09-16
 - @DeRain — 2026-05-11
-- @DesignOZ — 2026-05-18
 - @DestinyChidi — 2026-03-03
 - @desty — 2026-05-04
 - @dev-kks — 2026-04-20
@@ -732,6 +733,7 @@ summaries to spot which persona is churning.
 - @kiryllifi — 2026-05-11
 - @kks653 — 2026-02-02
 - @KlierSimone — 2026-02-21
+- @klt-mm — 2026-11-12
 - @kmeat981024 — 2026-04-16
 - @Knulp3126 — 2026-04-22
 - @Koddiez — 2026-02-09
@@ -1265,6 +1267,7 @@ summaries to spot which persona is churning.
 - @uyaki — 2026-02-23
 - @vanilalatte03 — 2026-06-04
 - @veiman — 2026-03-26
+- @verserdp — 2026-11-11
 - @verysys-pal — 2026-03-17
 - @vichhka-git — 2026-03-11
 - @victorpreston — 2026-03-09
@@ -1334,7 +1337,6 @@ summaries to spot which persona is churning.
 - @xieyicn — 2026-04-13
 - @Xing2000-1 — 2026-03-31
 - @xinghunzi — 2026-06-14
-- @xiray-xia — 2026-08-07
 - @xLagerFeuer — 2026-09-20
 - @xusyang — 2026-04-21
 - @xycool — 2026-02-07
