@@ -1,5 +1,17 @@
 # Changelog
 
+## [20.41.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.6...cli-v20.41.0) (2026-11-12)
+
+
+### Features
+
+* **hooks:** record skill routing source as skill.routed events ([6e18985](https://github.com/first-fluke/oh-my-agent/commit/6e18985d13cdfa08a38d6d22575a4ea83ad45396))
+
+
+### Documentation
+
+* **skills:** record runtime route selections as decisions ([4239114](https://github.com/first-fluke/oh-my-agent/commit/4239114dea81a0be5b24323fb950ed538751f0e2))
+
 ## [20.40.6](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.40.5...cli-v20.40.6) (2026-11-11)
 
 
