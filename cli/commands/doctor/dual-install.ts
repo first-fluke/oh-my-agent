@@ -90,9 +90,46 @@ export async function checkDualInstall(
   return { project, global, warnings };
 }
 
-export type OmaOnPath = { path: string; version: string };
+export type OmaOnPath = {
+  path: string;
+  /** Version of the package the entry runs, or null when it resolves lazily. */
+  version: string | null;
+  /**
+   * True when the entry is a package-manager launcher that hard-codes an
+   * oh-my-agent package dir which no longer exists. Running it can only fail —
+   * and because PATH stops at the first match, it also hides the working
+   * install behind it.
+   */
+  dead: boolean;
+};
 
-/** Version of the oh-my-agent package an `oma` entry resolves into. */
+const PACKAGE_NAME = "oh-my-agent";
+
+function packageVersionAt(dir: string): string | null {
+  try {
+    const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+    if (pkg.name === PACKAGE_NAME && typeof pkg.version === "string") {
+      return pkg.version;
+    }
+  } catch {
+    // not a package root
+  }
+  return null;
+}
+
+/**
+ * Version of the oh-my-agent package an `oma` entry resolves into, checked
+ * against every layout a global installer actually produces:
+ *
+ *   - inside the package — unix symlinks land on `<pkg>/bin/cli.js`
+ *   - `<dir>/node_modules/oh-my-agent` — npm/pnpm/yarn write the launcher next
+ *     to `node_modules`, so on Windows (`%AppData%\npm\oma.cmd`,
+ *     `%LOCALAPPDATA%\pnpm\oma.cmd`) no ancestor of the entry ever *is* the
+ *     package and an ancestor-only walk finds nothing
+ *   - `<dir>/lib/node_modules/oh-my-agent`, `<dir>/install/global/node_modules/oh-my-agent`
+ *     — bun keeps the package under `~/.bun/install/global` while the shim sits
+ *     in `~/.bun/bin`
+ */
 function omaPackageVersion(bin: string): string | null {
   let dir: string;
   try {
@@ -100,23 +137,46 @@ function omaPackageVersion(bin: string): string | null {
   } catch {
     return null;
   }
-  for (let i = 0; i < 4; i++) {
-    try {
-      const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
-      if (pkg.name === "oh-my-agent" && typeof pkg.version === "string") {
-        return pkg.version;
-      }
-    } catch {
-      // keep walking up
+  for (let depth = 0; depth < 4; depth++) {
+    for (const candidate of [
+      dir,
+      join(dir, "node_modules", PACKAGE_NAME),
+      join(dir, "lib", "node_modules", PACKAGE_NAME),
+      join(dir, "install", "global", "node_modules", PACKAGE_NAME),
+    ]) {
+      const version = packageVersionAt(candidate);
+      if (version) return version;
     }
-    dir = dirname(dir);
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
   }
   return null;
 }
 
 /**
+ * npm-family installers quote the package path verbatim in the launcher they
+ * write (`%~dp0\node_modules\oh-my-agent\bin\cli.js`,
+ * `$basedir/node_modules/oh-my-agent/bin/cli.js`), so such a file whose package
+ * is gone is a confirmed dead command — unlike a mise/volta/asdf shim, which
+ * resolves lazily and may legitimately hold no package path.
+ */
+function isDeadLauncher(bin: string): boolean {
+  if (bin.toLowerCase().endsWith(".exe")) return false;
+  let text: string;
+  try {
+    text = readFileSync(bin, "utf8");
+  } catch {
+    return false;
+  }
+  if (!new RegExp(`node_modules[/\\\\]${PACKAGE_NAME}`).test(text))
+    return false;
+  return omaPackageVersion(bin) === null;
+}
+
+/**
  * Every distinct oh-my-agent install reachable as `oma` on PATH, in PATH
- * order. Version-manager shims that do not resolve into a package are skipped.
+ * order. Lazy version-manager shims that resolve into no package are skipped.
  */
 export function findOmaOnPath(
   pathEnv: string = process.env.PATH ?? "",
@@ -136,28 +196,49 @@ export function findOmaOnPath(
       } catch {
         continue;
       }
-      if (seen.has(real)) continue;
-      seen.add(real);
       const version = omaPackageVersion(bin);
-      if (version) found.push({ path: bin, version });
+      const dead = version === null && isDeadLauncher(bin);
+      if (version === null && !dead) continue;
+      // One report per prefix: npm writes a `.cmd`, a `.ps1`, and a bash
+      // launcher for the same missing package.
+      const key = dead ? dirname(real) : real;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      found.push({ path: bin, version, dead });
     }
   }
   return found;
 }
 
 /**
- * Warn when PATH holds oh-my-agent installs of different versions. Whichever
- * comes first wins for vendor MCP entries and hooks that run bare `oma`, so a
- * forgotten global install silently serves stale commands.
+ * Warn about PATH entries that cannot run the install the user expects.
+ * Whichever entry comes first wins for bare `oma` — including the vendor hook
+ * wrappers, which resolve `oma` the same way and exit 0 when it fails, so a
+ * broken entry neither runs the working install nor reports itself.
  */
 export function checkOmaPathInstalls(
   installs: OmaOnPath[] = findOmaOnPath(),
 ): string[] {
-  if (new Set(installs.map((install) => install.version)).size < 2) return [];
-  const list = installs
+  const warnings: string[] = [];
+
+  const dead = installs.filter((install) => install.dead);
+  if (dead.length > 0) {
+    warnings.push(
+      `Dead oma launcher on PATH: ${dead.map((install) => install.path).join(", ")}. Its oh-my-agent package dir is gone, so \`oma\` fails with MODULE_NOT_FOUND and the working install behind it never runs; vendor hooks fail the same way but exit 0, so they go quiet instead of erroring. Remove the launcher with the package manager that wrote it (e.g. \`npm uninstall -g oh-my-agent\`), then re-check with \`where oma\` (Windows) or \`command -v oma\`.`,
+    );
+  }
+
+  const resolved = installs.flatMap((install) =>
+    install.version === null ? [] : [install],
+  );
+  if (new Set(resolved.map((install) => install.version)).size < 2) {
+    return warnings;
+  }
+  const list = resolved
     .map((install) => `${install.path} (${install.version})`)
     .join(", ");
-  return [
+  warnings.push(
     `Multiple oma versions on PATH: ${list}. The first one runs for vendor MCP entries and hooks; uninstall the stale one with the package manager that installed it.`,
-  ];
+  );
+  return warnings;
 }

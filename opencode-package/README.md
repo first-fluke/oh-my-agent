@@ -8,7 +8,7 @@ serves both plugin contracts from one default export: the OpenCode 2.x
 `{ id, setup }` definition and the V1 `server()` object form Kilo Code and
 OpenCode 1.18.29+ load.
 
-Requires the `oma` CLI on PATH (`npm install -g oh-my-agent`) and `bun`.
+Requires the `oma` CLI on PATH (`bun install -g oh-my-agent`) and `bun`.
 Every hook fails open: without `oma` the host runs unchanged.
 
 ## OpenCode

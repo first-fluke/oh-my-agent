@@ -109,7 +109,7 @@ function readme(): string {
 (\`mods/oma.ts\`) plus every oh-my-agent skill (\`skills/\`), loaded together by
 one \`cmd mods add\`.
 
-Requires the \`oma\` CLI on PATH (\`npm install -g oh-my-agent\`). Every hook
+Requires the \`oma\` CLI on PATH (\`bun install -g oh-my-agent\`). Every hook
 fails open: without \`oma\` the mod changes nothing.
 
 ## Install
