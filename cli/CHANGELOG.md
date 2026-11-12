@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.42.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.2...cli-v20.42.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* detect PATH-shadowing oma installs and stop creating them ([#1015](https://github.com/first-fluke/oh-my-agent/issues/1015)) ([f90b56d](https://github.com/first-fluke/oh-my-agent/commit/f90b56d2c3f0910ee7ccaf491adb0137a79a69b9))
+
 ## [20.42.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.1...cli-v20.42.2) (2026-11-12)
 
 
