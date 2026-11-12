@@ -413,6 +413,41 @@ describe("skill-injector", () => {
       );
       expect(discoverSkills("/repo")).toEqual([]);
     });
+
+    it("adds a global install's skills by absolute path; project shadows global", () => {
+      (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+        (p: string) => {
+          const norm = p.replace(/\\/g, "/");
+          return (
+            norm === "/repo/.agents/skills" ||
+            norm === "/repo/.agents/skills/oma-search/SKILL.md" ||
+            norm === "/home/.oma/.agents/skills" ||
+            norm.startsWith("/home/.oma/.agents/skills/oma-")
+          );
+        },
+      );
+      (
+        fs.readdirSync as unknown as ReturnType<typeof vi.fn>
+      ).mockImplementation((dir: string) =>
+        dir.replace(/\\/g, "/") === "/repo/.agents/skills"
+          ? [{ name: "oma-search", isDirectory: () => true }]
+          : [
+              { name: "oma-search", isDirectory: () => true },
+              {
+                name: "oma-video",
+                isDirectory: () => false,
+                isSymbolicLink: () => true,
+              },
+            ],
+      );
+      const skills = discoverSkills("/repo", "/home/.oma");
+      expect(
+        skills.map((s) => [s.name, s.relPath.replace(/\\/g, "/")]),
+      ).toEqual([
+        ["oma-search", ".agents/skills/oma-search/SKILL.md"],
+        ["oma-video", "/home/.oma/.agents/skills/oma-video/SKILL.md"],
+      ]);
+    });
   });
 
   describe("parseExplicitSlash", () => {
