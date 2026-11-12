@@ -102,6 +102,7 @@ export async function runStandaloneHookScript(
   const { config, memory } = resolveHookConfig(projectRoot);
   const ctx: HandlerCtx = {
     vendor: handlerVendor,
+    ...(handlerVendor !== vendor ? { host: vendor } : {}),
     cwd: projectRoot,
     sid: req.sid ?? extractSessionId(handlerVendor, rawStdin),
     ...(config ? { config } : {}),

@@ -71,29 +71,34 @@ export async function onBoundary(
   vendorSid: string,
   promptText?: string,
   forced = false,
+  /** Host to record when it differs from the dialect `vendor` (HandlerCtx.host). */
+  host?: string,
 ): Promise<string | null> {
+  const recorded = host ?? vendor;
   const idx = readIndex(projectDir);
   const previous = idx.lastSession;
   const boundary =
-    !previous || previous.vendor !== vendor || previous.vendorSid !== vendorSid;
+    !previous ||
+    previous.vendor !== recorded ||
+    previous.vendorSid !== vendorSid;
   const statelessTurnFlush = vendor === "kiro" && vendorSid === "unknown";
 
   // `forced` = post-compaction SessionStart: the session id is unchanged (no
   // boundary), but the snapshot was just compacted out of context — re-emit.
   if (!boundary && !statelessTurnFlush && !forced) {
-    setLastSession(projectDir, vendor, vendorSid);
+    setLastSession(projectDir, recorded, vendorSid);
     return null;
   }
 
   const sid = getActiveSid(idx);
   if (!sid) {
-    setLastSession(projectDir, vendor, vendorSid);
+    setLastSession(projectDir, recorded, vendorSid);
     return null;
   }
 
   await emitEvent(projectDir, sid, {
     kind: "boundary",
-    vendor,
+    vendor: recorded,
     vendorSid,
     payload: {
       reason: !boundary
@@ -105,13 +110,13 @@ export async function onBoundary(
           : "session-created",
       fromVendor: previous?.vendor ?? null,
       fromVendorSid: previous?.vendorSid ?? null,
-      toVendor: vendor,
+      toVendor: recorded,
       toVendorSid: vendorSid,
       previousSid: sid,
-      ...vendorHomePayload(vendor),
+      ...vendorHomePayload(recorded),
     },
   });
-  setLastSession(projectDir, vendor, vendorSid);
+  setLastSession(projectDir, recorded, vendorSid);
 
   const recentEvents = readEvents(projectDir, sid).slice(-10);
   // L2/L3 rehydration: recall enriched facts from AgentMemory for this working
@@ -167,7 +172,7 @@ export async function run(
 ): Promise<HandlerResult | null> {
   if (input.kind !== "prompt") return null;
 
-  const { vendor, cwd: projectDir, sid: vendorSid = "unknown" } = ctx;
+  const { vendor, host, cwd: projectDir, sid: vendorSid = "unknown" } = ctx;
   // input.kind === "prompt" is guaranteed by the guard above; the user prompt is
   // the primary recall signal for boundary rehydration. A post-compaction
   // SessionStart (source === "compact") forces re-emission: the session id is
@@ -178,6 +183,7 @@ export async function run(
     vendorSid,
     input.prompt,
     input.source === "compact",
+    host,
   );
   if (!rendered) return null;
   return { type: "context", additionalContext: rendered };

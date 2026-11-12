@@ -15,6 +15,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { run as runKeywordDetector } from "../../.agents/hooks/core/keyword-detector.ts";
 import { run as runSerenaPrimer } from "../../.agents/hooks/core/serena-primer.ts";
 import { run as runStateBoundary } from "../../.agents/hooks/core/state-boundary.ts";
+import { readEvents } from "../../.agents/hooks/core/state-emit.ts";
+import { readIndex } from "../../.agents/hooks/core/state-marker.ts";
 import type { HandlerCtx } from "../../.agents/hooks/core/types.ts";
 
 describe("SessionStart(source: compact) rehydration", () => {
@@ -89,5 +91,31 @@ describe("SessionStart(source: compact) rehydration", () => {
       throw new Error("expected a re-emitted state snapshot after compact");
     }
     expect(compacted.additionalContext).toContain("[OMA STATE SNAPSHOT]");
+  });
+
+  it("records the Claude-dialect host on the L1 session and boundary marker", async () => {
+    // Copilot / opencode / Kilo run these handlers with vendor "claude".
+    const hosted: HandlerCtx = {
+      vendor: "claude",
+      host: "copilot",
+      cwd: projectDir,
+      sid: "sess-host",
+    };
+    await runKeywordDetector(
+      { kind: "prompt", prompt: "work mode", cwd: projectDir },
+      hosted,
+    );
+    await runStateBoundary(
+      { kind: "prompt", prompt: "hello", cwd: projectDir },
+      hosted,
+    );
+    const index = readIndex(projectDir);
+    expect(index.lastSession?.vendor).toBe("copilot");
+    const sid = index.active.main as string;
+    const events = readEvents(projectDir, sid);
+    expect(events.find((e) => e.kind === "session.created")?.vendor).toBe(
+      "copilot",
+    );
+    expect(events.find((e) => e.kind === "boundary")?.vendor).toBe("copilot");
   });
 });

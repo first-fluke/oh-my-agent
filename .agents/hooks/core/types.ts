@@ -147,7 +147,14 @@ export type HookConfig = Record<string, unknown>;
 
 /** Context passed to every handler alongside the normalized HookInput. */
 export interface HandlerCtx {
+  /** Output dialect / handler identity. */
   vendor: Vendor;
+  /**
+   * Host to record in state and telemetry when it differs from the dialect
+   * `vendor`: Copilot and the opencode family (opencode, Kilo) run handlers
+   * in the Claude dialect. Absent when host and dialect are the same.
+   */
+  host?: string;
   /** Resolved OMA project root (config and state live under its `.agents/`). */
   cwd: string;
   sid?: string;

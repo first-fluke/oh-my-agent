@@ -1203,7 +1203,9 @@ export async function run(
   if (input.kind !== "prompt") return null;
 
   const { prompt } = input;
-  const { vendor, cwd: projectDir, sid: sessionId = "unknown" } = ctx;
+  const { cwd: projectDir, sid: sessionId = "unknown" } = ctx;
+  // Recorded on the L1 session only; the output dialect stays ctx.vendor.
+  const vendor = ctx.host ?? ctx.vendor;
 
   if (!prompt.trim()) return null;
   if (startsWithSlashCommand(prompt)) {

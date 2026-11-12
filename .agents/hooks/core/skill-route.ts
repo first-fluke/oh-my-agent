@@ -624,7 +624,7 @@ export async function run(
   if (!skill) return null;
 
   await recordSkillRoutes(
-    { projectDir, vendor: ctx.vendor, vendorSid: ctx.sid },
+    { projectDir, vendor: ctx.host ?? ctx.vendor, vendorSid: ctx.sid },
     [
       {
         skill,

@@ -502,7 +502,7 @@ export async function run(
       knownSkillNames(projectDir),
     );
     await recordSkillRoutes(
-      { projectDir, vendor, vendorSid: sessionId },
+      { projectDir, vendor: ctx.host ?? vendor, vendorSid: sessionId },
       explicit.map((skill) => ({
         skill,
         source: "user-explicit" as const,
@@ -546,7 +546,7 @@ export async function run(
   // Routing telemetry: why each skill was suggested (matched trigger
   // keywords only — never the prompt text).
   await recordSkillRoutes(
-    { projectDir, vendor, vendorSid: sessionId },
+    { projectDir, vendor: ctx.host ?? vendor, vendorSid: sessionId },
     fresh.map((match) => ({
       skill: match.name,
       source: "hook-trigger" as const,

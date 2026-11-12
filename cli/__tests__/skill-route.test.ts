@@ -647,6 +647,23 @@ describe("skill-route run (post_tool)", () => {
     ]);
   });
 
+  it("records the host, not the dialect vendor, for Claude-dialect hosts", async () => {
+    // opencode / Kilo / Copilot run handlers in the Claude dialect.
+    await run(
+      {
+        kind: "post_tool",
+        toolName: "skill",
+        toolInput: { name: "oma-design" },
+        cwd: projectDir,
+      },
+      { vendor: "claude", host: "opencode", cwd: projectDir, sid: "oc-1" },
+    );
+    const sid = readIndex(projectDir).active[ROUTING_CATEGORY] as string;
+    const [created, routed] = readEvents(projectDir, sid);
+    expect(created?.vendor).toBe("opencode");
+    expect(routed?.vendor).toBe("opencode");
+  });
+
   it("ignores tools that do not load a skill", async () => {
     await run(
       {

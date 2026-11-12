@@ -375,6 +375,7 @@ export async function runHookDispatch(req: HookRequest): Promise<HookResponse> {
   const { config, memory } = resolveHookConfig(projectRoot);
   const ctx: HandlerCtx = {
     vendor: handlerVendor,
+    ...(handlerVendor !== vendor ? { host: vendor } : {}),
     cwd: projectRoot,
     sid,
     ...(config ? { config } : {}),
