@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "20.40.6",
-  "releaseDate": "2026-11-12T00:21:10.669Z",
+  "version": "20.41.0",
+  "releaseDate": "2026-11-12T02:36:40.670Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -246,8 +246,8 @@
     },
     {
       "path": ".agents/hooks/core/skill-route.ts",
-      "sha256": "a9b2d490cf23ac2bf695624309806a2e362416695f1e512e9fc4424678f7ee55",
-      "size": 17264
+      "sha256": "15af13025c00e274208369cd65d6f92ed2a09e3f6021bd4be070bbdc3d6476e0",
+      "size": 18949
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
@@ -596,8 +596,8 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/event-spec.md",
-      "sha256": "65c4afff2835256f810ca5f34c7fc3123b0e1018a4b245e9060950913f9fbd66",
-      "size": 9633
+      "sha256": "ac1086c56c5861bf7e0884886a0b154eca182f65f2089fa4797d79f289da3318",
+      "size": 9885
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/antigravity.md",
@@ -681,7 +681,7 @@
     },
     {
       "path": ".agents/skills/_version.json",
-      "sha256": "a11cfceabd34f7681d7b7d528494f5ee28573e6be3dd93b57830714e727d7935",
+      "sha256": "b9e5f5d85328d655d737bd7ace58e1e0f5f88132ae5c8e57a62c0c24925c39c4",
       "size": 26
     },
     {
