@@ -102,6 +102,10 @@ vi.mock("../../../vendors/claude/settings.js", () => ({
 
 // Stub workspace trust so link() never touches the real ~/.claude.json. The
 // merge logic itself is covered by vendors/claude/trust.test.ts.
+// Host trust writes HOME files (~/.codex, ~/.cursor, ~/.pi, …).
+vi.mock("../../../vendors/host-trust.js", () => ({
+  hostTrustSteps: vi.fn(() => []),
+}));
 vi.mock("../../../vendors/claude/trust.js", () => ({
   ensureClaudeWorkspaceTrust: vi.fn(() => ({
     changed: false,

@@ -92,9 +92,28 @@ Claude Code gets more than skill symlinks:
 - **`.claude/agents/`**: subagent definitions generated from `.agents/agents/*.md`
 - **`.claude/rules/`**: rules generated from `.agents/rules/`, with `globs` mapped to `paths`
 - **`.claude/settings.json`**: hook registrations, the HUD status line, and permission entries; project installs also mark the workspace trusted in `~/.claude.json`
-- **`.mcp.json`**: project MCP servers seeded from `.agents/mcp.json`; user entries are kept
+- **`.mcp.json`**: project MCP servers seeded from `.agents/mcp.json`; user entries are kept. The configured code-intelligence server (`providers.code_intelligence`) is approved in an existing `.claude/settings.local.json`, including after an Esc on Claude's "new MCP servers" dialog rejected it
 - **Native loop patterns**: Review Loop, Issue Remediation Loop, and Phase Gate Loop run through the Agent tool
 - Generated files point back to `.agents/` as the source of truth. Edit `.agents/` and rerun `oma link`; do not edit the generated copies.
+
+## Host Trust for oma Hooks
+
+Most hosts hold a project's hooks back until the user trusts the folder, and `-p` / headless runs never ask, so a fresh install would run without oma until someone answered a prompt. `oma install`, `oma update` and `oma link` record that trust the way each host's own "trust" answer does. They only touch a host that has been run before, never override an explicit "untrusted" decision, and skip the step on a write they cannot make exactly.
+
+| Host | What oma records |
+|---|---|
+| Claude Code | `projects[<root>].hasTrustDialogAccepted` in `~/.claude.json` |
+| Qwen Code | the approval of oma's project hooks in `~/.qwen/hookApprovals.json` |
+| Codex | `[projects."<root>"] trust_level = "trusted"` plus a `[hooks.state."…"] trusted_hash` for each oma hook in `$CODEX_HOME/config.toml` (global installs: the hook hashes only). Hooks you disabled are left alone |
+| cursor-agent | the `.workspace-trusted` marker under `~/.cursor/projects/<slug>/` |
+| Copilot CLI | the project in `trustedFolders` of `~/.copilot/config.json` |
+| Grok | `[folders."<git root>"] trusted = true` in `~/.grok/trusted_folders.toml` |
+| Antigravity (agy) | the project in `trustedWorkspaces` of `~/.gemini/antigravity-cli/settings.json` |
+| Kiro (V3 engine) | `workspaceTrusted: true` in `~/.kiro/workspace-roots/<id>/permissions.yaml` (not on Windows) |
+| Command Code | the `~/.commandcode/projects/<slug>` directory |
+| pi (0.79+) | `"<root>": true` in `~/.pi/agent/trust.json` |
+
+opencode, Kilo and Kimi load hooks and plugins without a trust gate. Trust is recorded for project installs only, except Codex's per-hook hashes, which global hooks need too.
 
 ## Current Design Principle
 

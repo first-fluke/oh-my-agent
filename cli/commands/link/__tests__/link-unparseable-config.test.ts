@@ -18,6 +18,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  * HOME-scoped writers are stubbed so the test never touches the real HOME.
  */
 
+// Host trust writes HOME files (~/.codex, ~/.cursor, ~/.pi, …).
+vi.mock("../../../vendors/host-trust.js", () => ({
+  hostTrustSteps: vi.fn(() => []),
+}));
 vi.mock("../../../vendors/claude/trust.js", () => ({
   ensureClaudeWorkspaceTrust: vi.fn(() => ({
     changed: false,

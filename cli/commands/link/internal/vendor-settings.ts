@@ -52,6 +52,10 @@ import {
   needsGrokProjectMcpUpdate,
   needsGrokTelemetryUpdate,
 } from "../../../vendors/grok/settings.js";
+import {
+  type HostTrustOutcome,
+  hostTrustSteps,
+} from "../../../vendors/host-trust.js";
 import { kimiHome } from "../../../vendors/kimi/auth.js";
 import { installKimiHooks } from "../../../vendors/kimi/hooks.js";
 import {
@@ -502,5 +506,46 @@ export function syncVendorSettings(
     }
   }
 
+  // 6. Host trust for oma's hooks. Most hosts hold a project's hooks (and
+  //    often the whole session) back until the user trusts the folder, and
+  //    Codex additionally pins every hook to a reviewed hash — so a fresh
+  //    install, or an update that changes a hook command, silently runs
+  //    without oma until someone answers a prompt (`-p` runs never ask).
+  //    `oma install` in the project is that consent; record it the way each
+  //    host's own "trust" answer does. Explicit "untrusted" decisions are
+  //    kept, and a host that was never run is skipped. Claude (4b) and Qwen
+  //    (4c) are handled above; opencode, Kilo and Kimi have no gate.
+  syncHostTrust(ctx);
+
   return { agyInstalled, agySkipReason };
+}
+
+function syncHostTrust(ctx: VendorSettingsContext): void {
+  const { root, nativeRoot, configuredVendors, dryRun, quiet, record } = ctx;
+  const steps = hostTrustSteps({
+    root,
+    nativeRoot,
+    project: safeGetInstallMode() === "project",
+  });
+  for (const step of steps) {
+    if (!configuredVendors.includes(step.vendor)) continue;
+    record(step.target, "write", `${step.vendor} hook trust`);
+    if (dryRun) continue;
+    let outcome: HostTrustOutcome;
+    try {
+      outcome = step.apply();
+    } catch (error) {
+      // Trust is a convenience: a failure must not abort the link.
+      outcome = {
+        changed: false,
+        reason: error instanceof Error ? error.message : String(error),
+      };
+    }
+    if (quiet) continue;
+    if (outcome.changed) {
+      console.log(`${pc.green("✓")} ${step.label}`);
+    } else if (outcome.reason) {
+      console.log(`${pc.yellow("⚠")} ${step.vendor} trust: ${outcome.reason}`);
+    }
+  }
 }
