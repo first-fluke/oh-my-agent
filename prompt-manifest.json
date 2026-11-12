@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
-  "version": "20.41.0",
-  "releaseDate": "2026-11-12T02:36:40.670Z",
+  "version": "20.41.1",
+  "releaseDate": "2026-11-12T04:38:00.416Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -191,8 +191,8 @@
     },
     {
       "path": ".agents/hooks/core/keyword-detector.ts",
-      "sha256": "022b937b3f63883169db2c5914f99b57efdc7e358585e7e9ba7cefedab878e13",
-      "size": 53356
+      "sha256": "713924e704a361e02aa68d9faf3ff5f00b5a5153bd1b3f6dad0977061e61f5f5",
+      "size": 53464
     },
     {
       "path": ".agents/hooks/core/memory-adapter.ts",
@@ -216,8 +216,8 @@
     },
     {
       "path": ".agents/hooks/core/refactor-guard.ts",
-      "sha256": "480814f7780b840e7a0f1ac48160006da13672257ebce8c12e8ab19a920596b8",
-      "size": 21872
+      "sha256": "dd5cd2089602b90199a32f6fd30f70c1183dad2c3ae81fa8f5b520eb60f78606",
+      "size": 21969
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
@@ -241,18 +241,18 @@
     },
     {
       "path": ".agents/hooks/core/skill-injector.ts",
-      "sha256": "10f385054bffa20a401c79f40c04af710d623c3e9a5260d02c94dd805f65418a",
-      "size": 18410
+      "sha256": "06ce19ec68da31efac8fd8f1410b062a812168d73ececc3df7141838ff158ccf",
+      "size": 19501
     },
     {
       "path": ".agents/hooks/core/skill-route.ts",
-      "sha256": "15af13025c00e274208369cd65d6f92ed2a09e3f6021bd4be070bbdc3d6476e0",
-      "size": 18949
+      "sha256": "fe5f2cf2464d7a8d47306aafba9e1807952b9b667699c77331fbd07882ed0205",
+      "size": 23229
     },
     {
       "path": ".agents/hooks/core/state-boundary.ts",
-      "sha256": "b6d64b59ee27cdb1a3ecdfd474cfb180cd41ffad3a21851efd6230f20acbe3d4",
-      "size": 7844
+      "sha256": "d114be8104178af6992daa2389df798a971513d87dea900c338ee3eb5c0aa854",
+      "size": 8027
     },
     {
       "path": ".agents/hooks/core/state-core.ts",
@@ -291,8 +291,8 @@
     },
     {
       "path": ".agents/hooks/core/types.ts",
-      "sha256": "213b0a9c967ef4c64d608d1ffa4ef75e528f4d2848e2bcb47e64faf1bd4b1a19",
-      "size": 6039
+      "sha256": "e6407c55341585053224b42fd6d3aef9628986a09a95d315b5e5c29977a99dec",
+      "size": 6336
     },
     {
       "path": ".agents/hooks/core/vendor-detect.ts",
@@ -306,8 +306,8 @@
     },
     {
       "path": ".agents/hooks/variants/antigravity.json",
-      "sha256": "bc6a4646eb731648f373918552bdf1365cc77d8be595b32101dae5c1575e0565",
-      "size": 1336
+      "sha256": "3bd5882d82b9175d713789f1d05949ff75c08d8317e80243d2ef1ff3b3b20f65",
+      "size": 1452
     },
     {
       "path": ".agents/hooks/variants/claude.json",
@@ -321,28 +321,28 @@
     },
     {
       "path": ".agents/hooks/variants/commandcode/oma.ts",
-      "sha256": "ce500370b664c8a6b603c81fe7ba701f2c6c7714ff9b295227780266552b8b1c",
-      "size": 12488
+      "sha256": "4f76df683476b4c32012d5cda6a2b96c5e966e7793a7e962965cbd3792239572",
+      "size": 13963
     },
     {
       "path": ".agents/hooks/variants/commandcode.json",
-      "sha256": "dc82f052a92531e5b75f5ed07456d60a91d06aa05765f24dfe247577cee46898",
-      "size": 714
+      "sha256": "02801887a8d437d7e91fa5de56c632fcb4260cf8477df5a928f06ed1a439c091",
+      "size": 834
     },
     {
       "path": ".agents/hooks/variants/copilot.json",
-      "sha256": "02ee06c33bb11fb14a181f08baa09ca96a977865d2ba05d148c9d69b7247cae3",
-      "size": 1405
+      "sha256": "c708e805d107340a05cbb1eea9d28d6446e92e670a05147d11f2d00d64aac16f",
+      "size": 1515
     },
     {
       "path": ".agents/hooks/variants/cursor.json",
-      "sha256": "570b425924912f104e36c0c4fadf763460152fc71d7c23bd90beb5d3bdc61027",
-      "size": 1436
+      "sha256": "2c72536d97e19ff43630cf391e797ab54408223b264e6ec5a00a3d4c15d41827",
+      "size": 1568
     },
     {
       "path": ".agents/hooks/variants/grok.json",
-      "sha256": "eee944bcd781081886d4cbae68a3bce47a268aa12b9875e7fbc46c8e5d698c7e",
-      "size": 1266
+      "sha256": "3a71d9fcce590ddbf635b467d1357f43d6701237f6bb2137e9647d356e0b9484",
+      "size": 1443
     },
     {
       "path": ".agents/hooks/variants/hook-variant.schema.json",
@@ -351,23 +351,23 @@
     },
     {
       "path": ".agents/hooks/variants/kimi.json",
-      "sha256": "03b26bccf4fc7be128c9169a0a65b40d9de23d655c68e2007eecfdea723df74c",
-      "size": 1226
+      "sha256": "ece3739c88e4b3c694ec9c0298a610917f5f9128239c6a3c4d3d8c970e7ed283",
+      "size": 1322
     },
     {
       "path": ".agents/hooks/variants/kiro.json",
-      "sha256": "1fe1744a95db67b98189070c73b65142ddf536ccb104f6f2eb9f2a129fca0345",
-      "size": 1216
+      "sha256": "ff3a28f6f069715b7ddf906ece07d69b276651a30143d70d7a0af5ebcdffe9b2",
+      "size": 1380
     },
     {
       "path": ".agents/hooks/variants/opencode/index.ts",
-      "sha256": "b3da76af153b0eb4742712c32d4a86055d556d215c607998d394f234aa77e5db",
-      "size": 5516
+      "sha256": "24d8bde8499e57732bbf606593674038783c45e78d95974c2abcfb24231c23f7",
+      "size": 6211
     },
     {
       "path": ".agents/hooks/variants/opencode/oma.ts",
-      "sha256": "8b2a4195b39f5e0ae94c0a5361bc37fe6d35de91d68c42124ff92c785c40f876",
-      "size": 18268
+      "sha256": "2822b65b9f30933aa030ce1cce2cc02a52642aacfb6b5e39ba3c46bec84fc3db",
+      "size": 20053
     },
     {
       "path": ".agents/hooks/variants/pi/README.md",
@@ -376,13 +376,13 @@
     },
     {
       "path": ".agents/hooks/variants/pi/index.ts",
-      "sha256": "1cceeafb9f7c447e253f6fcfd87ac6d807d9e34516b7577c6e29b2c5fa6c59ee",
-      "size": 10583
+      "sha256": "1985090754d9c82ab4e7d83090fb7b32a70b5819fd24cc44301a6a47bd54a019",
+      "size": 11862
     },
     {
       "path": ".agents/hooks/variants/qwen.json",
-      "sha256": "fa664cb8458421d2e61266f256b7c698c448c8ab5e0e681edf38fbcec26c7deb",
-      "size": 1513
+      "sha256": "1f9d65285c4b08d92eb34ca2c4e97c71cdabf302a568011bfe094054def58f01",
+      "size": 1641
     },
     {
       "path": ".agents/mcp.json",
@@ -596,8 +596,8 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/event-spec.md",
-      "sha256": "ac1086c56c5861bf7e0884886a0b154eca182f65f2089fa4797d79f289da3318",
-      "size": 9885
+      "sha256": "8a6db936f9854d2ed2fc160cb0edf26c65f6f26171564901c02beaddedbb87d4",
+      "size": 10773
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/antigravity.md",
@@ -681,7 +681,7 @@
     },
     {
       "path": ".agents/skills/_version.json",
-      "sha256": "b9e5f5d85328d655d737bd7ace58e1e0f5f88132ae5c8e57a62c0c24925c39c4",
+      "sha256": "103529dc9ea2f9aee4da568213e661acb83cd137527186bd26f429635a757eb3",
       "size": 26
     },
     {
