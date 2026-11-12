@@ -4,6 +4,7 @@ import { runAction } from "../../utils/cli-framework.js";
 import { extractSessionId } from "./adapters.js";
 import { shouldDispatchHookDelivery } from "./dedup.js";
 import { runHookDispatch } from "./dispatch.js";
+import { shouldYieldToHostRegistration } from "./foreign-host.js";
 import {
   PROBE_VENDORS,
   type ProbeVendor,
@@ -156,6 +157,13 @@ export function registerHook(program: Command): void {
         }
 
         const cwd = process.cwd();
+
+        // Grok and Cursor also load other vendors' hook files; when the host
+        // has its own oma registration, that one handles this event.
+        if (shouldYieldToHostRegistration({ vendor, rawStdin, cwd })) {
+          return;
+        }
+
         const sid = extractSessionId(vendor, rawStdin);
 
         const req: HookRequest = {
