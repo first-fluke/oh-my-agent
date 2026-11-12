@@ -105,6 +105,23 @@ Readers MUST derive state by sorting valid events by `(ts, eventId)`. Raw file o
       }
     },
     {
+      "if": { "properties": { "kind": { "const": "skill.routed" } } },
+      "then": {
+        "required": ["payload"],
+        "properties": {
+          "payload": {
+            "type": "object",
+            "required": ["skill", "source", "stage"],
+            "properties": {
+              "skill": { "type": "string", "pattern": "\\S" },
+              "source": { "enum": ["user-explicit", "hook-trigger", "model-description"] },
+              "stage": { "enum": ["suggested", "loaded"] }
+            }
+          }
+        }
+      }
+    },
+    {
       "if": { "properties": { "kind": { "const": "blocker.raised" } } },
       "then": {
         "required": ["payload"],
@@ -146,6 +163,12 @@ Required payload fields:
 
 - `workflow`
 - `category`
+
+Optional payload fields:
+
+- `trigger`: why the workflow was routed — `{ "source": "keyword", "matchedKeyword": "..." }` or `{ "source": "user-explicit", ... }`. Never the prompt text.
+
+A `skill-routing` session (category `routing`) is created on demand to hold routing records when no workflow session owns the work; see `skill.routed`.
 
 ### `workflow.phase`
 
@@ -210,6 +233,24 @@ Optional payload fields:
 
 Use an instance that changes when the reviewed item changes: iteration plus plan revision, a finding ID plus patch/revalidation revision, or a target path plus patch revision. A single session-wide constant allows old decisions to satisfy later work. Keep IDs identical for emit and verify; do not emit literal angle-bracket placeholders.
 
+### `skill.routed`
+
+Records which OMA skill was routed and why. Written by hooks; agents do not emit it.
+
+Required payload fields:
+
+- `skill`: skill directory name under `.agents/skills/`.
+- `source`: `user-explicit` (the user named `/<skill>` or `$<skill>`), `hook-trigger` (a `triggers.json` keyword matched), or `model-description` (the model loaded a skill the hook never suggested, routing from the skill description).
+- `stage`: `suggested` (hook injected the suggestion) or `loaded` (the skill was actually loaded: Claude `Skill` tool, or a SKILL.md read).
+
+Optional payload fields:
+
+- `matchedTriggers`: matched trigger keywords (hook-trigger). The prompt text is never recorded.
+- `score`
+- `via`: tool that loaded the skill.
+
+Records go to the active main workflow session when it was created by the same vendor session or has non-boundary activity within two hours; otherwise to a per-vendor-session `skill-routing` session. Each skill is recorded once per stage per vendor session.
+
 ### `decision.missing`
 
 Records deterministic verifier failure for a required `decision.made` event.
@@ -250,5 +291,9 @@ oma state verify --workflow ultrawork --checkpoint plan-approved --instance "ite
 ```
 
 Required verification matches both `subject` and `instanceId` and checks nonblank decision content, including historical records. A decision for an earlier iteration, patch, or finding cannot satisfy the current checkpoint. `oma doctor` reports malformed event envelopes and payloads without rewriting the authoritative log.
+
+## Route Selection Decisions
+
+When a skill chooses among alternative routes at runtime (an upstream supplier, vendor, engine, backend, or mode), record the choice and its reason as an optional `decision.made` with `--category routing`. Follow `route-selection.md` in this directory. These records are not verifier checkpoints.
 
 Core kinds above have stable contracts. Additional event kinds may be used by extensions; they do not satisfy core decision or terminal contracts.

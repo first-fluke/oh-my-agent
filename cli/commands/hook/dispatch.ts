@@ -16,6 +16,7 @@ import * as persistentMode from "../../../.agents/hooks/core/persistent-mode.js"
 import * as refactorGuard from "../../../.agents/hooks/core/refactor-guard.js";
 import * as scmGuard from "../../../.agents/hooks/core/scm-guard.js";
 import * as skillInjector from "../../../.agents/hooks/core/skill-injector.js";
+import * as skillRoute from "../../../.agents/hooks/core/skill-route.js";
 import * as stateBoundary from "../../../.agents/hooks/core/state-boundary.js";
 import * as testFilter from "../../../.agents/hooks/core/test-filter.js";
 // Embedded variant route-tables. These JSON imports are INLINED into the bundle
@@ -84,6 +85,7 @@ type RunFn = (
 export const HANDLER_REGISTRY: Readonly<Record<string, RunFn>> = {
   "keyword-detector": keywordDetector.run,
   "skill-injector": skillInjector.run,
+  "skill-route": skillRoute.run,
   "code-intelligence-primer": codeIntelligencePrimer.run,
   "serena-primer": codeIntelligencePrimer.run,
   "state-boundary": stateBoundary.run,

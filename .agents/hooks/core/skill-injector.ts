@@ -25,6 +25,11 @@ import { agyConversationId, readAgyPrompt } from "./agy-input.ts";
 import { toPosixPath } from "./fs-utils.ts";
 import { makePromptOutput } from "./hook-output.ts";
 import { isRelayedAgentMessage, normalizePromptInput } from "./prompt-input.ts";
+import {
+  explicitSkillMentions,
+  knownSkillNames,
+  recordSkillRoutes,
+} from "./skill-route.ts";
 // triggers.json is imported statically: bundler inlines it into the oma binary;
 // standalone bun runs resolve the sibling file (pi / direct run).
 import embeddedTriggers from "./triggers.json" with { type: "json" };
@@ -455,6 +460,23 @@ export async function run(
   // and produced false skill suggestions. Same guard as keyword-detector.
   if (isRelayedAgentMessage(prompt)) return null;
 
+  // Routing telemetry: a skill the user named (`/name`, `$name`) is routed by
+  // explicit request. Recorded before every early exit below; never blocks.
+  if (/[/$]/.test(prompt)) {
+    const explicit = explicitSkillMentions(
+      stripCodeBlocks(prompt),
+      knownSkillNames(projectDir),
+    );
+    await recordSkillRoutes(
+      { projectDir, vendor, vendorSid: sessionId },
+      explicit.map((skill) => ({
+        skill,
+        source: "user-explicit" as const,
+        stage: "loaded" as const,
+      })),
+    );
+  }
+
   // Claude-specific: slash-skill resolution must run BEFORE the slash early-exit
   // and persistent-workflow guard (same order as the original standalone path).
   if (vendor === "claude") {
@@ -487,6 +509,18 @@ export async function run(
   if (fresh.length === 0) return null;
 
   writeState(projectDir, nextState);
+  // Routing telemetry: why each skill was suggested (matched trigger
+  // keywords only — never the prompt text).
+  await recordSkillRoutes(
+    { projectDir, vendor, vendorSid: sessionId },
+    fresh.map((match) => ({
+      skill: match.name,
+      source: "hook-trigger" as const,
+      stage: "suggested" as const,
+      matchedTriggers: match.matchedTriggers,
+      score: match.score,
+    })),
+  );
   return { type: "context", additionalContext: formatContext(fresh) };
 }
 

@@ -16,7 +16,9 @@ export function validateEventPayload(kind: string, payload: unknown): string[] {
       ? ["subject", "decision", "rationale"]
       : kind === "blocker.raised"
         ? ["summary"]
-        : [];
+        : kind === "skill.routed"
+          ? ["skill", "source", "stage"]
+          : [];
   const record = isEventRecord(payload) ? payload : undefined;
   if (payload !== undefined && !record)
     errors.push("payload must be an object");

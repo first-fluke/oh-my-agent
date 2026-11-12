@@ -56,6 +56,11 @@
         "hook": "refactor-guard.ts",
         "matcher": "Edit|Write|NotebookEdit",
         "timeout": 5
+      },
+      {
+        "hook": "skill-route.ts",
+        "matcher": "Skill|Read",
+        "timeout": 3
       }
     ],
     "Stop": [

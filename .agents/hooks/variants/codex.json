@@ -46,6 +46,11 @@
         "hook": "refactor-guard.ts",
         "matcher": "apply_patch|Edit|Write",
         "timeout": 5
+      },
+      {
+        "hook": "skill-route.ts",
+        "matcher": "Bash",
+        "timeout": 3
       }
     ],
     "Stop": [

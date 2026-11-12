@@ -910,6 +910,7 @@ async function activateL1WorkflowSession(
   workflow: string,
   vendor: string,
   vendorSid: string,
+  trigger?: Record<string, unknown>,
   category = "main",
 ): Promise<string | null> {
   try {
@@ -937,7 +938,14 @@ async function activateL1WorkflowSession(
       kind: "session.created",
       vendor,
       vendorSid,
-      payload: { workflow, category, ...vendorHomePayload(vendor) },
+      // `trigger` records WHY the workflow was routed (matched keyword or
+      // explicit slash) — never the prompt text.
+      payload: {
+        workflow,
+        category,
+        ...(trigger ? { trigger } : {}),
+        ...vendorHomePayload(vendor),
+      },
     });
     return sid;
   } catch (e) {
@@ -1208,6 +1216,7 @@ export async function run(
         slashWorkflow,
         vendor,
         sessionId,
+        { source: "user-explicit", command: `/${slashWorkflow}` },
       );
       activateMode(projectDir, slashWorkflow, sessionId, omaSid);
     }
@@ -1346,6 +1355,10 @@ export async function run(
     workflow,
     vendor,
     sessionId,
+    {
+      source: explicit ? "user-explicit" : "keyword",
+      matchedKeyword: winner.matchText,
+    },
   );
   // Only an explicit invocation enables persistent mode (the Stop hook blocks
   // while the state file exists). Natural-language matches such as "keep

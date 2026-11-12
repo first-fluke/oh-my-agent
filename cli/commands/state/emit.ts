@@ -1,5 +1,9 @@
 import type { Command } from "commander";
 import {
+  ROUTING_CATEGORY,
+  resolveRouteSid,
+} from "../../../.agents/hooks/core/skill-route.js";
+import {
   emitEventWithMemory,
   getActiveSid,
   readIndex,
@@ -56,7 +60,11 @@ export function registerEmit(program: Command): void {
       .command("state:emit <kind> [payload]")
       .description("Append an OMA L1 workflow event")
       .option("--sid <sid>", "Target session id")
-      .option("--category <category>", "Active category lookup", "main")
+      .option(
+        "--category <category>",
+        "Active category lookup (`routing` resolves or creates the skill-routing session)",
+        "main",
+      )
       .option("--vendor <vendor>", "Runtime/vendor name")
       .option("--vendor-sid <vendorSid>", "Runtime/vendor session id")
       .option("--parent-event-id <eventId>", "Parent event id")
@@ -75,7 +83,16 @@ export function registerEmit(program: Command): void {
         // from a monorepo sub-package writes to the repo-level `.agents/`
         // instead of materializing a stray `<sub-package>/.agents/`.
         const projectDir = resolveProjectRoot();
-        const sid = resolveEmitSid(projectDir, emitOptions);
+        // Route-selection decisions (`--category routing`) usually happen
+        // outside any workflow: they land in the live workflow session when
+        // there is one, otherwise in a skill-routing session created on demand.
+        const sid =
+          !emitOptions.sid && emitOptions.category === ROUTING_CATEGORY
+            ? await resolveRouteSid(projectDir, {
+                vendor: emitOptions.vendor,
+                vendorSid: emitOptions.vendorSid,
+              })
+            : resolveEmitSid(projectDir, emitOptions);
         const event = await emitEventWithMemory(projectDir, sid, {
           kind,
           ts: emitOptions.ts,

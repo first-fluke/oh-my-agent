@@ -63,6 +63,7 @@ export type EventKind =
   | "skill.proposal.created"
   | "skill.proposal.gated"
   | "skill.evolution.completed"
+  | "skill.routed"
   | "session.ended";
 
 export interface LastSessionMarker {
