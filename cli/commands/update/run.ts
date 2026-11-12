@@ -77,6 +77,7 @@ import {
 } from "../../utils/install-lock.js";
 import { loadProviders } from "../../utils/providers.js";
 import { syncBrowserMcp } from "../../vendors/browser-mcp.js";
+import { isClaudeMcpServerRejected } from "../../vendors/claude/mcp-approval.js";
 import { link } from "../link/run.js";
 import { runMigrations, runMigrationsWithStatus } from "../migrations/index.js";
 import { resolveAutoUpdateCli } from "./auto-update-config.js";
@@ -334,11 +335,25 @@ export async function update(options: UpdateOptions = {}): Promise<void> {
         global: mode === "global",
         dryRun: true,
       }).length > 0;
+    // Claude records an Esc on its "new MCP servers" dialog as a rejection of
+    // the code-intelligence server; link restores it (vendor-settings 4f').
+    let claudeMcpApprovalNeedsReconcile = false;
+    if (mode !== "global" && migrationVendors.includes("claude")) {
+      try {
+        claudeMcpApprovalNeedsReconcile = isClaudeMcpServerRejected(
+          cwd,
+          loadProviders(cwd).code_intelligence,
+        );
+      } catch {
+        // An invalid provider choice surfaces through the provider sync.
+      }
+    }
     const needsReconcile =
       migrationStatus.requiresReconcile ||
       getNeedsReconcile(cwd) ||
       providerMcpNeedsReconcile ||
-      browserMcpNeedsReconcile;
+      browserMcpNeedsReconcile ||
+      claudeMcpApprovalNeedsReconcile;
 
     // Persist reconcile flag so a failed download doesn't lose the intent
     if (migrationStatus.requiresReconcile && !getNeedsReconcile(cwd)) {

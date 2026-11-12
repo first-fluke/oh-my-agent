@@ -18,6 +18,7 @@ import {
   readTomlMergeBaseOrWarn,
   warnUnmergeable,
 } from "../../../utils/merge-read.js";
+import { loadProviders } from "../../../utils/providers.js";
 import { safeWriteJson } from "../../../utils/safe-write.js";
 import {
   installAntigravityHud,
@@ -29,6 +30,10 @@ import {
   applyClaudeMcp,
   needsClaudeMcpUpdate,
 } from "../../../vendors/claude/mcp.js";
+import {
+  approveClaudeMcpServer,
+  claudeLocalSettingsPath,
+} from "../../../vendors/claude/mcp-approval.js";
 import {
   applyClaudeSettings,
   claudeAttributionEnabled,
@@ -336,6 +341,47 @@ export function syncVendorSettings(
         const next = applyClaudeMcp(claudeMcp ?? {}, ssotServers);
         safeWriteJson(claudeMcpPath, next);
       }
+    }
+  }
+
+  // 4f'. Claude Code approval of the code-intelligence server in `.mcp.json`.
+  //      Esc on Claude's "new MCP servers found" dialog rejects every pending
+  //      server into `.claude/settings.local.json`, which strands the search
+  //      the guard routes to it; the oma-config provider choice is consent,
+  //      so restore it there. See vendors/claude/mcp-approval.ts.
+  if (
+    safeGetInstallMode() !== "global" &&
+    configuredVendors.includes("claude")
+  ) {
+    const localSettingsPath = claudeLocalSettingsPath(nativeRoot);
+    const localSettings = readJsonForMerge(localSettingsPath);
+    let server: string | undefined;
+    try {
+      server = loadProviders(root).code_intelligence;
+    } catch {
+      // An invalid provider choice is reported by the provider sync below.
+    }
+    if (server && localSettings.status === "ok") {
+      const approval = approveClaudeMcpServer(localSettings.value, server);
+      if (approval.changed) {
+        record(
+          localSettingsPath,
+          "write",
+          approval.wasRejected
+            ? `claude mcp approval (un-reject ${server})`
+            : `claude mcp approval (${server})`,
+        );
+        if (!dryRun) {
+          safeWriteJson(localSettingsPath, localSettings.value);
+          if (approval.wasRejected && !quiet) {
+            console.log(
+              `${pc.green("✓")} claude: re-approved the rejected ${server} MCP server (.claude/settings.local.json)`,
+            );
+          }
+        }
+      }
+    } else if (localSettings.status === "invalid") {
+      warnUnmergeable(localSettingsPath, localSettings.reason);
     }
   }
 
