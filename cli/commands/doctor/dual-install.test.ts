@@ -250,8 +250,8 @@ describe("oma installs on PATH", () => {
       );
 
       expect(found).toEqual([
-        { path: join(stale, "oma"), version: "15.0.17" },
-        { path: join(current, "oma"), version: "15.6.0" },
+        { path: join(stale, "oma"), version: "15.0.17", dead: false },
+        { path: join(current, "oma"), version: "15.6.0", dead: false },
       ]);
     },
   );
@@ -259,8 +259,8 @@ describe("oma installs on PATH", () => {
   it("warns only when the versions on PATH differ", () => {
     expect(
       checkOmaPathInstalls([
-        { path: "/opt/homebrew/bin/oma", version: "15.0.17" },
-        { path: "/home/u/.bun/bin/oma", version: "15.6.0" },
+        { path: "/opt/homebrew/bin/oma", version: "15.0.17", dead: false },
+        { path: "/home/u/.bun/bin/oma", version: "15.6.0", dead: false },
       ]),
     ).toEqual([
       expect.stringContaining(
@@ -269,10 +269,105 @@ describe("oma installs on PATH", () => {
     ]);
     expect(
       checkOmaPathInstalls([
-        { path: "/a/oma", version: "15.6.0" },
-        { path: "/b/oma", version: "15.6.0" },
+        { path: "/a/oma", version: "15.6.0", dead: false },
+        { path: "/b/oma", version: "15.6.0", dead: false },
       ]),
     ).toEqual([]);
     expect(checkOmaPathInstalls([])).toEqual([]);
+  });
+
+  describe("package-manager launcher layouts", () => {
+    // npm's Windows prefix: `<prefix>\oma.cmd` sitting next to
+    // `<prefix>\node_modules\oh-my-agent`, with the package path quoted in the
+    // launcher. Neither is an ancestor of the other.
+    function npmPrefixAt(root: string, version: string | null): string {
+      const prefix = join(root, "npm-prefix");
+      mkdirSync(prefix, { recursive: true });
+      writeFileSync(
+        join(prefix, "oma.cmd"),
+        [
+          "@ECHO off",
+          "SET basedir=%~dp0",
+          '"node"  "%basedir%\\node_modules\\oh-my-agent\\bin\\cli.js" %*',
+        ].join("\r\n"),
+      );
+      if (version) {
+        const pkg = join(prefix, "node_modules", "oh-my-agent");
+        mkdirSync(join(pkg, "bin"), { recursive: true });
+        writeFileSync(
+          join(pkg, "package.json"),
+          JSON.stringify({ name: "oh-my-agent", version }),
+        );
+        writeFileSync(join(pkg, "bin", "cli.js"), "");
+      }
+      return prefix;
+    }
+
+    // bun's global layout: the shim lives in `~/.bun/bin`, the package in
+    // `~/.bun/install/global/node_modules/oh-my-agent`.
+    function bunBinAt(root: string, version: string): string {
+      const pkg = join(
+        root,
+        ".bun",
+        "install",
+        "global",
+        "node_modules",
+        "oh-my-agent",
+      );
+      mkdirSync(join(pkg, "bin"), { recursive: true });
+      writeFileSync(
+        join(pkg, "package.json"),
+        JSON.stringify({ name: "oh-my-agent", version }),
+      );
+      writeFileSync(join(pkg, "bin", "cli.js"), "");
+      const binDir = join(root, ".bun", "bin");
+      mkdirSync(binDir, { recursive: true });
+      writeFileSync(join(binDir, "oma.exe"), "");
+      return binDir;
+    }
+
+    it("resolves the npm Windows prefix, which no ancestor walk can reach", () => {
+      const root = makeTempRoot();
+      const prefix = npmPrefixAt(root, "20.40.5");
+
+      expect(findOmaOnPath(prefix, "win32")).toEqual([
+        { path: join(prefix, "oma.cmd"), version: "20.40.5", dead: false },
+      ]);
+    });
+
+    it("resolves bun's split bin and install/global directories", () => {
+      const root = makeTempRoot();
+      const binDir = bunBinAt(root, "20.40.5");
+
+      expect(findOmaOnPath(binDir, "win32")).toEqual([
+        { path: join(binDir, "oma.exe"), version: "20.40.5", dead: false },
+      ]);
+    });
+
+    it("reports a launcher whose package dir is gone, so a working install behind it is not blamed", () => {
+      const root = makeTempRoot();
+      const prefix = npmPrefixAt(root, null);
+      const binDir = bunBinAt(root, "20.40.5");
+
+      const found = findOmaOnPath([prefix, binDir].join(delimiter), "win32");
+
+      expect(found).toEqual([
+        { path: join(prefix, "oma.cmd"), version: null, dead: true },
+        { path: join(binDir, "oma.exe"), version: "20.40.5", dead: false },
+      ]);
+      expect(checkOmaPathInstalls(found)[0]).toContain(
+        `Dead oma launcher on PATH: ${join(prefix, "oma.cmd")}`,
+      );
+    });
+
+    it("warns about a dead launcher even when it is the only oma on PATH", () => {
+      const root = makeTempRoot();
+      const prefix = npmPrefixAt(root, null);
+
+      const warnings = checkOmaPathInstalls(findOmaOnPath(prefix, "win32"));
+
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain("npm uninstall -g oh-my-agent");
+    });
   });
 });
