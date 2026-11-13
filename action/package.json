@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent-action",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "description": "GitHub Action to automatically update oh-my-agent skills"
 }

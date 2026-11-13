@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/first-fluke/oh-my-agent/compare/action-v1.2.2...action-v1.2.3) (2026-11-13)
+
+
+### Bug Fixes
+
+* **antigravity:** refresh stale oma hooks when vendor is unselected ([a0099b0](https://github.com/first-fluke/oh-my-agent/commit/a0099b07b364679bec4e276eeb0674b7fd693f58))
+
 ## [1.2.2](https://github.com/first-fluke/oh-my-agent/compare/action-v1.2.1...action-v1.2.2) (2026-07-11)
 
 
