@@ -315,7 +315,7 @@ Use this after editing `.agents/agents/`, `.agents/workflows/`, `.agents/rules/`
 
 ### Reconfigure an existing install {#setup-workflow}
 
-There is no `/setup` workflow. To change an installed project, rerun `oma install`, use `oma update mcp` for browser MCP servers only, or run `/tools` inside an agent session to enable or disable MCP tools. Check per-agent model resolution with `oma doctor --profile`; per-agent model pins live under `agents:` in `.agents/oma-config.yaml` ([Per-Agent Models](../guide/per-agent-models.md)).
+There is no `/setup` workflow. To change an installed project, rerun `oma install`, or use `oma update mcp` to choose the browser MCP servers. Check per-agent model resolution with `oma doctor --profile`; per-agent model pins live under `agents:` in `.agents/oma-config.yaml` ([Per-Agent Models](../guide/per-agent-models.md)).
 
 ---
 
@@ -1186,7 +1186,6 @@ When several session plans or run receipts match, verification fails and asks fo
 
 **Common checks (all agent types):**
 - **Scope Check**: Reads `.agents/results/plan-{sessionId}.json` task scopes. Compares `git diff` changed files against defined scope patterns. Fails if files are modified outside the agent's assigned scope.
-- **Charter Preflight**: Verifies the selected result report contains a properly filled `CHARTER_CHECK:` block with no unfilled placeholders.
 - **TDD Evidence**: Requires each applicable task's selected report to contain its exact task ID and its own nonempty `red:` and `green:` entries. Reports from another session or retry cannot replace the selected report.
 - **Hardcoded Secrets**: Scans `.py`, `.ts`, `.tsx`, `.js`, `.dart` files for patterns like `password = "..."`, `api_key = "..."` (excludes test/example files).
 - **TODO/FIXME Comments**: Counts `TODO`, `FIXME`, `HACK`, `XXX` comments (warns if any found).
@@ -1683,18 +1682,18 @@ Plan, author, and render short-form, explainer, and demo videos. `generate` crea
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` accepts `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, and `--capture-stop duration:<seconds>|selector:<css>`. Use `--source web --url <url>` for a browser capture; `--source file` is the default. `--output-dir` selects the run root, `--allow-external-output` permits a path outside `$PWD`, `--max-usd` sets a cost ceiling, `-y, --yes` skips the cost confirmation, `--seed` stabilizes planning inputs, `--timeout` limits each visual and music provider call, `--script` injects an agent-authored `script.json`, and `--no-brief-in-manifest` stores a brief hash instead of its text. `--dry-run` stops after planning. `--output text|json` controls the CLI envelope.
+`generate` accepts `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, and `--capture-stop duration:<seconds>|selector:<css>`. A demo takes a recording you supply with `--capture`; `--source file` is the default, and `--source web --url <url>` only adds the URL as context (the CLI does not open or record a browser). `--polish` routes the capture through the `Demo` composition, where personal information is masked; without it the output MP4 is the raw, unmasked capture. `--visual stock` and `--visual aigc` select the Pexels and Pixelle providers when their keys are set, and a slide visual needs `visual.ref` in the script to point at an existing deck directory. `--output-dir` selects the run root, `--allow-external-output` permits a path outside `$PWD`, `--max-usd` sets a cost ceiling, `-y, --yes` skips the cost confirmation, `--seed` stabilizes planning inputs, `--timeout` limits each visual and music provider call, `--script` injects an agent-authored `script.json`, and `--no-brief-in-manifest` stores a brief hash instead of its text. `--dry-run` stops after planning. `--output text|json` controls the CLI envelope.
 
 `doctor` checks the cached HyperFrames/MPT toolchain and accepts `--install`, `--upgrade`, `--install-mpt`, and `--install-strudel`. `provider list` reports provider availability and key status. `compose` scaffolds or refreshes the run composition and reports the authoring contract; `render` lints, renders, and probes the output. Missing compositor, composition, or toolchain dependencies are errors. The test-only `OMA_VIDEO_MOCK=1` path is the sole placeholder mode; a normal run never substitutes a text or tiny-file MP4.
 
-Successful JSON output contains `runDir`, `manifestPath`, `scriptPath`, and `renderSpecPath`; the manifest records selected providers, inputs, and generated assets. After `compose`, author the generated composition according to its `AUTHORING.md`, then rerun `render`. If a provider key is unavailable, run `oma video doctor`; if capture fails, check the URL, selector, device, and timeout; if rendering fails, fix the composition diagnostics before retrying.
+Successful JSON output contains `runDir`, `manifestPath`, `scriptPath`, and `renderSpecPath`; the manifest records selected providers, inputs, and generated assets. After `compose`, author the generated composition according to its `AUTHORING.md`, then rerun `render`. If a provider key is unavailable, run `oma video doctor`; if a demo run stops with recording instructions, supply the recording with `--capture`; if rendering fails, fix the composition diagnostics before retrying.
 
 ### star
 

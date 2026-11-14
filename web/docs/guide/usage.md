@@ -9,7 +9,7 @@ description: Usage guide for OMA, covering reader-first task selection, single-s
 ## Quick start
 
 1. Open your project in a selected AI-powered IDE or CLI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen, or another supported host)
-2. The selected host can load [skills](../getting-started/glossary.md#skill) from `.agents/skills/`; enabled hooks can detect [workflows](../getting-started/glossary.md#workflow) from natural-language keywords
+2. The selected host can load [skills](../getting-started/glossary.md#skill) from `.agents/skills/`; enabled hooks add skill hints from natural-language keywords, and start a [workflow](../getting-started/glossary.md#workflow) only from its slash command or, for the four persistent modes, its name
 3. Describe what you want in natural language. The host or selected workflow routes the task to the relevant skill
 4. For multi-agent work, use `/work` or `/orchestrate`
 
@@ -43,23 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. Layer 2 resources load on-demand:
    - `execution-protocol.md`: the 4-step workflow (Analyze, Plan, Implement, Verify)
    - `snippets.md`: form and Zod validation patterns, plus existing component patterns when the skill supplies them
-4. Agent outputs a **CHARTER_CHECK**:
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
 <!-- oma-docs:ignore-start -->
-5. Agent implements:
+4. Agent implements:
    - React component with TypeScript in `src/features/auth/components/login-form.tsx`
    - Zod validation schema in `src/features/auth/utils/login-validation.ts`
    - Vitest tests in `src/features/auth/utils/__tests__/login-validation.test.ts`
    - Loading skeleton in `src/features/auth/components/skeleton/login-form-skeleton.tsx`
 <!-- oma-docs:ignore-end -->
-6. Agent runs the checklist: accessibility (ARIA labels, semantic HTML, keyboard nav), mobile viewport, performance (no CLS), error boundaries
+5. Agent runs the checklist: accessibility (ARIA labels, semantic HTML, keyboard nav), mobile viewport, performance (no CLS), error boundaries
 
 **Expected result:** A scoped React component with TypeScript, validation, tests, and accessibility evidence when the project supports those checks. The prompt and selected workflow determine which files and checks actually run.
 
@@ -75,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **What happens:**
 
 1. This request spans frontend, backend, and mobile work. The host agent can use that scope to recommend a coordination approach.
-2. With the keyword-detection hook enabled, "Build a TODO app" matches a configured `/orchestrate` pattern and can activate it. The hook matches text; it does not classify the request as multi-domain. Use an explicit command to select the workflow you want.
+2. The keyword-detection hook does not start a workflow from this sentence: it activates only `orchestrate`, `ultrawork`, `work`, or `ralph`, and only when the prompt names the mode. It does not classify the request as multi-domain. Use an explicit command to select the workflow you want.
 
 **Using `/work` (step-by-step with user control):**
 
@@ -154,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **You type:**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **What happens:**
 
-1. `oma-design` activates (keywords: "design", "landing page", "dark", "premium")
-2. **Phase 1, SETUP:** Checks for `.design-context.md`. If missing, asks:
-   - What languages does the service support? (en only / + CJK)
-   - Target audience? (B2B, technical users, 25-45)
-   - Brand personality? (professional / premium)
-   - Aesthetic direction? (dark premium)
-   - Reference sites? (user provides examples)
-   - Accessibility? (WCAG AA)
-3. **Phase 3, ENHANCE:** If the prompt is vague, transforms it into section-by-section specification
-4. **Phase 4, PROPOSE:** Presents 3 design directions:
-   - **Direction A: "Midnight Observatory"**: Deep navy (#0f1729), cyan accents (#22d3ee), Inter + JetBrains Mono, bento grid layout, scroll-driven reveals
-   - **Direction B: "Carbon Interface"**: Neutral gray (#18181b), amber accents (#f59e0b), system fonts, chess layout, hover-driven micro-interactions
-   - **Direction C: "Deep Space"**: Pure dark (#0a0a0a), emerald accents (#10b981), Geist + Geist Mono, full-bleed sections, entrance animations
-5. **Phase 5, GENERATE:** Based on chosen direction, generates:
-   - `DESIGN.md` with 6 sections (typography, color, spacing, motion, components, accessibility)
-   - CSS custom properties
-   - Tailwind config extensions
-   - shadcn/ui theme variables
-6. **Phase 6, AUDIT:** Runs checks for responsive (320px minimum), WCAG 2.2, Nielsen heuristics, AI slop detection
-7. **Phase 7, HANDOFF:** "Design complete. Run `/orchestrate` to implement with oma-frontend."
+1. **Load the skill:** The workflow reads the `oma-design` skill and its execution protocol. The skill owns supplier selection and the project design contract.
+2. **Establish scope and context:** The request is classified as a design-system document. The workflow reads the existing `DESIGN.md`, `.design-context.md` when present, brand material, supported languages, and the affected UI, and looks for existing UI libraries, theme files, and tokens. For an existing product it first establishes Preserve or Overhaul. It asks only about a choice that materially changes the result and that the request and the codebase do not answer; this prompt already states the languages, audience, and accessibility target, so no questionnaire follows.
+3. **Select guidance and gather references:** One external design skill is selected for the operation: Interface Design for a dashboard or SaaS product UI, Taste for other new web art direction, Impeccable for critique or polish of an existing UI. A requested vendor seed, a Stitch operation, asset guidance, or data-grid rules load only when the task calls for them.
+4. **Decide the direction:** The selected guidance is applied to the project evidence. Alternative directions are presented only when an unresolved choice materially affects the result; a direction you already chose is reused. Every direction stays within the brand, CJK font coverage for Korean, the existing implementation stack, responsive behaviour from the smallest supported viewport, and WCAG AA.
+5. **Produce the artifact:** `DESIGN.md` is created or updated with all nine sections, including Section 9 (Agent Prompt Guide). Tokens map semantic roles onto the project's existing token system and theme format; no parallel configuration is introduced. No implementation code is written.
+6. **Verify and hand off:** The applicable checklist items are checked and what was inspected is named. Checks that need a rendered implementation are specified but stay unrun. The report lists the delivered artifacts, the selected route, the verification results, and the remaining limits, then hands implementation to `oma-frontend` (web) or `oma-mobile` (native).
 
 ---
 
@@ -274,17 +251,16 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 | `/plan` | Non-persistent | PM-driven task breakdown, API contracts, and tracked plan artifacts in `docs/plans/work/` (sequential `NNN-name.md`, Status field for lifecycle) | Before any complex multi-agent work; complex features needing tracked progress and decision logs |
 | `/brainstorm` | Non-persistent | Approach exploration with 2-3 proposals and a draft in `docs/decisions/` | Before committing to an implementation approach |
 | `/deepinit` | Non-persistent | Full project initialization (AGENTS.md, ARCHITECTURE.md, docs/) | Setting up oh-my-agent in an existing codebase |
-| `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality | Before merging code, pre-deployment review |
-| `/security` | Non-persistent | Scan application source, agent skills, or MCP components; run scoped web penetration tests against a test deployment; validate findings and configure security gates through `oma-security` | Before a release, or when a change needs a security scan or gate |
+| `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality. Scope comes from the request and defaults to the current changes | Before merging code, pre-deployment review |
+| `/security` | Non-persistent | Scan application source, agent skills, or MCP components, validate findings, and configure security gates through `oma-security`. Penetration tests of a scoped web test deployment run only against a user-supplied, reviewed runtime platform | Before a release, or when a change needs a security scan or gate |
 | `/debug` | Non-persistent | Structured debugging: reproduce, diagnose, fix, regression test, scan | Investigating bugs and errors |
-| `/design` | Non-persistent | 7-phase design workflow producing DESIGN.md with tokens | Building design systems, landing pages, UI redesigns |
+| `/design` | Non-persistent | Scopes a design task, selects the applicable design guidance, and delivers findings, `DESIGN.md`, a redesign direction, or design tokens through `oma-design` | Defining or reviewing a visual system, UI redesigns, design audits |
 | `/scm` | Non-persistent | SCM workflow for Git (branch/merge/conflict/worktree/baseline) plus Conventional Commit generation with auto type/scope detection and feature splitting | After completing code changes or when handling repository configuration management tasks |
-| `/tools` | Non-persistent | MCP tool visibility management (enable/disable groups) | Controlling which MCP tools agents can use |
-| `/stack-set` | Non-persistent | Auto-detect project tech stack and generate backend or mobile (Swift/Flutter/RN) references | Setting up language-specific coding conventions |
+| `/stack-set` | Non-persistent | Auto-detect project tech stack and generate backend, frontend, or mobile (Swift/Kotlin/Flutter/RN) references | Setting up language-specific coding conventions |
 | `/architecture` | Non-persistent | Architecture diagnosis, comparison, and decision records | Reviewing boundaries or choosing an architecture |
 | `/convert` | Non-persistent | Route document conversion to the appropriate skill | Converting HWP/HWPX or PDF source files |
 | `/docs` | Non-persistent | Documentation verification and diff-targeted sync proposals | Checking docs against the current codebase |
-| `/explain` | Non-persistent | Generate and validate an offline HTML code-change explainer | Teaching a diff, PR, branch, or commit range |
+| `/explain` | Non-persistent | Generate an offline HTML explainer for a code change or a topic, validate it with `oma explain validate`, and open it with `oma explain render --open` | Teaching a diff, PR, branch, or commit range, or explaining a topic |
 | `/recap` | Non-persistent | Summarize work across supported AI tool histories | Daily or period retrospectives |
 | `/schedule` | Non-persistent | Register recurring agent jobs | Nightly recaps, scans, or housekeeping |
 | `/video` | Non-persistent | Compose reproducible videos from scripts, narration, and visuals | Shorts, explainers, and demos |
@@ -330,19 +306,19 @@ The installer’s `all` preset follows the live registry. The table groups every
 | **oma-architecture** | System boundaries, tradeoffs, ADRs | Reports in `.agents/results/architecture/`; decision records in `docs/decisions/` |
 | **oma-backend** | APIs, auth, server logic, migrations | Router/service/repository changes and verification |
 | **oma-brainstorm** | Ambiguous ideas and approach comparison | Decision draft in `docs/decisions/` |
-| **oma-coordination** | Manual multi-agent coordination | Step-by-step task and handoff guidance |
+| **oma-coordination** | Shared coordination rules for `/work`, `/orchestrate`, and `/ultrawork`; manual step-by-step coordination | Plan reuse, contract alignment, workspace ownership, and QA handoff guidance |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations, and recovery plan |
 | **oma-debug** | Bug reproduction and root cause analysis | Minimal fix, regression evidence, and pattern scan |
-| **oma-security** | Source, agent-skill, and MCP security scanning; scoped web penetration tests | Validated findings and scan-gate configuration |
-| **oma-design** | Design systems, landing pages, tokens | `DESIGN.md`, tokens, and component guidance |
+| **oma-security** | Source, agent-skill, and MCP security scanning; penetration tests only on a user-supplied, reviewed runtime platform | Validated findings and scan-gate configuration |
+| **oma-design** | Visual systems, `DESIGN.md`, redesign direction, UI design review | Design decision or findings, `DESIGN.md` when the system changes, and an implementation handoff |
 | **oma-dev-workflow** | CI/CD, monorepos, migrations, release automation | Workflow configuration and release checks |
 | **oma-docs** | Broken references and documentation drift | Verify report or diff-targeted sync candidates |
-| **oma-explanation** | Diff, PR, branch, or commit walkthroughs | Offline HTML explainer with Background, Intuition, Code, and Quiz |
+| **oma-explanation** | Diff, PR, branch, or commit walkthroughs; topic explanations | Offline HTML explainer (Background, Intuition, Code, and Quiz for a change) |
 | **oma-frontend** | UI components, forms, pages, Angular or React styling | Frontend changes and relevant checks |
 | **oma-hwp** | HWP/HWPX/HWPML conversion | Markdown with headings, tables, images, and links |
 | **oma-image** | Image generation and visual assets | Reproducible image run with manifest |
 | **oma-market** | Pain points, trends, competitor and discovery research | LAW-compliant research brief with frameworks |
-| **oma-mobile** | Flutter, React Native, and Swift iOS work | Mobile screens, state, platform integration, and tests |
+| **oma-mobile** | Flutter, React Native, Swift iOS, and Kotlin Android work | Mobile screens, state, platform integration, and tests |
 | **oma-observability** | Traces, metrics, logs, profiles, SLOs, incident forensics | Layered observability recommendation or implementation guidance |
 | **oma-orchestration** | Automated parallel agent execution | Coordinated plans, memory updates, and result collection |
 | **oma-pdf** | PDF conversion and OCR-aware extraction | Markdown with reading order, tables, lists, and images |
@@ -352,7 +328,7 @@ The installer’s `all` preset follows the live registry. The table groups every
 | **oma-refactor** | Behavior-preserving restructuring | Refactor changes with characterization and quality evidence |
 | **oma-scholar** | Scholarly search and paper sidecars | Validated `.knows.yaml` sidecar operations |
 | **oma-scm** | Git branching, worktrees, baselines, and commit hygiene | SCM plan or Conventional Commit output |
-| **oma-search** | Trust-scored docs, web, code, and local search | Routed search results with trust labels |
+| **oma-search** | External documentation, web sources, remote code, and known-URL reading | Cited sources with route, provider, evidence, and limitations |
 | **oma-skill-creation** | Creating and auditing OMA skills | SSL-lite skill files and `oma skill audit` results |
 | **oma-slide** | HTML presentation decks and exports | Validated bundled HTML, PDF, PNG, or PPTX |
 | **oma-tf-infra** | Terraform infrastructure, IAM, and policy-as-code | Terraform modules, plans, and controls |
@@ -460,7 +436,7 @@ Common problems are below. For error messages, run-result failures, schedules, a
 | Dashboard shows "No agents detected yet" | Agents have not written to memory yet, or the dashboard watches another directory | Wait for the first progress file; run from the project root or pass `--project-root <path>` |
 | `oma dashboard web` exits with "port 9847 is already in use" | Another process holds the port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA report has 50+ issues | Normal for first review of large codebases | Focus on CRITICAL and HIGH severity first. Document MEDIUM/LOW for future sprints. |
-| Auto-detection triggers wrong workflow | Keyword ambiguity | Use explicit `/command` instead of natural language. Report false triggers for improvement. |
+| A persistent mode starts when you only mentioned its name | The prompt names `orchestrate`, `ultrawork`, `work mode`, or `ralph` outside a question or code block | Say "workflow done" to release it. Report false triggers for improvement. |
 | Persistent workflow will not stop | State file still exists | Say "workflow done" in the chat, or manually delete the state file from `.agents/state/` |
 | Agent blocked on HIGH clarification | Requirements too ambiguous | Provide the specific answers the agent requested, then re-run |
 | MCP tools not working | Serena not configured or not running | Run `oma doctor` to verify MCP config |

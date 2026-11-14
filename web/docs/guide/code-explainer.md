@@ -152,9 +152,9 @@ On any hit, generation stops immediately, only the masked locations are reported
 
 ## Validation checklist
 
-After generation, a grep-based checklist runs against the output file: no external resource-loading references, code-container `pre`/`pre-wrap` compliance, quiz script presence, the `{YYYY-MM-DD}-{slug}.html` filename format (date in the oma-config `timezone`, else the system timezone), and the final-HTML secret scan. On failure, the loop fixes and re-validates up to **3 iterations**, then stops and surfaces the remaining failing items rather than delivering silently.
+After generation, the workflow runs `oma explain validate <file>` and the final-HTML secret scan against the output file. The validator is the primary check: no external resource-loading references, code-container `pre`/`pre-wrap` compliance, quiz script presence, and the `{YYYY-MM-DD}-{slug}.html` filename format (date in the oma-config `timezone`, else the system timezone). The grep commands in the skill's HTML contract are supplemental spot checks, not a substitute. On failure, the loop fixes and re-validates up to **3 iterations**, then stops and surfaces the remaining failing items rather than delivering silently.
 
-This is a v1 constraint: validation is grep/file-based, and it verifies quiz-script *presence* only (not full behavioral correctness). Use a browser (or the chrome-devtools MCP) to manually exercise the quiz when behavioral confidence matters.
+This is a v1 constraint: validation is file-based, and it verifies quiz-script *presence* only (not full behavioral correctness). Use a browser (or the chrome-devtools MCP) to manually exercise the quiz when behavioral confidence matters.
 
 You can validate an existing artifact with the registered CLI command:
 
@@ -185,7 +185,7 @@ The first form checks one HTML file. The directory form checks every report in a
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-The date follows `timezone` in oma-config, falling back to the system timezone when unset. Rerunning the same date + slug overwrites the prior file — preserving an earlier run is your responsibility. After validation passes, the workflow attempts to open the page (warn-only; a headless environment just falls back to reporting the path) and reports a TL;DR plus the file path. `oma explain render --open` opens the page in the browser directly.
+The date follows `timezone` in oma-config, falling back to the system timezone when unset. Rerunning the same date + slug overwrites the prior file — preserving an earlier run is your responsibility. After validation passes, the workflow opens the page by rendering the validated draft with `oma explain render --open` and reports a TL;DR plus the file path. A failed open is a warning, not a failure: a headless environment falls back to reporting the path.
 
 ---
 
@@ -203,8 +203,8 @@ When either `diagram.explain_sidecar: true` is set in `oma-config.yaml` or you a
 | `gh` CLI missing or unauthenticated (PR ref) | Install/auth guidance, plus a local branch-diff alternative |
 | Merge/rebase in progress | Stop — worktree unstable |
 | Non-git directory | Change mode: stop immediately. Topic mode runs without git. |
-| Validation fails after 3 fix loops | Stop and surface the failing checklist items |
-| `open` fails / headless environment | Warn-only — the reported path suffices |
+| Validation fails after 3 fix loops | Stop and surface the failing items |
+| `--open` fails in a headless environment | Warn-only — the reported path suffices |
 
 ---
 

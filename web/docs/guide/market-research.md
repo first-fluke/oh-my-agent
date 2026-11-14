@@ -1,7 +1,7 @@
 ---
 title: "Guide: Market Research (last30days engine)"
 sidebar_label: Market Research
-description: How oh-my-agent's oma-market skill runs community-signal research on the upstream mvanhorn/last30days engine, kept at the latest release automatically — the market config section, oma market resolve / update / run, the detect-trap gate, intent-to-framework mapping, and failure modes.
+description: How oh-my-agent's oma-market skill runs community-signal research on the upstream mvanhorn/last30days engine, installed as a skill through the skills CLI — the market config section, oma market resolve / update / run, the detect-trap gate, intent-to-framework mapping, and failure modes.
 ---
 
 # Market Research
@@ -94,14 +94,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` — refuses keyword-trap and demographic-shopping topics (exit 2) with a reframe suggestion. An empty topic or one over 200 characters exits 4.
 2. `oma market resolve --json` — engine + Python; stops on `ok: false`.
 3. The agent reads the resolved engine's `SKILL.md` top to bottom and follows it: first-run setup wizard, pre-research resolution of handles / subreddits / hashtags (when WebSearch is available), query planning, the precondition gate.
 4. `oma market run "<topic>" <flags> --emit=compact` — identical arguments to the upstream `python3 scripts/last30days.py` call; `--save-dir` is added from `market.save_dir`.
-5. Synthesis follows the upstream OUTPUT CONTRACT (badge first line, ranked evidence clusters, LAWs 1–8), then oma appends framework sections that cite only engine clusters:
+5. Synthesis follows the upstream OUTPUT CONTRACT (badge first line, ranked evidence clusters, LAWs 1–8), then oma adds framework sections, placed between the engine body and the engine footer, that cite only engine clusters:
 
 | Intent | Engine shaping | Frameworks |
 |---|---|---|
@@ -110,7 +110,7 @@ flowchart TD
 | competitor | `"A vs B"` → upstream comparison flow | SWOT + Porter's 5F |
 | discovery | `--discover`, then `--drill` follow-ups | SWOT + PESTEL |
 
-6. Self-check, then write `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
+6. Write `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`, then run the self-check against the written file; fix and re-check before the brief is delivered.
 
 ---
 

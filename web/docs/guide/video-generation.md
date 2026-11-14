@@ -64,8 +64,9 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
 <!-- oma-docs:ignore-start -->
@@ -130,14 +131,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | Narration/caption language tag. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (key-free alignment). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. Selects the visual provider order; see [Visual chain](#visual-chain). |
 | `--voice <profile>` | Narration voice, or `none` (the default; omit it and the video renders silent with estimated caption timing). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano`, or `none`. |
 | `--compositor <c>` | `hyperframes` (default) \| `mpt`. |
 | `--capture <path>` | Your recording for demo mode: `.mp4`, `.mov`, `.webm`, or `.mkv`, stored inside the project. |
 | `--source <k>` | Demo capture source: `file` or `web` (default: `file`). |
 | `--url <url>` | Context URL for `--source web`, stored masked in `manifest.json`. Required with `--source web`; it never starts a capture and does not replace `--capture`. |
-| `--polish` | Overlay the HyperFrames composition on captured footage. |
+| `--polish` | Demo mode: use the capture as the background of the HyperFrames `Demo` composition, where personal information is masked. Without it the raw, unmasked capture is copied to the output MP4 and no composition runs. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | Accepted but not used: oma does not drive a browser or record the screen. |
 | `--output-dir <path>` | Output base directory. Paths outside `$PWD` require `--allow-external-output`. |
 | `--allow-external-output` | Permit output paths outside `$PWD`. |
@@ -161,14 +162,33 @@ Provider stages resolve to a **real branch** and, where the stage supports it, a
 |------------|-------------|----------|
 | script | agent-authored `script.json` passed with `--script <path>` (the `/video` workflow writes it) | deterministic three-scene skeleton from the brief text |
 | voice | `oma-voice` (Voicebox or VoiceStudio, local; chosen by `voice.backend`) with `--voice <profile>` | silent video with estimated timing (`--voice none`, the default) |
-| visual | `oma-image`, `oma-slide`, Pexels stock clips when `PEXELS_API_KEY` is set | placeholder asset |
-| visual: `aigc` | not wired yet; `RUNNINGHUB_API_KEY` enables the provider, which still writes placeholders | placeholder asset |
+| visual | `oma-image` stills by default; an `oma-slide` frame for a scene whose `visual.ref` is an existing deck directory; Pexels stock clips with `--visual stock` when `PEXELS_API_KEY` is set | placeholder asset |
+| visual: `aigc` | selected with `--visual aigc` when `RUNNINGHUB_API_KEY` is set; the live call is not wired yet, so the provider still writes placeholders | placeholder asset |
 | caption | `.srt` and `.vtt` aligned to `timing.json`, in the script's language | same; translation to `--locale` is not wired yet |
 | music | Strudel bed after `oma video doctor --install-strudel` | no music track |
 | capture | a recording you supply with `--capture <file>` | none: without `--capture`, demo mode prints recording instructions and exits 3 |
 | compositor | HyperFrames (managed) or MoneyPrinterTurbo | no compositor fallback; the run fails with diagnostics |
 
-No credential automation: you perform any on-screen login while recording; URLs and query tokens are masked in logs and the manifest.
+### Visual chain
+
+`--visual` and the mode pick the provider order walked for each scene:
+
+| `--visual` | Mode | Order |
+|------------|------|-------|
+| `auto` (default) | `shorts`, `demo` | `providers.visual.order` (default `oma-image`, `pexels`, `pixelle`) |
+| `auto` (default) | `explainer` | `oma-slide`, `oma-image`, then `providers.visual.order` |
+| `generate` | any | `oma-image` |
+| `slide` | any | `oma-slide`, `oma-image` |
+| `stock` | any | `pexels`, `oma-image` |
+| `aigc` | any | `pixelle`, `oma-image` |
+
+- The chain advances only past a provider that is unavailable or throws. `oma-image` and `oma-slide` are always available and write a placeholder instead of throwing, so nothing listed after them is reached. With the default order, `oma-image` therefore takes every scene: Pexels needs `--visual stock` plus `PEXELS_API_KEY`, and Pixelle needs `--visual aigc` plus `RUNNINGHUB_API_KEY`.
+- `oma-slide` exports a frame only for a scene whose `visual.ref` in `script.json` is the path of an existing deck directory; it does not generate a deck. The first exported frame becomes the scene visual, so give each slide scene its own single-slide deck. Every other scene it handles gets a placeholder, which includes each explainer scene without a deck under `--visual auto`. Build the decks with `oma-slide` first, or pass `--visual generate` for `oma-image` stills.
+- A placeholder is recorded in `warnings` as a fallback path for that scene.
+
+### Demo capture and masking
+
+You perform any on-screen login while recording; oma automates no credentials, and URLs and query tokens are masked in logs and the manifest. Personal information in the footage is masked only in the `--polish` composition. A demo run without `--polish` copies the raw capture to the output MP4; deliver that file only after you have inspected the footage and found nothing to mask, otherwise rerun with `--polish`.
 
 Captions render as **static windowed cues** — the single caption line active at the current frame, CSS-wrapped, with no per-word animation.
 

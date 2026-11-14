@@ -56,7 +56,7 @@ After installing, run `oma doctor`. [Your first 5 minutes](#your-first-5-minutes
 | | What it gives you | Try it |
 |---|---|---|
 | **12 specialist roles** | PM, architect, backend, frontend, mobile, database and infra engineers, QA reviewer, debugger, refactorer, docs curator, researcher ([meet them](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **21 workflows** | Slash commands from `/brainstorm` and `/plan` to `/review`, `/debug` and `/scm`. Most also start from a plain request (keyword banks in up to 11 languages) | "review this PR" |
+| **20 workflows** | Slash commands from `/brainstorm` and `/plan` to `/review`, `/debug` and `/scm`. The four multi-agent modes also start when a plain request names them | "ultrawork: add rate limiting" |
 | **33 skills** | Domain know-how that loads only when a task needs it: UI, APIs, schemas, Terraform, CI, security, git, observability | loads by itself, e.g. "add a Terraform S3 bucket" |
 | **Files you can open** | Plans, design docs, API contracts, ADRs, bug notes, per-agent results, security evidence, HTML explainers, recaps | `ls .agents/results` |
 | **Research and content** | Cited search, market research, papers, slide decks, MP4 videos, images, local voice, PDF/HWP to Markdown | `/video`, `/convert` |
@@ -162,11 +162,11 @@ Your own agent leads the team. In `/work`, `/orchestrate` and `/ultrawork` it ha
 
 | Your specialist | Carries | Call them with | Leaves behind |
 |---|---|---|---|
-| **Product manager** (`pm-planner`) | oma-pm | `/plan`, or "plan the payment feature" | A plan JSON and a tracker in `docs/plans/work/` for Medium and Complex work (Simple requests get a direct recommendation) |
+| **Product manager** (`pm-planner`) | oma-pm | `/plan` | A plan JSON and a tracker in `docs/plans/work/` for Medium and Complex work (Simple requests get a direct recommendation) |
 | **Architect** (`architecture-reviewer`) | oma-architecture | `/architecture` | An ADR or recommendation in `.agents/results/architecture/` |
 | **Backend, frontend, mobile, database and infra engineers** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`, `/orchestrate` | Code, tests, and a `result-<agent>` file per task |
-| **QA reviewer** (`qa-reviewer`) | oma-qa | `/review`, or "review this PR" | Findings ranked CRITICAL to LOW, each with file:line and fix code |
-| **Debugger** (`debug-investigator`) | oma-debug | `/debug`, or "fix this bug" | A minimal fix, a regression test, and a bug note in `.agents/results/bugs/` when one is warranted |
+| **QA reviewer** (`qa-reviewer`) | oma-qa | `/review` | Findings ranked CRITICAL to LOW, each with file:line and fix code |
+| **Debugger** (`debug-investigator`) | oma-debug | `/debug` | A minimal fix, a regression test, and a bug note in `.agents/results/bugs/` when one is warranted |
 
 <details>
 <summary>The other three roles, and the skills without a role</summary>
@@ -175,7 +175,7 @@ Your own agent leads the team. In `/work`, `/orchestrate` and `/ultrawork` it ha
 |---|---|---|---|
 | **Refactorer** (`refactor-engineer`) | oma-refactor | `/ultrawork`'s REFINE phase | Behavior-preserving `refactor:` commits and a `result-refactor-<session>.md` report |
 | **Docs curator** (`docs-curator`) | oma-docs | `/docs`, or "verify docs" | `docs/generated/doc-refs.json` and the doc patches you approve |
-| **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | a research request | Cited sources with trust labels; market briefs in `.agents/results/market/` |
+| **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | a research request | Cited sources with their provenance; market briefs in `.agents/results/market/` |
 
 The infra engineer (`tf-infra-engineer`) is told to ask before any destructive or production `apply` or `destroy`. The remaining skills (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, content and media) have no dedicated role. Your agent loads them itself, and for most of them the skill injector suggests the right one from your prompt.
 
@@ -184,7 +184,7 @@ The infra engineer (`tf-infra-engineer`) is told to ask before any destructive o
 ## How the team works together
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -205,14 +205,14 @@ Each step hands a file to the next. `/brainstorm` saves a design that `/plan` re
 | "Don't stop until it's really done" | `/ralph` | Repeats `/ultrawork` with a separately spawned, fresh-context judge until every criterion passes; stops with a partial report when criteria are blocked or after 5 iterations |
 | The team on a timer | `oma schedule create qa-reviewer "review open PRs" --every 2h` | One Markdown log per run in `~/.oma/schedule/runs/<id>/` |
 
-You don't need slash commands. On runtimes with a prompt hook, plain requests (keyword banks in up to 11 languages) can start most workflows: "review this PR" starts `/review`. Describing a whole app ("Build a TODO app with user authentication") suggests `/orchestrate`, and your agent decides whether to run it. Keywords inside code blocks are ignored.
+A slash command starts a workflow. A plain request does not, but on runtimes with a prompt hook it still gets a skill hint: keyword banks in up to 11 languages match the prompt and point your agent at the matching skills ("run a security audit" brings in `oma-qa`). The hint is advisory, and keywords inside code blocks are ignored.
 
-`/orchestrate`, `/work`, `/ultrawork` and `/ralph` are **persistent** when you invoke them by name, as a slash command or in plain text ("ultrawork: add rate limiting"). The agent is then sent back to work when it tries to stop early (up to 5 times or 2 hours) until you say **"workflow done"**. A loosely matching request only suggests them.
+`/orchestrate`, `/work`, `/ultrawork` and `/ralph` are **persistent** when you invoke them by name, as a slash command or in plain text ("ultrawork: add rate limiting"). The agent is then sent back to work when it tries to stop early (up to 5 times or 2 hours) until you say **"workflow done"**. These four are the only workflows a plain sentence can start, and only by name.
 
 **Measured, with caveats.** In the [benchmark](./benchmarks/README.md) (one prompt, Claude Code with five different add-on setups including plain, `claude-opus-4-6`, one build each), oma scored 80.6 against 70.7 for plain Claude Code, at 1.7x the cost ($4.04 vs $2.37) and 1.8x the time.
 
 <details>
-<summary>All 21 workflows</summary>
+<summary>All 20 workflows</summary>
 
 | Command | What it does |
 |---------|--------------|
@@ -221,7 +221,7 @@ You don't need slash commands. On runtimes with a prompt hook, plain requests (k
 | `/convert` | Converts PDF/HWP to Markdown, or transcodes images, video, and audio with ffmpeg |
 | `/debug` | Reproduces a bug, fixes the root cause, writes a regression test, and scans for similar patterns |
 | `/deepinit` | Maps an existing codebase into AGENTS.md, ARCHITECTURE.md, and a docs/ knowledge base |
-| `/design` | Builds a design system, DESIGN.md, and tokens with accessibility checks |
+| `/design` | Scopes a design task and delivers findings, DESIGN.md, or tokens through oma-design |
 | `/docs` | Finds broken doc references and proposes patches for docs a diff touched |
 | `/explain` | Turns a diff, PR, branch, or topic into a self-contained interactive HTML explainer |
 | `/orchestrate` | Runs agents in parallel, coordinates them through file state, and verifies the result (persistent) |
@@ -233,12 +233,11 @@ You don't need slash commands. On runtimes with a prompt hook, plain requests (k
 | `/scm` | Handles branches, merges, conflicts, worktrees, and Conventional Commits |
 | `/security` | Scans source, agent skills, and MCP components, validates findings, and sets up CI gates |
 | `/stack-set` | Detects your tech stack and generates stack-specific references for domain skills |
-| `/tools` | Lists, enables, and disables MCP tools in plain language |
 | `/ultrawork` | Five phases (PLAN, IMPL, VERIFY, REFINE, SHIP), each review in a fresh reviewer session (persistent) |
 | `/video` | Turns a brief into a finished MP4 through a key-optional pipeline |
 | `/work` | Coordinates several agents on a multi-domain project with PM planning and QA review (persistent) |
 
-`oma verify triggers` evaluates the detector against a labeled English and Korean corpus of 212 prompts. CI fails above 10% false fires or 20% missed fires. Last measured: **0% missed-fire, 5.3% false-fire**. Full reference: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
+`oma verify triggers` evaluates the detector against a labeled English and Korean corpus of 212 prompts. CI fails above 10% false fires or 20% missed fires. Last measured: **0% missed-fire, 0% false-fire**. Full reference: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
 
@@ -249,10 +248,10 @@ You don't need slash commands. On runtimes with a prompt hook, plain requests (k
 
 | Command | What it does | Writes |
 |---|---|---|
-| `/brainstorm` | Asks one clarifying question at a time and proposes 2-3 approaches that work differently, then hands off to `/plan`. Writes no code | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | Asks one clarifying question at a time and proposes 2-3 approaches that work differently, then hands off to `/plan`. Writes no code | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | Sizes the work as Simple, Medium or Complex; for Medium and Complex work, splits it into tasks, each with an agent, dependencies, acceptance criteria and a check command, and defines API contracts when the work crosses a boundary | `.agents/results/plan-<sid>.json`, `docs/plans/work/<NNN>-<name>.md`, contracts in `.agents/results/api-contracts/` when needed |
 | `/architecture` | Reads earlier decisions first, compares at least 2 options, and marks replaced ADRs as superseded | An ADR or recommendation in `.agents/results/architecture/` |
-| `/design` | Proposes 2-3 directions, then writes `DESIGN.md` with tokens and audits responsive layout and accessibility | `DESIGN.md`, CSS/Tailwind/shadcn tokens |
+| `/design` | Establishes scope and context, selects the design guidance for the task, then delivers audit findings, `DESIGN.md`, or tokens mapped onto the project's existing token system | Findings, `DESIGN.md`, design tokens |
 
 </details>
 
@@ -279,7 +278,7 @@ You don't need slash commands. On runtimes with a prompt hook, plain requests (k
 | Command or skill | What it does | Writes |
 |---|---|---|
 | `/review` | A dependency audit, then OWASP Top 10, performance, WCAG 2.2 AA and code quality. Every finding gets file:line and fix code | The report in chat plus a memory record; no report file |
-| `/security` | Scans your source, agent skills and MCP servers (Deepsec, Cisco Skill and MCP Scanner) and, given a scoped test deployment, runs ARTEX pen tests. The workflow requires an engine that failed to run to be reported as failed, not as clean | `.agents/results/security/<run-id>/` |
+| `/security` | Scans your source, agent skills and MCP servers (Deepsec, Cisco Skill and MCP Scanner) and validates the findings. Penetration tests run only on explicit request, against a runtime platform you supply and have reviewed. The workflow requires an engine that failed to run to be reported as failed, not as clean | `.agents/results/security/<run-id>/` |
 | `/debug` | Reproduces the failure, fixes the root cause with a minimal change, adds a regression test, and scans for the same pattern elsewhere | The fix and test; a bug note in `.agents/results/bugs/` when one is warranted |
 | oma-refactor | Changes structure without changing behavior: characterization tests first, then refactor-only commits | `.agents/results/refactor/` |
 | `/scm` | Conventional Commits split by logical change; branches, merges, rebases and worktrees | Commits and branches |
@@ -304,7 +303,7 @@ You don't need slash commands. On runtimes with a prompt hook, plain requests (k
 
 | Skill | What it does | Writes |
 |---|---|---|
-| oma-search | Docs, web and code search, with a trust label on each source | Cited results |
+| oma-search | Docs, web and code search, noting what was read versus only excerpted | Cited results |
 | oma-market | Pain points, trends and competitors from community signals, framed with SWOT, Porter's 5 Forces and PESTEL | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | Paper search that reads a compact claims file (Knows format, about 700 tokens) instead of the full PDF (about 10K tokens) | `<paper>.knows.yaml` |
 | oma-academic-writing | Drafts and audits academic prose against a rubric | Your file |
@@ -331,7 +330,7 @@ These pipelines report a missing source or vendor key instead of silently return
 
 | Hook | What it does | Off switch / limit |
 |---|---|---|
-| Keyword start | Starts the matching workflow from a plain request | Questions, pasted text and code blocks are skipped |
+| Keyword start | Starts `/orchestrate`, `/work`, `/ultrawork` or `/ralph` when a plain request names it | Questions, pasted text and code blocks are skipped |
 | Skill injector | Points your agent at the right skills for the prompt | Paused while a persistent workflow is active |
 | Stop gate | Sends a persistent workflow back to work; with `oma goal set --gate test`, the stop is allowed when that script exits 0 within 25 s | Say "workflow done"; it also releases after 5 blocks or 2 hours |
 | Refactor guard | At stop, flags edited files over 500 lines for `refactor-engineer` | Opt-in: `refactor_guard.enabled` |
@@ -369,7 +368,7 @@ These pipelines report a missing source or vendor key instead of silently return
 
 Serena supplies LSP-based code navigation and diagnostics, including native-edit feedback where supported. Provider selection is independent of the agent runtime; capabilities vary by provider and host.
 
-Agents coordinate through plain files in `.agents/state/`, with no outside service. `/tools` turns MCP tools on or off in plain language. Details: [Capability Providers](./docs/capability-providers.md).
+Agents coordinate through plain files in `.agents/state/`, with no outside service. Details: [Capability Providers](./docs/capability-providers.md).
 
 </details>
 
@@ -421,8 +420,8 @@ Agents coordinate through plain files in `.agents/state/`, with no outside servi
 | **oma-refactor** | Refactors without changing behavior, using hotspot targeting, characterization tests, and refactor-only commits. |
 | **oma-scholar** | Searches academic literature and builds Knows paper sidecars for claims, evidence, and peer review. |
 | **oma-scm** | Manages branches, merges, worktrees, and Conventional Commits. |
-| **oma-search** | Routes each query to the best source and scores how much you can trust the result. |
-| **oma-security** | Scans source, agent skills, and MCP components; tests deployed web apps and validates findings. |
+| **oma-search** | Routes each query to the best source and reports where each result came from and whether it was actually read. |
+| **oma-security** | Scans source, agent skills, and MCP components and validates findings; penetration tests run only on a user-supplied, reviewed platform. |
 | **oma-skill-creation** | Writes and audits new OMA skills. |
 | **oma-slide** | Generates HTML presentation decks and exports them to PDF/PNG/PPTX. |
 | **oma-tf-infra** | Provisions multi-cloud infrastructure with Terraform. |

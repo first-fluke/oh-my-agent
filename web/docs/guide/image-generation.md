@@ -259,7 +259,7 @@ To see exactly what was sent to the provider, check the `prompt` field in `manif
 
 ## Configuration
 
-- **Project config:** the `image:` section of `.agents/oma-config.yaml`. The legacy `config/image-config.yaml` is no longer read.
+- **Project config:** the `image:` section of `.agents/oma-config.yaml`. Shipped defaults live in the CLI, so write only the keys you change.
 - **Environment variables:**
   - `OMA_IMAGE_DEFAULT_VENDOR`: overrides the configured default vendor (`auto`). The `--vendor` flag itself defaults to `auto`, so pass `--vendor` per command when you need a specific vendor.
   - `OMA_IMAGE_DEFAULT_OUT`: overrides the default output directory

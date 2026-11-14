@@ -55,8 +55,8 @@ The installer asks **What type of project?** and offers a [skill preset](../gett
 
 If you selected a preset that includes the backend skill, you are asked to choose a language variant:
 
-- **Python**: FastAPI/SQLAlchemy (default)
-- **Node.js**: NestJS/Hono + Prisma/Drizzle
+- **Python**: Litestar/SQLAlchemy (default)
+- **Node.js**: NestJS + Prisma
 - **Rust**: Axum/Actix-web
 - **Other / Auto-detect**: Configure later with `/stack-set`
 
@@ -396,11 +396,11 @@ The installer downloads the latest release tarball from the oh-my-agent GitHub r
 
 ### 6. Config installation
 
-`installConfigs()` copies auxiliary files to `.agents/config/`, creates `.agents/mcp.json`, and bootstraps the user-owned `.agents/oma-config.yaml` or `.agents/oma-config.cue`. Existing user files are preserved unless `--force` is used; `oma update` also keeps the user config and appends new top-level template keys when needed.
+`installConfigs()` creates `.agents/mcp.json` and bootstraps the user-owned `.agents/oma-config.yaml` or `.agents/oma-config.cue`. Existing user files are preserved unless `--force` is used; `oma update` also keeps the user config and appends new top-level template keys when needed.
 
 ### 7. Skill installation
 
-For each selected skill, `installSkill()` copies the skill directory to `.agents/skills/{skill-name}/`. If a variant was selected (e.g., Python for backend), it also sets up the `stack/` directory with language-specific resources.
+For each selected skill, `installSkill()` copies the skill directory to `.agents/skills/{skill-name}/`. If a variant was selected (e.g., Python for backend), it also copies that variant into the skill's `stack/` directory and removes the redundant `variants/` directory. A skill installed without a variant, such as oma-mobile, keeps its `variants/` directory, which its SKILL.md reads directly.
 
 ### 8. Vendor adaptations
 

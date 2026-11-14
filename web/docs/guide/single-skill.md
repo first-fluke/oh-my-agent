@@ -6,13 +6,13 @@ description: Detailed guide for single-domain tasks in oh-my-agent, covering whe
 
 # Single Skill Execution
 
-Single-skill execution assigns one focused task in one domain to one agent. It avoids multi-agent coordination. A host or selected workflow may route a natural-language prompt to the skill; the hook system detects workflows, and routing depends on the selected runtime.
+Single-skill execution assigns one focused task in one domain to one agent. It avoids multi-agent coordination. A host or selected workflow may route a natural-language prompt to the skill; the hook system adds skill hints from keywords, and routing depends on the selected runtime.
 
 ## Quick path
 
 1. Run `oma doctor` once to confirm the selected host integration. Optional provider warnings do not block a task that does not use those providers.
 2. Describe one self-contained change with a clear **Goal**, **Context**, **Constraints**, and **Done When** condition.
-3. Expect the selected skill to inspect the repository, state its scope when the active execution contract requires a `CHARTER_CHECK`, and report which checks actually ran.
+3. Expect the selected skill to inspect the repository, state any assumption that affects the result, and report which checks actually ran.
 4. If the task grows across API, UI, database, or mobile boundaries, stop the single-skill run and switch to `/work` or `/orchestrate`.
 
 For stalled managed runs, use `oma agent status <session-id> [agent-id]`, then inspect receipts in `.agents/state/agent-runs/` and the injected claim path before retrying. See [Important Defaults](../getting-started/important-defaults.md) for provider and recovery behavior.
@@ -112,17 +112,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **Resources loaded:**
    - `execution-protocol.md` (always)
    - `snippets.md` (form and Zod patterns, plus existing component patterns when the skill supplies them)
-4. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **Implementation:**
+4. **Implementation:**
    - Creates `src/features/auth/components/login-form.tsx` (Client Component with `"use client"`)
    - Creates `src/features/auth/utils/login-schema.ts` (Zod schema)
    - Creates `src/features/auth/components/skeleton/login-form-skeleton.tsx`
@@ -130,7 +121,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Form handled by `@tanstack/react-form` with Zod validation
    - Absolute imports with `@/`
    - One component per file
-6. **Verification:**
+5. **Verification:**
    - Checklist: ARIA labels present, semantic headings, keyboard navigation works
    - Mobile: renders correctly at 320px viewport
    - Performance: no CLS
@@ -163,16 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - matching `stack/snippets.md` or `variants/{node,python,rust}/snippets.md` if available
    - matching `stack/tech-stack.md` or variant tech-stack references if available
 <!-- oma-docs:ignore-end -->
-5. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **Implementation:**
+5. **Implementation:**
    - Repository: `TaskRepository.find_by_user(user_id, cursor, status, limit)` with parameterized query
    - Service: `TaskService.get_user_tasks(user_id, cursor, status, limit)` (business logic wrapper)
    - Router: `GET /api/tasks` with JWT auth middleware, input validation, response formatting
@@ -200,19 +182,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **Difficulty assessment:** Medium (settings screen + state management + offline handling)
 3. **Resources loaded:**
    - `execution-protocol.md`
-   - `snippets.md` (screen template, Riverpod provider pattern)
-   - `screen-template.dart`
-4. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (screen, Riverpod provider, and data-layer patterns), or `stack/snippets.md` when `/stack-set` has generated it
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **Implementation:**
+4. **Implementation:**
    - Screen: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget with Riverpod)
    - Providers: `lib/features/settings/providers/settings_provider.dart`
    - Repository: `lib/features/settings/data/settings_repository.dart`
@@ -245,17 +218,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (deliverable structure)
    - `examples.md`
    - `anti-patterns.md` (review during optimization)
-4. **Execution contract (when enabled) may emit `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **Workflow:** Explore (entities, relationships, access patterns, volume estimates) -> Design (external/conceptual/internal schemas, constraints, lifecycle fields) -> Optimize (indexes for query patterns, partitioning strategy, backup plan, anti-pattern review)
-6. **Deliverables:**
+4. **Workflow:** Explore (entities, relationships, access patterns, volume estimates) -> Design (external/conceptual/internal schemas, constraints, lifecycle fields) -> Optimize (indexes for query patterns, partitioning strategy, backup plan, anti-pattern review)
+5. **Deliverables:**
    - External schema summary (views per role: admin, project manager, team member)
    - Conceptual schema with ERD (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership, etc.)
    - Internal schema with physical DDL, indexes, partitioning
@@ -320,7 +284,7 @@ Watch for these signals that indicate you should switch from single-skill to mul
 | Signal | What It Means | Action |
 |--------|--------------|--------|
 | Agent says "this requires a backend change" | Task has cross-domain dependencies | Switch to `/work` and add backend agent |
-| Agent's CHARTER_CHECK shows "Must NOT do" items that are actually needed | Scope exceeds one domain | Plan the full feature with `/plan` first |
+| Agent reports work it left out because it falls outside the skill's domain | Scope exceeds one domain | Plan the full feature with `/plan` first |
 | Fix cascades into 3+ files across different layers | One fix affects multiple domains | Use `/debug` with broader scope, or `/work` |
 | Agent discovers an API contract mismatch | Frontend/backend disagreement | Run `/plan` to define contracts, then re-spawn both agents |
 | Quality gate fails on integration points | Components do not connect properly | Run `/review`, or add a QA pass: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

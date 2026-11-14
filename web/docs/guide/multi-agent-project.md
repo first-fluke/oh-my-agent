@@ -88,10 +88,10 @@ You have two execution paths:
 
 1. Loads `.agents/results/plan-{sessionId}.json`, creating a plan inline through `/plan` when no usable plan exists.
 2. Initializes a session with ID format `session-YYYYMMDD-HHMMSS`.
-3. Creates `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the memory directory.
-4. Spawns agents per priority tier, each getting: task description, API contracts, and context.
-5. Monitors progress by polling `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files.
-6. Verifies each completed agent via `verify.sh`. PASS (exit 0) accepts; FAIL (exit 1) re-spawns with error context (max 2 retries); persistent failure triggers the Exploration Loop.
+3. Selects the skill references each task needs and creates `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the memory directory. The selected references are recorded there as coordinator notes; the launcher does not enforce them.
+4. Spawns agents per priority tier, each getting: task description, API contracts, context, and its selected references.
+5. Monitors progress through host completion notifications, or by polling changed `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files with bounded backoff.
+6. Verifies each completed agent: a mechanical self-check, then `verify.sh` for backend, frontend, mobile, qa, debug, and pm agents (other types record `SKIP`), then a QA cross-review. PASS (exit 0) continues; FAIL (exit 1) re-spawns with error context within the shared recovery budget (default 3 attempts per task, including the original). Retries and exploration hypotheses draw on the same budget; when it is exhausted the task is reported `partial` or `failed`.
 7. Collects all `result-{agentId}-{taskId}-{runId}-{sessionId}.md` files and compiles a final report.
 
 ### Step 3: agent spawn for CLI-Level agent management
@@ -134,7 +134,7 @@ See [Per-Agent Models](./per-agent-models.md) for configuration details.
 
 The review workflow runs a full QA pipeline:
 
-1. **Identify scope**: Asks what to review (specific files, feature branch, or entire project).
+1. **Identify scope**: Takes the scope from the request (specific files, a feature branch, a PR, or the entire project). With no scope given, it reviews the current uncommitted and branch changes and states that assumption; it asks only when there is nothing to scope from.
 2. **Automated security checks**: Runs `npm audit`, `bandit`, or equivalent.
 3. **OWASP Top 10 manual review**: Injection, broken auth, sensitive data, access control, misconfig, insecure deserialization, vulnerable components, insufficient logging.
 4. **Performance analysis**: N+1 queries, missing indexes, unbounded pagination, memory leaks, unnecessary re-renders, bundle sizes.

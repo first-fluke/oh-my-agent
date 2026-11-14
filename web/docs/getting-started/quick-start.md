@@ -89,7 +89,7 @@ Compare the reported branch and changes with the actual Git output. The agent
 should report which commands ran and their exit statuses. This read-only task
 needs no code test or build.
 
-When the keyword hook is enabled for the selected host, it can activate a matching workflow. Skill routing is performed by the host or the selected workflow, so an arbitrary host prompt does not guarantee a hook, a particular skill, or a `CHARTER_CHECK`. The execution contract should still inspect repository conventions, respect the requested read-only scope, and report the observed checks. The exact files and command depend on the project.
+A plain prompt starts no workflow; where the prompt hook is enabled it adds an advisory skill hint. Skill routing is performed by the host or the selected workflow, so an arbitrary host prompt does not guarantee a hook or a particular skill. The execution contract should still inspect repository conventions, respect the requested read-only scope, and report the observed checks. The exact files and command depend on the project.
 
 For a task that crosses API and UI boundaries, select `/work` or `/orchestrate` explicitly. For a single domain, continue with [Single Skill Execution](../guide/single-skill.md). The [Usage Guide](../guide/usage.md) contains longer examples.
 

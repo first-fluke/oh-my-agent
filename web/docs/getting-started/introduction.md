@@ -35,13 +35,13 @@ OMA assigns domains to skills and routes task work to agents:
 
 ---
 
-## The current catalog: 33 skills, 12 definitions, 21 workflows
+## The current catalog: 33 skills, 12 definitions, 20 workflows
 
 The catalog separates three things that are easy to confuse:
 
 - **[Skills](./glossary.md#skill)** are the 33 domain knowledge packages under `.agents/skills/*/SKILL.md`. They route from natural-language intent and load their resources progressively.
 - **[Agent definitions](./glossary.md#agent-definition)** are the 12 files under `.agents/agents/`. They provide vendor-native subagent personas and reference one or more skills.
-- **[Workflows](./glossary.md#workflow)** are the 21 process definitions under `.agents/workflows/`. Four are [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork`, and `ralph`); the rest run to a report and do not keep persistent mode active.
+- **[Workflows](./glossary.md#workflow)** are the 20 process definitions under `.agents/workflows/`. Four are [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork`, and `ralph`); the rest run to a report and do not keep persistent mode active.
 
 The sections below preserve the detailed skill catalog. When a name or description changes, the live `SKILL.md` frontmatter is authoritative.
 
@@ -51,56 +51,56 @@ The 12 checked-in definition files cover the 13 runtime roles through aliases: `
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-brainstorm** | Design-first ideation | Explores user intent, proposes 2-3 approaches with trade-off analysis, produces design documents before any code is written. 6-phase workflow: Context, Questions, Approaches, Design, Documentation, Transition to `/plan`. |
+| **oma-brainstorm** | Design-first ideation | Explores user intent, proposes 2-3 approaches with trade-off analysis, produces design documents before any code is written. The `/brainstorm` workflow runs 7 steps: Context, Questions, Approaches, Design, Blind Review, Documentation (`docs/decisions/`), Transition to `/plan`. |
 | **oma-architecture** | System architecture specialist | Module/service/ownership boundaries, tradeoff analysis, stakeholder synthesis. Methodologies: diagnostic routing, design-twice comparison, ATAM-style risk analysis, CBAM-style prioritization, ADR-style decision records. Cost-aware by default. |
-| **oma-pm** | Product manager | Decomposes requirements into prioritized tasks with dependencies. Defines API contracts. Outputs `.agents/results/plan-{sessionId}.json` and a session-scoped task board. Supports ISO 21500 concepts, ISO 31000 risk framing, ISO 38500 governance. |
+| **oma-pm** | Product manager | Decomposes requirements into prioritized tasks with dependencies. Defines API contracts. Outputs `.agents/results/plan-{sessionId}.json` as the orchestrator handoff; the orchestrator creates and owns the task board. Supports ISO 21500 concepts, ISO 31000 risk framing, ISO 38500 governance. |
 
 ### Implementation
 
 | Agent | Role | Tech Stack & Resources |
 |-------|------|----------------------|
 | **oma-frontend** | UI/UX specialist | React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui, FSD-lite architecture. Libraries: luxon (dates), ahooks or @mantine/hooks (hooks), es-toolkit (utils), Jotai/Zustand (client state), TanStack Query via orval-generated hooks (server state), @tanstack/react-form + Zod (forms), better-auth (auth), nuqs (URL state). Resources: `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `snippets.md`, `angular-rules.md`, `error-playbook.md`, `checklist.md`. |
-| **oma-backend** | API & server specialist | Clean architecture (Router-Service-Repository-Models). Stack-agnostic; detects Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET from project manifests. JWT + Argon2id for auth. Resources: `execution-protocol.md`, `orm-reference.md`, `checklist.md`, `error-playbook.md`. Supports `/stack-set` for generating language-specific `stack/` references. |
-| **oma-mobile** | Cross-platform mobile | Flutter, Dart, Riverpod/Bloc for state management, Dio with interceptors for API calls, GoRouter for navigation. Clean architecture: domain-data-presentation. Material Design 3 (Android) + iOS HIG. 60fps target. Also supports Swift native iOS: SwiftUI + `@Observable` (iOS 17+), Apple `swift-openapi-generator` for API clients, `App/Core/Features/Shared` project layout. Resources: `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md`, `error-playbook.md`; platform-specific variants are materialized by `/stack-set`. |
-| **oma-db** | Database architecture | SQL, NoSQL, and vector database modeling. Schema design (3NF default), normalization, indexing, transactions, capacity planning, backup strategy. Supports ISO 27001/27002/22301-aware design. Resources: `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`. |
+| **oma-backend** | API & server specialist | Clean architecture (Router-Service-Repository-Models). Stack-agnostic; detects Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET from project manifests. JWT + Argon2id for auth. Shipped presets: Python (Litestar with SQLAlchemy 2 (async) through Advanced Alchemy, msgspec models, built-in JWT auth), Node.js (NestJS + Prisma, tested with Vitest), and Rust (Axum + SQLx); a project installed with the earlier FastAPI preset keeps FastAPI. Resources: `execution-protocol.md`, `orm-reference.md`, `checklist.md`, `error-playbook.md`, plus the stack reference (`stack/` when present, otherwise the matching `variants/<language>/`). Supports `/stack-set` for generating language-specific `stack/` references. |
+| **oma-mobile** | Cross-platform mobile | Flutter, Dart, Riverpod/Bloc for state management, Dio with interceptors for API calls, GoRouter for navigation. Clean architecture: domain-data-presentation. Material Design 3 (Android) + iOS HIG. 60fps target. Also supports React Native, Swift native iOS (SwiftUI + `@Observable` on iOS 17+, Apple `swift-openapi-generator` for API clients, `App/Core/Features/Shared` project layout), and Kotlin native Android (Jetpack Compose, Hilt, generated `*Api` clients over Ktor). Resources: `execution-protocol.md`, `tech-stack.md`, `checklist.md`, `error-playbook.md`; each platform's `stack.yaml`, `tech-stack.md`, and `snippets.md` (screen, state, data-layer, and API patterns) live in `variants/<platform>/`. The skill reads `stack/` when `/stack-set` has generated it and the matching variant otherwise. |
+| **oma-db** | Database architecture | SQL, NoSQL, and vector database modeling. Schema design (3NF default), normalization, indexing, transactions, capacity planning, backup strategy. Supports ISO 27001/27002/22301-aware design. Resources: `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `migration-playbook.md`, `query-tuning.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`, `examples.md`. |
 
 ### Design
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-design** | Design system specialist | Creates DESIGN.md with tokens, typography, color systems, motion design (motion/react, GSAP, Three.js), responsive-first layouts, WCAG 2.2 compliance. 7-phase workflow: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. Enforces anti-patterns (no "AI slop"). Optional Stitch MCP integration. Resources: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, plus `reference/` directory with typography, color, spatial, motion, responsive, component, accessibility, and shader guides. |
+| **oma-design** | Visual system and design direction | Defines or reviews a visual system, `DESIGN.md`, or a redesign direction: typography, layout, color, motion, and interaction decisions. Resolves the project's design intent and loads one external design skill per operation (Interface Design for product interfaces, Impeccable for critique, audit, and polish, Taste for other web art direction); documentation-only and token-contract tasks stay local. Keeps the existing brand, stack, and CJK font coverage, with WCAG AA as the default accessibility target. Asks only about a material unresolved choice and presents alternative directions only when one is open. Writes no implementation code; hands off to `oma-frontend` or `oma-mobile`. Optional Stitch and getdesign inputs. Resources: `execution-protocol.md`, `external-design-skills.md`, `product-interface-review.md`, `redesign-protocol.md`, `design-md-spec.md`, `design-tokens.md`, `data-grid.md`, `asset-strategy.md`, `getdesign-fetcher.md`, `stitch-integration.md`, `checklist.md`, `error-playbook.md`. |
 
 ### Infrastructure, DevOps, and observability
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
 | **oma-tf-infra** | Infrastructure-as-code | Multi-cloud Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC-first auth, least privilege IAM, policy-as-code (OPA/Sentinel), cost optimization. Supports ISO/IEC 42001 AI controls, ISO 22301 continuity, ISO/IEC/IEEE 42010 architecture documentation. Resources: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
-| **oma-dev-workflow** | Monorepo task automation | mise task runner, CI/CD pipelines, database migrations, release coordination, git hooks, pre-commit validation. Resources: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
-| **oma-observability** | Intent-based observability router | MELT+P signal coverage (metrics/logs/traces/profiles/cost/audit/privacy), transport tuning (UDP/MTU, OTLP gRPC vs HTTP, Collector topology, sampling), W3C Trace Context propagation, SLO management and burn-rate alerts, incident forensics (6-dimension localization), meta-observability (self-health, clock sync, cardinality, retention). CNCF-first; Fluentd deprecated (use Fluent Bit or OTel Collector). |
+| **oma-dev-workflow** | Monorepo task automation | mise task runner, CI/CD pipelines, database migrations, release coordination, git hooks, pre-commit validation. Also configures language-specific lint, format, and typecheck tools and commitlint. Resources: `mise-basics.md`, `tooling-profiles.md`, `validation-pipeline.md`, `example-task-wiring.md` (migrations, API client generation, i18n builds), `release-coordination.md`, `troubleshooting.md`. |
+| **oma-observability** | Intent-based observability router | MELT+P signal coverage (metrics/logs/traces/profiles/cost/audit/privacy), transport tuning (UDP/MTU, OTLP gRPC vs HTTP, Collector topology, sampling), W3C Trace Context propagation, SLO management and burn-rate alerts, incident forensics (6-dimension localization), meta-observability (self-health, clock sync, cardinality, retention). Resources load on their triggers; Fluentd, Fluent Bit, or the OTel Collector is selected from workload, plugin, and operational requirements. |
 
 ### Quality and debugging
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-qa** | Quality assurance | Security audit (OWASP Top 10), performance analysis, accessibility (WCAG 2.2 AA), code quality review. Severity: CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation code. Supports ISO/IEC 25010 quality characteristics and ISO/IEC 29119 test alignment. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `verify-ship-protocol.md`, `error-playbook.md`. |
-| **oma-debug** | Bug diagnosis and fixing | Reproduce-first methodology. Root cause analysis, minimal fixes, mandatory regression tests, similar pattern scanning. Uses code-intelligence MCP tools (Gortex or Serena) for symbol tracing. Resources: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
+| **oma-qa** | Quality assurance | Security audit (OWASP Top 10), performance analysis, accessibility (WCAG 2.2 AA), code quality review. Severity: CRITICAL/HIGH/MEDIUM/LOW with file:line and remediation code. Supports ISO/IEC 25010 quality characteristics and ISO/IEC 29119 test alignment. Scanner-driven scans and penetration tests belong to `oma-security`. Resources: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `error-playbook.md`. |
+| **oma-debug** | Bug diagnosis and fixing | Reproduce-first methodology. Root cause analysis, minimal fixes, mandatory regression tests, similar pattern scanning. Uses code-intelligence MCP tools (Gortex or Serena) for symbol tracing. Resources: `execution-protocol.md`, `checklist.md`, `debugging-checklist.md` (condensed bug report, tools reference, handoff routing), `bug-report-template.md` (Complex or CRITICAL/HIGH bugs), `error-playbook.md`. |
 | **oma-refactor** | Behavior-preserving refactoring | Safe incremental restructuring gated by characterization-test safety nets. Hotspot targeting (complexity × churn), code-smell/SATD selection, Mikado-method revert on failure, expand-contract for stateful change, refactor-only commits (no behavior change mixed in). Engine-first transforms (IDE rename, jscodeshift/ast-grep), metrics via `uvx lizard` / `uvx radon`. Readability is the success criterion; metrics are proxies. |
 
 ### Localization, coordination, and git
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-translation** | Context-aware translation | Six-scene flow: Prepare, Acquire, Reason, Act, Verify, Finalize. The translation method has four steps: read meaning and protected syntax, choose register, reconstruct in the target language, and preserve author style where it belongs. Per-target language profiles (`resources/lang/{code}.md`) carry register and typography rules. Resources: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestration** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates through durable session, task-board, progress, and result files, and monitors verification loops. Configurable: MAX_PARALLEL (default 3), MAX_RETRIES (default 2), POLL_INTERVAL (default 30s). Includes agent-to-agent review loop and optional session evidence. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-translation** | Context-aware translation | The translation method has four steps: read meaning and protected syntax, choose register, reconstruct in the target language, and preserve author style where it belongs. Per-target language profiles (`resources/lang/{code}.md`) carry register and typography rules. Resources: `translation-rubric.md`, `anti-ai-patterns.md`, `style-skills.md`, `lang/{ko,ja,zh,en}.md`. |
+| **oma-orchestration** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates through durable session, task-board, progress, and result files, and monitors verification loops. Defaults: MAX_PARALLEL 3 and MAX_RECOVERY_ATTEMPTS 3 (retries and exploration hypotheses per task, including the original attempt); progress polling uses bounded backoff and only when completion notifications are unavailable. Selects per-task skill references and records them as coordinator notes. Includes agent-to-agent review loop and optional session evidence. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Handles branching strategies, merge/rebase/conflict workflows, worktrees, baselines, and release-state tracking. Also guides Conventional Commit messages with safe staging; co-author trailers come from effective `scm.co_author` configuration when enabled. |
-| **oma-coordination** | Manual multi-agent workflow guide | Step-by-step coordination of PM, Frontend, Backend, Mobile, and QA agents via CLI `oma agent spawn`. Starts with PM decomposition, spawns same-priority tasks in separate workspaces, monitors run-scoped progress/result files, aligns API/data contracts before frontend/mobile work, and ends with QA review. The manual counterpart to `oma-orchestration`. |
+| **oma-coordination** | Shared coordination rules | Coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the `/work`, `/orchestrate`, and `/ultrawork` workflows, and also usable for manual step-by-step coordination with `oma agent spawn`: reuse or create the plan, spawn same-priority tasks in separate workspaces, monitor run-scoped progress/result files, align API/data contracts before frontend/mobile work, and end with QA review. `oma-orchestration` owns automated execution. |
 
 ### Search, retrospective, and document processing
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-search** | Intent-based search router | Routes queries to Context7 (docs), native web search, `gh`/`glab` (code), local code intelligence (Gortex or Serena). Domain trust scoring on all non-local results. Fail-forward routing (docs→web→fetch). Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | Cross-tool work retrospective | Analyzes conversation histories from Grok, Claude, Codex, Gemini, Qwen, Cursor, and Antigravity. Resolves natural-language date/window input, groups by tool+session, extracts themes, renders daily/period summaries, and records when the CLI caps a requested window at 30 days. |
+| **oma-search** | Search router for external sources | Selects one primary route per request: `docs` (Context7, official-site discovery when needed), `web` (the configured `native`, `brave`, or `exa` provider), `code` (`oma search code` over `gh`/`glab`), or `fetch` (a known URL). Returns sources with the route, actual provider, content-read status, supporting evidence, and limitations; it does not assign numeric trust scores. Another route is added only when an evidence gap needs it, and a failed explicit provider is reported, not silently replaced. Flags: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. Local code navigation uses the configured code tools. |
+| **oma-recap** | Cross-tool work retrospective | Analyzes conversation histories from Grok, Claude, Codex, Gemini, Qwen, Cursor, and Antigravity. Resolves natural-language date/window input, groups by work content (by project for windows of 3 days or more), extracts themes, renders daily/period summaries, and records when the CLI caps a requested window at 30 days. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | Korean word-processor document conversion via `bunx kordoc@latest`. Preserves headings, tables (incl. nested), footnotes, hyperlinks, images. Strips Hancom Private Use Area characters via `flatten-tables.ts` post-processor. |
 | **oma-pdf** | PDF → Markdown | PDF document conversion via `uvx opendataloader-pdf`. Preserves headings, tables, lists, images; OCR hybrid mode for scanned PDFs; output normalized with `uvx mdformat`. |
 
@@ -108,14 +108,14 @@ The 12 checked-in definition files cover the 13 runtime roles through aliases: `
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-academic-writing** | Publication-grade English prose | Drafts, revises, and audits essays, reports, executive summaries, conclusions, and literature reviews. Enforces four protocols simultaneously: Sentence Structure (4 types, varied length/openers), Verb (banned generic verbs replaced from a tiered academic corpus), Hedging (strength matched to evidence), and Anti-AI compliance. Quote-before-judgment rubric gate, Claim-Evidence Map, reverse outlining. Modes: `draft` / `revise` / `review`. |
-| **oma-scholar** | Research paper sidecar companion | Searches, generates, validates, reviews, and compares scholarly papers via the Knows `.knows.yaml` sidecar spec (v0.9.0 / `paper@1`). Token-efficient claim/evidence/relation access (~700 tokens for claims-only vs ~10K full PDF). `oma scholar search/resolve/get/lint` over knows.academy with automatic OpenAlex fallback for pre-2026 papers. Anti-fabrication: omits unknown fields rather than guessing. |
+| **oma-academic-writing** | Publication-grade English prose | Drafts, revises, and audits essays, reports, abstracts, executive summaries, conclusions, and literature reviews. Applies sentence-structure guidance (rhythm, openers, paragraph cohesion), verb guidance (`academic-verb-guide.md`: exact meaning and evidence strength), hedging matched to evidence, and the anti-AI prose audit. Quotes supplied rubric constraints before judging, and uses a Claim-Evidence Map and reverse outlining. Modes: `draft` / `revise` / `review`. |
+| **oma-scholar** | Research paper sidecar companion | Searches, generates, validates, reviews, and compares scholarly papers via the Knows `.knows.yaml` sidecar spec (v0.9.0 / `paper@1`). Token-efficient claim/evidence/relation access (~700 tokens for claims-only vs ~10K full PDF). `oma scholar search/resolve/get/lint` over knows.academy with an OpenAlex and Semantic Scholar fallback for papers knows.academy does not have. Anti-fabrication: omits unknown fields rather than guessing. |
 
 ### Security
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-security** | Security scanning and validation | Scans application source, agent skills, and MCP components; runs penetration tests against scoped web test deployments, validates findings, and configures scan gates. Default engines by target: Deepsec for application source or diffs, Cisco Skill Scanner for agent skill packages, Cisco MCP Scanner for MCP components, and ARTEX for web test deployments. Use `oma-qa` for broad quality reviews and domain skills for remediation. |
+| **oma-security** | Security scanning and validation | Scans application source, agent skills, and MCP components, validates findings, and configures scan gates. Default engines by target: Deepsec for application source or diffs, Cisco Skill Scanner for agent skill packages, and Cisco MCP Scanner for MCP components. Runtime penetration testing has no default engine: a penetration test of a scoped web test deployment runs only on an explicit ARTEX request, on a user-supplied, reviewed ARTEX platform. Use `oma-qa` for broad quality reviews and domain skills for remediation. |
 
 ### Documentation and meta-tooling
 
@@ -123,7 +123,7 @@ The 12 checked-in definition files cover the 13 runtime roles through aliases: `
 |-------|------|-----------------|
 | **oma-docs** | Documentation drift detector | `verify` mode deterministically checks `docs/**/*.md` for broken refs (file paths, CLI commands, config keys, env vars, scripts) and exits 0/1; `sync` mode correlates a git diff to candidate docs and drafts host-LLM patch proposals confirmed per-doc (never auto-applies). URL checking delegated to `lychee`; CLI emits structured JSON, host LLM does all synthesis (no vendor SDK calls). Never modifies `.agents/`. |
 | **oma-skill-creation** | SSL-lite skill authoring specialist | Creates, updates, and audits OMA skills in the SSL-lite format with the four mandatory sections (Scheduling / Structural Flow / Logical Operations / References). Classifies skill type, inserts exactly one inline canonical path, enforces `When NOT to use` cross-routes, and runs `oma skill audit` to catch description collisions (warn ≥ 60%, fail ≥ 75% TF-IDF cosine). Pushes long variant detail into `resources/`. |
-| **oma-explanation** | Code-change explainer | Turns a diff, PR, branch, or commit range into a self-contained offline HTML explainer with Background, Intuition, Code, and Quiz sections. The `/explain` workflow validates the final artifact and writes it under `.agents/results/explain/`. |
+| **oma-explanation** | Change and topic explainer | Turns a diff, PR, branch, or commit range into a self-contained offline HTML explainer with Background, Intuition, Code, and Quiz sections, or explains a topic as a one-page visual sheet. The model writes a draft, `oma explain render` writes the page under `.agents/results/explain/`, `oma explain validate` checks it, and `oma explain render --open` opens it. |
 
 ### Market research
 
@@ -135,9 +135,9 @@ The 12 checked-in definition files cover the 13 runtime roles through aliases: `
 
 | Agent | Role | Key Capabilities |
 |-------|------|-----------------|
-| **oma-image** | Multi-vendor image router | Authentication-aware parallel dispatch to Codex (`gpt-image-2` via ChatGPT OAuth, CLI-first), Antigravity Gemini-family “nano-banana” models via the `agy` CLI + Gemini Code Assist (the exact model is selected internally), and Pollinations (free `flux`/`zimage`). Clarification/amplification protocol before generation, up to 10 reference images, cost guardrail (confirm at ≥ $0.20), `manifest.json` for reproducibility. CLI: `oma image generate`, `oma image doctor`, and `oma image vendor list`. |
-| **oma-slide** | Animation-rich HTML deck generator | Generates distinctive, anti-"AI slop" presentation decks authored at a fixed 1920×1080 stage, then deterministically validates geometry, bundles to single-file HTML, and exports to PDF/PNG/PPTX via the `oma slide` CLI. Style presets + bold templates, CJK→Pretendard rule, `prefers-reduced-motion` + visible focus required, max-3 auto-fix validate loop. Delegates imagery to `oma-image`; optional Canva MCP export/import. |
-| **oma-video** | Short-form, explainer & demo router | Creates shorts/reels (9:16), explainers (16:9), and human-recorded demos (16:9) through the `oma video` CLI. The deterministic asset bus (`script.json` → `timing.json` → `render-spec.json`) feeds a managed HyperFrames compositor; asset providers may use local fallbacks, while missing composition/toolchain or render errors fail the run. Human capture never automates credentials. |
+| **oma-image** | Multi-vendor image router | Authentication-aware parallel dispatch to Codex (`gpt-image-2` via ChatGPT OAuth, CLI-first), Antigravity Gemini-family “nano-banana” models via the `agy` CLI + Gemini Code Assist (the exact model is selected internally), and Pollinations (free `flux`/`zimage`). Resolves the brief from supplied details and reasonable defaults and asks only about a material missing choice, up to 10 reference images, cost guardrail (confirm at ≥ $0.20), `manifest.json` for reproducibility. Settings live under `image:` in `.agents/oma-config.yaml`. CLI: `oma image generate`, `oma image doctor`, and `oma image vendor list`. |
+| **oma-slide** | Animation-rich HTML deck generator | Generates distinctive, anti-"AI slop" presentation decks authored at a fixed 1920×1080 stage, then deterministically validates geometry, bundles to single-file HTML, and exports to PDF/PNG/PPTX via the `oma slide` CLI. Style presets + bold templates, CJK→Pretendard rule, `prefers-reduced-motion` + visible focus required, max-3 auto-fix validate loop. Delegates imagery to `oma-image`; optional Canva MCP export/import. CLI: `oma slide create`, `oma slide style get`, `oma slide asset fetch-video`, `oma slide validate`, `oma slide bundle`, `oma slide export pdf|png|pptx`. |
+| **oma-video** | Short-form, explainer & demo router | Creates shorts/reels (9:16), explainers (16:9), and human-recorded demos (16:9) through the `oma video` CLI. The deterministic asset bus (`script.json` → `timing.json` → `render-spec.json`) feeds a managed HyperFrames compositor; asset providers may use local fallbacks, while missing composition/toolchain or render errors fail the run. Stock and AIGC visuals are reached with `--visual stock|aigc`; a slide visual needs `visual.ref` pointing at an existing deck. A demo needs `--polish` to produce a masked, deliverable video; without it the output is the raw capture. Human capture never automates credentials. Settings live under `video:` in `.agents/oma-config.yaml`. |
 | **oma-voice** | Local-first TTS and STT | Drives the Voicebox MCP server for on-device notifications, asset TTS, and transcription without cloud calls or per-call cost. TTS defaults to WAV and can be locally transcoded to MP3; transcription accepts audio paths or base64. TTS calls cap at 5000 characters and STT inputs at 30 minutes; persisted asset/transcription runs write a manifest. |
 
 ---
@@ -168,11 +168,10 @@ Everything oh-my-agent needs lives in the `.agents/` directory:
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -262,14 +261,15 @@ The HUD is powered by `.claude/hooks/hud.ts` using Claude Code's `statusLine` ho
 
 ---
 
-## Automatic workflow detection
+## Automatic detection
 
-You do not need to type `/command` to trigger workflows. oh-my-agent's hook system scans your natural language input against keyword triggers defined in `.agents/hooks/core/triggers.json` (inlined into the `oma` binary and shared by every vendor), supporting 11 languages (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
+A slash command starts a workflow. For a plain request, oh-my-agent's hook system scans the input against the keyword tables in `.agents/hooks/core/triggers.json` (inlined into the `oma` binary and shared by every vendor), which cover 11 languages (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
 
-- **Actionable input** (e.g., "plan the auth feature") → automatically loads the workflow
+- **Skill hints** (e.g., "run a security audit") → the skill injector names up to three matching skills; the note is advisory and starts no workflow
+- **Persistent workflows** (`orchestrate`, `work`, `ultrawork`, `ralph`) → start from plain text only when the prompt uses the workflow's explicit name (for example `ultrawork: add rate limiting`)
+- **Every other workflow** → starts from its `/command` only
 - **Informational input** (e.g., "what is orchestrate?") → filtered out, no workflow triggered
 - **Explicit `/command`** → hook skips detection to avoid duplication
-- **Persistent workflows** (`orchestrate`, `work`, `ultrawork`, `ralph`) matched only from natural language are suggested, not started; persistent mode turns on when the prompt uses the workflow's explicit keyword (for example `ultrawork` or `ralph`)
 - **Active persistent workflows** reinject context on every message until you say "workflow done"
 
 Every hook event is delivered through the `oma hook run` canonical ABI: the vendor fires `oma-hook.sh --vendor <v> --event <nativeEvent>`, which routes to the in-process handler chain and emits the vendor-specific dialect on stdout (always exit 0, fail-open).
@@ -301,7 +301,7 @@ The `.agents/` directory remains the source of truth. Installation links or proj
 ## What is next
 
 - **[Installation](./installation.md)**: Three install methods, presets, CLI setup, and verification
-- **[Agents](/docs/core-concepts/agents)**: Deep dive into the 33 skills, 13 dispatch roles, and charter preflight
+- **[Agents](/docs/core-concepts/agents)**: Deep dive into the 33 skills, 13 dispatch roles, and the authorization and clarification policy
 - **[Skills](/docs/core-concepts/skills)**: The two-layer architecture explained
-- **[Workflows](/docs/core-concepts/workflows)**: All 21 workflows with triggers and phases
+- **[Workflows](/docs/core-concepts/workflows)**: All 20 workflows with triggers and phases
 - **[Usage Guide](/docs/guide/usage)**: Real examples from single tasks to full orchestration

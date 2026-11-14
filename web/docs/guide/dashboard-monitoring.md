@@ -89,7 +89,7 @@ The dashboards read from the `.agents/state/memories/` directory. This directory
 | `orchestrator-session.md` | `/orchestrate` Step 2 | Session ID, start time, status (RUNNING/COMPLETED/FAILED), workflow version |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | Session metadata, phase progress, user request summary |
 | `task-board.md` | Orchestration workflows | Markdown table with agent assignments, statuses, and tasks |
-| `progress-{agent}.md` | Each spawned agent | Current turn number, what the agent is working on, intermediate results |
+| `progress-{agent}-{task}-{run}-{session}.md` | Each spawned agent | Appended `## Turn N` entries: what the agent did, current status, files changed |
 | `result-{agent}.md` | Each completed agent | Final status (COMPLETED/FAILED), files changed, issues found, deliverables |
 | `debug-{id}.md` | `/debug` workflow | Bug diagnosis, root cause, fix applied, regression test location |
 | `experiment-ledger-{sessionId}.md` | Actual experiments | Comparable baseline/candidate evidence, required checks, and decisions |
@@ -105,7 +105,7 @@ The dashboard uses multiple strategies to extract information:
 
 3. **Agent discovery**: If no task board exists, discovers agents by scanning all `.md` files for `**Agent**: {name}` patterns, `Agent: {name}` lines, or filenames containing `_agent` or `-agent`.
 
-4. **Turn counting**: For each discovered agent, reads `progress-{agent}.md` files and extracts the turn number from `turn: N` patterns.
+4. **Turn counting**: For each discovered agent, takes the newest file whose name starts with `progress-{agent}` and reads the last `Turn N` (or `turn: N`) line in it.
 
 5. **Activity feed**: Lists the 5 most recently modified `.md` files, extracts the last meaningful line (headers, status lines, action items) as the activity message. The web dashboard also exposes the recap view at `/recap`.
 
@@ -124,13 +124,13 @@ The top section displays:
 The agent table shows every detected agent with:
 - **Agent name**: The domain identifier (backend, frontend, mobile, qa, debug, pm).
 - **Status**: Current state with visual indicator (running/completed/failed/blocked/pending).
-- **Turn**: The agent's current turn number (how many iterations it has completed). Extracted from progress files.
+- **Turn**: The number of the agent's latest progress entry. Extracted from progress files; it counts entries, not model turns.
 - **Task**: Brief description of what the agent is working on (truncated to fit).
 
 ### Agent progress
 
-Progress is tracked through `progress-{agent}.md` files. Each file is updated by the agent as it works. The dashboard polls these files for:
-- Turn number (increments as the agent progresses).
+Progress is tracked through `progress-{agent}-*.md` files. Each agent appends an entry at a meaningful checkpoint (a finished step, a blocker, a changed approach). The dashboard polls these files for:
+- Turn number (the latest entry number).
 - Current action (what the agent is doing right now).
 - Intermediate results (partial completions).
 

@@ -8,7 +8,7 @@ description: Structured seven-step debugging workflow with severity triage, esca
 
 ## When to use the debug workflow
 
-Use `/debug` (or say "fix bug", "fix error", "debug" in natural language) to diagnose a specific bug. The seven-step workflow includes severity triage, source-backed diagnosis, and post-fix validation.
+Use `/debug` to diagnose a specific bug. A plain request such as "find the root cause" loads the `oma-debug` skill through the skill hint, but only the slash command starts this workflow. The seven-step workflow includes severity triage, source-backed diagnosis, and post-fix validation.
 
 The debug workflow supports all configured vendors. Steps 1-5 run inline. Step 6 (similar pattern scanning) may delegate to a `debug-investigator` subagent when the scan scope is broad (10+ files or multi-domain errors), followed by step 7’s memory record.
 

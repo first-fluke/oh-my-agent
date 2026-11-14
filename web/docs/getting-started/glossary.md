@@ -78,7 +78,7 @@ Cross-context review is the rule that each review step in `/ultrawork` runs in a
 
 ### Charter
 
-The charter is the `CHARTER_CHECK` preflight block that implementation agents used to write before any code. Current agent definitions require no fixed preflight output. Agents follow the shared execution policy instead: they state material assumptions, ask only when missing information changes correctness or scope, and pause only the work that depends on the answer. A spawned subagent cannot ask you directly, so it reports the missing fact in a `blocked` or `partial` result. See [Authorization and clarification](../core-concepts/agents.md#charter-preflight-charter_check).
+A charter is a fixed preflight block (`CHARTER_CHECK`) written before any code. oh-my-agent requires none: agent definitions ask for no fixed preflight output. Agents follow the shared execution policy: they state material assumptions, ask only when missing information changes correctness or scope, and pause only the work that depends on the answer. A spawned subagent cannot ask you directly, so it reports the missing fact in a `blocked` or `partial` result. See [Authorization and clarification](../core-concepts/agents.md#charter-preflight-charter_check).
 
 ### Run record and claim
 

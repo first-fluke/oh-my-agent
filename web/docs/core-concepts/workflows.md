@@ -1,13 +1,13 @@
 ---
 title: Workflows
-description: Complete reference for all 21 oh-my-agent workflows, covering slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
+description: Complete reference for all 20 oh-my-agent workflows, covering slash commands, persistent vs non-persistent modes, trigger keywords in 11 languages, phases and steps, files read and written, auto-detection mechanics via triggers.json and keyword-detector.ts, informational pattern filtering, and persistent mode state management.
 ---
 
 # Workflows
 
-Workflows are structured multi-step processes triggered by slash commands or natural language keywords. They define how agents collaborate on tasks, from single-phase utilities to complex 5-phase quality gates.
+Workflows are structured multi-step processes started by slash commands; the four persistent modes also start when a plain request names them. They define how agents collaborate on tasks, from single-phase utilities to complex 5-phase quality gates.
 
-There are 21 workflows, 4 of which are [persistent](../getting-started/glossary.md#persistent-workflow) (they maintain state and cannot be accidentally interrupted).
+There are 20 workflows, 4 of which are [persistent](../getting-started/glossary.md#persistent-workflow) (they maintain state and cannot be accidentally interrupted).
 
 ## Workflows at a glance
 
@@ -22,11 +22,10 @@ There are 21 workflows, 4 of which are [persistent](../getting-started/glossary.
 | [`/architecture`](#architecture) | Architecture decisions, reviews, and ADRs | No |
 | [`/deepinit`](#deepinit) | Generating AGENTS.md, ARCHITECTURE.md, and `docs/` for an existing codebase | No |
 | [`/review`](#review) | QA review: security, performance, accessibility, code quality | No |
-| [`/security`](#security) | Security scans, deployed web pentests, finding validation, CI gates | No |
+| [`/security`](#security) | Security scans of source, agent skills, and MCP components; finding validation; CI gates | No |
 | [`/debug`](#debug) | Bug diagnosis and fix with a regression test | No |
-| [`/design`](#design) | DESIGN.md with tokens, component patterns, and accessibility rules | No |
+| [`/design`](#design) | Design findings, DESIGN.md, a redesign direction, or design tokens | No |
 | [`/scm`](#scm) | Git operations and Conventional Commits | No |
-| [`/tools`](#tools) | MCP tool visibility and restrictions | No |
 | [`/convert`](#convert) | Converting documents and media between formats | No |
 | [`/docs`](#docs) | Documentation drift detection and sync | No |
 | [`/recap`](#recap) | Daily or period work recap across AI tools | No |
@@ -81,10 +80,10 @@ Sentences such as "do everything", "전부 해줘", or "build me an app" do not 
 **Steps:**
 1. **Step 0, Preparation:** Read coordination skill, context-loading guide, memory protocol. Detect vendor.
 2. **Step 1, Load/Create Plan:** Check for `.agents/results/plan-{sessionId}.json`, then the most recent `plan-*.json`. If none is found — or the plan is not execution-ready (a task missing its agent, priority tier, dependencies, or acceptance criteria) — delegate to `/plan` inline to create one, keeping the same session ID. Present the plan and reuse existing authorization; ask only for a material missing decision or new authorization before delegation.
-3. **Step 2, Initialize Session:** Load `oma-config.yaml`, display the CLI mapping table, reuse the session ID from plan creation or generate one (`session-YYYYMMDD-HHMMSS`), and create `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the configured memory store.
-4. **Step 3, Spawn Agents:** For each priority tier (lowest first: tier 1, then tier 2, and so on), spawn agents using the vendor-appropriate method (native subagents when the current runtime and target vendor match; `oma agent spawn` for external or cross-vendor work). Never exceed MAX_PARALLEL.
-5. **Step 4, Monitor:** Poll run-scoped `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files and structured receipts, then update the task board. Watch for completions, failures, and crashes.
-6. **Step 5, Verify:** For each completed agent, run a mechanical self-check (lint, typecheck, tests, diff scope; up to 3 cycles), then `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug, and pm; other agent types record `SKIP`), then a QA cross-review. On a verify failure, re-spawn with error context (max 2 retries). Repeated failures may justify alternative hypotheses, but all attempts consume the same aggregate recovery budget (`max_attempts`, default 3 including the original). Preserve unresolved evidence if the budget cannot cover a comparison round.
+3. **Step 2, Initialize Session:** Load `oma-config.yaml`, display the CLI mapping table, and reuse the session ID from plan creation or generate one (`session-YYYYMMDD-HHMMSS`). For each task, select the skill references it needs by matching the task against the installed skills' intent signatures; one confidently matched skill is enough. Create `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the configured memory store, and record each task's selected references and the selection reason there. These are coordinator notes; the launcher does not enforce them.
+4. **Step 3, Spawn Agents:** For each priority tier (lowest first: tier 1, then tier 2, and so on), spawn agents using the vendor-appropriate method (native subagents when the current runtime and target vendor match; `oma agent spawn` for external or cross-vendor work). Each agent receives its task, the API contracts, and its selected references with their load conditions. Never exceed MAX_PARALLEL (default 3).
+5. **Step 4, Monitor:** Check process health with `oma agent status`. Prefer host completion notifications; otherwise poll changed run-scoped `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files with bounded backoff, read the structured receipts, and update the task board. Watch for completions, failures, and crashes.
+6. **Step 5, Verify:** For each completed agent, run a mechanical self-check (lint, typecheck, tests, diff scope; up to 3 cycles), then `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug, and pm; other agent types record `SKIP`), then a QA cross-review. On a verify failure, re-spawn with error context. Repeated failures may justify alternative hypotheses, but the original attempt, each retry, and each hypothesis consume the same aggregate recovery budget (`max_attempts`, default 3 including the original). Preserve unresolved evidence if the budget cannot cover a comparison round.
 7. **Step 6, Collect:** Read run-scoped result files and structured claims, then compile the summary.
 8. **Step 7, Final Report:** Present session summary. If experiments were run, summarize evidence and decisions; capture lessons only when a reusable cause is established.
 
@@ -92,7 +91,7 @@ Sentences such as "do everything", "전부 해줘", or "build me an app" do not 
 flowchart TD
   S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
   S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task board, domain gate"]
+  MK --> S2["Step 2: session ID, task references, task board"]
   S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
   S3 --> S4["Step 4: monitor with oma agent status and progress files"]
   S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
@@ -269,7 +268,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Steps:** Gather requirements -> Analyze technical feasibility (MCP code analysis) -> Assess complexity (Simple/Medium/Complex) -> Define API contracts (if cross-boundary) -> Decompose into tasks -> Review with user -> Save plan artifacts (machine-readable JSON + human-readable markdown tracker for Medium/Complex).
 
-**Output:** `.agents/results/plan-{sessionId}.json`, memory write, and (Medium/Complex) `docs/plans/work/{NNN}-{name}.md` with task table, decision log, progress notes. Lifecycle is tracked via the `Status` field in the markdown header (`Active` -> `Completed`); plans are not moved between folders. Designs created via `/brainstorm` go to `docs/plans/designs/{NNN}-{name}.md`.
+**Output:** `.agents/results/plan-{sessionId}.json`, memory write, and (Medium/Complex) `docs/plans/work/{NNN}-{name}.md` with task table, decision log, progress notes. Lifecycle is tracked via the `Status` field in the markdown header (`Active` -> `Completed`); plans are not moved between folders. Approaches selected via `/brainstorm` are saved to `docs/decisions/{NNN}-{name}.md`.
 
 **Execution:** Inline (no subagent spawning). Consumed by `/orchestrate` or `/work`, which update task/status fields during execution.
 
@@ -281,7 +280,7 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Trigger keywords:** None. Start it with `/brainstorm`. The keyword hook does not open this workflow from a sentence.
 
-**Steps:** Explore project context (MCP analysis) -> Ask clarifying questions (one at a time) -> Propose 2-3 approaches with trade-offs -> Present design section by section (with user approval each step) -> Save design document to `docs/plans/designs/{NNN}-{name}.md` -> Transition: suggest `/plan`.
+**Steps:** Explore project context (MCP analysis) -> Ask clarifying questions (one at a time) -> Propose 2-3 approaches with trade-offs -> Present design section by section (with user approval each step) -> Blind review round -> Save the selected approach to `docs/decisions/{NNN}-{name}.md` and update `docs/decisions/index.md` -> Transition: suggest `/plan`.
 
 **Rules:** No implementation or planning before design approval. No code output. YAGNI.
 
@@ -307,19 +306,21 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 **Trigger keywords:** None. Start it with `/deepinit`. The keyword hook does not open this workflow from a sentence.
 
-**Steps:** Preparation -> Analyze codebase (project type, architecture, implicit rules, domains, boundaries) -> Generate ARCHITECTURE.md (domain map, under 200 lines) -> Generate `docs/` knowledge base (design-docs/, plans/, generated/, product-specs/, references/, domain docs) -> Generate root AGENTS.md (~100 lines, table of contents) -> Generate boundary AGENTS.md files (monorepo packages, under 50 lines each) -> Update existing harness (if re-running) -> Validate (no dead links, line limits).
+**Steps:** Preparation -> Analyze codebase (project type, architecture, implicit rules, domains, boundaries) -> Generate ARCHITECTURE.md (domain map, under 200 lines) -> Generate `docs/` knowledge base (decisions/, plans/, generated/, product-specs/, references/, domain docs) -> Generate root AGENTS.md (~100 lines, table of contents) -> Generate boundary AGENTS.md files (monorepo packages, under 50 lines each) -> Update existing harness (if re-running) -> Validate (no dead links, line limits).
 
-**Output:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md, and domain-specific docs as discovered.
+**Output:** AGENTS.md, ARCHITECTURE.md, docs/decisions/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md, and domain-specific docs as discovered.
 
 ---
 
 ### /review
 
-**Description:** Full QA review pipeline. Security audit (OWASP Top 10), performance analysis, accessibility check (WCAG 2.1 AA), and code quality review.
+**Description:** Full QA review pipeline. Security audit (OWASP Top 10), performance analysis, accessibility check (WCAG 2.2 AA), and code quality review.
 
 **Trigger keywords:** None. Start it with `/review`. The keyword hook does not open this workflow from a sentence.
 
-**Steps:** Identify review scope -> Automated security checks (npm audit, bandit) -> Manual security review (OWASP Top 10) -> Performance analysis -> Accessibility review (WCAG 2.1 AA) -> Code quality review -> Generate QA report.
+**Steps:** Identify review scope -> Automated security checks (`npm audit`, `bandit`, or the stack's equivalent) -> Manual security review (OWASP Top 10) -> Performance analysis -> Accessibility review (WCAG 2.2 AA) -> Code quality review -> Generate QA report.
+
+**Scope:** The scope comes from the request: specific files, a feature branch, a PR, or the entire project. A PR or branch is diffed against its base branch. With no scope given, the workflow reviews the current uncommitted and branch changes and states that assumption; it asks only when there is nothing to scope from.
 
 **Optional fix-verify loop** (with `--fix`): After QA report, spawn domain agents to fix CRITICAL/HIGH issues, re-run QA, repeat up to 3 times.
 
@@ -329,9 +330,9 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 
 ### /security
 
-**Description:** Run the `oma-security` skill for source code, agent skills, MCP components, or a deployed web application. The workflow selects the relevant engine, records its coverage and evidence, validates findings, and applies a configured CI gate.
+**Description:** Run the `oma-security` skill for source code, agent skills, or MCP components. The workflow selects the relevant engine, records its coverage and evidence, validates findings, and applies a configured CI gate. A penetration test of a scoped web test deployment runs only on an explicit ARTEX request, against an ARTEX platform that you supply and that has been reviewed.
 
-**Entry point:** `/security`. The keyword hook does not open this workflow from a sentence. Inside the workflow, Deepsec, Cisco scanners, and ARTEX are selected by target and intent.
+**Entry point:** `/security`. The keyword hook does not open this workflow from a sentence. Inside the workflow, Deepsec and the Cisco scanners are selected by target and intent. A repository scan selects source only; skill, MCP, and runtime scans are not added by implication.
 
 **Targets and engines:**
 
@@ -340,7 +341,9 @@ The judge node is the prompted judge described in Phase 2: the workflow tells th
 | Source code | Vercel Deepsec by default; Cisco AI Deep SAST when requested |
 | Agent skill package | Cisco Skill Scanner |
 | MCP component or server | Cisco MCP Scanner |
-| Deployed test web application | ARTEX, within the authorized target and execution scope |
+| Web test deployment (runtime penetration test) | None by default. ARTEX only on explicit request, on a user-supplied, reviewed ARTEX platform, within the authorized target and execution scope |
+
+Runtime testing has no bundled engine: the skill does not install, build, or deploy an ARTEX platform. Without an explicit ARTEX request, a concrete web test deployment, and a reviewed platform, the workflow states the missing prerequisite, records the runtime stage as `skipped`, and continues with the other selected operations.
 
 Cloudflare's audit methodology guides independent verification and local sandbox reproduction. It does not add another scanner or establish better detection accuracy.
 
@@ -348,7 +351,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 1. Read `.agents/skills/oma-security/SKILL.md` and only the resources needed for the target and intent.
 2. Resolve the target (`source`, `skill`, `mcp`, or `web_runtime`) and intent (`setup`, `scan`, `diff`, `pentest`, `triage`, `validate`, `ci`, or `troubleshoot`). Check the selected engine's version, available interface, credentials, and execution budget.
-3. Run the selected engine within the agreed scope. Reuse existing Deepsec state where applicable. For ARTEX, bind the run to a reviewed, pinned version and an isolated deployment, account, target allowlist, and budget. ARTEX uses the reviewed snapshot's verified UI/API or a manual/external task; CI automation requires a verified adapter and task receipts.
+3. Run the selected engine within the agreed scope. Reuse existing Deepsec state where applicable. For an explicitly requested ARTEX run, bind it to a reviewed, pinned version of the supplied platform and an isolated deployment, account, target allowlist, and budget. ARTEX uses the reviewed snapshot's verified UI/API or a manual/external task; CI automation requires a verified adapter and task receipts.
 4. Preserve raw results and engine exit codes, then normalize findings without discarding their source or disagreements. Review candidates independently; record static validation and observed reproduction separately.
 5. Report coverage, findings, evidence, incomplete work, and the applicable CI result. Route fixes to the specialist responsible for the affected component.
 
@@ -356,7 +359,7 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 **Rules:** Keep credentials out of reports and version control. Treat source and scanner output as untrusted input. Run local reproductions in an OS sandbox; keep ARTEX traffic within its authorized runtime scope. Failed, partial, or skipped scans and unsuccessful exploit attempts do not establish that a target is secure. A `confirmed` finding requires independent verification and observed proof on the recorded revision or deployment; static support remains `needs_validation`.
 
-**When to use:** Security scanning, deployed web pentesting, finding triage and validation, or CI security gates. Use `/review` for a broader code quality, accessibility, and performance review.
+**When to use:** Security scanning of source, agent skills, or MCP components; finding triage and validation; CI security gates; or a bounded penetration test of a test deployment on an ARTEX platform you already operate. Use `/review` for a broader code quality, accessibility, and performance review.
 
 ---
 
@@ -374,13 +377,20 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 ### /design
 
-**Description:** 7-phase design workflow producing DESIGN.md with tokens, component patterns, and accessibility rules.
+**Description:** Scopes a design task, selects the applicable design guidance, and delivers findings, `DESIGN.md`, a redesign direction, or design tokens through `oma-design`. The workflow writes no implementation code; implementation is handed to `oma-frontend` or `oma-mobile`. Executes inline (no subagent spawning).
 
 **Trigger keywords:** None. Start it with `/design`. The keyword hook does not open this workflow from a sentence.
 
-**Phases:** SETUP (context gathering, `.design-context.md`) -> EXTRACT (optional, from reference URLs/Stitch) -> ENHANCE (vague prompt augmentation) -> PROPOSE (2-3 design directions with color, typography, layout, motion, components) -> GENERATE (DESIGN.md + CSS/Tailwind/shadcn tokens) -> AUDIT (responsive, WCAG 2.2, Nielsen heuristics, AI slop check) -> HANDOFF (save, inform user).
+**Steps:**
 
-**Mandatory:** All output responsive-first (mobile 320-639px, tablet 768px+, desktop 1024px+).
+1. **Load the skill:** Read `.agents/skills/oma-design/SKILL.md` and `resources/execution-protocol.md`. The skill owns supplier selection, the project design contract, and delivery evidence; the workflow sequences its operations and adds no visual rules of its own.
+2. **Establish scope and context:** Classify the requested result: findings (an audit), a design-system document, a redesign direction, or tokens. Read the request, the existing `DESIGN.md`, `.design-context.md` when present, brand material, supported languages, and the affected UI. For an existing site or application, load `redesign-protocol.md` and establish Preserve or Overhaul before proposing changes. The workflow asks only about a choice that materially changes the result and that the request, the artifacts, and the codebase do not answer. `.design-context.md` is created or updated only when a substantive discovery pass informed the decision.
+3. **Select guidance and gather references:** Select one supplier for the operation through `external-design-skills.md` (Interface Design, Taste, or Impeccable). A documentation-only or token-contract task stays local. Optional inputs load only when the task calls for them: a requested vendor seed (`getdesign-fetcher.md`), a requested Stitch operation (`stitch-integration.md`), imagery and placeholders (`asset-strategy.md`), or a surface built around a data table or grid (`data-grid.md`). An unavailable integration is reported as an evidence limit, not replaced silently.
+4. **Decide the direction:** Apply the selected guidance to the project evidence. Alternative directions are presented only when an unresolved choice materially affects the result; an existing direction and authorization are sufficient when they answer it.
+5. **Produce the artifact:** A design system creates or updates `DESIGN.md` per `design-md-spec.md`, keeping all nine sections including Section 9 (Agent Prompt Guide). Tokens follow `design-tokens.md` and map semantic roles onto the project's existing token system and theme format. An audit returns findings with the inspected location, evidence, effect, and recommendation, and edits nothing.
+6. **Verify and hand off:** Run the applicable checks in `checklist.md` and name what was inspected. Report the delivered artifacts, the selected route and its provenance, the verification results, and the remaining limits, then hand implementation to `oma-frontend` (web) or `oma-mobile` (native).
+
+**Constraints:** Every direction stays within the project's brand, CJK font coverage where those languages are supported, the existing implementation stack, responsive behaviour from the smallest supported viewport, and WCAG AA unless the project sets a stricter target. Checks that need a rendered implementation are specified but stay unrun for document-only work.
 
 ---
 
@@ -393,22 +403,6 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 **Steps:** Analyze changes (git status, git diff) -> Separate features (if > 5 files spanning different scope/type) -> Determine type (feat/fix/refactor/docs/test/chore/style/perf) -> Determine scope (changed module) -> Write description (imperative, < 72 chars) -> Execute commit immediately (no confirmation prompt).
 
 **Rules:** Never `git add -A`. Never commit secrets. Use a HEREDOC for multi-line messages. Add a co-author trailer only when effective `scm.co_author` configuration enables it and supplies both values.
-
----
-
-### /tools
-
-**Description:** Manage MCP tool visibility and restrictions.
-
-**Trigger keywords:** None (excluded from auto-detection).
-
-**Features:** Show current MCP tool status, enable/disable tool groups (memory, code-analysis, code-edit, file-ops), permanent or temporary (`--temp`) changes, natural language parsing ("memory tools only", "disable code edit").
-
-**Tool groups:**
-- memory: read_memory, write_memory, edit_memory, list_memories, delete_memory
-- code-analysis: get_symbols_overview, find_symbol, find_referencing_symbols, search_for_pattern
-- code-edit: replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol
-- file-ops: list_dir, find_file
 
 ---
 
@@ -462,12 +456,12 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 ### /stack-set
 
-**Description:** Auto-detect project tech stack and generate language-specific references for the resolved domain skill (backend or mobile). Detects mobile stacks (Swift/iOS via `Package.swift`/`.xcodeproj`, Flutter via `pubspec.yaml`, React Native via `package.json` + react-native) and routes to `oma-mobile`; otherwise routes to `oma-backend`. In monorepos where both are present, asks which to configure.
+**Description:** Auto-detect project tech stack and generate language-specific references for the resolved domain skill. Backend manifests route to `oma-backend`; mobile stacks (Swift/iOS via `Package.swift`/`.xcodeproj`, Kotlin/Android via `settings.gradle.kts`, Flutter via `pubspec.yaml`, React Native via `package.json` + react-native) route to `oma-mobile`; frontend manifests (Angular, Next.js, React, Vue, Svelte) route to `oma-frontend`. When more than one domain is detected and the request does not name one, the workflow asks which to configure.
 
 **Trigger keywords:** None (excluded from auto-detection).
 
 <!-- oma-docs:ignore-start -->
-**Steps:** Detect (scan manifests: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj, Package.swift, *.xcodeproj, pubspec.yaml) -> Confirm (display detected stack, get user confirmation) -> Generate (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` with 8 mandatory patterns, `stack/api-template.*`) -> Verify.
+**Steps:** Detect (scan manifests: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj, Package.swift, *.xcodeproj, pubspec.yaml) -> Confirm (display detected stack, get user confirmation) -> Generate (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` with 8 mandatory patterns, and for backend `stack/api-template.*`; a mobile stack keeps its API service or repository snippet in `stack/snippets.md`) -> Verify.
 <!-- oma-docs:ignore-end -->
 
 **Output:** Files in the resolved domain skill's `stack/` directory (e.g. `.agents/skills/oma-backend/stack/` or `.agents/skills/oma-mobile/stack/`). Does not modify SKILL.md or `resources/`.
@@ -481,11 +475,11 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 **Trigger keywords:** None. Start it with `/video`. The keyword hook does not open this workflow from a sentence.
 
 **Steps:**
-1. **Resolve the brief and mode:** Pick `shorts` (9:16), `explainer` (16:9), or `demo` (screen/web capture); apply mode defaults, overridable by flags.
+1. **Resolve the brief and mode:** Pick `shorts` (9:16), `explainer` (16:9), or `demo` (a human screen recording supplied with `--capture`); apply mode defaults, overridable by flags.
 2. **Compose the script:** Generate scenes + narration (LLM when a key is present, else a deterministic outline from the brief).
-3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image`/`oma-slide`/stock, key-free caption alignment, or a supervised browser web capture for `demo --source web`. Each provider degrades to a deterministic fallback.
+3. **Synthesize assets:** Narration via `oma-voice`, visuals via `oma-image` by default, key-free caption alignment, and for `demo` the ingested human recording. An `oma-slide` frame is used only for a scene whose `visual.ref` names an existing deck directory; stock (Pexels) and AIGC (Pixelle) visuals are reached with `--visual stock` or `--visual aigc` when their key is set. `--source web --url` adds URL context only; the CLI does not open or record a browser. Each provider degrades to a deterministic fallback.
 4. **Build the render-spec:** Write `render-spec.json` (the determinism boundary) plus assets into the run directory.
-5. **Render:** Spawn the managed HyperFrames project (or MoneyPrinterTurbo) as a subprocess. A normal compositor or toolchain failure fails the run; the deterministic placeholder is available only through the explicit mock/test path (`OMA_VIDEO_MOCK=1`). Live capture is recorded as `nondeterministic` in the manifest.
+5. **Render:** Spawn the managed HyperFrames project (or MoneyPrinterTurbo) as a subprocess. A normal compositor or toolchain failure fails the run; the deterministic placeholder is available only through the explicit mock/test path (`OMA_VIDEO_MOCK=1`). A `demo` run needs `--polish` to pass the capture through the `Demo` composition, where personal information is masked; without it the output MP4 is the raw, unmasked capture.
 
 **Output:** A run directory at `.agents/results/videos/{timestamp}-{shortid}-{mode}/` with `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4`, and `manifest.json`. See the [Video Generation guide](../guide/video-generation.md).
 
@@ -505,11 +499,11 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 ### /explain
 
-**Description:** Drive the `oma-explanation` skill end-to-end: turn a diff, PR, branch, or commit range into a self-contained interactive HTML explainer (Background / Intuition / Code / Quiz). Executes inline (no subagent spawning).
+**Description:** Drive the `oma-explanation` skill end-to-end: turn a diff, PR, branch, or commit range, or a topic, into a self-contained interactive HTML explainer (Background / Intuition / Code / Quiz for a change). Executes inline (no subagent spawning).
 
 **Trigger keywords:** None ("explain" is everyday vocabulary — keyword detection would false-positive on ordinary "explain this function" questions, so the workflow is slash-only).
 
-**Steps:** Resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explanation` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate the HTML per the document and HTML contracts -> Validate (grep checklist including a final-HTML secret scan, max 3 fix loops) -> Deliver (`open` warn-only, TL;DR + path).
+**Steps:** Resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explanation` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate (write the draft, then render it with `oma explain render <draft.md>`) -> Validate (`oma explain validate <file>` plus the final-HTML secret scan, max 3 fix loops) -> Deliver (open the page with `oma explain render --open`, where a failed open is only a warning; TL;DR + path).
 
 **Output:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (date in oma-config `timezone`, else the system timezone; rerunning the same date + slug overwrites). See the [Code Explainer guide](../guide/code-explainer.md).
 
@@ -606,7 +600,7 @@ If the input matches both an explicit mode name and an informational pattern, th
 
 ### Workflows the keyword hook does not open
 
-Every workflow other than `orchestrate`, `ultrawork`, `work`, and `ralph` starts from its slash command. The procedure file stays in `.agents/workflows/`. `excludedWorkflows` still names `tools`, `stack-set`, `schedule`, and `convert`, so a keyword bank cannot route those four even if one is added later. `/explain` stays slash-only because "explain" is everyday vocabulary. Skill keyword hints in the same file are separate and still inject skill context.
+Every workflow other than `orchestrate`, `ultrawork`, `work`, and `ralph` starts from its slash command. The procedure file stays in `.agents/workflows/`. `excludedWorkflows` names `stack-set`, `schedule`, and `convert`, so a keyword bank cannot route those three even if one is added later. `/explain` stays slash-only because "explain" is everyday vocabulary. Skill keyword hints in the same file are separate and still inject skill context.
 
 ---
 
