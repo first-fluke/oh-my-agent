@@ -53,52 +53,5 @@
       "write": "Write",
       "edit": "Edit"
     }
-  },
-  "toolGroups": {
-    "code-analysis": [
-      "get_symbols_overview",
-      "find_symbol",
-      "find_referencing_symbols",
-      "find_implementations",
-      "find_declaration",
-      "search_for_pattern"
-    ],
-    "code-edit": [
-      "replace_symbol_body",
-      "insert_after_symbol",
-      "insert_before_symbol",
-      "rename_symbol",
-      "safe_delete_symbol",
-      "replace_in_files"
-    ],
-    "browser": [
-      "navigate_page",
-      "take_screenshot",
-      "click",
-      "fill",
-      "fill_form",
-      "evaluate_script",
-      "list_network_requests",
-      "list_console_messages",
-      "lighthouse_audit",
-      "performance_start_trace",
-      "performance_stop_trace",
-      "performance_analyze_insight"
-    ],
-    "docs-search": [
-      "resolve-library-id",
-      "query-docs"
-    ],
-    "file-ops": [
-      "list_dir",
-      "find_file"
-    ],
-    "all": null,
-    "code-diagnostics": [
-      "get_diagnostics_for_file"
-    ],
-    "serena-support": [
-      "initial_instructions"
-    ]
   }
 }

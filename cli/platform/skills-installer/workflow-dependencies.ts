@@ -38,7 +38,6 @@ export const WORKFLOW_DEPENDENCIES: Readonly<
     required: [],
     conditional: ["oma-frontend", "oma-backend", "oma-mobile"],
   },
-  tools: { required: [], conditional: [] },
   ultrawork: {
     required: ["oma-coordination", "oma-pm", "oma-qa"],
     conditional: ["oma-refactor", "oma-scm"],

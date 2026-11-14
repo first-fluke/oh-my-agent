@@ -86,6 +86,8 @@ import { migrateLegacyGeminiMcp } from "./030-legacy-gemini-mcp.js";
 import { migrateClaudeMdAgents } from "./031-claude-md-agents.js";
 import { migrateArtifactLayoutPaths } from "./032-artifact-layout.js";
 import { migrateConsolidateConfigKeys } from "./033-consolidate-config-keys.js";
+import { migrateRemoveToolsWorkflow } from "./034-remove-tools-workflow.js";
+import { migrateRemoveMcpToolGroups } from "./035-remove-mcp-tool-groups.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -120,6 +122,8 @@ const migrations: Migration[] = [
   migrateClaudeMdAgents,
   migrateArtifactLayoutPaths,
   migrateConsolidateConfigKeys,
+  migrateRemoveToolsWorkflow,
+  migrateRemoveMcpToolGroups,
 ];
 
 export function runMigrations(

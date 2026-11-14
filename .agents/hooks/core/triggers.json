@@ -1529,7 +1529,7 @@
       "wykryto"
     ]
   },
-  "excludedWorkflows": ["tools", "stack-set", "schedule", "convert"],
+  "excludedWorkflows": ["stack-set", "schedule", "convert"],
   "extensionRouting": {
     "frontend-engineer": [
       "tsx",

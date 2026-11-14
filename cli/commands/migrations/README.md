@@ -50,4 +50,6 @@ export const migrateExample: Migration = {
 | 028 | `028-profile-sessions.ts` | Verified copy of inactive legacy sessions and archives to home profile 0; removes verified originals without backups and defers active sessions |
 | 033 | `033-consolidate-config-keys.ts` | In `.agents/oma-config.yaml` and the local YAML: `free:` → `providers.free` (`model` → `default_model`), `brave:` / `exa:` / `honcho:` → `providers.<name>`, `default_cli` → `agents.default.cli`; drops the ignored `diagram.archify.*` and `market.*` managed-copy keys. Comment-preserving; the runtime still reads the legacy spellings |
 | 031 | `031-claude-md-agents.ts` | Once `claude --version` is ≥ 2.1.277 (Claude Code reads `AGENTS.md` natively), strips the legacy OMA block from `./CLAUDE.md`: deletes the file when the block was its sole content, otherwise appends an `@AGENTS.md` import so the surviving `CLAUDE.md` does not shadow `AGENTS.md` |
+| 034 | `034-remove-tools-workflow.ts` | Removes the shipped `.agents/workflows/tools.md`; a project workflow that only reuses the file name is left alone |
+| 035 | `035-remove-mcp-tool-groups.ts` | Drops the unused `toolGroups` key from `.agents/mcp.json`; every other key is kept |
 <!-- oma-docs:ignore-end -->
