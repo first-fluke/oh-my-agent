@@ -106,6 +106,30 @@ describe("dashboard report sources", () => {
     );
   });
 
+  // Regression: the first `Turn N` in the file was reported, so an agent that
+  // appended entries stayed at turn 1 for the whole run.
+  it("reports the latest turn of an appended progress file", () => {
+    writeFileSync(
+      join(memoriesDir, "progress-backend-task-api-run-01-session-1.md"),
+      [
+        "Agent: backend",
+        "## Turn 1",
+        "- Read the task board",
+        "## Turn 2",
+        "- Added the route",
+        "## Turn 3",
+        "- Wrote the repository; unknown ids return 404",
+        "",
+      ].join("\n"),
+    );
+
+    const state = buildFullState(memoriesDir, resultsDir);
+
+    expect(state.agents).toEqual([
+      expect.objectContaining({ agent: "backend", turn: 3 }),
+    ]);
+  });
+
   it("prefers canonical report contents over a newer legacy file with the same name", () => {
     const filename = "result-backend.md";
     writeFileSync(

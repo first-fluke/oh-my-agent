@@ -205,9 +205,13 @@ function getAgentTurn(memoriesDir: string, agent: string): number | null {
       return null;
     }
 
+    // Progress entries are appended, so the current turn is the last one named.
+    // Anchored to a line start (after Markdown markers) so prose such as
+    // "return 404" is not read as a turn.
     const content = readFileSafe(join(memoriesDir, files[0]));
-    const match = content.match(/turn[:\s]*(\d+)/i);
-    return match?.[1] ? Number.parseInt(match[1], 10) : null;
+    const turns = [...content.matchAll(/^[\s#*>-]*turn[:\s]*(\d+)/gim)];
+    const latest = turns.at(-1)?.[1];
+    return latest ? Number.parseInt(latest, 10) : null;
   } catch {
     return null;
   }

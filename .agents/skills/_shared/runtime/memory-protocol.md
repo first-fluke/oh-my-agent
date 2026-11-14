@@ -49,11 +49,12 @@ Existing reports under `.agents/state/memories/`, the configured memory base, or
 ## On Start
 
 1. `[READ]("task-board-{sessionId}.md")` to confirm your assigned task
-2. `[WRITE]("progress-{agentId}-{taskId}-{runId}-{sessionId}.md", initial progress entry)` with Turn 1 status
+2. `[WRITE]("progress-{agentId}-{taskId}-{runId}-{sessionId}.md", initial progress entry)` with the starting status, headed `## Turn 1`
 
 ## During Execution
 
-- Every 3-5 turns: `[EDIT]("progress-{agentId}-{taskId}-{runId}-{sessionId}.md")` to append a new turn entry
+- At each meaningful checkpoint (a finished step, a blocker, a changed approach): `[EDIT]("progress-{agentId}-{taskId}-{runId}-{sessionId}.md")` to append a progress entry
+- Head each entry `## Turn N`, counting up from 1. The number is the entry's position in the file, which the dashboard shows as the agent's turn; it is not a budget or a quota
 - Include: action taken, current status, files created/modified
 
 ## On Completion
@@ -87,7 +88,7 @@ Read(".agents/state/memories/task-board-session-20260405-100835.md")
 Write(".agents/state/memories/progress-backend-task-api-run-01-session-20260405-100835.md", initial_content)
 
 # During Execution
-Edit(".agents/state/memories/progress-backend-task-api-run-01-session-20260405-100835.md", turn_update)
+Edit(".agents/state/memories/progress-backend-task-api-run-01-session-20260405-100835.md", progress_entry)
 
 # On Completion
 Write(".agents/results/result-backend-task-api-run-01-session-20260405-100835.md", final_result)
@@ -113,6 +114,6 @@ Then use:
 ```python
 fs_read("task-board-session-20260405-100835.md")
 fs_write("progress-backend-task-api-run-01-session-20260405-100835.md", initial_content)
-fs_patch("progress-backend-task-api-run-01-session-20260405-100835.md", turn_update)
+fs_patch("progress-backend-task-api-run-01-session-20260405-100835.md", progress_entry)
 fs_write(".agents/results/result-backend-task-api-run-01-session-20260405-100835.md", final_result)
 ```
