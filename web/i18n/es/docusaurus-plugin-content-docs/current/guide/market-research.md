@@ -6,7 +6,7 @@ description: "Cómo la skill oma-market de oh-my-agent realiza investigación de
 
 # Investigación de mercado
 
-`oma-market` analiza qué dice la gente sobre un tema durante los últimos N días. Identifica puntos de dolor, tendencias, percepción de competidores y temas emergentes mediante fuentes comunitarias con cifras de interacción: Reddit (votos y comentarios destacados), X, transcripciones de YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, la web y más.
+`oma-market` responde a «qué dice realmente la gente sobre X en los últimos N días»: puntos de dolor, tendencias, sentimiento de competidores y descubrimiento, a partir de fuentes comunitarias con cifras reales de interacción: Reddit (votos y comentarios destacados), X, transcripciones de YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, la web y más.
 
 La investigación se ejecuta en el motor upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent no lo bifurca: el motor se instala como skill de agente mediante la [skills CLI](https://github.com/vercel-labs/skills), y oh-my-agent controla cada ejecución y añade una capa de marcos estratégicos. La cadencia de releases, el número de estrellas y la cobertura de proveedores pertenecen al proyecto upstream y pueden cambiar.
 
@@ -103,7 +103,7 @@ flowchart TD
 4. `oma market run "<topic>" <flags> --emit=compact`: argumentos idénticos a la llamada upstream `python3 scripts/last30days.py`; añade `--save-dir` desde `market.save_dir`.
 5. La síntesis sigue el CONTRATO DE SALIDA upstream (badge en la primera línea, clusters de evidencia ordenados y LAWs 1–8); después oma añade secciones de marcos, situadas entre el cuerpo del motor y el pie del motor, que citan solo clusters del motor:
 
-| Intención | Preparación del motor | Marcos |
+| Intención | Formulación del motor | Marcos |
 |---|---|---|
 | pain | tema con forma de queja, `--days 30`, `--deep` cuando los datos sean escasos | SWOT |
 | trend | `--days 7/30/90/180`, `--discover "<domain>"` para «qué está de moda» | SWOT |

@@ -6,7 +6,7 @@ description: "Guía completa del flujo de trabajo /explain y la skill oma-explan
 
 # Explicador de código
 
-`/explain` convierte un cambio de código en un documento HTML completo y autocontenido que enseña qué cambió y por qué: contexto profundo que se puede omitir si ya conoces el sistema, una sección de intuición central con datos de ejemplo, un recorrido del código ordenado para la comprensión y un cuestionario de cinco preguntas. El resultado es un único archivo `.html` que funciona sin conexión, con diagramas, llamadas y un cuestionario accesible, guardado en `.agents/results/explain/` y validado con una lista determinista antes de entregarlo.
+`/explain` convierte un cambio de código en un documento HTML autocontenido que explica qué cambió y por qué. La página incluye contexto que se puede omitir para quien llega nuevo, una sección de intuición central con datos de juguete, un recorrido del código ordenado para la comprensión y un cuestionario accesible de cinco preguntas por defecto. El archivo `.html`, usable sin conexión, incluye diagramas y callouts, se guarda en `.agents/results/explain/` y se valida con una lista determinista antes de entregarlo.
 
 `/explain` solo se activa con una barra; no se activa automáticamente a partir del lenguaje natural. «Explain» es vocabulario cotidiano, por lo que se excluye intencionadamente de la detección de palabras clave, igual que `/convert`. Escribe `/explain` explícitamente o pide a otra skill que produzca un «documento explicativo» como resultado delegado.
 

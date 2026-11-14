@@ -176,6 +176,6 @@ Um archify não resolvível é coberto pela [tabela de decisão do engine](#whic
 - [Workflow `/architecture`](../core-concepts/workflows.md#architecture) — ADRs e revisões que carregam o bloco Mermaid
 - [Semântica de oma-config.yaml](./oma-config-semantics.md) — como a seção `diagram:` é mesclada
 - [Comandos da CLI: diagram](../cli-interfaces/commands.md#diagram) — lista completa de opções
-- [Market Research](./market-research.md) — o mesmo padrão de instalação via skills CLI para o engine last30days
+- [Pesquisa de mercado](./market-research.md) — o mesmo padrão de instalação via skills CLI para o engine last30days
 - upstream archify: [tt-a1i/archify](https://github.com/tt-a1i/archify)
 - upstream stack-diagram: [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram)

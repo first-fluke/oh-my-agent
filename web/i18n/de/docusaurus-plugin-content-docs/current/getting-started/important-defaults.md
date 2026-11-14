@@ -5,14 +5,17 @@ description: Die oh-my-agent-Standardwerte für Routing, Modellauswahl, Provider
 
 # Wichtige Standardwerte
 
+Diese Standardwerte gelten für die installierte OMA-Laufzeit. Das Laden eines einzelnen Skills mit `skills use` liefert Anweisungen, ohne Projekt-Hooks, Provider oder Dienste zu konfigurieren. Beginnen Sie mit [Setup wählen](./choose-setup.md), um diesen Aufgabenweg oder eine Laufzeitinstallation auszuwählen.
+
 Die Standardwerte machen ein neues Projekt sofort nutzbar und bewahren zugleich die Konfiguration, die Ihnen gehört. Sie werden zur Laufzeit aufgelöst. Ein ausgelassener Schlüssel kann sich deshalb anders verhalten als ein ausdrücklich leerer Wert. Beginnen Sie hier, wenn das Harness funktioniert, sich aber anders verhält als erwartet.
 
 ## Standardwerte für den ersten Lauf
 
 | Bereich | Standardwert | Auswirkung | Überschreibung |
 |---|---|---|---|
-| Antwortsprache | `en` | Agenten- und Workflow-Antworten sind Englisch, sofern die Projektkonfiguration keine andere unterstützte Sprache auswählt. Eine ausdrückliche Sprachvorgabe des Benutzers oder der Sitzung kann den Projektstandard weiterhin überschreiben, wenn Host oder Workflow dies unterstützt. | `language` in `.agents/oma-config.yaml` oder `.cue` |
-| Modell-Routing ([Modell-Preset](./glossary.md#model-preset)) | `auto` | Die native Agentenkonfiguration der aktuellen Laufzeit wird verwendet. Unbekannte Laufzeiten greifen auf `default_cli` zurück, sofern dieser gesetzt ist. | `model_preset`, `default_cli` oder `agents.<id>` |
+| Antwortsprache | Gespeicherte Sprache, sonst die Systemsprache; Fallback `en` | Die Installation erkennt die Sprache ohne Rückfrage. Regionale Locales werden auf eine unterstützte Basissprache abgebildet, etwa `ko_KR.UTF-8` → `ko`; nicht unterstützte Locales verwenden `en`. Die Sprache des Benutzer-Prompts hat Vorrang vor dieser Einstellung. | `language` in `.agents/oma-config.yaml` oder `.cue` |
+| Modell-Routing ([Modell-Preset](./glossary.md#model-preset)) | `auto` | Die native Agentenkonfiguration der aktuellen Laufzeit wird verwendet. Unbekannte Laufzeiten greifen auf `agents.default.cli` zurück, sofern dieser gesetzt ist. | `model_preset`, `agents.default.cli` oder `agents.<id>` |
+| Skill-Inhalt ([Skill-Preset](./glossary.md#skill-preset)) | Interaktive Auswahl; `all` für die unbeaufsichtigte Einrichtung, sofern kein `--preset` angegeben ist | Ein Preset wählt Skills aus. Gemeinsame Dateien, alle Workflow- und Agentendefinitionen, Hooks und die Provider-Einrichtung bleiben Teil der Laufzeitinstallation; andere vorhandene Skills bleiben erhalten. | `oma install --preset <name>`; siehe [Preset-Grenzen](./installation.md#presets) |
 | Code-Intelligenz ([Fähigkeits-Provider](./glossary.md#capability-provider)) | `serena` | Eine neue Installation versucht, Serena zu installieren und dessen MCP-Konfiguration zu verknüpfen. | `providers.code_intelligence: gortex` oder `serena` |
 | Code-Such-Guard | `block` | Solange ein Code-Intelligenz-Provider konfiguriert ist, blockiert ein PreToolUse-Hook die nativen Tools `Grep`/`Glob` sowie rekursive Shell-Suchen (`rg`, `grep -r`, `find -name`) und verweist den Agenten auf die Tools des Providers. Suchen, die auf bestätigte Ausschlüsse oder Pfade außerhalb des Projekts beschränkt sind, sind erlaubt. Der Hook weist nicht auf einen Bypass für Projektquellcode hin. | `providers.code_intelligence_guard: off` |
 | Semantischer Speicher | `agentmemory` | Installation und Update verwenden einen funktionierenden AgentMemory-Endpunkt weiter oder installieren und starten den verwalteten lokalen Dienst und prüfen anschließend dessen Bereitschaft, bevor sie erfolgreich abschließen. Ausdrücklich angegebene benutzerdefinierte Endpunkte werden geprüft, ohne ersetzt zu werden. | `providers.semantic_memory: honcho` oder `none`; `OMA_NO_AGENTMEMORY=1` überspringt die AgentMemory-Einrichtung. |
@@ -40,15 +43,15 @@ nach dem Laden der Dateien. Eine ungültige lokale Konfiguration beendet das Lad
 
 Vor der festen Preset-Reihenfolge gelten zwei Sonderfälle für das Modell-Routing:
 
-- Bei `model_preset: auto` wird die native Agenten-/Modellkonfiguration der aktuellen Laufzeit verwendet. Explizite Überschreibungen unter `agents.<id>` haben weiterhin Vorrang; eine unbekannte Laufzeit kann `default_cli` verwenden.
-- Bei `model_preset: free` verwenden untergeordnete Spawns das lokale FreeLLMAPI-Gateway. `free.model` wählt das Gateway-Modell und ersetzt agentenspezifische Modell-Pins; fehlt der Wert, wird `FREELLM_MODEL` oder das Provider-Fallback `auto` verwendet.
+- Bei `model_preset: auto` wird die native Agenten-/Modellkonfiguration der aktuellen Laufzeit verwendet. Explizite Überschreibungen unter `agents.<id>` haben weiterhin Vorrang; eine unbekannte Laufzeit kann `agents.default.cli` verwenden.
+- Bei `model_preset: free` (oder einem anderen LLM-Provider unter `providers.<name>`) verwenden untergeordnete Spawns dieses Gateway. `providers.free.default_model` wählt das Gateway-Modell und ersetzt agentenspezifische Modell-Pins; fehlt der Wert, wird `FREELLM_MODEL` oder das Provider-Fallback `auto` verwendet.
 
 Für ein festes oder benutzerdefiniertes Preset gilt folgende effektive Reihenfolge:
 
 1. Explizite Überschreibung unter `agents.<id>`.
 2. Der passende Eintrag von `model_preset`, als integriertes Preset oder unter `custom_presets`.
 3. Der Eintrag `orchestrator` des Presets, wenn für eine Rolle kein eigener Eintrag vorhanden ist.
-4. `default_cli` als Vendor-Fallback, wenn die vorherigen Ebenen keinen Plan auflösen.
+4. `agents.default.cli` als Vendor-Fallback, wenn die vorherigen Ebenen keinen Plan auflösen.
 
 Das `free`-Preset liefert Standardwerte für alle drei Provider-Einstellungen: `base_url` ist `http://127.0.0.1:31415/v1`, `api_key_env` ist `FREELLM_API_KEY` (der Kompatibilitätsalias `FREELLMAPI_API_KEY` wird ebenfalls akzeptiert) und `model` ist `auto`. Die ausgewählte Umgebungsvariable muss trotzdem einen gültigen API-Schlüssel enthalten; es gibt keinen Vendor-Fallback. Setzen Sie diese Werte in `oma-config.local.yaml`, wenn sie auf dem Rechner bleiben sollen, oder verwenden Sie `FREELLM_BASE_URL` und `FREELLM_MODEL` für prozessweite Überschreibungen.
 

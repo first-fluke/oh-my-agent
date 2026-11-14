@@ -8,7 +8,7 @@ description: Como a skill oma-market do oh-my-agent executa pesquisa de sinais d
 
 `oma-market` pesquisa pontos de dor, tendências, sentimento sobre concorrentes e tópicos emergentes relatados sobre um tema nos últimos N dias. A pesquisa usa fontes comunitárias com métricas reais de engajamento, como Reddit (upvotes e comentários principais), X, transcrições do YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits e Bluesky, além da web.
 
-A pesquisa roda no engine upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). O oh-my-agent não faz fork do projeto: mantém uma cópia gerenciada, aplica o gate de tópico a cada execução e acrescenta uma camada de frameworks estratégicos. A cadência de releases, a quantidade de stars e a cobertura de providers dependem do projeto upstream e podem mudar.
+A pesquisa em si roda no engine upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). O oh-my-agent não faz fork dele: o engine é instalado como skill de agente por meio da [skills CLI](https://github.com/vercel-labs/skills), e o oh-my-agent aplica um gate a cada execução e acrescenta uma camada de frameworks estratégicos. A cadência de releases, a quantidade de stars e a cobertura de providers pertencem ao projeto upstream e podem mudar.
 
 ---
 
@@ -119,9 +119,9 @@ flowchart TD
 | Situação | Resultado |
 |---|---|
 | Tópico recusado por detect-trap | Reformulação exibida; o engine não é executado. `--force` somente após reconfirmação explícita do usuário |
-| Nenhum engine em cache e modo offline | `ok: false` → execute `oma market update` uma vez online |
+| Engine não instalado | `ok: false` → `oma market update` (instala com a skills CLI) |
 | Nenhum Python 3.12+ | `ok: false` com dica de instalação (brew / apt / `uv python install 3.12`), ou defina `LAST30DAYS_PYTHON` / `market.python`; não há substituto somente com pesquisa web |
-| Verificação de release falha | Engine em cache usado, informado como `stale` |
+| `oma market update` falha | O erro da skills CLI é exibido; uma instalação existente continua funcionando |
 | Fontes sem chaves | Ignoradas dentro do engine e listadas no rodapé; habilite-as pelo assistente de configuração upstream |
 
 ---
@@ -129,7 +129,7 @@ flowchart TD
 ## Próximos passos
 
 - [Fluxos de conteúdo e pesquisa](./content-and-research.md) — escolha a capacidade certa para outras tarefas de pesquisa e documentos
-- [Motor de diagramas](./diagram-engine.md) — o mesmo padrão de latest gerenciado para archify
+- [Motor de diagramas](./diagram-engine.md) — o mesmo padrão de instalação via skills CLI para o archify
 - [Semântica de oma-config.yaml](./oma-config-semantics.md) — como a seção `market:` é mesclada
 - [Comandos da CLI: market](../cli-interfaces/commands.md#market) — lista completa de opções
 - Upstream: [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

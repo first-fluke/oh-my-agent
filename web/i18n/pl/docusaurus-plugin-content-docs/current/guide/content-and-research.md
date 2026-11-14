@@ -6,7 +6,7 @@ description: Wybierz właściwą ścieżkę oh-my-agent wraz z jej wymaganiami w
 
 # Workflowy treści i badań
 
-Ten przewodnik kieruje pracę nad dokumentami, dźwiękiem, badaniami, multimediami i prezentacjami do właściwej możliwości. Zacznij od artefaktu, którego potrzebujesz, a następnie użyj najmniejszego polecenia albo punktu wejścia umiejętności, który tworzy wynik możliwy do przejrzenia. Możliwości z własnym przewodnikiem linkują do niego w ostatniej kolumnie; pozostałe opisano na tej stronie.
+Wybierz według artefaktu, którego potrzebujesz, a następnie użyj najmniejszego polecenia albo punktu wejścia umiejętności, który tworzy wynik możliwy do przejrzenia. Gdy możliwość ma własną stronę, użyj podlinkowanego przewodnika.
 
 | Potrzeba | Punkt wejścia | Wymagania wstępne | Pierwszy wynik | Przewodnik |
 |---|---|---|---|---|
@@ -26,7 +26,7 @@ Ten przewodnik kieruje pracę nad dokumentami, dźwiękiem, badaniami, multimedi
 | Przetłumacz albo przejrzyj lokalizowaną prozę | umiejętność `oma-translation` | brak | Tekst w języku docelowym albo przegląd oparty na dowodach | [niżej](#translate-or-review-localized-content) |
 | Napisz albo skontroluj prozę akademicką | umiejętność `oma-academic-writing` | brak | Draft, poprawiona wersja albo raport zgodności z Claim-Evidence Map | [niżej](#draft-or-audit-academic-writing) |
 
-Nazwy poleceń `oma` na tej stronie są zarejestrowanymi poleceniami publicznymi. `uvx`, `bunx` i `bun` to zewnętrzne narzędzia konwersji opisane przez ich właścicielskie umiejętności. Pozostałe [umiejętności](../getting-started/glossary.md#skill) są punktami wejścia w języku naturalnym albo poleceniami slash; nie ma samodzielnych poleceń `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ani `oma academic-writing`.
+Każde polecenie `oma` wymienione niżej jest zarejestrowanym poleceniem publicznym. `uvx`, `bunx` i `bun` to zewnętrzne narzędzia konwersji opisane przez ich właścicielskie umiejętności. Pozostałe [umiejętności](../getting-started/glossary.md#skill) są punktami wejścia w języku naturalnym albo poleceniami slash; nie ma samodzielnych poleceń `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ani `oma academic-writing`.
 
 ## Wyodrębnij treść PDF {#extract-pdf-content}
 
@@ -79,7 +79,7 @@ HWP_SKILL_DIR=".agents/skills/oma-hwp"
 bun "$HWP_SKILL_DIR/resources/flatten-tables.ts" "$OUT"
 ```
 
-W świeżym klonie helper może zgłosić `Cannot find module "turndown"`; uruchom `bun install` w katalogu umiejętności `oma-hwp`, w jego `resources/`, a następnie uruchom helper ponownie.
+W świeżym klonie helper może zgłosić `Cannot find module "turndown"`; uruchom `bun install` w katalogu `resources/` umiejętności `oma-hwp`, a następnie uruchom helper ponownie.
 
 Dla partii użyj jawnego katalogu wynikowego:
 
@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Użyj `--slide <file>` do kontroli pojedynczego slajdu i `--report-file <path>` z wynikiem JSON, gdy inny proces potrzebuje ustaleń. `slide import pptx <file>` rozpoczyna workflow importu; `slide asset fetch-video <url>` pobiera zasób wideo; `slide style list|preview|get <slug>` sprawdza style. Wynik PPTX jest oparty na rastrze, więc nie dostarcza edytowalnego tekstu ani warstw kształtów. Walidacja i eksport wymagają Chrome/puppeteer; ustaw `OMA_CHROME_PATH`, gdy plik wykonywalny nie jest znajdowany. Jeśli po trzech iteracjach automatycznych napraw walidacja nie osiągnie zbieżności, użyj zgłoszonych ustaleń geometrii do edycji właściwego fragmentu.
 
+### Edytowalny PowerPoint (ścieżka native-pptx) {#editable-powerpoint-native-pptx-route}
+
+Gdy wynik musi być edytowalnym plikiem PowerPoint, `oma-slide` przełącza się na ścieżkę `native-pptx`. Ta sama ścieżka obsługuje wypełnianie albo edycję istniejącego PPTX z zachowaniem jego projektu, zamianę PDF, DOCX, XLSX albo URL w deck, budowę wielokrotnego użytku marki, stylu, układu albo szablonu decku oraz wynik PPTX albo MP4 z narracją. Decki webowe, animowane i Canva zostają na ścieżce HTML powyżej.
+
+Ścieżka uruchamia nadrzędną umiejętność [ppt-master](https://github.com/hugohe3/ppt-master) (MIT, Hugo He) bez jej modyfikowania. `oma-slide` używa zainstalowanej kopii z katalogu umiejętności runtime, gdy taka istnieje; w przeciwnym razie ładuje umiejętność na czas sesji poleceniem:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master tworzy strony SVG i eksportuje natywne kształty DrawingML, pola tekstowe, wykresy i tabele, więc PPTX trafia do katalogu `exports/` projektu pod `.agents/results/slides/<session-id>/`. Jego skrypty Pythona potrzebują pakietów z `requirements.txt` umiejętności; `oma-slide` pyta przed ich instalacją w wirtualnym środowisku `uv`. Jeśli odmówisz, proponuje zamiast tego ścieżkę HTML. Obrazy AI na tej ścieżce generuje `oma-image`, a własne bramki ppt-master i ekran potwierdzenia decydują o reszcie przebiegu.
+
 ## Odtwarzaj rozmowy agentów {#recap-agent-conversations}
 
 Użyj `/recap` (albo poproś agenta o recap) do podsumowań pracy opartych na dowodach; uruchamia on `oma recap`, aby zebrać historię. Data kalendarzowa i okno kroczące są różnymi wejściami:
@@ -188,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` zwraca prozę, Writing Notes i Claim-Evidence Map. `revise` zwraca oryginalne i poprawione fragmenty wraz z konkretnymi zmianami. `review` zwraca ustalenia PASS/FAIL dotyczące struktury zdań, czasowników, hedgingu, szczegółowości, wzorców anti-AI, jasności akapitów, rytmu i zgodności twierdzeń z dowodami. Umiejętność czyta istniejący draft w całości w trybie revise/review, osłabia albo usuwa twierdzenia bez poparcia, a nieangielski wynik przekazuje do `oma-translation` po przejściu angielskiej wersji.
 
-Użyj `oma scholar` do odkrywania źródeł i dowodów sidecara przed pisaniem. Jeśli brakuje cytowania albo rubryki, oznacz twierdzenie jako oczekujące albo poproś o brakujące ograniczenie; nie uzupełniaj luki wymyślonym źródłem. Wartościowym artefaktem ukończenia jest proza wraz z mapą dowodów albo raportem audytu, a nie ogólnie „wygładzony” akapit bez śledzalnego poparcia.
+Użyj `oma scholar` do odkrywania źródeł i dowodów sidecara przed pisaniem. Jeśli brakuje cytowania albo rubryki, oznacz twierdzenie jako oczekujące albo poproś o brakujące ograniczenie; nie uzupełniaj luki wymyślonym źródłem. Zwróć prozę wraz z jej mapą dowodów albo raportem audytu, aby czytelnicy mogli prześledzić jej twierdzenia.
 
 ## Lista kontrolna odzyskiwania {#recovery-checklist}
 

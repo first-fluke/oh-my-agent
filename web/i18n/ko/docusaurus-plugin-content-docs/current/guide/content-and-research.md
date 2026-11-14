@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 단일 슬라이드 검사에는 `--slide <file>`을 사용하고, 다른 프로세스가 결과를 필요로 하면 JSON 출력과 함께 `--report-file <path>`를 사용합니다. `slide import pptx <file>`은 가져오기 워크플로우를 시작하며, `slide asset fetch-video <url>`은 동영상 자산을 다운로드합니다. `slide style list|preview|get <slug>`는 스타일을 확인합니다. PPTX 출력은 래스터 기반이므로 편집 가능한 텍스트나 도형 레이어를 제공하지 않습니다. 검증과 내보내기에는 Chrome/puppeteer가 필요하며 실행 파일을 찾지 못하면 `OMA_CHROME_PATH`를 설정합니다. 세 번의 자동 수정 뒤에도 검증이 수렴하지 않으면 보고된 기하 문제를 사용해 영향을 받은 조각을 수정합니다.
 
+### 편집 가능한 PowerPoint (native-pptx 경로) {#editable-powerpoint-native-pptx-route}
+
+결과물이 편집 가능한 PowerPoint 파일이어야 하면 `oma-slide`는 `native-pptx` 경로로 전환합니다. 같은 경로는 기존 PPTX의 디자인을 유지한 채 내용을 채우거나 편집하고, PDF, DOCX, XLSX, URL을 덱으로 바꾸고, 재사용할 브랜드, 스타일, 레이아웃, 덱 템플릿을 만들고, 내레이션이 있는 PPTX나 MP4를 출력하는 일도 처리합니다. 웹, 애니메이션, Canva 덱은 위의 HTML 경로에 그대로 둡니다.
+
+이 경로는 업스트림 [ppt-master](https://github.com/hugohe3/ppt-master) 스킬(MIT, Hugo He)을 수정하지 않고 실행합니다. `oma-slide`는 런타임 스킬 카탈로그에 설치된 사본이 있으면 그 사본을 쓰고, 없으면 세션 동안 다음 명령으로 스킬을 불러옵니다.
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master는 SVG 페이지를 작성하고 네이티브 DrawingML 도형, 텍스트 상자, 차트, 표를 내보내므로, PPTX는 프로젝트의 `exports/` 폴더, 즉 `.agents/results/slides/<session-id>/` 아래에 놓입니다. Python 스크립트에는 스킬의 `requirements.txt`에 있는 패키지가 필요하며, `oma-slide`는 그 패키지를 `uv` 가상 환경에 설치하기 전에 묻습니다. 거부하면 HTML 경로를 대신 제안합니다. 이 경로의 AI 이미지는 `oma-image`로 만들고, 나머지 흐름은 ppt-master 자체 게이트와 확인 화면이 결정합니다.
+
 ## 에이전트 대화 리캡 {#recap-agent-conversations}
 
 증거 기반 작업 요약에는 `/recap`을 사용하거나 에이전트에게 리캡을 요청합니다. 이 경로는 `oma recap`을 실행해 이력을 수집합니다. 달력 날짜와 이동 시간 창은 서로 다른 입력입니다.

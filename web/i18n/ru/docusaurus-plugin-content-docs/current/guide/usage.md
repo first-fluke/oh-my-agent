@@ -301,9 +301,9 @@ Preset installer `all` следует актуальному registry. Табл�
 | Навык | Лучше всего подходит для | Основной результат |
 |-------|---------|---------------|
 | **oma-academic-writing** | Academic drafting, revision и anti-AI review | Publication-oriented prose и claim/evidence revisions |
-| **oma-architecture** | System boundaries, tradeoffs, ADRs | Architecture recommendation или decision record |
+| **oma-architecture** | System boundaries, tradeoffs, ADRs | Отчёты в `.agents/results/architecture/`; записи решений в `docs/decisions/` |
 | **oma-backend** | APIs, auth, server logic, migrations | Router/service/repository changes и verification |
-| **oma-brainstorm** | Неоднозначные идеи и сравнение подходов | Design document в `docs/plans/designs/` |
+| **oma-brainstorm** | Неоднозначные идеи и сравнение подходов | Черновик решения в `docs/decisions/` |
 | **oma-coordination** | Общие правила координации для `/work`, `/orchestrate` и `/ultrawork`; ручная пошаговая координация | Переиспользование планов, согласование контрактов, владение workspace и handoff в QA |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations и recovery plan |
 | **oma-debug** | Bug reproduction и root cause analysis | Minimal fix, regression evidence и pattern scan |
@@ -343,7 +343,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Обе команды наблюдают за `.agents/state/memories/` в текущем каталоге. Передайте `--project-root <path>`, чтобы наблюдать за другим проектом, или задайте `MEMORIES_DIR`. Таблица агентов содержит четыре столбца:
+Обе команды следят за прогрессом в `.agents/state/memories/` и за отчётами `result-*.md` в `.agents/results/` в текущем каталоге. Передайте `--project-root <path>`, чтобы следить за другим проектом. `MEMORIES_DIR` удерживает дашборд на одном этом пользовательском каталоге. Таблица агентов содержит четыре столбца:
 
 | Столбец | Источник |
 |--------|--------|

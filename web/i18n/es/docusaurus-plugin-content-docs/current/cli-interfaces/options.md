@@ -168,8 +168,10 @@ Usa `select(.supportsDryRun? == true)` de la misma forma para encontrar los coma
 ### install
 
 ```text
-oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
+oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
+
+`--preset` selecciona uno de los diez [presets de skills con nombre](../getting-started/installation.md#presets) y tiene prioridad sobre el prompt interactivo de skills y sobre el valor predeterminado `all` en modo desatendido. Los nombres desconocidos, los valores vacíos y `custom` fallan antes de la instalación; la selección individual usa el menú interactivo Custom. Los presets seleccionan skills y conservan los archivos compartidos del runtime, las definiciones de workflows y agentes, los hooks, los proveedores y las skills ya instaladas. Consulta [Elegir una configuración](../getting-started/choose-setup.md) para la carga temporal de instrucciones de una sola skill.
 
 El instalador interactivo escribe en `.agents/oma-config.yaml` la configuración de proveedores seleccionada. Si existe `.agents/oma-config.cue`, tiene prioridad sobre ese archivo, por lo que las opciones que la configuración CUE aún no contiene se escriben en la capa local ignorada por git `.agents/oma-config.local.yaml`; la selección de DevTools del navegador y la referencia de vault de `oma memory keys` siguen la misma regla, y la selección de vendors de CLI y `oma model propose --write` también cuando no existe `oma-config.yaml`. Los flags de proveedor seleccionan las integraciones de web-search, code-intelligence y semantic-memory; `--honcho-url` y `--honcho-workspace` configuran el servicio de memoria Honcho cuando se selecciona ese proveedor. El flag raíz `-y, --yes` se aplica cuando un flujo de instalación solicita confirmación.
 

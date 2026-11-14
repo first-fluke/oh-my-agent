@@ -139,7 +139,7 @@ flowchart TD
 | **리팩터링** | oma-refactor | 동작을 보존하는 점진적 구조 개선. 핫스팟 타기팅, 특성화 테스트 안전망, 리팩터링만 담는 커밋 |
 | **시장 조사** | oma-market | 커뮤니티 신호 기반 페인·트렌드·경쟁·발견 조사. 의도에 따라 SWOT / Porter's 5F / PESTEL 자동 선택 |
 | **스킬 작성** | oma-skill-creation | SSL-lite 형식으로 OMA 스킬을 만들고 검증 |
-| **미디어 생성** | oma-image, oma-slide, oma-video, oma-voice | AI 이미지 생성, HTML 발표 덱, 숏폼·설명·데모 영상, 로컬 TTS/STT |
+| **미디어 생성** | oma-image, oma-slide, oma-video, oma-voice | AI 이미지 생성, HTML과 편집 가능한 PPTX 발표 덱, 숏폼·설명·데모 영상, 로컬 TTS/STT |
 
 ---
 

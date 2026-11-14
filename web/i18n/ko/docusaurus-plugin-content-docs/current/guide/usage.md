@@ -303,9 +303,9 @@ oma stats get
 | 스킬 | 적합한 용도 | 주요 출력 |
 |-------|---------|---------------|
 | **oma-academic-writing** | 학술 초안, 수정, AI 문체 검토 | 출판용 문장과 주장·근거 수정 |
-| **oma-architecture** | 시스템 경계, 트레이드오프, ADR | 아키텍처 권고 또는 결정 기록 |
+| **oma-architecture** | 시스템 경계, 트레이드오프, ADR | `.agents/results/architecture/`의 보고서, `docs/decisions/`의 결정 기록 |
 | **oma-backend** | API, 인증, 서버 로직, 마이그레이션 | 라우터·서비스·리포지토리 변경과 검증 |
-| **oma-brainstorm** | 모호한 아이디어와 접근 방식 비교 | `docs/plans/designs/` 설계 문서 |
+| **oma-brainstorm** | 모호한 아이디어와 접근 방식 비교 | `docs/decisions/`의 결정 초안 |
 | **oma-coordination** | `/work`, `/orchestrate`, `/ultrawork`의 공유 조율 규칙과 수동 단계별 조율 | 계획 재사용, 컨트랙트 정렬, 워크스페이스 소유권, QA 인계 안내 |
 | **oma-db** | 스키마, ERD, 쿼리 튜닝, 용량 계획 | 스키마 문서, 마이그레이션, 복구 계획 |
 | **oma-debug** | 버그 재현과 근본 원인 분석 | 최소 수정, 회귀 근거, 유사 패턴 스캔 |

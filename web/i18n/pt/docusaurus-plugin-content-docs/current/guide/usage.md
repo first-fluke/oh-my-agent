@@ -137,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Etapa 6, procurar padrões semelhantes:** MCP `search_for_pattern` procura outras chamadas `.map()` em arrays potencialmente indefinidos
    - Encontra 3 padrões semelhantes em `user-list.tsx`, `comment-list.tsx`, `notification-list.tsx`
    - Aplica proativamente o mesmo padrão de correção
-8. **Etapa 7, documentar:** O relatório do bug é escrito na memória com causa raiz, correção e prevenção
+8. **Etapa 7, documentar:** O relatório do bug é escrito em `.agents/results/bugs/` com causa raiz, correção e prevenção
 
 ---
 
@@ -249,7 +249,7 @@ Tarefas entre vendors e `model_preset: free` usam `oma agent spawn`. O dispatch 
 | `/work` | Persistente | Planejamento, implementação e QA passo a passo em vários domínios dentro do escopo autorizado | Funcionalidades que abrangem vários domínios e exigem entrega coordenada |
 | `/ultrawork` | Persistente | Workflow de qualidade em 5 fases e 17 etapas com 12 checkpoints de revisão isolados | Entrega de qualidade máxima, código crítico para produção |
 | `/plan` | Não persistente | Breakdown de tarefas conduzido pelo PM, contratos de API e artefatos de plano acompanhados em `docs/plans/work/` (arquivos sequenciais `NNN-name.md`, campo Status para o ciclo de vida) | Antes de qualquer trabalho complexo com vários agentes; funcionalidades complexas que precisam de progresso acompanhado e registros de decisão |
-| `/brainstorm` | Não persistente | Ideação orientada ao design com propostas de 2-3 abordagens | Antes de se comprometer com uma abordagem de implementação |
+| `/brainstorm` | Não persistente | Exploração de abordagens com 2-3 propostas e um rascunho em `docs/decisions/` | Antes de se comprometer com uma abordagem de implementação |
 | `/deepinit` | Não persistente | Inicialização completa do projeto (AGENTS.md, ARCHITECTURE.md, docs/) | Configurar o oh-my-agent em um codebase existente |
 | `/review` | Não persistente | Pipeline de QA: segurança OWASP, performance, acessibilidade e qualidade do código. O escopo vem da solicitação e, por padrão, são as mudanças atuais | Antes de fazer merge, revisão pré-deploy |
 | `/security` | Não persistente | Faz varreduras no código-fonte da aplicação, em skills de agentes ou em componentes MCP, valida achados e configura gates de segurança por meio de `oma-security`. Testes de penetração em uma implantação web de teste com escopo definido só são executados em uma plataforma de execução fornecida e revisada pelo usuário | Antes de um release, ou quando uma mudança precisa de varredura ou gate de segurança |
@@ -303,7 +303,7 @@ O preset `all` do instalador segue o registro ativo. A tabela agrupa cada skill 
 | Skill | Melhor para | Saída principal |
 |-------|-------------|-----------------|
 | **oma-academic-writing** | Redação acadêmica, revisão e análise anti-AI | Prosa orientada à publicação e revisões de claims/evidências |
-| **oma-architecture** | Fronteiras de sistema, tradeoffs e ADRs | Recomendação de arquitetura ou registro de decisão |
+| **oma-architecture** | Fronteiras de sistema, tradeoffs e ADRs | Relatórios em `.agents/results/architecture/`; registros de decisão em `docs/decisions/` |
 | **oma-backend** | APIs, auth, lógica de servidor e migrações | Alterações de router/serviço/repositório e verificação |
 | **oma-brainstorm** | Ideias ambíguas e comparação de abordagens | Rascunho de decisão em `docs/decisions/` |
 | **oma-coordination** | Regras compartilhadas de coordenação para `/work`, `/orchestrate` e `/ultrawork`; coordenação manual passo a passo | Orientação sobre reutilização de plano, alinhamento de contratos, responsabilidade pelos workspaces e handoff para QA |
@@ -345,7 +345,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Os dois comandos observam `.agents/state/memories/` no diretório atual. Passe `--project-root <path>` para observar outro projeto ou defina `MEMORIES_DIR`. A tabela de agentes tem quatro colunas:
+Os dois comandos observam `.agents/state/memories/` em busca de progresso e `.agents/results/` em busca de relatórios `result-*.md` no diretório atual. Passe `--project-root <path>` para observar outro projeto. Definir `MEMORIES_DIR` mantém o dashboard nesse único diretório personalizado. A tabela de agentes tem quatro colunas:
 
 | Coluna | Origem |
 |--------|--------|
@@ -384,7 +384,7 @@ Quando você executa `oma agent spawn`, a CLI:
 
 ### Armazenamento de memória do projeto
 
-Os agentes coordenam por meio de arquivos duráveis em `.agents/state/memories/` (projetos antigos recorrem ao caminho legado `.serena/memories/`). O orquestrador escreve arquivos de sessão e quadro de tarefas específicos da execução. Cada execução escreve `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` e `result-{agentId}-{taskId}-{runId}-{sessionId}.md` quando a saída Markdown de progresso ou resultado está habilitada; recibos e claims estruturados em `.agents/state/agent-runs/` são a autoridade para criações via CLI. Os agentes leem e escrevem esses arquivos com suas ferramentas nativas; o mapeamento de ferramentas permanece configurável em `.agents/mcp.json → memoryConfig.tools`.
+Os agentes coordenam por meio de arquivos duráveis em `.agents/state/memories/` (projetos antigos recorrem ao caminho legado `.serena/memories/`). Esse diretório guarda resumos de sessão, quadros de tarefas, progresso, lições e registros de experimentos. Relatórios legíveis por humanos `result-{agentId}-{taskId}-{runId}-{sessionId}.md` ficam em `.agents/results/`. Recibos e claims estruturados em `.agents/state/agent-runs/` continuam autoritativos para spawns da CLI, e planos de execução congelados ficam em `.agents/state/agent-plans/`. Os agentes leem e escrevem esses arquivos com suas ferramentas nativas; o mapeamento de ferramentas permanece configurável em `.agents/mcp.json → memoryConfig.tools`.
 
 ### Documentos e relatórios
 

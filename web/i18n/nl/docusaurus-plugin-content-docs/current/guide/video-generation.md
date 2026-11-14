@@ -88,7 +88,8 @@ Andere tools die `oma video generate --output json` als shell-opdracht aanroepen
 
 ---
 
-## Beheerde HyperFrames-toolchain en het schrijven van composities {#always-latest-hyperframes-you-author-the-composition}
+<a id="always-latest-hyperframes--you-author-the-composition"></a>
+## Beheerde HyperFrames-toolchain en het schrijven van composities
 
 oh-my-agent levert **geen HyperFrames-compositiecode** mee. Elke run krijgt een eigen project op `<runDir>/hyperframes/`, dat door `oma video compose` wordt gescaffold op de nieuwste npm-HyperFrames (toolchain-cache `~/.cache/oma-video/hyperframes/<version>/`, gedeeld via een `node_modules`-symlink) en de [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)-skills `hyperframes` en `hyperframes-cli`, geïnstalleerd via de [skills CLI](https://github.com/vercel-labs/skills). De agent schrijft de bron van de gegenereerde compositie volgens de `AUTHORING.md` van de scaffold, de skills en de modespecificatie in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 

@@ -29,7 +29,7 @@ OMA は、明示的に呼び出したとき、またはそのチェックを含�
 OMA はスキルにドメインを割り当て、タスクをエージェントへ振り分けます。
 
 1. **各スキルには主なドメインがあります。** フロントエンドスキルは React/Next.js、shadcn/ui、TailwindCSS v4、FSD-lite アーキテクチャを扱います。バックエンドスキルは Repository-Service-Router パターン、パラメーター化クエリ、JWT 認証を扱います。ドメインの境界では重なりもあるため、2つ目のスキルや調整ワークフローが必要かどうかは、タスクの受入基準で判断してください。
-2. **エージェントは並列で実行できます。** バックエンドエージェントが API を構築している間、フロントエンドエージェントは自分のワークスペースで作業できます。オーケストレーターはファイルとして保存される実行単位の状態と実行記録を介して調整します。
+2. **エージェントは並列で実行できます。** バックエンドエージェントが API を構築している間、フロントエンドエージェントは自分のワークスペースで作業できます。オーケストレーターは、実行単位で残るファイルと受領記録を通じて調整します。
 3. **品質に関するガイダンスが組み込まれています。** スキルにはドメイン別のチェックリスト、エラー対応手順、[チャーター](./glossary.md#charter)規則があります。チャータープリフライトでコードを書く前に範囲を絞り、選択したワークフローに含まれる場合、または依頼した場合に QA レビューを実行します。
 
 ---
@@ -98,7 +98,7 @@ OMA はスキルにドメインを割り当て、タスクをエージェント�
 
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
-| **oma-search** | 外部ソースの検索ルーター | リクエストごとに主ルートを1つ選択します。`docs`（Context7、必要に応じて公式サイト探索）、`web`（設定済みの `native`、`brave`、`exa` プロバイダー）、`code`（`gh`/`glab` 上の `oma search code`）、`fetch`（既知の URL）のいずれかです。ルート、実際のプロバイダー、本文の読み取り状況、裏付けとなる証拠、制約事項を添えてソースを返し、数値による信頼スコアは付けません。別のルートは証拠の不足を補う必要がある場合のみ追加し、明示的に指定したプロバイダーが失敗した場合は黙って置き換えずに報告します。フラグは `--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab` です。ローカルコードの移動には設定済みのコードツールを使います。 |
+| **oma-search** | 外部ソースの検索ルーター | リクエストごとに主ルートを1つ選択します。`docs`（Context7、必要に応じて公式サイト探索）、`web`（設定済みの `native`、`brave`、`exa` プロバイダー）、`code`（`gh`/`glab` 上の `oma search code`）、`fetch`（既知の URL）のいずれかです。ルート、実際のプロバイダー、本文の読み取り状況、裏付けとなる証拠、制約事項を添えてソースを返し、数値による信頼スコアは付けません。別のルートは証拠の不足を補う必要がある場合のみ追加し、明示的に指定したプロバイダーが失敗した場合は黙って置き換えずに報告します。フラグは `--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab` です。ローカルのコード探索には、設定済みのコードツールを使います。 |
 | **oma-recap** | ツール横断の作業レトロスペクティブ | Grok、Claude、Codex、Gemini、Qwen、Cursor、Antigravity の会話履歴を分析します。自然言語の日付や期間を解決し、作業内容ごと（3日以上の期間ではプロジェクトごと）にグループ化し、テーマを抽出し、日次や期間のサマリーをレンダリングします。CLI が要求された期間を30日で上限設定した場合も記録します。 |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | `bunx kordoc@latest` で韓国語ワープロ文書を変換します。見出し、ネストした表、脚注、ハイパーリンク、画像を保持し、`flatten-tables.ts` の後処理で Hancom の私用領域文字を除去します。 |
 | **oma-pdf** | PDF → Markdown | `uvx opendataloader-pdf` で PDF を変換します。見出し、表、リスト、画像を保持し、スキャン PDF には OCR ハイブリッドモードを使い、`uvx mdformat` で出力を正規化します。 |
@@ -120,7 +120,7 @@ OMA はスキルにドメインを割り当て、タスクをエージェント�
 
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
-| **oma-docs** | ドキュメントの整合性検出 | `verify` モードは `docs/**/*.md` の壊れた参照（ファイルパス、CLI コマンド、設定キー、環境変数、スクリプト）を決定論的に確認し、0/1 を終了コードとして返します。`sync` モードは Git の差分を候補ドキュメントに対応付け、ホスト LLM によるパッチ案をドキュメントごとに確認してから適用します（自動適用はしません）。URL 確認は `lychee` に委ねます。CLI は構造化 JSON を出力し、ホスト LLM が自然言語の整理を担います。`.agents/` は変更しません。 |
+| **oma-docs** | ドキュメントの整合性検出 | `verify` モードは `docs/**/*.md` の壊れた参照（ファイルパス、CLI コマンド、設定キー、環境変数、スクリプト）を決定論的に確認し、0/1 を終了コードとして返します。`sync` モードは Git の差分を候補ドキュメントに対応付け、ホスト LLM によるパッチ案をドキュメントごとに確認してから適用します（自動適用はしません）。URL 確認は `lychee` に委ねます。CLI は構造化 JSON を出力し、ホスト LLM がすべての整理を担います（ベンダー SDK は呼び出しません）。`.agents/` は変更しません。 |
 | **oma-skill-creation** | SSL-lite スキル作成スペシャリスト | SSL-lite 形式で OMA スキルを作成、更新、監査します。必須4セクション（Scheduling / Structural Flow / Logical Operations / References）を検査し、標準パスを1つだけインラインに入れ、`When NOT to use` の相互ルートを設定し、`oma skill audit` で説明の衝突を検出します。TF-IDF コサイン類似度は警告が60%以上、失敗が75%以上です。長い variant の詳細は `resources/` に移します。 |
 | **oma-explanation** | 変更とトピックの解説 | 差分、PR、ブランチ、コミット範囲を Background、Intuition、Code、Quiz を含む自己完結型オフライン HTML の解説にまとめたり、トピックを1ページ構成のビジュアルシートとして説明したりします。モデルが下書きを作成し、`oma explain render` が `.agents/results/explain/` 配下にページを書き出し、`oma explain validate` が検証し、`oma explain render --open` がページを開きます。 |
 
@@ -128,7 +128,7 @@ OMA はスキルにドメインを割り当て、タスクをエージェント�
 
 | エージェント | 役割 | 主な機能 |
 |-------|------|-----------------|
-| **oma-market** | コミュニティシグナル分析 | Reddit、X、YouTube、TikTok、HN、Polymarket、GitHub、arXiv、Techmeme、Bluesky、Web などを含む上流の `last30days` エンジンを `oma market run` から実行します。`oma` はエンジンを常に最新リリース（`~/.cache/oma-market/`）に保ち、各実行を `detect-trap` で確認し、意図（pain / trend / competitor / discovery）を分類し、SWOT / Porter's 5F / PESTEL を追加します。LAW に準拠したブリーフを `.agents/results/market/{slug}-{YYYYMMDD}.md` に出力します。 |
+| **oma-market** | コミュニティシグナル分析 | 上流の `last30days` エンジン（実際の投票数とコメント付きの Reddit、X、YouTube の文字起こし、TikTok、HN、Polymarket、GitHub、arXiv、Techmeme、Bluesky、Web など）を `oma market run` で実行します。エンジンは skills CLI でインストールします（`oma market update`）。oma は各実行を `detect-trap` でゲートし、意図（pain / trend / competitor / discovery）を分類し、SWOT / Porter's 5F / PESTEL のセクションを追加します。LAW に準拠したブリーフを 1 つ、`.agents/results/market/{slug}-{YYYYMMDD}.md` に出力します。 |
 
 ### メディアとコンテンツ生成
 
@@ -221,7 +221,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-出典：`.agents/hooks/core/keyword-detector.ts`（スラッシュコマンドのスキップ、トリガーの照合、永続ワークフローの提案）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`、および `.agents/workflows/` 配下のワークフローファイル。すべてのワークフローがすべてのゲートを持つわけではありません。`/orchestrate` は検証スクリプトを、`/review` は QA レビューを実行し、`/ralph` は [judge](./glossary.md#judge) を追加します。
+出典：`.agents/hooks/core/keyword-detector.ts`（スラッシュコマンドのスキップ、明示的なモード名の照合）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`、および `.agents/workflows/` 配下のワークフローファイル。すべてのワークフローがすべてのゲートを持つわけではありません。`/orchestrate` は検証スクリプトを、`/review` は QA レビューを実行し、`/ralph` は [judge](./glossary.md#judge) を追加します。
 
 ---
 

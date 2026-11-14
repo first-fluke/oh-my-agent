@@ -182,7 +182,7 @@ Het finishcommando valideert de claim, het huidige contract, de huidige receipts
 
 ## Gedrag van gespawnde en native runs {#spawned-and-native-behavior}
 
-`oma agent spawn` en `oma agent parallel` maken een run aan, voegen de runidentiteit en resultinstructies toe aan de childprompt en laten de parent de exitcode van de child vastleggen. Een child hoort zijn claim en artifacts te schrijven en die artifacts te melden; de parent finaliseert de beheerde receipt. Een read-only child retourneert één regel in de vorm `OMA_RESULT_JSON: {...}`; de parent bewaart die als inspectie en de status `verificationSkipped` ervan blijft onderscheiden van uitvoerbare verificatie.
+`oma agent spawn` en `oma agent parallel` maken een run aan, voegen de runidentiteit en resultinstructies toe aan de childprompt en laten de parent de exitcode van de child vastleggen. Een child hoort zijn claim te schrijven en zijn artifacts te melden; de parent finaliseert de beheerde receipt. Een read-only child retourneert één regel in de vorm `OMA_RESULT_JSON: {...}`; de parent bewaart die als inspectie en de status `verificationSkipped` ervan blijft onderscheiden van uitvoerbare verificatie.
 
 De mensleesbare resultbestanden in `.agents/results/` en memorynotities in `.agents/state/memories/` helpen mensen het verloop te volgen. De machineleesbare receipt in `.agents/state/agent-runs/` is het bewijs dat voor hergebruik en hervatten wordt gebruikt.
 

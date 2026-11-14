@@ -354,7 +354,11 @@ Mọi event của một lần đánh giá dùng chung một `causalityKey`. Khi 
 Mỗi lần chạy arm cũng lưu `diagnostics` và `trace` trong record:
 
 - `diagnostics`: exit code, signal, timeout flag, và 8 KiB cuối của stderr cùng `stderrStatus` (`captured`, `truncated` hoặc `unavailable`).
-- `trace`: những gì harness có thể quan sát. `output` là `complete`, `partial` (một process thất bại vẫn tạo ra stdout) hoặc `unavailable`; `artifacts` cho biết final snapshot có đầy đủ hay không; `changedPaths` liệt kê các file mà arm đã thêm, sửa hoặc xóa so với pinned initial workspace (giới hạn 200 kèm `changedPathsTruncated`); `toolCalls` luôn là `unsupported` vì vendor CLI không cung cấp cho harness quan sát theo từng tool.
+- `trace`: những gì harness có thể quan sát. `output` là `complete`, `partial` (một process thất bại vẫn tạo ra stdout) hoặc `unavailable`; `artifacts` cho biết final snapshot có đầy đủ hay không; `changedPaths` liệt kê các file mà arm đã thêm, sửa hoặc xóa so với pinned initial workspace (giới hạn 200 kèm `changedPathsTruncated`).
+- `trace.toolCalls`: `captured`, `partial`, `missing` hoặc `unsupported`. Các run Claude và Codex có thể tải một native transcript mới, gắn với session và temporary workspace của arm. Log bị thiếu vẫn là `missing`; các vendor khác vẫn là `unsupported`.
+- `trace.toolEvidence`: khi có, gồm ID, tên, timing, cờ lỗi của tool call ở root session, cùng hash SHA-256 và số byte của request/response text đã chuẩn hóa. Đối số và kết quả tool thô không được sao chép vào evaluation record. Capture giới hạn 200 call và native transcript 16 MiB; chi tiết đã chuẩn hóa giới hạn 20.000 ký tự. Quan sát bị ngắt, không khớp hoặc bị cắt được đánh dấu partial, và chi tiết bị cắt được nhận diện cạnh hash của chúng.
+
+Hash của tool giúp tương quan lỗi với native log cục bộ. Chúng không thể replay phản hồi tool hay trạng thái bên ngoài, và không capture request API cuối cùng tới provider. Transcript của native subagent nằm ngoài phạm vi capture này. Các record cũ không có quan sát tool vẫn đọc được, và fixture replay giữ các yêu cầu bằng chứng riêng của nó.
 
 Vì vậy, một arm thất bại vẫn giữ partial output, stderr tail, exit status và các file change của nó, nhờ đó lỗi cuối cùng có thể được lần ngược về những gì arm đã thay đổi. Quan sát bị thiếu được ghi như một trạng thái; nó không bao giờ bị đọc như một lần chạy sạch.
 

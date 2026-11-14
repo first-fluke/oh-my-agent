@@ -6,7 +6,7 @@ description: Выберите правильный путь oh-my-agent и ег�
 
 # Workflow контента и исследований
 
-Начните с нужного артефакта, затем используйте минимальную команду или точку входа skill, создающую результат для review. Ссылки на отдельные руководства указаны в последнем столбце.
+Начните с нужного артефакта, затем используйте минимальную команду или точку входа skill, создающую результат для review. Если у возможности есть отдельная страница, откройте связанное руководство.
 
 | Задача | Точка входа | Предварительные требования | Первый результат | Руководство |
 |---|---|---|---|---|
@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Используйте `--slide <file>` для проверки одного слайда и `--report-file <path>` с JSON output, когда найденные проблемы нужны другому процессу. `slide import pptx <file>` начинает import workflow; `slide asset fetch-video <url>` скачивает video asset; `slide style list|preview|get <slug>` изучает стили. PPTX output основан на растре и не предоставляет редактируемые текстовые или графические слои. Validation и export требуют Chrome/puppeteer; задайте `OMA_CHROME_PATH`, если executable не найден. Если validation не сходится после трёх auto-fix итераций, по geometry findings исправьте затронутый fragment.
 
+### Редактируемый PowerPoint (маршрут native-pptx) {#editable-powerpoint-native-pptx-route}
+
+Когда результатом должен быть редактируемый файл PowerPoint, `oma-slide` переключается на маршрут `native-pptx`. Тот же маршрут заполняет или редактирует существующий PPTX, сохраняя оформление, превращает PDF, DOCX, XLSX или URL в deck, собирает переиспользуемый шаблон бренда, стиля, раскладки или deck, а также выдаёт озвученный PPTX или MP4. Web, анимированные и Canva deck остаются на HTML-маршруте выше.
+
+Маршрут запускает upstream skill [ppt-master](https://github.com/hugohe3/ppt-master) (MIT, автор Hugo He), не изменяя его. Если в каталоге skills runtime уже есть установленная копия, `oma-slide` использует её; иначе загружает skill на сессию так:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master создаёт SVG-страницы и экспортирует нативные фигуры DrawingML, текстовые поля, charts и tables, поэтому PPTX попадает в каталог `exports/` проекта внутри `.agents/results/slides/<session-id>/`. Python-скриптам нужны пакеты из `requirements.txt` skill; `oma-slide` спрашивает перед установкой их в виртуальное окружение `uv`. Если вы отказываетесь, skill предлагает HTML-маршрут. Изображения AI на этом маршруте создаются через `oma-image`, а собственные gates и экран подтверждения ppt-master определяют дальнейший ход.
+
 ## Recap разговоров агентов {#recap-agent-conversations}
 
 Используйте `/recap` (или попросите агента сделать recap) для сводки работы на основе evidence; он запускает `oma recap`, чтобы собрать историю. Календарная дата и скользящее окно — разные виды входных данных:
@@ -188,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` возвращает прозу, Writing Notes и Claim-Evidence Map. `revise` возвращает исходные и исправленные блоки с concrete changes. `review` возвращает PASS/FAIL findings по структуре предложений, глаголам, hedging, конкретности, anti-AI patterns, ясности абзацев, ритму и claim-evidence alignment. Skill полностью читает существующий draft для revise/review, ослабляет или удаляет неподтверждённые claims и передаёт non-English output в `oma-translation` после English pass.
 
-Перед draft используйте `oma scholar` для поиска источников и sidecar evidence. Если citation или rubric отсутствует, отметьте claim как pending или запросите недостающее ограничение; не заполняйте пробел выдуманным source. Полезный completion artifact — prose вместе с evidence map или audit report, а не общий «polished» paragraph без traceable support.
+Перед draft используйте `oma scholar` для поиска источников и sidecar evidence. Если citation или rubric отсутствует, отметьте claim как pending или запросите недостающее ограничение; не заполняйте пробел выдуманным source. Верните prose вместе с evidence map или audit report, чтобы читатели могли проследить claims.
 
 ## Checklist восстановления
 

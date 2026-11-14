@@ -6,7 +6,7 @@ description: Kies het juiste oh-my-agent-pad, met de bijbehorende vereisten, voo
 
 # Inhouds- en onderzoeksworkflows {#content-and-research-workflows}
 
-Koppel documenten, audio, onderzoek, media en presentaties aan de verantwoordelijke capability. Begin met het gewenste artifact en kies het kleinste commando of skill-entrypoint waarmee je een controleerbaar resultaat krijgt.
+Kies op basis van het artifact dat je nodig hebt en gebruik daarna het kleinste commando of skill-entrypoint dat een controleerbaar resultaat oplevert. Gebruik de gekoppelde gids wanneer een capability een eigen pagina heeft.
 
 | Behoefte | Entry point | Vereisten | Eerste resultaat | Gids |
 |---|---|---|---|---|
@@ -87,7 +87,7 @@ Gebruik voor een batch een expliciete uitvoermap:
 bunx kordoc@latest "./incoming/*.hwpx" -d ".agents/results/hwp"
 ```
 
-De standaarduitvoer is Markdown. Gebruik voor een gestructureerde AST `bunx kordoc@latest "<input.hwp>" --format json`; gebruik voor retrievalgerichte chunks `--format chunks`. De conversieopties `--dedupe-headers`, `--keep-empty-cols` en `--inline-images` sturen veelvoorkomende problemen met tabellen, samengevoegde kolommen en afbeeldingen. Controleer koppen, geneste of samengevoegde tabellen, lijsten, afbeeldingen, voetnoten en links in het resultaat voordat je het aan een andere skill doorgeeft.
+De standaarduitvoer is Markdown. Gebruik voor een gestructureerde AST `bunx kordoc@latest "<input.hwp>" --format json`; gebruik voor retrievalgerichte chunks `--format chunks`. De conversieopties `--dedupe-headers`, `--keep-empty-cols` en `--inline-images` sturen veelvoorkomende gevallen van tabellen en afbeeldingen. Controleer koppen, geneste of samengevoegde tabellen, lijsten, afbeeldingen, voetnoten en links in het resultaat voordat je het aan een andere skill doorgeeft.
 
 `bun` en `bunx` zijn vereisten. Lege uitvoer kan betekenen dat de inhoud alleen uit gescande afbeeldingen bestaat; stuur dat geval naar een OCR-workflow. Versleutelde of door DRM beperkte inhoud kan onvolledig blijven. PDF-, DOCX- en XLSX-invoer hoort bij de bijbehorende skills, ook al heeft `kordoc` andere commando's voor schrijven en parseren.
 
@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Gebruik `--slide <file>` voor een controle van één dia en `--report-file <path>` met JSON-uitvoer wanneer een ander proces de bevindingen nodig heeft. `slide import pptx <file>` start een importworkflow; `slide asset fetch-video <url>` downloadt een video-asset; `slide style list|preview|get <slug>` inspecteert stijlen. PPTX-uitvoer is rastergebaseerd en levert dus geen bewerkbare tekst- of vormlagen. Validatie en export vereisen Chrome/puppeteer; stel `OMA_CHROME_PATH` in wanneer het uitvoerbare bestand niet wordt gevonden. Als validatie na drie automatische herstelrondes niet convergeert, gebruik je de gemelde geometriebevindingen om het betrokken fragment aan te passen.
 
+### Bewerkbare PowerPoint (native-pptx-route) {#editable-powerpoint-native-pptx-route}
+
+Wanneer het resultaat een bewerkbaar PowerPoint-bestand moet zijn, schakelt `oma-slide` over naar de route `native-pptx`. Dezelfde route vult of bewerkt een bestaande PPTX met behoud van het ontwerp, maakt van een PDF, DOCX, XLSX of URL een deck, bouwt een herbruikbaar merk-, stijl-, layout- of deck-sjabloon, en levert een PPTX of MP4 met vertelling. Web-, geanimeerde en Canva-decks blijven op de HTML-route hierboven.
+
+De route voert de upstream-skill [ppt-master](https://github.com/hugohe3/ppt-master) uit (MIT, door Hugo He) zonder die te wijzigen. `oma-slide` gebruikt een geïnstalleerde kopie uit de skillcatalogus van je runtime wanneer die er is; anders laadt het de skill voor de sessie met:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master schrijft SVG-pagina's en exporteert native DrawingML-vormen, tekstvakken, grafieken en tabellen, zodat de PPTX in de map `exports/` van het project terechtkomt onder `.agents/results/slides/<session-id>/`. De Python-scripts hebben de pakketten in `requirements.txt` van de skill nodig; `oma-slide` vraagt toestemming voordat het die in een `uv`-virtual environment installeert. Als je weigert, biedt het in plaats daarvan de HTML-route aan. AI-afbeeldingen op deze route worden gegenereerd met `oma-image`, en de eigen gates en het bevestigingsscherm van ppt-master bepalen de rest van de flow.
+
 ## Agentgesprekken samenvatten {#recap-agent-conversations}
 
 Gebruik `/recap` (of vraag de agent om een recap) voor evidence-based samenvattingen van werk; dat voert `oma recap` uit om de geschiedenis te verzamelen. Een kalenderdatum en een voortschrijdend venster zijn verschillende invoeren:
@@ -188,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` levert proza, Writing Notes en een Claim-Evidence Map op. `revise` levert oorspronkelijke en herziene blokken plus concrete wijzigingen op. `review` retourneert PASS/FAIL-bevindingen over zinsstructuur, werkwoorden, hedging, specificiteit, anti-AI-patronen, alineaduidelijkheid, ritme en claim-evidence-alignment. De skill leest een bestaande draft volledig tijdens revise/review, verzwakt of verwijdert onbewezen claims en geeft niet-Engelse uitvoer na de Engelse stap door aan `oma-translation`.
 
-Gebruik `oma scholar` voor bronontdekking en sidecar-bewijs voordat je schrijft. Als een citaat of rubric ontbreekt, markeer de claim als pending of vraag naar de ontbrekende beperking; vul het gat niet met een verzonnen bron. Het bruikbare eindartifact is de tekst plus evidence map of auditrapport, geen generiek "opgepoetste" alinea zonder traceerbaarheid.
+Gebruik `oma scholar` voor bronontdekking en sidecar-bewijs voordat je schrijft. Als een citaat of rubric ontbreekt, markeer de claim als pending of vraag naar de ontbrekende beperking; vul het gat niet met een verzonnen bron. Geef de tekst terug met de evidence map of het auditrapport, zodat lezers de claims kunnen nagaan.
 
 ## Herstelchecklist {#recovery-checklist}
 
@@ -199,7 +211,7 @@ Gebruik `oma scholar` voor bronontdekking en sidecar-bewijs voordat je schrijft.
 | Een onderzoeksresultaat is mager | Maak de query breder, inspecteer de fallback-/bronstatus en bewaar de onzekerheid in het rapport. |
 | Een slide-export faalt | Voer `oma slide validate --workspace <dir> --output json` uit, herstel geometrie- of fontbevindingen en exporteer daarna opnieuw. |
 | Een recap overdrijft de voltooiing | Controleer receipts en artifacts opnieuw; een prompt of toolaanroep alleen is geen bewijs van voltooiing. |
-| Een vertaling verandert codesyntax | Herstel beschermde namen en voer de structuurcontroles opnieuw uit voordat je de prozabetekenis reviewt. |
+| Een vertaling verandert codesyntax | Herstel beschermde namen en voer de structuurcontroles opnieuw uit voordat je de prozakwaliteit reviewt. |
 | Academische tekst bevat onbewezen claims | Verwijder of nuanceer de claim, voeg bewijs toe via het scholar-pad en voer de Claim-Evidence Map opnieuw uit. |
 
 ## Volgende stappen {#next-steps}

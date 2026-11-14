@@ -91,7 +91,7 @@ Una instalación en WSL y otra desde PowerShell son independientes. Si quieres c
 
 ### Guard de cwd = HOME (modo de proyecto)
 
-`oma link` y `oma update` (sin `--global`) se niegan a ejecutarse mientras tu directorio actual es tu HOME. En modo de proyecto, `<cwd>/.claude/settings.json` sería `~/.claude/settings.json`, es decir, tu configuración global de Claude Code, y el render con ámbito de proyecto reescribiría sus comandos `$HOME/.claude/hooks/...` a `$CLAUDE_PROJECT_DIR/...`, lo que rompería todos los hooks y la barra de estado en los proyectos que no tengan su propio `.claude/hooks/`. Para la instalación global, usa en su lugar `oma link --global` / `oma update --global`, o entra primero con `cd` en un proyecto.
+`oma link` y `oma update` (sin `--global`) se niegan a ejecutarse mientras tu directorio actual es tu HOME. En modo de proyecto, `<cwd>/.claude/settings.json` sería `~/.claude/settings.json`, es decir, tu configuración global de Claude Code, y el render con ámbito de proyecto reescribiría sus comandos `$HOME/.claude/hooks/...` a `$CLAUDE_PROJECT_DIR/...`, lo que rompería todos los hooks y la statusline en los proyectos que no tengan su propio `.claude/hooks/`. Para la instalación global, usa en su lugar `oma link --global` / `oma update --global`, o entra primero con `cd` en un proyecto.
 
 Si ejecutas `oma install` (sin `--global`) mientras tu directorio actual es tu HOME, oma te avisa:
 

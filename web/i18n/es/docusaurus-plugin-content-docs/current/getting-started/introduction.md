@@ -25,11 +25,11 @@ Los asistentes de programación tradicionales basados en IA suelen gestionar fro
 - **Propiedad poco clara**: una tarea entre dominios no tiene un límite explícito para cada parte.
 - **Coordinación manual**: las funcionalidades complejas que abarcan varios dominios necesitan handoffs elegidos por el host o el usuario.
 
-oh-my-agent resuelve esto mediante especialización:
+OMA asigna dominios a skills y dirige el trabajo de las tareas a agentes:
 
 1. **Cada skill tiene un dominio principal.** La skill frontend conoce React/Next.js, shadcn/ui, TailwindCSS v4 y la arquitectura FSD-lite. La skill backend conoce el patrón Repository-Service-Router, las consultas parametrizadas y la autenticación JWT. Los dominios pueden solaparse en sus límites, así que usa los criterios de aceptación de la tarea para decidir cuándo hace falta una segunda skill o un workflow coordinador.
 
-2. **Los agentes pueden ejecutarse en paralelo.** Mientras un agente backend construye una API, un agente frontend puede trabajar en su propio workspace. El orquestador coordina mediante archivos duraderos y acotados a la ejecución, además de registros de ejecución.
+2. **Los agentes pueden ejecutarse en paralelo.** Mientras un agente backend construye una API, un agente frontend puede trabajar en su propio workspace. El orquestador coordina mediante archivos duraderos y acotados a la ejecución, y registros de verificación (receipts).
 
 3. **La orientación de calidad está integrada.** Las skills incluyen listas de comprobación de dominio, playbooks de errores y reglas de [charter](./glossary.md#charter). El preflight del charter acota el alcance antes de escribir código; la revisión de QA se ejecuta cuando el workflow seleccionado la incluye o cuando la solicitas.
 
@@ -52,7 +52,7 @@ Los 12 archivos de definición versionados cubren los 13 roles de runtime median
 | Agente | Rol | Capacidades principales |
 |-------|------|-------------------------|
 | **oma-brainstorm** | Ideación centrada en el diseño | Explora la intención del usuario, propone 2-3 enfoques con análisis de compensaciones y produce documentos de diseño antes de escribir código. El workflow `/brainstorm` ejecuta 7 pasos: Contexto, Preguntas, Enfoques, Diseño, Revisión a ciegas, Documentación (`docs/decisions/`) y transición a `/plan`. |
-| **oma-architecture** | Especialista en arquitectura de sistemas | Límites de módulos, servicios y propiedad, análisis de compensaciones y síntesis de partes interesadas. Metodologías: enrutamiento diagnóstico, comparación de diseño doble, registros de decisiones estilo ATAM, priorización estilo CBAM y registros ADR. Es consciente del coste por defecto. |
+| **oma-architecture** | Especialista en arquitectura de sistemas | Límites de módulos, servicios y propiedad, análisis de compensaciones y síntesis de partes interesadas. Metodologías: enrutamiento diagnóstico, comparación de diseño doble, análisis de riesgo estilo ATAM, priorización estilo CBAM y registros de decisiones estilo ADR. Es consciente del coste por defecto. |
 | **oma-pm** | Product manager | Descompone requisitos en tareas priorizadas con dependencias. Define contratos de API. Produce `.agents/results/plan-{sessionId}.json` como handoff para el orquestador; el orquestador crea el tablero de tareas y es su propietario. Admite conceptos de ISO 21500, marcos de riesgo ISO 31000 y gobernanza ISO 38500. |
 
 ### Implementación
@@ -129,7 +129,7 @@ Los 12 archivos de definición versionados cubren los 13 roles de runtime median
 
 | Agente | Rol | Capacidades principales |
 |-------|------|-------------------------|
-| **oma-market** | Inteligencia de señales de comunidad | Ejecuta el motor upstream `last30days` (Reddit con votos y comentarios reales, X, transcripciones de YouTube, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web y más) mediante `oma market run`; oma mantiene el motor **siempre en su versión más reciente** (`~/.cache/oma-market/`), aplica `detect-trap` en cada ejecución, clasifica la intención (dolor / tendencia / competidor / descubrimiento) y añade secciones SWOT / 5 fuerzas de Porter / PESTEL. Emite un brief conforme a LAW en `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
+| **oma-market** | Inteligencia de señales de comunidad | Ejecuta el motor upstream `last30days` (Reddit con votos y comentarios reales, X, transcripciones de YouTube, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web y más) mediante `oma market run`; el motor se instala con la skills CLI (`oma market update`), y oma aplica `detect-trap` en cada ejecución, clasifica la intención (pain / trend / competitor / discovery) y añade secciones SWOT / Porter's 5F / PESTEL. Emite un brief conforme a LAW en `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
 
 ### Generación de medios y contenido
 
@@ -204,7 +204,7 @@ El spawn de agentes se adapta a cada proveedor seleccionado mediante detección 
 
 ## Cómo fluye una solicitud
 
-El diagrama muestra qué ocurre entre un prompt y un resultado terminado. El hook de palabras clave, el inyector de skills y el hook Stop solo se ejecutan en hosts que tienen habilitada la integración de hooks. El hook de palabras clave y el inyector de skills se ejecutan en secuencia sobre el mismo prompt, y su contexto inyectado se combina.
+El hook de palabras clave, el inyector de skills y el hook Stop solo se ejecutan en hosts que tienen habilitada la integración de hooks. El hook de palabras clave y el inyector de skills se ejecutan en secuencia sobre el mismo prompt, y su contexto inyectado se combina.
 
 ```mermaid
 flowchart TD
@@ -222,7 +222,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Fuentes: `.agents/hooks/core/keyword-detector.ts` (omisión de comandos slash, coincidencia de triggers, sugerencia persistente), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` y los archivos de workflow bajo `.agents/workflows/`. No todos los workflows tienen todas las puertas: `/orchestrate` ejecuta el script de verificación, `/review` ejecuta la revisión de QA y `/ralph` añade el [juez](./glossary.md#judge).
+Fuentes: `.agents/hooks/core/keyword-detector.ts` (omisión de comandos slash, coincidencia explícita del nombre del modo), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` y los archivos de workflow bajo `.agents/workflows/`. No todos los workflows tienen todas las puertas: `/orchestrate` ejecuta el script de verificación, `/review` ejecuta la revisión de QA y `/ralph` añade el [juez](./glossary.md#judge).
 
 ---
 

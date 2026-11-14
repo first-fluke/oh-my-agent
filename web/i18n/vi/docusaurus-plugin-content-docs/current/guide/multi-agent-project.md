@@ -324,7 +324,7 @@ oma agent parallel tasks.yaml --vendor claude
 
 ### 1. Chấp nhận plan một cách máy móc
 
-`/orchestrate` có thể tạo plan qua `/plan` inline nếu chưa có plan dùng được. Plan inline vẫn qua review gate; fan-out tiếp theo dùng plan đã duyệt. Với dự án nhiều lĩnh vực, nên chạy `/plan` trước để có tracker lâu dài trong `docs/plans/work/` và có chỗ refine phân tách.
+`/orchestrate` có thể tạo plan qua `/plan` inline khi chưa có file plan dùng được. Plan inline vẫn đi qua review gate của `/plan`, và fan-out ở bước tiếp theo theo phân tách đã được duyệt. Với công việc nhiều lĩnh vực lớn, hãy chạy `/plan` trước để có tracker bền trong `docs/plans/work/` và có chỗ refine phân tách trước khi bất kỳ agent nào spawn.
 
 ### 2. Workspace chồng chéo
 
@@ -336,15 +336,15 @@ Spawn backend và frontend mà chưa định nghĩa contract khiến hai phía g
 
 ### 4. Bỏ qua phát hiện QA
 
-Coi QA là tùy chọn sẽ để bug thật lọt vào production. CRITICAL và HIGH phải được xử lý trong vòng lặp QA.
+Coi QA review là tùy chọn. Phát hiện CRITICAL và HIGH là bug thật sẽ xuất hiện ở production. Workflow thực thi điều này bằng cách lặp cho đến khi không còn blocker.
 
-### 5. Quá song song
+### 5. Điều phối file thủ công
 
-Chạy task tier 2 trước khi task tier 1 hoàn thành. Tier priority tồn tại vì task ở tier sau thường phụ thuộc vào output của tier trước. Workflow tự động thực thi thứ tự tier.
+Tự merge output của các agent thay vì để pipeline verification và QA xử lý tích hợp. Pipeline tự động bắt các vấn đề mà review thủ công bỏ sót.
 
-### 6. Điều phối file thủ công
+### 6. Quá song song
 
-Tự merge output agent thay vì để pipeline verification và QA xử lý khiến các lỗi tích hợp khó phát hiện.
+Chạy task tier 2 trước khi task tier 1 hoàn thành. Các tier ưu tiên tồn tại vì task ở tier sau thường phụ thuộc output của tier trước. Workflow tự động thực thi thứ tự tier.
 
 ### 7. Bỏ qua xác minh
 
@@ -362,7 +362,7 @@ Sau khi mọi agent hoàn tất task riêng, phải xác minh tích hợp:
 4. **Xử lý lỗi:** mọi consumer API phải xử lý error response đã mô tả. Nếu backend trả `{ "error": "unauthorized", "code": 401 }` thì mọi client phải xử lý format này.
 5. **Khớp schema database:** migration của database phải khớp chính xác ORM model backend.
 
-QA agent thực hiện Alignment Review để kiểm tra hệ thống các điểm trên.
+Alignment Review của agent QA (Bước 6 trong ultrawork, Bước 6 trong work) thực hiện xác minh xuyên lĩnh vực này một cách có hệ thống.
 
 ---
 
@@ -371,7 +371,7 @@ QA agent thực hiện Alignment Review để kiểm tra hệ thống các đi�
 Dự án nhiều agent hoàn thành khi:
 
 - Mọi agent ở mọi priority tier đã hoàn tất thành công.
-- Script verification pass cho từng agent.
+- Script verification pass cho từng agent (exit code 0).
 - QA review có 0 CRITICAL và 0 HIGH.
 - Đã xác nhận API contract xuyên lĩnh vực khớp nhau.
 - Build thành công và mọi test pass.

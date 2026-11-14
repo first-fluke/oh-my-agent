@@ -33,11 +33,11 @@ Renderuje bezpośrednio w terminalu interfejs z ramkami znakowymi. Aktualizuje s
 | Stopka | `Updated: <time>  \|  Ctrl+C to exit` | Czas ostatniego odświeżenia |
 
 **Symbole statusu:**
-- `●` (zielony): działanie
-- `✓` (cyjan): ukończony
-- `✗` (czerwony): nieudany
-- `○` (żółty): zablokowany
-- `◌` (przygaszony): oczekujący
+- `●` (zielony): running
+- `✓` (cyjan): completed
+- `✗` (czerwony): failed
+- `○` (żółty): blocked
+- `◌` (przygaszony): pending
 
 ### Dashboard webowy
 

@@ -74,7 +74,7 @@ Spec judge và visual judge chạy 3 lần cho mỗi harness qua `judge-multi.sh
 1. **Ghi đè prompt của superpowers** — cần thiết để harness hoạt động ở chế độ non-interactive (skill brainstorming `<HARD-GATE>` của nó chặn các lần chạy single-shot). Kết quả phản ánh "khả năng của superpowers khi gate đã được vượt qua", không phải so sánh thuần túy ngang hàng.
 2. **Trung bình hóa đa judge cho spec + visual, single-run cho journey** — judge journey cần một dev server đang chạy, vì vậy phần này vẫn là single-run. Hãy coi chênh lệch journey dưới khoảng 2 điểm là nhiễu. Cỡ mẫu là 1 lần build cho mỗi harness.
 3. **Chuẩn hóa chi phí** — trục efficiency dùng chi phí trên mỗi file; chi phí tuyệt đối ($1.28–$8.19 trên 5 harness) không được phản ánh vào điểm.
-4. **Mức phạt `lint-clean` của oma là cố ý** — oma chủ ý để việc thực thi lint/typecheck cho git hooks (husky + lint-staged) và CI thay vì nhúng các quy tắc đặc thù ESLint vào skill của agent. Benchmark single-run phạt điều này -5 ở `lint-clean`, nhưng trong workflow thực tế những vấn đề tương tự sẽ bị chặn bởi pre-push trước khi đến remote.
+4. **Mức phạt `lint-clean` của oma là cố ý** — oma chủ ý để việc thực thi lint/typecheck cho git hooks (hk) và CI thay vì nhúng các quy tắc đặc thù ESLint vào skill của agent. Benchmark single-run phạt điều này -5 ở `lint-clean`, nhưng trong workflow thực tế những vấn đề tương tự sẽ bị chặn bởi pre-push trước khi đến remote.
 
 ---
 

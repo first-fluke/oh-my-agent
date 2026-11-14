@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Dùng `--slide <file>` cho single-slide check và `--report-file <path>` cùng JSON output khi process khác cần findings. `slide import pptx <file>` bắt đầu import workflow; `slide asset fetch-video <url>` tải video asset; `slide style list|preview|get <slug>` xem style. PPTX output được raster-backed nên không có editable text hoặc shape layer. Validation và export cần Chrome/puppeteer; đặt `OMA_CHROME_PATH` khi executable không tự discover được. Nếu validation không hội tụ sau ba vòng auto-fix, dùng geometry finding đã báo để sửa fragment bị ảnh hưởng.
 
+### PowerPoint chỉnh sửa được (route native-pptx) {#editable-powerpoint-native-pptx-route}
+
+Khi deliverable phải là file PowerPoint chỉnh sửa được, `oma-slide` chuyển sang route `native-pptx`. Cùng route này xử lý việc điền hoặc sửa một PPTX hiện có trong khi giữ nguyên thiết kế, biến PDF, DOCX, XLSX hoặc URL thành deck, dựng brand, style, layout hoặc deck template dùng lại, và output PPTX hoặc MP4 có narration. Deck web, animated và Canva vẫn ở route HTML phía trên.
+
+Route chạy skill upstream [ppt-master](https://github.com/hugohe3/ppt-master) (MIT, của Hugo He) mà không sửa skill đó. `oma-slide` dùng bản đã cài từ catalog skill của runtime khi có; nếu không, nó tải skill cho session bằng:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master soạn các trang SVG và export shape DrawingML native, text box, chart và table, nên PPTX nằm trong thư mục `exports/` của project dưới `.agents/results/slides/<session-id>/`. Script Python của nó cần các package trong `requirements.txt` của skill; `oma-slide` hỏi trước khi cài chúng vào virtual environment `uv`. Nếu bạn từ chối, nó đề nghị route HTML. Ảnh AI trên route này được tạo bằng `oma-image`, còn các gate và màn hình xác nhận của ppt-master quyết định phần còn lại của luồng.
+
 ## Recap hội thoại agent {#recap-agent-conversations}
 
 Dùng `/recap` (hoặc yêu cầu agent tạo recap) cho work summary dựa trên evidence; nó chạy `oma recap` để thu thập lịch sử. Calendar date và rolling window là hai input khác nhau:
@@ -188,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` trả prose, Writing Notes và Claim-Evidence Map. `revise` trả các block gốc và đã sửa cùng thay đổi cụ thể. `review` trả finding PASS/FAIL cho sentence structure, verb, hedging, specificity, anti-AI pattern, paragraph clarity, rhythm và claim-evidence alignment. Skill đọc toàn bộ draft hiện có cho revise/review, làm yếu hoặc xóa claim không được hỗ trợ và chuyển output không phải tiếng Anh cho `oma-translation` sau English pass.
 
-Dùng `oma scholar` để discovery source và sidecar evidence trước khi soạn. Nếu thiếu citation hoặc rubric, đánh dấu claim là pending hoặc hỏi constraint còn thiếu; không lấp khoảng trống bằng source bịa. Artifact hoàn tất hữu ích là prose cùng evidence map hoặc audit report, thay vì một đoạn “polished” chung chung không truy được support.
+Dùng `oma scholar` để discovery source và sidecar evidence trước khi soạn. Nếu thiếu citation hoặc rubric, đánh dấu claim là pending hoặc hỏi constraint còn thiếu; không lấp khoảng trống bằng source bịa. Trả prose kèm evidence map hoặc audit report để người đọc truy được các claim.
 
 ## Checklist khôi phục {#recovery-checklist}
 

@@ -233,7 +233,7 @@ Environment: Node 22.1, PostgreSQL 16
 
 **Vì sao cấu trúc này hiệu quả:**
 
-- **Error và stack trace** cho phép Step 2 định vị ngay code, chẳng hạn search `deleteUser` tìm function và `find_symbol` xác định vị trí.
+- **Error và stack trace** cho phép Step 2 định vị ngay code (`search_for_pattern` với "deleteUser" tìm function; `find_symbol` xác định vị trí chính xác).
 - **Bước tái hiện** với điều kiện “user whose organization was deleted” gợi ý null foreign key.
 - **Environment** loại trừ giả thuyết sai do khác phiên bản.
 

@@ -89,10 +89,9 @@ oma video generate "product walkthrough" --mode demo --polish --capture ./captur
 ---
 
 <a id="always-latest-hyperframes--you-author-the-composition"></a>
-<a id="常に最新の-hyperframesコンポジションは自分で作成する"></a>
 ## HyperFrames の管理ツールチェーンとコンポジション作成
 
-oh-my-agent に HyperFrames のコンポジションコードは**含まれていません**。各実行は `<runDir>/hyperframes/` に専用プロジェクトを持ち、最新 npm HyperFrames を使って `oma video compose` が雛形を生成します。ツールチェーンのキャッシュは `~/.cache/oma-video/hyperframes/<version>/` にあり、`node_modules` のシンボリックリンクで共有されます。[heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) は HEAD（`~/.cache/oma-video/hyperframes-skills/`）にあります。エージェントは、生成された雛形の `AUTHORING.md`、スキル、`.agents/skills/oma-video/resources/hyperframes-authoring/` のモード仕様に従って生成コンポジションのソースを作成します。
+oh-my-agent に HyperFrames のコンポジションコードは**含まれていません**。各実行は `<runDir>/hyperframes/` に専用プロジェクトを持ちます。`oma video compose` が最新の npm HyperFrames で雛形を作ります（ツールチェーンのキャッシュは `~/.cache/oma-video/hyperframes/<version>/` で、`node_modules` のシンボリックリンクで共有します）。[heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) の `hyperframes` と `hyperframes-cli` スキルは [skills CLI](https://github.com/vercel-labs/skills) でインストールします。エージェントは、生成された雛形の `AUTHORING.md`、スキル、`.agents/skills/oma-video/resources/hyperframes-authoring/` のモード仕様に従って、生成されたコンポジションのソースを作成します。
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -101,14 +100,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- 最新版の確認（npm + GitHub）は `video.hyperframes.check_interval_min`（デフォルト 60、`0` なら compose ごと）で間引かれます。`oma update` は間隔に従い、`oma video doctor --upgrade` は確認を強制します。オフライン実行ではキャッシュしたツールチェーンを使い、`stale` と報告します。
-- 再現性は実行ディレクトリにあります。`render-spec.json`、作成したコンポジションのソース、生成された HyperFrames パッケージメタデータに記録されたツールチェーンのバージョンが境界です。同じ実行を再レンダーすると同じレンダー契約を再利用し、新しい実行では最新 HyperFrames を確認します。
+- ツールチェーンの最新版確認（npm）は `video.hyperframes.check_interval_min`（デフォルト 60。`0` なら compose ごと）で間引かれます。`oma update` はこの間隔に従います。`oma video doctor --upgrade` は確認を強制します。オフライン実行ではキャッシュしたツールチェーンを使い、`stale` と報告します。
+- スキル：`oma video doctor --install` は不足しているスキルをインストールします（`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`）。`--upgrade` はインストール済みのスキルも更新します。`oma update` が更新するのは、すでにインストールされているスキルだけです。スキルがない場合、`AUTHORING.md` は代わりに上流のドキュメントへリンクします。以前の `~/.cache/oma-video/hyperframes-skills/` のコピーはもう読まれないので、削除できます。
+- 再現性は実行ディレクトリにあります。`render-spec.json`、作成したコンポジションのソース、生成された HyperFrames パッケージのメタデータに記録されたツールチェーンのバージョンです。同じ実行を再レンダーすると、そのレンダー契約を再利用します。新しい実行では最新の HyperFrames を確認します。
 - lint やレンダーの失敗はプレースホルダーで**隠されません**（それが存在するのは `OMA_VIDEO_MOCK=1` の場合だけです）。`oma video render` は診断付きで終了コード 1 を返し、エージェントは最新スキルを使ってコンポジションを修正します。新しい HyperFrames リリースでの破損はコンポジションのバグであり、固定する理由にはなりません。
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---
@@ -162,7 +162,7 @@ oma video provider list         # provider availability + key/fallback status
 |------------|-------------|----------|
 | script | `--script <path>` で渡したエージェント作成の `script.json`（`/video` ワークフローが書き込む） | brief のテキストから作る決定的な 3 シーンの骨格 |
 | voice | `--voice <profile>` を指定した `oma-voice`（Voicebox または VoiceStudio、ローカル。`voice.backend` で選択） | 推定タイミングの無音動画（デフォルトの `--voice none`） |
-| visual | デフォルトでは `oma-image` の静止画、`script.json` の `visual.ref` が既存のデッキディレクトリを指すシーンでは `oma-slide` のフレーム、`PEXELS_API_KEY` を設定して `--visual stock` を指定した場合は Pexels のストッククリップ | プレースホルダーアセット |
+| visual | デフォルトでは `oma-image` の静止画。`visual.ref` が既存のデッキディレクトリであるシーンでは `oma-slide` のフレーム。`PEXELS_API_KEY` を設定して `--visual stock` を指定した場合は Pexels のストッククリップ | プレースホルダーアセット |
 | visual: `aigc` | `RUNNINGHUB_API_KEY` が設定されている場合に `--visual aigc` で選択される。ライブ呼び出しはまだ接続されていないため、プロバイダーは引き続きプレースホルダーを書き込む | プレースホルダーアセット |
 | caption | `timing.json` に合わせた `.srt` と `.vtt`（スクリプトの言語） | 同じ。`--locale` への翻訳はまだ接続されていない |
 | music | `oma video doctor --install-strudel` 実行後の Strudel の BGM | 音楽トラックなし |

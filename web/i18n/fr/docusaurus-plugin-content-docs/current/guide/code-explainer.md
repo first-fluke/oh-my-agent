@@ -201,7 +201,7 @@ Lorsque `diagram.explain_sidecar: true` est défini dans `oma-config.yaml` ou qu
 | Diff trop volumineux | Exclure automatiquement les fichiers lock/générés, regrouper le reste par fichier et lister les exclusions dans le pied de page de provenance |
 | Diff uniquement binaire ou généré | Arrêter — rien à expliquer |
 | CLI `gh` manquant ou non authentifié (référence PR) | Indications d’installation/authentification, avec alternative de diff de branche locale |
-| Fusion/rebase en cours | Arrêter — arbre de travail instable |
+| Fusion/rebase en cours | Arrêter — worktree instable |
 | Répertoire non Git | Mode change : arrêt immédiat. Le mode topic fonctionne sans git. |
 | Échec de validation après 3 boucles de correction | Arrêter et exposer les éléments en échec |
 | Échec de `--open` dans un environnement sans interface | Avertissement seulement — le chemin signalé suffit |

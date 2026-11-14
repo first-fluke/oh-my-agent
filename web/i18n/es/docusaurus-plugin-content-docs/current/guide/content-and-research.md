@@ -6,7 +6,7 @@ description: Elige la ruta adecuada de oh-my-agent, con sus requisitos previos, 
 
 # Flujos de contenido e investigación
 
-Esta guía dirige el trabajo con documentos, audio, investigación, multimedia y presentaciones hacia la capacidad que lo gestiona. Empieza por el artefacto que necesitas y después usa el comando o punto de entrada de skill más pequeño que produzca un resultado revisable. Las capacidades con guía propia enlazan a ella en la última columna; el resto se cubre en esta página.
+Elige según el artefacto que necesitas y después usa el comando o punto de entrada de skill más pequeño que produzca un resultado revisable. Usa la guía enlazada cuando una capacidad tenga una página propia.
 
 | Necesidad | Punto de entrada | Requisitos previos | Primer resultado | Guía |
 |---|---|---|---|---|
@@ -26,7 +26,7 @@ Esta guía dirige el trabajo con documentos, audio, investigación, multimedia y
 | Traducir o revisar prosa localizada | skill `oma-translation` | ninguno | Texto en el idioma de destino o revisión respaldada por evidencia | [abajo](#translate-or-review-localized-content) |
 | Redactar o auditar prosa académica | skill `oma-academic-writing` | ninguno | Borrador, revisión o informe de cumplimiento con Claim-Evidence Map | [abajo](#draft-or-audit-academic-writing) |
 
-Los nombres de comandos `oma` de esta página son comandos públicos registrados. `uvx`, `bunx` y `bun` son herramientas externas de conversión documentadas por las skills que las gestionan. Las demás [skills](../getting-started/glossary.md#skill) son puntos de entrada de lenguaje natural o de barra; no existe un comando independiente `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ni `oma academic-writing`.
+Cada comando `oma` nombrado abajo es un comando público registrado. `uvx`, `bunx` y `bun` son herramientas externas de conversión documentadas por las skills que las gestionan. Las demás [skills](../getting-started/glossary.md#skill) son puntos de entrada de lenguaje natural o de comando de barra; no existe un comando independiente `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ni `oma academic-writing`.
 
 ## Extraer contenido PDF {#extract-pdf-content}
 
@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Usa `--slide <file>` para comprobar una sola diapositiva y `--report-file <path>` con salida JSON cuando otro proceso necesite los hallazgos. `slide import pptx <file>` inicia un flujo de importación; `slide asset fetch-video <url>` descarga un recurso de vídeo; `slide style list|preview|get <slug>` inspecciona estilos. La salida PPTX está respaldada por raster, así que no proporciona texto ni capas de formas editables. La validación y la exportación necesitan Chrome/puppeteer; define `OMA_CHROME_PATH` cuando el ejecutable no se pueda descubrir. Si la validación no converge después de tres iteraciones de autocorrección, usa los hallazgos de geometría informados para editar el fragmento afectado.
 
+### PowerPoint editable (ruta native-pptx) {#editable-powerpoint-native-pptx-route}
+
+Cuando el entregable debe ser un archivo PowerPoint editable, `oma-slide` cambia a su ruta `native-pptx`. La misma ruta cubre rellenar o editar un PPTX existente conservando su diseño, convertir un PDF, DOCX, XLSX o una URL en un deck, crear una marca, un estilo, un layout o una plantilla de deck reutilizables, y la salida PPTX o MP4 narrada. Los decks web, animados y de Canva siguen en la ruta HTML de arriba.
+
+La ruta ejecuta la skill upstream [ppt-master](https://github.com/hugohe3/ppt-master) (MIT, de Hugo He) sin modificarla. `oma-slide` usa una copia instalada del catálogo de skills del runtime cuando hay una; si no, carga la skill para la sesión con:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master redacta páginas SVG y exporta formas DrawingML nativas, cuadros de texto, gráficos y tablas, así que el PPTX queda en la carpeta `exports/` del proyecto, bajo `.agents/results/slides/<session-id>/`. Sus scripts de Python necesitan los paquetes del `requirements.txt` de la skill; `oma-slide` pregunta antes de instalarlos en un entorno virtual de `uv`. Si lo rechazas, ofrece en su lugar la ruta HTML. Las imágenes de IA de esta ruta se generan con `oma-image`, y las puertas y la pantalla de confirmación propias de ppt-master deciden el resto del flujo.
+
 ## Recaps de conversaciones de agentes {#recap-agent-conversations}
 
 Usa `/recap` (o pide un recap al agente) para resúmenes de trabajo basados en evidencia; ejecuta `oma recap` para recopilar el historial. Una fecha de calendario y una ventana móvil son entradas diferentes:
@@ -188,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` devuelve prosa, Writing Notes y un Claim-Evidence Map. `revise` devuelve los bloques original y revisado junto con cambios concretos. `review` devuelve hallazgos PASS/FAIL sobre estructura de frases, verbos, hedging, especificidad, patrones anti-IA, claridad de párrafos, ritmo y alineación entre claims y evidencia. La skill lee por completo un borrador existente para revise/review, debilita o elimina claims sin respaldo y entrega la salida no inglesa a `oma-translation` después del paso en inglés.
 
-Usa `oma scholar` para descubrir fuentes y evidencia del sidecar antes de redactar. Si falta una cita o una rúbrica, marca el claim como pendiente o solicita la restricción que falta; no llenes el hueco con una fuente inventada. El artefacto útil de finalización es la prosa junto con el mapa de evidencia o el informe de auditoría, no un párrafo genéricamente «pulido» sin soporte rastreable.
+Usa `oma scholar` para descubrir fuentes y evidencia del sidecar antes de redactar. Si falta una cita o una rúbrica, marca el claim como pendiente o solicita la restricción que falta; no llenes el hueco con una fuente inventada. Devuelve la prosa con su mapa de evidencia o informe de auditoría para que quien lea pueda rastrear los claims.
 
 ## Lista de recuperación
 

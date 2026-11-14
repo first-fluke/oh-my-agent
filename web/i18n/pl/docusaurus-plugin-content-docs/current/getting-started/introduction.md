@@ -11,19 +11,21 @@ OMA wykonuje mechaniczne kontrole, gdy je wywołasz lub wybierzesz workflow, kt�
 
 Cały system znajduje się w przenośnym katalogu `.agents/` wewnątrz projektu. Możesz przełączać się między Claude Code, Codex CLI, Antigravity CLI lub IDE, Cursorem, OpenCode i innymi obsługiwanymi narzędziami, a konfiguracja agentów podróżuje razem z kodem.
 
-Jeśli dopiero poznajesz OMA, zacznij od [Szybkiego startu](./quick-start.md), a potem przeczytaj [Ważne ustawienia domyślne](./important-defaults.md). Instalacja tworzy [SSOT](./glossary.md#ssot) i integracje dostawców; pierwszą użyteczną kontrolą jest `oma doctor`, a pierwszym użytecznym zadaniem — jedna mała zmiana w jednej domenie. Przejdź do `/work` lub `/orchestrate` dopiero wtedy, gdy zadanie wymaga koordynacji.
+Zacznij od [Wybierz konfigurację](./choose-setup.md): załaduj jedną umiejętność do zadania w bieżącym agencie, wybierz preset umiejętności runtime'u dla hooków i workflowów albo zainstaluj wtyczkę Claude Code. Tymczasowe ładowanie umiejętności dostarcza instrukcje i pliki pomocnicze; zależności CLI, reguł projektu i usług zewnętrznych pozostają jawne. Instalacja runtime'u tworzy [SSOT](./glossary.md#ssot) i integracje dostawców.
+
+[Szybki start](./quick-start.md) poprowadzi przez pierwsze zadanie i zaobserwowane kontrole. `oma doctor` sprawdza instalację runtime'u; [Ważne ustawienia domyślne](./important-defaults.md) wyjaśniają dostawców i konfigurację. Przejdź do `/work` albo `/orchestrate`, gdy potrzebna jest koordynacja i zainstalowane są umiejętności, do których te workflowy się odwołują.
 
 ---
 
 ## Paradygmat wieloagentowy {#the-multi-agent-paradigm}
 
-Obsługa frontendu, backendu, baz danych, bezpieczeństwa i infrastruktury w jednym kontekście promptu może prowadzić do:
+Tradycyjni asystenci AI do kodowania często obsługują frontend, backend, bazy danych, bezpieczeństwo i infrastrukturę z jednego kontekstu promptu. To może prowadzić do:
 
 - **Rozmycia kontekstu:** ładowanie wiedzy dla każdej domeny marnuje okno kontekstowe
 - **Niejasnego właścicielstwa:** zadanie obejmujące wiele domen nie ma wyraźnej granicy odpowiedzialności dla każdej części
 - **Ręcznej koordynacji:** złożone funkcje obejmujące wiele domen wymagają przekazań wybieranych przez hosta lub użytkownika
 
-oh-my-agent rozdziela te obszary między wyspecjalizowane umiejętności i agentów:
+OMA przypisuje domeny umiejętnościom i kieruje pracę nad zadaniem do agentów:
 
 1. **Każda umiejętność ma główną domenę.** Umiejętność frontendowa zna React/Next.js, shadcn/ui, TailwindCSS v4 i architekturę FSD-lite. Umiejętność backendowa zna wzorzec Repository-Service-Router, zapytania parametryzowane i uwierzytelnianie JWT. Domeny mogą nakładać się na granicach, dlatego użyj kryteriów akceptacji zadania, aby zdecydować, czy potrzebna jest druga umiejętność lub workflow koordynujący.
 2. **Agenci mogą działać równolegle.** Gdy agent backendowy buduje API, agent frontendowy może pracować we własnym workspace'ie. Orchestrator koordynuje działania za pomocą trwałych plików i potwierdzeń przypisanych do runu.
@@ -33,13 +35,13 @@ oh-my-agent rozdziela te obszary między wyspecjalizowane umiejętności i agent
 
 ## Obecny katalog: 33 umiejętności, 12 definicji, 20 workflowów {#the-current-catalog-33-skills-12-definitions-20-workflows}
 
-Katalog składa się z trzech elementów:
+Katalog rozdziela trzy rzeczy, które łatwo pomylić:
 
 - **[Umiejętności](./glossary.md#skill)** to 33 pakiety wiedzy domenowej w `.agents/skills/*/SKILL.md`. Kierują na podstawie intencji wyrażonej naturalnym językiem i progresywnie ładują zasoby.
 - **[Definicje agentów](./glossary.md#agent-definition)** to 12 plików w `.agents/agents/`. Dostarczają natywne dla dostawcy persony subagentów i odwołują się do co najmniej jednej umiejętności.
 - **[Workflowy](./glossary.md#workflow)** to 20 definicji procesów w `.agents/workflows/`. Cztery są [trwałe](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu trwałego.
 
-Gdy nazwa lub opis umiejętności się zmienia, rozstrzygający jest frontmatter aktywnego `SKILL.md`.
+Poniższe sekcje zachowują szczegółowy katalog umiejętności. Gdy nazwa albo opis się zmienia, rozstrzygający jest frontmatter bieżącego `SKILL.md`.
 
 Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról runtime'u dzięki aliasom: `research-explorer.md` mapuje się na `explore`, a `orchestrator` istnieje tylko w runtime'ie. Pozostałe pliki definicji mapują się na nazwane role wymienione w [Agentach](../core-concepts/agents.md).
 
@@ -88,7 +90,7 @@ Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról 
 |-------|------|-----------------|
 | **oma-translation** | Tłumaczenie uwzględniające kontekst | Metoda tłumaczenia ma cztery kroki: odczytanie znaczenia i chronionej składni, wybór rejestru, rekonstrukcja w języku docelowym i zachowanie stylu autora tam, gdzie ma to zastosowanie. Profile języków docelowych (`resources/lang/{code}.md`) zawierają zasady rejestru i typografii. Zasoby: `translation-rubric.md`, `anti-ai-patterns.md`, `style-skills.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | Automatyczny koordynator wieloagentowy | Uruchamia subagentów CLI równolegle, koordynuje ich przez trwałą sesję, tablicę zadań, pliki postępu i wyników oraz monitoruje pętle weryfikacji. Wartości domyślne: MAX_PARALLEL 3 i MAX_RECOVERY_ATTEMPTS 3 (ponowienia oraz hipotezy eksploracyjne na zadanie, łącznie z pierwszą próbą); odpytywanie postępu używa ograniczonego backoffu i działa tylko wtedy, gdy powiadomienia o zakończeniu nie są dostępne. Dobiera referencje umiejętności dla każdego zadania i zapisuje je jako notatki koordynatora. Zawiera pętlę review między agentami i opcjonalne dowody sesji. Zasoby: `subagent-prompt-template.md`, `memory-schema.md`. |
-| **oma-scm** | Zarządzanie konfiguracją oprogramowania (SCM) i Git | Obsługuje strategie branchowania, workflowy merge/rebase/conflict, workspace'y, baseline'y i śledzenie stanu wydań. Prowadzi też przez Conventional Commit z bezpiecznym stagingiem; traile co-author pochodzą z aktywnej konfiguracji `scm.co_author`, gdy jest włączona. |
+| **oma-scm** | Zarządzanie konfiguracją oprogramowania (SCM) i Git | Obsługuje strategie branchowania, workflowy merge/rebase/conflict, worktree'y, baseline'y i śledzenie stanu wydań. Prowadzi też przez Conventional Commit z bezpiecznym stagingiem; traile co-author pochodzą z aktywnej konfiguracji `scm.co_author`, gdy jest włączona. |
 | **oma-coordination** | Wspólne zasady koordynacji | Zasady koordynacji pracy wieloagentowej: ponowne użycie planu, uzgadnianie kontraktów, własność workspace'u i przekazanie do QA. Ładowane przez workflowy `/work`, `/orchestrate` i `/ultrawork`, a także przydatne do ręcznej koordynacji krok po kroku za pomocą `oma agent spawn`: ponowne użycie lub utworzenie planu, uruchamianie zadań o tym samym priorytecie w osobnych workspace'ach, monitorowanie plików postępu i wyników przypisanych do runu, uzgadnianie kontraktów API/danych przed pracą frontendową i mobilną oraz zakończenie przeglądem QA. Za automatyczne wykonanie odpowiada `oma-orchestration`. |
 
 
@@ -127,7 +129,7 @@ Dwanaście plików definicji znajdujących się w repozytorium obejmuje 13 ról 
 
 | Agent | Rola | Kluczowe możliwości |
 |-------|------|-----------------|
-| **oma-market** | Inteligencja sygnałów społecznościowych | Uruchamia nadrzędny silnik `last30days` (Reddit z rzeczywistymi głosami i komentarzami, X, YouTube, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, sieć i inne) przez `oma market run`; OMA utrzymuje silnik **zawsze w najnowszym wydaniu** (`~/.cache/oma-market/`), przepuszcza każdy przebieg przez `detect-trap`, klasyfikuje intencję (problem / trend / konkurent / odkrywanie) i dołącza sekcje SWOT / Portera 5F / PESTEL. Tworzy jeden brief zgodny z LAW w `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
+| **oma-market** | Inteligencja sygnałów społecznościowych | Uruchamia nadrzędny silnik `last30days` (Reddit z rzeczywistymi głosami i komentarzami, X, transkrypcje YouTube, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, sieć i inne) przez `oma market run`; silnik jest instalacją skills CLI (`oma market update`), a oma przepuszcza każdy przebieg przez `detect-trap`, klasyfikuje intencję (pain / trend / competitor / discovery) i dołącza sekcje SWOT / Porter's 5F / PESTEL. Tworzy jeden brief zgodny z LAW w `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
 
 ### Generowanie mediów i treści {#media-and-content-generation}
 
@@ -202,7 +204,7 @@ Uruchamianie agentów dostosowuje się do każdego wybranego dostawcy przez wykr
 
 ## Jak przebiega żądanie {#how-a-request-flows}
 
-Diagram pokazuje, co dzieje się między promptem a gotowym wynikiem. Hook słów kluczowych, injector umiejętności i hook Stop działają tylko na hostach z włączoną integracją hooków. Hook słów kluczowych i injector umiejętności działają kolejno na tym samym prompcie, a wstrzyknięty przez nie kontekst jest łączony.
+Hook słów kluczowych, injector umiejętności i hook Stop działają tylko na hostach z włączoną integracją hooków. Hook słów kluczowych i injector umiejętności działają kolejno na tym samym prompcie, a wstrzyknięty przez nie kontekst jest łączony.
 
 ```mermaid
 flowchart TD
@@ -220,7 +222,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Źródła: `.agents/hooks/core/keyword-detector.ts` (pomijanie komend slash, dopasowywanie wyzwalaczy, sugestie workflowów trwałych), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` oraz pliki workflowów w `.agents/workflows/`. Nie każdy workflow ma każdą bramkę: `/orchestrate` uruchamia skrypt weryfikacji, `/review` uruchamia przegląd QA, a `/ralph` dodaje [sędziego](./glossary.md#judge).
+Źródła: `.agents/hooks/core/keyword-detector.ts` (pomijanie poleceń slash, dopasowywanie jawnej nazwy trybu), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` oraz pliki workflowów w `.agents/workflows/`. Nie każdy workflow ma każdą bramkę: `/orchestrate` uruchamia skrypt weryfikacji, `/review` uruchamia przegląd QA, a `/ralph` dodaje [sędziego](./glossary.md#judge).
 
 ---
 

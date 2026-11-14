@@ -6,7 +6,7 @@ description: Как создавать fixture задач evaluation для oma 
 
 # Оценка полезности skill
 
-`oma skill eval` измеряет, меняются ли результаты задач агента при загрузке skill. `oma skill audit` проверяет, дублируют ли друг друга два skill.
+`oma skill eval` сравнивает результаты задач с одним skill и без него. `oma skill audit` проверяет, избыточны ли два описания skill.
 
 Дизайн опирается на два результата исследований: WikiSkill (arXiv:2608.27454) разделяет raw experience, persistent knowledge и executable skills, сохраняя held-out gate для evolution; SkillLens (arXiv:2605.23899) показывает, что utility skill независима от distinctiveness описания — distinct skill может оказаться бесполезным, а пересекающийся skill может помогать.
 
@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-Далее прочитайте результат, как описано в разделе [Чтение report](#reading-the-report). Разделы после этого — справочный материал.
+Далее прочитайте результат, как описано в разделе [Чтение report](#reading-the-report).
 
 ---
 

@@ -92,16 +92,18 @@ Gdy polecenie przekazuje pozostałe argumenty innemu narzędziu, rejestr celowo 
 
 ### install
 
-`oma` bez argumentów uruchamia instalator interaktywny. `oma install` jest jawną formą i przyjmuje opcje wyboru dostawców.
+`oma` bez argumentów uruchamia interaktywny instalator runtime'u. `oma install` jest jawną formą i przyjmuje preset umiejętności oraz opcje wyboru dostawców. Do tymczasowego załadowania instrukcji na jedno zadanie użyj strony [Wybierz konfigurację](../getting-started/choose-setup.md).
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Opcja | Akceptowane wartości |
 |:-------|:----------------|
+| `--preset <name>` | Jeden z dziesięciu [nazwanych presetów umiejętności](../getting-started/installation.md#presets), na przykład `frontend`, `research` albo `all`. Indywidualny wybór Custom korzysta z menu interaktywnego. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,28 +112,32 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 Pominięte `--web-search`, `--code-intelligence` i `--semantic-memory` zachowują zapisany wybór dostawcy. `--honcho-url` i `--honcho-workspace` konfigurują nowe połączenie Honcho, gdy wybrano tego dostawcę. Główna flaga `-y, --yes` pomija pytania i używa wartości domyślnych; `--global` kieruje instalację do `$OMA_HOME/.agents/` (domyślnie `~/.oma/.agents/`). Instalacja projektowa pozostaje w `<cwd>/.agents/` nawet wtedy, gdy ustawiono `OMA_HOME`.
 
+`--preset` ma pierwszeństwo przed interaktywnym pytaniem o umiejętności oraz nieinteraktywnym domyślnym `all`. Nieznane nazwy, puste wartości i `custom` są odrzucane przed instalacją. Opcja wybiera treść umiejętności; nie filtruje plików współdzielonych, definicji workflowów i agentów, hooków ani konfiguracji dostawców i zachowuje pozostałe zainstalowane umiejętności. [Workflowy wymagające umiejętności spoza presetu](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset) mogą więc różnić się od wybranego zestawu.
+
 **Co robi:**
-1. Sprawdza obecność starego katalogu `.agent/` i w razie potrzeby migruje go do `.agents/`.
-2. Wykrywa konkurencyjne narzędzia i oferuje ich usunięcie.
-3. Pyta o typ projektu (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+1. Sprawdza obecność starego katalogu `.agent/` i w razie znalezienia migruje go do `.agents/`.
+2. W trybie interaktywnym wykrywa inne narzędzia agentów i pyta, czy je odinstalować (domyślnie: zachowaj). Instalacje z `--yes`, `OMA_YES` i CI zachowują je; `oma update` nie proponuje usunięcia.
+3. Używa `--preset`, gdy go podano; w przeciwnym razie w trybie interaktywnym pyta o preset umiejętności albo indywidualny wybór Custom. Konfiguracja nieinteraktywna domyślnie wybiera `all`.
 4. Jeśli wybrano backend, pyta o wariant języka (Python, Node.js, Rust, Other).
 5. Pyta o dowiązania symboliczne GitHub Copilot.
 6. Pobiera najnowszy tarball z rejestru.
-7. Instaluje współdzielone zasoby, workflow, konfiguracje i wybrane umiejętności.
-8. Instaluje adaptacje dla wybranych dostawców (ustawienia lokalne projektu; bez cichych zapisów dostawcy w HOME).
+7. Instaluje współdzielone zasoby, workflowy, konfiguracje i wybrane umiejętności.
+8. Instaluje adaptacje dostawców dla wybranych dostawców. Zmiany na poziomie projektu i HOME opisuje [to, co instalator robi domyślnie poza tym](../getting-started/installation.md#what-the-installer-also-does-by-default).
 9. Tworzy dowiązania symboliczne CLI.
-10. Oferuje zalecaną **globalną** konfigurację git (wymaga jawnej zgody):
+10. Oferuje zalecaną **globalną** konfigurację git (jawne potwierdzenie):
     - `rerere.enabled=true` — ponowne używanie rozwiązań konfliktów merge wielu agentów
     - `init.defaultBranch=main` — spójna domyślna gałąź dla nowych repozytoriów
     - Całkowicie pomijana przy `--yes` / CI (zamiast tego wypisywane są wskazówki ręcznej naprawy)
 11. Oferuje konfigurację MCP tam, gdzie ma to zastosowanie.
 12. Prosi o dodanie gwiazdki GitHub, jeśli `gh` jest uwierzytelnione.
 
+Końcowe podsumowanie wymienia wybrane umiejętności i sprawdza wskazane manifesty umiejętności na podstawie faktycznie obecnych plików, w tym zachowanych umiejętności i gałęzi warunkowych. Zgłasza brakujące albo nieczytelne odwołania umiejętności w workflowach i agentach oraz wskazuje polecenie doctor dla tego korzenia instalacji. To statyczne pokrycie manifestów; zawartość zasobów, narzędzia, dostawcy i wykonanie nie są weryfikowane.
+
 **Przykład:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor

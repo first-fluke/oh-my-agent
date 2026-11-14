@@ -249,7 +249,7 @@ Zadania między dostawcami oraz `model_preset: free` używają `oma agent spawn`
 | `/work` | Trwały | Planowanie wielodomenowe krok po kroku, implementacja i QA w autoryzowanym zakresie | Funkcje obejmujące wiele domen i wymagające skoordynowanego dostarczenia |
 | `/ultrawork` | Trwały | 5-fazowy, 17-krokowy workflow jakości z 12 odizolowanymi punktami przeglądu | Dostarczenie o maksymalnej jakości, kod krytyczny dla produkcji |
 | `/plan` | Nietrwały | Podział zadań prowadzony przez PM, kontrakty API i śledzone artefakty planu w `docs/plans/work/` (sekwencyjne `NNN-name.md`, pole Status dla cyklu życia) | Przed złożoną pracą wieloagentową; złożone funkcje wymagające śledzonego postępu i logów decyzji |
-| `/brainstorm` | Nietrwały | Ideacja projektowa z 2–3 propozycjami podejść | Przed wyborem podejścia implementacyjnego |
+| `/brainstorm` | Nietrwały | Eksploracja podejść z 2–3 propozycjami i szkicem w `docs/decisions/` | Przed wyborem podejścia implementacyjnego |
 | `/deepinit` | Nietrwały | Pełna inicjalizacja projektu (AGENTS.md, ARCHITECTURE.md, docs/) | Konfiguracja oh-my-agent w istniejącej bazie kodu |
 | `/review` | Nietrwały | Potok QA: bezpieczeństwo OWASP, wydajność, dostępność, jakość kodu. Zakres pochodzi z żądania i domyślnie obejmuje bieżące zmiany | Przed scaleniem kodu, przed wdrożeniem |
 | `/security` | Nietrwały | Skanowanie kodu źródłowego aplikacji, umiejętności agentów albo komponentów MCP, walidacja ustaleń i konfiguracja bramek bezpieczeństwa przez `oma-security`. Testy penetracyjne ograniczonego zakresem testowego wdrożenia webowego działają wyłącznie na dostarczonej przez użytkownika i zweryfikowanej platformie uruchomieniowej | Przed wydaniem albo gdy zmiana wymaga skanu lub bramki bezpieczeństwa |
@@ -270,7 +270,7 @@ Zadania między dostawcami oraz `model_preset: free` używają `oma agent spawn`
 
 ## Przykłady automatycznego wykrywania
 
-oh-my-agent wykrywa słowa kluczowe workflowów w 11 językach. Poniższe przykłady pokazują, jak język naturalny uruchamia workflowy:
+Hook słów kluczowych uruchamia tylko cztery tryby trwałe i tylko wtedy, gdy prompt wymienia nazwę trybu. Pozostałe workflowy startują ze swojego polecenia slash.
 
 | Wpisujesz | Wykryty workflow | Język |
 |----------|------------------|----------|
@@ -282,6 +282,8 @@ oh-my-agent wykrywa słowa kluczowe workflowów w 11 językach. Poniższe przyk�
 | "work workflow로 진행해줘" | `/work` | Korean |
 | "ralph this task" | `/ralph` | English |
 | "랄프로 끝까지 해줘" | `/ralph` | Korean |
+
+Zdania takie jak „plan the authentication feature”, „fix the login bug”, „do everything in parallel” i „don't stop until it's done” nie uruchamiają workflowu.
 
 **Zapytania informacyjne są odfiltrowywane:**
 
@@ -301,9 +303,9 @@ Preset instalatora `all` korzysta z aktywnego rejestru. Tabela grupuje wszystkie
 | Umiejętność | Najlepsze zastosowanie | Główny wynik |
 |-------|---------|---------------|
 | **oma-academic-writing** | Pisanie akademickie, redakcja i przegląd anty-AI | Proza publikacyjna oraz poprawki twierdzeń/dowodów |
-| **oma-architecture** | Granice systemu, kompromisy, ADR-y | Rekomendacja architektoniczna albo rejestr decyzji |
+| **oma-architecture** | Granice systemu, kompromisy, ADR-y | Raporty w `.agents/results/architecture/`; zapisy decyzji w `docs/decisions/` |
 | **oma-backend** | API, auth, logika serwerowa, migracje | Zmiany routera/serwisu/repozytorium i weryfikacja |
-| **oma-brainstorm** | Niejednoznaczne pomysły i porównanie podejść | Dokument projektowy w `docs/plans/designs/` |
+| **oma-brainstorm** | Niejednoznaczne pomysły i porównanie podejść | Szkic decyzji w `docs/decisions/` |
 | **oma-coordination** | Wspólne zasady koordynacji dla `/work`, `/orchestrate` i `/ultrawork`; ręczna koordynacja krok po kroku | Wskazówki dotyczące ponownego użycia planu, uzgadniania kontraktów, własności workspace'u i przekazania do QA |
 | **oma-db** | Projekt schematu, ERD, strojenie zapytań, planowanie pojemności | Dokumentacja schematu, migracje i plan odzyskiwania |
 | **oma-debug** | Odtwarzanie błędów i analiza przyczyny źródłowej | Minimalna poprawka, dowody regresji i skan wzorców |

@@ -139,7 +139,7 @@ flowchart TD
 | **リファクタリング** | oma-refactor | ホットスポット、特性テストの安全網、リファクタリング専用コミットを使う、動作を保つ段階的な構造変更 |
 | **市場調査** | oma-market | コミュニティシグナルからの課題・トレンド・競合・発見の調査と、意図に応じた SWOT/Porter の 5F/PESTEL の枠組み |
 | **スキル作成** | oma-skill-creation | SSL-lite 形式での OMA スキルの作成と検証 |
-| **メディア生成** | oma-image, oma-slide, oma-video, oma-voice | AI 画像生成、HTML プレゼンテーション、短編・解説・デモ動画、ローカル TTS/STT |
+| **メディア生成** | oma-image, oma-slide, oma-video, oma-voice | AI 画像生成、HTML と編集可能な PPTX のプレゼンテーションデッキ、短編・解説・デモ動画、ローカル TTS/STT |
 
 ---
 

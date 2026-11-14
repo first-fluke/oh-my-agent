@@ -393,12 +393,13 @@ oma stats reset [--json] [--output <format>]
 - Timestamp da última atualização
 
 **Telemetria de custos** (agregada em cada arquivo `session-cost-*.md` sob `.agents/state/memories/`):
-- Número total de tokens de entrada (aproximação baseada nos caracteres do prompt, ainda sem tokens de saída)
-- Número total de delegações
-- Estimativa em USD conforme uma tabela conservadora de preços por token de entrada e vendor (Claude 3 $/M, Codex 5 $/M, Gemini 0,3 $/M, Qwen 0 $/M, Cursor 5 $/M, Antigravity 0,3 $/M)
-- Distribuição por vendor (tokens · delegações · USD)
+- Tokens registrados, com o uso nativo real distinguido das estimativas pelo tamanho do prompt
+- Total de spawns
+- Spawns reservados e execuções com cobertura parcial de uso nativo
+- Estimativa em USD usando uma tabela de tarifas por vendor; essa estimativa é separada das contagens reais de tokens
+- Distribuição por vendor (tokens · spawns · USD)
 
-A estimativa é um piso, não um valor fiel ao faturamento. Configure `session.quota_cap` em `.agents/oma-config.yaml` para impor orçamentos rígidos no momento da criação de agentes; consulte a página "Por que escolher o oh-my-agent" em Primeiros passos para conhecer o arsenal voltado à qualidade a que esses limites pertencem.
+A estimativa em USD não é um valor fiel ao faturamento. Configure `session.quota_cap` em `.agents/oma-config.yaml` para bloquear o próximo spawn quando o uso de tokens registrado ou a contagem de spawns atingir um limite. A ausência de uso nativo mantém uma estimativa explícita, e os processos filhos em execução não são interrompidos. Consulte [Limites de cota da sessão](../guide/configuration-reference.md#session-quota-caps).
 
 As métricas são armazenadas em `.agents/state/metrics.json`; o arquivo legado `.serena/metrics.json` é lido quando existe. Os dados são coletados das estatísticas do git e dos arquivos de memória.
 

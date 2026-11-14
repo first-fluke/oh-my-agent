@@ -382,12 +382,13 @@ oma stats reset [--json] [--output <format>]
 - Timestamp cập nhật gần nhất
 
 **Telemetry chi phí** (tổng hợp từ mọi file `session-cost-*.md` trong `.agents/state/memories/`):
-- Tổng số input token (ước tính theo số ký tự của prompt, chưa tính output token)
+- Token đã ghi, trong đó usage native thực tế được tách khỏi ước lượng theo độ dài prompt
 - Tổng số lần spawn
-- Chi phí USD ước tính theo bảng đơn giá input token thận trọng cho từng vendor (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
+- Spawn đã giữ chỗ và các run có coverage usage native không đầy đủ
+- USD ước tính theo bảng đơn giá từng vendor; ước tính này tách khỏi số token thực tế
 - Phân tích theo từng vendor (token · spawn · USD)
 
-Ước tính này là mức sàn, không phải số tiền chính xác theo hóa đơn. Cấu hình `session.quota_cap` trong `.agents/oma-config.yaml` để áp ngân sách cứng tại thời điểm spawn; xem trang Vì sao chọn oh-my-agent trong mục Bắt đầu để biết bộ công cụ ưu tiên chất lượng mà các giới hạn này thuộc về.
+Ước tính USD không phải số tiền chính xác theo hóa đơn. Cấu hình `session.quota_cap` trong `.agents/oma-config.yaml` để chặn lần spawn tiếp theo khi token usage đã ghi hoặc số lần spawn chạm giới hạn. Usage native bị thiếu vẫn giữ một ước tính rõ ràng, và các child đang chạy không bị ngắt. Xem [Session quota caps](../guide/configuration-reference.md#session-quota-caps).
 
 Số liệu được lưu trong `.agents/state/metrics.json`; file legacy `.serena/metrics.json` được đọc nếu có. Dữ liệu được thu thập từ thống kê git và các file memory.
 
@@ -1180,6 +1181,8 @@ Khi có nhiều session plan hoặc run receipt khớp, việc xác minh thất 
 
 **Kiểm tra riêng theo agent:**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | Loại agent | Kiểm tra bổ sung |
 |:-----------|:-----------------|
 | `backend` | Kiểm tra cú pháp, phát hiện SQL injection (pattern raw SQL) và test, tất cả lấy từ các lệnh `verify` trong `.agents/skills/oma-backend/stack/stack.yaml` (do `/stack-set` tạo). Bị bỏ qua khi không có file này |
@@ -1188,6 +1191,7 @@ Khi có nhiều session plan hoặc run receipt khớp, việc xác minh thất 
 | `qa` | Không có kiểm tra máy móc; ghi nhận một kiểm tra `QA Report` duy nhất là `PASS` |
 | `debug` | Chạy test Python hoặc test frontend tùy theo loại project phát hiện được |
 | `pm` | Xác thực rằng `.agents/results/plan-{sessionId}.json` tồn tại và là JSON hợp lệ |
+<!-- oma-docs:ignore-end -->
 
 **Định dạng đầu ra:**
 Mỗi kiểm tra báo `PASS`, `FAIL`, `WARN` hoặc `SKIP` kèm thông báo chi tiết. Kết quả tổng thể là `ok: true` chỉ khi không có kiểm tra nào thất bại.

@@ -168,8 +168,10 @@ W ten sam sposób użyj `select(.supportsDryRun? == true)`, aby znaleźć polece
 ### install
 
 ```text
-oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
+oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
+
+`--preset` wybiera jeden z dziesięciu [nazwanych presetów umiejętności](../getting-started/installation.md#presets) i zastępuje interaktywne pytanie o umiejętności oraz nieinteraktywne domyślne `all`. Nieznane nazwy, puste wartości i `custom` kończą się błędem przed instalacją; indywidualny wybór korzysta z interaktywnego menu Custom. Presety wybierają umiejętności, zachowując pliki współdzielone runtime'u, definicje workflowów i agentów, hooki, dostawców oraz zachowane umiejętności. Tymczasowe ładowanie instrukcji jednej umiejętności opisuje [Wybierz konfigurację](../getting-started/choose-setup.md).
 
 Instalator interaktywny zapisuje ustawienia wybranego dostawcy w `.agents/oma-config.yaml`. Gdy istnieje `.agents/oma-config.cue`, ma on pierwszeństwo przed tym plikiem, więc wybory, których konfiguracja CUE jeszcze nie zawiera, trafiają do ignorowanej przez git lokalnej nakładki `.agents/oma-config.local.yaml`. Wybór DevTools przeglądarki i odwołanie do sejfu z `oma memory keys` podlegają tej samej zasadzie, a wybór vendorów CLI i `oma model propose --write` – gdy nie ma `oma-config.yaml`. Flagi dostawców wybierają integracje wyszukiwania w sieci, inteligencji kodu i pamięci semantycznej; `--honcho-url` i `--honcho-workspace` konfigurują usługę pamięci Honcho po wybraniu tego dostawcy. Główna flaga `-y, --yes` działa, gdy przebieg instalacji prosi o potwierdzenie.
 
