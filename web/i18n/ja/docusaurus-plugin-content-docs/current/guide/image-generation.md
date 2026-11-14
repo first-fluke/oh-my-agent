@@ -259,7 +259,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 ## 設定
 
-- **プロジェクト設定：** `.agents/oma-config.yaml`の`image:`セクション。従来の`config/image-config.yaml`はもう読み込まれません。
+- **プロジェクト設定：** `.agents/oma-config.yaml`の`image:`セクション。同梱デフォルトはCLI側にあるため、変更するキーだけを書きます。
 - **環境変数：**
   - `OMA_IMAGE_DEFAULT_VENDOR`：設定済みのデフォルトベンダー（`auto`）を上書きします。`--vendor`フラグ自体のデフォルトも`auto`なので、特定のベンダーが必要な場合はコマンドごとに`--vendor`を渡します。
   - `OMA_IMAGE_DEFAULT_OUT`：デフォルト出力ディレクトリを上書きします

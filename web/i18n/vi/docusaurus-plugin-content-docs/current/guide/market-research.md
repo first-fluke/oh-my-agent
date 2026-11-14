@@ -1,7 +1,7 @@
 ---
 title: "Hướng dẫn: Nghiên cứu thị trường (last30days engine)"
 sidebar_label: Nghiên cứu thị trường
-description: Cách skill oma-market của oh-my-agent chạy nghiên cứu community signal trên upstream mvanhorn/last30days engine, tự giữ bản release mới nhất — phần market config, oma market resolve / update / run, detect-trap gate, ánh xạ intent sang framework và failure mode.
+description: Cách skill oma-market của oh-my-agent chạy nghiên cứu community signal trên upstream mvanhorn/last30days engine, được cài như một skill qua skills CLI — phần market config, oma market resolve / update / run, detect-trap gate, ánh xạ intent sang framework và failure mode.
 ---
 
 # Nghiên cứu thị trường {#market-research}
@@ -36,32 +36,38 @@ Kết quả là một brief tại `.agents/results/market/{topic-slug}-{YYYYMMDD
 
 ---
 
-## Cache engine và cập nhật phiên bản (yêu cầu Python 3.12+) {#always-the-latest-engine--nothing-to-install}
+## Cài đặt engine (yêu cầu Python 3.12+) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- Cache: `~/.cache/oma-market/last30days/<tag>/` + `state.json`.
-- Trước mỗi lần dùng, `resolve` hỏi GitHub release mới nhất (throttled một lần mỗi `check_interval_min`, mặc định 60 phút), tải tag mới vào directory riêng (tag cũ bị prune), nếu không thì dùng lại cache. Network failure dùng cached copy và báo `stale`.
+- `resolve` chỉ đọc các thư mục skill đã cài và không bao giờ kết nối mạng. Khi chưa cài gì, nó trả về không ok và nêu tên lệnh cài đặt; skill hỏi trước khi chạy `oma market update`.
+- `oma update` không cài đặt engine. Cập nhật nó bằng `oma market update` (hoặc `bunx skills update last30days -g -y`).
 - Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` trong PATH (phải ≥ 3.12) → `uv python find '>=3.12'`. Nếu không tìm thấy, `resolve` không ok và in install hint; skill dừng thay vì degrade sang nghiên cứu chỉ dùng web search.
-- Engine config và API key nằm trong `~/.config/last30days/` (được upstream setup wizard ghi với sự đồng ý), nên tồn tại qua engine upgrade.
+- Engine config và API key nằm trong `~/.config/last30days/` (được upstream setup wizard ghi với sự đồng ý), nên tồn tại qua engine update.
 
-Thứ tự resolve (hit đầu tiên thắng): `market.path` → `LAST30DAYS_HOME` → **managed latest** → user-installed copy (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` trong project và dưới `~`, sau đó Claude Code plugin cache).
+Thứ tự resolve (hit đầu tiên thắng): `market.path` → `LAST30DAYS_HOME` → thư mục skill đã cài (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` trong project, sau đó dưới `~`, rồi `~/.config/agents/skills/last30days` và Claude Code plugin cache). Bản cài plugin Claude Code được cập nhật qua `/plugin`, không phải `oma market update`.
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+Các bản phát hành trước lưu bản sao riêng tại `~/.cache/oma-market/`. Đường dẫn đó không còn được đọc; bạn có thể xóa nó.
 
 ---
 
@@ -69,13 +75,12 @@ oma market run -- --help     # the engine's own flags (without `--`, oma prints 
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`, `channel` và `check_interval_min` đã lỗi thời: chúng vẫn pass bước validate nhưng bị bỏ qua, và `resolve` in cảnh báo khi chúng được đặt.
 
 ---
 
@@ -89,14 +94,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` — từ chối keyword-trap và demographic-shopping topic (exit 2), kèm đề xuất reframe. Topic rỗng hoặc dài hơn 200 ký tự sẽ exit 4.
 2. `oma market resolve --json` — engine + Python; dừng khi `ok: false`.
 3. Agent đọc `SKILL.md` của engine đã resolve từ đầu đến cuối và làm theo: first-run setup wizard, pre-research resolution cho handle / subreddit / hashtag (khi có WebSearch), query planning và precondition gate.
 4. `oma market run "<topic>" <flags> --emit=compact` — argument giống hệt call upstream `python3 scripts/last30days.py`; thêm `--save-dir` từ `market.save_dir`.
-5. Synthesis theo upstream OUTPUT CONTRACT (badge ở dòng đầu, evidence cluster xếp hạng, LAW 1–8), sau đó oma thêm framework section chỉ cite engine cluster:
+5. Synthesis theo upstream OUTPUT CONTRACT (badge ở dòng đầu, evidence cluster xếp hạng, LAW 1–8), sau đó oma thêm các framework section, đặt giữa phần thân engine và footer engine, chỉ cite engine cluster:
 
 | Intent | Engine shaping | Framework |
 |---|---|---|
@@ -105,7 +110,7 @@ flowchart TD
 | competitor | `"A vs B"` → upstream comparison flow | SWOT + Porter's 5F |
 | discovery | `--discover`, sau đó follow-up `--drill` | SWOT + PESTEL |
 
-6. Tự kiểm tra, sau đó ghi `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
+6. Ghi `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`, sau đó chạy tự kiểm tra trên file đã ghi; sửa và kiểm tra lại trước khi bàn giao brief.
 
 ---
 

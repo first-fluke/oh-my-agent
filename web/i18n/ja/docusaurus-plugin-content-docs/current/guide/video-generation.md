@@ -64,7 +64,8 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
 oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
@@ -130,14 +131,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`。 |
 | `--locale <lang>` | ナレーション／字幕の言語タグ。 |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none`（キーなしの整列）。 |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`。 |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`。映像プロバイダーの順序を選択します。[映像チェーン](#visual-chain)を参照してください。 |
 | `--voice <profile>` | ナレーション音声。`none`（デフォルト）を指定するか、フラグを省略すると、推定した字幕タイミングで音声なしの動画をレンダーします。 |
 | `--music <mode>` | `upbeat`、`calm`、`cinematic`、`lofi`、`piano`、または `none`。 |
 | `--compositor <c>` | `hyperframes`（デフォルト） \| `mpt`。 |
 | `--capture <path>` | demo モードで使う自分の録画。`.mp4`、`.mov`、`.webm`、`.mkv` のいずれかで、プロジェクト内に置きます。 |
 | `--source <k>` | demo のキャプチャー元。`file` または `web`（デフォルトは `file`）。 |
 | `--url <url>` | `--source web` の文脈 URL。マスクして `manifest.json` に保存します。`--source web` では必須ですが、キャプチャーを開始することはなく、`--capture` の代わりにもなりません。 |
-| `--polish` | キャプチャーした映像に HyperFrames コンポジションを重ねます。 |
+| `--polish` | demo モード：個人情報をマスクした HyperFrames `Demo` コンポジションの背景としてキャプチャーを使用します。指定しない場合、未処理でマスクされていないキャプチャーが出力 MP4 にそのままコピーされ、コンポジションは実行されません。 |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | 受け付けますが使われません。oma はブラウザーを操作せず、画面も録画しません。 |
 | `--output-dir <path>` | 出力の基底ディレクトリ。`$PWD` 外のパスには `--allow-external-output` が必要です。 |
 | `--allow-external-output` | `$PWD` 外の出力パスを許可します。 |
@@ -161,14 +162,33 @@ oma video provider list         # provider availability + key/fallback status
 |------------|-------------|----------|
 | script | `--script <path>` で渡したエージェント作成の `script.json`（`/video` ワークフローが書き込む） | brief のテキストから作る決定的な 3 シーンの骨格 |
 | voice | `--voice <profile>` を指定した `oma-voice`（Voicebox または VoiceStudio、ローカル。`voice.backend` で選択） | 推定タイミングの無音動画（デフォルトの `--voice none`） |
-| visual | `oma-image`、`oma-slide`、`PEXELS_API_KEY` を設定した場合は Pexels のストッククリップ | プレースホルダーアセット |
-| visual: `aigc` | まだ接続されていない。`RUNNINGHUB_API_KEY` でプロバイダーは有効になるが、書き込むのはプレースホルダーのまま | プレースホルダーアセット |
+| visual | デフォルトでは `oma-image` の静止画、`script.json` の `visual.ref` が既存のデッキディレクトリを指すシーンでは `oma-slide` のフレーム、`PEXELS_API_KEY` を設定して `--visual stock` を指定した場合は Pexels のストッククリップ | プレースホルダーアセット |
+| visual: `aigc` | `RUNNINGHUB_API_KEY` が設定されている場合に `--visual aigc` で選択される。ライブ呼び出しはまだ接続されていないため、プロバイダーは引き続きプレースホルダーを書き込む | プレースホルダーアセット |
 | caption | `timing.json` に合わせた `.srt` と `.vtt`（スクリプトの言語） | 同じ。`--locale` への翻訳はまだ接続されていない |
 | music | `oma video doctor --install-strudel` 実行後の Strudel の BGM | 音楽トラックなし |
 | capture | `--capture <file>` で渡した録画 | なし。`--capture` がない場合、demo モードは録画の手順を表示して終了コード 3 で終了する |
 | compositor | HyperFrames（管理対象）または MoneyPrinterTurbo | コンポジターのフォールバックなし。実行は診断付きで失敗します |
 
-認証情報の自動化はありません。画面上のログインは録画中にユーザー自身が行います。URL とクエリトークンはログとマニフェストでマスクされます。
+### 映像チェーン {#visual-chain}
+
+`--visual` とモードの組み合わせで、各シーンに順番に試すプロバイダーの順序が決まります。
+
+| `--visual` | モード | 順序 |
+|------------|------|-------|
+| `auto`（デフォルト） | `shorts`、`demo` | `providers.visual.order`（デフォルトは `oma-image`、`pexels`、`pixelle`） |
+| `auto`（デフォルト） | `explainer` | `oma-slide`、`oma-image`、続いて `providers.visual.order` |
+| `generate` | すべて | `oma-image` |
+| `slide` | すべて | `oma-slide`、`oma-image` |
+| `stock` | すべて | `pexels`、`oma-image` |
+| `aigc` | すべて | `pixelle`、`oma-image` |
+
+- チェーンが次に進むのは、プロバイダーが利用できないか例外を送出した場合だけです。`oma-image` と `oma-slide` は常に利用でき、例外を送出せずにプレースホルダーを書き込むため、それより後ろに並んだプロバイダーには到達しません。したがって、デフォルトの順序では `oma-image` がすべてのシーンを担当します。Pexels には `--visual stock` と `PEXELS_API_KEY`、Pixelle には `--visual aigc` と `RUNNINGHUB_API_KEY` が必要です。
+- `oma-slide` がフレームをエクスポートするのは、`script.json` 内の `visual.ref` が既存のデッキディレクトリのパスを指しているシーンだけです（デッキ自体の生成は行いません）。最初にエクスポートされたフレームがそのシーンの映像になるため、スライドを使う各シーンには専用の単一スライドデッキを用意してください。それ以外のシーン（`--visual auto` の下でデッキを持たない explainer の各シーンも含む）にはプレースホルダーが使われます。あらかじめ `oma-slide` でデッキを作成しておくか、`oma-image` の静止画を使う場合は `--visual generate` を渡してください。
+- プレースホルダーは、そのシーンのフォールバックパスとして `warnings` に記録されます。
+
+### デモのキャプチャーとマスキング
+
+画面上のログイン操作は録画中にユーザー自身が行います。oma が認証情報を自動入力することはなく、URL とクエリトークンはログとマニフェストでマスクされます。映像内の個人情報がマスクされるのは `--polish` コンポジションを通した場合だけです。`--polish` なしの demo 実行は生のキャプチャー映像を出力 MP4 にそのままコピーするため、映像を確認してマスクすべき情報がないことを確かめたうえで配布するか、`--polish` を付けて再実行してください。
 
 字幕は **静的なウィンドウ形式のキュー**としてレンダーされます。現在のフレームで有効な 1 行の字幕を CSS で折り返し、単語ごとのアニメーションは行いません。
 

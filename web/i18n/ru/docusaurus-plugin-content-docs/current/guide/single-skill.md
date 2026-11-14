@@ -6,13 +6,13 @@ description: "Подробное руководство по задачам в �
 
 # Выполнение одного навыка
 
-Одиночный навык — быстрый путь: один агент, один домен, одна сфокусированная задача. Здесь нет накладных расходов на оркестрацию и координацию нескольких агентов. Хост или выбранный workflow может направить промпт на естественном языке к навыку; сама hook-система обнаруживает workflow, а правила маршрутизации зависят от выбранного runtime.
+Одиночный навык — быстрый путь: один агент, один домен, одна сфокусированная задача. Здесь нет накладных расходов на оркестрацию и координацию нескольких агентов. Хост или выбранный workflow может направить промпт на естественном языке к навыку; система хуков добавляет подсказки навыков по ключевым словам, а маршрутизация зависит от выбранного runtime.
 
 ## Быстрый путь
 
 1. Один раз запустите `oma doctor`, чтобы проверить интеграцию с выбранным хостом. Предупреждения о необязательных провайдерах не блокируют задачу, которая ими не пользуется.
 2. Опишите одно самодостаточное изменение с ясными условиями **Goal**, **Context**, **Constraints** и **Done When**.
-3. Выбранный навык должен проверить репозиторий, обозначить область работы, если активный execution contract требует `CHARTER_CHECK`, и сообщить, какие проверки действительно были запущены.
+3. Ожидайте, что выбранный навык проверит репозиторий, укажет любое допущение, влияющее на результат, и сообщит, какие проверки действительно были запущены.
 4. Если задача выходит за границы API, UI, базы данных или мобильного приложения, остановите запуск одиночного навыка и переключитесь на `/work` или `/orchestrate`.
 
 Для зависших управляемых запусков используйте `oma agent status <session-id> [agent-id]`, затем перед повторной попыткой проверьте receipts в `.agents/state/agent-runs/` и переданный путь claim. Подробности о поведении провайдеров и восстановлении см. в [важных значениях по умолчанию](../getting-started/important-defaults.md).
@@ -112,17 +112,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **Загружаемые ресурсы:**
    - `execution-protocol.md` (всегда)
    - `snippets.md` (паттерны формы и Zod, а также существующие паттерны компонентов, если навык их предоставляет)
-4. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **Реализация:**
+4. **Реализация:**
    - Создаёт `src/features/auth/components/login-form.tsx` (Client Component с `"use client"`)
    - Создаёт `src/features/auth/utils/login-schema.ts` (схема Zod)
    - Создаёт `src/features/auth/components/skeleton/login-form-skeleton.tsx`
@@ -130,7 +121,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Обрабатывает форму через `@tanstack/react-form` с валидацией Zod
    - Использует абсолютные импорты с `@/`
    - Один компонент на файл
-6. **Проверка:**
+5. **Проверка:**
    - Чек-лист: ARIA-метки присутствуют, заголовки семантичны, клавиатурная навигация работает
    - Мобильные устройства: корректный рендер при ширине viewport 320px
    - Производительность: CLS отсутствует
@@ -163,16 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - подходящий `stack/snippets.md` или `variants/{node,python,rust}/snippets.md`, если он есть
    - подходящий `stack/tech-stack.md` или ссылки на tech-stack варианта, если они есть
 <!-- oma-docs:ignore-end -->
-5. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **Реализация:**
+5. **Реализация:**
    - Repository: `TaskRepository.find_by_user(user_id, cursor, status, limit)` с параметризованным запросом
    - Service: `TaskService.get_user_tasks(user_id, cursor, status, limit)` (обёртка бизнес-логики)
    - Router: `GET /api/tasks` с JWT auth middleware, валидацией входных данных и форматированием ответа
@@ -200,18 +182,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **Оценка сложности:** средняя (экран настроек + управление состоянием + обработка offline)
 3. **Загружаемые ресурсы:**
    - `execution-protocol.md`
-   - `snippets.md` (шаблон экрана, паттерн провайдера Riverpod)
-4. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (паттерны экрана, провайдера Riverpod и слоя данных) или `stack/snippets.md`, если его сгенерировал `/stack-set`
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **Реализация:**
+4. **Реализация:**
    - Экран: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget с Riverpod)
    - Провайдеры: `lib/features/settings/providers/settings_provider.dart`
    - Репозиторий: `lib/features/settings/data/settings_repository.dart`
@@ -244,17 +218,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (структура результата)
    - `examples.md`
    - `anti-patterns.md` (проверка во время оптимизации)
-4. **Execution contract (если включён) может вывести `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **Workflow:** исследование (сущности, связи, паттерны доступа, оценки объёма) -> проектирование (внешняя, концептуальная и внутренняя схемы, ограничения, поля жизненного цикла) -> оптимизация (индексы для паттернов запросов, стратегия секционирования, план резервного копирования, проверка анти-паттернов)
-6. **Результаты:**
+4. **Workflow:** исследование (сущности, связи, паттерны доступа, оценки объёма) -> проектирование (внешняя, концептуальная и внутренняя схемы, ограничения, поля жизненного цикла) -> оптимизация (индексы для паттернов запросов, стратегия секционирования, план резервного копирования, проверка анти-паттернов)
+5. **Результаты:**
    - краткое описание внешней схемы (представления для ролей администратора, менеджера проекта и участника команды)
    - концептуальная схема с ERD (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership и т. д.)
    - внутренняя схема с физическим DDL, индексами и секционированием
@@ -319,7 +284,7 @@ Add deliverables: data standards table, glossary, migration script.
 | Сигнал | Что это значит | Действие |
 |--------|----------------|---------|
 | Агент говорит «это требует изменения бэкенда» | У задачи есть кросс-доменные зависимости | Переключитесь на `/work` и добавьте агента бэкенда |
-| В `CHARTER_CHECK` агента указаны пункты `Must NOT do`, которые на самом деле нужны | Объём выходит за пределы одного домена | Сначала спланируйте всю функцию через `/plan` |
+| Агент сообщает о работе, которую оставил за рамками, так как она выходит за пределы домена навыка | Объём выходит за пределы одного домена | Сначала спланируйте всю функцию через `/plan` |
 | Исправление затрагивает 3+ файла в разных слоях | Одно исправление влияет на несколько доменов | Используйте `/debug` с более широким объёмом или `/work` |
 | Агент обнаруживает несоответствие API-контракта | Фронтенд и бэкенд расходятся | Запустите `/plan`, определите контракты и заново запустите обоих агентов |
 | Шлюз качества не проходит на точках интеграции | Компоненты не соединяются должным образом | Запустите `/review` или добавьте проход QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

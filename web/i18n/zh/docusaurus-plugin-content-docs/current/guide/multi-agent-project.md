@@ -88,10 +88,10 @@ flowchart LR
 
 1. 加载 `.agents/results/plan-{sessionId}.json`；没有可用计划时，通过 `/plan` 内联创建计划。
 2. 初始化会话，ID 格式为 `session-YYYYMMDD-HHMMSS`。
-3. 在内存目录中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。
-4. 按优先级层启动智能体，每个智能体获得任务描述、API 契约和上下文。
-5. 通过轮询 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件监控进度。
-6. 通过 `verify.sh` 验证每个完成的智能体。PASS（退出码 0）接受结果；FAIL（退出码 1）带错误上下文重新启动（最多重试 2 次）；持续失败触发探索循环。
+3. 为每个任务选择所需的技能参考资料，并在内存目录中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。所选参考资料作为协调者备注记录在其中，启动器不强制执行。
+4. 按优先级层启动智能体，每个智能体获得任务描述、API 契约、上下文及所选参考资料。
+5. 通过宿主完成通知监控进度，或采用有界退避轮询发生变更的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件。
+6. 验证每个完成的智能体：先做机械自检，然后对 backend、frontend、mobile、qa、debug 和 pm 智能体运行 `verify.sh`（其他类型记录为 `SKIP`），再进行 QA 交叉审查。PASS（退出码 0）继续；FAIL（退出码 1）在共享恢复预算（默认每个任务 3 次尝试，含首次尝试）内携带错误上下文重新启动。重试与探索假设共享同一预算；耗尽后任务会报告为 `partial` 或 `failed`。
 7. 收集所有 `result-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件并编译最终报告。
 
 ### 步骤 3：agent spawn，CLI 级别的智能体管理 {#step-3-agent-spawn-for-cli-level-agent-management}
@@ -134,7 +134,7 @@ oma agent spawn backend "Implement user auth API with JWT" session-20260324-1430
 
 review 工作流运行完整 QA 流水线：
 
-1. **确定范围**：询问审查什么（特定文件、功能分支或整个项目）。
+1. **确定范围**：从请求中获取范围（特定文件、功能分支、PR 或整个项目）。未指定范围时，审查当前未提交和分支的变更并说明该假设；只有在没有任何依据可确定范围时才询问。
 2. **自动安全检查**：运行 `npm audit`、`bandit` 或等效工具。
 3. **OWASP Top 10 手动审查**：注入、认证缺陷、敏感数据、访问控制、配置错误、不安全反序列化、有漏洞的组件、日志不足。
 4. **性能分析**：N+1 查询、缺失索引、无界分页、内存泄漏、不必要的重新渲染、包大小。

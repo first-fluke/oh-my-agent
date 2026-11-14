@@ -6,13 +6,13 @@ description: Gedetailleerde gids voor taken binnen één domein in oh-my-agent, 
 
 # Uitvoering met één skill
 
-Uitvoering met één skill is de snelle route: één agent, één domein, één gerichte taak. Er is geen orchestratie-overhead en geen coördinatie tussen meerdere agenten. Een host of geselecteerde workflow kan een prompt in natuurlijke taal naar de skill routeren; het hook-systeem detecteert workflows zelf en het routinggedrag hangt af van de geselecteerde runtime.
+Uitvoering met één skill is de snelle route: één agent, één domein, één gerichte taak. Er is geen orchestratie-overhead en geen coördinatie tussen meerdere agenten. Een host of geselecteerde workflow kan een prompt in natuurlijke taal naar de skill routeren; het hook-systeem voegt skillhints toe op basis van trefwoorden en het routinggedrag hangt af van de geselecteerde runtime.
 
 ## Snelle route
 
 1. Voer één keer `oma doctor` uit om de geselecteerde hostintegratie te controleren. Optionele waarschuwingen over providers blokkeren een taak niet wanneer die providers niet worden gebruikt.
 2. Beschrijf één zelfstandige wijziging met een duidelijke voorwaarde **Goal**, **Context**, **Constraints** en **Done When**.
-3. Verwacht dat de geselecteerde skill de repository inspecteert, zijn scope vermeldt wanneer het actieve uitvoeringscontract een `CHARTER_CHECK` vereist en rapporteert welke controles werkelijk zijn uitgevoerd.
+3. Verwacht dat de geselecteerde skill de repository inspecteert, eventuele aannames vermeldt die van invloed zijn op het resultaat en rapporteert welke controles werkelijk zijn uitgevoerd.
 4. Als de taak zich uitbreidt over API-, UI-, database- of mobilegrenzen, stop je de run met één skill en schakel je over naar `/work` of `/orchestrate`.
 
 Gebruik voor vastgelopen beheerde runs `oma agent status <session-id> [agent-id]`. Inspecteer daarna de receipts in `.agents/state/agent-runs/` en het geïnjecteerde claimpad voordat je opnieuw probeert. Zie [Belangrijke standaardinstellingen](../getting-started/important-defaults.md) voor provider- en herstelgedrag.
@@ -115,17 +115,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **Geladen resources:**
    - `execution-protocol.md` (altijd)
    - `snippets.md` (formulier- en Zod-patronen, plus bestaande componentpatronen wanneer de skill die aanlevert)
-4. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **Implementatie:**
+4. **Implementatie:**
    - Maakt `src/features/auth/components/login-form.tsx` (Client Component met `"use client"`)
    - Maakt `src/features/auth/utils/login-schema.ts` (Zod-schema)
    - Maakt `src/features/auth/components/skeleton/login-form-skeleton.tsx`
@@ -133,7 +124,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Het formulier wordt afgehandeld door `@tanstack/react-form` met Zod-validatie
    - Absolute imports met `@/`
    - Eén component per bestand
-6. **Verificatie:**
+5. **Verificatie:**
    - Checklist: ARIA-labels aanwezig, semantische headings, toetsenbordnavigatie werkt
    - Mobile: correcte weergave bij een viewport van 320px
    - Performance: geen CLS
@@ -166,16 +157,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - overeenkomende `stack/snippets.md` of `variants/{node,python,rust}/snippets.md` wanneer beschikbaar
    - overeenkomende `stack/tech-stack.md` of verwijzingen naar variant-tech-stacks
 <!-- oma-docs:ignore-end -->
-5. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **Implementatie:**
+5. **Implementatie:**
    - Repository: `TaskRepository.find_by_user(user_id, cursor, status, limit)` met geparametriseerde query
    - Service: `TaskService.get_user_tasks(user_id, cursor, status, limit)` (wrapper voor bedrijfslogica)
    - Router: `GET /api/tasks` met JWT-authmiddleware, invoervalidatie en response-opmaak
@@ -203,18 +185,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **Moeilijkheidsinschatting:** Gemiddeld (instellingenscherm + state management + offline-afhandeling).
 3. **Geladen resources:**
    - `execution-protocol.md`
-   - `snippets.md` (schermtemplate, Riverpod-providerpatroon)
-4. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (patronen voor schermen, Riverpod-providers en de datalaag), of `stack/snippets.md` wanneer `/stack-set` dit heeft gegenereerd
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **Implementatie:**
+4. **Implementatie:**
    - Scherm: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget met Riverpod)
    - Providers: `lib/features/settings/providers/settings_provider.dart`
    - Repository: `lib/features/settings/data/settings_repository.dart`
@@ -247,17 +221,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (structuur van deliverables)
    - `examples.md`
    - `anti-patterns.md` (controle tijdens optimalisatie)
-4. **Uitvoeringscontract (wanneer ingeschakeld) kan `CHARTER_CHECK` uitsturen:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **Workflow:** Verkennen (entiteiten, relaties, toegangspatronen, volume-inschattingen) -> Ontwerpen (externe/conceptuele/interne schema's, constraints, lifecyclevelden) -> Optimaliseren (indexen voor querypatronen, partitioneringsstrategie, back-upplan, controle op anti-patronen)
-6. **Deliverables:**
+4. **Workflow:** Verkennen (entiteiten, relaties, toegangspatronen, volume-inschattingen) -> Ontwerpen (externe/conceptuele/interne schema's, constraints, lifecyclevelden) -> Optimaliseren (indexen voor querypatronen, partitioneringsstrategie, back-upplan, controle op anti-patronen)
+5. **Deliverables:**
    - Samenvatting van het externe schema (views per rol: admin, projectmanager, teamlid)
    - Conceptueel schema met ERD (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership, enzovoort)
    - Intern schema met fysieke DDL, indexen en partitionering
@@ -322,7 +287,7 @@ Let op deze signalen dat je van uitvoering met één skill naar multi-agentuitvo
 | Signaal | Wat het betekent | Actie |
 |---------|-------------------|-------|
 | Agent zegt "dit vereist een backendwijziging" | De taak heeft afhankelijkheden over domeinen heen | Schakel over naar `/work` en voeg een backendagent toe |
-| De `CHARTER_CHECK` van de agent bevat onderdelen bij "Must NOT do" die wel nodig zijn | De scope overschrijdt één domein | Plan de volledige feature eerst met `/plan` |
+| De agent rapporteert werk dat hij heeft weggelaten omdat het buiten het domein van de skill valt | De scope overschrijdt één domein | Plan de volledige feature eerst met `/plan` |
 | Een fix werkt door naar 3+ bestanden in verschillende lagen | Eén fix raakt meerdere domeinen | Gebruik `/debug` met bredere scope of `/work` |
 | De agent ontdekt een API-contractmismatch | Frontend en backend zijn het niet eens | Voer `/plan` uit om contracten te definiëren en start daarna beide agenten opnieuw |
 | Een kwaliteitsgate faalt op integratiepunten | Componenten sluiten niet op elkaar aan | Voer `/review` uit, of voeg een QA-ronde toe: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

@@ -1,13 +1,25 @@
 ---
 title: Szybki start
-description: Uruchom jedno zadanie o ograniczonym zakresie od instalacji po weryfikację, z oczekiwanym wyjściem i odzyskiwaniem.
+description: Wybierz jedną umiejętność lub preset runtime'u, a następnie uruchom pierwsze zadanie o ograniczonym zakresie z obserwowaną weryfikacją.
 ---
 
 # Szybki start
 
-Aby uruchomić jedno małe zadanie i zapisać konkretny wynik, przygotuj katalog projektu oraz co najmniej jedno obsługiwane CLI AI lub IDE. Instalator może skonfigurować `bun`, `uv`, Serenę, CUE oraz globalne polecenie `oma` na macOS, Linuxie lub Windowsie; wybrana integracja hosta jest wymagana przy pierwszym prompcie, natomiast integracje dostawców i przeglądarki są opcjonalne.
+Sprawdź wynik na jednym ukierunkowanym zadaniu. Załaduj umiejętność w używanym już agencie kodującym albo zainstaluj runtime, gdy potrzebujesz hooków projektowych, wyspecjalizowanych agentów i workflowów. Przewodnik [Wybór konfiguracji](./choose-setup.md) wyjaśnia dostępne ścieżki oraz ich zależności.
 
-## 1. Zainstaluj
+## 1. Wybierz konfigurację {#1-install}
+
+Dla poniższego zadania Git wyłącznie do odczytu poproś agenta o załadowanie umiejętności i przeczytanie jej instrukcji oraz katalogu pomocniczego:
+
+```bash
+bunx skills use first-fluke/oh-my-agent@oma-scm
+```
+
+Przejdź do zadania w kroku 3. Operacje CLI tej umiejętności, pozostałe umiejętności, reguły projektu i usługi zewnętrzne pozostają osobnymi zależnościami. Załadowanie tej umiejętności nie uruchamia instalatora OMA.
+
+### Zainstaluj runtime, gdy jest potrzebny
+
+Instalator początkowy runtime'u może przygotować `bun`, `uv`, Serenę, CUE oraz globalne polecenie `oma`. Wybierz używane już CLI AI lub IDE; integracje dostawców i przeglądarki zależą od planowanych zadań.
 
 W katalogu projektu uruchom instalator początkowy:
 
@@ -21,7 +33,7 @@ W Windows PowerShell uruchom:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-Interaktywna konfiguracja pyta o język odpowiedzi, dostawców CLI, [dostawców możliwości](./glossary.md#capability-provider), [preset modelu](./glossary.md#model-preset), [preset umiejętności](./glossary.md#skill-preset) projektu oraz ewentualny wariant stosu. Przy pierwszym uruchomieniu zachowaj wartości domyślne, wybierz używanego dostawcę i preset projektu najbardziej zbliżony do repozytorium. Umiejętności każdego presetu oraz [workflowy wymagające umiejętności spoza presetu](./installation.md#workflows-that-need-skills-outside-a-preset) opisano w sekcji [Presety](./installation.md#presets).
+Interaktywna konfiguracja pyta o dostawców CLI, [dostawców możliwości](./glossary.md#capability-provider), [preset modelu](./glossary.md#model-preset), [preset umiejętności](./glossary.md#skill-preset) projektu oraz ewentualny wariant stosu; instalacja zachowuje istniejący język odpowiedzi albo wykrywa język systemu automatycznie. Przy pierwszym uruchomieniu zachowaj wartości domyślne, wybierz używanego dostawcę i preset projektu najbardziej zbliżony do repozytorium. Umiejętności każdego presetu oraz [workflowy wymagające umiejętności spoza presetu](./installation.md#workflows-that-need-skills-outside-a-preset) opisano w sekcji [Presety](./installation.md#presets).
 
 Jeśli masz już `bun`, uruchom instalator bezpośrednio:
 
@@ -31,10 +43,9 @@ bunx oh-my-agent@latest
 
 Skrypty początkowe instalują się w bieżącym projekcie. Użyj `oma install --global`, gdy potrzebujesz instalacji na poziomie HOME; przed łączeniem instalacji projektowej i globalnej przeczytaj [Instalację globalną](../guide/global-install.md).
 
-
 ## 2. Sprawdź wynik
 
-Uruchom kontrolę stanu z tego samego katalogu projektu:
+Przy tymczasowym ładowaniu umiejętności potwierdź, że agent przeczytał wybrane instrukcje, i zweryfikuj samo zadanie. Przy instalacji runtime'u uruchom kontrolę stanu z tego samego katalogu projektu:
 
 ```bash
 oma doctor
@@ -64,19 +75,21 @@ Jeśli samo polecenie nadal nie jest dostępne, otwórz nową powłokę albo dod
 
 ## 3. Uruchom jedno małe zadanie
 
-Otwórz repozytorium w skonfigurowanym narzędziu AI i poproś o jedną nazwaną umiejętność i jeden samodzielny wynik:
+Otwórz istniejące repozytorium Git w swoim narzędziu AI. Użyj załadowanej umiejętności `oma-scm` albo kopii zainstalowanej przez nazwany preset runtime'u. Jeśli użyto wyboru Custom, dołącz `oma-scm` do tego przykładu:
 
 ```text
-Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
+Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
 ```
 
-Host powinien zidentyfikować wybraną umiejętność, sprawdzić jeden cel i zgłosić albo punktową zmianę linku, albo że link jest już poprawny. Dołącz wyjście polecenia i status wyjścia każdej kontroli, która faktycznie została uruchomiona.
+Porównaj zgłoszoną gałąź i zmiany z rzeczywistym wynikiem Git. Agent powinien podać, które polecenia zostały uruchomione oraz jakie miały statusy wyjścia. To zadanie wyłącznie do odczytu nie wymaga testów kodu ani budowania.
 
-Gdy hook słów kluczowych jest włączony dla wybranego hosta, może uruchomić pasujący workflow. Routing umiejętności wykonuje host albo wybrany workflow, więc dowolny prompt hosta nie gwarantuje hooka, konkretnej umiejętności ani `CHARTER_CHECK`. Kontrakt wykonania powinien mimo to sprawdzić konwencje repozytorium, wprowadzić wyłącznie zmianę w wyznaczonym zakresie i zgłosić jej weryfikację. Dokładne pliki i polecenie zależą od projektu.
+Zwykły prompt nie uruchamia żadnego workflowu; tam, gdzie hook promptu jest włączony, dodaje on doradczą podpowiedź umiejętności. Routing umiejętności wykonuje host albo wybrany workflow, więc dowolny prompt hosta nie gwarantuje hooka ani konkretnej umiejętności. Kontrakt wykonania powinien mimo to sprawdzić konwencje repozytorium, zachować żądany zakres wyłącznie do odczytu i zgłosić zaobserwowane kontrole. Dokładne pliki i polecenie zależą od projektu.
 
 Dla zadania przekraczającego granice API i UI wybierz jawnie `/work` albo `/orchestrate`. Dla jednej domeny przejdź do [Wykonania pojedynczej umiejętności](../guide/single-skill.md). [Przewodnik użycia](../guide/usage.md) zawiera dłuższe przykłady.
 
-## 4. Poznaj wartości domyślne przed skalowaniem
+## 4. Poznaj wartości domyślne runtime'u przed skalowaniem
+
+Tymczasowe ładowanie umiejętności nie konfiguruje tych domyślnych ustawień runtime'u. Dla hooków projektowych, konfiguracji dostawców lub workflowów zespołowych użyj ścieżki runtime'u opisanej w [Wybór konfiguracji](./choose-setup.md).
 
 OMA rozpoczyna z `model_preset: auto`, Sereną do inteligencji kodu, Agent Memory do pamięci semantycznej, natywnym wyszukiwaniem w sieci i wyłączoną telemetrią. Serena używa współdzielonego transportu `bridge` i automatycznie się aktualizuje, chyba że skonfigurujesz inaczej. Browser DevTools MCP jest opcjonalny; nowa konfiguracja interaktywna najpierw oferuje Aside. Skutki tych ustawień i klucze nadpisywania opisano w [Ważnych wartościach domyślnych](./important-defaults.md).
 
@@ -84,6 +97,7 @@ Jeśli zarządzane zadanie utknie, zacznij od `oma agent status <session-id> [ag
 
 ## Następne kroki
 
+- [Wybór konfiguracji](./choose-setup.md) — dla pojedynczej umiejętności, presetu runtime'u albo wtyczki Claude Code
 - [Ważne wartości domyślne](./important-defaults.md) — priorytety, dostawcy i sposoby odzyskiwania
 - [Instalacja](./installation.md) — presety, konfiguracja dostawców, instalacje globalne i aktualizacje
 - [Agenci](../core-concepts/agents.md) — 33 pakiety umiejętności i role dispatchu

@@ -88,10 +88,10 @@ Masz dwie ścieżki wykonania:
 
 1. Wczytuje `.agents/results/plan-{sessionId}.json`, a gdy nie ma użytecznego planu, tworzy plan inline przez `/plan`.
 2. Inicjalizuje sesję z identyfikatorem w formacie `session-YYYYMMDD-HHMMSS`.
-3. Tworzy `orchestrator-session-{sessionId}.md` i `task-board-{sessionId}.md` w katalogu pamięci.
-4. Uruchamia agentów według poziomu priorytetu, przekazując każdemu: opis zadania, kontrakty API i kontekst.
-5. Monitoruje postęp, odpytując pliki `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`.
-6. Weryfikuje każdego ukończonego agenta za pomocą `verify.sh`. PASS (kod wyjścia 0) akceptuje wynik; FAIL (kod wyjścia 1) uruchamia agenta ponownie z kontekstem błędu (maksymalnie 2 ponowienia); trwała porażka uruchamia pętlę eksploracji.
+3. Dobiera referencje umiejętności potrzebne dla każdego zadania i tworzy `orchestrator-session-{sessionId}.md` oraz `task-board-{sessionId}.md` w katalogu pamięci. Wybrane referencje są tam zapisywane jako notatki koordynatora; program uruchamiający ich nie wymusza.
+4. Uruchamia agentów według poziomu priorytetu, przekazując każdemu: opis zadania, kontrakty API, kontekst i wybrane referencje.
+5. Monitoruje postęp za pomocą powiadomień o zakończeniu z hosta albo przez odpytywanie zmienionych plików `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` z ograniczonym backoffem.
+6. Weryfikuje każdego ukończonego agenta: mechaniczna samokontrola, następnie `verify.sh` dla agentów backend, frontend, mobile, qa, debug i pm (inne typy zapisują `SKIP`), a potem wzajemny przegląd QA. PASS (kod wyjścia 0) kontynuuje wykonanie; FAIL (kod wyjścia 1) uruchamia agenta ponownie z kontekstem błędu w ramach wspólnego budżetu odzyskiwania (domyślnie 3 próby na zadanie, łącznie z pierwszą). Ponowienia i hipotezy eksploracji korzystają z tego samego budżetu; po jego wyczerpaniu zadanie otrzymuje status `partial` albo `failed`.
 7. Zbiera wszystkie pliki `result-{agentId}-{taskId}-{runId}-{sessionId}.md` i kompiluje raport końcowy.
 
 ### Krok 3: agent spawn — zarządzanie agentami na poziomie CLI
@@ -134,7 +134,7 @@ Szczegóły konfiguracji znajdziesz w [Modelach per agent](./per-agent-models.md
 
 Workflow przeglądu uruchamia pełny potok QA:
 
-1. **Określenie zakresu**: pyta, co ma zostać przejrzane (konkretne pliki, gałąź funkcji albo cały projekt).
+1. **Określenie zakresu**: pobiera zakres z żądania (konkretne pliki, gałąź funkcji, PR albo cały projekt). Gdy zakres nie został podany, przegląda bieżące niezatwierdzone zmiany i zmiany na gałęzi oraz podaje to założenie; pyta tylko wtedy, gdy nie ma podstaw do określenia zakresu.
 2. **Zautomatyzowane kontrole bezpieczeństwa**: uruchamia `npm audit`, `bandit` lub odpowiednik.
 3. **Ręczny przegląd OWASP Top 10**: wstrzykiwanie, złamane uwierzytelnianie, dane wrażliwe, kontrola dostępu, błędna konfiguracja, niebezpieczna deserializacja, podatne komponenty, niewystarczające logowanie.
 4. **Analiza wydajności**: zapytania N+1, brakujące indeksy, nieograniczona paginacja, wycieki pamięci, zbędne ponowne renderowanie, rozmiary bundli.

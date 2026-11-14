@@ -9,7 +9,7 @@ description: OMA 使用指南，涵盖以读者为先的任务选择、单技能
 ## 快速上手 {#quick-start}
 
 1. 在选定的 AI IDE 或 CLI 中打开项目（Claude Code、Codex CLI、Cursor、Antigravity、OpenCode、Kimi、Kiro、Qwen 或其他受支持的宿主）
-2. 选定的宿主可以从 `.agents/skills/` 加载[技能](../getting-started/glossary.md#skill)；启用的钩子可以从自然语言关键词检测[工作流](../getting-started/glossary.md#workflow)
+2. 选定的宿主可以从 `.agents/skills/` 加载[技能](../getting-started/glossary.md#skill)；启用的钩子会根据自然语言关键词添加技能提示，且仅在输入斜杠命令（或 4 种持久化模式对应的名称）时启动[工作流](../getting-started/glossary.md#workflow)
 3. 用自然语言描述想完成的事情。宿主或选定的工作流会将任务路由到相关技能
 4. 对于多智能体工作，使用 `/work` 或 `/orchestrate`
 
@@ -24,6 +24,7 @@ description: OMA 使用指南，涵盖以读者为先的任务选择、单技能
 | 带错误消息的 bug | `/debug`，附上错误和复现步骤 | [Bug 修复](./bug-fixing.md) |
 | 在智能体运行时观察它们 | `oma dashboard terminal` | [仪表盘监控](./dashboard-monitoring.md) |
 | 审计或恢复智能体结果 | `oma agent resume SESSION_ID --dry-run` | [结果与恢复](./agent-results-and-resume.md) |
+| 查找或迁移 OMA 文档 | `oma docs migrate --dry-run` | [产物布局](./artifact-layout.md) |
 | 出现了故障 | `oma doctor --json` | [故障排查](./troubleshooting.md) |
 
 ---
@@ -42,23 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. 第二层资源按需加载：
    - `execution-protocol.md`：4 步工作流（分析、规划、实现、验证）
    - `snippets.md`：表单和 Zod 验证模式，技能提供时还包括已有组件模式
-4. 智能体输出 **CHARTER_CHECK**：
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
 <!-- oma-docs:ignore-start -->
-5. 智能体实现：
+4. 智能体实现：
    - `src/features/auth/components/login-form.tsx` 中的 React TypeScript 组件
    - `src/features/auth/utils/login-validation.ts` 中的 Zod 验证 schema
    - `src/features/auth/utils/__tests__/login-validation.test.ts` 中的 Vitest 测试
    - `src/features/auth/components/skeleton/login-form-skeleton.tsx` 中的加载骨架屏
 <!-- oma-docs:ignore-end -->
-6. 智能体运行检查清单：无障碍性（ARIA 标签、语义 HTML、键盘导航）、移动视口、性能（无 CLS）、错误边界
+5. 智能体运行检查清单：无障碍性（ARIA 标签、语义 HTML、键盘导航）、移动视口、性能（无 CLS）、错误边界
 
 **预期结果**：在项目支持这些检查时，得到一个范围明确的 React 组件，并附带 TypeScript、验证、测试和无障碍证据。实际运行哪些文件和检查，由提示和选定的工作流决定。
 
@@ -74,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **发生了什么：**
 
 1. 该请求涉及前端、后端和移动端工作。宿主智能体可以根据这个范围推荐协调方式。
-2. 启用关键词检测钩子后，“Build a TODO app”会匹配配置中的 `/orchestrate` 模式，可能激活该工作流。钩子匹配的是文本，不会将请求判定为多领域任务。使用明确的命令来选择所需工作流。
+2. 关键词检测钩子不会根据这句话启动工作流：它只会在提示中明确提及 `orchestrate`、`ultrawork`、`work` 或 `ralph` 这几个模式名称时才激活对应模式，并不会将请求分类为多领域任务。请使用显式命令来选择你想要的工作流。
 
 **使用 `/work`（逐步进行，用户控制）：**
 
@@ -153,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **你输入：**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **发生了什么：**
 
-1. `oma-design` 激活（关键词：“design”、“landing page”、“dark”、“premium”）
-2. **阶段 1：SETUP** 检查 `.design-context.md`。如果缺失，会询问：
-   - 服务支持哪些语言？（仅英文 / + CJK）
-   - 目标受众？（B2B，技术用户，25-45 岁）
-   - 品牌个性？（专业 / 高端）
-   - 美学方向？（暗色高端）
-   - 参考网站？（用户提供示例）
-   - 无障碍性？（WCAG AA）
-3. **阶段 3：ENHANCE** 如果提示词模糊，将其转换为逐节规范
-4. **阶段 4：PROPOSE** 展示 3 个设计方向：
-   - **方向 A：“午夜天文台”**，深海军蓝（#0f1729），青色强调（#22d3ee），Inter + JetBrains Mono，bento 网格布局，滚动驱动显现
-   - **方向 B：“碳纤界面”**，中性灰（#18181b），琥珀强调（#f59e0b），系统字体，棋盘布局，悬停驱动微交互
-   - **方向 C：“深空”**，纯暗（#0a0a0a），翡翠强调（#10b981），Geist + Geist Mono，全出血区域，入场动画
-5. **阶段 5：GENERATE** 基于选定方向生成：
-   - 包含 6 个部分（字体、颜色、间距、动效、组件、无障碍）的 `DESIGN.md`
-   - CSS 自定义属性
-   - Tailwind 配置扩展
-   - shadcn/ui 主题变量
-6. **阶段 6：AUDIT** 运行响应式（320px 最小值）、WCAG 2.2、Nielsen 启发式、AI 痕迹检测的检查
-7. **阶段 7：HANDOFF** “设计完成。运行 `/orchestrate` 使用 oma-frontend 实现。”
+1. **加载技能：** 工作流读取 `oma-design` 技能及其执行协议。该技能负责供应商选择以及项目设计契约。
+2. **确立范围与上下文：** 该请求被归类为设计系统文档。工作流读取现有的 `DESIGN.md`、存在的 `.design-context.md`、品牌材料、受支持的语言以及受影响的 UI，并查找现有的 UI 库、主题文件和令牌。对于现有产品，它会先确定“保留（Preserve）”还是“全面重构（Overhaul）”。只有当某个选择会实质性改变结果，且请求与代码库均未给出答案时，它才会提问；该提示已明确说明语言、受众和无障碍目标，因此不会继续追问问卷。
+3. **选择指南并收集参考：** 为该操作选择一个外部设计技能：仪表盘或 SaaS 产品 UI 选择 Interface Design，其他全新 Web 艺术方向选择 Taste，现有 UI 的评审或打磨选择 Impeccable。仅当任务需要时，才加载指定的供应商 seed、Stitch 操作、资产指南或数据网格规则。
+4. **决定方向：** 将所选指南应用于项目证据。仅当未决选择会实质性影响结果时才给出备选方向；复用你已选定的方向。每个方向都符合品牌规范、韩语的 CJK 字体覆盖、现有实现技术栈、从最小支持视口开始的响应式行为以及 WCAG AA 标准。
+5. **生成产物：** 创建或更新包含全部 9 个部分（含第 9 部分 Agent Prompt Guide）的 `DESIGN.md`。令牌将语义角色映射到项目现有的令牌系统与主题格式，不引入并行配置，也不编写实现代码。
+6. **验证并交接：** 检查适用的检查清单项，并列出已检查的具体对象。需要渲染实现才能完成的检查会明确列出但保持未运行状态。报告会列出交付的产物、所选路由、验证结果及剩余限制，随后将实现交接给 `oma-frontend`（Web）或 `oma-mobile`（原生）。
 
 ---
 
@@ -271,18 +249,18 @@ oma stats get
 | `/work` | 持久化 | 在授权范围内逐步完成多领域规划、实现和 QA | 跨越多个领域、需要协调交付的功能 |
 | `/ultrawork` | 持久化 | 包含 5 个阶段、17 个步骤和 12 个隔离审查检查点的质量工作流 | 最高质量交付，生产关键代码 |
 | `/plan` | 非持久化 | PM 驱动的任务分解、API 契约，以及在 `docs/plans/work/` 中跟踪计划工件（顺序命名 `NNN-name.md`，使用 Status 字段管理生命周期） | 复杂多智能体工作之前，或需要跟踪进度和决策日志的复杂功能 |
-| `/brainstorm` | 非持久化 | 设计优先的构思，提出 2 到 3 个方案 | 确定实现方案之前 |
+| `/brainstorm` | 非持久化 | 结合 2 到 3 个方案进行方法探索，并在 `docs/decisions/` 中生成草案 | 确定实现方案之前 |
 | `/deepinit` | 非持久化 | 完整项目初始化（AGENTS.md、ARCHITECTURE.md、docs/） | 在现有代码库中设置 oh-my-agent |
-| `/review` | 非持久化 | QA 流水线：OWASP 安全、性能、无障碍、代码质量 | 合并代码前或部署前审查 |
-| `/security` | 非持久化 | 通过 `oma-security` 扫描应用源码、智能体技能或 MCP 组件；对测试部署运行限定范围的 Web 渗透测试；验证发现并配置安全关卡 | 发布之前，或某项变更需要安全扫描或关卡时 |
+| `/review` | 非持久化 | QA 流水线：OWASP 安全、性能、无障碍、代码质量。审查范围由请求指定，默认针对当前变更 | 合并代码前或部署前审查 |
+| `/security` | 非持久化 | 通过 `oma-security` 扫描应用源码、智能体技能或 MCP 组件，验证发现并配置安全关卡。针对限定范围 Web 测试部署的渗透测试，仅在用户提供且经过审查的运行时平台上运行 | 发布之前，或某项变更需要安全扫描或关卡时 |
 | `/debug` | 非持久化 | 结构化调试：复现、诊断、修复、回归测试、扫描 | 调查 bug 和错误 |
-| `/design` | 非持久化 | 7 阶段设计工作流，产出包含令牌的 DESIGN.md | 构建设计系统、着陆页、UI 重设计 |
+| `/design` | 非持久化 | 划定设计任务范围，选择适用的设计指南，并通过 `oma-design` 交付发现报告、`DESIGN.md`、重设计方向或设计令牌 | 定义或评审视觉系统、UI 重设计、设计审计 |
 | `/scm` | 非持久化 | Git 的 SCM 工作流（分支、合并、冲突、工作树、基线）以及自动类型和范围检测、功能拆分的 Conventional Commit 生成 | 完成代码变更后，或处理仓库配置管理任务时 |
-| `/stack-set` | 非持久化 | 自动检测项目技术栈并生成 backend 或 mobile（Swift、Flutter、RN）参考 | 设置语言专用编码约定 |
+| `/stack-set` | 非持久化 | 自动检测项目技术栈并生成 backend、frontend 或 mobile（Swift、Kotlin、Flutter、RN）参考 | 设置语言专用编码约定 |
 | `/architecture` | 非持久化 | 架构诊断、方案比较和决策记录 | 审查边界或选择架构 |
 | `/convert` | 非持久化 | 将文档转换路由到适当技能 | 转换 HWP/HWPX 或 PDF 源文件 |
 | `/docs` | 非持久化 | 文档验证和面向 diff 的同步提案 | 检查文档是否与当前代码库一致 |
-| `/explain` | 非持久化 | 生成并验证离线 HTML 代码变更讲解 | 讲解 diff、PR、分支或提交范围 |
+| `/explain` | 非持久化 | 为代码变更或主题生成离线 HTML 讲解，使用 `oma explain validate` 验证，并用 `oma explain render --open` 打开 | 讲解 diff、PR、分支、提交范围或某个主题 |
 | `/recap` | 非持久化 | 汇总受支持的 AI 工具历史中的工作 | 每日或周期回顾 |
 | `/schedule` | 非持久化 | 注册重复性智能体作业 | 夜间回顾、扫描或维护 |
 | `/video` | 非持久化 | 从脚本、旁白和视觉素材合成可复现视频 | 短视频、讲解视频和演示 |
@@ -292,7 +270,7 @@ oma stats get
 
 ## 自动检测示例 {#auto-detection-examples}
 
-oh-my-agent 会在 11 种语言中检测工作流关键词。下面的示例展示自然语言如何触发工作流：
+关键词钩子只会启动 4 种持久化模式，并且只在提示明确点出模式名称时触发。其他工作流都从各自的斜杠命令启动。
 
 | 你输入 | 检测到的工作流 | 语言 |
 |--------|------------------|----------|
@@ -304,6 +282,8 @@ oh-my-agent 会在 11 种语言中检测工作流关键词。下面的示例展�
 | "work workflow로 진행해줘" | `/work` | 韩语 |
 | "ralph this task" | `/ralph` | 英语 |
 | "랄프로 끝까지 해줘" | `/ralph` | 韩语 |
+
+像“plan the authentication feature”、“fix the login bug”、“do everything in parallel”和“don't stop until it's done”这样的句子不会启动工作流。
 
 **信息性查询会被过滤：**
 
@@ -323,22 +303,22 @@ oh-my-agent 会在 11 种语言中检测工作流关键词。下面的示例展�
 | 技能 | 最适用于 | 主要输出 |
 |-------|---------|---------------|
 | **oma-academic-writing** | 学术写作起草、修订和反 AI 审查 | 面向发表的行文以及主张与证据修订 |
-| **oma-architecture** | 系统边界、权衡、ADR | 架构建议或决策记录 |
+| **oma-architecture** | 系统边界、权衡、ADR | `.agents/results/architecture/` 中的报告；`docs/decisions/` 中的决策记录 |
 | **oma-backend** | API、认证、服务端逻辑、迁移 | 路由器/服务/仓库变更和验证 |
-| **oma-brainstorm** | 模糊想法和方案比较 | `docs/plans/designs/` 中的设计文档 |
-| **oma-coordination** | 手动多智能体协调 | 逐步任务与交接指导 |
+| **oma-brainstorm** | 模糊想法和方案比较 | `docs/decisions/` 中的决策草案 |
+| **oma-coordination** | `/work`、`/orchestrate` 和 `/ultrawork` 的共享协调规则；手动逐步协调 | 计划复用、契约对齐、工作区所有权与 QA 交接指导 |
 | **oma-db** | 模式设计、ERD、查询调优、容量规划 | 模式文档、迁移和恢复计划 |
 | **oma-debug** | Bug 复现和根因分析 | 最小修复、回归证据和模式扫描 |
-| **oma-security** | 源码、智能体技能和 MCP 安全扫描；限定范围的 Web 渗透测试 | 经过验证的发现和扫描关卡配置 |
-| **oma-design** | 设计系统、着陆页、令牌 | `DESIGN.md`、令牌和组件指导 |
+| **oma-security** | 源码、智能体技能和 MCP 安全扫描；仅在用户提供且经过审查的运行时平台上开展渗透测试 | 经过验证的发现和扫描关卡配置 |
+| **oma-design** | 视觉系统、`DESIGN.md`、重设计方向、UI 设计评审 | 设计决策或发现报告、系统变更时的 `DESIGN.md` 以及实现交接 |
 | **oma-dev-workflow** | CI/CD、单体仓库、迁移、发布自动化 | 工作流配置和发布检查 |
 | **oma-docs** | 损坏引用和文档漂移 | 验证报告或面向 diff 的同步候选 |
-| **oma-explanation** | diff、PR、分支或提交讲解 | 包含 Background、Intuition、Code、Quiz 的离线 HTML 讲解 |
+| **oma-explanation** | diff、PR、分支或提交讲解；主题讲解 | 离线 HTML 讲解（针对变更包含 Background、Intuition、Code 和 Quiz） |
 | **oma-frontend** | UI 组件、表单、页面、Angular 或 React 样式 | 前端变更和相关检查 |
 | **oma-hwp** | HWP/HWPX/HWPML 转换 | 带标题、表格、图像和链接的 Markdown |
 | **oma-image** | 图像生成和视觉素材 | 带清单的可复现图像运行 |
 | **oma-market** | 痛点、趋势、竞品和发现研究 | 遵循 LAW 的研究简报及框架 |
-| **oma-mobile** | Flutter、React Native 和 Swift iOS 工作 | 移动端界面、状态、平台集成和测试 |
+| **oma-mobile** | Flutter、React Native、Swift iOS 与 Kotlin Android 工作 | 移动端界面、状态、平台集成和测试 |
 | **oma-observability** | 追踪、指标、日志、剖析、SLO、事件取证 | 分层可观测性建议或实现指导 |
 | **oma-orchestration** | 自动并行智能体执行 | 协调后的计划、内存更新和结果收集 |
 | **oma-pdf** | PDF 转换和支持 OCR 的提取 | 保持阅读顺序、表格、列表和图像的 Markdown |
@@ -348,7 +328,7 @@ oh-my-agent 会在 11 种语言中检测工作流关键词。下面的示例展�
 | **oma-refactor** | 保持行为的结构重组 | 带特征测试和质量证据的重构变更 |
 | **oma-scholar** | 学术搜索和论文 sidecar | 经过验证的 `.knows.yaml` sidecar 操作 |
 | **oma-scm** | Git 分支、工作树、基线和提交规范 | SCM 计划或 Conventional Commit 输出 |
-| **oma-search** | 带信任评分的文档、网络、代码和本地搜索 | 附信任标签的路由搜索结果 |
+| **oma-search** | 外部文档、Web 来源、远程代码和已知 URL 读取 | 附带路由、提供方、证据与局限说明的引用来源 |
 | **oma-skill-creation** | 创建和审计 OMA 技能 | SSL-lite 技能文件和 `oma skill audit` 结果 |
 | **oma-slide** | HTML 演示文稿和导出 | 经过验证的打包 HTML、PDF、PNG 或 PPTX |
 | **oma-tf-infra** | Terraform 基础设施、IAM 和策略即代码 | Terraform 模块、计划和控制措施 |
@@ -404,7 +384,13 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 
 ### 项目内存存储 {#project-memory-store}
 
-智能体通过 `.agents/state/memories/` 中的持久化文件协调（旧项目回退到旧版 `.serena/memories/` 路径）。编排器写入运行范围内的会话和任务板文件。启用 Markdown 进度或结果输出时，每次运行都会写入 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 和 `result-{agentId}-{taskId}-{runId}-{sessionId}.md`；CLI 启动的智能体以 `.agents/state/agent-runs/` 下的结构化回执和声明为准。智能体使用原生文件工具读写这些文件，工具映射可在 `.agents/mcp.json → memoryConfig.tools` 中配置。
+智能体通过 `.agents/state/memories/` 中的持久化文件协调（旧项目回退到旧版 `.serena/memories/` 路径）。该目录保存会话摘要、任务板、进度、经验教训与实验记录。人类可读的 `result-{agentId}-{taskId}-{runId}-{sessionId}.md` 报告存放在 `.agents/results/` 中。`.agents/state/agent-runs/` 下的结构化回执和声明仍是 CLI 启动的权威记录，冻结的执行计划则保存在 `.agents/state/agent-plans/`。智能体使用原生文件工具读写这些文件，工具映射可在 `.agents/mcp.json → memoryConfig.tools` 中配置。
+
+### 文档与报告 {#documents-and-reports}
+
+使用 `docs/decisions/` 存放方案提案和 ADR，并带有诸如 `draft`、`accepted` 或 `superseded` 的 `Status` 字段。UI 设计放在 `DESIGN.md`。工作计划保留在 `docs/plans/work/`，已采用的 API 契约保留在 `docs/plans/contracts/`。
+
+执行报告和契约草案属于 `.agents/results/`。当某份文档成为长期维护的项目参考时，请将其移动到对应的 `docs/` 目录，并在原位置保留指向新位置的链接。完整布局与迁移命令请参见[产物布局](./artifact-layout.md)。
 
 ### 工作区 {#workspaces}
 
@@ -450,7 +436,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | 仪表盘显示“No agents detected yet” | 智能体尚未写入内存，或仪表盘监视的是另一个目录 | 等待第一个进度文件出现；在项目根目录运行，或传入 `--project-root <path>` |
 | `oma dashboard web` 退出并提示“port 9847 is already in use” | 其他进程占用了该端口 | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA 报告有 50 多个问题 | 大型代码库的首次审查通常如此 | 优先处理 CRITICAL 和 HIGH 严重性问题。将 MEDIUM/LOW 记录到后续迭代。 |
-| 自动检测触发了错误工作流 | 关键词存在歧义 | 使用显式 `/command` 代替自然语言。报告误触发以便改进。 |
+| 仅提及某个持久化模式的名称却启动了该模式 | 提示在问题或代码块之外提到了 `orchestrate`、`ultrawork`、`work mode` 或 `ralph` | 输入“workflow done”以释放该模式。建议反馈误触发以便持续改进。 |
 | 持久化工作流无法停止 | 状态文件仍然存在 | 在聊天中说“workflow done”，或从 `.agents/state/` 手动删除状态文件 |
 | 智能体因 HIGH 澄清而阻塞 | 需求过于含糊 | 提供智能体要求的具体答案，然后重新运行 |
 | MCP 工具无法使用 | Serena 未配置或未运行 | 运行 `oma doctor` 检查 MCP 配置 |
@@ -466,6 +452,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 - 带错误消息的 bug：[Bug 修复](./bug-fixing.md)
 - 观察一次运行：[仪表盘监控](./dashboard-monitoring.md)
 - 审计或恢复智能体结果：[结果与恢复](./agent-results-and-resume.md)
+- 查找或迁移 OMA 文档：[产物布局](./artifact-layout.md)
 - 出现了故障：[故障排查](./troubleshooting.md)
 - 项目集成细节：[集成指南](./integration.md)
 - 这些指南中使用的术语：[术语表](../getting-started/glossary.md)

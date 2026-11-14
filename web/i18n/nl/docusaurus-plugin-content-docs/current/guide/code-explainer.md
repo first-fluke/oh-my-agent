@@ -152,9 +152,9 @@ Bij een hit stopt de generatie onmiddellijk; alleen de gemaskeerde locaties word
 
 ## Validatiechecklist {#validation-checklist}
 
-Na generatie wordt met een grep-gebaseerde checklist het uitvoerbestand gecontroleerd: geen verwijzingen die externe resources laden, correcte `pre`/`pre-wrap` voor codecontainers, aanwezigheid van het quizscript, het bestandsnaamformaat `{YYYY-MM-DD}-{slug}.html` (datum in de `timezone` uit oma-config, anders in de systeemtijdzone) en de secret-scan van de uiteindelijke HTML. Bij fouten herstelt en hervalideert de lus maximaal **3 iteraties** en stopt daarna met de resterende mislukte items in beeld in plaats van stilzwijgend op te leveren.
+Na generatie voert de workflow `oma explain validate <file>` en de secret-scan van de uiteindelijke HTML uit op het uitvoerbestand. De validator is de primaire controle: geen verwijzingen die externe resources laden, correcte `pre`/`pre-wrap` voor codecontainers, aanwezigheid van het quizscript en het bestandsnaamformaat `{YYYY-MM-DD}-{slug}.html` (datum in de `timezone` uit oma-config, anders in de systeemtijdzone). De grep-commando's in het HTML-contract van de skill zijn aanvullende steekproeven, geen vervanging. Bij fouten herstelt en hervalideert de lus maximaal **3 iteraties** en stopt daarna met de resterende mislukte items in beeld in plaats van stilzwijgend op te leveren.
 
-Dit is een v1-beperking: de validatie is gebaseerd op grep en bestanden en controleert alleen of het quizscript *aanwezig* is (niet of het gedrag volledig klopt). Gebruik een browser (of de chrome-devtools-MCP) om de quiz handmatig te doorlopen wanneer gedragsvertrouwen belangrijk is.
+Dit is een v1-beperking: de validatie is bestandsgebaseerd en controleert alleen of het quizscript *aanwezig* is (niet of het gedrag volledig klopt). Gebruik een browser (of de chrome-devtools-MCP) om de quiz handmatig te doorlopen wanneer gedragsvertrouwen belangrijk is.
 
 Je kunt een bestaand artifact valideren met het geregistreerde CLI-commando:
 
@@ -185,7 +185,7 @@ De eerste vorm controleert één HTML-bestand. De mapvorm controleert elk rappor
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-De datum volgt `timezone` in oma-config; zonder waarde geldt de systeemtijdzone. Opnieuw uitvoeren met dezelfde datum + slug overschrijft het eerdere bestand — het bewaren van een eerdere run is je eigen verantwoordelijkheid. Nadat validatie slaagt, probeert de workflow de pagina te openen (alleen waarschuwing; een headless omgeving valt gewoon terug op het rapporteren van het pad) en rapporteert hij een TL;DR plus het bestandspad. `oma explain render --open` opent de pagina direct in de browser.
+De datum volgt `timezone` in oma-config; zonder waarde geldt de systeemtijdzone. Opnieuw uitvoeren met dezelfde datum + slug overschrijft het eerdere bestand — het bewaren van een eerdere run is je eigen verantwoordelijkheid. Nadat de validatie is geslaagd, opent de workflow de pagina door het gevalideerde concept te renderen met `oma explain render --open` en rapporteert hij een TL;DR plus het bestandspad. Een mislukte open is een waarschuwing, geen fout: een headless omgeving valt terug op het rapporteren van het pad.
 
 ---
 
@@ -203,8 +203,8 @@ Wanneer `diagram.explain_sidecar: true` in `oma-config.yaml` staat of je erom vr
 | `gh` CLI ontbreekt of is niet geauthenticeerd (PR-ref) | Installatie-/authenticatiehulp plus een lokaal alternatief op basis van een branch-diff |
 | Merge/rebase bezig | Stop — worktree is instabiel |
 | Map is geen git-repository | Change-modus: stop onmiddellijk. Topic-modus draait zonder git. |
-| Validatie faalt na 3 herstellussen | Stop en toon de mislukte checklistitems |
-| `open` faalt / headless omgeving | Alleen waarschuwing — het gerapporteerde pad volstaat |
+| Validatie faalt na 3 herstellussen | Stop en toon de mislukte items |
+| `--open` faalt in een headless omgeving | Alleen waarschuwing — het gerapporteerde pad volstaat |
 
 ---
 

@@ -6,6 +6,21 @@ description: oh-my-agent のインストール方法、スキルとプロバイ�
 
 # インストール
 
+タスク 1 つだけなら、[単一スキル](./choose-setup.md#load-one-skill)から始めます。プロジェクトフックやチームワークフローが必要な場合は、以下のランタイムインストールを使います。[セットアップガイド](./choose-setup.md)では、指示の読み込み、スキルプリセット、Claude Code マーケットプレイス経由のインストールを区別して説明しています。
+
+Grok Bot を使う場合は [Grok Bot インストールページ](/grok-bot/) を参照してください。ネイティブの **Add to Grok Bot** リンクは承認済みの Cursor Marketplace 掲載が必要なため、登録審査中は利用できません。Bot マシン向けの `oma install --target grok-bot` については、別途[手動インストールガイド](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md)で説明しています。下の Grok Build ランタイム統合は別のインストール対象です。
+
+## AI エージェントでインストールする
+
+コーディングエージェントに以下を貼り付けます。
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[エージェントインストールガイド](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md)では、CLI の準備、非対話のプロジェクトセットアップ、`oma doctor` による確認を扱っています。
+
 ## 前提条件
 
 - **AI 搭載 IDE または CLI**: Claude Code、Codex CLI、Qwen Code、Antigravity CLI（`agy`）、Cursor、OpenCode、Kimi Code CLI、Kiro、CommandCode、pi、GitHub Copilot、Hermes など、サポート対象のホストを少なくとも1つ
@@ -13,7 +28,7 @@ description: oh-my-agent のインストール方法、スキルとプロバイ�
 - **uv**: Python パッケージマネージャー。ない場合はブートストラップスクリプトが導入を提案します。
 - **コードインテリジェンスプロバイダー**: デフォルトは Serena です。プロバイダー設定で選択すれば Gortex も使えます。インストーラーは `uv tool install` で Serena を導入できます。任意の依存関係が利用できなくても、警告を出して処理を続けます。Gortex を選択している場合、プロジェクトモードの `oma install` と `oma update` は、まだ追跡されていないプロジェクトを Gortex デーモンに登録します（`gortex track`）。あわせて、OMA が生成するディレクトリを、Gortex CLI 経由でそのプロジェクトの除外リストに追加します。プロジェクトツリーには何も書き込みません。Gortex 自体は別途インストールする必要があります。
 
-インストーラーは統合を機能別に扱います。フックベンダーは Antigravity、Claude、Codex、CommandCode、Cursor、Grok、Kimi、Kiro、Qwen です。OpenCode と pi は拡張ブリッジを使い、GitHub Copilot と Hermes にはスキルリンクを作り、ZCode にはワークフローコマンドを渡します。複数のベンダーを選べますが、最初のタスクに必要なのは使う予定のホストだけです。
+インストーラーは統合を機能別に扱います。フックベンダーは Antigravity、Claude、Codex、CommandCode、Cursor、Grok、Kimi、Kiro、Qwen、Copilot です。OpenCode と pi は拡張ブリッジを使い、Hermes にはスキルリンクを作り、ZCode にはワークフローコマンドを渡します。複数のベンダーを選べますが、最初のタスクに必要なのは使う予定のホストだけです。
 
 ---
 
@@ -52,7 +67,7 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 - **commit-msg ガード**: `.githooks/commit-msg` は、`.githooks/co-authors.allow` にも `scm.co_author.email` にもない `Co-authored-by` アドレスを拒否します。`git config --local core.hooksPath .githooks` はほかのフックが有効でない場合にのみ設定され、有効な場合は oma がガードをチェーンする方法を表示します。オプトアウトするには `scm.co_author.enforce_hook: false` を設定してください。
 - **バックグラウンド更新**: `oma update` はバックグラウンドで `oma` CLI を更新し（止めるには `auto_update_cli: false` または `OMA_SKIP_VERSION_CHECK=1`）、`uv tool upgrade serena-agent --prerelease=allow` を実行します（止めるには `serena.auto_update: false`）。
 - **Serena クリーンアップタイマー**: Serena がデフォルトの `bridge` モードのとき、共有 Serena サーバーを最初に起動したエージェントセッションが、アイドル状態の共有 Serena サーバーを 5 分ごとに停止するタイマーを登録します（launchd `dev.oma.serena-daemon-gc`、systemd ユーザータイマー `oma-serena-daemon-gc.timer`、または Windows のスケジュールされたタスク `OMA Serena Daemon GC`）。共有サーバーとタイマーを使わない場合は `serena.mode: stdio` を設定してください。`oma uninstall` はこのタイマーを削除しません。
-- **非対話の実行**（`-y`、`OMA_YES=1`、`CI=true`）では、`All` スキルプリセット、`model_preset: auto`、バックエンド言語として Python を使います。`mcp.devtools_browsers` にブラウザがすでに登録されていない限り、ブラウザ MCP は選択されません（Aside のインストールスクリプトも実行しません）。
+- **非対話の実行**（`-y`、`OMA_YES=1`、`CI=true`）では、`--preset` で別のプリセットを選ばない限り `All` スキルプリセットと `model_preset: auto`、バックエンド言語として Python を使います。`mcp.devtools_browsers` にブラウザがすでに登録されていない限り、ブラウザ MCP は選択されません（Aside のインストールスクリプトも実行しません）。
 
 ---
 
@@ -85,25 +100,51 @@ bunx oh-my-agent@latest
 
 プリセットはスキルのまとまりです。スキルごとにサブエージェント定義を1つ作るものではありません。`all` プリセットは実行時のスキルレジストリから展開されるため、リポジトリに追加されたスキルも一覧に反映されます。ドメインプリセットには、その用途のスキルだけが含まれます。
 
+コマンドラインからプリセットを選ぶこともできます。
+
+```bash
+oma install --preset frontend --yes
+```
+
+`--preset` には表内の名前を指定でき、対話式のスキル選択や非対話時のデフォルトである `all` より優先されます。未知の名前はインストール開始前に拒否されます。オプションを省略すると、従来の選択フローが維持されます。このオプションが選ぶのはスキルのみであり、共有ファイル、エージェント、ワークフロー、フック、プロバイダー設定は引き続きランタイムインストーラーに従って導入されます。より小さいプリセットで再インストールしても、以前にインストール済みのスキルは保持されます。カスタム選択は対話式メニューでのみ利用でき、`custom` や空の値は `--preset` では受け付けられません。
+
+インストール後は、選択されたスキル一覧とワークフローの利用可能状況レポートを確認してください。ワークフローが公開されるのは、必要なスキルマニフェストに有効な名前と説明が揃っている場合だけです。既存で保持されたスキルによってそれらの要件を満たすこともできます。条件付き参照は別途報告され、選択したプリセットを拡張することはありません。このチェックはマニフェストを対象としており、ツール、プロバイダー、認証情報、実行については別途確認が必要です。
+
 ### プリセット外のスキルが必要なワークフロー {#workflows-that-need-skills-outside-a-preset}
 
-どのプリセットもワークフローとエージェントの定義をすべてインストールします。ただし、いくつかのワークフローはドメインプリセットがインストールしないスキルを読み込みます。ドメインプリセットを選ぶ前に、この表を確認してください。
+どのプリセットもワークフローとエージェントの定義をすべてコピーします。ただし、コマンドやプロンプトが公開されるのは、必要なスキルが利用可能なワークフローだけです。たとえば、新規の `frontend` インストールでは `oma-coordination` がないため `/work` は利用できません（一方で既存の PM スキルと QA スキルがほかのエントリー要件を満たしています）。インストーラーは `all` へ切り替えずに、その不足スキルを報告します。
 
-| ワークフロー | 読み込むスキル | そのスキルを含むプリセット |
+| ワークフロー | 必須のエントリースキル | それらを含むプリセット |
 |----------|-------------|-------------------------|
-| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
-| `/ultrawork`, `/ralph` | oma-coordination。起動される `refactor-engineer` エージェントは oma-refactor を使う | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
+| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
-| `/security` | oma-security | all |
+| `/security` | oma-security | all, security |
 | `/recap` | oma-recap | all |
 | `/video` | oma-video | all |
-| `/convert`（PDF、HWP） | oma-pdf, oma-hwp | all, research |
 | `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
-| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/architecture` | oma-architecture | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
+| `/plan` | oma-pm | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/review` | oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
 | `/scm` | oma-scm | すべてのプリセット |
 
-不足しているスキルを後から追加するには、プロジェクトルートで `oma doctor` を実行し、不足スキルのプロンプトを受け入れて **Select individually** を選びます。
+分岐固有の参照は引き続き参考情報扱いです。たとえば `/convert` は入力を検査したうえで PDF、HWP、動画ツールを選び、`/ralph` と `/ultrawork` はリファクタリングの分岐で `oma-refactor` を必要とする場合があります。これらは無条件のエントリー要件ではありません。
+
+不足しているマニフェストや無効なマニフェストを診断するには `oma doctor` を実行します。不足しているスキルを追加するには `oma install` を実行して **Select individually** を選びます。マニフェストを修復した後は `oma link` を実行してワークフローの公開状態を更新してください（再インストールでも更新されます）。OMA のグローバルインストールには対応する `--global` スコープを使います。利用できない OMA コマンドが削除されても、既存のユーザーコマンドは保持されます。
+
+### ドメインプラグイン
+
+Claude Code マーケットプレイスのユーザーは、`oh-my-agent` マーケットプレイスを追加した後にドメインエントリーを選択できます。
+
+```bash
+claude plugin install oma-frontend@oh-my-agent
+# Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
+```
+
+ドメインエントリーにはそれぞれ frontend 用 8 個、security 用 6 個、research 用 8 個のスキルと、対応するネイティブエージェント選択が含まれます。セッションのブートストラップはそのプリセットをランタイムインストーラーへ渡します。共有ランタイムのセットアップと既存のインストール済みスキルは、上述のインストーラーの動作に従います。`oma` エントリーには引き続きフルプラグインが含まれます。同じドメインルートは、生成された Codex マーケットプレイスカタログおよび Grok Build、ZCode のカタログでも宣言されています。Antigravity CLI（生成されたツリーまたはリリースアセット `oma-antigravity-plugin.tar.gz` に対して `agy plugin install ./antigravity-plugin`）、Grok Build CLI、ZCode、Kimi Code（`/plugins install`）はそれぞれ独自に生成されたマニフェストを読み込みます。ホスト別の正確な手順は [Claude 互換プラグインホスト](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) を参照してください。
+
+固定されたホスト CI ジョブは、クリーンなランナー上にローカルマーケットプレイスを登録してドメインエントリーをインストールし、結果のインベントリを検査します。これらのチェックはモデル呼び出しなしで実行されます。ランタイム認証情報、外部プロバイダー、最初のタスクの成功については別途確認が必要です。リリースチェックでは、すべてのドメインルートの両マニフェストが CLI バージョンと一致し、Release Please のバージョンアップデーターを持つことも求められます。
 
 共有リソース（`_shared/`）はプリセットに関係なく常にインストールされます。コアルーティング、コンテキスト読み込み、プロンプト構造、ベンダー検出、実行プロトコル、メモリプロトコルが含まれます。
 
@@ -297,9 +338,8 @@ agents:
 |-------|------|-------------|-------------|
 | `language` | string | はい | 応答言語コード。en、ko、ja、zh、es、fr、de、pt、ru、nl、pl に対応します。 |
 | `model_preset` | string | はい | アクティブな[モデルプリセット](./glossary.md#model-preset)キー。`auto` は現在のランタイムに従います。固定キーには `free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro`、`mixed` があります。カスタムプリセットキーも使えます。[エージェント別モデル](../guide/per-agent-models.md)を参照してください。 |
-| `default_cli` | string | いいえ | 明示的なエージェント設定と選択したプリセットでベンダーが決まらないとき、`oma agent spawn` が使うフォールバック CLI です。 |
-| `free` | map | いいえ | `model_preset: free` のときに使う FreeLLMAPI ゲートウェイ設定です。API キーは環境変数に置いてください。 |
-| `providers` | map | いいえ | 機能プロバイダーです。`code_intelligence`（`serena` または `gortex`）、`code_intelligence_guard`（`block` または `off`）、`docs`（`context7`）、`web`（`native` または `brave`）、`semantic_memory`（`agentmemory`、`honcho`、`none`）を指定します。 |
+| `agents` | map | いいえ | ロールごとのモデル上書き設定です。`agents.default` には `cli`（明示的なエージェント設定と選択したプリセットでベンダーが決まらないときに `oma agent spawn` が使うフォールバック CLI）と、デフォルトの `effort`、`thinking`、`memory` を指定します。 |
+| `providers` | map | いいえ | 機能プロバイダーです。`code_intelligence`（`serena` または `gortex`）、`code_intelligence_guard`（`block` または `off`）、`docs`（`context7`）、`web`（`native` または `brave`）、`semantic_memory`（`agentmemory`、`honcho`、`none`）に加え、それらの認証情報セクション（`brave`、`exa`、`honcho`）、さらに `free`（`model_preset: free` が使う FreeLLMAPI ゲートウェイ）などの名前付き LLM プロバイダーを指定します。API キーは環境変数に置いてください。 |
 | `date_format` | string | いいえ | タイムスタンプ形式（`ISO`、`US`、`EU`）。デフォルトは `ISO` です。 |
 | `timezone` | string | いいえ | タイムゾーン識別子（例: `Asia/Seoul`）。省略するとホストのシステムタイムゾーンを使います。 |
 | `auto_update_cli` | boolean | いいえ | 通常の CLI チェックでバックグラウンド更新を許可するかどうか。デフォルトは `true` で、`false` にすると無効になります。 |
@@ -315,7 +355,7 @@ agents:
 
 ### ベンダー解決
 
-エージェントをスポーンするとき、CLI は `agents.<id>`、選択した `model_preset`、プリセットのオーケストレーター用フォールバック、`default_cli` の順で設定を解決します。`model_preset: auto` では現在のランタイムのネイティブ設定がモデルを決めます。ランタイムが不明なら `default_cli` にフォールバックします。完全な対応表は[エージェント別モデル](../guide/per-agent-models.md)を参照してください。
+エージェントをスポーンするとき、CLI は `agents.<id>`、選択した `model_preset`、プリセットのオーケストレーター用フォールバック、`agents.default.cli` の順で設定を解決します。`model_preset: auto` では現在のランタイムのネイティブ設定がモデルを決めます。ランタイムが不明なら `agents.default.cli` にフォールバックします。完全な対応表は[エージェント別モデル](../guide/per-agent-models.md)を参照してください。
 
 ---
 

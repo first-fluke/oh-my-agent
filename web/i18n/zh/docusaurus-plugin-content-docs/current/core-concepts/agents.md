@@ -422,7 +422,7 @@ flowchart TD
 - MELT+P 信号覆盖：metrics、logs、traces、profiles、cost、audit、privacy
 - 日志管道迁移，需对照当前上游支持情况和项目要求进行评估
 
-**何时不使用：** LLM ops / gen_ai 可观测性（使用 Langfuse、Arize Phoenix、LangSmith、Braintrust）、数据管道 lineage（OpenLineage + Marquez、dbt test、Airflow lineage）、IoT / 数据中心物理层遥测（Nlyte、Sunbird、Device42）、混沌工程编排（Chaos Mesh、Litmus、Gremlin、ChaosToolkit）、GPU / TPU 基础设施（NVIDIA DCGM Exporter）、软件供应链（sigstore、in-toto、SLSA）、事件响应工作流 / 告警派单（PagerDuty、Jira Service Management、Grafana Cloud IRM）、完整的 TLS 数据包检查、安全扫描或渗透测试（使用 oma-security；本技能只覆盖安全遥测）、已由该供应商自有技能 覆盖的单供应商配置。
+**何时不使用：** LLM ops / gen_ai 可观测性（使用 Langfuse、Arize Phoenix、LangSmith、Braintrust）、数据管道 lineage（OpenLineage + Marquez、dbt test、Airflow lineage）、IoT / 数据中心物理层遥测（Nlyte、Sunbird、Device42）、混沌工程编排（Chaos Mesh、Litmus、Gremlin、ChaosToolkit）、GPU / TPU 基础设施（NVIDIA DCGM Exporter）、软件供应链（sigstore、in-toto、SLSA）、事件响应工作流 / 告警派单（PagerDuty、Jira Service Management、Grafana Cloud IRM）、完整的 TLS 数据包检查、安全扫描或渗透测试（使用 oma-security；本技能只覆盖安全遥测）、已由该供应商自有技能覆盖的单供应商配置。
 
 **核心规则：**
 - 路由前先分类意图：setup | migrate | investigate | alert | trace | tune | route

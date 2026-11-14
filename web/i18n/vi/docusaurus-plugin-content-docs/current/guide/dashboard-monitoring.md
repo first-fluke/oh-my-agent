@@ -90,7 +90,7 @@ Dashboard đọc thư mục `.agents/state/memories/`. Agent và workflow điề
 | `orchestrator-session.md` | `/orchestrate` Step 2 | Session ID, thời gian bắt đầu, status (RUNNING/COMPLETED/FAILED), version workflow |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | Metadata session, tiến độ phase, tóm tắt yêu cầu user |
 | `task-board.md` | Workflow orchestration | Bảng Markdown có assignment, status và task của agent |
-| `progress-{agent}.md` | Mỗi agent được spawn | Số turn hiện tại, việc agent đang làm, kết quả trung gian |
+| `progress-{agent}-{task}-{run}-{session}.md` | Mỗi agent được spawn | Các mục `## Turn N` được nối thêm: việc agent đã làm, trạng thái hiện tại, các file đã sửa |
 | `result-{agent}.md` | Mỗi agent hoàn thành | Status cuối (COMPLETED/FAILED), file đổi, issue và deliverable |
 | `debug-{id}.md` | Workflow `/debug` | Chẩn đoán lỗi, root cause, bản sửa, vị trí regression test |
 | `experiment-ledger-{sessionId}.md` | Các experiment thực sự | Bằng chứng baseline/candidate có thể so sánh, các check bắt buộc và quyết định |
@@ -103,7 +103,7 @@ Dashboard dùng nhiều chiến lược để trích xuất thông tin:
 1. **Phát hiện session:** tìm `orchestrator-session.md` trước, rồi fallback về file `session-*.md` được sửa gần nhất. Đọc status từ keyword `RUNNING`, `IN PROGRESS`, `COMPLETED`, `DONE`, `FAILED`, `ERROR`.
 2. **Parse task board:** đọc `task-board.md` như bảng Markdown, lấy tên agent, status và mô tả task theo cột.
 3. **Discovery agent:** nếu không có task board, quét file `.md` tìm pattern `**Agent**: {name}`, dòng `Agent: {name}` hoặc filename chứa `_agent` hay `-agent`.
-4. **Đếm turn:** với mỗi agent được phát hiện, đọc file `progress-{agent}.md` và lấy số turn từ pattern `turn: N`.
+4. **Đếm turn:** với mỗi agent được phát hiện, lấy file mới nhất có tên bắt đầu bằng `progress-{agent}` và đọc dòng `Turn N` (hoặc `turn: N`) cuối cùng trong đó.
 5. **Activity feed:** liệt kê 5 file `.md` được sửa gần nhất, lấy dòng có ý nghĩa cuối cùng, như header, status hoặc action item. Web dashboard cũng cung cấp recap tại `/recap`.
 
 ---
@@ -123,14 +123,14 @@ Bảng agent hiển thị mọi agent được phát hiện:
 
 - **Tên agent:** identifier lĩnh vực, như backend, frontend, mobile, qa, debug và pm.
 - **Status:** trạng thái hiện tại với chỉ báo trực quan: running, completed, failed, blocked hoặc pending.
-- **Turn:** số turn hiện tại, tức số iteration đã hoàn thành; lấy từ progress file.
+- **Turn:** số thứ tự mục tiến độ mới nhất của agent. Được trích xuất từ progress file; chỉ số này đếm số mục tiến độ, không phải model turn.
 - **Task:** mô tả ngắn việc agent đang làm, cắt gọn cho vừa bảng.
 
 ### Tiến độ agent
 
-Tiến độ được theo dõi qua file `progress-{agent}.md`. Agent cập nhật file trong lúc làm việc. Dashboard poll các file để lấy:
+Tiến độ được theo dõi qua các file `progress-{agent}-*.md`. Mỗi agent nối thêm một mục tại mỗi checkpoint có ý nghĩa (một bước đã xong, một blocker hoặc một thay đổi hướng tiếp cận). Dashboard poll các file này để lấy:
 
-- Số turn, tăng khi agent tiến triển.
+- Số turn (số thứ tự của mục tiến độ mới nhất).
 - Hành động hiện tại.
 - Kết quả trung gian.
 

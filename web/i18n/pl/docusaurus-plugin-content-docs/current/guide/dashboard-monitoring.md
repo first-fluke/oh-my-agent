@@ -89,7 +89,7 @@ Dashboardy odczytują katalog `.agents/state/memories/`. Agenci i workflowy wype
 | `orchestrator-session.md` | Krok 2 `/orchestrate` | ID sesji, czas rozpoczęcia, status (RUNNING/COMPLETED/FAILED), wersja workflowu |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | Metadane sesji, postęp fazy, podsumowanie żądania użytkownika |
 | `task-board.md` | Workflowy orkiestracji | Tabela Markdown z przydziałami agentów, statusami i zadaniami |
-| `progress-{agent}.md` | Każdy uruchomiony agent | Bieżąca tura, nad czym agent pracuje, wyniki pośrednie |
+| `progress-{agent}-{task}-{run}-{session}.md` | Każdy uruchomiony agent | Dopisywane wpisy `## Turn N`: co agent zrobił, bieżący status, zmienione pliki |
 | `result-{agent}.md` | Każdy ukończony agent | Status końcowy (COMPLETED/FAILED), zmienione pliki, znalezione problemy, dostarczone rezultaty |
 | `debug-{id}.md` | Workflow `/debug` | Diagnoza błędu, przyczyna źródłowa, zastosowana poprawka, lokalizacja testu regresji |
 | `experiment-ledger-{sessionId}.md` | Rzeczywiste eksperymenty | Porównywalne dowody bazowe i kandydata, wymagane kontrole i decyzje |
@@ -102,7 +102,7 @@ Dashboard korzysta z kilku strategii wydobywania informacji:
 1. **Wykrywanie sesji:** Najpierw szuka `orchestrator-session.md`, a następnie przechodzi do najnowszego zmodyfikowanego pliku `session-*.md`. Status rozpoznaje po słowach kluczowych: `RUNNING`, `IN PROGRESS`, `COMPLETED`, `DONE`, `FAILED`, `ERROR`.
 2. **Parsowanie task boardu:** Odczytuje `task-board.md` jako tabelę Markdown. Wydobywa nazwę agenta, status i opis zadania z kolumn.
 3. **Wykrywanie agentów:** Jeśli nie ma task boardu, wyszukuje agentów we wszystkich plikach `.md` na podstawie wzorców `**Agent**: {name}`, wierszy `Agent: {name}` albo nazw plików zawierających `_agent` lub `-agent`.
-4. **Liczenie tur:** Dla każdego wykrytego agenta odczytuje pliki `progress-{agent}.md` i wydobywa numer tury ze wzorców `turn: N`.
+4. **Liczenie tur:** Dla każdego wykrytego agenta wybiera najnowszy plik, którego nazwa zaczyna się od `progress-{agent}`, i odczytuje z niego ostatni wiersz `Turn N` (albo `turn: N`).
 5. **Strumień aktywności:** Wypisuje 5 ostatnio zmodyfikowanych plików `.md`, wydobywa ostatnią znaczącą linię (nagłówki, wiersze statusu, zadania) jako komunikat aktywności. Dashboard webowy udostępnia też widok podsumowania pod `/recap`.
 
 ---
@@ -120,13 +120,13 @@ Górna sekcja pokazuje:
 Tabela agentów pokazuje każdego wykrytego agenta wraz z:
 - **Nazwą agenta:** Identyfikator domeny (backend, frontend, mobile, qa, debug, pm).
 - **Statusem:** Bieżący stan ze wskaźnikiem wizualnym (running/completed/failed/blocked/pending).
-- **Turą:** Numer bieżącej tury agenta (liczba ukończonych przez niego iteracji). Wydobywany z plików postępu.
+- **Turą:** Numer ostatniego wpisu postępu agenta. Wydobywany z plików postępu; zlicza wpisy, a nie tury modelu.
 - **Zadaniem:** Krótki opis pracy agenta (skrócony, aby się zmieścił).
 
 ### Postęp agenta
 
-Postęp jest śledzony przez pliki `progress-{agent}.md`. Każdy plik aktualizuje agent podczas pracy. Dashboard odpyta te pliki pod kątem:
-- numeru tury (rośnie wraz z postępem agenta)
+Postęp jest śledzony przez pliki `progress-{agent}-*.md`. Każdy agent dopisuje wpis w istotnym punkcie kontrolnym (ukończony krok, bloker, zmiana podejścia). Dashboard odpytuje te pliki pod kątem:
+- numeru tury (numer najnowszego wpisu)
 - bieżącego działania (co agent robi teraz)
 - wyników pośrednich (częściowe ukończenia)
 

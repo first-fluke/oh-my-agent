@@ -259,7 +259,7 @@ Agent dùng những gì bạn nói và lấp chỗ trống bằng giá trị sá
 
 ## Cấu hình
 
-- **Project config:** section `image:` của `.agents/oma-config.yaml`. Legacy `config/image-config.yaml` không còn được đọc.
+- **Project config:** section `image:` của `.agents/oma-config.yaml`. Các giá trị mặc định đi kèm nằm trong CLI, nên chỉ cần ghi những key bạn thay đổi.
 - **Biến môi trường:**
   - `OMA_IMAGE_DEFAULT_VENDOR`: ghi đè vendor mặc định đã cấu hình (`auto`). Bản thân flag `--vendor` mặc định là `auto`, nên hãy truyền `--vendor` cho từng lệnh khi cần một vendor cụ thể.
   - `OMA_IMAGE_DEFAULT_OUT`: ghi đè output directory mặc định.

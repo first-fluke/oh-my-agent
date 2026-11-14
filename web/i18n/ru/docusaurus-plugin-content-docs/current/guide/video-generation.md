@@ -64,7 +64,8 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
 oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
@@ -89,7 +90,7 @@ oma video generate "product walkthrough" --mode demo --polish --capture ./captur
 
 ## Управляемый инструментарий HyperFrames {#always-latest-hyperframes--you-author-the-composition}
 
-oh-my-agent **не поставляет код HyperFrames composition**. Каждый run получает собственный project в `<runDir>/hyperframes/`, созданный `oma video compose` на последней npm HyperFrames (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, общий через symlink `node_modules`) с [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) на HEAD (`~/.cache/oma-video/hyperframes-skills/`). Agent создаёт исходник сгенерированной composition по `AUTHORING.md` scaffold, skills и mode spec из `.agents/skills/oma-video/resources/hyperframes-authoring/`.
+oh-my-agent **не поставляет код HyperFrames composition**. Каждый run получает собственный project в `<runDir>/hyperframes/`, созданный `oma video compose` на последней npm HyperFrames (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, общий через symlink `node_modules`) и навыках `hyperframes` и `hyperframes-cli` из [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes), установленных через [skills CLI](https://github.com/vercel-labs/skills). Agent создаёт исходник сгенерированной composition по `AUTHORING.md` scaffold, skills и mode spec из `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -98,14 +99,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- Проверки последней версии (npm + GitHub) ограничены `video.hyperframes.check_interval_min` (default 60; `0` = каждый compose). `oma update` учитывает этот интервал; `oma video doctor --upgrade` принудительно запускает проверку; offline run использует cached toolchain и сообщает `stale`.
+- Проверки последней версии toolchain (npm) ограничены `video.hyperframes.check_interval_min` (default 60; `0` = каждый compose). `oma update` учитывает этот интервал; `oma video doctor --upgrade` принудительно запускает проверку; offline run использует cached toolchain и сообщает `stale`.
+- Skills: `oma video doctor --install` устанавливает отсутствующие навыки (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` также обновляет установленные; `oma update` обновляет только уже установленные skills. Без них `AUTHORING.md` ссылается на документацию upstream. Старая копия `~/.cache/oma-video/hyperframes-skills/` больше не читается и может быть удалена.
 - Воспроизводимость живёт в run dir: `render-spec.json`, authored composition source и версия toolchain в generated HyperFrames package metadata. Повторный render того же run использует этот render contract; новый run проверяет последнюю HyperFrames.
 - Ошибка lint или render **не** скрывается placeholder (он существует только для `OMA_VIDEO_MOCK=1`): `oma video render` завершается с code 1 и diagnostics, а agent исправляет composition с помощью latest skills. Поломка на новом release HyperFrames — ошибка composition, а не причина закреплять версию.
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---
@@ -128,14 +130,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | Языковой tag narration/caption. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (alignment без key). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. Выбирает порядок visual-провайдеров; см. [Визуальная цепочка](#visual-chain). |
 | `--voice <profile>` | Голос narration или `none` (default); если не задавать, видео будет без звука с оценочным timing captions. |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` или `none`. |
 | `--compositor <c>` | `hyperframes` (default) \| `mpt`. |
 | `--capture <path>` | Ваша запись для demo mode: `.mp4`, `.mov`, `.webm` или `.mkv`, хранящаяся внутри проекта. |
 | `--source <k>` | Источник demo capture: `file` или `web` (default: `file`). |
 | `--url <url>` | Context URL для `--source web`, сохраняется в `manifest.json` в замаскированном виде. Обязателен с `--source web`; никогда не запускает capture и не заменяет `--capture`. |
-| `--polish` | Наложить HyperFrames composition на captured footage. |
+| `--polish` | Режим demo: использовать запись как фон composition `Demo` HyperFrames, где маскируются персональные данные. Без этого флага исходная немаскированная запись копируется в итоговый MP4, и composition не запускается. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | Принимаются, но не используются: oma не управляет браузером и не записывает экран. |
 | `--output-dir <path>` | Базовый output directory. Пути вне `$PWD` требуют `--allow-external-output`. |
 | `--allow-external-output` | Разрешить output paths вне `$PWD`. |
@@ -159,14 +161,33 @@ oma video provider list         # provider availability + key/fallback status
 |------------|-------------|----------|
 | script | созданный agent `script.json`, переданный через `--script <path>` (его пишет workflow `/video`) | детерминированный skeleton из трёх сцен по тексту brief |
 | voice | `oma-voice` (Voicebox или VoiceStudio, local; выбирается через `voice.backend`) с `--voice <profile>` | видео без звука с estimated timing (`--voice none`, default) |
-| visual | `oma-image`, `oma-slide`, stock clips Pexels при заданном `PEXELS_API_KEY` | placeholder asset |
-| visual: `aigc` | ещё не подключён; `RUNNINGHUB_API_KEY` включает провайдера, который всё равно пишет placeholder | placeholder asset |
+| visual | Кадры `oma-image` по умолчанию; кадр `oma-slide` для сцены, у которой `visual.ref` — существующий каталог колоды; stock clips Pexels с `--visual stock` при заданном `PEXELS_API_KEY` | placeholder asset |
+| visual: `aigc` | Выбирается с `--visual aigc` при заданном `RUNNINGHUB_API_KEY`; живой вызов ещё не подключён, поэтому провайдер всё равно пишет placeholder | placeholder asset |
 | caption | `.srt` и `.vtt`, выровненные по `timing.json`, на языке script | то же; перевод на `--locale` ещё не подключён |
 | music | фоновая музыка Strudel после `oma video doctor --install-strudel` | без музыкальной дорожки |
 | capture | запись, которую вы передаёте через `--capture <file>` | нет: без `--capture` demo mode печатает инструкции по записи и завершается с exit 3 |
 | compositor | HyperFrames (managed) или MoneyPrinterTurbo | compositor fallback отсутствует; run завершается с diagnostics |
 
-Автоматизации учётных данных нет: любой on-screen login вы выполняете сами во время записи; URL и query token маскируются в log и manifest.
+### Визуальная цепочка {#visual-chain}
+
+`--visual` и режим задают порядок провайдеров, который проходится для каждой сцены:
+
+| `--visual` | Режим | Порядок |
+|------------|------|---------|
+| `auto` (по умолчанию) | `shorts`, `demo` | `providers.visual.order` (по умолчанию `oma-image`, `pexels`, `pixelle`) |
+| `auto` (по умолчанию) | `explainer` | `oma-slide`, `oma-image`, затем `providers.visual.order` |
+| `generate` | любой | `oma-image` |
+| `slide` | любой | `oma-slide`, `oma-image` |
+| `stock` | любой | `pexels`, `oma-image` |
+| `aigc` | любой | `pixelle`, `oma-image` |
+
+- Цепочка продвигается дальше, только если провайдер недоступен или выбрасывает ошибку. `oma-image` и `oma-slide` доступны всегда и записывают placeholder вместо исключения, поэтому до провайдеров после них дело не доходит. При порядке по умолчанию `oma-image` забирает каждую сцену: для Pexels нужны `--visual stock` и `PEXELS_API_KEY`, а для Pixelle — `--visual aigc` и `RUNNINGHUB_API_KEY`.
+- `oma-slide` экспортирует кадр только для сцены, у которой `visual.ref` в `script.json` указывает на существующий каталог колоды; он не генерирует колоду. Визуалом сцены становится первый экспортированный кадр, поэтому выделяйте каждой слайд-сцене отдельную однослайдовую колоду. Каждая другая обрабатываемая им сцена получает placeholder, включая каждую сцену explainer без колоды при `--visual auto`. Сначала соберите колоды через `oma-slide` либо передайте `--visual generate` для кадров `oma-image`.
+- Placeholder фиксируется в `warnings` как запасной путь для этой сцены.
+
+### Захват demo и маскирование {#demo-capture-and-masking}
+
+Любой on-screen login вы выполняете сами во время записи; oma не автоматизирует учётные данные, а URL и query token маскируются в log и manifest. Персональные данные на видеозаписи маскируются только в composition `--polish`. Запуск demo без `--polish` копирует исходную запись в итоговый MP4; передавайте этот файл только после того, как сами просмотрите запись и убедитесь, что маскировать нечего, иначе перезапустите с `--polish`.
 
 Captions рендерятся как **static windowed cues** — единственная строка caption, активная на текущем frame, с CSS wrapping и без per-word animation.
 

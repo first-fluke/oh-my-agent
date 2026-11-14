@@ -36,32 +36,38 @@ Le résultat est un seul brief dans `.agents/results/market/{topic-slug}-{YYYYMM
 
 ---
 
-## Moteur toujours à jour (Python 3.12+ requis) {#always-the-latest-engine--nothing-to-install}
+## Installer le moteur (Python 3.12+ requis) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- Cache : `~/.cache/oma-market/last30days/<tag>/` + `state.json`.
-- Avant chaque utilisation, `resolve` demande à GitHub la dernière version (vérification limitée à une fois par `check_interval_min`, 60 minutes par défaut), télécharge une balise plus récente dans son propre répertoire (les anciennes balises sont supprimées) et réutilise sinon le cache. Les échecs réseau réutilisent la copie en cache et signalent `stale`.
+- `resolve` lit uniquement les répertoires de compétences installés et ne touche jamais au réseau. Lorsque rien n’est installé, le statut n’est pas ok et la commande d’installation est indiquée ; la compétence demande confirmation avant d’exécuter `oma market update`.
+- `oma update` n’installe pas le moteur. Mettez-le à jour avec `oma market update` (ou `bunx skills update last30days -g -y`).
 - Python : `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` dans le PATH (doit être ≥ 3.12) → `uv python find '>=3.12'`. Si rien n’est trouvé, `resolve` n’est pas ok et affiche l’indication d’installation ; la compétence s’arrête au lieu de dégrader vers une recherche limitée au web.
-- La configuration du moteur et les clés API résident dans `~/.config/last30days/` (écrites par l’assistant de configuration amont avec votre accord) ; elles survivent aux mises à niveau du moteur.
+- La configuration du moteur et les clés API résident dans `~/.config/last30days/` (écrites par l’assistant de configuration amont avec votre accord) ; elles survivent aux mises à jour du moteur.
 
-Ordre de résolution (le premier résultat l’emporte) : `market.path` → `LAST30DAYS_HOME` → **dernière version gérée** → copies installées par l’utilisateur (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` dans le projet et sous `~`, puis le cache du plugin Claude Code).
+Ordre de résolution (le premier résultat l’emporte) : `market.path` → `LAST30DAYS_HOME` → répertoires de compétences installés (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` dans le projet, puis sous `~`, puis `~/.config/agents/skills/last30days` et le cache du plugin Claude Code). Une installation via plugin Claude Code se met à jour avec `/plugin`, et non avec `oma market update`.
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+Les versions précédentes conservaient leur propre copie sous `~/.cache/oma-market/`. Elle n’est plus lue ; vous pouvez la supprimer.
 
 ---
 

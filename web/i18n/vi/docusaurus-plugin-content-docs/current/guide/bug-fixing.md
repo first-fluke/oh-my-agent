@@ -8,7 +8,7 @@ description: Quy trình debug bảy bước có cấu trúc, gồm phân loại 
 
 ## Khi nào dùng workflow debug
 
-Dùng `/debug`, hoặc nói “fix bug”, “fix error”, “debug” bằng ngôn ngữ tự nhiên, khi có lỗi cụ thể cần chẩn đoán và sửa. Workflow đưa ra các bước có cấu trúc và có thể tái hiện để tìm và sửa nguyên nhân gốc của lỗi.
+Dùng `/debug` để chẩn đoán một lỗi cụ thể. Yêu cầu thông thường như "find the root cause" tải skill `oma-debug` thông qua gợi ý skill, nhưng chỉ lệnh slash mới khởi động workflow này. Workflow 7 bước bao gồm phân loại mức độ nghiêm trọng, chẩn đoán dựa trên mã nguồn và xác minh sau khi sửa.
 
 Workflow hỗ trợ mọi vendor đã cấu hình. Bước 1 đến 5 chạy inline. Bước 6, quét mẫu tương tự, có thể giao cho subagent `debug-investigator` khi phạm vi quét rộng, từ 10 file trở lên hoặc lỗi xuyên nhiều lĩnh vực; tiếp theo là bản ghi memory của bước 7.
 

@@ -9,7 +9,7 @@ description: Gebruiksgids voor OMA met taakselectie vanuit de lezer, voorbeelden
 ## Snelstart
 
 1. Open je project in een geselecteerde AI-IDE of CLI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen of een andere ondersteunde host).
-2. De geselecteerde host kan [skills](../getting-started/glossary.md#skill) uit `.agents/skills/` laden; ingeschakelde hooks kunnen [workflows](../getting-started/glossary.md#workflow) detecteren aan de hand van natural-language-keywords.
+2. De geselecteerde host kan [skills](../getting-started/glossary.md#skill) uit `.agents/skills/` laden; ingeschakelde hooks voegen skillhints toe op basis van natural-language-keywords en starten een [workflow](../getting-started/glossary.md#workflow) alleen via het slash-commando of, voor de vier persistente modi, via de naam van de modus.
 3. Beschrijf in natuurlijke taal wat je wilt. De host of de geselecteerde workflow routeert de taak naar de relevante skill.
 4. Gebruik voor multi-agentwerk `/work` of `/orchestrate`.
 
@@ -24,6 +24,7 @@ Voor single-domaintaken is geen speciale syntax nodig. Gebruik de [gids voor ski
 | Een bug met een foutmelding | `/debug` plus de fout en reproductiestappen | [Bug Fixing](./bug-fixing.md) |
 | Agenten volgen terwijl ze draaien | `oma dashboard terminal` | [Dashboardmonitoring](./dashboard-monitoring.md) |
 | Agentresultaten auditen of hervatten | `oma agent resume SESSION_ID --dry-run` | [Results and Resume](./agent-results-and-resume.md) |
+| OMA-documenten vinden of migreren | `oma docs migrate --dry-run` | [Artefactindeling](./artifact-layout.md) |
 | Er is iets misgegaan | `oma doctor --json` | [Probleemoplossing](./troubleshooting.md) |
 
 ---
@@ -42,23 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. Laag 2-resources worden op aanvraag geladen:
    - `execution-protocol.md`: de workflow met 4 stappen (Analyze, Plan, Implement, Verify)
    - `snippets.md`: patronen voor formulieren en Zod-validatie, plus bestaande componentpatronen wanneer de skill die aanlevert
-4. De agent produceert een **CHARTER_CHECK**:
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
 <!-- oma-docs:ignore-start -->
-5. De agent implementeert:
+4. De agent implementeert:
    - React-component met TypeScript in `src/features/auth/components/login-form.tsx`
    - Zod-validatieschema in `src/features/auth/utils/login-validation.ts`
    - Vitest-tests in `src/features/auth/utils/__tests__/login-validation.test.ts`
    - Laadskelet in `src/features/auth/components/skeleton/login-form-skeleton.tsx`
 <!-- oma-docs:ignore-end -->
-6. De agent voert de checklist uit: toegankelijkheid (ARIA-labels, semantische HTML, toetsenbordnavigatie), mobiele viewport, prestaties (geen CLS) en error boundaries.
+5. De agent voert de checklist uit: toegankelijkheid (ARIA-labels, semantische HTML, toetsenbordnavigatie), mobiele viewport, prestaties (geen CLS) en error boundaries.
 
 **Verwacht resultaat:** Een afgebakende React-component met TypeScript, validatie, tests en toegankelijkheidsbewijs wanneer het project die checks ondersteunt. De prompt en de geselecteerde workflow bepalen welke bestanden en checks werkelijk draaien.
 
@@ -74,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **Wat gebeurt er:**
 
 1. Dit verzoek omvat frontend-, backend- en mobilewerk. De hostagent kan die scope gebruiken om een coördinatieaanpak voor te stellen.
-2. Wanneer de keyword-detection-hook aanstaat, matcht "Build a TODO app" een geconfigureerd `/orchestrate`-patroon en kan de hook dat activeren. De hook matcht tekst; hij classificeert niet of het verzoek meerdere domeinen heeft. Gebruik een expliciet commando om de gewenste workflow te kiezen.
+2. De keyword-detection-hook start geen workflow vanuit deze zin: hij activeert alleen `orchestrate`, `ultrawork`, `work` of `ralph`, en alleen wanneer de prompt de modus bij naam noemt. Hij classificeert het verzoek niet als multi-domein. Gebruik een expliciet commando om de gewenste workflow te kiezen.
 
 **Met `/work` (stap voor stap met gebruikerscontrole):**
 
@@ -153,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **Je typt:**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **Wat gebeurt er:**
 
-1. `oma-design` activeert (keywords: "design", "landing page", "dark", "premium").
-2. **Fase 1, SETUP:** Controleert `.design-context.md`. Ontbreekt die, dan vraagt de agent:
-   - Welke talen ondersteunt de service? (alleen en / + CJK)
-   - Doelgroep? (B2B, technische gebruikers, 25-45)
-   - Merkpersoonlijkheid? (professioneel / premium)
-   - Esthetische richting? (dark premium)
-   - Referentiesites? (de gebruiker levert voorbeelden)
-   - Toegankelijkheid? (WCAG AA)
-3. **Fase 3, ENHANCE:** Als de prompt vaag is, wordt die omgezet in een specificatie per sectie.
-4. **Fase 4, PROPOSE:** Presenteert 3 ontwerprichtingen:
-   - **Direction A: "Midnight Observatory"**: Deep navy (#0f1729), cyanaccenten (#22d3ee), Inter + JetBrains Mono, bento-gridlayout, scrollgestuurde reveals
-   - **Direction B: "Carbon Interface"**: Neutraal grijs (#18181b), amberaccenten (#f59e0b), systeemfonts, schaaklayout, hovergestuurde micro-interacties
-   - **Direction C: "Deep Space"**: Puur donker (#0a0a0a), smaragdaccenten (#10b981), Geist + Geist Mono, full-bleedsecties, entrance-animaties
-5. **Fase 5, GENERATE:** Op basis van de gekozen richting genereert de agent:
-   - `DESIGN.md` met 6 secties (typografie, kleur, spacing, beweging, componenten, toegankelijkheid)
-   - CSS custom properties
-   - Tailwind-configuratie-uitbreidingen
-   - shadcn/ui-themevariabelen
-6. **Fase 6, AUDIT:** Voert checks uit voor responsive (minimum 320px), WCAG 2.2, Nielsen-heuristieken en AI-slopdetectie.
-7. **Fase 7, HANDOFF:** "Design complete. Run `/orchestrate` to implement with oma-frontend."
+1. **Laad de skill:** De workflow leest de skill `oma-design` en het bijbehorende uitvoeringsprotocol. De skill is verantwoordelijk voor de keuze van de leverancier en het projectdesigncontract.
+2. **Bepaal scope en context:** Het verzoek wordt geclassificeerd als een designsysteemdocument. De workflow leest de bestaande `DESIGN.md`, `.design-context.md` indien aanwezig, merkmateriaal, ondersteunde talen en de betrokken UI, en zoekt naar bestaande UI-bibliotheken, themabestanden en tokens. Voor een bestaand product bepaalt hij eerst Preserve of Overhaul. Hij vraagt alleen door over een keuze die het resultaat materieel verandert en die niet uit het verzoek en de codebase blijkt; deze prompt vermeldt al de talen, doelgroep en toegankelijkheidsdoelstelling, dus er volgt geen vragenlijst.
+3. **Selecteer richtlijnen en verzamel referenties:** Er wordt één externe designskill gekozen voor de bewerking: Interface Design voor een dashboard of SaaS-product-UI, Taste voor andere nieuwe web-artdirection, Impeccable voor kritische review of afwerking van een bestaande UI. Een aangevraagde vendorseed, een Stitch-bewerking, assetrichtlijnen of datagrid-regels worden alleen geladen wanneer de taak daarom vraagt.
+4. **Bepaal de richting:** De gekozen richtlijnen worden toegepast op het projectbewijs. Alternatieve richtingen worden alleen voorgelegd wanneer een onopgeloste keuze het resultaat materieel beïnvloedt; een richting die je al hebt gekozen wordt hergebruikt. Elke richting blijft binnen het merk, CJK-lettertypedekking voor Koreaans, de bestaande implementatiestack, responsief gedrag vanaf de kleinste ondersteunde viewport en WCAG AA.
+5. **Lever het artefact op:** `DESIGN.md` wordt aangemaakt of bijgewerkt met alle negen secties, inclusief Sectie 9 (Agent Prompt Guide). Tokens koppelen semantische rollen aan het bestaande tokensysteem en themaformaat van het project; er wordt geen parallelle configuratie geïntroduceerd. Er wordt geen implementatiecode geschreven.
+6. **Verifieer en draag over:** De toepasselijke checklistitems worden gecontroleerd en wat is geïnspecteerd wordt benoemd. Controles waarvoor een gerenderde implementatie nodig is worden gespecificeerd maar niet uitgevoerd. Het rapport somt de opgeleverde artefacten, de gekozen route, de verificatieresultaten en de resterende beperkingen op, en draagt de implementatie daarna over aan `oma-frontend` (web) of `oma-mobile` (native).
 
 ---
 
@@ -274,16 +252,16 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 | `/plan` | Niet-persistent | PM-gestuurde taakdecompositie, API-contracten en bijgehouden planartefacts in `docs/plans/work/` (sequentiële `NNN-name.md`, veld Status voor levenscyclus) | Vóór complex multi-agentwerk; complexe features met bijgehouden voortgang en beslislogs |
 | `/brainstorm` | Niet-persistent | Design-first ideevorming met 2-3 benaderingen | Vóór je een implementatieaanpak vastlegt |
 | `/deepinit` | Niet-persistent | Volledige projectinitialisatie (AGENTS.md, ARCHITECTURE.md, docs/) | oh-my-agent in een bestaande codebase instellen |
-| `/review` | Niet-persistent | QA-pipeline: OWASP-security, prestaties, toegankelijkheid en codekwaliteit | Vóór code mergen of deployen |
-| `/security` | Niet-persistent | Applicatiebroncode, agent-skills of MCP-componenten scannen; afgebakende web-penetratietests tegen een testdeployment draaien; bevindingen valideren en security gates configureren via `oma-security` | Vóór een release, of wanneer een wijziging een securityscan of gate nodig heeft |
+| `/review` | Niet-persistent | QA-pipeline: OWASP-security, prestaties, toegankelijkheid en codekwaliteit. De scope komt uit het verzoek en valt standaard terug op de huidige wijzigingen | Vóór code mergen, review vóór deployment |
+| `/security` | Niet-persistent | Applicatiebroncode, agent-skills of MCP-componenten scannen, bevindingen valideren en security gates configureren via `oma-security`. Penetratietests van een afgebakend web-testdeployment draaien alleen tegen een door de gebruiker aangeleverd en beoordeeld runtimeplatform | Vóór een release, of wanneer een wijziging een securityscan of gate nodig heeft |
 | `/debug` | Niet-persistent | Gestructureerd debuggen: reproduceren, diagnosticeren, fixen, regressietest en scan | Bugs en fouten onderzoeken |
-| `/design` | Niet-persistent | Designworkflow met 7 fasen die DESIGN.md met tokens oplevert | Designsysteem, landingspagina of UI-redesign maken |
+| `/design` | Niet-persistent | Bakent een designtaak af, kiest de toepasselijke designrichtlijnen en levert bevindingen, `DESIGN.md`, een redesignrichting of designtokens op via `oma-design` | Een visueel systeem definiëren of reviewen, UI-redesigns en designaudits |
 | `/scm` | Niet-persistent | SCM-workflow voor Git (branch/merge/conflict/worktree/baseline) plus Conventional Commit-generatie met automatische type-/scopedetectie en featuresplitsing | Na codewijzigingen of bij repository configuration management |
 | `/stack-set` | Niet-persistent | Projecttechstack automatisch detecteren en backend- of mobile-referenties genereren (Swift/Flutter/RN) | Taalspecifieke codeconventies instellen |
 | `/architecture` | Niet-persistent | Architectuur diagnosticeren, vergelijken en beslisrecords maken | Grenzen reviewen of architectuur kiezen |
 | `/convert` | Niet-persistent | Documentconversie naar de passende skill routeren | HWP/HWPX- of PDF-bronbestanden converteren |
 | `/docs` | Niet-persistent | Documentatie verifiëren en diffgerichte syncvoorstellen maken | Docs tegen de huidige codebase controleren |
-| `/explain` | Niet-persistent | Offline HTML-uitleg voor een codewijziging genereren en valideren | Een diff, PR, branch of commitreeks onderwijzend uitleggen |
+| `/explain` | Niet-persistent | Offline HTML-uitleg genereren voor een codewijziging of een onderwerp, valideren met `oma explain validate` en openen met `oma explain render --open` | Een diff, PR, branch of commitreeks onderwijzend uitleggen, of een onderwerp verklaren |
 | `/recap` | Niet-persistent | Werk samenvatten uit ondersteunde AI-toolgeschiedenissen | Dagelijkse of periodieke retrospective |
 | `/schedule` | Niet-persistent | Terugkerende agentjobs registreren | Nachtelijke recaps, scans of housekeeping |
 | `/video` | Niet-persistent | Reproduceerbare video's samenstellen uit script, narratie en visuals | Shorts, explainers en demo's |
@@ -293,7 +271,7 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 
 ## Voorbeelden van autodetectie
 
-oh-my-agent detecteert workflowkeywords in 11 talen. Deze voorbeelden laten zien hoe natural language workflows activeert:
+De keyword-hook start alleen vier persistente modi, en alleen wanneer de prompt de modus bij naam noemt. Andere workflows starten via hun slash-commando.
 
 | Je typt | Gedetecteerde workflow | Taal |
 |----------|------------------|----------|
@@ -305,6 +283,8 @@ oh-my-agent detecteert workflowkeywords in 11 talen. Deze voorbeelden laten zien
 | "work workflow로 진행해줘" | `/work` | Koreaans |
 | "ralph this task" | `/ralph` | Engels |
 | "랄프로 끝까지 해줘" | `/ralph` | Koreaans |
+
+Zinnen zoals "plan the authentication feature", "fix the login bug", "do everything in parallel" en "don't stop until it's done" starten geen workflow.
 
 **Informatieve vragen worden gefilterd:**
 
@@ -327,19 +307,19 @@ De `all`-preset van de installer volgt de live registry. De tabel groepeert elke
 | **oma-architecture** | Systeemgrenzen, afwegingen, ADR's | Architectuuraanbeveling of beslisrecord |
 | **oma-backend** | API's, auth, serverlogica, migraties | Router/service/repository-wijzigingen en verificatie |
 | **oma-brainstorm** | Ambigue ideeën en benaderingsvergelijking | Ontwerpdocument in `docs/plans/designs/` |
-| **oma-coordination** | Handmatige multi-agentcoördinatie | Stapsgewijze taak- en handoffgids |
+| **oma-coordination** | Gedeelde coördinatieregels voor `/work`, `/orchestrate` en `/ultrawork`; handmatige stapsgewijze coördinatie | Richtlijnen voor planhergebruik, contractafstemming, workspace-eigendom en QA-overdracht |
 | **oma-db** | Schemadesign, ERD, querytuning, capaciteitsplanning | Schemasdocumentatie, migraties en herstelplan |
 | **oma-debug** | Bugreproductie en grondoorzaakanalyse | Minimale fix, regressiebewijs en patroonscan |
-| **oma-security** | Securityscans van broncode, agent-skills en MCP; afgebakende web-penetratietests | Gevalideerde bevindingen en configuratie van scan-gates |
-| **oma-design** | Designsysteem, landingspagina, tokens | `DESIGN.md`, tokens en componentguidance |
+| **oma-security** | Securityscans van broncode, agent-skills en MCP; penetratietests alleen op een door de gebruiker aangeleverd en beoordeeld runtimeplatform | Gevalideerde bevindingen en configuratie van scan-gates |
+| **oma-design** | Visuele systemen, `DESIGN.md`, redesignrichting, UI-designreview | Designbesluit of bevindingen, `DESIGN.md` wanneer het systeem verandert en een overdracht voor implementatie |
 | **oma-dev-workflow** | CI/CD, monorepo's, migraties, releaseautomatisering | Workflowconfiguratie en releasechecks |
 | **oma-docs** | Kapotte verwijzingen en documentatiedrift | Verificatierapport of diffgerichte synckandidaten |
-| **oma-explanation** | Diff-, PR-, branch- of commitwalkthroughs | Offline HTML-uitleg met Background, Intuition, Code en Quiz |
+| **oma-explanation** | Diff-, PR-, branch- of commitwalkthroughs; uitleg over onderwerpen | Offline HTML-uitleg (Background, Intuition, Code en Quiz voor een wijziging) |
 | **oma-frontend** | UI-componenten, formulieren, pagina's, Angular- of React-styling | Frontendwijzigingen en relevante checks |
 | **oma-hwp** | HWP/HWPX/HWPML-conversie | Markdown met koppen, tabellen, afbeeldingen en links |
 | **oma-image** | Afbeeldingen en visuele assets genereren | Reproduceerbare beeldrun met manifest |
 | **oma-market** | Pijnpunten, trends, concurrentie en discovery onderzoeken | LAW-conforme onderzoeksbrief met frameworks |
-| **oma-mobile** | Flutter-, React Native- en Swift-iOS-werk | Mobiele schermen, state, platformintegratie en tests |
+| **oma-mobile** | Flutter-, React Native-, Swift-iOS- en Kotlin-Android-werk | Mobiele schermen, state, platformintegratie en tests |
 | **oma-observability** | Traces, metrics, logs, profiles, SLO's, incidentforensiek | Gelaagd observabilityadvies of implementatiegids |
 | **oma-orchestration** | Geautomatiseerde parallelle agentuitvoering | Gecoördineerde plannen, geheugenupdates en resultaatverzameling |
 | **oma-pdf** | PDF-conversie en OCR-bewuste extractie | Markdown met leesvolgorde, tabellen, lijsten en afbeeldingen |
@@ -349,7 +329,7 @@ De `all`-preset van de installer volgt de live registry. De tabel groepeert elke
 | **oma-refactor** | Gedragsbehoudende herstructurering | Refactorwijzigingen met karakterisering en kwaliteitbewijs |
 | **oma-scholar** | Scholarly search en paper-sidecars | Gevalideerde `.knows.yaml`-sidecarbewerkingen |
 | **oma-scm** | Git-branches, worktrees, baselines en commit-hygiëne | SCM-plan of Conventional Commit-output |
-| **oma-search** | Trust-scored docs, web, code en lokale search | Gerouteerde zoekresultaten met trustlabels |
+| **oma-search** | Externe documentatie, webbronnen, externe code en het lezen van bekende URL's | Geciteerde bronnen met route, provider, bewijs en beperkingen |
 | **oma-skill-creation** | OMA-skills maken en auditen | SSL-lite-skillbestanden en `oma skill audit`-resultaten |
 | **oma-slide** | HTML-presentatiedecks en exports | Gevalideerde gebundelde HTML, PDF, PNG of PPTX |
 | **oma-tf-infra** | Terraform-infrastructuur, IAM en policy-as-code | Terraformmodules, plannen en controls |
@@ -407,6 +387,12 @@ Wanneer je `oma agent spawn` draait, doet de CLI het volgende:
 
 Agenten coördineren via duurzame bestanden in `.agents/state/memories/` (oudere projecten vallen terug op het legacy-pad `.serena/memories/`). De orchestrator schrijft rungebonden sessie- en task-boardbestanden. Elke run schrijft `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` en `result-{agentId}-{taskId}-{runId}-{sessionId}.md` wanneer Markdown-output voor voortgang of resultaten aanstaat; gestructureerde receipts en claims in `.agents/state/agent-runs/` zijn leidend voor CLI-spawns. Agenten lezen en schrijven deze bestanden met hun native tools; de toolmapping blijft configureerbaar in `.agents/mcp.json → memoryConfig.tools`.
 
+### Documenten en rapporten
+
+Gebruik `docs/decisions/` voor aanpakvoorstellen en ADR's, met een veld `Status` zoals `draft`, `accepted` of `superseded`. UI-design hoort in `DESIGN.md`. Werkplannen blijven in `docs/plans/work/`, en overgenomen API-contracten blijven in `docs/plans/contracts/`.
+
+Uitvoeringsrapporten en conceptcontracten horen in `.agents/results/`. Wanneer een document een onderhouden projectreferentie wordt, verplaats je het naar de relevante map onder `docs/` en laat je op de vorige locatie een link achter. Zie [Artefactindeling](./artifact-layout.md) voor de volledige indeling en migratieopdrachten.
+
 ### Werkruimtes
 
 <!-- oma-docs:ignore-start -->
@@ -451,7 +437,7 @@ Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runre
 | Dashboard toont "No agents detected yet" | Agenten hebben nog niet naar geheugen geschreven, of het dashboard bewaakt een andere directory | Wacht op het eerste progressbestand; draai vanuit de projectroot of geef `--project-root <path>` mee |
 | `oma dashboard web` stopt met "port 9847 is already in use" | Een ander proces bezet de poort | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA-rapport heeft 50+ issues | Normaal bij een eerste review van grote codebases | Richt je eerst op CRITICAL en HIGH. Documenteer MEDIUM/LOW voor latere sprints |
-| Autodetectie activeert de verkeerde workflow | Ambiguïteit in keywords | Gebruik een expliciet `/command` in plaats van natural language. Meld false triggers ter verbetering |
+| Een persistente modus start terwijl je alleen de naam noemde | De prompt noemt `orchestrate`, `ultrawork`, `work mode` of `ralph` buiten een vraag of codeblok | Zeg "workflow done" om de modus vrij te geven. Meld false triggers ter verbetering |
 | Persistente workflow stopt niet | Statusbestand bestaat nog | Zeg "workflow done" in de chat, of verwijder het statusbestand handmatig uit `.agents/state/` |
 | Agent is geblokkeerd op HIGH-clarification | Requirements zijn te ambigue | Geef de gevraagde antwoorden en voer daarna opnieuw uit |
 | MCP-tools werken niet | Serena is niet geconfigureerd of draait niet | Voer `oma doctor` uit om de MCP-configuratie te controleren |
@@ -467,6 +453,7 @@ Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runre
 - Een bug met een foutmelding: [Bug Fixing](./bug-fixing.md)
 - Een run volgen: [Dashboardmonitoring](./dashboard-monitoring.md)
 - Agentresultaten auditen of hervatten: [Results and Resume](./agent-results-and-resume.md)
+- OMA-documenten vinden of migreren: [Artefactindeling](./artifact-layout.md)
 - Er is iets misgegaan: [Probleemoplossing](./troubleshooting.md)
 - Details over projectintegratie: [Integratiegids](./integration.md)
 - Termen die in deze gidsen worden gebruikt: [Woordenlijst](../getting-started/glossary.md)

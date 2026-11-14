@@ -55,8 +55,8 @@ Instalator pyta **What type of project?** i proponuje [preset umiejętności](..
 
 Jeśli wybrany preset obejmuje umiejętność backendu, pojawi się prośba o wybór wariantu językowego:
 
-- **Python**: FastAPI/SQLAlchemy (domyślnie)
-- **Node.js**: NestJS/Hono + Prisma/Drizzle
+- **Python**: Litestar/SQLAlchemy (domyślnie)
+- **Node.js**: NestJS + Prisma
 - **Rust**: Axum/Actix-web
 - **Other / Auto-detect**: skonfiguruj później przez `/stack-set`
 
@@ -118,6 +118,14 @@ Instalator wyświetla podsumowanie wszystkiego, co zostało zainstalowane:
 - lokalizację katalogu umiejętności
 - utworzone dowiązania symboliczne
 - pominięte elementy (jeśli są)
+
+Instalacja i aktualizacja migrują również starsze lokalizacje dokumentów do [układu artefaktów](./artifact-layout.md). Istniejące pliki są zachowywane w razie kolizji nazw, a raporty powiązane z dowodami wykonania pozostają pod swoimi oryginalnymi ścieżkami. Przed aktualizacją podejrzyj zmiany:
+
+```bash
+oma docs migrate --dry-run
+```
+
+Ścieżki źródłowe, obsługę konfliktów oraz polecenie ręczne opisano w [Migracji istniejącego projektu](./artifact-layout.md#migrate-an-existing-project).
 
 ---
 
@@ -380,11 +388,11 @@ Instalator pobiera najnowszy tarball wydania z wydań GitHub oh-my-agent. Tarbal
 
 ### 6. Instalacja konfiguracji
 
-`installConfigs()` kopiuje pliki pomocnicze do `.agents/config/`, tworzy `.agents/mcp.json` i inicjalizuje należący do użytkownika `.agents/oma-config.yaml` albo `.agents/oma-config.cue`. Istniejące pliki użytkownika są zachowywane, chyba że użyto `--force`; `oma update` również zachowuje konfigurację użytkownika i dopisuje nowe klucze najwyższego poziomu szablonu, gdy są potrzebne.
+`installConfigs()` tworzy `.agents/mcp.json` i inicjalizuje należący do użytkownika `.agents/oma-config.yaml` albo `.agents/oma-config.cue`. Istniejące pliki użytkownika są zachowywane, chyba że użyto `--force`; `oma update` również zachowuje konfigurację użytkownika i dopisuje nowe klucze najwyższego poziomu szablonu, gdy są potrzebne.
 
 ### 7. Instalacja umiejętności
 
-Dla każdej wybranej umiejętności `installSkill()` kopiuje katalog umiejętności do `.agents/skills/{skill-name}/`. Jeśli wybrano wariant (np. Python dla backendu), konfiguruje też katalog `stack/` z zasobami właściwymi dla języka.
+Dla każdej wybranej umiejętności `installSkill()` kopiuje katalog umiejętności do `.agents/skills/{skill-name}/`. Jeśli wybrano wariant (np. Python dla backendu), kopiuje go również do katalogu `stack/` tej umiejętności i usuwa zbędny katalog `variants/`. Umiejętność zainstalowana bez wariantu, taka jak `oma-mobile`, zachowuje katalog `variants/`, który jej plik `SKILL.md` odczytuje bezpośrednio.
 
 ### 8. Dostosowania vendorów
 

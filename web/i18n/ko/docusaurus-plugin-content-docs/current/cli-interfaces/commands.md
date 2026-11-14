@@ -92,16 +92,18 @@ description: 모든 oh-my-agent CLI 명령어의 종합 레퍼런스입니다. �
 
 ### install
 
-인자 없이 `oma`를 실행하면 대화형 설치 프로그램이 시작됩니다. `oma install`은 명시적 형식이며 프로바이더 선택 옵션을 받습니다.
+인자 없이 `oma`를 실행하면 대화형 런타임 설치 프로그램이 시작됩니다. `oma install`은 명시적 형식이며 스킬 프리셋과 프로바이더 선택 옵션을 받습니다. 태스크 하나를 위한 임시 지침 로딩은 [설정 방식 선택](../getting-started/choose-setup.md)을 참고하세요.
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | 옵션 | 허용 값 |
 |:-------|:----------------|
+| `--preset <name>` | 10개 [이름이 붙은 스킬 프리셋](../getting-started/installation.md#presets) 중 하나(`frontend`, `research`, `all` 등). 개별 Custom 선택은 대화형 메뉴를 사용합니다. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,15 +112,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 `--web-search`, `--code-intelligence`, `--semantic-memory`를 생략하면 저장된 프로바이더 선택을 유지합니다. 선택한 프로바이더가 Honcho일 때 `--honcho-url`과 `--honcho-workspace`로 새 Honcho 연결을 설정합니다. 루트 `-y, --yes` 플래그는 프롬프트를 건너뛰고 기본값을 사용합니다. `--global`은 `$OMA_HOME/.agents/`(기본값 `~/.oma/.agents/`)를 대상으로 합니다. `OMA_HOME`이 설정되어 있어도 프로젝트 설치는 `<cwd>/.agents/`에 그대로 둡니다.
 
+`--preset`은 대화형 스킬 프롬프트와 비대화형 `all` 기본값보다 우선합니다. 알 수 없는 이름, 빈 값, `custom`은 설치 전에 거부됩니다. 이 옵션은 스킬 콘텐츠를 선택하며 공유 파일, 워크플로우/에이전트 정의, 훅, 프로바이더 설정은 걸러내지 않고 기존에 설치된 다른 스킬도 유지합니다. 따라서 [워크플로우 의존성](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)이 선택한 번들과 다를 수 있습니다.
+
 **수행 내용:**
 1. 레거시 `.agent/` 디렉토리를 확인하고 발견되면 `.agents/`로 마이그레이션합니다.
-2. 경쟁 도구를 감지하고 제거를 제안합니다.
-3. 프로젝트 타입 선택을 요청합니다 (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+2. 대화형 모드에서는 다른 에이전트 도구를 감지하고 제거할지 묻습니다 (기본값: 유지). `--yes`, `OMA_YES`, CI 설치에서는 유지하며, `oma update`는 제거를 제안하지 않습니다.
+3. `--preset`이 전달되면 그 값을 사용하고, 아니면 대화형 모드에서 스킬 프리셋 또는 개별 Custom 선택을 묻습니다. 비대화형 설정의 기본값은 `all`입니다.
 4. 백엔드가 선택된 경우 언어 변형을 요청합니다 (Python, Node.js, Rust, Other).
 5. GitHub Copilot 심볼릭 링크에 대해 질문합니다.
 6. 레지스트리에서 최신 tarball을 다운로드합니다.
 7. 공유 리소스, 워크플로우, 설정, 선택된 스킬을 설치합니다.
-8. 선택된 벤더에 대한 벤더 적응을 설치합니다 (프로젝트 로컬 설정이며, HOME 레벨 벤더 파일을 몰래 쓰지 않습니다).
+8. 선택된 벤더에 대한 벤더 적응을 설치합니다. 프로젝트와 HOME 수준 변경 사항은 [설치 효과](../getting-started/installation.md#what-the-installer-also-does-by-default)를 참고하세요.
 9. CLI 심볼릭 링크를 생성합니다.
 10. 권장 **전역** git 설정을 제안합니다 (opt-in 확인):
     - `rerere.enabled=true`: 멀티 에이전트 머지 충돌 해결 재사용
@@ -127,11 +131,13 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. 해당되는 경우 MCP 설정을 제안합니다.
 12. `gh`가 인증되어 있으면 GitHub star를 제안합니다.
 
+최종 요약은 선택한 스킬을 나열하고, 유지된 스킬과 조건부 분기를 포함해 실제로 존재하는 파일을 기준으로 참조된 스킬 매니페스트를 검사합니다. 워크플로우와 에이전트의 스킬 참조 중 누락되었거나 읽을 수 없는 항목을 보고하고 해당 설치 루트의 doctor 명령을 안내합니다. 이는 정적 매니페스트 검사이며 리소스 내용, 도구, 프로바이더, 실행 여부는 검증하지 않습니다.
+
 **예시:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor
@@ -376,12 +382,13 @@ oma stats reset [--json] [--output <format>]
 - 마지막 업데이트 타임스탬프
 
 **비용 텔레메트리** (`.agents/state/memories/` 아래의 모든 `session-cost-*.md` 파일을 합산):
-- 총 입력 토큰 (프롬프트 문자 수 기반 근사치이며, 출력 토큰은 아직 포함하지 않습니다)
+- 기록된 토큰 (실제 네이티브 사용량과 프롬프트 길이 추정치를 구분해 표시)
 - 총 스폰 수
-- 벤더별 입력 토큰 단가를 보수적으로 적용한 추정 USD (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
+- 예약된 스폰 및 일부만 네이티브 사용량을 포함하는 실행
+- 벤더별 단가 표를 사용한 추정 USD (이 추정치는 실제 토큰 수와 별도입니다)
 - 벤더별 내역 (토큰 · 스폰 · USD)
 
-추정치는 하한일 뿐 청구 금액과 정확히 일치하지 않습니다. 스폰 시점에 하드 예산을 적용하려면 `.agents/oma-config.yaml`의 `session.quota_cap`을 설정합니다. 이 상한이 속한 품질 우선 도구 모음은 Getting Started의 Why oh-my-agent 페이지를 참고합니다.
+USD 추정치는 실제 청구 금액과 정확히 일치하지 않습니다. 기록된 토큰 사용량이나 스폰 횟수가 상한에 도달했을 때 다음 스폰을 차단하려면 `.agents/oma-config.yaml`에서 `session.quota_cap`을 설정합니다. 네이티브 사용량이 빠진 경우에도 명시적 추정치는 유지되며, 실행 중인 자식 프로세스는 중단되지 않습니다. [세션 쿼터 상한](../guide/configuration-reference.md#session-quota-caps)을 참고하세요.
 
 메트릭은 `.agents/state/metrics.json`에 저장되며, 레거시 `.serena/metrics.json`이 있으면 함께 읽습니다. 데이터는 git 통계와 메모리 파일에서 수집됩니다.
 

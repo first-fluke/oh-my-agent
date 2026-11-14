@@ -80,7 +80,7 @@ Przegląd międzykontekstowy (Cross-Context Review) to reguła, zgodnie z któr�
 
 ### Charter {#charter}
 
-Charter to blok preflight `CHARTER_CHECK`, który agenci implementacji pisali wcześniej przed jakimkolwiek kodem. Obecne definicje agentów nie wymagają stałego wyjścia preflight. Agenci stosują zamiast tego wspólną politykę wykonywania: podają istotne założenia, pytają tylko wtedy, gdy brakująca informacja zmienia poprawność lub zakres, i wstrzymują wyłącznie pracę zależną od odpowiedzi. Uruchomiony subagent nie może zapytać Cię bezpośrednio, więc zgłasza brakujący fakt w wyniku `blocked` albo `partial`. Zobacz [Autoryzacja i doprecyzowanie](../core-concepts/agents.md#charter-preflight-charter_check).
+Charter to stały blok preflight (`CHARTER_CHECK`) zapisywany przed jakimkolwiek kodem. oh-my-agent nie wymaga żadnego: definicje agentów nie oczekują stałego wyjścia preflight. Agenci stosują zamiast tego wspólną politykę wykonywania: podają istotne założenia, pytają tylko wtedy, gdy brakująca informacja zmienia poprawność lub zakres, i wstrzymują wyłącznie pracę zależną od odpowiedzi. Uruchomiony subagent nie może zapytać Cię bezpośrednio, więc zgłasza brakujący fakt w wyniku `blocked` albo `partial`. Zobacz [Autoryzacja i doprecyzowanie](../core-concepts/agents.md#charter-preflight-charter_check).
 
 ### Rekord uruchomienia i zgłoszenie {#run-record-and-claim}
 

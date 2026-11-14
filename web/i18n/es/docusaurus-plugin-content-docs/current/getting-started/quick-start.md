@@ -5,9 +5,21 @@ description: Ejecuta una tarea acotada desde la instalación hasta la verificaci
 
 # Inicio rápido
 
-Usa esta página para ejecutar una tarea pequeña y registrar un resultado concreto. Necesitas un directorio de proyecto y al menos un CLI o IDE de IA compatible. El instalador puede preparar `bun`, `uv`, Serena, CUE y el comando global `oma` en macOS, Linux o Windows; la integración con el host seleccionado es necesaria para el primer prompt, mientras que las integraciones de proveedores y del navegador son opcionales.
+Usa esta página para ejecutar una tarea pequeña y verificar el resultado. Carga una skill en el agente de código que ya usas, o instala el runtime cuando necesites hooks de proyecto, agentes especialistas y flujos de trabajo. [Elegir una configuración](./choose-setup.md) explica las rutas disponibles y sus dependencias.
 
-## 1. Instala
+## 1. Elige la configuración {#1-install}
+
+Para la tarea de Git de solo lectura de abajo, pide a tu agente que cargue la skill y lea sus instrucciones y su directorio de soporte:
+
+```bash
+bunx skills use first-fluke/oh-my-agent@oma-scm
+```
+
+Continúa con la tarea del paso 3. Las operaciones CLI de la skill, otras skills, las reglas del proyecto y los servicios externos siguen siendo dependencias aparte. Cargar esta skill no ejecuta el instalador de OMA.
+
+### Instala el runtime cuando lo necesites
+
+El instalador de arranque puede preparar `bun`, `uv`, Serena, CUE y el comando global `oma`. Selecciona la CLI o IDE de IA que ya usas; las integraciones de proveedores y de navegador dependen de las tareas que planees ejecutar.
 
 Desde el directorio del proyecto, ejecuta el instalador de arranque:
 
@@ -33,7 +45,7 @@ Los scripts de arranque instalan en el proyecto actual. Usa `oma install --globa
 
 ## 2. Comprueba el resultado
 
-Ejecuta la comprobación de salud desde el mismo directorio del proyecto:
+Para la carga temporal de una skill, confirma que el agente leyó las instrucciones seleccionadas y verifica la tarea en sí. Para una instalación del runtime, ejecuta la comprobación de salud desde el mismo directorio del proyecto:
 
 ```bash
 oma doctor
@@ -63,19 +75,21 @@ Si el comando `oma` sigue sin encontrarse, abre un shell nuevo o añade el direc
 
 ## 3. Ejecuta una tarea pequeña
 
-Abre el repositorio en la herramienta de IA configurada y pide una skill con nombre y un resultado autocontenido:
+Abre un repositorio Git existente en tu herramienta de IA. Usa la skill `oma-scm` cargada o la copia instalada por un preset de runtime con nombre. Si usaste la selección Custom, incluye `oma-scm` para este ejemplo:
 
 ```text
-Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
+Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
 ```
 
-El host debe identificar la skill seleccionada, inspeccionar un objetivo e informar de una edición específica del enlace o de que el enlace ya es válido. Incluye la salida del comando y el código de salida de cualquier comprobación que se haya ejecutado de verdad.
+Compara la rama y los cambios informados con la salida real de Git. El agente debe informar qué comandos se ejecutaron y sus estados de salida. Esta tarea de solo lectura no necesita pruebas de código ni compilación.
 
-Cuando el hook de palabras clave está habilitado para el host seleccionado, puede activar un flujo de trabajo coincidente. El host o el flujo seleccionado realiza el enrutamiento de skills, por lo que un prompt arbitrario del host no garantiza un hook, una skill concreta ni un `CHARTER_CHECK`. El contrato de ejecución debe revisar aun así las convenciones del repositorio, hacer solo el cambio dentro del alcance e informar de su verificación. Los archivos y comandos exactos dependen del proyecto.
+Un prompt en lenguaje natural no inicia ningún flujo de trabajo; donde el hook de prompt está habilitado, añade una sugerencia orientativa de skill. El host o el flujo seleccionado realiza el enrutamiento de skills, por lo que un prompt arbitrario del host no garantiza un hook ni una skill concreta. El contrato de ejecución debe revisar aun así las convenciones del repositorio, respetar el alcance de solo lectura solicitado e informar de las comprobaciones observadas. Los archivos y comandos exactos dependen del proyecto.
 
 Para una tarea que cruce los límites de API y UI, selecciona `/work` o `/orchestrate` explícitamente. Para un solo dominio, continúa con [Ejecución de una skill](../guide/single-skill.md). La [Guía de uso](../guide/usage.md) contiene ejemplos más largos.
 
-## 4. Conoce los valores predeterminados antes de escalar
+## 4. Conoce los valores predeterminados del runtime antes de escalar
+
+La carga temporal de una skill no configura estos valores predeterminados del runtime. Para hooks de proyecto, configuración de proveedores o flujos de trabajo en equipo, usa la ruta del runtime en [Elegir una configuración](./choose-setup.md).
 
 OMA empieza con `model_preset: auto`, Serena para la inteligencia de código, Agent Memory para la memoria semántica, búsqueda web nativa y la telemetría desactivada. Serena usa el transporte compartido `bridge` y se actualiza automáticamente, salvo que se configure de otro modo. El MCP de DevTools del navegador está desactivado por defecto; una configuración interactiva nueva ofrece Aside primero. Consulta [Valores predeterminados importantes](./important-defaults.md) para conocer las consecuencias y las claves de sobrescritura.
 
@@ -83,6 +97,7 @@ Si una tarea gestionada se atasca, empieza con `oma agent status <session-id> [a
 
 ## Próximos pasos
 
+- [Elegir una configuración](./choose-setup.md) para una skill, un preset de runtime o el plugin de Claude Code
 - [Valores predeterminados importantes](./important-defaults.md) para la precedencia, los proveedores y las opciones de recuperación
 - [Instalación](./installation.md) para presets, configuración de proveedores, instalaciones globales y actualizaciones
 - [Agentes](../core-concepts/agents.md) para los 33 paquetes de skills y los roles de despacho

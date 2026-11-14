@@ -1,7 +1,7 @@
 ---
 title: "Przewodnik: badania rynku (silnik last30days)"
 sidebar_label: Badania rynku
-description: Jak umiejętność oma-market prowadzi badania sygnałów społecznościowych na upstreamowym silniku mvanhorn/last30days, automatycznie utrzymywanym przy najnowszym wydaniu — sekcja konfiguracji market, oma market resolve / update / run, bramka detect-trap, mapowanie intencji na frameworki i tryby awarii.
+description: Jak umiejętność oma-market prowadzi badania sygnałów społecznościowych na upstreamowym silniku mvanhorn/last30days, instalowanym jako umiejętność przez CLI skills — sekcja konfiguracji market, oma market resolve / update / run, bramka detect-trap, mapowanie intencji na frameworki i tryby awarii.
 ---
 
 # Badania rynku
@@ -36,26 +36,32 @@ Wynikiem jest jeden raport w `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`
 
 ---
 
-## Zawsze najnowszy silnik (wymagany Python 3.12+) {#always-the-latest-engine--nothing-to-install}
+## Zainstaluj silnik (wymagany Python 3.12+) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- Cache: `~/.cache/oma-market/last30days/<tag>/` + `state.json`.
-- Przed każdym użyciem `resolve` pyta GitHub o najnowsze wydanie (maksymalnie raz na `check_interval_min`, domyślnie co 60 min), pobiera nowszy tag do własnego katalogu (starsze tagi są usuwane), a w przeciwnym razie używa cache. Błędy sieci ponownie wykorzystują kopię z cache i zgłaszają `stale`.
+- `resolve` czyta wyłącznie katalogi zainstalowanych umiejętności i nigdy nie łączy się z siecią. Gdy nic nie jest zainstalowane, zwraca stan negatywny i podaje polecenie instalacji; umiejętność pyta przed uruchomieniem `oma market update`.
+- `oma update` nie instaluje silnika. Zaktualizuj go przez `oma market update` (albo `bunx skills update last30days -g -y`).
 - Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` w PATH (musi być ≥ 3.12) → `uv python find '>=3.12'`. Jeśli nie ma żadnego interpretera, `resolve` nie jest poprawne i wypisuje wskazówkę instalacji; umiejętność zatrzymuje się zamiast zredukować badanie do samego wyszukiwania w sieci.
 - Konfiguracja silnika i klucze API znajdują się w `~/.config/last30days/` (zapisywane za zgodą użytkownika przez kreator upstream), więc przetrwają aktualizacje silnika.
 
-Kolejność rozstrzygania (wygrywa pierwsze trafienie): `market.path` → `LAST30DAYS_HOME` → **zarządzane najnowsze wydanie** → kopie zainstalowane przez użytkownika (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` w projekcie i pod `~`, następnie cache pluginu Claude Code).
+Kolejność rozstrzygania (wygrywa pierwsze trafienie): `market.path` → `LAST30DAYS_HOME` → katalogi zainstalowanych umiejętności (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` w projekcie, następnie pod `~`, a potem `~/.config/agents/skills/last30days` i cache wtyczki Claude Code). Instalacja wtyczki Claude Code jest aktualizowana przez `/plugin`, a nie `oma market update`.
 
 ```bash
 oma market update            # force a check / download now
@@ -89,14 +95,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` — odrzuca tematy będące pułapką słów kluczowych albo zakupami demograficznymi (kod wyjścia 2) i proponuje przeformułowanie. Pusty temat albo temat dłuższy niż 200 znaków kończy się kodem wyjścia 4.
 2. `oma market resolve --json` — silnik i Python; zatrzymuje się przy `ok: false`.
 3. Agent czyta od początku do końca `SKILL.md` rozstrzygniętego silnika i postępuje zgodnie z nim: kreator pierwszej konfiguracji, rozstrzygnięcie uchwytów / subredditów / hashtagów przed badaniem (gdy dostępne jest WebSearch), planowanie zapytań i bramka warunku wstępnego.
 4. `oma market run "<topic>" <flags> --emit=compact` — identyczne argumenty jak w upstreamowym wywołaniu `python3 scripts/last30days.py`; `--save-dir` jest dodawane z `market.save_dir`.
-5. Synteza podąża za upstreamowym OUTPUT CONTRACT (odznaka w pierwszej linii, uporządkowane klastry dowodów, LAWs 1–8), a następnie oma dopisuje sekcje frameworków, które odwołują się wyłącznie do klastrów silnika:
+5. Synteza podąża za upstreamowym OUTPUT CONTRACT (odznaka w pierwszej linii, uporządkowane klastry dowodów, LAWs 1–8), a następnie oma dopisuje sekcje frameworków, umieszczane między treścią silnika a stopką silnika, które odwołują się wyłącznie do klastrów silnika:
 
 | Intencja | Kształtowanie silnika | Frameworki |
 |---|---|---|
@@ -105,7 +111,7 @@ flowchart TD
 | competitor | `"A vs B"` → upstreamowy przepływ porównania | SWOT + Porter’s 5F |
 | discovery | `--discover`, następnie kolejne `--drill` | SWOT + PESTEL |
 
-6. Wykonaj samokontrolę, a następnie zapisz `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
+6. Zapisz `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`, a następnie uruchom samokontrolę względem zapisanego pliku; popraw i sprawdź ponownie przed dostarczeniem raportu.
 
 ---
 

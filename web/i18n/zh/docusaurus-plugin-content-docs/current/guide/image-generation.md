@@ -259,7 +259,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 ## 配置 {#configuration}
 
-- **项目配置**：`.agents/oma-config.yaml` 中的 `image:` 部分。旧版 `config/image-config.yaml` 不再读取。
+- **项目配置**：`.agents/oma-config.yaml` 中的 `image:` 部分。内置默认值保存在 CLI 中，因此只写需要修改的键即可。
 - **环境变量：**
   - `OMA_IMAGE_DEFAULT_VENDOR`：覆盖配置的默认供应商（`auto`）。`--vendor` 标志本身默认为 `auto`，因此需要特定供应商时，请在每条命令中传入 `--vendor`。
   - `OMA_IMAGE_DEFAULT_OUT`：覆盖默认输出目录

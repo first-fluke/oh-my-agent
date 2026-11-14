@@ -9,7 +9,7 @@ description: 読者が先にタスクを選ぶための手順、単一スキル�
 ## クイックスタート
 
 1. 対応する AI 搭載 IDE または CLI（Claude Code、Codex CLI、Cursor、Antigravity、OpenCode、Kimi、Kiro、Qwen など）でプロジェクトを開きます。
-2. 選択したホストは `.agents/skills/` から[スキル](../getting-started/glossary.md#skill)をロードできます。有効なフックは自然言語のキーワードから[ワークフロー](../getting-started/glossary.md#workflow)を検出します。
+2. 選択したホストは `.agents/skills/` から[スキル](../getting-started/glossary.md#skill)をロードできます。有効なフックは自然言語のキーワードからスキルヒントを追加し、[ワークフロー](../getting-started/glossary.md#workflow)はスラッシュコマンド、または 4 つの永続モードの場合はその名前からのみ開始します。
 3. やりたいことを自然言語で説明します。ホストまたは選択したワークフローがタスクを適切なスキルへルーティングします。
 4. 複数のエージェントを使う場合は `/work` または `/orchestrate` を使います。
 
@@ -24,6 +24,7 @@ description: 読者が先にタスクを選ぶための手順、単一スキル�
 | エラーメッセージが出ているバグ | `/debug` とエラー内容、再現手順 | [バグ修正](./bug-fixing.md) |
 | 実行中のエージェントを見守る | `oma dashboard terminal` | [ダッシュボード監視](./dashboard-monitoring.md) |
 | エージェントの結果を監査または再開する | `oma agent resume SESSION_ID --dry-run` | [結果と再開](./agent-results-and-resume.md) |
+| OMA ドキュメントの検索や移行 | `oma docs migrate --dry-run` | [アーティファクト配置](./artifact-layout.md) |
 | 何かが失敗した | `oma doctor --json` | [トラブルシューティング](./troubleshooting.md) |
 
 ---
@@ -42,23 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. Layer 2 のリソースがオンデマンドでロードされます。
    - `execution-protocol.md`：4 ステップのワークフロー（Analyze、Plan、Implement、Verify）
    - `snippets.md`：フォームと Zod のバリデーションパターン。スキルが提供する場合は既存コンポーネントのパターンも含む
-4. エージェントが **CHARTER_CHECK** を出力します。
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
 <!-- oma-docs:ignore-start -->
-5. エージェントが実装します。
+4. エージェントが実装します。
    - TypeScript の React コンポーネント：`src/features/auth/components/login-form.tsx`
    - Zod のバリデーションスキーマ：`src/features/auth/utils/login-validation.ts`
    - Vitest テスト：`src/features/auth/utils/__tests__/login-validation.test.ts`
    - ローディングスケルトン：`src/features/auth/components/skeleton/login-form-skeleton.tsx`
 <!-- oma-docs:ignore-end -->
-6. エージェントがチェックリストを実行します。アクセシビリティ（ARIA ラベル、セマンティック HTML、キーボード操作）、モバイルビューポート、パフォーマンス（CLS なし）、エラーバウンダリを確認します。
+5. エージェントがチェックリストを実行します。アクセシビリティ（ARIA ラベル、セマンティック HTML、キーボード操作）、モバイルビューポート、パフォーマンス（CLS なし）、エラーバウンダリを確認します。
 
 **期待される結果：** プロジェクトが対応するチェックを実行できる場合、スコープを限定した TypeScript の React コンポーネント、バリデーション、テスト、アクセシビリティの根拠が得られます。実際に実行されるファイルとチェックは、プロンプトと選択したワークフローで決まります。
 
@@ -74,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **実行されること：**
 
 1. このリクエストはフロントエンド、バックエンド、モバイルにまたがります。その範囲から、ホストエージェントは調整方法を提案できます。
-2. キーワード検出フックが有効なら、「Build a TODO app」が設定済みの `/orchestrate` パターンに一致して起動する場合があります。フックは入力テキストを照合するだけで、リクエストをマルチドメインとは分類しません。使うワークフローを明示的なコマンドで選びます。
+2. キーワード検出フックはこの文からはワークフローを開始しません。起動するのは `orchestrate`、`ultrawork`、`work`、`ralph` のみで、プロンプトにモード名が含まれている場合だけです。リクエストをマルチドメインとして分類することもありません。使いたいワークフローを明示的なコマンドで選んでください。
 
 **`/work` を使う場合（ユーザーが段階ごとに制御）：**
 
@@ -145,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Step 6、類似パターンのスキャン：** MCP の `search_for_pattern` で、`undefined` の可能性がある配列に対する他の `.map()` 呼び出しを検索します。
    - `user-list.tsx`、`comment-list.tsx`、`notification-list.tsx` に似たパターンを 3 件見つける
    - 同じ修正パターンを先回りして適用する
-8. **Step 7、記録：** 根本原因、修正、予防策を含むバグレポートをメモリに書き込みます。
+8. **Step 7、記録：** 根本原因、修正、予防策を含むバグレポートを `.agents/results/bugs/` に書き込みます。
 
 ---
 
@@ -153,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **入力例：**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **実行されること：**
 
-1. 「design」「landing page」「dark」「premium」などのキーワードで `oma-design` が起動します。
-2. **Phase 1、SETUP：** `.design-context.md` を確認します。ない場合は次を質問します。
-   - サービスはどの言語に対応するか（英語のみ / CJK を追加）
-   - 対象ユーザー（B2B、技術ユーザー、25〜45 歳）
-   - ブランドの個性（プロフェッショナル / プレミアム）
-   - 美的方向性（ダークプレミアム）
-   - 参考サイト（ユーザーが例を提供）
-   - アクセシビリティ（WCAG AA）
-3. **Phase 3、ENHANCE：** プロンプトが曖昧なら、セクションごとの仕様へ変換します。
-4. **Phase 4、PROPOSE：** 3 つのデザイン方向を提示します。
-   - **方向 A「Midnight Observatory」**：深いネイビー（#0f1729）、シアンのアクセント（#22d3ee）、Inter + JetBrains Mono、ベントグリッド、スクロール連動の表示
-   - **方向 B「Carbon Interface」**：ニュートラルグレー（#18181b）、アンバーのアクセント（#f59e0b）、システムフォント、チェス盤レイアウト、ホバー連動のマイクロインタラクション
-   - **方向 C「Deep Space」**：純粋なダーク（#0a0a0a）、エメラルドのアクセント（#10b981）、Geist + Geist Mono、全面幅セクション、入場アニメーション
-5. **Phase 5、GENERATE：** 選択した方向に基づいて次を生成します。
-   - 6 セクションの `DESIGN.md`（タイポグラフィ、カラー、スペーシング、モーション、コンポーネント、アクセシビリティ）
-   - CSS カスタムプロパティ
-   - Tailwind 設定の拡張
-   - shadcn/ui のテーマ変数
-6. **Phase 6、AUDIT：** レスポンシブ（最小 320px）、WCAG 2.2、Nielsen ヒューリスティクス、AI スロップ検出を確認します。
-7. **Phase 7、HANDOFF：** 「デザインが完了しました。`oma-frontend` で実装するには `/orchestrate` を実行してください」と案内します。
+1. **スキルを読み込む：** ワークフローが `oma-design` スキルとその実行プロトコルを読み込みます。サプライヤー選定とプロジェクトのデザインコントラクトはスキルが担います。
+2. **スコープとコンテキストを確定する：** リクエストはデザインシステム文書として分類されます。既存の `DESIGN.md`、存在する場合は `.design-context.md`、ブランド資料、対応言語、対象 UI を読み込み、既存の UI ライブラリ、テーマファイル、トークンを探します。既存プロダクトの場合は、まず維持（Preserve）か刷新（Overhaul）かを確定します。結果に大きく影響し、かつリクエストとコードベースから分からない選択肢についてだけ質問します。このプロンプトにはすでに対応言語、対象ユーザー、アクセシビリティ目標が示されているため、追加の質問は行いません。
+3. **指針を選び参照を集める：** 作業に応じて外部デザインスキルを 1 つ選択します（ダッシュボードや SaaS プロダクト UI には Interface Design、その他の新規 Web アートディレクションには Taste、既存 UI の講評や仕上げには Impeccable）。指定されたベンダーシード、Stitch 操作、アセット指針、データグリッド規則はタスクで必要な場合のみ読み込みます。
+4. **方向性を決める：** 選んだ指針をプロジェクトの根拠に適用します。別案を提示するのは未決定の選択が結果に大きく影響する場合のみで、すでに選ばれている方向性はそのまま使います。どの方向性も、ブランド、韓国語向けの CJK フォント対応、既存の実装スタック、最小対応ビューポートからのレスポンシブ挙動、WCAG AA の範囲に収まります。
+5. **成果物を作成する：** セクション 9（Agent Prompt Guide）を含む全 9 セクションで `DESIGN.md` を新規作成または更新します。トークンはプロジェクト既存のトークン体系とテーマ形式へセマンティックロールを対応付け、並立する設定は増やしません。実装コードは書きません。
+6. **検証して引き継ぐ：** 該当するチェックリスト項目を確認し、検査した対象を明記します。描画済みの実装が必要なチェックは手順を明記したうえで未実行のままにします。レポートに成果物一覧、選択したルート、検証結果、残る制約を記載し、`oma-frontend`（Web）または `oma-mobile`（ネイティブ）へ実装を引き継ぎます。
 
 ---
 
@@ -271,18 +249,18 @@ oma stats get
 | `/work` | 永続 | 承認済み範囲で、段階的に計画、実装、QA を進める | 複数ドメインにまたがり、調整が必要な機能 |
 | `/ultrawork` | 永続 | 12 個の分離レビューを含む 5 フェーズ、17 ステップの品質ワークフロー | 最高品質のデリバリー、プロダクションに重要なコード |
 | `/plan` | 非永続 | PM 主導のタスク分解、API コントラクト、`docs/plans/work/` の追跡付きプラン成果物（連番 `NNN-name.md`、ライフサイクル用 Status フィールド） | 複雑なマルチエージェント作業の前、追跡が必要な複雑な機能 |
-| `/brainstorm` | 非永続 | 2〜3 のアプローチを提案するデザインファーストのアイデア出し | 実装方針を決める前 |
+| `/brainstorm` | 非永続 | 2〜3 のアプローチを比較検討し、`docs/decisions/` にドラフトを作成 | 実装方針を決める前 |
 | `/deepinit` | 非永続 | プロジェクト全体の初期化（AGENTS.md、ARCHITECTURE.md、docs/） | 既存のコードベースに oh-my-agent を設定するとき |
-| `/review` | 非永続 | QA パイプライン（OWASP セキュリティ、パフォーマンス、アクセシビリティ、コード品質） | マージ前、デプロイ前のレビュー |
-| `/security` | 非永続 | `oma-security` を通じて、アプリケーションのソース、エージェントスキル、MCP コンポーネントをスキャンし、テスト環境に対してスコープを限定した Web ペネトレーションテストを実行し、指摘を検証してセキュリティゲートを設定 | リリース前、またはセキュリティスキャンやゲートが必要な変更のとき |
+| `/review` | 非永続 | QA パイプライン（OWASP セキュリティ、パフォーマンス、アクセシビリティ、コード品質）。スコープはリクエストから取得し、指定がなければ現在の変更がデフォルト | マージ前、デプロイ前のレビュー |
+| `/security` | 非永続 | `oma-security` を通じて、アプリケーションのソース、エージェントスキル、MCP コンポーネントをスキャンし、指摘を検証してセキュリティゲートを設定。スコープを限定した Web テスト環境へのペネトレーションテストは、レビュー済みのユーザー提供ランタイムプラットフォームに対してのみ実行 | リリース前、またはセキュリティスキャンやゲートが必要な変更のとき |
 | `/debug` | 非永続 | 再現、診断、修正、回帰テスト、スキャンを行う構造化デバッグ | バグやエラーの調査 |
-| `/design` | 非永続 | トークン付きの DESIGN.md を作る 7 フェーズのデザインワークフロー | デザインシステム、ランディングページ、UI の再設計 |
+| `/design` | 非永続 | デザインタスクのスコープを定め、該当するデザイン指針を選び、`oma-design` を通じて指摘事項、`DESIGN.md`、リデザイン方針、またはデザイントークンを提供 | ビジュアルシステムの定義やレビュー、UI の再設計、デザイン監査 |
 | `/scm` | 非永続 | Git（ブランチ、マージ、競合、ワークツリー、ベースライン）と Conventional Commit 生成を自動的に型・スコープ検出して扱う | コード変更後、リポジトリ構成の管理 |
-| `/stack-set` | 非永続 | プロジェクトの技術スタックを自動検出し、バックエンドまたはモバイル（Swift / Flutter / RN）のリファレンスを生成 | 言語固有のコーディング規約を設定するとき |
+| `/stack-set` | 非永続 | プロジェクトの技術スタックを自動検出し、バックエンド、フロントエンド、またはモバイル（Swift / Kotlin / Flutter / RN）のリファレンスを生成 | 言語固有のコーディング規約を設定するとき |
 | `/architecture` | 非永続 | アーキテクチャの診断、比較、意思決定記録 | 境界をレビュー、アーキテクチャを選択するとき |
 | `/convert` | 非永続 | ドキュメント変換を適切なスキルへルーティング | HWP/HWPX または PDF の変換 |
 | `/docs` | 非永続 | ドキュメントの検証と、差分対象の同期提案 | コードベースに対してドキュメントを確認するとき |
-| `/explain` | 非永続 | オフライン HTML のコード変更解説を生成・検証 | 差分、PR、ブランチ、コミット範囲を説明するとき |
+| `/explain` | 非永続 | コード変更またはトピック向けのオフライン HTML 解説を生成し、`oma explain validate` で検証、`oma explain render --open` で開く | 差分、PR、ブランチ、コミット範囲の解説やトピックの説明 |
 | `/recap` | 非永続 | 対応する AI ツールの履歴を要約 | 日次または期間の振り返り |
 | `/schedule` | 非永続 | エージェントの定期ジョブを登録 | 夜間のリキャップ、スキャン、定期メンテナンス |
 | `/video` | 非永続 | スクリプト、ナレーション、映像から再現可能な動画を作成 | ショート、解説、デモ |
@@ -292,7 +270,7 @@ oma stats get
 
 ## 自動検出の例
 
-oh-my-agent は 11 言語のワークフローキーワードを検出します。自然言語の入力からワークフローが起動する例を示します。
+キーワードフックが起動するのは 4 つの永続モードのみで、プロンプトにモード名が含まれている場合だけです。他のワークフローはそれぞれのスラッシュコマンドから開始します。
 
 | 入力 | 検出されるワークフロー | 言語 |
 |------|------------------|------|
@@ -304,6 +282,8 @@ oh-my-agent は 11 言語のワークフローキーワードを検出します�
 | "work workflow로 진행해줘" | `/work` | Korean |
 | "ralph this task" | `/ralph` | English |
 | "랄프로 끝까지 해줘" | `/ralph` | Korean |
+
+「plan the authentication feature」「fix the login bug」「do everything in parallel」「don't stop until it's done」のような文では、ワークフローは開始しません。
 
 **情報を尋ねる入力は除外されます。**
 
@@ -323,22 +303,22 @@ oh-my-agent は 11 言語のワークフローキーワードを検出します�
 | スキル | 得意なこと | 主な出力 |
 |-------|---------|---------------|
 | **oma-academic-writing** | 学術的な執筆、改稿、アンチ AI レビュー | 出版向けの文章と主張/根拠の改稿 |
-| **oma-architecture** | システム境界、トレードオフ、ADR | アーキテクチャの推奨案または意思決定記録 |
+| **oma-architecture** | システム境界、トレードオフ、ADR | `.agents/results/architecture/` のレポート、`docs/decisions/` の意思決定記録 |
 | **oma-backend** | API、認証、サーバーロジック、マイグレーション | Router / Service / Repository の変更と検証 |
-| **oma-brainstorm** | 曖昧なアイデアとアプローチ比較 | `docs/plans/designs/` の設計ドキュメント |
-| **oma-coordination** | 手動のマルチエージェント調整 | 段階的なタスクとハンドオフの指針 |
+| **oma-brainstorm** | 曖昧なアイデアとアプローチ比較 | `docs/decisions/` の決定ドラフト |
+| **oma-coordination** | `/work`、`/orchestrate`、`/ultrawork` の共有調整ルール、手動の段階的調整 | 計画の再利用、契約の整合、ワークスペース所有権、QA ハンドオフの指針 |
 | **oma-db** | スキーマ設計、ERD、クエリ調整、容量計画 | スキーマ文書、マイグレーション、復旧計画 |
 | **oma-debug** | バグの再現と根本原因分析 | 最小修正、回帰の根拠、類似パターンスキャン |
-| **oma-security** | ソース、エージェントスキル、MCP のセキュリティスキャン、スコープを限定した Web ペネトレーションテスト | 検証済みの指摘とスキャンゲートの設定 |
-| **oma-design** | デザインシステム、ランディングページ、トークン | `DESIGN.md`、トークン、コンポーネント指針 |
+| **oma-security** | ソース、エージェントスキル、MCP のセキュリティスキャン。ペネトレーションテストはレビュー済みのユーザー提供ランタイムプラットフォームに対してのみ実施 | 検証済みの指摘とスキャンゲートの設定 |
+| **oma-design** | ビジュアルシステム、`DESIGN.md`、リデザイン方針、UI デザインレビュー | デザイン決定または指摘事項、システム変更時の `DESIGN.md`、実装への引き継ぎ |
 | **oma-dev-workflow** | CI/CD、モノレポ、マイグレーション、リリース自動化 | ワークフロー設定とリリースチェック |
 | **oma-docs** | 壊れた参照とドキュメントドリフト | 検証レポートまたは差分対象の同期候補 |
-| **oma-explanation** | 差分、PR、ブランチ、コミットの解説 | Background、Intuition、Code、Quiz を含むオフライン HTML 解説 |
+| **oma-explanation** | 差分、PR、ブランチ、コミットの解説やトピックの説明 | オフライン HTML 解説（変更の場合は Background、Intuition、Code、Quiz） |
 | **oma-frontend** | UI コンポーネント、フォーム、ページ、Angular / React のスタイリング | フロントエンドの変更と関連チェック |
 | **oma-hwp** | HWP / HWPX / HWPML の変換 | 見出し、表、画像、リンクを含む Markdown |
 | **oma-image** | 画像生成とビジュアルアセット | マニフェスト付きの再現可能な画像実行 |
 | **oma-market** | ペインポイント、トレンド、競合、発見調査 | フレームワーク付き LAW 準拠の調査ブリーフ |
-| **oma-mobile** | Flutter、React Native、Swift iOS の作業 | モバイル画面、状態、プラットフォーム統合、テスト |
+| **oma-mobile** | Flutter、React Native、Swift iOS、Kotlin Android の作業 | モバイル画面、状態、プラットフォーム統合、テスト |
 | **oma-observability** | トレース、メトリクス、ログ、プロファイル、SLO、インシデントフォレンジック | レイヤー化したオブザーバビリティの推奨または実装指針 |
 | **oma-orchestration** | 自動並列エージェント実行 | 調整済みプラン、メモリ更新、結果収集 |
 | **oma-pdf** | PDF 変換と OCR 対応の抽出 | 読み順、表、リスト、画像を保った Markdown |
@@ -348,7 +328,7 @@ oh-my-agent は 11 言語のワークフローキーワードを検出します�
 | **oma-refactor** | 挙動を保った再構成 | 特性テストと品質根拠を伴うリファクタリング変更 |
 | **oma-scholar** | 学術検索と論文サイドカー | 検証済み `.knows.yaml` サイドカーの操作 |
 | **oma-scm** | Git ブランチ、ワークツリー、ベースライン、コミット規約 | SCM プランまたは Conventional Commit の出力 |
-| **oma-search** | 信頼度付きのドキュメント、Web、コード、ローカル検索 | 信頼ラベル付きのルーティング済み検索結果 |
+| **oma-search** | 外部ドキュメント、Web ソース、リモートコード、既知 URL の読み取り | ルート、プロバイダー、根拠、制約を添えた出典付きソース |
 | **oma-skill-creation** | OMA スキルの作成と監査 | SSL-lite 形式のスキルファイルと `oma skill audit` の結果 |
 | **oma-slide** | HTML プレゼンテーションとエクスポート | 検証済みのバンドル HTML、PDF、PNG、PPTX |
 | **oma-tf-infra** | Terraform インフラ、IAM、Policy-as-Code | Terraform モジュール、プラン、統制 |
@@ -365,7 +345,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-どちらのコマンドも、カレントディレクトリ配下の `.agents/state/memories/` を監視します。別のプロジェクトを監視するには `--project-root <path>` を渡すか、`MEMORIES_DIR` を設定します。エージェントの表には 4 つの列があります。
+どちらのコマンドも、カレントディレクトリ配下の進捗用の `.agents/state/memories/` と、`result-*.md` レポート用の `.agents/results/` を監視します。別のプロジェクトを監視するには `--project-root <path>` を渡します。`MEMORIES_DIR` を設定すると、ダッシュボードはその単一のカスタムディレクトリだけを参照します。エージェントの表には 4 つの列があります。
 
 | 列 | ソース |
 |--------|--------|
@@ -406,7 +386,13 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 
 ### プロジェクトメモリストア
 
-エージェントは `.agents/state/memories/` の永続ファイル（古いプロジェクトでは `.serena/memories/` にフォールバック）で調整します。オーケストレーターは実行単位のセッションファイルとタスクボードを作成します。Markdown の進捗または結果出力が有効な場合、各実行は `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` と `result-{agentId}-{taskId}-{runId}-{sessionId}.md` を作成します。`.agents/state/agent-runs/` の構造化された実行記録と申告が CLI スポーンの正本です。エージェントはネイティブのファイルツールでこれらのファイルを読み書きし、ツールの対応付けは `.agents/mcp.json → memoryConfig.tools` で設定できます。
+エージェントは `.agents/state/memories/` の永続ファイル（古いプロジェクトでは `.serena/memories/` にフォールバック）で調整します。このディレクトリにはセッション概要、タスクボード、進捗、教訓、実験記録が保存されます。人間向けの `result-{agentId}-{taskId}-{runId}-{sessionId}.md` レポートは `.agents/results/` に置かれます。CLI スポーンでは `.agents/state/agent-runs/` の構造化された実行記録と申告が引き続き正本であり、凍結された実行プランは `.agents/state/agent-plans/` に残ります。エージェントはネイティブのファイルツールでこれらのファイルを読み書きし、ツールの対応付けは `.agents/mcp.json → memoryConfig.tools` で設定できます。
+
+### ドキュメントとレポート
+
+アプローチの提案や ADR には `docs/decisions/` を使い、`draft`、`accepted`、`superseded` などの `Status` フィールドを付けます。UI デザインは `DESIGN.md` に置きます。作業プランは `docs/plans/work/`、採用された API コントラクトは `docs/plans/contracts/` に置きます。
+
+実行レポートやコントラクトのドラフトは `.agents/results/` に置きます。ドキュメントが保守対象のリファレンスになった場合は、対応する `docs/` ディレクトリへ移動し、元の場所にリンクを残してください。完全な配置と移行コマンドは[アーティファクト配置](./artifact-layout.md)を参照してください。
 
 ### ワークスペース
 
@@ -443,7 +429,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | ダッシュボードに「No agents detected yet」と表示される | エージェントがまだメモリへ書き込んでいない、またはダッシュボードが別のディレクトリを監視している | 最初の進捗ファイルが作られるまで待つ。プロジェクトルートから実行するか、`--project-root <path>` を渡す |
 | `oma dashboard web` が「port 9847 is already in use」で終了する | 別のプロセスがポートを使用している | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA レポートに 50 件以上の問題がある | 大きなコードベースの初回レビューでは通常の結果 | まず CRITICAL と HIGH に集中し、MEDIUM / LOW は次のスプリントに記録 |
-| 自動検出が誤ったワークフローを起動する | キーワードが曖昧 | 自然言語ではなく明示的な `/command` を使い、誤検出を改善用に報告 |
+| 名前を挙げただけで永続モードが開始される | 質問やコードブロックの外で、プロンプトに `orchestrate`、`ultrawork`、`work mode`、または `ralph` の名前が含まれている | 「workflow done」と言って解除します。誤トリガーは改善のために報告してください |
 | 永続ワークフローを停止できない | 状態ファイルが残っている | チャットで「workflow done」と言うか、`.agents/state/` から状態ファイルを手動で削除 |
 | エージェントが HIGH の明確化で停止する | 要件が曖昧すぎる | エージェントが求めた具体的な回答を示し、再実行 |
 | MCP ツールが動かない | Serena が設定されていない、または起動していない | `oma doctor` を実行して MCP 設定を確認 |
@@ -459,6 +445,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 - エラーメッセージが出ているバグ：[バグ修正](./bug-fixing.md)
 - 実行を見守る：[ダッシュボード監視](./dashboard-monitoring.md)
 - エージェントの結果を監査または再開する：[結果と再開](./agent-results-and-resume.md)
+- OMA ドキュメントの検索や移行：[アーティファクト配置](./artifact-layout.md)
 - 何かが失敗した：[トラブルシューティング](./troubleshooting.md)
 - プロジェクト統合の詳細：[統合ガイド](./integration.md)
 - このガイドで使う用語：[用語集](../getting-started/glossary.md)

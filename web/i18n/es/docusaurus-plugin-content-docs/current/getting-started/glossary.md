@@ -80,7 +80,7 @@ La revisión entre contextos (cross-context review) es la regla según la cual c
 
 ### Charter {#charter}
 
-El charter es el bloque de preflight `CHARTER_CHECK` que los agentes de implementación escribían antes de cualquier código. Las definiciones de agentes actuales no exigen ninguna salida de preflight fija. En su lugar, los agentes siguen la política de ejecución compartida: declaran las suposiciones relevantes, preguntan solo cuando la información que falta cambia la corrección o el alcance, y pausan únicamente el trabajo que depende de la respuesta. Un subagente generado no puede preguntarte directamente, así que informa del dato que falta en un resultado `blocked` o `partial`. Consulta [Autorización y aclaración](../core-concepts/agents.md#charter-preflight-charter_check).
+Un charter es un bloque de preflight fijo (`CHARTER_CHECK`) que se escribe antes de cualquier código. oh-my-agent no exige ninguno: las definiciones de agentes no piden ninguna salida de preflight fija. Los agentes siguen la política de ejecución compartida: declaran las suposiciones relevantes, preguntan solo cuando la información que falta cambia la corrección o el alcance, y pausan únicamente el trabajo que depende de la respuesta. Un subagente generado no puede preguntarte directamente, así que informa del dato que falta en un resultado `blocked` o `partial`. Consulta [Autorización y aclaración](../core-concepts/agents.md#charter-preflight-charter_check).
 
 ### Registro de ejecución y declaración de resultados (claim) {#run-record-and-claim}
 

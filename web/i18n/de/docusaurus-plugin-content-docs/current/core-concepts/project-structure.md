@@ -68,8 +68,9 @@ your-project/
 │   │   │
 │   │   ├── oma-mobile/
 │   │   │   ├── SKILL.md
-│   │   │   ├── resources/              ← execution, tech stack, screen templates, checks
-│   │   │   └── stack/                  ← created by /stack-set (Flutter, React Native, or Swift)
+│   │   │   ├── resources/              ← execution, tech stack index, checks
+│   │   │   ├── variants/               ← platform references (Flutter, React Native, Swift, Kotlin): stack.yaml, tech-stack.md, snippets.md
+│   │   │   └── stack/                  ← created by /stack-set from the detected project
 │   │   │
 │   │   ├── oma-db/
 │   │   │   ├── SKILL.md
@@ -155,6 +156,7 @@ your-project/
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
 │   │   │       ├── anti-ai-patterns.md
+│   │   │       ├── style-skills.md
 │   │   │       └── lang/
 │   │   │           ├── _template.md
 │   │   │           ├── en.md
@@ -293,7 +295,7 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Ver
 
 - `SKILL.md`: Ebene 1, die beim Routing des Skills geladen wird; Identität, Routing und Kernregeln
 - `resources/`: Ebene 2, bedarfsgesteuert; Ausführungsprotokolle, Beispiele, Checklisten, Fehler-Playbooks, Tech-Stacks, Snippets und Vorlagen
-- Einige Skills haben zusätzliche Unterverzeichnisse: `stack/` (die bei der Installation gewählte Backend-Variante oder von `/stack-set` generierte Referenzen; das Quell-Repository hält die Seeds in `variants/`), `reference/` (bei `oma-design`) sowie skill-spezifische Skripte und Konfigurationen
+- Einige Skills haben zusätzliche Unterverzeichnisse: `stack/` (die bei der Installation gewählte Backend-Variante oder von `/stack-set` generierte Referenzen), `variants/` (die mitgelieferten Stack-Referenzen; ein ohne gewählte Variante installierter Skill behält sein `variants/`-Verzeichnis und liest die passende Variante) sowie skill-spezifische Skripte und Konfigurationen
 
 ### workflows/
 
@@ -319,7 +321,7 @@ Persistente Workflows sind `orchestrate.md`, `work.md`, `ultrawork.md` und `ralp
 
 ### plan-\{sessionId\}.json
 
-Wird vom Workflow `/plan` erzeugt. Die Datei enthält die strukturierte Aufgabenzerlegung mit Agentenzuweisungen, Prioritäten, Abhängigkeiten und Akzeptanzkriterien. `/orchestrate` und `/work` verwenden sie. Der zugehörige menschenlesbare Tracker liegt unter `docs/plans/work/{NNN}-{name}.md` und wird über das Feld `Status` verwaltet. Dauerhafte Design-Referenzen liegen daneben unter `docs/plans/designs/{NNN}-{name}.md`.
+Wird vom Workflow `/plan` erzeugt. Die Datei enthält die strukturierte Aufgabenzerlegung mit Agentenzuweisungen, Prioritäten, Abhängigkeiten und Akzeptanzkriterien. `/orchestrate` und `/work` verwenden sie. Der zugehörige menschenlesbare Tracker liegt unter `docs/plans/work/{NNN}-{name}.md` und wird über das Feld `Status` verwaltet. Über `/brainstorm` gewählte Ansätze und Entscheidungen liegen unter `docs/decisions/{NNN}-{name}.md`.
 
 ### state/
 

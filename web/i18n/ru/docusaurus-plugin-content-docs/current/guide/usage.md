@@ -9,7 +9,7 @@ description: "Руководство по OMA: выбор задачи с учё
 ## Быстрый старт
 
 1. Откройте проект в выбранной IDE или CLI с поддержкой AI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen или другом поддерживаемом host)
-2. Выбранный host загружает [навыки](../getting-started/glossary.md#skill) из `.agents/skills/`; включённые hooks могут обнаруживать [рабочие процессы](../getting-started/glossary.md#workflow) по ключевым словам естественного языка
+2. Выбранный host загружает [навыки](../getting-started/glossary.md#skill) из `.agents/skills/`; включённые hooks добавляют подсказки навыков по ключевым словам естественного языка и запускают [рабочий процесс](../getting-started/glossary.md#workflow) только по его slash-команде либо, для четырёх постоянных режимов, по его имени
 3. Опишите желаемый результат естественным языком. Host или выбранный workflow направит задачу в подходящий skill
 4. Для работы нескольких агентов используйте `/work` или `/orchestrate`
 
@@ -24,6 +24,7 @@ description: "Руководство по OMA: выбор задачи с учё
 | Баг с сообщением об ошибке | `/debug` вместе с ошибкой и шагами воспроизведения | [Исправление ошибок](./bug-fixing.md) |
 | Наблюдение за агентами во время работы | `oma dashboard terminal` | [Мониторинг через дашборд](./dashboard-monitoring.md) |
 | Аудит или возобновление результатов агентов | `oma agent resume SESSION_ID --dry-run` | [Результаты и возобновление](./agent-results-and-resume.md) |
+| Поиск или перенос документов OMA | `oma docs migrate --dry-run` | [Структура артефактов](./artifact-layout.md) |
 | Что-то сломалось | `oma doctor --json` | [Устранение неполадок](./troubleshooting.md) |
 
 ---
@@ -42,23 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. Ресурсы Слоя 2 загружаются по требованию:
    - `execution-protocol.md`: 4-шаговый workflow (Analyze, Plan, Implement, Verify)
    - `snippets.md`: паттерны формы и валидации Zod, а также существующие component patterns, если skill их предоставляет
-4. Агент выводит **CHARTER_CHECK**:
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
 <!-- oma-docs:ignore-start -->
-5. Агент реализует:
+4. Агент реализует:
    - React component с TypeScript в `src/features/auth/components/login-form.tsx`
    - Zod validation schema в `src/features/auth/utils/login-validation.ts`
    - Vitest tests в `src/features/auth/utils/__tests__/login-validation.test.ts`
    - Loading skeleton в `src/features/auth/components/skeleton/login-form-skeleton.tsx`
 <!-- oma-docs:ignore-end -->
-6. Агент запускает checklist: accessibility (ARIA labels, semantic HTML, keyboard nav), mobile viewport, performance (no CLS), error boundaries
+5. Агент запускает checklist: accessibility (ARIA labels, semantic HTML, keyboard nav), mobile viewport, performance (no CLS), error boundaries
 
 **Ожидаемый результат:** scoped React component с TypeScript, валидацией, тестами и evidence доступности, если проект поддерживает такие проверки. Prompt и выбранный workflow определяют, какие файлы и проверки действительно выполняются.
 
@@ -74,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **Что происходит:**
 
 1. Запрос охватывает frontend, backend и mobile. Host agent может использовать этот scope, чтобы предложить способ координации.
-2. При включённом keyword-detection hook фраза "Build a TODO app" совпадает с настроенным `/orchestrate` pattern и может активировать его. Hook сопоставляет текст, но не классифицирует запрос как multi-domain. Используйте явную command, чтобы выбрать workflow.
+2. Keyword-detection hook не запускает workflow по этому предложению: он активирует только `orchestrate`, `ultrawork`, `work` или `ralph`, и только когда промпт называет режим. Он не классифицирует запрос как multi-domain. Используйте явную command, чтобы выбрать нужный workflow.
 
 **Использование `/work` (пошагово, под контролем пользователя):**
 
@@ -153,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **Вы вводите:**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **Что происходит:**
 
-1. `oma-design` активируется (keywords: "design", "landing page", "dark", "premium")
-2. **Phase 1, SETUP:** проверяет `.design-context.md`. Если файла нет, спрашивает:
-   - Какие языки поддерживает сервис? (только en / + CJK)
-   - Целевая аудитория? (B2B, technical users, 25-45)
-   - Характер бренда? (professional / premium)
-   - Эстетическое направление? (dark premium)
-   - Reference sites? (пользователь приводит примеры)
-   - Accessibility? (WCAG AA)
-3. **Phase 3, ENHANCE:** если prompt расплывчат, преобразует его в спецификацию по разделам
-4. **Phase 4, PROPOSE:** представляет 3 направления дизайна:
-   - **Направление A: "Midnight Observatory"**: глубокий navy (#0f1729), бирюзовые акценты (#22d3ee), Inter + JetBrains Mono, bento-сетка, раскрытие элементов при прокрутке
-   - **Направление B: "Carbon Interface"**: нейтральный серый (#18181b), янтарные акценты (#f59e0b), системные шрифты, шахматная раскладка, микроинтеракции при наведении
-   - **Направление C: "Deep Space"**: чистый тёмный фон (#0a0a0a), изумрудные акценты (#10b981), Geist + Geist Mono, полноширинные секции, входные анимации
-5. **Phase 5, GENERATE:** по выбранному направлению создаёт:
-   - `DESIGN.md` с 6 разделами (typography, color, spacing, motion, components, accessibility)
-   - CSS custom properties
-   - Tailwind config extensions
-   - shadcn/ui theme variables
-6. **Phase 6, AUDIT:** запускает проверки responsive (минимум 320px), WCAG 2.2, Nielsen heuristics и AI slop detection
-7. **Phase 7, HANDOFF:** "Design complete. Run `/orchestrate` to implement with oma-frontend."
+1. **Загрузить навык:** workflow читает навык `oma-design` и его execution protocol. За выбор поставщика и дизайн-контракт проекта отвечает навык.
+2. **Установить рамки и контекст:** запрос классифицируется как документ дизайн-системы. Workflow читает существующий `DESIGN.md`, `.design-context.md` (если он есть), материалы бренда, поддерживаемые языки и затронутый UI, а также ищет существующие UI-библиотеки, файлы тем и tokens. Для существующего продукта сначала определяется Preserve или Overhaul. Workflow спрашивает только о выборе, который существенно меняет результат и на который не отвечают запрос и codebase; этот промпт уже задаёт языки, аудиторию и целевой уровень accessibility, поэтому опрос не запускается.
+3. **Выбрать рекомендации и собрать референсы:** для операции выбирается один внешний дизайн-навык: Interface Design для dashboard или UI SaaS-продукта, Taste для другого нового web art direction, Impeccable для критики или полировки существующего UI. Запрошенная отправная точка вендора, операция Stitch, рекомендации по assets или правила для data-grid загружаются только тогда, когда этого требует задача.
+4. **Определить направление:** выбранные рекомендации применяются к доказательствам из проекта. Альтернативные направления представляются, только когда нерешённый выбор существенно влияет на результат; уже выбранное вами направление используется повторно. Каждое направление остаётся в рамках бренда, покрытия шрифтами CJK для корейского языка, существующего стека реализации, адаптивного поведения начиная с наименьшего поддерживаемого вьюпорта и WCAG AA.
+5. **Создать артефакт:** `DESIGN.md` создаётся или обновляется со всеми девятью разделами, включая раздел 9 (Agent Prompt Guide). Tokens сопоставляют семантические роли с существующей системой токенов и форматом тем проекта; параллельная конфигурация не вводится. Код реализации не пишется.
+6. **Проверить и передать:** проверяются применимые пункты чек-листа и называется всё, что было проверено. Проверки, которым нужна отрендеренная реализация, описываются, но не запускаются. Отчёт перечисляет выданные артефакты, выбранный маршрут, результаты верификации и оставшиеся ограничения, после чего передаёт реализацию `oma-frontend` (веб) или `oma-mobile` (нативные приложения).
 
 ---
 
@@ -273,16 +251,16 @@ oma stats get
 | `/plan` | Non-persistent | PM task breakdown, API contracts и tracked plan artifacts в `docs/plans/work/` (последовательные `NNN-name.md`, поле Status для lifecycle) | Перед сложной multi-agent работой и feature с журналом решений |
 | `/brainstorm` | Non-persistent | Design-first ideation с 2–3 предложениями подходов | Перед выбором подхода реализации |
 | `/deepinit` | Non-persistent | Инициализация проекта (AGENTS.md, ARCHITECTURE.md, docs/) | Настройка oh-my-agent в существующей кодовой базе |
-| `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality | Перед merge кода и pre-deployment review |
-| `/security` | Non-persistent | Сканирует исходный код приложений, навыки агентов или MCP-компоненты; выполняет ограниченные веб-тесты на проникновение против тестового развёртывания; проверяет findings и настраивает security gates через `oma-security` | Перед релизом или когда изменению нужен security scan или gate |
+| `/review` | Non-persistent | QA pipeline: OWASP security, performance, accessibility, code quality. Scope берётся из запроса и по умолчанию равен текущим изменениям | Перед merge кода и pre-deployment review |
+| `/security` | Non-persistent | Сканирует исходный код приложений, навыки агентов или MCP-компоненты, проверяет findings и настраивает security gates через `oma-security`. Тесты на проникновение для ограниченного по scope тестового веб-развёртывания запускаются только против проверенной runtime-платформы, предоставленной пользователем | Перед релизом или когда изменению нужен security scan или gate |
 | `/debug` | Non-persistent | Structured debugging: reproduce, diagnose, fix, regression test, scan | Исследование bugs и errors |
-| `/design` | Non-persistent | 7-фазный design workflow с DESIGN.md и tokens | Создание design systems, landing pages и UI redesign |
+| `/design` | Non-persistent | Определяет рамки дизайн-задачи, выбирает применимые дизайн-рекомендации и выдаёт находки, `DESIGN.md`, направление редизайна или дизайн-токены через `oma-design` | Определение или ревью визуальной системы, UI-редизайн, дизайн-аудит |
 | `/scm` | Non-persistent | SCM workflow для Git (branch/merge/conflict/worktree/baseline) и Conventional Commit с автоопределением type/scope и splitting features | После code changes или при задачах repository configuration management |
-| `/stack-set` | Non-persistent | Автоопределение tech stack и генерация backend или mobile (Swift/Flutter/RN) references | Настройка language-specific coding conventions |
+| `/stack-set` | Non-persistent | Автоопределение tech stack и генерация backend, frontend или mobile (Swift/Kotlin/Flutter/RN) references | Настройка language-specific coding conventions |
 | `/architecture` | Non-persistent | Диагностика архитектуры, сравнение вариантов и decision records | Ревью границ или выбор архитектуры |
 | `/convert` | Non-persistent | Направляет conversion документа в нужный skill | Конвертация HWP/HWPX или PDF |
 | `/docs` | Non-persistent | Проверка документации и diff-targeted sync proposals | Сверка docs с текущей кодовой базой |
-| `/explain` | Non-persistent | Генерирует и проверяет автономный HTML code-change explainer | Объяснение diff, PR, ветки или диапазона коммитов |
+| `/explain` | Non-persistent | Генерирует автономный HTML-объяснитель для изменения кода или темы, проверяет его через `oma explain validate` и открывает через `oma explain render --open` | Объяснение diff, PR, ветки, диапазона коммитов или темы |
 | `/recap` | Non-persistent | Суммирует работу по истории поддерживаемых AI tools | Daily или period retrospectives |
 | `/schedule` | Non-persistent | Регистрирует recurring agent jobs | Nightly recap, scans или housekeeping |
 | `/video` | Non-persistent | Создаёт воспроизводимое видео из script, narration и visuals | Shorts, explainers и demos |
@@ -326,19 +304,19 @@ Preset installer `all` следует актуальному registry. Табл�
 | **oma-architecture** | System boundaries, tradeoffs, ADRs | Architecture recommendation или decision record |
 | **oma-backend** | APIs, auth, server logic, migrations | Router/service/repository changes и verification |
 | **oma-brainstorm** | Неоднозначные идеи и сравнение подходов | Design document в `docs/plans/designs/` |
-| **oma-coordination** | Ручная координация нескольких агентов | Пошаговые task и handoff guidance |
+| **oma-coordination** | Общие правила координации для `/work`, `/orchestrate` и `/ultrawork`; ручная пошаговая координация | Переиспользование планов, согласование контрактов, владение workspace и handoff в QA |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations и recovery plan |
 | **oma-debug** | Bug reproduction и root cause analysis | Minimal fix, regression evidence и pattern scan |
-| **oma-security** | Security scanning исходного кода, agent skills и MCP; ограниченные web penetration tests | Проверенные findings и конфигурация scan gates |
-| **oma-design** | Design systems, landing pages, tokens | `DESIGN.md`, tokens и component guidance |
+| **oma-security** | Security scanning исходного кода, agent skills и MCP; тесты на проникновение только на предоставленной и проверенной пользователем runtime-платформе | Проверенные findings и конфигурация scan gates |
+| **oma-design** | Визуальные системы, `DESIGN.md`, направление редизайна, ревью UI-дизайна | Дизайн-решение или находки, `DESIGN.md` при изменении системы и передача в реализацию |
 | **oma-dev-workflow** | CI/CD, monorepos, migrations, release automation | Workflow configuration и release checks |
 | **oma-docs** | Broken references и documentation drift | Verify report или diff-targeted sync candidates |
-| **oma-explanation** | Diff, PR, branch или commit walkthroughs | Offline HTML explainer с Background, Intuition, Code и Quiz |
+| **oma-explanation** | Diff, PR, branch или commit walkthroughs; объяснение тем | Offline HTML explainer (Background, Intuition, Code и Quiz для изменения) |
 | **oma-frontend** | UI components, forms, pages, Angular или React styling | Frontend changes и relevant checks |
 | **oma-hwp** | HWP/HWPX/HWPML conversion | Markdown с headings, tables, images и links |
 | **oma-image** | Image generation и visual assets | Reproducible image run с manifest |
 | **oma-market** | Pain points, trends, competitor и discovery research | LAW-compliant research brief с frameworks |
-| **oma-mobile** | Flutter, React Native и Swift iOS работа | Mobile screens, state, platform integration и tests |
+| **oma-mobile** | Flutter, React Native, Swift iOS и Kotlin Android работа | Mobile screens, state, platform integration и tests |
 | **oma-observability** | Traces, metrics, logs, profiles, SLOs, incident forensics | Layered observability recommendation или implementation guidance |
 | **oma-orchestration** | Automated parallel agent execution | Coordinated plans, memory updates и result collection |
 | **oma-pdf** | PDF conversion и OCR-aware extraction | Markdown с reading order, tables, lists и images |
@@ -348,7 +326,7 @@ Preset installer `all` следует актуальному registry. Табл�
 | **oma-refactor** | Behavior-preserving restructuring | Refactor changes с characterization и quality evidence |
 | **oma-scholar** | Scholarly search и paper sidecars | Validated `.knows.yaml` sidecar operations |
 | **oma-scm** | Git branching, worktrees, baselines и commit hygiene | SCM plan или Conventional Commit output |
-| **oma-search** | Trust-scored docs, web, code и local search | Routed search results с trust labels |
+| **oma-search** | Внешняя документация, веб-источники, удалённый код и чтение известных URL | Цитируемые источники с маршрутом, провайдером, доказательствами и ограничениями |
 | **oma-skill-creation** | Создание и аудит OMA skills | SSL-lite skill files и `oma skill audit` results |
 | **oma-slide** | HTML presentation decks и exports | Validated bundled HTML, PDF, PNG или PPTX |
 | **oma-tf-infra** | Terraform infrastructure, IAM и policy-as-code | Terraform modules, plans и controls |
@@ -404,7 +382,13 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 
 ### Хранилище памяти проекта
 
-Агенты координируются через durable files в `.agents/state/memories/` (старые проекты используют legacy `.serena/memories/`). Orchestrator записывает run-scoped session и task-board files. Каждый запуск пишет `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` и `result-{agentId}-{taskId}-{runId}-{sessionId}.md`, когда включён Markdown progress или result output; structured receipts и claims в `.agents/state/agent-runs/` являются authoritative для CLI spawns. Агенты читают и записывают файлы нативными tools; mapping инструментов остаётся configurable в `.agents/mcp.json → memoryConfig.tools`.
+Агенты координируются через durable files в `.agents/state/memories/` (старые проекты используют legacy `.serena/memories/`). В этом каталоге хранятся сводки сессий, доски задач, прогресс, уроки и записи экспериментов. Человекочитаемые отчёты `result-{agentId}-{taskId}-{runId}-{sessionId}.md` помещаются в `.agents/results/`. Structured receipts и claims в `.agents/state/agent-runs/` остаются authoritative для CLI spawns, а замороженные планы выполнения хранятся в `.agents/state/agent-plans/`. Агенты читают и записывают эти файлы нативными file tools; mapping инструментов остаётся configurable в `.agents/mcp.json → memoryConfig.tools`.
+
+### Документы и отчёты
+
+Используйте `docs/decisions/` для предложений подходов и ADR с полем `Status`, таким как `draft`, `accepted` или `superseded`. Дизайн UI относится к `DESIGN.md`. Планы работы хранятся в `docs/plans/work/`, а принятые API contracts — в `docs/plans/contracts/`.
+
+Отчёты выполнения и черновики контрактов хранятся в `.agents/results/`. Когда документ становится поддерживаемым справочником проекта, перенесите его в соответствующий каталог `docs/` и оставьте ссылку на прежнем месте. Полную схему и команды миграции см. в [Структуре артефактов](./artifact-layout.md).
 
 ### Рабочие пространства
 
@@ -450,7 +434,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | Dashboard показывает "No agents detected yet" | Агенты ещё не записали память, или dashboard наблюдает за другим каталогом | Дождитесь первого progress-файла; запускайте из корня проекта или передайте `--project-root <path>` |
 | `oma dashboard web` завершается с "port 9847 is already in use" | Порт занят другим процессом | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA report содержит 50+ issues | Для первого review большой codebase это нормально | Сначала разберите CRITICAL и HIGH; MEDIUM/LOW задокументируйте для будущих sprint |
-| Автодетекция запускает неправильный workflow | Неоднозначность keywords | Используйте явный `/command`, а не естественный язык. Сообщите о false trigger для улучшения |
+| Постоянный режим запускается, когда вы лишь упомянули его имя | Промпт называет `orchestrate`, `ultrawork`, `work mode` или `ralph` вне вопроса и code block | Скажите «workflow done», чтобы его выключить. Сообщите о false triggers для улучшения. |
 | Persistent workflow не останавливается | Файл state всё ещё существует | Скажите в чате "workflow done" или вручную удалите state file из `.agents/state/` |
 | Агент остановился на HIGH clarification | Требования слишком неоднозначны | Дайте запрошенные агентом ответы и запустите снова |
 | MCP tools не работают | Serena не настроена или не запущена | Выполните `oma doctor` для проверки MCP config |
@@ -466,6 +450,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 - Баг с сообщением об ошибке: [Исправление ошибок](./bug-fixing.md)
 - Наблюдение за запуском: [Мониторинг через дашборд](./dashboard-monitoring.md)
 - Аудит или возобновление результатов агентов: [Результаты и возобновление](./agent-results-and-resume.md)
+- Поиск или перенос документов OMA: [Структура артефактов](./artifact-layout.md)
 - Что-то сломалось: [Устранение неполадок](./troubleshooting.md)
 - Подробности интеграции проекта: [руководство интеграции](./integration.md)
 - Термины из этих руководств: [Глоссарий](../getting-started/glossary.md)

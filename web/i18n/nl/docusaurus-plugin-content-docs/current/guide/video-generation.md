@@ -64,7 +64,8 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
 oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
@@ -87,9 +88,9 @@ Andere tools die `oma video generate --output json` als shell-opdracht aanroepen
 
 ---
 
-## Beheerde HyperFrames-toolchain; jij schrijft de compositie {#always-latest-hyperframes-you-author-the-composition}
+## Beheerde HyperFrames-toolchain en het schrijven van composities {#always-latest-hyperframes-you-author-the-composition}
 
-oh-my-agent levert **geen HyperFrames-compositiecode** mee. Elke run krijgt een eigen project op `<runDir>/hyperframes/`, dat door `oma video compose` wordt gescaffold op de nieuwste npm-HyperFrames (toolchain-cache `~/.cache/oma-video/hyperframes/<version>/`, gedeeld via een `node_modules`-symlink), met [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) op HEAD (`~/.cache/oma-video/hyperframes-skills/`). De agent schrijft de bron van de gegenereerde compositie volgens de `AUTHORING.md` van de scaffold, de skills en de modespecificatie in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
+oh-my-agent levert **geen HyperFrames-compositiecode** mee. Elke run krijgt een eigen project op `<runDir>/hyperframes/`, dat door `oma video compose` wordt gescaffold op de nieuwste npm-HyperFrames (toolchain-cache `~/.cache/oma-video/hyperframes/<version>/`, gedeeld via een `node_modules`-symlink) en de [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)-skills `hyperframes` en `hyperframes-cli`, geïnstalleerd via de [skills CLI](https://github.com/vercel-labs/skills). De agent schrijft de bron van de gegenereerde compositie volgens de `AUTHORING.md` van de scaffold, de skills en de modespecificatie in `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -98,14 +99,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- Controles op de nieuwste versie (npm + GitHub) worden gethrottled door `video.hyperframes.check_interval_min` (standaard 60; `0` = bij elke compose). `oma update` respecteert het interval; `oma video doctor --upgrade` forceert een controle; offline-runs gebruiken de gecachte toolchain en melden `stale`.
+- Controles op de nieuwste versie (npm) worden gethrottled door `video.hyperframes.check_interval_min` (standaard 60; `0` = bij elke compose). `oma update` respecteert het interval; `oma video doctor --upgrade` forceert een controle; offline-runs gebruiken de gecachte toolchain en melden `stale`.
+- Skills: `oma video doctor --install` installeert ontbrekende skills (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` werkt ook al geïnstalleerde skills bij; `oma update` werkt alleen skills bij die al geïnstalleerd zijn. Zonder skills linkt `AUTHORING.md` in plaats daarvan naar de upstream-documentatie. De oude kopie in `~/.cache/oma-video/hyperframes-skills/` wordt niet meer gelezen en kan worden verwijderd.
 - Reproduceerbaarheid zit in de runmap: `render-spec.json`, de geschreven compositiebron en de toolchainversie in de gegenereerde HyperFrames-package metadata. Opnieuw renderen van dezelfde run hergebruikt dat rendercontract; een nieuwe run controleert de nieuwste HyperFrames.
 - Een lint- of renderfout wordt **niet** verborgen achter een placeholder (die bestaat alleen voor `OMA_VIDEO_MOCK=1`): `oma video render` eindigt met exitcode 1 en diagnostics, en de agent herstelt de compositie met de nieuwste skills. Breuk op een nieuwe HyperFrames-release is een compositiefout en nooit een reden om te pinnen.
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---
@@ -128,14 +130,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | Taal-tag voor vertelling/captions. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (key-vrije uitlijning). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. Selecteert de providervolgorde voor visuals; zie [Visualketen](#visual-chain). |
 | `--voice <profile>` | Stem voor vertelling, of `none` (de standaard; laat je deze weg, dan rendert de video zonder geluid met geschatte captiontiming). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` of `none`. |
 | `--compositor <c>` | `hyperframes` (standaard) \| `mpt`. |
 | `--capture <path>` | Je opname voor demomodus: `.mp4`, `.mov`, `.webm` of `.mkv`, opgeslagen binnen het project. |
 | `--source <k>` | Capturebron voor demo's: `file` of `web` (standaard: `file`). |
 | `--url <url>` | Context-URL voor `--source web`, gemaskeerd opgeslagen in `manifest.json`. Verplicht bij `--source web`; start nooit een capture en vervangt `--capture` niet. |
-| `--polish` | Legt de HyperFrames-compositie over opgenomen beeld heen. |
+| `--polish` | Demomodus: gebruik de opname als achtergrond van de HyperFrames `Demo`-compositie, waarin persoonsgegevens worden gemaskeerd. Zonder deze vlag wordt de ruwe, ongemaskeerde opname naar de uitvoer-MP4 gekopieerd en draait er geen compositie. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | Geaccepteerd maar niet gebruikt: oma bestuurt geen browser en neemt het scherm niet op. |
 | `--output-dir <path>` | Basismap voor uitvoer. Paden buiten `$PWD` vereisen `--allow-external-output`. |
 | `--allow-external-output` | Staat uitvoerpaden buiten `$PWD` toe. |
@@ -159,14 +161,33 @@ Providerfasen lossen op naar een **echte branch** en, waar de fase dat ondersteu
 |------------|-------------|----------|
 | script | door de agent geschreven `script.json`, doorgegeven met `--script <path>` (de `/video`-workflow schrijft die) | deterministisch skelet van drie scènes uit de tekst van de briefing |
 | voice | `oma-voice` (Voicebox of VoiceStudio, lokaal; gekozen via `voice.backend`) met `--voice <profile>` | stille video met geschatte timing (`--voice none`, de standaard) |
-| visual | `oma-image`, `oma-slide`, Pexels-stockclips wanneer `PEXELS_API_KEY` is ingesteld | placeholder-asset |
-| visual: `aigc` | nog niet aangesloten; `RUNNINGHUB_API_KEY` schakelt de provider in, die nog steeds placeholders schrijft | placeholder-asset |
+| visual | standaard `oma-image`-stills; een `oma-slide`-frame voor een scène waarvan `visual.ref` een bestaande deckmap is; Pexels-stockclips met `--visual stock` wanneer `PEXELS_API_KEY` is ingesteld | placeholder-asset |
+| visual: `aigc` | gekozen met `--visual aigc` wanneer `RUNNINGHUB_API_KEY` is ingesteld; de live call is nog niet aangesloten, dus de provider schrijft nog steeds placeholders | placeholder-asset |
 | caption | `.srt` en `.vtt`, uitgelijnd op `timing.json`, in de taal van het script | hetzelfde; vertaling naar `--locale` is nog niet aangesloten |
 | music | Strudel-achtergrondmuziek na `oma video doctor --install-strudel` | geen muziektrack |
 | capture | een opname die je aanlevert met `--capture <file>` | geen: zonder `--capture` print de demomodus opname-instructies en sluit af met exitcode 3 |
 | compositor | HyperFrames (beheerd) of MoneyPrinterTurbo | geen compositor-fallback; de run faalt met diagnostics |
 
-Er is geen credential-automatisering: jij voert elke login op het scherm uit tijdens het opnemen; URL's en querytokens worden gemaskeerd in logs en het manifest.
+### Visualketen {#visual-chain}
+
+`--visual` en de modus kiezen de providervolgorde die per scène wordt doorlopen:
+
+| `--visual` | Modus | Volgorde |
+|------------|-------|----------|
+| `auto` (standaard) | `shorts`, `demo` | `providers.visual.order` (standaard `oma-image`, `pexels`, `pixelle`) |
+| `auto` (standaard) | `explainer` | `oma-slide`, `oma-image`, daarna `providers.visual.order` |
+| `generate` | elke | `oma-image` |
+| `slide` | elke | `oma-slide`, `oma-image` |
+| `stock` | elke | `pexels`, `oma-image` |
+| `aigc` | elke | `pixelle`, `oma-image` |
+
+- De keten gaat alleen verder voorbij een provider die niet beschikbaar is of een fout gooit. `oma-image` en `oma-slide` zijn altijd beschikbaar en schrijven een placeholder in plaats van een fout te gooien, waardoor niets na hen wordt bereikt. Met de standaardvolgorde neemt `oma-image` daarom elke scène voor zijn rekening: Pexels vereist `--visual stock` plus `PEXELS_API_KEY`, en Pixelle vereist `--visual aigc` plus `RUNNINGHUB_API_KEY`.
+- `oma-slide` exporteert alleen een frame voor een scène waarvan `visual.ref` in `script.json` het pad van een bestaande deckmap is; het genereert geen deck. Het eerste geëxporteerde frame wordt de scène-visual, dus geef elke slidescène zijn eigen deck van één slide. Elke andere scène die het verwerkt krijgt een placeholder, waaronder elke explainerscène zonder deck onder `--visual auto`. Bouw eerst de decks met `oma-slide`, of geef `--visual generate` mee voor `oma-image`-stills.
+- Een placeholder wordt in `warnings` vastgelegd als fallbackpad voor die scène.
+
+### Demo-opname en maskering {#demo-capture-and-masking}
+
+Jij voert elke login op het scherm uit tijdens het opnemen; oma automatiseert geen credentials en URL's en querytokens worden gemaskeerd in logs en het manifest. Persoonsgegevens in de beelden worden alleen in de `--polish`-compositie gemaskeerd. Een demorun zonder `--polish` kopieert de ruwe opname naar de uitvoer-MP4; lever dat bestand pas aan nadat je de beelden hebt gecontroleerd en niets te maskeren hebt gevonden, of voer anders opnieuw uit met `--polish`.
 
 Captions worden weergegeven als **statische cues met vensters** — de ene captionregel die in het huidige frame actief is, met CSS-wrapping en zonder animatie per woord.
 

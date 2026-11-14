@@ -168,8 +168,10 @@ oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .pat
 ### install
 
 ```text
-oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
+oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
+
+`--preset`은 10개의 [이름이 지정된 스킬 프리셋](../getting-started/installation.md#presets) 중 하나를 선택하며 대화형 스킬 프롬프트와 비대화형 `all` 기본값을 덮어씁니다. 알 수 없는 이름, 빈 값, `custom`은 설치 전에 실패하며 개별 선택은 대화형 Custom 메뉴를 사용합니다. 프리셋은 런타임의 공유 파일, 워크플로우/에이전트 정의, 훅, 프로바이더, 유지된 스킬을 보존하면서 스킬을 선택합니다. 단일 스킬 지침을 일시적으로 로드하는 방법은 [설정 방식 선택](../getting-started/choose-setup.md)을 참조하세요.
 
 대화형 설치기는 선택한 프로바이더 설정을 `.agents/oma-config.yaml`에 기록합니다. `.agents/oma-config.cue`가 있으면 그 파일이 우선하므로, CUE 설정에 아직 없는 선택은 gitignore 대상인 로컬 오버레이 `.agents/oma-config.local.yaml`에 기록됩니다. 브라우저 DevTools 선택과 `oma memory keys`의 vault 참조도 같은 규칙을 따르며, CLI 벤더 선택과 `oma model propose --write`는 `oma-config.yaml`이 없을 때 같은 규칙을 따릅니다. 프로바이더 플래그는 web-search, code-intelligence, semantic-memory 통합을 선택하며 `--honcho-url`과 `--honcho-workspace`는 해당 프로바이더를 선택했을 때 Honcho 메모리 서비스를 설정합니다. 설치 과정에서 확인을 요청하면 루트 `-y, --yes` 플래그가 적용됩니다.
 

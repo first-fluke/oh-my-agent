@@ -88,10 +88,10 @@ Je hebt twee uitvoeringspaden:
 
 1. Laadt `.agents/results/plan-{sessionId}.json`, en maakt inline een plan via `/plan` wanneer er geen bruikbaar planbestand is.
 2. Initialiseert een sessie met een ID in de vorm `session-YYYYMMDD-HHMMSS`.
-3. Maakt `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` in de memorydirectory.
-4. Start agenten per prioriteitstier; elke agent ontvangt de taakomschrijving, API-contracten en context.
-5. Monitort de voortgang door bestanden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` te pollen.
-6. Verifieert elke voltooide agent via `verify.sh`. PASS (exit 0) accepteert het resultaat; FAIL (exit 1) start opnieuw met foutcontext (maximaal 2 retries). Aanhoudende mislukking activeert de Exploration Loop.
+3. Selecteert de skillreferenties die elke taak nodig heeft en maakt `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` in de memorydirectory. De geselecteerde referenties worden daar als coördinatornotities vastgelegd; de launcher dwingt ze niet af.
+4. Start agenten per prioriteitstier; elke agent ontvangt de taakomschrijving, API-contracten, context en zijn geselecteerde referenties.
+5. Monitort de voortgang via voltooiingsmeldingen van de host, of door gewijzigde bestanden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` met begrensde backoff te pollen.
+6. Verifieert elke voltooide agent: een mechanische self-check, daarna `verify.sh` voor backend-, frontend-, mobile-, qa-, debug- en pm-agenten (andere types leggen `SKIP` vast), gevolgd door een QA-cross-review. PASS (exit 0) gaat verder; FAIL (exit 1) start opnieuw met foutcontext binnen het gedeelde herstelbudget (standaard 3 pogingen per taak, inclusief de oorspronkelijke). Retries en exploratiehypotheses putten uit hetzelfde budget; zodra dat op is, wordt de taak als `partial` of `failed` gerapporteerd.
 7. Verzamelt alle bestanden `result-{agentId}-{taskId}-{runId}-{sessionId}.md` en stelt een eindrapport samen.
 
 ### Stap 3: agent spawn voor CLI-agentbeheer
@@ -134,7 +134,7 @@ Zie [Modellen per agent](./per-agent-models.md) voor configuratiedetails.
 
 De reviewworkflow voert een volledige QA-pipeline uit:
 
-1. **Scope bepalen:** Vraagt wat er moet worden gereviewd (specifieke bestanden, een featurebranch of het hele project).
+1. **Scope bepalen:** Neemt de scope over uit het verzoek (specifieke bestanden, een featurebranch, een PR of het hele project). Als er geen scope is opgegeven, reviewt hij de huidige niet-gecommitte en branchwijzigingen en vermeldt hij die aanname; hij vraagt alleen door wanneer er niets is om op af te bakenen.
 2. **Geautomatiseerde securitycontroles:** Voert `npm audit`, `bandit` of het equivalent uit.
 3. **Handmatige review volgens OWASP Top 10:** Injection, broken auth, gevoelige data, toegangscontrole, misconfiguratie, onveilige deserialisatie, kwetsbare componenten en onvoldoende logging.
 4. **Performanceanalyse:** N+1-queries, ontbrekende indexen, onbegrensde paginering, memory leaks, onnodige rerenders en bundelgroottes.

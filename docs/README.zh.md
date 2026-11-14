@@ -413,7 +413,7 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 | **oma-scholar** | 检索学术文献，并生成涵盖论点、证据与同行评审的 Knows 论文 sidecar |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
 | **oma-search** | 将每条查询路由到最合适的来源，并报告每条结果的出处以及是否实际读过 |
-| **oma-security** | 扫描源代码、代理技能和 MCP 组件并验证发现；渗透测试仅在用户提供并已审查的平台上运行 |
+| **oma-security** | 扫描源代码、agent 技能和 MCP 组件并验证发现；渗透测试仅在用户提供并已审查的运行时平台上运行 |
 | **oma-skill-creation** | 编写并审核新的 OMA 技能 |
 | **oma-slide** | 生成 HTML 演示文稿，并导出为 PDF/PNG/PPTX |
 | **oma-tf-infra** | 用 Terraform 配置多云基础设施 |

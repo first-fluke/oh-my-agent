@@ -92,16 +92,18 @@ Lorsqu’une commande délègue ses arguments restants à un autre outil, le reg
 
 ### install
 
-`oma` sans argument lance l’installateur interactif. `oma install` est la forme explicite et accepte des options de sélection des fournisseurs.
+`oma` sans argument lance l’installateur interactif du runtime. `oma install` est la forme explicite et accepte un preset de compétences ainsi que des options de sélection des fournisseurs. Pour charger temporairement des instructions le temps d’une seule tâche, consultez [Choisir une configuration](../getting-started/choose-setup.md).
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Option | Valeurs acceptées |
 |:-------|:----------------|
+| `--preset <name>` | L’un des dix [presets de compétences nommés](../getting-started/installation.md#presets), tels que `frontend`, `research` ou `all`. La sélection individuelle Custom passe par le menu interactif. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,10 +112,12 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 `--web-search`, `--code-intelligence` et `--semantic-memory` conservent le choix de fournisseur enregistré lorsqu’ils sont omis. `--honcho-url` et `--honcho-workspace` configurent une nouvelle connexion Honcho lorsque ce fournisseur est sélectionné. L’option racine `-y, --yes` ignore les invites et utilise les valeurs par défaut ; `--global` cible `$OMA_HOME/.agents/` (par défaut `~/.oma/.agents/`). L’installation de projet reste dans `<cwd>/.agents/` même lorsque `OMA_HOME` est défini.
 
+`--preset` est prioritaire sur l’invite interactive des compétences et sur la valeur par défaut `all` en mode non interactif. Les noms inconnus, valeurs vides et `custom` sont rejetés avant l’installation. Il sélectionne le contenu des compétences ; il ne filtre pas les fichiers partagés, les définitions de workflows ou d’agents, les hooks ni la configuration des fournisseurs, et conserve les autres compétences déjà installées. Les [dépendances de workflows](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset) peuvent donc différer du bundle sélectionné.
+
 **Ce que fait la commande :**
 1. Recherche un ancien répertoire `.agent/` et le migre vers `.agents/` s’il existe.
-2. Détecte les outils concurrents et propose de les supprimer.
-3. Demande le type de projet (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+2. En mode interactif, détecte les autres outils d’agents et propose de les désinstaller (par défaut : conserver). `--yes`, `OMA_YES` et les installations CI les conservent ; `oma update` ne propose pas de suppression.
+3. Utilise `--preset` lorsqu’il est fourni ; sinon demande un preset de compétences ou une sélection individuelle Custom en mode interactif. L’installation sans surveillance utilise `all` par défaut.
 4. Si le backend est sélectionné, demande la variante de langage (Python, Node.js, Rust, Other).
 5. Demande si des liens symboliques GitHub Copilot sont souhaités.
 6. Télécharge la dernière archive depuis le registre.
@@ -376,12 +380,13 @@ oma stats reset [--json] [--output <format>]
 - Horodatage de la dernière mise à jour
 
 **Télémétrie des coûts** (agrégée sur chaque fichier `session-cost-*.md` sous `.agents/state/memories/`) :
-- Nombre total de tokens d’entrée (approximation fondée sur les caractères du prompt, sans tokens de sortie pour l’instant)
+- Tokens enregistrés, en distinguant l’usage natif réel des estimations fondées sur la longueur du prompt
 - Nombre total de délégations
-- Estimation en USD selon une table prudente de tarifs par token d’entrée et fournisseur (Claude 3 $/M, Codex 5 $/M, Gemini 0,3 $/M, Qwen 0 $/M, Cursor 5 $/M, Antigravity 0,3 $/M)
+- Délégations réservées et exécutions avec couverture partielle de l’usage natif
+- Estimation en USD selon une table de tarifs par fournisseur ; cette estimation est distincte des décomptes réels de tokens
 - Répartition par fournisseur (tokens · délégations · USD)
 
-L’estimation est un plancher, pas un montant fidèle à la facturation. Configurez `session.quota_cap` dans `.agents/oma-config.yaml` pour imposer des budgets stricts au lancement ; consultez la page Pourquoi oh-my-agent dans les guides de démarrage pour l’arsenal axé sur la qualité auquel ces plafonds appartiennent.
+L’estimation en USD n’est pas un montant fidèle à la facturation. Configurez `session.quota_cap` dans `.agents/oma-config.yaml` pour bloquer la délégation suivante lorsque l’usage de tokens enregistré ou le nombre de délégations atteint une limite. L’usage natif manquant conserve une estimation explicite, et les processus enfants en cours ne sont pas interrompus. Voir [Plafonds de quota de session](../guide/configuration-reference.md#session-quota-caps).
 
 Les métriques sont stockées dans `.agents/state/metrics.json` ; un ancien `.serena/metrics.json` est lu lorsqu’il existe. Les données sont collectées à partir des statistiques git et des fichiers de mémoire.
 

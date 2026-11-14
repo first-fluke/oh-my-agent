@@ -92,16 +92,18 @@ Cuando un comando delega los argumentos restantes a otra herramienta, el registr
 
 ### install
 
-`oma` sin argumentos inicia el instalador interactivo. `oma install` es la forma explícita y acepta opciones para seleccionar proveedores.
+`oma` sin argumentos inicia el instalador de runtime interactivo. `oma install` es la forma explícita y acepta un preset de skills además de opciones para seleccionar proveedores. Para cargar instrucciones temporales en una sola tarea, consulta [Elegir una configuración](../getting-started/choose-setup.md).
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Opción | Valores aceptados |
 |:-------|:----------------|
+| `--preset <name>` | Uno de los diez [presets de skills con nombre](../getting-started/installation.md#presets), como `frontend`, `research` o `all`. La selección Custom individual usa el menú interactivo. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,15 +112,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 Si omites `--web-search`, `--code-intelligence` y `--semantic-memory`, se conserva la selección de proveedor guardada. `--honcho-url` y `--honcho-workspace` configuran una conexión nueva de Honcho cuando se selecciona ese proveedor. El flag raíz `-y, --yes` omite los prompts y usa los valores predeterminados; `--global` apunta a `$OMA_HOME/.agents/` (predeterminado: `~/.oma/.agents/`). La instalación de proyecto permanece en `<cwd>/.agents/` aunque `OMA_HOME` esté establecido.
 
+`--preset` tiene prioridad sobre el prompt interactivo de skills y sobre el valor predeterminado `all` en modo desatendido. Los nombres desconocidos, los valores vacíos y `custom` se rechazan antes de la instalación. Selecciona el contenido de las skills; no filtra archivos compartidos, definiciones de workflow/agente, hooks ni la configuración de proveedores, y conserva otras skills instaladas. Por ello, las [dependencias de workflows](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset) pueden diferir del paquete seleccionado.
+
 **Qué hace:**
 1. Comprueba si existe el directorio legacy `.agent/` y lo migra a `.agents/` si lo encuentra.
-2. Detecta herramientas competidoras y ofrece eliminarlas.
-3. Solicita el tipo de proyecto (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+2. En modo interactivo, detecta otras herramientas de agentes y pregunta si deseas desinstalarlas (por defecto: conservar). `--yes`, `OMA_YES` y las instalaciones en CI las conservan; `oma update` no ofrece eliminarlas.
+3. Usa `--preset` cuando se indica; en caso contrario, solicita un preset de skills o una selección Custom individual en modo interactivo. La configuración desatendida usa `all` por defecto.
 4. Si se selecciona backend, solicita la variante del lenguaje (Python, Node.js, Rust, Other).
 5. Pregunta por los symlinks de GitHub Copilot.
 6. Descarga el tarball más reciente del registro.
 7. Instala recursos compartidos, workflows, configuraciones y las skills seleccionadas.
-8. Instala adaptaciones de los proveedores seleccionados (configuración local del proyecto; no escribe silenciosamente en el nivel HOME del proveedor).
+8. Instala adaptaciones para los proveedores seleccionados. Consulta [efectos de la instalación](../getting-started/installation.md#what-the-installer-also-does-by-default) para ver los cambios a nivel de proyecto y HOME.
 9. Crea symlinks del CLI.
 10. Ofrece la configuración **global** recomendada de git (requiere confirmación explícita):
     - `rerere.enabled=true` — reutilización de conflictos de merge entre agentes
@@ -127,11 +131,13 @@ Si omites `--web-search`, `--code-intelligence` y `--semantic-memory`, se conser
 11. Ofrece configurar MCP cuando corresponde.
 12. Solicita la estrella de GitHub si `gh` está autenticado.
 
+El resumen final lista las skills seleccionadas y comprueba los manifests de skills referenciados usando los archivos realmente presentes, incluidas las skills conservadas y las ramas condicionales. Informa de referencias a skills de workflows o agentes faltantes o ilegibles y remite al comando doctor de esa raíz de instalación. Se trata de cobertura estática de manifests; no se verifican contenidos de recursos, herramientas, proveedores ni ejecución.
+
 **Ejemplo:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor
@@ -376,12 +382,13 @@ oma stats reset [--json] [--output <format>]
 - Marca de tiempo de la última actualización
 
 **Telemetría de costes** (agregada a partir de todos los archivos `session-cost-*.md` bajo `.agents/state/memories/`):
-- Total de tokens de entrada (aproximación basada en caracteres del prompt; todavía no incluye tokens de salida)
+- Tokens registrados, distinguiendo el uso nativo real de las estimaciones basadas en la longitud del prompt
 - Total de spawns
-- USD estimados mediante una tabla conservadora de tarifas por token de entrada y proveedor (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
+- Spawns reservados y ejecuciones con cobertura parcial de uso nativo
+- USD estimados mediante una tabla de tarifas por proveedor; esta estimación es independiente de los conteos reales de tokens
 - Desglose por proveedor (tokens · spawns · USD)
 
-La estimación es un mínimo, no un importe exacto de facturación. Configura `session.quota_cap` en `.agents/oma-config.yaml` para imponer límites estrictos en el momento del spawn.
+La estimación en USD no es un importe exacto de facturación. Configura `session.quota_cap` en `.agents/oma-config.yaml` para bloquear el siguiente spawn cuando el uso de tokens registrado o el recuento de spawns alcancen un límite. Si falta el uso nativo, se mantiene una estimación explícita y los subprocesos en ejecución no se interrumpen. Consulta [Límites de cuota de sesión](../guide/configuration-reference.md#session-quota-caps).
 
 Las métricas se almacenan en `.agents/state/metrics.json`; cuando existe, también se lee el archivo legacy `.serena/metrics.json`. Los datos se recopilan de las estadísticas de git y de los archivos de memoria.
 

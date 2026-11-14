@@ -88,10 +88,10 @@ Có hai đường thực thi:
 
 1. Tải `.agents/results/plan-{sessionId}.json`, hoặc tạo plan inline qua `/plan` khi chưa có file dùng được.
 2. Khởi tạo session theo định dạng `session-YYYYMMDD-HHMMSS`.
-3. Tạo `orchestrator-session-{sessionId}.md` và `task-board-{sessionId}.md` trong thư mục memory.
-4. Spawn agent theo tier priority; mỗi agent nhận mô tả tác vụ, API contract và context.
-5. Poll các file `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` để theo dõi tiến độ.
-6. Xác minh agent hoàn tất bằng `verify.sh`. PASS (exit 0) chấp nhận; FAIL (exit 1) spawn lại kèm context lỗi, tối đa 2 lần retry; lỗi kéo dài kích hoạt Exploration Loop.
+3. Chọn các skill reference mà mỗi tác vụ cần và tạo `orchestrator-session-{sessionId}.md` cùng `task-board-{sessionId}.md` trong thư mục memory. Các reference đã chọn được ghi lại ở đó dưới dạng ghi chú của coordinator; launcher không cưỡng chế chúng.
+4. Spawn agent theo tier priority; mỗi agent nhận: mô tả tác vụ, API contract, context và các reference đã chọn của nó.
+5. Theo dõi tiến độ thông qua thông báo hoàn thành từ host, hoặc bằng cách poll các file `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` đã thay đổi với backoff có giới hạn.
+6. Xác minh từng agent đã hoàn tất: bước tự kiểm tra cơ học, sau đó là `verify.sh` đối với agent backend, frontend, mobile, qa, debug và pm (các loại khác ghi `SKIP`), rồi QA cross-review. PASS (exit 0) đi tiếp; FAIL (exit 1) spawn lại kèm context lỗi trong giới hạn ngân sách phục hồi dùng chung (mặc định 3 lần thử mỗi tác vụ, tính cả lần gốc). Các lần retry và giả thuyết khám phá cùng dùng chung ngân sách này; khi cạn ngân sách, tác vụ được báo cáo là `partial` hoặc `failed`.
 7. Thu thập mọi file `result-{agentId}-{taskId}-{runId}-{sessionId}.md` và biên soạn báo cáo cuối.
 
 ### Bước 3: agent spawn để quản lý agent cấp CLI
@@ -135,7 +135,7 @@ Xem [Cấu hình model theo từng agent](./per-agent-models.md) để biết c�
 
 Workflow review chạy pipeline QA đầy đủ:
 
-1. **Xác định phạm vi:** hỏi cần review file cụ thể, feature branch hay toàn dự án.
+1. **Xác định phạm vi:** Lấy phạm vi từ yêu cầu (file cụ thể, feature branch, PR hoặc toàn dự án). Nếu không nêu phạm vi, workflow review các thay đổi chưa commit và thay đổi trên branch hiện tại rồi nêu rõ giả định đó; chỉ hỏi khi không có gì để xác định phạm vi.
 2. **Kiểm tra security tự động:** chạy `npm audit`, `bandit` hoặc tương đương.
 3. **Review thủ công OWASP Top 10:** injection, auth hỏng, dữ liệu nhạy cảm, kiểm soát truy cập, cấu hình sai, deserialization không an toàn, component dễ tổn thương và logging thiếu.
 4. **Phân tích hiệu suất:** N+1 query, index thiếu, pagination không giới hạn, memory leak, re-render thừa và bundle size.
@@ -212,13 +212,18 @@ oma agent spawn frontend "Build landing page" session-id -w ./packages/web-app
 
 ## Quy tắc contract-first
 
-API contract là cơ chế đồng bộ giữa agent:
+API contract là cơ chế đồng bộ giữa các agent. Quy tắc contract-first có nghĩa là:
 
-1. **Định nghĩa contract trước khi bắt đầu triển khai.**
-2. **Mỗi agent nhận contract liên quan làm context.**
-3. **Contract định nghĩa boundary**, gồm method HTTP, path, schema body request/response, yêu cầu auth và format lỗi.
+1. **Định nghĩa contract trước khi bắt đầu triển khai.** Bước 3 của workflow `/plan` tạo API contract và lưu vào `.agents/results/api-contracts/` (hoặc `docs/plans/contracts/` cho spec lâu dài).
+2. **Mỗi agent nhận contract liên quan làm context.** Khi `/orchestrate` spawn agent ở Bước 3, mỗi agent nhận "task description, API contracts, relevant context".
+3. **Contract định nghĩa boundary giao diện.** Một contract nêu rõ:
+   - Method HTTP và path
+   - Schema request body (kèm kiểu dữ liệu)
+   - Schema response body (kèm kiểu dữ liệu)
+   - Yêu cầu authentication
+   - Format error response
 4. **Vi phạm contract được phát hiện khi monitor.** Bước 5 của `/work` dùng provider code-intelligence đã cấu hình để xác minh các agent khớp API contract với nhau. Native search chỉ dành cho path nằm ngoài project hoặc path bị ignore.
-5. **QA review kiểm tra tuân thủ contract.**
+5. **QA review kiểm tra tuân thủ contract.** Alignment Review của agent QA (Bước 6 trong ultrawork) đối chiếu trực tiếp triển khai với kế hoạch, bao gồm API contract.
 
 Không có contract, agent backend có thể trả `{ "user_id": 1 }` còn frontend dùng `{ "userId": 1 }`. Contract-first loại bỏ lớp lỗi tích hợp này.
 

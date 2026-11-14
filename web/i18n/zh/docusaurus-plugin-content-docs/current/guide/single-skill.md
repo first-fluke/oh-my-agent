@@ -6,13 +6,13 @@ description: oh-my-agent 单领域任务的详细指南，涵盖适用时机、�
 
 # 单技能执行
 
-单技能执行是快速路径：一个智能体、一个领域、一个聚焦任务。它没有编排开销和多智能体协调。宿主或选定的工作流可以将自然语言提示路由到该技能；钩子系统自身负责检测工作流，路由行为取决于所选运行时。
+单技能执行是快速路径：一个智能体、一个领域、一个聚焦任务。它没有编排开销和多智能体协调。宿主或选定的工作流可以将自然语言提示路由到该技能；钩子系统会根据关键词添加技能提示，具体路由行为取决于所选运行时。
 
 ## 快速路径 {#quick-path}
 
 1. 运行一次 `oma doctor`，确认选定的宿主集成。任务不使用相关供应商时，可选供应商警告不会阻塞任务。
 2. 描述一个自包含的变更，明确写出 **Goal**、**Context**、**Constraints** 和 **Done When** 条件。
-3. 选定技能会检查仓库；当前执行契约启用时，会声明范围并输出 `CHARTER_CHECK`，然后报告实际运行的检查。
+3. 选定技能会检查仓库，说明影响结果的假设，并报告实际运行的检查。
 4. 如果任务扩展到 API、UI、数据库或移动端边界，停止单技能运行并切换到 `/work` 或 `/orchestrate`。
 
 对于停滞的受管运行，使用 `oma agent status <session-id> [agent-id]`，然后检查 `.agents/state/agent-runs/` 中的回执和注入的声明路径，再重试。供应商和恢复行为请参见[重要默认值](../getting-started/important-defaults.md)。
@@ -112,17 +112,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **加载的资源：**
    - `execution-protocol.md`（始终加载）
    - `snippets.md`（表单和 Zod 模式；如果技能提供，还包括现有组件模式）
-4. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **实现：**
+4. **实现：**
    - 创建 `src/features/auth/components/login-form.tsx`（带 `"use client"` 的 Client Component）
    - 创建 `src/features/auth/utils/login-schema.ts`（Zod schema）
    - 创建 `src/features/auth/components/skeleton/login-form-skeleton.tsx`
@@ -130,7 +121,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - 使用 `@tanstack/react-form` 和 Zod 处理表单
    - 使用 `@/` 绝对导入
    - 每个文件包含一个组件
-6. **验证：**
+5. **验证：**
    - 检查清单：存在 ARIA 标签、语义化标题，键盘导航可用
    - 移动端：在 320px 视口中正确渲染
    - 性能：无 CLS
@@ -163,16 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - 如果可用，加载匹配的 `stack/snippets.md` 或 `variants/{node,python,rust}/snippets.md`
    - 如果可用，加载匹配的 `stack/tech-stack.md` 或变体技术栈参考
 <!-- oma-docs:ignore-end -->
-5. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **实现：**
+5. **实现：**
    - Repository：`TaskRepository.find_by_user(user_id, cursor, status, limit)` 使用参数化查询
    - Service：`TaskService.get_user_tasks(user_id, cursor, status, limit)`，业务逻辑包装
    - Router：`GET /api/tasks` 带 JWT 认证中间件、输入验证、响应格式化
@@ -200,18 +182,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **难度评估：** 中等（设置界面 + 状态管理 + 离线处理）
 3. **加载的资源：**
    - `execution-protocol.md`
-   - `snippets.md`（界面模板、Riverpod provider 模式）
-4. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md`（界面、Riverpod provider 与数据层模式），或在 `/stack-set` 已生成时使用 `stack/snippets.md`
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **实现：**
+4. **实现：**
    - 界面：`lib/features/settings/presentation/settings_screen.dart`（带 Riverpod 的 Stateless Widget）
    - Providers：`lib/features/settings/providers/settings_provider.dart`
    - Repository：`lib/features/settings/data/settings_repository.dart`
@@ -244,17 +218,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md`（交付物结构）
    - `examples.md`
    - `anti-patterns.md`（优化时审查）
-4. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **工作流：** 探索（实体、关系、访问模式、数据量估算）-> 设计（外部/概念/内部模式、约束、生命周期字段）-> 优化（查询模式的索引、分区策略、备份计划、反模式审查）
-6. **交付物：**
+4. **工作流：** 探索（实体、关系、访问模式、数据量估算）-> 设计（外部/概念/内部模式、约束、生命周期字段）-> 优化（查询模式的索引、分区策略、备份计划、反模式审查）
+5. **交付物：**
    - 外部模式摘要（按角色的视图：管理员、项目经理、团队成员）
    - 概念模式与 ERD（Organization 1:N Project、Project 1:N Task、Organization 1:N TeamMembership 等）
    - 内部模式与物理 DDL、索引、分区
@@ -319,7 +284,7 @@ Add deliverables: data standards table, glossary, migration script.
 | 信号 | 含义 | 操作 |
 |------|------|------|
 | 智能体说"这需要后端变更" | 任务有跨领域依赖 | 切换到 `/work`：添加后端智能体 |
-| 智能体的 CHARTER_CHECK 显示的 "Must NOT do" 项实际上是需要的 | 范围超出单一领域 | 先用 `/plan` 规划完整功能 |
+| 智能体报告某些工作因超出该技能领域而被排除 | 范围超出单一领域 | 先用 `/plan` 规划完整功能 |
 | 修复级联到 3+ 个不同层的文件 | 一个修复影响多个领域 | 使用更广范围的 `/debug`，或 `/work` |
 | 智能体发现 API 契约不匹配 | 前端/后端不一致 | 运行 `/plan` 定义契约，然后重新启动两个智能体 |
 | 质量关卡在集成点失败 | 组件未正确连接 | 运行 `/review`，或添加一次 QA 检查：`oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

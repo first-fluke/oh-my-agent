@@ -1,14 +1,14 @@
 ---
 title: "Gids: Marktonderzoek (last30days-engine)"
 sidebar_label: Marktonderzoek
-description: Hoe de oma-market-skill van oh-my-agent communitysignalen onderzoekt met de upstream-engine mvanhorn/last30days, die automatisch op de nieuwste release wordt gehouden — de marktconfiguratie, oma market resolve / update / run, de detect-trap-gate, de koppeling van intent aan frameworks en foutmodi.
+description: Hoe de oma-market-skill van oh-my-agent communitysignalen onderzoekt met de upstream-engine mvanhorn/last30days, geïnstalleerd als een skill via de skills-CLI — de marktconfiguratie, oma market resolve / update / run, de detect-trap-gate, de koppeling van intent aan frameworks en foutmodi.
 ---
 
 # Marktonderzoek {#market-research}
 
 `oma-market` beantwoordt de vraag "wat zeggen mensen echt over X in de afgelopen N dagen" — pijnpunten, trends, concurrentensentiment en discovery — op basis van communitybronnen met echte engagementcijfers: Reddit (upvotes en topcomments), X, YouTube-transcripten, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, het web en meer.
 
-Het onderzoek draait op de upstream-engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent forkt die engine niet: het houdt een **beheerde kopie** bij, controleert periodiek op releases, voert gates uit voor elke run en voegt strategische frameworks toe. Releasecadans, aantal stars en providerdekking horen bij het upstreamproject en kunnen veranderen.
+Het onderzoek draait op de upstream-engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent forkt die engine niet: de engine wordt geïnstalleerd als agent-skill via de [skills CLI](https://github.com/vercel-labs/skills), en oh-my-agent gatet elke run en voegt daarbovenop een laag met strategische frameworks toe. Releasecadans, aantal stars en providerdekking horen bij het upstreamproject en kunnen veranderen.
 
 ---
 
@@ -36,32 +36,38 @@ Het resultaat is één brief in `.agents/results/market/{topic-slug}-{YYYYMMDD}.
 
 ---
 
-## Beheerde engineversie (Python 3.12+ vereist) {#always-the-latest-engine--nothing-to-install}
+## De engine installeren (Python 3.12+ vereist) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- Cache: `~/.cache/oma-market/last30days/<tag>/` + `state.json`.
-- Voor elk gebruik vraagt `resolve` GitHub om de nieuwste release (beperkt tot één keer per `check_interval_min`, standaard 60 min), downloadt het een nieuwere tag naar zijn eigen map (oude tags worden verwijderd) en gebruikt het anders de cache opnieuw. Bij netwerkfouten wordt de gecachte kopie opnieuw gebruikt en als `stale` gerapporteerd.
+- `resolve` leest alleen geïnstalleerde skillmappen en raakt het netwerk nooit aan. Wanneer niets is geïnstalleerd, is `resolve` niet ok en noemt het het installatiecommando; de skill vraagt eerst toestemming voordat `oma market update` wordt uitgevoerd.
+- `oma update` installeert de engine niet. Werk hem bij met `oma market update` (of `bunx skills update last30days -g -y`).
 - Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` op PATH (moet ≥ 3.12 zijn) → `uv python find '>=3.12'`. Als niets wordt gevonden, is `resolve` niet ok en geeft het de installatietip; de skill stopt in plaats van terug te vallen op onderzoek dat alleen via websearch werkt.
-- Engineconfiguratie en API-keys staan in `~/.config/last30days/` (geschreven door de upstream-setupwizard met jouw toestemming), zodat ze upgrades van de engine overleven.
+- Engineconfiguratie en API-keys staan in `~/.config/last30days/` (geschreven door de upstream-setupwizard met jouw toestemming), zodat ze updates van de engine overleven.
 
-De volgorde van resolutie (eerste hit wint) is: `market.path` → `LAST30DAYS_HOME` → **managed latest** → door de gebruiker geïnstalleerde kopieën (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` in het project en onder `~`, daarna de Claude Code-plugin-cache).
+De volgorde van resolutie (eerste hit wint): `market.path` → `LAST30DAYS_HOME` → geïnstalleerde skillmappen (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` in het project, daarna onder `~`, daarna `~/.config/agents/skills/last30days` en de Claude Code-plugin-cache). Een Claude Code-plugininstallatie wordt bijgewerkt via `/plugin`, niet via `oma market update`.
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+Eerdere releases bewaarden hun eigen kopie onder `~/.cache/oma-market/`. Die wordt niet meer gelezen; je kunt die verwijderen.
 
 ---
 
@@ -69,13 +75,12 @@ oma market run -- --help     # the engine's own flags (without `--`, oma prints 
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`, `channel` en `check_interval_min` zijn verouderd: ze valideren nog steeds maar worden genegeerd, en `resolve` print een waarschuwing zolang ze zijn ingesteld.
 
 ---
 
@@ -89,14 +94,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` — weigert keyword-trap- en demographic-shopping-onderwerpen (exit 2) met een voorstel om de vraag te herformuleren. Een leeg onderwerp of een onderwerp van meer dan 200 tekens eindigt met exit 4.
 2. `oma market resolve --json` — engine plus Python; stopt bij `ok: false`.
 3. De agent leest de `SKILL.md` van de opgeloste engine van boven tot onder en volgt die: setupwizard voor het eerste gebruik, voorafgaand aan onderzoek handles / subreddits / hashtags oplossen (wanneer WebSearch beschikbaar is), queryplanning en de precondition-gate.
 4. `oma market run "<topic>" <flags> --emit=compact` — identieke argumenten als de upstream-call `python3 scripts/last30days.py`; `--save-dir` wordt toegevoegd vanuit `market.save_dir`.
-5. Synthese volgt het upstream OUTPUT CONTRACT (eerste regel is de badge, daarna gerangschikte evidenceclusters en LAWs 1–8), waarna oma frameworksecties toevoegt die alleen naar engineclusters verwijzen:
+5. Synthese volgt het upstream OUTPUT CONTRACT (eerste regel is de badge, daarna gerangschikte evidenceclusters en LAWs 1–8), waarna oma frameworksecties toevoegt, geplaatst tussen de engine-body en de engine-footer, die alleen naar engineclusters verwijzen:
 
 | Intent | Vormgeving door engine | Frameworks |
 |---|---|---|
@@ -105,7 +110,7 @@ flowchart TD
 | competitor | `"A vs B"` → upstream-vergelijkingsflow | SWOT + Porter's 5F |
 | discovery | `--discover`, daarna follow-ups met `--drill` | SWOT + PESTEL |
 
-6. Voer een self-check uit en schrijf daarna `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
+6. Schrijf `.agents/results/market/{topic-slug}-{YYYYMMDD}.md` en voer daarna de self-check uit tegen het geschreven bestand; herstel en controleer opnieuw voordat de brief wordt opgeleverd.
 
 ---
 
@@ -114,9 +119,9 @@ flowchart TD
 | Situatie | Resultaat |
 |---|---|
 | Onderwerp geweigerd door detect-trap | Herformulering getoond; engine wordt niet uitgevoerd. `--force` alleen na expliciete herbevestiging van de gebruiker |
-| Geen engine gecachet en offline | `ok: false` → voer één keer online `oma market update` uit |
+| Engine niet geïnstalleerd | `ok: false` → `oma market update` (installeert deze met de skills CLI) |
 | Geen Python 3.12+ | `ok: false` met installatietip (brew / apt / `uv python install 3.12`), of stel `LAST30DAYS_PYTHON` / `market.python` in; geen vervanging die alleen websearch gebruikt |
-| Releasecontrole faalt | Gecachte engine wordt gebruikt en als `stale` gerapporteerd |
+| `oma market update` faalt | De foutmelding van de skills CLI wordt getoond; een bestaande installatie blijft werken |
 | Bronnen zonder keys | Binnen de engine overgeslagen en in de footer vermeld; activeer ze via de upstream-setupwizard |
 
 ---
@@ -124,7 +129,7 @@ flowchart TD
 ## Volgende stappen {#next-steps}
 
 - [Inhouds- en onderzoeksworkflows](./content-and-research.md) — kies de juiste capability voor andere onderzoeks- en documenttaken
-- [Diagramengine](./diagram-engine.md) — hetzelfde patroon van een altijd actuele beheerde engine als voor archify
+- [Diagramengine](./diagram-engine.md) — hetzelfde installatiepatroon via de skills-CLI als voor archify
 - [oma-config.yaml-semantiek](./oma-config-semantics.md) — hoe de sectie `market:` wordt samengevoegd
 - [CLI-commando's: market](../cli-interfaces/commands.md#market) — volledige lijst met opties
 - Upstream: [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

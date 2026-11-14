@@ -6,13 +6,13 @@ description: oh-my-agentで単一ドメインのタスクを実行するため�
 
 # ガイド：単一スキル実行
 
-単一スキル実行では、1つのエージェントが1つのドメインの1つのタスクを担当します。複数エージェント間の調整はありません。ホストまたは選択したワークフローが自然言語のプロンプトをスキルへルーティングする場合があります。フックシステム自体がワークフローを検出し、ルーティング動作は選択したランタイムによって決まります。
+単一スキル実行では、1つのエージェントが1つのドメインの1つのタスクを担当します。複数エージェント間の調整はありません。ホストまたは選択したワークフローが自然言語のプロンプトをスキルへルーティングする場合があります。フックシステムはキーワードからスキルヒントを追加し、ルーティングは選択したランタイムによって決まります。
 
 ## クイックパス
 
 1. `oma doctor`を1回実行し、選択したホスト統合を確認します。使用しないプロバイダーに関する警告は、そのプロバイダーを使わないタスクを妨げません。
 2. 明確な **Goal**、**Context**、**Constraints**、**Done When** の条件を含む、自己完結した変更を1つ説明します。
-3. 選択したスキルがリポジトリを調査し、アクティブな実行コントラクトで`CHARTER_CHECK`が必要な場合はスコープを示し、実際に実行したチェックを報告します。
+3. 選択したスキルがリポジトリを調査し、結果に影響する前提があれば明示し、実際に実行したチェックを報告することを確認します。
 4. タスクがAPI、UI、データベース、モバイルの境界をまたぐようになったら、単一スキルの実行を止めて`/work`または`/orchestrate`に切り替えます。
 
 管理対象の実行が停止した場合は、`oma agent status <session-id> [agent-id]`を使ってから、`.agents/state/agent-runs/`の受領記録と注入された申告パスを確認して再試行します。プロバイダーと復旧の動作については、[重要なデフォルト](../getting-started/important-defaults.md)を参照してください。
@@ -113,17 +113,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **ロードされるリソース：**
    - `execution-protocol.md`（常にロード）
    - `snippets.md`（フォームとZodのパターン。スキルが提供する場合は既存コンポーネントのパターンも含む）
-4. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **実装：**
+4. **実装：**
    - `src/features/auth/components/login-form.tsx`を作成（`"use client"`付きのClient Component）
    - `src/features/auth/utils/login-schema.ts`を作成（Zodスキーマ）
    - `src/features/auth/components/skeleton/login-form-skeleton.tsx`を作成
@@ -131,7 +122,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - `@tanstack/react-form`とZodでフォームを処理
    - `@/`による絶対インポートを使用
    - 1ファイルにつき1コンポーネント
-6. **検証：**
+5. **検証：**
    - チェックリスト：ARIAラベル、セマンティックな見出し、キーボード操作を確認
    - モバイル：320pxのビューポートで正しく表示
    - パフォーマンス：CLSなし
@@ -164,16 +155,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - 利用可能な場合は対応する`stack/snippets.md`または`variants/{node,python,rust}/snippets.md`
    - 対応する`stack/tech-stack.md`またはvariantのtech-stack参照
 <!-- oma-docs:ignore-end -->
-5. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **実装：**
+5. **実装：**
    - Repository：パラメーター化クエリを使う`TaskRepository.find_by_user(user_id, cursor, status, limit)`
    - Service：`TaskService.get_user_tasks(user_id, cursor, status, limit)`（ビジネスロジックのラッパー）
    - Router：JWT認証ミドルウェア、入力バリデーション、レスポンス整形を備えた`GET /api/tasks`
@@ -201,18 +183,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **難易度評価：** Medium（設定画面、状態管理、オフライン処理）。
 3. **ロードされるリソース：**
    - `execution-protocol.md`
-   - `snippets.md`（画面テンプレート、Riverpodプロバイダーパターン）
-4. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md`（画面テンプレート、Riverpodプロバイダー、データ層のパターン）、または`/stack-set`で生成済みの場合は`stack/snippets.md`
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **実装：**
+4. **実装：**
    - `lib/features/settings/presentation/settings_screen.dart`（Riverpodを使うStateless Widget）
    - `lib/features/settings/providers/settings_provider.dart`にプロバイダーを作成
    - `lib/features/settings/data/settings_repository.dart`にリポジトリを作成
@@ -245,17 +219,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md`（成果物の構成）
    - `examples.md`
    - `anti-patterns.md`（最適化時のレビュー）
-4. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **ワークフロー：** 探索（エンティティ、リレーション、アクセスパターン、ボリューム見積もり）→設計（外部・概念・内部スキーマ、制約、ライフサイクル項目）→最適化（クエリパターン向けのインデックス、パーティショニング戦略、バックアップ計画、アンチパターンレビュー）
-6. **成果物：**
+4. **ワークフロー：** 探索（エンティティ、リレーション、アクセスパターン、ボリューム見積もり）→設計（外部・概念・内部スキーマ、制約、ライフサイクル項目）→最適化（クエリパターン向けのインデックス、パーティショニング戦略、バックアップ計画、アンチパターンレビュー）
+5. **成果物：**
    - 外部スキーマの概要（管理者、プロジェクトマネージャー、チームメンバーのロール別ビュー）
    - ERD付きの概念スキーマ（Organization 1:N Project、Project 1:N Task、Organization 1:N TeamMembershipなど）
    - 物理DDL、インデックス、パーティショニングを含む内部スキーマ
@@ -320,7 +285,7 @@ Add deliverables: data standards table, glossary, migration script.
 | シグナル | 意味 | 対応 |
 |--------|--------------|--------|
 | エージェントが「バックエンドの変更が必要」と言う | クロスドメイン依存関係 | `/work`に切り替えてバックエンドエージェントを追加 |
-| CHARTER_CHECKの「Must NOT do」に実際に必要な項目がある | スコープが1ドメインを超過 | まず`/plan`で機能全体を計画 |
+| エージェントがスキルのドメイン外であるため残した作業を報告 | スコープが1ドメインを超過 | まず`/plan`で機能全体を計画 |
 | 修正が3つ以上の異なるレイヤーのファイルに波及 | 複数ドメインに影響 | `/debug`でスコープ拡大、または`/work` |
 | APIコントラクトの不一致を発見 | フロントエンド/バックエンドの不整合 | `/plan`でコントラクト定義後、両エージェントを再スポーン |
 | 品質ゲートが統合ポイントで失敗 | コンポーネントが正しく接続されない | `/review`を実行するか、QAパスを追加：`oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

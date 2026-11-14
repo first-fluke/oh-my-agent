@@ -5,6 +5,21 @@ description: Zainstaluj oh-my-agent, wybierz umiejętności i dostawców, poznaj
 
 # Instalacja {#installation}
 
+Dla pojedynczego zadania zacznij od [jednej umiejętności](./choose-setup.md#load-one-skill). Dla hooków projektowych i workflowów zespołowych użyj opisanej poniżej instalacji runtime'u. Przewodnik [Wybór konfiguracji](./choose-setup.md) oddziela ładowanie instrukcji, presety umiejętności oraz instalację z marketplace'u Claude Code.
+
+Dla Grok Bot użyj [strony instalacji Grok Bot](/grok-bot/). Natywny link **Add to Grok Bot** wymaga zatwierdzonego wpisu w Cursor Marketplace; nie jest dostępny, dopóki rejestracja oczekuje na zatwierdzenie. Osobny [przewodnik instalacji ręcznej](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md) opisuje polecenie `oma install --target grok-bot` dla maszyny Bota. Opisana niżej integracja runtime'u Grok Build jest osobnym celem instalacji.
+
+## Instalacja z użyciem agenta AI
+
+Wklej ten tekst do swojego agenta kodującego:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[Przewodnik instalacji agenta](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md) obejmuje przygotowanie CLI, nieinteraktywną konfigurację projektu oraz weryfikację poleceniem `oma doctor`.
+
 ## Wymagania wstępne {#prerequisites}
 
 - **IDE lub CLI z obsługą AI**: co najmniej jeden obsługiwany host, taki jak Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot lub Hermes
@@ -51,7 +66,7 @@ Bootstrap kontynuuje działanie po błędach opcjonalnych zależności i podaje 
 - **Strażnik commit-msg**: `.githooks/commit-msg` odrzuca adresy `Co-authored-by`, których nie ma w `.githooks/co-authors.allow` ani w `scm.co_author.email`. `git config --local core.hooksPath .githooks` jest ustawiane tylko wtedy, gdy nie są aktywne żadne inne hooki; w przeciwnym razie oma pokazuje, jak podpiąć strażnika w łańcuchu. Ustaw `scm.co_author.enforce_hook: false`, aby zrezygnować.
 - **Aktualizacje w tle**: `oma update` aktualizuje CLI `oma` w tle (`auto_update_cli: false` albo `OMA_SKIP_VERSION_CHECK=1`, aby to zatrzymać) i uruchamia `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`, aby to zatrzymać).
 - **Timer czyszczący Sereny**: gdy Serena działa w domyślnym trybie `bridge`, pierwsza sesja agenta, która uruchomi współdzielony serwer Serena, rejestruje timer, który co 5 minut zatrzymuje bezczynne współdzielone serwery Serena (launchd `dev.oma.serena-daemon-gc`, timer użytkownika systemd `oma-serena-daemon-gc.timer` albo zaplanowane zadanie Windows `OMA Serena Daemon GC`). Ustaw `serena.mode: stdio`, aby pominąć współdzielony serwer i jego timer. `oma uninstall` nie usuwa tego timera.
-- **Uruchomienia nieinteraktywne** (`-y`, `OMA_YES=1`, `CI=true`) używają presetu umiejętności `All`, `model_preset: auto` i Pythona jako języka backendu. Nie wybierają żadnego browser MCP (i pomijają skrypt instalacyjny Aside), chyba że `mcp.devtools_browsers` już jakiś zawiera.
+- **Uruchomienia nieinteraktywne** (`-y`, `OMA_YES=1`, `CI=true`) używają presetu umiejętności `All`, chyba że `--preset` wybierze inny, a także `model_preset: auto` i Pythona jako języka backendu. Nie wybierają żadnego browser MCP (i pomijają skrypt instalacyjny Aside), chyba że `mcp.devtools_browsers` już jakiś zawiera.
 
 ---
 
@@ -79,30 +94,57 @@ Wybierz preset odpowiadający pracy, której potrzebuje repozytorium. Nazwy umie
 | **backend** | API albo usługa z bazą danych | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
 | **mobile** | Tylko aplikacja mobilna | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
 | **devops** | Praca nad infrastrukturą, CI/CD i obserwowalnością | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **security** | Skanowanie bezpieczeństwa, przegląd kodu i remediacja | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Artykuły naukowe, badania rynku i konwersja PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Zasoby designu, obrazy, głos i treści pisane | design, image, voice, academic-writing, translation, scm | 6 |
 
 Presety są pakietami umiejętności; nie tworzą jednej definicji subagenta dla każdej umiejętności. Preset `all` rozwija się na podstawie aktywnego rejestru umiejętności, więc lista może rosnąć wraz z repozytorium. Presety domenowe zawierają tylko umiejętności dla danego obszaru.
 
+Wybierz preset z wiersza poleceń:
+
+```bash
+oma install --preset frontend --yes
+```
+
+`--preset` korzysta z nazw z tabeli i ma pierwszeństwo przed interaktywnym monitem o umiejętności oraz nieinteraktywnym domyślnym `all`. Nieznana nazwa jest odrzucana przed rozpoczęciem instalacji. Pominięcie opcji zachowuje dotychczasowy przepływ wyboru. Opcja wybiera umiejętności; pliki współdzielone, agenci, workflowy, hooki i konfiguracja dostawców nadal podlegają instalatorowi runtime'u. Ponowna instalacja z mniejszym presetem zachowuje wcześniej zainstalowane umiejętności. Wybór Custom jest dostępny wyłącznie w menu interaktywnym; wartości `custom` ani pusty ciąg nie są akceptowane przez `--preset`.
+
+Po instalacji sprawdź listę wybranych umiejętności i raport dostępności workflowów. Workflow jest udostępniany tylko wtedy, gdy wymagane przez niego manifesty umiejętności mają poprawne nazwy i opisy. Istniejące zachowane umiejętności mogą spełniać te wymagania. Warunkowe referencje są raportowane osobno i nie rozszerzają wybranego presetu. Kontrola obejmuje manifesty; narzędzia, dostawcy, poświadczenia i wykonanie nadal wymagają własnych kontroli.
+
 ### Workflowy wymagające umiejętności spoza presetu {#workflows-that-need-skills-outside-a-preset}
 
-Każdy preset instaluje wszystkie definicje workflowów i agentów, ale kilka workflowów odczytuje umiejętność, której presety domenowe nie instalują. Sprawdź tę tabelę przed wyborem presetu domenowego:
+Każdy preset kopiuje definicje workflowów i agentów. Polecenia i prompty są udostępniane wyłącznie dla workflowów, których wymagane umiejętności są dostępne. Przykładowo świeża instalacja presetu `frontend` pozostawia `/work` niedostępne, ponieważ brakuje w niej `oma-coordination`; jej istniejące umiejętności PM i QA spełniają już pozostałe wymagania wejściowe. Instalator zgłasza brakującą umiejętność bez przełączania na `all`.
 
-| Workflow | Odczytywana umiejętność | Presety, które ją zawierają |
-|----------|-------------|-------------------------|
-| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
-| `/ultrawork`, `/ralph` | oma-coordination; uruchamiany przez niego agent `refactor-engineer` używa oma-refactor | all |
+| Workflow | Wymagane umiejętności wejściowe | Presety, które je zawierają |
+|----------|----------------------------------|-----------------------------|
+| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
+| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
-| `/security` | oma-security | all |
+| `/security` | oma-security | all, security |
 | `/recap` | oma-recap | all |
 | `/video` | oma-video | all |
-| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
 | `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
-| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/architecture` | oma-architecture | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
+| `/plan` | oma-pm | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/review` | oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
 | `/scm` | oma-scm | każdy preset |
 
-Aby później dodać brakującą umiejętność, uruchom `oma doctor` z katalogu głównego projektu, zaakceptuj monit o brakującej umiejętności i wybierz **Select individually**.
+Referencje specyficzne dla gałęzi wykonania pozostają doradcze. Przykładowo `/convert` wybiera narzędzia PDF, HWP albo wideo po zbadaniu danych wejściowych; `/ralph` i `/ultrawork` mogą potrzebować `oma-refactor` na gałęzi refaktoryzacji. Takie referencje nie są bezwarunkowymi wymaganiami wejściowymi.
+
+Uruchom `oma doctor`, aby zdiagnozować brakujące lub nieprawidłowe manifesty. Aby dodać brakującą umiejętność, uruchom `oma install` i wybierz **Select individually**. Po naprawieniu manifestu uruchom `oma link`, aby odświeżyć udostępnianie workflowów; ponowna instalacja również je odświeża. Dla globalnej instalacji OMA użyj pasującego zakresu `--global`. Istniejące polecenia użytkownika są zachowywane przy usuwaniu niedostępnych poleceń OMA.
+
+### Wtyczki domenowe
+
+Użytkownicy marketplace'u Claude Code mogą wybrać wpis domenowy po dodaniu marketplace'u `oh-my-agent`:
+
+```bash
+claude plugin install oma-frontend@oh-my-agent
+# Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
+```
+
+Wpisy domenowe zawierają 8 umiejętności frontendowych, 6 bezpieczeństwa albo 8 badawczych oraz pasujący zestaw natywnych agentów. Ich bootstrap sesji przekazuje ten preset do instalatora runtime'u. Współdzielona konfiguracja runtime'u i istniejące zainstalowane umiejętności działają zgodnie z opisanym wyżej zachowaniem instalatora. Wpis `oma` zachowuje pełną wtyczkę. Te same korzenie domenowe są zadeklarowane w wygenerowanym katalogu marketplace'u Codex oraz w katalogach Grok Build i ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` na wygenerowanym drzewie albo na archiwum wydania `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode i Kimi Code (`/plugins install`) czytają własne wygenerowane manifesty; zobacz [Hosty wtyczek kompatybilne z Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts), aby sprawdzić dokładne kroki dla każdego hosta.
+
+Przypięte zadania CI hostów rejestrują lokalny marketplace na świeżych runnerach, instalują wpisy domenowe i sprawdzają wynikowy inwentarz. Te kontrole działają bez wywołań modeli. Poświadczenia runtime'u, zewnętrzni dostawcy oraz pierwsze udane zadanie nadal wymagają własnej weryfikacji. Kontrole wydań wymagają również, aby oba manifesty w każdym korzeniu domenowym odpowiadały wersji CLI i miały moduł aktualizacji wersji Release Please.
 
 Współdzielone zasoby (`_shared/`) są instalowane niezależnie od presetu. Obejmuje to routing podstawowy, ładowanie kontekstu, strukturę promptów, wykrywanie dostawcy, protokoły wykonywania i protokół pamięci.
 

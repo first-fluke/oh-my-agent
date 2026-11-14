@@ -88,10 +88,10 @@ Hay dos rutas de ejecución:
 
 1. Carga `.agents/results/plan-{sessionId}.json`; si no hay un plan utilizable, crea uno inline mediante `/plan`.
 2. Inicializa una sesión con el formato de ID `session-YYYYMMDD-HHMMSS`.
-3. Crea `orchestrator-session-{sessionId}.md` y `task-board-{sessionId}.md` en el directorio de memoria.
-4. Genera agentes por nivel de prioridad y entrega a cada uno la descripción de la tarea, los contratos API y el contexto.
-5. Supervisa el progreso consultando los archivos `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`.
-6. Verifica cada agente completado mediante `verify.sh`. PASS (salida 0) lo acepta; FAIL (salida 1) lo vuelve a generar con el contexto del error (máximo 2 reintentos); un fallo persistente activa el Bucle de exploración.
+3. Selecciona las referencias de skills que necesita cada tarea y crea `orchestrator-session-{sessionId}.md` y `task-board-{sessionId}.md` en el directorio de memoria. Las referencias seleccionadas se registran allí como notas del coordinador; el lanzador no las impone.
+4. Genera agentes por nivel de prioridad y entrega a cada uno la descripción de la tarea, los contratos API, el contexto y sus referencias seleccionadas.
+5. Supervisa el progreso mediante las notificaciones de finalización del host, o consultando los archivos `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` modificados con backoff acotado.
+6. Verifica cada agente completado: una autocomprobación mecánica, luego `verify.sh` para los agentes backend, frontend, mobile, qa, debug y pm (los demás tipos registran `SKIP`), y después una revisión cruzada de QA. PASS (salida 0) continúa; FAIL (salida 1) lo vuelve a generar con el contexto del error dentro del presupuesto de recuperación compartido (por defecto 3 intentos por tarea, incluido el original). Los reintentos y las hipótesis de exploración consumen el mismo presupuesto; cuando se agota, la tarea se informa como `partial` o `failed`.
 7. Recopila todos los archivos `result-{agentId}-{taskId}-{runId}-{sessionId}.md` y compila el informe final.
 
 ### Paso 3: agent spawn para gestionar agentes desde la CLI
@@ -134,7 +134,7 @@ La **resolución del prompt** permite que el argumento `<prompt>` sea texto inli
 
 El flujo de revisión sigue estos pasos:
 
-1. **Identificar el alcance**: pregunta qué debe revisarse (archivos concretos, una rama de funcionalidad o todo el proyecto).
+1. **Identificar el alcance**: toma el alcance de la solicitud (archivos concretos, una rama de funcionalidad, un PR o todo el proyecto). Si no se indica un alcance, revisa los cambios actuales sin confirmar y los de la rama y declara esa suposición; solo pregunta cuando no hay nada a partir de lo cual acotar.
 2. **Comprobaciones de seguridad automatizadas**: ejecuta `npm audit`, `bandit` o el equivalente.
 3. **Revisión manual de OWASP Top 10**: inyección, autenticación rota, datos sensibles, control de acceso, configuración incorrecta, deserialización insegura, componentes vulnerables y registro insuficiente.
 4. **Análisis de rendimiento**: consultas N+1, índices faltantes, paginación sin límites, fugas de memoria, renderizados innecesarios y tamaños de bundles.

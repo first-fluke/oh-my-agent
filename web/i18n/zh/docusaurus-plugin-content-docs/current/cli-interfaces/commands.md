@@ -93,16 +93,18 @@ sidebar_label: CLI 命令
 
 ### install（安装） {#install}
 
-不带参数运行 `oma` 会启动交互式安装器。`oma install` 是显式形式，并接受用于选择提供方的选项。
+不带参数运行 `oma` 会启动交互式运行时安装器。`oma install` 是显式形式，接受技能预设以及提供方选择选项。若只为单个任务临时加载指令，请参阅[选择安装方式](../getting-started/choose-setup.md)。
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | 选项 | 可接受的值 |
 |:-------|:----------------|
+| `--preset <name>` | 十种[具名技能预设](../getting-started/installation.md#presets)之一，例如 `frontend`、`research` 或 `all`。逐项 Custom 选择需使用交互式菜单。 |
 | `--web-search <provider>` | `native`、`brave` |
 | `--code-intelligence <provider>` | `serena`、`gortex` |
 | `--semantic-memory <provider>` | `agentmemory`、`honcho`、`none` |
@@ -111,15 +113,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 省略 `--web-search`、`--code-intelligence` 和 `--semantic-memory` 时，会沿用已保存的提供方选择。选中 Honcho 提供方时，`--honcho-url` 和 `--honcho-workspace` 用于配置新的 Honcho 连接。根级 `-y, --yes` 标志会跳过提示并使用默认值；`--global` 以 `$OMA_HOME/.agents/`（默认为 `~/.oma/.agents/`）为目标。即使设置了 `OMA_HOME`，项目安装仍位于 `<cwd>/.agents/`。
 
+`--preset` 优先于交互式技能提示和无人值守时的 `all` 默认值。未知名称、空值和 `custom` 会在安装前被拒绝。它只选择技能内容，不会过滤共享文件、工作流或智能体定义、钩子或提供方设置，并且会保留其他已安装的技能。因此[工作流依赖](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)可能与所选技能包不同。
+
 **功能**：
 1. 检查是否存在旧版 `.agent/` 目录，如果找到，则迁移到 `.agents/`。
-2. 检测相互冲突的同类工具，并提示是否删除。
-3. 提示选择项目类型（All、Fullstack、Frontend、Backend、Mobile、DevOps、Custom）。
+2. 在交互模式下检测其他智能体工具，并询问是否卸载（默认：保留）。`--yes`、`OMA_YES` 和 CI 安装会保留这些工具；`oma update` 不提供移除选项。
+3. 提供 `--preset` 时直接使用该预设；否则在交互模式下提示选择技能预设或逐项 Custom 选择。无人值守安装默认为 `all`。
 4. 如果选择了 Backend，提示选择语言变体（Python、Node.js、Rust、Other）。
 5. 询问是否创建 GitHub Copilot 符号链接。
 6. 从注册表下载最新的 tarball。
 7. 安装共享资源、工作流、配置和选定的技能。
-8. 为选定的供应商安装供应商适配（项目本地设置；不会静默写入 HOME 级别的供应商配置）。
+8. 为选定的供应商安装供应商适配。项目级与 HOME 级变更请参阅[安装效果](../getting-started/installation.md#what-the-installer-also-does-by-default)。
 9. 创建 CLI 符号链接。
 10. 提供推荐的**全局** Git 配置（确认后才启用）：
     - `rerere.enabled=true`：在多智能体合并时复用冲突解决结果
@@ -128,11 +132,13 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. 在适用时提供 MCP 配置。
 12. 如果 `gh` 已通过身份验证，询问是否在 GitHub 上为仓库加星。
 
+最终摘要会列出所选技能，并使用实际存在的文件（包括保留的技能和条件分支）检查引用的技能清单。它会报告缺失或不可读的工作流/智能体技能引用，并指向该安装根目录的 `doctor` 命令。这只检查静态清单覆盖情况，不验证资源内容、工具、提供方和实际执行。
+
 **示例**：
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor（诊断） {#doctor}
@@ -377,12 +383,13 @@ oma stats reset [--json] [--output <format>]
 - 最后更新时间戳
 
 **成本遥测**（汇总 `.agents/state/memories/` 下所有 `session-cost-*.md` 文件）：
-- 输入 token 总数（按提示词字符数近似估算，暂不统计输出 token）
+- 已记录的 token，区分实际原生用量与按提示词长度估算的值
 - 启动总次数
-- 按保守的各供应商输入 token 费率表估算的美元费用（Claude $3/M、Codex $5/M、Gemini $0.3/M、Qwen $0/M、Cursor $5/M、Antigravity $0.3/M）
+- 已预留的启动次数，以及原生用量覆盖不完整的运行
+- 按各供应商费率表估算的美元费用；该估算值与实际 token 计数分开记录
 - 按供应商细分（token · 启动次数 · 美元）
 
-这个估算值只是下限，并非精确的计费金额。在 `.agents/oma-config.yaml` 中配置 `session.quota_cap`，即可在启动时强制执行硬性预算；这些上限属于质量优先的整套工具，详见“快速开始”中的“为什么选择 oh-my-agent”页面。
+美元估算值并非精确的计费金额。在 `.agents/oma-config.yaml` 中配置 `session.quota_cap`，可在已记录的 token 用量或启动次数达到上限时阻止下一次启动。缺少原生用量时会保留显式估算值，且不会中断正在运行的子进程。参见[会话配额上限](../guide/configuration-reference.md#session-quota-caps)。
 
 指标存储在 `.agents/state/metrics.json` 中；如果存在旧版 `.serena/metrics.json`，也会读取。数据来自 Git 统计和内存文件。
 
@@ -1125,6 +1132,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 **按智能体类型的附加检查**：
 
+<!-- oma-docs:ignore-start -->
 | 智能体类型 | 附加检查 |
 |:-----------|:-----------------|
 | `backend` | 语法校验、SQL 注入检测（原始 SQL 模式）和测试执行，均来自 `.agents/skills/oma-backend/stack/stack.yaml`（由 `/stack-set` 生成）中的 `verify` 命令。该文件不存在时跳过 |
@@ -1133,6 +1141,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `qa` | 没有机械检查；仅记录一项 `QA Report` 检查为 `PASS` |
 | `debug` | 根据检测到的项目类型运行 Python 测试或前端测试 |
 | `pm` | 校验 `.agents/results/plan-{sessionId}.json` 是否存在且为有效 JSON |
+<!-- oma-docs:ignore-end -->
 
 **输出格式**：
 每项检查都会报告 `PASS`、`FAIL`、`WARN` 或 `SKIP`，并附带详细信息。只有没有任何检查失败时，总体结果才是 `ok: true`。

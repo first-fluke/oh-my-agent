@@ -1,13 +1,25 @@
 ---
 title: Início rápido
-description: Execute uma tarefa de escopo definido, da instalação à verificação, com a saída esperada e a recuperação.
+description: Escolha uma skill ou um preset de runtime e execute uma primeira tarefa de escopo definido com verificação observada.
 ---
 
 # Início rápido
 
-Use esta página para executar uma pequena tarefa e registrar um resultado concreto. Você precisa de um diretório de projeto e de pelo menos uma CLI ou IDE de IA compatível. O instalador pode preparar `bun`, `uv`, Serena, CUE e o comando global `oma` no macOS, Linux ou Windows; a integração do host selecionado é necessária para o primeiro prompt, enquanto providers e integrações de navegador são opcionais.
+Use uma tarefa focada para conferir o resultado. Carregue uma skill no agente de código que você já usa ou instale o runtime quando precisar de hooks de projeto, agentes especialistas e workflows. [Escolha uma configuração](./choose-setup.md) explica os caminhos disponíveis e suas dependências.
 
-## 1. Instalar
+## 1. Escolha a configuração {#1-install}
+
+Para a tarefa Git somente leitura abaixo, peça ao agente para carregar a skill e ler suas instruções e o diretório de suporte:
+
+```bash
+bunx skills use first-fluke/oh-my-agent@oma-scm
+```
+
+Continue com a tarefa na Etapa 3. As operações de CLI da skill, outras skills, regras do projeto e serviços externos continuam sendo dependências separadas. Carregar essa skill não executa o instalador do OMA.
+
+### Instale o runtime quando necessário
+
+O bootstrap do runtime pode preparar `bun`, `uv`, Serena, CUE e o comando global `oma`. Selecione a CLI ou IDE com IA que você já usa; as integrações de providers e de navegador dependem das tarefas que você pretende executar.
 
 No diretório do projeto, execute o instalador de bootstrap:
 
@@ -33,7 +45,7 @@ Os scripts de bootstrap instalam no projeto atual. Use `oma install --global` qu
 
 ## 2. Verificar o resultado
 
-Execute a verificação de saúde no mesmo diretório do projeto:
+Para o carregamento temporário de skill, confirme que o agente leu as instruções selecionadas e verifique a própria tarefa. Para uma instalação do runtime, execute a verificação de saúde no mesmo diretório do projeto:
 
 ```bash
 oma doctor
@@ -63,25 +75,29 @@ Se o comando simples ainda estiver ausente, abra um novo shell ou adicione o dir
 
 ## 3. Executar uma tarefa pequena
 
-Abra o repositório na ferramenta de IA configurada e peça uma skill nomeada e um resultado autocontido:
+Abra um repositório Git existente na sua ferramenta de IA. Use a skill `oma-scm` carregada ou a cópia instalada por um preset nomeado de runtime. Se você usou seleção personalizada, inclua `oma-scm` para este exemplo:
 
 ```text
-Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
+Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
 ```
 
-O host deve identificar a skill selecionada, inspecionar um alvo e informar uma edição pontual do link ou que o link já é válido. Inclua a saída do comando e o status de saída de qualquer verificação que tenha realmente sido executada.
+Compare a ramificação e as alterações informadas com a saída real do Git. O agente deve informar quais comandos foram executados e seus status de saída. Esta tarefa somente leitura não precisa de teste nem build de código.
 
-Um prompt em linguagem natural não inicia nenhum workflow; onde o hook de prompt está habilitado, ele acrescenta uma dica de skill, que é apenas uma sugestão. O roteamento de skills é feito pelo host ou pelo workflow selecionado, portanto um prompt arbitrário do host não garante um hook nem uma skill específica. O contrato de execução ainda deve inspecionar as convenções do repositório, fazer somente a alteração no escopo e informar a verificação. Os arquivos e comandos exatos dependem do projeto.
+Um prompt em linguagem natural não inicia nenhum workflow; onde o hook de prompt está habilitado, ele acrescenta uma dica informativa de skill. O roteamento de skills é feito pelo host ou pelo workflow selecionado, portanto um prompt arbitrário do host não garante um hook nem uma skill específica. O contrato de execução ainda deve inspecionar as convenções do repositório, respeitar o escopo somente leitura solicitado e informar as verificações observadas. Os arquivos e o comando exatos dependem do projeto.
 
 Para uma tarefa que atravesse limites de API e UI, selecione `/work` ou `/orchestrate` explicitamente. Para um único domínio, continue com [Execução de uma única skill](../guide/single-skill.md). O [Guia de uso](../guide/usage.md) contém exemplos mais longos.
 
-## 4. Conhecer os padrões antes de escalar
+## 4. Conhecer os padrões do runtime antes de escalar
+
+O carregamento temporário de skills não configura esses padrões do runtime. Para hooks de projeto, configuração de providers ou workflows em equipe, use o caminho de runtime em [Escolha uma configuração](./choose-setup.md).
 
 O OMA começa com `model_preset: auto`, Serena para inteligência de código, Agent Memory para memória semântica, busca web nativa e telemetria desabilitada. Serena usa o transporte compartilhado `bridge` e se atualiza automaticamente, salvo configuração diferente. O MCP do Browser DevTools é opt-in; uma configuração interativa nova oferece Aside primeiro. Consulte [Padrões importantes](./important-defaults.md) para as consequências e as chaves de substituição.
 
 Se uma tarefa gerenciada parar, comece com `oma agent status <session-id> [agent-id]`, depois inspecione o receipt em `.agents/state/agent-runs/` e o caminho do claim estruturado injetado. Esses registros mostram a execução, a tarefa, o workspace, o código de saída e o status da verificação. Arquivos legíveis `result-*.md` e `progress-*.md` em `.agents/state/memories/` acrescentam contexto quando presentes. Execute novamente somente o menor comando que falhou depois de confirmar que a execução não está mais ativa. Um [workflow persistente](./glossary.md#persistent-workflow) continua ativo até concluir ou você dizer `workflow done`; consulte [Workflows](../core-concepts/workflows.md#persistent-mode-mechanics) para a recuperação do arquivo de estado.
 
 ## Próximos passos
+
+- [Escolha uma configuração](./choose-setup.md) para uma skill, um preset de runtime ou o plugin do Claude Code
 
 - [Padrões importantes](./important-defaults.md) para precedência, providers e escolhas de recuperação
 - [Instalação](./installation.md) para presets, configuração de vendors, instalações globais e atualizações

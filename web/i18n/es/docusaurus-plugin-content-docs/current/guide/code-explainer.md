@@ -152,9 +152,9 @@ Ante cualquier detección, la generación se detiene inmediatamente, solo se inf
 
 ## Lista de validación
 
-Después de generar, se ejecuta una lista basada en grep contra el archivo de salida: ausencia de referencias que carguen recursos externos, cumplimiento de `pre`/`pre-wrap` para contenedores de código, presencia del script del cuestionario, formato de nombre `{YYYY-MM-DD}-{slug}.html` (fecha en la `timezone` de oma-config o, si no está definida, en la zona horaria del sistema) y análisis de secretos del HTML final. Si falla, el bucle corrige y vuelve a validar hasta **3 iteraciones**, y después se detiene y muestra los elementos que siguen fallando en vez de entregar el archivo en silencio.
+Después de generar, el flujo de trabajo ejecuta `oma explain validate <file>` y el análisis de secretos del HTML final contra el archivo de salida. El validador es la comprobación principal: ausencia de referencias que carguen recursos externos, cumplimiento de `pre`/`pre-wrap` para contenedores de código, presencia del script del cuestionario y formato de nombre `{YYYY-MM-DD}-{slug}.html` (fecha en la `timezone` de oma-config o, si no está definida, en la zona horaria del sistema). Los comandos grep del contrato HTML de la skill son comprobaciones puntuales complementarias, no un sustituto. Si falla, el bucle corrige y vuelve a validar hasta **3 iteraciones**, y después se detiene y muestra los elementos que siguen fallando en vez de entregar el archivo en silencio.
 
-Esta es una restricción de v1: la validación se basa en grep y archivos, y comprueba solo la *presencia* del script del cuestionario, no su corrección completa. Usa un navegador (o el MCP de chrome-devtools) para probar manualmente el cuestionario cuando necesites confianza en su comportamiento.
+Esta es una restricción de v1: la validación se basa en archivos, y comprueba solo la *presencia* del script del cuestionario, no su corrección completa. Usa un navegador (o el MCP de chrome-devtools) para probar manualmente el cuestionario cuando necesites confianza en su comportamiento.
 
 Puedes validar un artefacto existente con el comando CLI registrado:
 
@@ -185,7 +185,7 @@ La primera forma comprueba un archivo HTML. La forma con directorio comprueba ca
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-La fecha sigue la `timezone` de oma-config y, si no está definida, la zona horaria del sistema. Volver a ejecutar con la misma fecha y slug sobrescribe el archivo anterior; conservar una ejecución anterior es responsabilidad tuya. Cuando la validación pasa, el flujo intenta abrir la página (solo muestra una advertencia; en un entorno sin interfaz se limita a informar de la ruta) y muestra un TL;DR junto con la ruta del archivo. `oma explain render --open` abre la página directamente en el navegador.
+La fecha sigue la `timezone` de oma-config y, si no está definida, la zona horaria del sistema. Volver a ejecutar con la misma fecha y slug sobrescribe el archivo anterior; conservar una ejecución anterior es responsabilidad tuya. Cuando la validación pasa, el flujo abre la página renderizando el borrador validado con `oma explain render --open` y muestra un TL;DR junto con la ruta del archivo. Un error al abrir es una advertencia, no un fallo: un entorno sin interfaz se limita a informar de la ruta.
 
 ---
 
@@ -203,8 +203,8 @@ Cuando `diagram.explain_sidecar: true` está definido en `oma-config.yaml` o lo 
 | Falta la CLI `gh` o no está autenticada (referencia PR) | Ofrece instrucciones para instalar y autenticar, además de una alternativa local basada en el diff de la rama |
 | Merge o rebase en curso | Se detiene: el worktree es inestable |
 | Directorio que no es Git | Modo cambio: se detiene inmediatamente. El modo tema funciona sin git. |
-| La validación falla después de 3 bucles de corrección | Se detiene y muestra los elementos fallidos de la lista |
-| Falla `open` o el entorno no tiene interfaz | Solo muestra una advertencia; la ruta informada es suficiente |
+| La validación falla después de 3 bucles de corrección | Se detiene y muestra los elementos que fallan |
+| `--open` falla en un entorno sin interfaz | Solo muestra una advertencia; la ruta informada es suficiente |
 
 ---
 

@@ -55,8 +55,8 @@ De installer vraagt **What type of project?** en biedt een [skillpreset](../gett
 
 Als je een preset met de backendskill kiest, vraagt de installer om een taalvariant:
 
-- **Python:** FastAPI/SQLAlchemy (standaard)
-- **Node.js:** NestJS/Hono + Prisma/Drizzle
+- **Python:** Litestar/SQLAlchemy (standaard)
+- **Node.js:** NestJS + Prisma
 - **Rust:** Axum/Actix-web
 - **Other / Auto-detect:** later configureren met `/stack-set`
 
@@ -118,6 +118,14 @@ De installer toont een samenvatting van alles wat is geïnstalleerd:
 - Locatie van de skillsmap
 - Aangemaakte symlinks
 - Overgeslagen items (indien aanwezig)
+
+Install en update migreren ook verouderde documentlocaties naar de [artefactindeling](./artifact-layout.md). Bestaande bestanden blijven behouden bij naamconflicten, en rapporten die aan uitvoeringsbewijs zijn gekoppeld blijven op hun oorspronkelijke paden. Bekijk de wijzigingen vooraf vóór het upgraden:
+
+```bash
+oma docs migrate --dry-run
+```
+
+Zie [Een bestaand project migreren](./artifact-layout.md#migrate-an-existing-project) voor de bronpaden, conflictafhandeling en de handmatige opdracht.
 
 ---
 
@@ -380,11 +388,11 @@ De installer downloadt de nieuwste releasetarball uit de GitHub-releases van oh-
 
 ### 6. Configuratie installeren
 
-`installConfigs()` kopieert aanvullende bestanden naar `.agents/config/`, maakt `.agents/mcp.json` aan en initialiseert de gebruikersconfiguratie `.agents/oma-config.yaml` of `.agents/oma-config.cue`. Bestaande gebruikersbestanden blijven behouden tenzij `--force` wordt gebruikt; `oma update` behoudt de gebruikersconfiguratie ook en voegt indien nodig nieuwe top-level-sleutels uit het sjabloon toe.
+`installConfigs()` maakt `.agents/mcp.json` aan en initialiseert de gebruikersconfiguratie `.agents/oma-config.yaml` of `.agents/oma-config.cue`. Bestaande gebruikersbestanden blijven behouden tenzij `--force` wordt gebruikt; `oma update` behoudt de gebruikersconfiguratie ook en voegt indien nodig nieuwe top-level-sleutels uit het sjabloon toe.
 
 ### 7. Skills installeren
 
-Voor elke geselecteerde skill kopieert `installSkill()` de skillmap naar `.agents/skills/{skill-name}/`. Als een variant is geselecteerd, bijvoorbeeld Python voor backend, wordt ook de map `stack/` met taalspecifieke resources ingesteld.
+Voor elke geselecteerde skill kopieert `installSkill()` de skillmap naar `.agents/skills/{skill-name}/`. Als een variant is geselecteerd (bijvoorbeeld Python voor backend), wordt die variant ook gekopieerd naar de map `stack/` van de skill en wordt de overbodige map `variants/` verwijderd. Een skill die zonder variant is geïnstalleerd, zoals oma-mobile, behoudt zijn map `variants/`, die zijn SKILL.md rechtstreeks leest.
 
 ### 8. Vendor-aanpassingen
 
@@ -423,3 +431,4 @@ Zoals hierboven in het CLI-pad beschreven, configureren install en update option
 - [Modelconfiguratie per agent](./per-agent-models.md): kies het model en de CLI voor elke agent
 - [Codex hook trust](./codex-hook-trust.md): de eenmalige `/hooks`-stap voor Codex
 - [Geautomatiseerde updates](./automated-updates.md): houd de installatie actueel vanuit CI
+- [Artefactindeling](./artifact-layout.md): documentlocaties, promotie en migratie

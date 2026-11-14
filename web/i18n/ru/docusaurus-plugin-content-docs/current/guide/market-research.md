@@ -1,7 +1,7 @@
 ---
 title: "Руководство: исследование рынка (engine last30days)"
 sidebar_label: Исследование рынка
-description: Как skill oma-market проводит исследование сигналов сообществ через upstream engine mvanhorn/last30days, автоматически поддерживаемый на последнем release, — раздел market config, oma market resolve / update / run, gate detect-trap, сопоставление intent с framework и режимы ошибок.
+description: Как skill oma-market проводит исследование сигналов сообществ через upstream engine mvanhorn/last30days, установленный как skill через skills CLI, — раздел market config, oma market resolve / update / run, gate detect-trap, сопоставление intent с framework и режимы ошибок.
 ---
 
 # Исследование рынка
@@ -36,26 +36,32 @@ description: Как skill oma-market проводит исследование �
 
 ---
 
-## Всегда последняя версия engine (нужен Python 3.12+) {#always-the-latest-engine--nothing-to-install}
+## Установка engine (нужен Python 3.12+) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- Кэш: `~/.cache/oma-market/last30days/<tag>/` плюс `state.json`.
-- Перед каждым использованием `resolve` запрашивает у GitHub последний release (не чаще одного раза за `check_interval_min`, по умолчанию 60 min), загружает более новый tag в собственный каталог (старые tag удаляются), иначе использует cache. При сетевых ошибках используется копия из cache со статусом `stale`.
-- Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` в PATH (версия должна быть ≥ 3.12) → `uv python find '>=3.12'`. Если interpreter не найден, `resolve` завершается неуспешно и печатает подсказку по установке; skill останавливается, а не скатывается к исследованию одним web search.
+- `resolve` читает только установленные каталоги навыков и никогда не обращается к сети. Если ничего не установлено, статус не равен ok и выводится команда установки; перед запуском `oma market update` skill спрашивает подтверждение.
+- `oma update` не устанавливает engine. Обновляйте его через `oma market update` (или `bunx skills update last30days -g -y`).
+- Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` в PATH (версия должна быть ≥ 3.12) → `uv python find '>=3.12'`. Если interpreter не найден, статус `resolve` не равен ok и печатается подсказка по установке; skill останавливается, а не скатывается к исследованию одним web search.
 - Конфигурация engine и API key хранятся в `~/.config/last30days/` (их записывает upstream setup wizard с вашего согласия), поэтому переживают обновления engine.
 
-Порядок разрешения (побеждает первое совпадение): `market.path` → `LAST30DAYS_HOME` → **последний управляемый release** → пользовательские копии (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` в проекте и под `~`, затем plugin cache Claude Code).
+Порядок разрешения (побеждает первое совпадение): `market.path` → `LAST30DAYS_HOME` → установленные каталоги навыков (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` в проекте, затем под `~`, затем `~/.config/agents/skills/last30days` и plugin cache Claude Code). Установка через plugin Claude Code обновляется командой `/plugin`, а не через `oma market update`.
 
 ```bash
 oma market update            # force a check / download now
@@ -89,14 +95,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` — отклоняет темы-ловушки по ключевым словам и темы демографического шопинга (exit 2) и предлагает переформулировку. Пустая тема или тема длиннее 200 символов завершается с exit 4.
 2. `oma market resolve --json` — engine и Python; останавливается при `ok: false`.
 3. Agent полностью читает `SKILL.md` разрешённого engine и следует ему: setup wizard при первом запуске, разрешение handle / subreddit / hashtag до исследования (если доступен WebSearch), планирование query, precondition gate.
 4. `oma market run "<topic>" <flags> --emit=compact` — те же аргументы, что и upstream-вызов `python3 scripts/last30days.py`; `--save-dir` добавляется из `market.save_dir`.
-5. Синтез следует upstream OUTPUT CONTRACT (badge в первой строке, упорядоченные evidence clusters, LAWs 1–8), затем oma добавляет разделы framework, ссылающиеся только на clusters engine:
+5. Синтез следует upstream OUTPUT CONTRACT (badge в первой строке, упорядоченные evidence clusters, LAWs 1–8), затем oma добавляет разделы framework между основным текстом engine и footer engine, ссылаясь только на clusters engine:
 
 | Intent | Формирование запроса к engine | Framework |
 |---|---|---|
@@ -105,7 +111,7 @@ flowchart TD
 | competitor | `"A vs B"` → upstream comparison flow | SWOT + Porter's 5F |
 | discovery | `--discover`, затем дополнительные `--drill` | SWOT + PESTEL |
 
-6. Self-check, затем запись `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
+6. Запишите `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`, затем выполните self-check по записанному файлу; при необходимости исправьте и проверьте повторно до выдачи brief.
 
 ---
 

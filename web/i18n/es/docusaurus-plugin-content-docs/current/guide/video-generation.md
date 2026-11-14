@@ -64,7 +64,8 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
 oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
@@ -87,9 +88,9 @@ Otras herramientas que ejecutan `oma video generate --output json` interpretan u
 
 ---
 
-## HyperFrames siempre actualizado: tú escribes la composición {#always-latest-hyperframes--you-author-the-composition}
+## Toolchain gestionado de HyperFrames y autoría de composiciones {#always-latest-hyperframes--you-author-the-composition}
 
-oh-my-agent **no incluye código de composición de HyperFrames**. Cada ejecución obtiene su propio proyecto en `<runDir>/hyperframes/`, preparado por `oma video compose` con la versión más reciente de HyperFrames publicada en npm (la caché del toolchain está en `~/.cache/oma-video/hyperframes/<version>/`, compartida mediante un enlace simbólico a `node_modules`) y con [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) en HEAD (`~/.cache/oma-video/hyperframes-skills/`). El agente escribe el código de composición generado siguiendo el `AUTHORING.md` del scaffold, las skills y la especificación del modo en `.agents/skills/oma-video/resources/hyperframes-authoring/`.
+oh-my-agent **no incluye código de composición de HyperFrames**. Cada ejecución obtiene su propio proyecto en `<runDir>/hyperframes/`, preparado por `oma video compose` con la versión más reciente de HyperFrames en npm (caché del toolchain `~/.cache/oma-video/hyperframes/<version>/`, compartida mediante un enlace simbólico a `node_modules`) y con las skills `hyperframes` y `hyperframes-cli` de [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) instaladas mediante la [skills CLI](https://github.com/vercel-labs/skills). El agente escribe el código fuente de la composición generada siguiendo el `AUTHORING.md` del scaffold, las skills y la especificación del modo en `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -98,14 +99,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- Las comprobaciones de versión más reciente (npm + GitHub) están limitadas por `video.hyperframes.check_interval_min` (60 de forma predeterminada; `0` = comprobar en cada compose). `oma update` respeta el intervalo; `oma video doctor --upgrade` fuerza una comprobación; las ejecuciones sin conexión usan el toolchain en caché e informan `stale`.
+- Las comprobaciones de la última versión del toolchain (npm) están limitadas por `video.hyperframes.check_interval_min` (60 por defecto; `0` = comprobar en cada compose). `oma update` respeta el intervalo; `oma video doctor --upgrade` fuerza una comprobación; las ejecuciones sin conexión usan el toolchain en caché e informan `stale`.
+- Skills: `oma video doctor --install` instala las que falten (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` también actualiza las instaladas; `oma update` solo actualiza las skills ya instaladas. Sin ellas, `AUTHORING.md` enlaza en su lugar con la documentación upstream. La copia antigua de `~/.cache/oma-video/hyperframes-skills/` ya no se lee y puede eliminarse.
 - La reproducibilidad vive en el directorio de ejecución: `render-spec.json`, el código de composición escrito y la versión del toolchain registrada en los metadatos del paquete HyperFrames generado. Volver a renderizar la misma ejecución reutiliza ese contrato de renderizado; una ejecución nueva comprueba la versión más reciente de HyperFrames.
 - Un fallo de lint o renderizado **no** se oculta detrás de un placeholder (eso solo existe para `OMA_VIDEO_MOCK=1`): `oma video render` termina con código 1 y los diagnósticos, y el agente corrige la composición usando las skills más recientes. Un fallo en una versión nueva de HyperFrames es un error de composición, nunca un motivo para fijar la versión.
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---
@@ -128,14 +130,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | Etiqueta de idioma de narración/subtítulos. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (alineación sin clave). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. Selecciona el orden de proveedores visuales; consulta [Cadena visual](#visual-chain). |
 | `--voice <profile>` | Voz de narración o `none` (la predeterminada; si se omite, el vídeo se renderiza sin sonido con una temporización de subtítulos estimada). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` o `none`. |
 | `--compositor <c>` | `hyperframes` (predeterminado) \| `mpt`. |
 | `--capture <path>` | Tu grabación para el modo demo: `.mp4`, `.mov`, `.webm` o `.mkv`, guardada dentro del proyecto. |
 | `--source <k>` | Fuente de captura demo: `file` o `web` (predeterminada: `file`). |
 | `--url <url>` | URL de contexto para `--source web`, que se guarda enmascarada en `manifest.json`. Obligatoria con `--source web`; nunca inicia una captura y no sustituye a `--capture`. |
-| `--polish` | Superpone la composición HyperFrames sobre las imágenes capturadas. |
+| `--polish` | Modo demo: usa la captura como fondo de la composición `Demo` de HyperFrames, donde se enmascara la información personal. Sin él, la captura sin procesar y sin enmascarar se copia al MP4 de salida y no se ejecuta ninguna composición. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | Se aceptan, pero no se usan: oma no controla un navegador ni graba la pantalla. |
 | `--output-dir <path>` | Directorio base de salida. Las rutas fuera de `$PWD` requieren `--allow-external-output`. |
 | `--allow-external-output` | Permite rutas de salida fuera de `$PWD`. |
@@ -159,14 +161,33 @@ Las etapas de proveedor se resuelven en una **rama real** y, cuando la etapa lo 
 |-----------|-----------|-------------|
 | script | `script.json` escrito por el agente y pasado con `--script <path>` (el flujo de trabajo `/video` lo escribe) | esqueleto determinista de tres escenas a partir del texto del brief |
 | voice | `oma-voice` (Voicebox o VoiceStudio, local; elegido con `voice.backend`) con `--voice <profile>` | vídeo sin sonido con temporización estimada (`--voice none`, el valor predeterminado) |
-| visual | `oma-image`, `oma-slide` y clips de stock de Pexels cuando `PEXELS_API_KEY` está definida | recurso placeholder |
-| visual: `aigc` | aún no está conectado; `RUNNINGHUB_API_KEY` habilita el proveedor, que sigue escribiendo placeholders | recurso placeholder |
+| visual | imágenes fijas de `oma-image` por defecto; un fotograma de `oma-slide` para una escena cuyo `visual.ref` sea un directorio de deck existente; clips de stock de Pexels con `--visual stock` cuando `PEXELS_API_KEY` está definida | recurso placeholder |
+| visual: `aigc` | se selecciona con `--visual aigc` cuando `RUNNINGHUB_API_KEY` está definida; la llamada en vivo aún no está conectada, por lo que el proveedor sigue escribiendo placeholders | recurso placeholder |
 | caption | `.srt` y `.vtt` alineados con `timing.json`, en el idioma del guion | igual; la traducción a `--locale` aún no está conectada |
 | music | fondo musical de Strudel tras `oma video doctor --install-strudel` | sin pista de música |
 | capture | una grabación que aportas con `--capture <file>` | ninguna: sin `--capture`, el modo demo imprime instrucciones de grabación y termina con código 3 |
 | compositor | HyperFrames (gestionado) o MoneyPrinterTurbo | sin alternativa de compositor; la ejecución falla con diagnósticos |
 
-No se automatizan credenciales: tú realizas cualquier inicio de sesión en pantalla mientras grabas; las URL y los tokens de consulta se enmascaran en los registros y en el manifiesto.
+### Cadena visual {#visual-chain}
+
+`--visual` y el modo eligen el orden de proveedores que se recorre para cada escena:
+
+| `--visual` | Modo | Orden |
+|------------|------|-------|
+| `auto` (predeterminado) | `shorts`, `demo` | `providers.visual.order` (por defecto `oma-image`, `pexels`, `pixelle`) |
+| `auto` (predeterminado) | `explainer` | `oma-slide`, `oma-image` y después `providers.visual.order` |
+| `generate` | cualquiera | `oma-image` |
+| `slide` | cualquiera | `oma-slide`, `oma-image` |
+| `stock` | cualquiera | `pexels`, `oma-image` |
+| `aigc` | cualquiera | `pixelle`, `oma-image` |
+
+- La cadena solo avanza tras un proveedor que no está disponible o que lanza un error. `oma-image` y `oma-slide` siempre están disponibles y escriben un placeholder en lugar de lanzar un error, así que nunca se alcanza nada de lo que aparece después de ellos. Con el orden predeterminado, `oma-image` se queda por tanto con todas las escenas: Pexels necesita `--visual stock` además de `PEXELS_API_KEY`, y Pixelle necesita `--visual aigc` además de `RUNNINGHUB_API_KEY`.
+- `oma-slide` exporta un fotograma únicamente para una escena cuyo `visual.ref` en `script.json` sea la ruta de un directorio de deck existente; no genera un deck. El primer fotograma exportado se convierte en el visual de la escena, así que dale a cada escena de diapositiva su propio deck de una sola diapositiva. Cualquier otra escena que gestione recibe un placeholder, lo que incluye cada escena de `explainer` sin un deck bajo `--visual auto`. Construye primero los decks con `oma-slide`, o pasa `--visual generate` para usar imágenes fijas de `oma-image`.
+- Un placeholder se registra en `warnings` como ruta alternativa para esa escena.
+
+### Captura demo y enmascarado
+
+Tú realizas cualquier inicio de sesión en pantalla mientras grabas; oma no automatiza credenciales, y las URL y los tokens de consulta se enmascaran en los registros y en el manifiesto. La información personal de la grabación solo se enmascara en la composición `--polish`. Una ejecución demo sin `--polish` copia la captura sin procesar al MP4 de salida; entrega ese archivo únicamente después de haber inspeccionado el vídeo y comprobar que no hay nada que enmascarar; en caso contrario, vuelve a ejecutar con `--polish`.
 
 Los subtítulos se renderizan como **indicaciones estáticas por ventana**: una sola línea de subtítulo activa en el fotograma actual, ajustada mediante CSS, sin animación por palabra.
 

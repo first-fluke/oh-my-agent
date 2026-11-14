@@ -152,9 +152,9 @@ Nếu phát hiện hit, generation dừng ngay, chỉ báo vị trí đã mask (
 
 ## Validation checklist {#validation-checklist}
 
-Sau generation, grep-based checklist chạy trên output file: không có external resource-loading reference, code-container `pre`/`pre-wrap` hợp lệ, quiz script hiện diện, filename dạng `{YYYY-MM-DD}-{slug}.html` (date theo `timezone` trong oma-config, nếu không có thì theo timezone của hệ thống) và final-HTML secret scan. Khi thất bại, loop sửa và validate lại tối đa **3 iteration**, sau đó dừng và nêu item còn fail thay vì âm thầm giao.
+Sau generation, workflow chạy `oma explain validate <file>` và final-HTML secret scan trên output file. Validator là bước kiểm tra chính: không có external resource-loading reference, code-container `pre`/`pre-wrap` hợp lệ, quiz script hiện diện và filename dạng `{YYYY-MM-DD}-{slug}.html` (date theo `timezone` trong oma-config, nếu không có thì theo timezone của hệ thống). Các lệnh grep trong HTML contract của skill chỉ là kiểm tra bổ sung, không phải lựa chọn thay thế. Khi thất bại, loop sửa và validate lại tối đa **3 iteration**, sau đó dừng và nêu item còn fail thay vì âm thầm giao.
 
-Đây là giới hạn v1: validation dựa trên grep/file và chỉ xác minh quiz-script *có mặt* (không xác minh đầy đủ behavior). Dùng browser (hoặc chrome-devtools MCP) để tự chạy quiz khi cần confidence về behavior.
+Đây là giới hạn v1: validation dựa trên file và chỉ xác minh quiz-script *có mặt* (không xác minh đầy đủ behavior). Dùng browser (hoặc chrome-devtools MCP) để tự chạy quiz khi cần confidence về behavior.
 
 Có thể validate artifact hiện có bằng CLI đã đăng ký:
 
@@ -185,7 +185,7 @@ Dạng đầu kiểm tra một HTML file. Dạng directory kiểm tra mọi repo
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-Date theo `timezone` trong oma-config; nếu không đặt thì dùng timezone của hệ thống. Chạy lại cùng date + slug sẽ ghi đè file trước — trách nhiệm giữ run cũ thuộc về bạn. Sau khi validation pass, workflow thử mở trang (warn-only; môi trường headless chỉ fallback sang báo path) và báo TL;DR cùng file path. `oma explain render --open` mở trang trực tiếp trong browser.
+Date theo `timezone` trong oma-config; nếu không đặt thì dùng timezone của hệ thống. Chạy lại cùng date + slug sẽ ghi đè file trước — trách nhiệm giữ run cũ thuộc về bạn. Sau khi validation pass, workflow mở trang bằng cách render bản nháp đã xác minh với `oma explain render --open` và báo TL;DR cùng file path. Mở thất bại chỉ là cảnh báo, không phải lỗi: môi trường headless sẽ fallback sang báo path.
 
 ---
 
@@ -203,8 +203,8 @@ Khi `diagram.explain_sidecar: true` được đặt trong `oma-config.yaml` ho�
 | `gh` CLI thiếu hoặc chưa authenticate (PR ref) | Hướng dẫn install/auth, kèm alternative local branch-diff |
 | Đang merge/rebase | Dừng — worktree không ổn định |
 | Không phải thư mục git | Change mode: dừng ngay. Topic mode chạy không cần git. |
-| Validation fail sau 3 fix loop | Dừng và nêu item checklist còn fail |
-| `open` fail / môi trường headless | Chỉ cảnh báo — path đã báo là đủ |
+| Validation fail sau 3 fix loop | Dừng và nêu các item còn fail |
+| `--open` fail trong môi trường headless | Chỉ cảnh báo — path đã báo là đủ |
 
 ---
 

@@ -36,32 +36,38 @@ O resultado é um único brief em `.agents/results/market/{topic-slug}-{YYYYMMDD
 
 ---
 
-## Engine sempre na versão mais recente (requer Python 3.12+) {#always-the-latest-engine--nothing-to-install}
+## Instale o engine (requer Python 3.12+) {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- Cache: `~/.cache/oma-market/last30days/<tag>/` + `state.json`.
-- Antes de cada uso, `resolve` consulta no GitHub a release mais recente (limitada a uma vez por `check_interval_min`, padrão 60 min), baixa uma tag mais nova para seu próprio diretório (tags antigas são removidas) e, caso contrário, reutiliza o cache. Falhas de rede reutilizam a cópia em cache e informam `stale`.
+- `resolve` lê apenas os diretórios de skills instalados e nunca acessa a rede. Quando nada está instalado, ele não fica ok e indica o comando de instalação; a skill pergunta antes de executar `oma market update`.
+- `oma update` não instala o engine. Atualize-o com `oma market update` (ou `bunx skills update last30days -g -y`).
 - Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` no PATH (deve ser ≥ 3.12) → `uv python find '>=3.12'`. Se nenhum for encontrado, `resolve` não fica ok e imprime a dica de instalação; a skill para em vez de degradar para uma pesquisa somente na web.
 - A configuração do engine e as chaves de API ficam em `~/.config/last30days/` (gravadas pelo assistente de configuração upstream com seu consentimento), portanto sobrevivem às atualizações do engine.
 
-Ordem de resolução (o primeiro resultado vence): `market.path` → `LAST30DAYS_HOME` → **managed latest** → cópias instaladas pelo usuário (`.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days` no projeto e em `~`, depois o cache de plugins do Claude Code).
+Ordem de resolução (o primeiro resultado vence): `market.path` → `LAST30DAYS_HOME` → diretórios de skills instalados (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` no projeto, depois em `~`, depois `~/.config/agents/skills/last30days` e o cache de plugins do Claude Code). Uma instalação pelo plugin do Claude Code é atualizada por meio de `/plugin`, não por `oma market update`.
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+Versões anteriores mantinham sua própria cópia em `~/.cache/oma-market/`. Ela não é mais lida; você pode excluí-la.
 
 ---
 
@@ -69,13 +75,12 @@ oma market run -- --help     # the engine's own flags (without `--`, oma prints 
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`, `channel` e `check_interval_min` estão obsoletos: ainda passam na validação, mas são ignorados, e `resolve` imprime um aviso enquanto estiverem definidos.
 
 ---
 

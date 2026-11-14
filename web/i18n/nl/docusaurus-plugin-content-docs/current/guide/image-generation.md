@@ -259,7 +259,7 @@ Wil je precies zien wat naar de provider is gestuurd, controleer dan het veld `p
 
 ## Configuratie
 
-- **Projectconfiguratie:** de sectie `image:` van `.agents/oma-config.yaml`. De verouderde `config/image-config.yaml` wordt niet meer gelezen.
+- **Projectconfiguratie:** de sectie `image:` van `.agents/oma-config.yaml`. Meegeleverde standaarden staan in de CLI, dus schrijf alleen de sleutels die je wijzigt.
 - **Omgevingsvariabelen:**
   - `OMA_IMAGE_DEFAULT_VENDOR`: overschrijft de geconfigureerde standaardvendor (`auto`). De vlag `--vendor` zelf staat standaard op `auto`, dus geef `--vendor` per commando mee wanneer je een specifieke vendor nodig hebt.
   - `OMA_IMAGE_DEFAULT_OUT`: overschrijft de standaarduitvoermap

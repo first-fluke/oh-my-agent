@@ -89,7 +89,7 @@ De dashboards lezen uit de directory `.agents/state/memories/`. Agenten en workf
 | `orchestrator-session.md` | `/orchestrate` stap 2 | Sessie-ID, starttijd, status (RUNNING/COMPLETED/FAILED), workflowversie |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | Sessiemetadata, fasevoortgang, samenvatting van het gebruikersverzoek |
 | `task-board.md` | Orchestratieworkflows | Markdown-tabel met agenttoewijzingen, statussen en taken |
-| `progress-{agent}.md` | Elke gestarte agent | Huidige beurt, waaraan de agent werkt en tussentijdse resultaten |
+| `progress-{agent}-{task}-{run}-{session}.md` | Elke gestarte agent | Toegevoegde `## Turn N`-items: wat de agent deed, huidige status, gewijzigde bestanden |
 | `result-{agent}.md` | Elke voltooide agent | Eindstatus (COMPLETED/FAILED), gewijzigde bestanden, gevonden problemen en deliverables |
 | `debug-{id}.md` | `/debug`-workflow | Bugdiagnose, hoofdoorzaak, toegepaste fix en locatie van de regressietest |
 | `experiment-ledger-{sessionId}.md` | Daadwerkelijke experimenten | Vergelijkbare evidence voor baseline en kandidaat, vereiste checks en beslissingen |
@@ -105,7 +105,7 @@ Het dashboard gebruikt meerdere strategieën om informatie uit te lezen:
 
 3. **Agenten ontdekken:** Als er geen task board is, zoekt het in alle `.md`-bestanden naar patronen als `**Agent**: {name}`, regels als `Agent: {name}` of bestandsnamen met `_agent` of `-agent`.
 
-4. **Beurten tellen:** Leest voor elke gevonden agent `progress-{agent}.md` en haalt het aantal beurten uit patronen als `turn: N`.
+4. **Beurten tellen:** Kiest voor elke gedetecteerde agent het nieuwste bestand waarvan de naam begint met `progress-{agent}` en leest de laatste regel met `Turn N` (of `turn: N`) erin.
 
 5. **Activiteitsfeed:** Toont de 5 meest recent gewijzigde `.md`-bestanden en haalt daaruit de laatste betekenisvolle regel (heading, statusregel, actiepunt) als activiteitsbericht. Het webdashboard stelt de recapweergave ook beschikbaar op `/recap`.
 
@@ -124,13 +124,13 @@ Het bovenste gedeelte toont:
 De agenttabel toont elke gedetecteerde agent met:
 - **Agentnaam:** De domeinidentifier (backend, frontend, mobile, qa, debug, pm).
 - **Status:** De huidige toestand met visuele indicator (running/completed/failed/blocked/pending).
-- **Beurt:** Het huidige beurtgetal van de agent (hoeveel iteraties zijn voltooid). Dit wordt uit progressbestanden gehaald.
+- **Beurt:** Het nummer van het nieuwste voortgangsitem van de agent. Dit wordt uit progressbestanden gehaald; het telt items, geen modelbeurten.
 - **Taak:** Een korte beschrijving van waaraan de agent werkt (afgekapt om te passen).
 
 ### Agentvoortgang
 
-Voortgang wordt bijgehouden via `progress-{agent}.md`-bestanden. Elke agent werkt zijn bestand bij tijdens de uitvoering. Het dashboard leest daaruit:
-- Het aantal beurten (neemt toe naarmate de agent vordert).
+Voortgang wordt bijgehouden via `progress-{agent}-*.md`-bestanden. Elke agent voegt een item toe bij een betekenisvol checkpoint (een afgeronde stap, een blokkade, een gewijzigde aanpak). Het dashboard pollt deze bestanden voor:
+- Beurtnummer (het nieuwste itemnummer).
 - De huidige actie (waaraan de agent nu werkt).
 - Tussentijdse resultaten (gedeeltelijke voltooiingen).
 

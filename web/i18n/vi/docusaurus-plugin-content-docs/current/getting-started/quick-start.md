@@ -1,13 +1,25 @@
 ---
 title: Bắt đầu nhanh
-description: Chạy một task có phạm vi từ cài đặt đến xác minh, kèm output mong đợi và cách khôi phục.
+description: Chọn một skill hoặc một runtime preset, rồi chạy task đầu tiên có phạm vi rõ kèm xác minh thực tế.
 ---
 
 # Bắt đầu nhanh
 
-Để chạy một task nhỏ và ghi lại kết quả cụ thể, bạn cần một thư mục dự án và ít nhất một AI CLI hoặc IDE được hỗ trợ. Trình cài đặt có thể thiết lập `bun`, `uv`, Serena, CUE và lệnh `oma` global trên macOS, Linux hoặc Windows; tích hợp host đã chọn là bắt buộc cho prompt đầu tiên, còn tích hợp provider và trình duyệt là tùy chọn.
+Dùng một task có trọng tâm để kiểm tra kết quả. Tải một skill vào coding agent bạn đang dùng, hoặc cài đặt runtime khi bạn cần project hook, agent chuyên biệt và workflow. [Chọn cách thiết lập](./choose-setup.md) giải thích các hướng khả dụng và dependency tương ứng.
 
-## 1. Cài đặt
+## 1. Chọn cách thiết lập {#1-install}
+
+Với task Git chỉ đọc bên dưới, yêu cầu agent tải skill và đọc hướng dẫn cùng thư mục hỗ trợ của nó:
+
+```bash
+bunx skills use first-fluke/oh-my-agent@oma-scm
+```
+
+Tiếp tục với task ở Bước 3. Thao tác CLI của skill, các skill khác, rule của dự án và dịch vụ bên ngoài vẫn là các dependency riêng. Việc tải skill này không chạy bộ cài OMA.
+
+### Cài runtime khi cần
+
+Bootstrap runtime có thể chuẩn bị `bun`, `uv`, Serena, CUE và lệnh `oma` global. Hãy chọn AI CLI hoặc IDE bạn đang dùng; các tích hợp provider và trình duyệt phụ thuộc vào những task bạn dự định chạy.
 
 Từ thư mục dự án, chạy bootstrap installer:
 
@@ -21,7 +33,7 @@ Trong Windows PowerShell, chạy:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-Thiết lập tương tác sẽ hỏi ngôn ngữ phản hồi, các CLI vendor, [capability provider](./glossary.md#capability-provider), [model preset](./glossary.md#model-preset), project [skill preset](./glossary.md#skill-preset) và stack variant. Ở lần chạy đầu tiên, hãy giữ giá trị mặc định, chọn vendor bạn đang dùng và chọn project preset gần với repository nhất. Xem [Preset](./installation.md#presets) để biết skill của từng preset và các [workflow cần skill nằm ngoài preset](./installation.md#workflows-that-need-skills-outside-a-preset).
+Thiết lập giữ nguyên ngôn ngữ phản hồi hiện có hoặc tự động phát hiện ngôn ngữ hệ thống. Thiết lập tương tác sẽ hỏi các CLI vendor, [capability provider](./glossary.md#capability-provider), [model preset](./glossary.md#model-preset), project [skill preset](./glossary.md#skill-preset) và stack variant. Ở lần chạy đầu tiên, hãy giữ giá trị mặc định, chọn vendor bạn đang dùng và chọn project preset gần với repository nhất. Xem [Preset](./installation.md#presets) để biết skill của từng preset và các [workflow cần skill nằm ngoài preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Nếu đã có `bun`, dùng trực tiếp installer:
 
@@ -33,7 +45,7 @@ Bootstrap script cài đặt vào dự án hiện tại. Dùng `oma install --gl
 
 ## 2. Kiểm tra kết quả
 
-Chạy health check từ cùng thư mục dự án:
+Khi tải skill tạm thời, hãy xác nhận agent đã đọc hướng dẫn được chọn và tự xác minh task. Với bản cài runtime, chạy health check từ cùng thư mục dự án:
 
 ```bash
 oma doctor
@@ -63,19 +75,21 @@ Nếu lệnh trần vẫn không tìm thấy, mở shell mới hoặc thêm thư
 
 ## 3. Chạy một task nhỏ
 
-Mở repository trong AI tool đã cấu hình và yêu cầu một skill có tên cụ thể cùng một kết quả độc lập:
+Mở một Git repository sẵn có trong AI tool của bạn. Dùng skill `oma-scm` đã tải, hoặc bản sao được cài bởi một runtime preset cụ thể. Nếu bạn dùng tùy chọn Custom, hãy thêm `oma-scm` cho ví dụ này:
 
 ```text
-Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
+Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
 ```
 
-Host cần nêu rõ skill đã chọn, kiểm tra một mục tiêu và báo cáo một chỉnh sửa link có trọng tâm hoặc cho biết link vốn đã hợp lệ. Hãy kèm output lệnh và exit status cho mọi bước kiểm tra thực sự đã chạy.
+So sánh branch và các thay đổi được báo cáo với output Git thực tế. Agent cần báo cáo các lệnh đã chạy cùng exit status của chúng. Task chỉ đọc này không cần test mã hay build.
 
-Khi keyword hook được bật cho host đã chọn, nó có thể kích hoạt workflow phù hợp. Host hoặc workflow đã chọn thực hiện skill routing, vì vậy prompt tùy ý của host không đảm bảo có hook, skill cụ thể hoặc `CHARTER_CHECK`. Execution contract vẫn phải kiểm tra quy ước của repository, chỉ thực hiện thay đổi trong phạm vi và báo cáo kết quả xác minh. File và lệnh chính xác phụ thuộc vào dự án.
+Một prompt thông thường không khởi động workflow nào; nơi prompt hook được bật, nó chỉ thêm gợi ý skill mang tính tham khảo. Host hoặc workflow đã chọn thực hiện skill routing, vì vậy prompt tùy ý của host không đảm bảo có hook hoặc skill cụ thể. Execution contract vẫn phải kiểm tra quy ước của repository, chỉ thực hiện thay đổi trong phạm vi và báo cáo kết quả xác minh. File và lệnh chính xác phụ thuộc vào dự án.
 
 Với task đi qua ranh giới API và UI, hãy chọn rõ `/work` hoặc `/orchestrate`. Với một domain duy nhất, tiếp tục với [Thực thi một skill](../guide/single-skill.md). [Hướng dẫn sử dụng](../guide/usage.md) có các ví dụ dài hơn.
 
-## 4. Biết các mặc định trước khi mở rộng
+## 4. Biết các mặc định runtime trước khi mở rộng
+
+Việc tải skill tạm thời không cấu hình các mặc định runtime này. Để dùng project hook, thiết lập provider hoặc workflow nhóm, hãy dùng hướng cài runtime trong [Chọn cách thiết lập](./choose-setup.md).
 
 OMA khởi động với `model_preset: auto`, Serena cho code intelligence, Agent Memory cho semantic memory, native web search và telemetry bị tắt. Serena dùng transport dùng chung `bridge` và tự động cập nhật nếu không được cấu hình khác. Browser DevTools MCP là tùy chọn bật; thiết lập tương tác mới sẽ đề xuất Aside trước. Xem [Các mặc định quan trọng](./important-defaults.md) để biết hệ quả và các khóa ghi đè.
 
@@ -83,6 +97,7 @@ Nếu managed task bị dừng, bắt đầu bằng `oma agent status <session-i
 
 ## Bước tiếp theo
 
+- [Chọn cách thiết lập](./choose-setup.md) cho một skill, một runtime preset hoặc plugin Claude Code
 - [Các mặc định quan trọng](./important-defaults.md) về precedence, provider và lựa chọn khôi phục
 - [Cài đặt](./installation.md) về preset, thiết lập vendor, cài đặt toàn cục và cập nhật
 - [Agents](../core-concepts/agents.md) về 33 skill package và vai trò dispatch

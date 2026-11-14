@@ -8,7 +8,7 @@ description: Flujo estructurado de depuración en siete pasos, con triaje de sev
 
 ## Cuándo usar el flujo de depuración
 
-Usa `/debug` (o di «fix bug», «fix error» o «debug» en lenguaje natural) cuando tengas un bug concreto que diagnosticar y corregir. El flujo ofrece pasos reproducibles para identificar la causa raíz y corregir el bug.
+Usa `/debug` para diagnosticar un bug concreto. Una petición en lenguaje natural como "find the root cause" carga la skill `oma-debug` mediante la sugerencia de skills, pero solo el comando slash inicia este flujo de trabajo. El flujo de trabajo de siete pasos incluye triaje por severidad, diagnóstico respaldado por el código fuente y validación posterior a la corrección.
 
 El flujo de depuración admite todos los proveedores configurados. Los pasos 1-5 se ejecutan inline. El paso 6 (búsqueda de patrones similares) puede delegarse a un subagente `debug-investigator` cuando el alcance sea amplio (10+ archivos o errores que abarcan varios dominios); después se registra la memoria del paso 7.
 

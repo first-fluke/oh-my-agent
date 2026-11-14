@@ -6,13 +6,13 @@ description: "Szczegółowy przewodnik po zadaniach w jednej domenie w oh-my-age
 
 # Wykonanie jednej umiejętności
 
-Wykonanie jednej umiejętności kieruje jedno skupione zadanie w jednej domenie do jednego agenta. Host albo wybrany workflow może skierować prompt w języku naturalnym do umiejętności; sam system hooków wykrywa workflowy, a zachowanie routingu zależy od wybranego runtime'u.
+Wykonanie jednej umiejętności kieruje jedno skupione zadanie w jednej domenie do jednego agenta. Unika koordynacji wieloagentowej. Host albo wybrany workflow może skierować prompt w języku naturalnym do umiejętności; system hooków dodaje podpowiedzi umiejętności na podstawie słów kluczowych, a zachowanie routingu zależy od wybranego runtime'u.
 
 ## Szybka ścieżka
 
 1. Raz uruchom `oma doctor`, aby potwierdzić integrację z wybranym hostem. Opcjonalne ostrzeżenia dostawcy nie blokują zadania, które z niego nie korzysta.
 2. Opisz jedną samodzielną zmianę z jasnymi warunkami **Goal**, **Context**, **Constraints** i **Done When**.
-3. Oczekuj, że wybrana umiejętność przejrzy repozytorium, określi swój zakres, gdy aktywny kontrakt wykonania wymaga `CHARTER_CHECK`, i zgłosi, które kontrole faktycznie wykonała.
+3. Oczekuj, że wybrana umiejętność przejrzy repozytorium, poda każde założenie wpływające na wynik i zgłosi, które kontrole faktycznie wykonała.
 4. Jeśli zadanie przekroczy granice API, UI, bazy danych lub mobile, zatrzymaj wykonanie jednej umiejętności i przełącz się na `/work` albo `/orchestrate`.
 
 W przypadku zatrzymanych uruchomień zarządzanych użyj `oma agent status <session-id> [agent-id]`, a przed ponowieniem sprawdź potwierdzenia w `.agents/state/agent-runs/` oraz wstrzykniętą ścieżkę twierdzenia. Zobacz [Ważne ustawienia domyślne](../getting-started/important-defaults.md), aby poznać zachowanie dostawców i odzyskiwanie.
@@ -112,17 +112,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **Załadowane zasoby:**
    - `execution-protocol.md` (zawsze)
    - `snippets.md` (wzorce formularzy i Zod oraz istniejące wzorce komponentów, gdy umiejętność je dostarcza)
-4. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **Implementacja:**
+4. **Implementacja:**
    - tworzy `src/features/auth/components/login-form.tsx` (Client Component z `"use client"`)
    - tworzy `src/features/auth/utils/login-schema.ts` (schemat Zod)
    - tworzy `src/features/auth/components/skeleton/login-form-skeleton.tsx`
@@ -130,7 +121,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - formularz obsługuje `@tanstack/react-form` z walidacją Zod
    - używa importów absolutnych z `@/`
    - jeden komponent na plik
-6. **Weryfikacja:**
+5. **Weryfikacja:**
    - checklista: obecne etykiety ARIA, semantyczne nagłówki, działająca nawigacja klawiaturą
    - mobile: poprawne renderowanie przy viewport 320px
    - wydajność: brak CLS
@@ -163,16 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - pasujące `stack/snippets.md` albo `variants/{node,python,rust}/snippets.md`, jeśli są dostępne
    - pasujące `stack/tech-stack.md` albo odwołania do tech-stack z wariantu, jeśli są dostępne
 <!-- oma-docs:ignore-end -->
-5. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **Implementacja:**
+5. **Implementacja:**
    - Repozytorium: `TaskRepository.find_by_user(user_id, cursor, status, limit)` z zapytaniem parametryzowanym
    - Serwis: `TaskService.get_user_tasks(user_id, cursor, status, limit)` (opakowanie logiki biznesowej)
    - Router: `GET /api/tasks` z middleware uwierzytelniania JWT, walidacją danych wejściowych i formatowaniem odpowiedzi
@@ -200,18 +182,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **Ocena trudności:** Medium (ekran ustawień + zarządzanie stanem + obsługa trybu offline)
 3. **Załadowane zasoby:**
    - `execution-protocol.md`
-   - `snippets.md` (szablon ekranu, wzorzec providera Riverpod)
-4. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (wzorce ekranów, providera Riverpod i warstwy danych) albo `stack/snippets.md`, gdy `/stack-set` go wygeneruje
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **Implementacja:**
+4. **Implementacja:**
    - ekran: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget z Riverpod)
    - providery: `lib/features/settings/providers/settings_provider.dart`
    - repozytorium: `lib/features/settings/data/settings_repository.dart`
@@ -244,17 +218,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (struktura rezultatów)
    - `examples.md`
    - `anti-patterns.md` (przegląd podczas optymalizacji)
-4. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **Workflow:** Eksploruj (encje, relacje, wzorce dostępu, szacunki wolumenu) -> Projektuj (zewnętrzny/koncepcyjny/wewnętrzny schemat, ograniczenia, pola cyklu życia) -> Optymalizuj (indeksy dla wzorców zapytań, strategia partycjonowania, plan backupu, przegląd antywzorców)
-6. **Rezultaty:**
+4. **Workflow:** Eksploruj (encje, relacje, wzorce dostępu, szacunki wolumenu) -> Projektuj (zewnętrzny/koncepcyjny/wewnętrzny schemat, ograniczenia, pola cyklu życia) -> Optymalizuj (indeksy dla wzorców zapytań, strategia partycjonowania, plan backupu, przegląd antywzorców)
+5. **Rezultaty:**
    - podsumowanie schematu zewnętrznego (widoki według roli: administrator, kierownik projektu, członek zespołu)
    - schemat koncepcyjny z ERD (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership itd.)
    - schemat wewnętrzny z fizycznym DDL, indeksami i partycjonowaniem
@@ -319,7 +284,7 @@ Zwróć uwagę na sygnały oznaczające, że należy przejść z wykonania jedne
 | Sygnał | Znaczenie | Działanie |
 |--------|-----------|-----------|
 | Agent mówi „to wymaga zmiany backendu” | Zadanie ma zależności między domenami | Przełącz się na `/work` i dodaj agenta backendu |
-| CHARTER_CHECK agenta pokazuje elementy „Must NOT do”, które są jednak potrzebne | Zakres przekracza jedną domenę | Najpierw zaplanuj pełną funkcję przez `/plan` |
+| Agent zgłasza pracę, którą pominął, ponieważ wykracza poza domenę umiejętności | Zakres przekracza jedną domenę | Najpierw zaplanuj pełną funkcję przez `/plan` |
 | Poprawka rozchodzi się na co najmniej 3 pliki w różnych warstwach | Jedna poprawka dotyka wielu domen | Użyj `/debug` z szerszym zakresem albo `/work` |
 | Agent odkrywa niezgodność kontraktu API | Frontend i backend się nie zgadzają | Uruchom `/plan`, zdefiniuj kontrakty, potem uruchom ponownie obu agentów |
 | Bramka jakości nie przechodzi w punktach integracji | Komponenty nie łączą się poprawnie | Uruchom `/review` albo dodaj przebieg QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

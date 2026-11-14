@@ -64,7 +64,8 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
 oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
@@ -128,14 +129,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | Znacznik języka narracji i napisów. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (wyrównanie bez klucza). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. Wybiera kolejność dostawców wizualizacji; zobacz [Łańcuch wizualny](#visual-chain). |
 | `--voice <profile>` | Głos narracji albo `none` (domyślnie; pomiń, a wideo wyrenderuje się bez dźwięku z szacowanym czasem napisów). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` albo `none`. |
 | `--compositor <c>` | `hyperframes` (domyślnie) \| `mpt`. |
 | `--capture <path>` | Twoje nagranie dla trybu demo: `.mp4`, `.mov`, `.webm` albo `.mkv`, przechowywane wewnątrz projektu. |
 | `--source <k>` | Źródło przechwytywania demo: `file` albo `web` (domyślnie: `file`). |
 | `--url <url>` | URL kontekstu dla `--source web`, zapisywany w zamaskowanej postaci w `manifest.json`. Wymagany z `--source web`; nigdy nie rozpoczyna przechwytywania i nie zastępuje `--capture`. |
-| `--polish` | Nałóż kompozycję HyperFrames na przechwycone nagranie. |
+| `--polish` | Tryb demo: użyj nagrania jako tła kompozycji `Demo` HyperFrames, w której dane osobowe są maskowane. Bez tej flagi surowe, niezamaskowane nagranie jest kopiowane do wynikowego pliku MP4 i żadna kompozycja nie działa. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | Akceptowane, ale nieużywane: oma nie steruje przeglądarką ani nie nagrywa ekranu. |
 | `--output-dir <path>` | Bazowy katalog wyjściowy. Ścieżki poza `$PWD` wymagają `--allow-external-output`. |
 | `--allow-external-output` | Zezwól na ścieżki wyjściowe poza `$PWD`. |
@@ -159,14 +160,33 @@ Etapy dostawców rozstrzygają się do **rzeczywistej gałęzi** oraz, gdy etap 
 |------------|-------------|----------|
 | script | napisany przez agenta `script.json` przekazany przez `--script <path>` (zapisuje go workflow `/video`) | deterministyczny szkielet z trzema scenami na podstawie tekstu krótkiego opisu |
 | voice | `oma-voice` (Voicebox lub VoiceStudio, lokalnie; wybierany przez `voice.backend`) z `--voice <profile>` | wideo bez dźwięku z szacowanym czasem (`--voice none`, domyślnie) |
-| visual | `oma-image`, `oma-slide`, klipy stockowe Pexels, gdy ustawiono `PEXELS_API_KEY` | zasób placeholdera |
-| visual: `aigc` | jeszcze niepodłączone; `RUNNINGHUB_API_KEY` włącza dostawcę, który nadal zapisuje placeholdery | zasób placeholdera |
+| visual | domyślnie nieruchome obrazy `oma-image`; klatka `oma-slide` dla sceny, której `visual.ref` wskazuje istniejący katalog prezentacji; klipy stockowe Pexels z `--visual stock`, gdy ustawiono `PEXELS_API_KEY` | zasób placeholdera |
+| visual: `aigc` | wybierane przez `--visual aigc`, gdy ustawiono `RUNNINGHUB_API_KEY`; wywołanie live nie jest jeszcze podłączone, więc dostawca nadal zapisuje placeholdery | zasób placeholdera |
 | caption | `.srt` i `.vtt` wyrównane do `timing.json`, w języku skryptu | to samo; tłumaczenie na `--locale` nie jest jeszcze podłączone |
 | music | podkład Strudel po `oma video doctor --install-strudel` | brak ścieżki muzycznej |
 | capture | nagranie dostarczone przez Ciebie przez `--capture <file>` | brak: bez `--capture` tryb demo wypisuje instrukcje nagrywania i kończy się kodem 3 |
 | compositor | HyperFrames (zarządzany) albo MoneyPrinterTurbo | brak fallbacku kompozytora; uruchomienie kończy się diagnostyką |
 
-Brak automatyzacji poświadczeń: każde logowanie na ekranie wykonujesz samodzielnie podczas nagrywania; URL-e i tokeny zapytań są maskowane w logach i manifeście.
+### Łańcuch wizualny {#visual-chain}
+
+`--visual` i tryb określają kolejność dostawców przechodzoną dla każdej sceny:
+
+| `--visual` | Tryb | Kolejność |
+|------------|------|-----------|
+| `auto` (domyślnie) | `shorts`, `demo` | `providers.visual.order` (domyślnie `oma-image`, `pexels`, `pixelle`) |
+| `auto` (domyślnie) | `explainer` | `oma-slide`, `oma-image`, potem `providers.visual.order` |
+| `generate` | dowolny | `oma-image` |
+| `slide` | dowolny | `oma-slide`, `oma-image` |
+| `stock` | dowolny | `pexels`, `oma-image` |
+| `aigc` | dowolny | `pixelle`, `oma-image` |
+
+- Łańcuch przechodzi dalej tylko wtedy, gdy dostawca jest niedostępny albo rzuca wyjątek. `oma-image` i `oma-slide` są zawsze dostępne i zapisują placeholder zamiast rzucać wyjątek, więc żaden dostawca wymieniony po nich nie zostanie osiągnięty. Przy domyślnej kolejności `oma-image` przejmuje więc każdą scenę: Pexels wymaga `--visual stock` oraz `PEXELS_API_KEY`, a Pixelle wymaga `--visual aigc` oraz `RUNNINGHUB_API_KEY`.
+- `oma-slide` eksportuje klatkę tylko dla sceny, której `visual.ref` w `script.json` jest ścieżką do istniejącego katalogu prezentacji; nie generuje prezentacji. Pierwsza wyeksportowana klatka staje się wizualizacją sceny, więc każdej scenie slajdowej daj własną jednostronicową prezentację. Każda inna obsługiwana przez niego scena dostaje placeholder, w tym każda scena typu explainer bez prezentacji przy `--visual auto`. Najpierw zbuduj prezentacje za pomocą `oma-slide` albo przekaż `--visual generate`, aby uzyskać nieruchome obrazy `oma-image`.
+- Placeholder jest zapisywany w `warnings` jako ścieżka fallbacku dla tej sceny.
+
+### Przechwytywanie demo i maskowanie {#demo-capture-and-masking}
+
+Każde logowanie na ekranie wykonujesz samodzielnie podczas nagrywania; oma nie automatyzuje poświadczeń, a URL-e i tokeny zapytań są maskowane w logach oraz manifeście. Dane osobowe w nagraniu są maskowane wyłącznie w kompozycji `--polish`. Uruchomienie demo bez `--polish` kopiuje surowe nagranie do wynikowego pliku MP4; przekaż ten plik dopiero wtedy, gdy obejrzysz nagranie i nie znajdziesz nic do zamaskowania — w przeciwnym razie uruchom ponownie z `--polish`.
 
 Napisy renderują się jako **statyczne okna cue** — pojedyncza linia napisów aktywna dla bieżącej klatki, zawijana przez CSS, bez animacji per słowo.
 

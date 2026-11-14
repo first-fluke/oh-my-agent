@@ -120,6 +120,14 @@ L'installateur affiche un récapitulatif de tout ce qui a été installé :
 - Liens symboliques créés
 - Éléments ignorés, le cas échéant
 
+L’installation et la mise à jour migrent aussi les emplacements de documents hérités vers la [disposition des artefacts](./artifact-layout.md). Les fichiers existants sont préservés en cas de collision de noms, et les rapports liés à des preuves d’exécution restent à leur emplacement d’origine. Prévisualisez les changements avant la mise à niveau :
+
+```bash
+oma docs migrate --dry-run
+```
+
+Voir [Migrer un projet existant](./artifact-layout.md#migrate-an-existing-project) pour les chemins source, la gestion des conflits et la commande manuelle.
+
 ---
 
 ## Voie manuelle
@@ -424,3 +432,4 @@ Comme indiqué dans la voie CLI, install/update peuvent configurer les réglages
 - [Configuration des modèles par agent](./per-agent-models.md) : choisir le modèle et la CLI de chaque agent
 - [Confiance accordée aux hooks Codex](./codex-hook-trust.md) : l'étape `/hooks` unique pour Codex
 - [Mises à jour automatisées](./automated-updates.md) : maintenir l'installation à jour depuis la CI
+- [Disposition des artefacts](./artifact-layout.md) : emplacements des documents, promotion et migration

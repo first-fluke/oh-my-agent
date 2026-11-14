@@ -89,7 +89,7 @@ Los dashboards leen del directorio `.agents/state/memories/`. Los agentes y los 
 | `orchestrator-session.md` | Paso 2 de `/orchestrate` | ID de sesión, hora de inicio, estado (RUNNING/COMPLETED/FAILED), versión del flujo |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | Metadatos de sesión, progreso por fase y resumen de la solicitud del usuario |
 | `task-board.md` | Flujos de orquestación | Tabla Markdown con asignaciones de agentes, estados y tareas |
-| `progress-{agent}.md` | Cada agente generado | Número de turno actual, en qué está trabajando el agente y resultados intermedios |
+| `progress-{agent}-{task}-{run}-{session}.md` | Cada agente generado | Entradas `## Turn N` añadidas al final: qué hizo el agente, estado actual y archivos modificados |
 | `result-{agent}.md` | Cada agente completado | Estado final (COMPLETED/FAILED), archivos modificados, problemas encontrados y entregables |
 | `debug-{id}.md` | Flujo `/debug` | Diagnóstico del bug, causa raíz, corrección aplicada y ubicación de la prueba de regresión |
 | `experiment-ledger-{sessionId}.md` | Experimentos reales | Evidencia comparable de línea base/candidato, comprobaciones requeridas y decisiones |
@@ -105,7 +105,7 @@ El dashboard usa varias estrategias para extraer información:
 
 3. **Descubrimiento de agentes**: si no existe un task board, busca en todos los archivos `.md` patrones `**Agent**: {name}`, líneas `Agent: {name}` o nombres de archivo que contengan `_agent` o `-agent`.
 
-4. **Conteo de turnos**: para cada agente descubierto, lee los archivos `progress-{agent}.md` y extrae el número de turno de los patrones `turn: N`.
+4. **Conteo de turnos**: para cada agente descubierto, toma el archivo más reciente cuyo nombre empiece por `progress-{agent}` y lee la última línea `Turn N` (o `turn: N`) que contiene.
 
 5. **Feed de actividad**: enumera los 5 archivos `.md` modificados más recientemente y extrae la última línea relevante (encabezados, líneas de estado y elementos de acción) como mensaje de actividad. El dashboard web también expone la vista de recapitulación en `/recap`.
 
@@ -124,13 +124,13 @@ La sección superior muestra:
 La tabla de agentes muestra cada agente detectado con:
 - **Nombre del agente**: identificador del dominio (backend, frontend, mobile, qa, debug, pm).
 - **Estado**: estado actual con indicador visual (running/completed/failed/blocked/pending).
-- **Turno**: número de turno actual del agente (cuántas iteraciones ha completado). Se extrae de los archivos de progreso.
+- **Turno**: número de la última entrada de progreso del agente. Se extrae de los archivos de progreso; cuenta entradas, no turnos del modelo.
 - **Tarea**: descripción breve de aquello en lo que trabaja el agente (truncada para que quepa).
 
 ### Progreso de los agentes
 
-El progreso se registra mediante los archivos `progress-{agent}.md`. Cada agente actualiza su archivo mientras trabaja. El dashboard consulta estos archivos para obtener:
-- Número de turno (aumenta a medida que avanza el agente).
+El progreso se registra mediante los archivos `progress-{agent}-*.md`. Cada agente añade una entrada en cada punto de control relevante (un paso terminado, un bloqueo o un cambio de enfoque). El dashboard consulta estos archivos para obtener:
+- Número de turno (el número de la última entrada).
 - Acción actual (lo que el agente hace en ese momento).
 - Resultados intermedios (completados parciales).
 

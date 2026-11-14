@@ -64,7 +64,8 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
 oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
@@ -87,9 +88,10 @@ Tool khác gọi shell tới `oma video generate --output json` sẽ parse JSON 
 
 ---
 
-## Cache HyperFrames và cách author composition {#always-latest-hyperframes-you-author-the-composition}
+<a id="always-latest-hyperframes--you-author-the-composition"></a>
+## Toolchain HyperFrames được quản lý và cách author composition {#always-latest-hyperframes-you-author-the-composition}
 
-oh-my-agent **không ship HyperFrames composition code**. Mỗi run có project riêng tại `<runDir>/hyperframes/`, được scaffold bởi `oma video compose` trên npm HyperFrames mới nhất (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, dùng chung qua symlink `node_modules`) cùng [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) tại HEAD (`~/.cache/oma-video/hyperframes-skills/`). Agent author generated composition source theo `AUTHORING.md` của scaffold, skill và mode spec trong `.agents/skills/oma-video/resources/hyperframes-authoring/`.
+oh-my-agent **không ship HyperFrames composition code**. Mỗi run có project riêng tại `<runDir>/hyperframes/`, được scaffold bởi `oma video compose` trên npm HyperFrames mới nhất (toolchain cache `~/.cache/oma-video/hyperframes/<version>/`, dùng chung qua symlink `node_modules`) cùng các skill `hyperframes` và `hyperframes-cli` của [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) cài qua [skills CLI](https://github.com/vercel-labs/skills). Agent author generated composition source theo `AUTHORING.md` của scaffold, các skill và mode spec trong `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -98,14 +100,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- Latest-version check (npm + GitHub) bị giới hạn bởi `video.hyperframes.check_interval_min` (mặc định 60; `0` = mỗi compose). `oma update` tuân theo interval; `oma video doctor --upgrade` force check; offline run dùng cached toolchain và báo `stale`.
+- Kiểm tra bản mới nhất của toolchain (npm) bị giới hạn bởi `video.hyperframes.check_interval_min` (mặc định 60; `0` = mỗi compose). `oma update` tuân theo interval; `oma video doctor --upgrade` ép kiểm tra; offline run dùng cached toolchain và báo `stale`.
+- Skill: `oma video doctor --install` cài các skill còn thiếu (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` cập nhật cả những skill đã cài; `oma update` chỉ cập nhật những skill đã cài sẵn. Nếu thiếu chúng, `AUTHORING.md` sẽ trỏ tới tài liệu upstream. Bản sao cũ `~/.cache/oma-video/hyperframes-skills/` không còn được đọc và bạn có thể xóa nó.
 - Tính tái lập nằm trong run dir: `render-spec.json`, authored composition source và toolchain version ghi trong generated HyperFrames package metadata. Render lại cùng run dùng lại render contract; run mới kiểm tra HyperFrames mới nhất.
-- Lint hoặc render failure **không** bị che bằng placeholder (chỉ tồn tại khi `OMA_VIDEO_MOCK=1`): `oma video render` thoát 1 kèm diagnostics và agent sửa composition bằng skill mới nhất. Hỏng trên HyperFrames release mới là composition bug, không phải lý do pin.
+- Lint hoặc render failure **không** bị che bằng placeholder (chỉ tồn tại khi `OMA_VIDEO_MOCK=1`): `oma video render` thoát 1 kèm diagnostics và agent sửa composition bằng các skill mới nhất. Hỏng trên HyperFrames release mới là composition bug, không phải lý do pin.
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---
@@ -128,14 +131,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | Language tag của narration/caption. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (alignment không cần key). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. Chọn thứ tự visual provider; xem [Visual chain](#visual-chain). |
 | `--voice <profile>` | Narration voice hoặc `none` (mặc định; bỏ qua để video silent với caption timing ước tính). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` hoặc `none`. |
 | `--compositor <c>` | `hyperframes` (mặc định) \| `mpt`. |
 | `--capture <path>` | Recording của bạn cho demo mode: `.mp4`, `.mov`, `.webm` hoặc `.mkv`, lưu bên trong project. |
 | `--source <k>` | Demo capture source: `file` hoặc `web` (mặc định: `file`). |
 | `--url <url>` | Context URL cho `--source web`, được lưu dạng mask trong `manifest.json`. Bắt buộc khi dùng `--source web`; nó không bao giờ bắt đầu capture và không thay thế `--capture`. |
-| `--polish` | Overlay HyperFrames composition lên footage đã capture. |
+| `--polish` | Demo mode: dùng capture làm nền cho HyperFrames `Demo` composition, nơi thông tin cá nhân được che. Không có nó thì capture thô, chưa che được copy sang output MP4 và không chạy composition nào. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | Được chấp nhận nhưng không dùng: oma không điều khiển browser hay ghi màn hình. |
 | `--output-dir <path>` | Output base directory. Path nằm ngoài `$PWD` cần `--allow-external-output`. |
 | `--allow-external-output` | Cho phép output path nằm ngoài `$PWD`. |
@@ -159,14 +162,33 @@ Provider stage resolve tới **real branch** và, khi stage hỗ trợ, **determ
 |------------|-------------|----------|
 | script | `script.json` do agent author, truyền bằng `--script <path>` (workflow `/video` ghi file này) | skeleton ba scene deterministic từ nội dung brief |
 | voice | `oma-voice` (Voicebox hoặc VoiceStudio, local; chọn bằng `voice.backend`) với `--voice <profile>` | video silent với timing ước tính (`--voice none`, mặc định) |
-| visual | `oma-image`, `oma-slide`, stock clip từ Pexels khi đặt `PEXELS_API_KEY` | placeholder asset |
-| visual: `aigc` | chưa được nối; `RUNNINGHUB_API_KEY` bật provider, nhưng provider vẫn ghi placeholder | placeholder asset |
+| visual | mặc định dùng ảnh tĩnh `oma-image`; frame `oma-slide` cho scene có `visual.ref` là thư mục deck sẵn có; stock clip Pexels với `--visual stock` khi đặt `PEXELS_API_KEY` | placeholder asset |
+| visual: `aigc` | được chọn với `--visual aigc` khi đặt `RUNNINGHUB_API_KEY`; lời gọi thực tế chưa được nối, nên provider vẫn ghi placeholder | placeholder asset |
 | caption | `.srt` và `.vtt` căn theo `timing.json`, bằng ngôn ngữ của script | như cũ; việc dịch sang `--locale` chưa được nối |
 | music | nhạc nền Strudel sau `oma video doctor --install-strudel` | không có music track |
 | capture | recording bạn cung cấp bằng `--capture <file>` | không có: thiếu `--capture`, demo mode in hướng dẫn ghi hình và thoát với code 3 |
 | compositor | HyperFrames (được quản lý) hoặc MoneyPrinterTurbo | không có compositor fallback; run thất bại kèm diagnostics |
 
-Không tự động hóa credential: bạn tự thực hiện mọi login trên màn hình trong lúc ghi hình; URL và query token được mask trong log và manifest.
+### Chuỗi visual {#visual-chain}
+
+`--visual` và mode chọn thứ tự provider được duyệt qua cho từng scene:
+
+| `--visual` | Mode | Thứ tự |
+|------------|------|--------|
+| `auto` (mặc định) | `shorts`, `demo` | `providers.visual.order` (mặc định `oma-image`, `pexels`, `pixelle`) |
+| `auto` (mặc định) | `explainer` | `oma-slide`, `oma-image`, sau đó `providers.visual.order` |
+| `generate` | bất kỳ | `oma-image` |
+| `slide` | bất kỳ | `oma-slide`, `oma-image` |
+| `stock` | bất kỳ | `pexels`, `oma-image` |
+| `aigc` | bất kỳ | `pixelle`, `oma-image` |
+
+- Chuỗi chỉ đi tiếp qua một provider khi provider đó không khả dụng hoặc báo lỗi. `oma-image` và `oma-slide` luôn khả dụng và ghi placeholder thay vì ném lỗi, nên không provider nào đứng sau chúng được chạm tới. Với thứ tự mặc định, `oma-image` do đó đảm nhận mọi scene: Pexels cần `--visual stock` kèm `PEXELS_API_KEY`, và Pixelle cần `--visual aigc` kèm `RUNNINGHUB_API_KEY`.
+- `oma-slide` chỉ xuất một frame cho scene có `visual.ref` trong `script.json` trỏ tới đường dẫn của thư mục deck sẵn có; nó không tạo deck mới. Frame đầu tiên được xuất trở thành visual của scene, vì vậy hãy cấp cho mỗi scene slide một deck một slide riêng. Mọi scene khác mà nó xử lý sẽ nhận placeholder, bao gồm từng scene explainer không có deck dưới `--visual auto`. Hãy dựng deck bằng `oma-slide` trước, hoặc truyền `--visual generate` để dùng ảnh tĩnh `oma-image`.
+- Placeholder được ghi vào `warnings` như một đường dẫn fallback cho scene đó.
+
+### Capture demo và che thông tin {#demo-capture-and-masking}
+
+Bạn tự thực hiện mọi đăng nhập trên màn hình trong lúc ghi hình; oma không tự động hóa credential, còn URL và query token được mask trong log và manifest. Thông tin cá nhân trong footage chỉ được che trong composition `--polish`. Một run demo không có `--polish` sẽ copy capture thô sang output MP4; chỉ bàn giao file đó sau khi bạn đã tự kiểm tra footage và xác nhận không có gì cần che, nếu không hãy chạy lại với `--polish`.
 
 Caption render dưới dạng **static windowed cue**: một caption line hoạt động ở frame hiện tại, được CSS wrap và không có per-word animation.
 

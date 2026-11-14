@@ -152,9 +152,9 @@ Po każdym trafieniu generowanie natychmiast się zatrzymuje, zgłaszane są wy�
 
 ## Lista kontrolna walidacji
 
-Po generowaniu wobec pliku wynikowego uruchamiana jest lista kontrolna oparta na grep: brak odwołań do ładowania zewnętrznych zasobów, zgodność kontenerów kodu z `pre`/`pre-wrap`, obecność skryptu quizu, format nazwy `{YYYY-MM-DD}-{slug}.html` (data w strefie `timezone` z oma-config, a gdy jej brak — w strefie czasowej systemu) i skan sekretów końcowego HTML. Po niepowodzeniu pętla naprawia i ponownie waliduje do **3 iteracji**, a następnie zatrzymuje się i pokazuje pozostałe nieudane elementy zamiast po cichu dostarczyć wynik.
+Po generowaniu workflow uruchamia `oma explain validate <file>` oraz końcowy skan sekretów HTML na pliku wynikowym. Walidator jest główną kontrolą: brak odwołań do ładowania zewnętrznych zasobów, zgodność kontenerów kodu z `pre`/`pre-wrap`, obecność skryptu quizu i format nazwy `{YYYY-MM-DD}-{slug}.html` (data w strefie `timezone` z oma-config, a gdy jej brak — w strefie czasowej systemu). Polecenia grep w kontrakcie HTML umiejętności są uzupełniającymi kontrolami wyrywkowymi, a nie zamiennikiem. Po niepowodzeniu pętla naprawia i ponownie waliduje do **3 iteracji**, a następnie zatrzymuje się i pokazuje pozostałe nieudane elementy zamiast po cichu dostarczyć wynik.
 
-To ograniczenie v1: walidacja działa na plikach i grep, a sprawdza tylko *obecność* skryptu quizu, nie pełną poprawność zachowania. Gdy ważna jest pewność zachowania, użyj przeglądarki (albo MCP chrome-devtools), aby ręcznie przećwiczyć quiz.
+To ograniczenie v1: walidacja działa na plikach i sprawdza tylko *obecność* skryptu quizu, nie pełną poprawność zachowania. Gdy ważna jest pewność zachowania, użyj przeglądarki (albo MCP chrome-devtools), aby ręcznie przećwiczyć quiz.
 
 Istniejący artefakt można zwalidować zarejestrowanym poleceniem CLI:
 
@@ -185,7 +185,7 @@ Pierwsza forma sprawdza jeden plik HTML. Forma katalogowa sprawdza każdy raport
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-Data jest liczona w strefie `timezone` z oma-config, a gdy jej brak — w strefie czasowej systemu. Ponowne uruchomienie z tą samą datą i slugiem nadpisuje wcześniejszy plik — zachowanie wcześniejszego uruchomienia jest Twoją odpowiedzialnością. Po przejściu walidacji workflow próbuje otworzyć stronę (tylko ostrzeżenie; środowisko bez interfejsu po prostu zgłasza ścieżkę) i raportuje TL;DR wraz ze ścieżką pliku. `oma explain render --open` otwiera stronę bezpośrednio w przeglądarce.
+Data jest liczona w strefie `timezone` z oma-config, a gdy jej brak — w strefie czasowej systemu. Ponowne uruchomienie z tą samą datą i slugiem nadpisuje wcześniejszy plik — zachowanie wcześniejszego uruchomienia jest Twoją odpowiedzialnością. Po przejściu walidacji workflow otwiera stronę, renderując zwalidowany szkic za pomocą `oma explain render --open`, i raportuje TL;DR wraz ze ścieżką pliku. Nieudane otwarcie jest ostrzeżeniem, a nie błędem: środowisko bez interfejsu wraca po prostu do zgłoszenia ścieżki.
 
 ---
 
@@ -203,8 +203,8 @@ Gdy ustawiono `diagram.explain_sidecar: true` w `oma-config.yaml` albo poprosisz
 | Brak `gh` CLI albo brak uwierzytelnienia (ref PR-a) | Wskazówki instalacji/uwierzytelnienia oraz alternatywa lokalnego diffu gałęzi |
 | Trwa scalanie/rebase | Zatrzymaj się — workspace jest niestabilny |
 | Katalog nie jest repozytorium git | Tryb zmiany: zatrzymaj się natychmiast. Tryb tematu działa bez git. |
-| Walidacja nie przechodzi po 3 pętlach naprawczych | Zatrzymaj się i pokaż nieudane elementy listy kontrolnej |
-| `open` kończy się błędem / środowisko bez interfejsu | Tylko ostrzeżenie — zgłoszona ścieżka wystarcza |
+| Walidacja nie przechodzi po 3 pętlach naprawczych | Zatrzymaj się i pokaż nieudane elementy |
+| `--open` kończy się błędem w środowisku bez interfejsu | Tylko ostrzeżenie — zgłoszona ścieżka wystarcza |
 
 ---
 

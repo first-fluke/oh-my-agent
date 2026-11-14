@@ -9,7 +9,7 @@ description: Hướng dẫn sử dụng OMA, bao quát cách chọn task theo ng
 ## Bắt đầu nhanh
 
 1. Mở project trong IDE hoặc CLI hỗ trợ AI đã chọn (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen hoặc host được hỗ trợ khác)
-2. Host đã chọn có thể tải [skill](../getting-started/glossary.md#skill) từ `.agents/skills/`; hook đã bật có thể phát hiện [workflow](../getting-started/glossary.md#workflow) từ từ khóa ngôn ngữ tự nhiên
+2. Host đã chọn có thể tải [skill](../getting-started/glossary.md#skill) từ `.agents/skills/`; hook đã bật thêm gợi ý skill từ từ khóa ngôn ngữ tự nhiên, và chỉ khởi động [workflow](../getting-started/glossary.md#workflow) từ lệnh slash hoặc, với bốn chế độ liên tục, từ tên của chế độ đó
 3. Mô tả điều bạn muốn bằng ngôn ngữ tự nhiên. Host hoặc workflow đã chọn định tuyến task tới skill phù hợp
 4. Với công việc đa agent, dùng `/work` hoặc `/orchestrate`
 
@@ -24,6 +24,7 @@ Task đơn lĩnh vực không cần cú pháp đặc biệt. Dùng [hướng d�
 | Bug có thông báo lỗi | `/debug` kèm lỗi và các bước tái hiện | [Sửa lỗi](./bug-fixing.md) |
 | Theo dõi agent khi đang chạy | `oma dashboard terminal` | [Giám sát dashboard](./dashboard-monitoring.md) |
 | Kiểm tra hoặc resume kết quả agent | `oma agent resume SESSION_ID --dry-run` | [Agent result và resume](./agent-results-and-resume.md) |
+| Tìm hoặc di trú tài liệu OMA | `oma docs migrate --dry-run` | [Bố cục artifact](./artifact-layout.md) |
 | Có gì đó thất bại | `oma doctor --json` | [Khắc phục sự cố](./troubleshooting.md) |
 
 ---
@@ -42,24 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. Tài nguyên tầng 2 tải theo nhu cầu:
    - `execution-protocol.md`: workflow 4 bước (Analyze, Plan, Implement, Verify)
    - `snippets.md`: mẫu form và xác thực Zod, cùng mẫu component hiện có khi skill cung cấp
-4. Agent xuất **CHARTER_CHECK**:
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
-
 <!-- oma-docs:ignore-start -->
-5. Agent triển khai:
+4. Agent triển khai:
    - Component React với TypeScript trong `src/features/auth/components/login-form.tsx`
    - Schema xác thực Zod trong `src/features/auth/utils/login-validation.ts`
    - Test Vitest trong `src/features/auth/utils/__tests__/login-validation.test.ts`
    - Loading skeleton trong `src/features/auth/components/skeleton/login-form-skeleton.tsx`
 <!-- oma-docs:ignore-end -->
-6. Agent chạy checklist: accessibility (ARIA label, HTML ngữ nghĩa, điều hướng bàn phím), viewport mobile, hiệu suất (không CLS), Error Boundary
+5. Agent chạy checklist: accessibility (ARIA label, HTML ngữ nghĩa, điều hướng bàn phím), viewport mobile, hiệu suất (không CLS), Error Boundary
 
 **Kết quả mong đợi:** Component React có phạm vi rõ với TypeScript, xác thực, test và evidence accessibility khi project hỗ trợ các kiểm tra đó. Prompt và workflow đã chọn quyết định file và kiểm tra thực sự chạy.
 
@@ -75,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **Điều xảy ra:**
 
 1. Yêu cầu này bao phủ frontend, backend và mobile. Host agent có thể dựa trên phạm vi đó để đề xuất cách điều phối.
-2. Khi hook phát hiện từ khóa được bật, “Build a TODO app” khớp pattern `/orchestrate` đã cấu hình và có thể kích hoạt. Hook khớp văn bản, không phân loại yêu cầu thành đa lĩnh vực. Dùng lệnh tường minh để chọn workflow.
+2. Hook phát hiện từ khóa không khởi động workflow từ câu này: nó chỉ kích hoạt `orchestrate`, `ultrawork`, `work` hoặc `ralph`, và chỉ khi prompt nêu tên chế độ đó. Hook không phân loại yêu cầu thành đa lĩnh vực. Dùng lệnh tường minh để chọn workflow bạn muốn.
 
 **Dùng `/work` (từng bước với quyền kiểm soát của người dùng):**
 
@@ -154,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **Bạn nhập:**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **Điều xảy ra:**
 
-1. `oma-design` kích hoạt (từ khóa: “design”, “landing page”, “dark”, “premium”)
-2. **Giai đoạn 1, SETUP:** Kiểm tra `.design-context.md`. Nếu thiếu, hỏi:
-   - Dịch vụ hỗ trợ ngôn ngữ nào? (chỉ en / + CJK)
-   - Đối tượng mục tiêu? (B2B, người dùng kỹ thuật, 25-45)
-   - Tính cách thương hiệu? (chuyên nghiệp / cao cấp)
-   - Hướng thẩm mỹ? (cao cấp tối)
-   - Site tham chiếu? (người dùng cung cấp ví dụ)
-   - Accessibility? (WCAG AA)
-3. **Giai đoạn 3, ENHANCE:** Nếu prompt mơ hồ, chuyển thành đặc tả từng section
-4. **Giai đoạn 4, PROPOSE:** Trình bày 3 hướng thiết kế:
-   - **Hướng A: "Midnight Observatory"**: xanh navy đậm (#0f1729), điểm nhấn cyan (#22d3ee), Inter + JetBrains Mono, layout lưới bento, reveal theo scroll
-   - **Hướng B: "Carbon Interface"**: xám trung tính (#18181b), điểm nhấn amber (#f59e0b), font hệ thống, bố cục kiểu bàn cờ, micro-interaction theo hover
-   - **Hướng C: "Deep Space"**: tối thuần (#0a0a0a), điểm nhấn emerald (#10b981), Geist + Geist Mono, section tràn viền, animation khi vào
-5. **Giai đoạn 5, GENERATE:** Theo hướng đã chọn, tạo:
-   - `DESIGN.md` với 6 section (typography, màu, spacing, motion, component, accessibility)
-   - CSS custom properties
-   - mở rộng cấu hình Tailwind
-   - biến theme shadcn/ui
-6. **Giai đoạn 6, AUDIT:** Kiểm tra responsive (tối thiểu 320px), WCAG 2.2, heuristic Nielsen và phát hiện AI slop
-7. **Giai đoạn 7, HANDOFF:** “Design hoàn tất. Chạy `/orchestrate` để triển khai với oma-frontend.”
+1. **Tải skill:** Workflow đọc skill `oma-design` và execution protocol của nó. Skill chịu trách nhiệm chọn supplier và giữ project design contract.
+2. **Xác định phạm vi và ngữ cảnh:** Yêu cầu được phân loại là tài liệu design system. Workflow đọc `DESIGN.md` hiện có, `.design-context.md` nếu có, tài liệu thương hiệu, các ngôn ngữ được hỗ trợ và UI bị ảnh hưởng, đồng thời tìm thư viện UI, file theme và token sẵn có. Với sản phẩm đã có sẵn, bước này xác định Preserve hay Overhaul trước. Workflow chỉ hỏi về lựa chọn làm thay đổi đáng kể kết quả mà yêu cầu và codebase chưa trả lời; prompt này đã nêu rõ ngôn ngữ, đối tượng người dùng và mục tiêu accessibility nên không cần bảng hỏi.
+3. **Chọn hướng dẫn và thu thập tham chiếu:** Một external design skill được chọn cho thao tác này: Interface Design cho dashboard hoặc UI sản phẩm SaaS, Taste cho chỉ đạo mỹ thuật web mới khác, Impeccable cho phê bình hoặc trau chuốt UI sẵn có. Vendor seed được yêu cầu, thao tác Stitch, hướng dẫn asset hoặc quy tắc data-grid chỉ được tải khi tác vụ cần.
+4. **Quyết định hướng đi:** Hướng dẫn đã chọn được áp dụng vào bằng chứng của dự án. Các phương án thay thế chỉ được trình bày khi còn lựa chọn chưa chốt làm thay đổi đáng kể kết quả; hướng đi bạn đã chọn sẵn sẽ được dùng lại. Mọi hướng đi phải nằm trong phạm vi thương hiệu, hỗ trợ font CJK cho tiếng Hàn, tương thích implementation stack hiện có, đáp ứng responsive từ viewport nhỏ nhất được hỗ trợ và đạt chuẩn WCAG AA.
+5. **Tạo artifact:** `DESIGN.md` được tạo mới hoặc cập nhật với đầy đủ chín phần, gồm cả Phần 9 (Agent Prompt Guide). Các token ánh xạ vai trò ngữ nghĩa lên hệ thống token và định dạng theme sẵn có của dự án; không đưa vào cấu hình song song. Không viết mã triển khai.
+6. **Xác minh và bàn giao:** Các mục checklist áp dụng được kiểm tra và nêu rõ những gì đã xem xét. Các kiểm tra cần bản triển khai đã render được chỉ định nhưng giữ trạng thái chưa chạy. Báo cáo liệt kê artifact đã giao, route đã chọn, kết quả xác minh và các giới hạn còn lại, rồi bàn giao phần triển khai cho `oma-frontend` (web) hoặc `oma-mobile` (native).
 
 ---
 
@@ -274,16 +251,16 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 | `/plan` | Không liên tục | Phân tách task do PM dẫn dắt, API contract và artifact plan trong `docs/plans/work/` (`NNN-name.md` tuần tự, trường Status theo lifecycle) | Trước công việc đa agent phức tạp; tính năng phức tạp cần theo dõi và log quyết định |
 | `/brainstorm` | Không liên tục | Khám phá ý tưởng ưu tiên thiết kế với 2-3 đề xuất hướng tiếp cận | Trước khi cam kết hướng triển khai |
 | `/deepinit` | Không liên tục | Khởi tạo project đầy đủ (AGENTS.md, ARCHITECTURE.md, docs/) | Thiết lập oh-my-agent trong codebase hiện có |
-| `/review` | Không liên tục | Pipeline QA: bảo mật OWASP, hiệu suất, accessibility, chất lượng code | Trước khi merge code hoặc review trước triển khai |
-| `/security` | Không liên tục | Quét mã nguồn ứng dụng, agent skill hoặc thành phần MCP; chạy penetration test web có phạm vi trên bản triển khai thử nghiệm; xác thực phát hiện và cấu hình security gate qua `oma-security` | Trước release, hoặc khi thay đổi cần security scan hoặc gate |
+| `/review` | Không liên tục | Pipeline QA: bảo mật OWASP, hiệu suất, accessibility, chất lượng code. Phạm vi lấy từ yêu cầu và mặc định là các thay đổi hiện tại | Trước khi merge code hoặc review trước triển khai |
+| `/security` | Không liên tục | Quét mã nguồn ứng dụng, agent skill hoặc thành phần MCP, xác thực phát hiện và cấu hình security gate qua `oma-security`. Penetration test cho bản triển khai web thử nghiệm có phạm vi chỉ chạy trên nền tảng runtime đã qua rà soát do người dùng cung cấp | Trước release, hoặc khi thay đổi cần security scan hoặc gate |
 | `/debug` | Không liên tục | Debug có cấu trúc: tái hiện, chẩn đoán, sửa, regression test, quét | Điều tra bug và error |
-| `/design` | Không liên tục | Workflow design 7 giai đoạn tạo DESIGN.md với token | Xây design system, landing page, UI redesign |
+| `/design` | Không liên tục | Xác định phạm vi tác vụ thiết kế, chọn hướng dẫn thiết kế phù hợp và bàn giao kết quả kiểm tra, `DESIGN.md`, định hướng redesign hoặc design token qua `oma-design` | Định nghĩa hoặc review hệ thống thị giác, UI redesign, design audit |
 | `/scm` | Không liên tục | Workflow SCM cho Git (branch/merge/conflict/worktree/baseline) và tạo Conventional Commit với tự động phát hiện type/scope, tách feature | Sau thay đổi code hoặc task quản lý cấu hình repository |
-| `/stack-set` | Không liên tục | Tự phát hiện tech stack và tạo tham chiếu backend hoặc mobile (Swift/Flutter/RN) | Thiết lập quy ước code theo ngôn ngữ |
+| `/stack-set` | Không liên tục | Tự phát hiện tech stack và tạo tham chiếu backend, frontend hoặc mobile (Swift/Kotlin/Flutter/RN) | Thiết lập quy ước code theo ngôn ngữ |
 | `/architecture` | Không liên tục | Chẩn đoán kiến trúc, so sánh và ghi quyết định | Review ranh giới hoặc chọn kiến trúc |
 | `/convert` | Không liên tục | Định tuyến chuyển đổi tài liệu tới skill phù hợp | Chuyển đổi file HWP/HWPX hoặc PDF |
 | `/docs` | Không liên tục | Xác minh tài liệu và đề xuất sync theo diff | Kiểm tra docs theo codebase hiện tại |
-| `/explain` | Không liên tục | Tạo và xác minh explainer HTML offline cho thay đổi code | Giải thích diff, PR, branch hoặc commit range |
+| `/explain` | Không liên tục | Tạo explainer HTML offline cho thay đổi code hoặc chủ đề, xác minh bằng `oma explain validate` và mở bằng `oma explain render --open` | Giải thích diff, PR, branch, commit range hoặc một chủ đề |
 | `/recap` | Không liên tục | Tóm tắt công việc qua lịch sử các tool AI được hỗ trợ | Retrospective theo ngày hoặc kỳ |
 | `/schedule` | Không liên tục | Đăng ký job agent lặp lại | Recap, scan hoặc housekeeping ban đêm |
 | `/video` | Không liên tục | Soạn video có thể tái lập từ script, narration và visual | Shorts, explainer và demo |
@@ -326,20 +303,20 @@ Preset `all` của installer bám theo registry đang chạy. Bảng nhóm mọi
 | **oma-academic-writing** | Soạn/sửa học thuật và review anti-AI | Prose hướng xuất bản và sửa claim/evidence |
 | **oma-architecture** | Ranh giới hệ thống, đánh đổi, ADR | Khuyến nghị kiến trúc hoặc decision record |
 | **oma-backend** | API, auth, logic server, migration | Thay đổi Router/Service/Repository và xác minh |
-| **oma-brainstorm** | Ý tưởng mơ hồ và so sánh hướng tiếp cận | Tài liệu thiết kế trong `docs/plans/designs/` |
-| **oma-coordination** | Điều phối đa agent thủ công | Hướng dẫn task và bàn giao từng bước |
+| **oma-brainstorm** | Ý tưởng mơ hồ và so sánh hướng tiếp cận | Bản nháp quyết định trong `docs/decisions/` |
+| **oma-coordination** | Quy tắc điều phối dùng chung cho `/work`, `/orchestrate` và `/ultrawork`; điều phối thủ công từng bước | Tái sử dụng plan, đồng bộ contract, quyền sở hữu workspace và hướng dẫn bàn giao QA |
 | **oma-db** | Thiết kế schema, ERD, tuning query, capacity | Tài liệu schema, migration và kế hoạch phục hồi |
 | **oma-debug** | Tái hiện bug và phân tích nguyên nhân gốc | Sửa tối thiểu, evidence hồi quy và quét pattern |
-| **oma-security** | Quét bảo mật mã nguồn, agent skill và MCP; penetration test web có phạm vi | Phát hiện đã xác thực và cấu hình scan gate |
-| **oma-design** | Design system, landing page, token | `DESIGN.md`, token và hướng dẫn component |
+| **oma-security** | Quét bảo mật mã nguồn, agent skill và MCP; penetration test chỉ trên nền tảng runtime đã qua rà soát do người dùng cung cấp | Phát hiện đã xác thực và cấu hình scan gate |
+| **oma-design** | Hệ thống thị giác, `DESIGN.md`, định hướng redesign, review thiết kế UI | Quyết định thiết kế hoặc kết quả kiểm tra, `DESIGN.md` khi hệ thống thay đổi và bàn giao triển khai |
 | **oma-dev-workflow** | CI/CD, monorepo, migration, release automation | Cấu hình workflow và kiểm tra release |
 | **oma-docs** | Ref hỏng và drift tài liệu | Báo cáo verify hoặc ứng viên sync theo diff |
-| **oma-explanation** | Walkthrough diff, PR, branch hoặc commit | HTML explainer offline với Background, Intuition, Code và Quiz |
+| **oma-explanation** | Walkthrough diff, PR, branch hoặc commit; giải thích chủ đề | HTML explainer offline (Background, Intuition, Code và Quiz cho một thay đổi) |
 | **oma-frontend** | Component UI, form, page, style Angular hoặc React | Thay đổi frontend và kiểm tra liên quan |
 | **oma-hwp** | Chuyển đổi HWP/HWPX/HWPML | Markdown có heading, bảng, hình và link |
 | **oma-image** | Tạo hình ảnh và visual | Image run tái lập với manifest |
 | **oma-market** | Nghiên cứu pain point, trend, competitor, discovery | Brief nghiên cứu tuân thủ LAW với framework |
-| **oma-mobile** | Flutter, React Native và Swift iOS | Màn hình mobile, state, tích hợp platform và test |
+| **oma-mobile** | Flutter, React Native, Swift iOS và Kotlin Android | Màn hình mobile, state, tích hợp platform và test |
 | **oma-observability** | Trace, metric, log, profile, SLO, điều tra sự cố | Khuyến nghị hoặc hướng dẫn observability theo tầng |
 | **oma-orchestration** | Thực thi agent song song tự động | Plan điều phối, cập nhật memory và thu thập kết quả |
 | **oma-pdf** | Chuyển đổi PDF và trích xuất có OCR | Markdown giữ thứ tự đọc, bảng, list và hình |
@@ -349,7 +326,7 @@ Preset `all` của installer bám theo registry đang chạy. Bảng nhóm mọi
 | **oma-refactor** | Tái cấu trúc bảo toàn hành vi | Thay đổi refactor với characterization và evidence chất lượng |
 | **oma-scholar** | Tìm kiếm học thuật và sidecar bài báo | Thao tác `.knows.yaml` đã xác thực |
 | **oma-scm** | Branch Git, worktree, baseline, vệ sinh commit | Kế hoạch SCM hoặc output Conventional Commit |
-| **oma-search** | Tìm docs, web, code, local có chấm điểm tin cậy | Kết quả search đã định tuyến kèm nhãn tin cậy |
+| **oma-search** | Tài liệu bên ngoài, nguồn web, mã từ xa và đọc URL đã biết | Nguồn có trích dẫn kèm route, provider, bằng chứng và giới hạn |
 | **oma-skill-creation** | Tạo và audit skill OMA | File skill SSL-lite và kết quả `oma skill audit` |
 | **oma-slide** | Deck HTML và export | HTML bundle đã xác thực, PDF, PNG hoặc PPTX |
 | **oma-tf-infra** | Hạ tầng Terraform, IAM, policy-as-code | Module Terraform, plan và control |
@@ -405,7 +382,13 @@ Khi chạy `oma agent spawn`, CLI:
 
 ### Project memory store
 
-Agent phối hợp qua file bền vững tại `.agents/state/memories/` (project cũ fallback về `.serena/memories/`). Orchestrator ghi file session và task-board theo run. Mỗi run ghi `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` và `result-{agentId}-{taskId}-{runId}-{sessionId}.md` khi bật output Markdown; receipt và claim cấu trúc tại `.agents/state/agent-runs/` là nguồn có thẩm quyền cho CLI spawn. Agent đọc/ghi file bằng native tool; mapping tool vẫn cấu hình được trong `.agents/mcp.json → memoryConfig.tools`.
+Agent phối hợp qua file bền vững tại `.agents/state/memories/` (project cũ fallback về đường dẫn legacy `.serena/memories/`). Thư mục này lưu tóm tắt session, task board, tiến độ, bài học và bản ghi thử nghiệm. Báo cáo `result-{agentId}-{taskId}-{runId}-{sessionId}.md` dễ đọc được lưu trong `.agents/results/`. Receipt và claim cấu trúc tại `.agents/state/agent-runs/` vẫn là nguồn có thẩm quyền cho CLI spawn, còn kế hoạch thực thi đóng băng nằm trong `.agents/state/agent-plans/`. Agent đọc/ghi các file này bằng tool file native; mapping tool vẫn cấu hình được trong `.agents/mcp.json → memoryConfig.tools`.
+
+### Tài liệu và báo cáo
+
+Dùng `docs/decisions/` cho đề xuất hướng tiếp cận và ADR, kèm trường `Status` như `draft`, `accepted` hoặc `superseded`. Thiết kế UI thuộc về `DESIGN.md`. Work plan nằm trong `docs/plans/work/`, còn API contract đã chốt nằm trong `docs/plans/contracts/`.
+
+Báo cáo thực thi và bản nháp contract thuộc về `.agents/results/`. Khi một tài liệu trở thành tham chiếu được duy trì của dự án, hãy chuyển nó sang thư mục `docs/` phù hợp và để lại liên kết tại vị trí cũ. Xem [Bố cục artifact](./artifact-layout.md) để biết bố cục đầy đủ và các lệnh di trú.
 
 ### Workspace
 
@@ -442,7 +425,7 @@ Các vấn đề thường gặp được liệt kê bên dưới. Với thông 
 | Dashboard hiện "No agents detected yet" | Agent chưa ghi vào memory, hoặc dashboard đang theo dõi thư mục khác | Đợi file progress đầu tiên; chạy từ project root hoặc truyền `--project-root <path>` |
 | `oma dashboard web` thoát với "port 9847 is already in use" | Process khác đang giữ port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | Báo cáo QA có hơn 50 vấn đề | Bình thường ở lần review đầu của codebase lớn | Tập trung CRITICAL và HIGH trước. Ghi MEDIUM/LOW cho sprint tương lai. |
-| Tự động phát hiện kích hoạt sai workflow | Từ khóa mơ hồ | Dùng `/command` tường minh thay vì ngôn ngữ tự nhiên. Ghi nhận false trigger để cải thiện. |
+| Một chế độ liên tục khởi động khi bạn chỉ nhắc đến tên của nó | Prompt nêu `orchestrate`, `ultrawork`, `work mode` hoặc `ralph` ngoài câu hỏi hoặc code block | Nói "workflow done" để tắt nó. Ghi nhận false trigger để cải thiện. |
 | Workflow liên tục không dừng | File trạng thái vẫn tồn tại | Nói "workflow done" trong chat hoặc xóa thủ công file trạng thái từ `.agents/state/` |
 | Agent bị chặn ở clarification HIGH | Yêu cầu quá mơ hồ | Cung cấp câu trả lời cụ thể agent yêu cầu, rồi chạy lại |
 | Tool MCP không hoạt động | Serena chưa cấu hình hoặc chưa chạy | Chạy `oma doctor` để xác minh cấu hình MCP |
@@ -458,6 +441,7 @@ Các vấn đề thường gặp được liệt kê bên dưới. Với thông 
 - Bug có thông báo lỗi: [Sửa lỗi](./bug-fixing.md)
 - Theo dõi một run: [Giám sát dashboard](./dashboard-monitoring.md)
 - Kiểm tra hoặc resume kết quả agent: [Agent result và resume](./agent-results-and-resume.md)
+- Tìm hoặc di trú tài liệu OMA: [Bố cục artifact](./artifact-layout.md)
 - Có gì đó thất bại: [Khắc phục sự cố](./troubleshooting.md)
 - Chi tiết tích hợp project: [Hướng dẫn tích hợp](./integration.md)
 - Thuật ngữ dùng trong các hướng dẫn này: [Bảng thuật ngữ](../getting-started/glossary.md)

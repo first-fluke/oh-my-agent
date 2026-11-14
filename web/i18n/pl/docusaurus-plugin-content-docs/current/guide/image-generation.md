@@ -259,7 +259,7 @@ Aby zobaczyć dokładnie, co zostało wysłane do dostawcy, sprawdź pole `promp
 
 ## Konfiguracja
 
-- **Konfiguracja projektu:** sekcja `image:` w `.agents/oma-config.yaml`. Starszy `config/image-config.yaml` nie jest już odczytywany.
+- **Konfiguracja projektu:** sekcja `image:` w `.agents/oma-config.yaml`. Dostarczane wartości domyślne znajdują się w CLI, więc zapisuj tylko te klucze, które zmieniasz.
 - **Zmienne środowiskowe:**
   - `OMA_IMAGE_DEFAULT_VENDOR`: nadpisuje skonfigurowanego domyślnego vendora (`auto`). Sama flaga `--vendor` domyślnie przyjmuje `auto`, więc gdy potrzebujesz konkretnego vendora, przekazuj `--vendor` w każdej komendzie.
   - `OMA_IMAGE_DEFAULT_OUT`: nadpisuje domyślny katalog wyjściowy

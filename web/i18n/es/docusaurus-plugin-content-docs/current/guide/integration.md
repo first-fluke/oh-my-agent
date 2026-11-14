@@ -55,8 +55,8 @@ El instalador pregunta **What type of project?** y ofrece un [preset de skills](
 
 Si seleccionaste un preset que incluye la skill de backend, se te pedirá elegir una variante de lenguaje:
 
-- **Python**: FastAPI/SQLAlchemy (predeterminado)
-- **Node.js**: NestJS/Hono + Prisma/Drizzle
+- **Python**: Litestar/SQLAlchemy (predeterminado)
+- **Node.js**: NestJS + Prisma
 - **Rust**: Axum/Actix-web
 - **Other / Auto-detect**: configurar más adelante con `/stack-set`
 
@@ -118,6 +118,14 @@ El instalador muestra un resumen de todo lo instalado:
 - Ubicación del directorio de skills
 - Symlinks creados
 - Elementos omitidos, si los hay
+
+La instalación y la actualización también migran las ubicaciones de documentos heredadas al [diseño de artefactos](./artifact-layout.md). Los archivos existentes se conservan cuando coinciden los nombres, y los informes vinculados a evidencia de ejecución permanecen en sus rutas originales. Previsualiza los cambios antes de actualizar:
+
+```bash
+oma docs migrate --dry-run
+```
+
+Consulta [Migrar un proyecto existente](./artifact-layout.md#migrate-an-existing-project) para ver las rutas de origen, la gestión de conflictos y el comando manual.
 
 ---
 
@@ -380,11 +388,11 @@ El instalador descarga el tarball de la última versión desde los releases de G
 
 ### 6. Instalación de configuración
 
-`installConfigs()` copia archivos auxiliares a `.agents/config/`, crea `.agents/mcp.json` e inicializa el `.agents/oma-config.yaml` o `.agents/oma-config.cue` propiedad del usuario. Los archivos del usuario existentes se conservan salvo que se use `--force`; `oma update` también mantiene la configuración del usuario y añade nuevas claves de nivel superior de la plantilla cuando es necesario.
+`installConfigs()` crea `.agents/mcp.json` e inicializa el `.agents/oma-config.yaml` o `.agents/oma-config.cue` propiedad del usuario. Los archivos del usuario existentes se conservan salvo que se use `--force`; `oma update` también mantiene la configuración del usuario y añade nuevas claves de nivel superior de la plantilla cuando es necesario.
 
 ### 7. Instalación de skills
 
-Para cada skill seleccionada, `installSkill()` copia el directorio de la skill a `.agents/skills/{skill-name}/`. Si se seleccionó una variante (por ejemplo, Python para backend), también configura el directorio `stack/` con recursos específicos del lenguaje.
+Para cada skill seleccionada, `installSkill()` copia el directorio de la skill a `.agents/skills/{skill-name}/`. Si se seleccionó una variante (por ejemplo, Python para backend), también copia esa variante en el directorio `stack/` de la skill y elimina el directorio redundante `variants/`. Una skill instalada sin variante, como oma-mobile, conserva su directorio `variants/`, que su SKILL.md lee directamente.
 
 ### 8. Adaptaciones de proveedores
 
@@ -423,3 +431,4 @@ Como se describe en la ruta de la CLI anterior, install/update puede configurar 
 - [Configuración del modelo por agente](./per-agent-models.md): elige el modelo y la CLI de cada agente
 - [Confianza de los hooks de Codex](./codex-hook-trust.md): el paso único `/hooks` para Codex
 - [Actualizaciones automáticas](./automated-updates.md): mantén la instalación al día desde CI
+- [Diseño de artefactos](./artifact-layout.md): ubicaciones de documentos, promoción y migración

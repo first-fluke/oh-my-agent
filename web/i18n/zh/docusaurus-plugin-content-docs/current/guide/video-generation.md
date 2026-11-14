@@ -64,7 +64,8 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
 oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
@@ -87,9 +88,9 @@ oma video generate "product walkthrough" --mode demo --polish --capture ./captur
 
 ---
 
-## 始终使用最新 HyperFrames：由你编写组合 {#always-latest-hyperframes--you-author-the-composition}
+## 受管的 HyperFrames 工具链与组合编写 {#always-latest-hyperframes--you-author-the-composition}
 
-oh-my-agent **不提供 HyperFrames 组合代码**。每次运行都会在 `<runDir>/hyperframes/` 中创建项目；`oma video compose` 使用最新 npm HyperFrames 搭建骨架（工具链缓存位于 `~/.cache/oma-video/hyperframes/<version>/`，通过 `node_modules` 符号链接共享），并使用 HEAD 版本的 [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)（位于 `~/.cache/oma-video/hyperframes-skills/`）。智能体遵循骨架中的 `AUTHORING.md`、这些技能以及 `.agents/skills/oma-video/resources/hyperframes-authoring/` 中的模式规范，编写生成的组合源代码。
+oh-my-agent **不随附 HyperFrames 组合代码**。每次运行都会在 `<runDir>/hyperframes/` 创建独立项目，由 `oma video compose` 基于最新 npm HyperFrames 搭建骨架（工具链缓存位于 `~/.cache/oma-video/hyperframes/<version>/`，通过 `node_modules` 符号链接共享），并通过 [skills CLI](https://github.com/vercel-labs/skills) 安装来自 [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) 的 `hyperframes` 与 `hyperframes-cli` 技能。智能体遵循骨架中的 `AUTHORING.md`、这些技能以及 `.agents/skills/oma-video/resources/hyperframes-authoring/` 中的模式规范，编写生成的组合源代码。
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -98,14 +99,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- 最新版本检查（npm + GitHub）由 `video.hyperframes.check_interval_min` 控制频率（默认 60；`0` 表示每次 compose）。`oma update` 遵循该间隔；`oma video doctor --upgrade` 会强制检查；离线运行使用缓存的工具链，并报告 `stale`。
+- 工具链最新版本检查（npm）由 `video.hyperframes.check_interval_min` 节流控制（默认 60；`0` 表示每次 compose 检查）。`oma update` 遵循该间隔；`oma video doctor --upgrade` 会强制检查；离线运行使用缓存的工具链并报告 `stale`。
+- 技能：`oma video doctor --install` 会安装缺失技能（`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`）；`--upgrade` 同时更新已安装的技能；`oma update` 仅更新已安装的技能。未安装这些技能时，`AUTHORING.md` 会改为链接到上游文档。旧版 `~/.cache/oma-video/hyperframes-skills/` 副本不再被读取，可以直接删除。
 - 可复现性保存在运行目录中：`render-spec.json`、编写的组合源代码，以及生成的 HyperFrames 软件包元数据中记录的工具链版本。重新渲染同一运行会复用该渲染契约；新运行会检查最新 HyperFrames。
 - lint 或渲染失败**不会**通过占位内容隐藏（占位仅在 `OMA_VIDEO_MOCK=1` 时存在）：`oma video render` 会带诊断退出 1，智能体需使用最新技能修复组合。新 HyperFrames 版本导致的损坏属于组合缺陷，不能因此固定版本。
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---
@@ -128,14 +130,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`。 |
 | `--locale <lang>` | 旁白或字幕的语言标签。 |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none`（无需密钥的对齐）。 |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`。 |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`。选择视觉供应商顺序，见[视觉链](#visual-chain)。 |
 | `--voice <profile>` | 旁白声音，或 `none`（默认值；省略后视频将静音，并使用估算的字幕时间）。 |
 | `--music <mode>` | `upbeat`、`calm`、`cinematic`、`lofi`、`piano` 或 `none`。 |
 | `--compositor <c>` | `hyperframes`（默认）\| `mpt`。 |
 | `--capture <path>` | demo 模式使用的录制文件：`.mp4`、`.mov`、`.webm` 或 `.mkv`，需存放在项目内。 |
 | `--source <k>` | demo 采集源：`file` 或 `web`（默认：`file`）。 |
 | `--url <url>` | `--source web` 的上下文 URL，屏蔽后保存到 `manifest.json`。使用 `--source web` 时必填；它从不启动采集，也不能替代 `--capture`。 |
-| `--polish` | 在采集的素材上叠加 HyperFrames 组合。 |
+| `--polish` | Demo 模式：将录屏作为 HyperFrames `Demo` 组合的背景，在其中屏蔽个人信息。不传此标志时，原始、未脱敏的录屏将直接复制到输出 MP4，不会运行任何组合。 |
 | `--device`、`--ready-selector`、`--show-cursor`、`--capture-timeout`、`--capture-stop` | 会被接受但不会使用：oma 不驱动浏览器，也不录制屏幕。 |
 | `--output-dir <path>` | 输出基础目录。位于 `$PWD` 之外的路径需要 `--allow-external-output`。 |
 | `--allow-external-output` | 允许输出路径位于 `$PWD` 之外。 |
@@ -159,14 +161,33 @@ oma video provider list         # provider availability + key/fallback status
 |------------|-------------|----------|
 | script | 通过 `--script <path>` 传入的智能体编写 `script.json`（由 `/video` 工作流写入） | 根据简述文本生成的确定性三场景骨架 |
 | voice | 配合 `--voice <profile>` 使用的 `oma-voice`（本地 Voicebox 或 VoiceStudio，由 `voice.backend` 选择） | 使用估算时间的静音视频（`--voice none`，默认值） |
-| visual | `oma-image`、`oma-slide`，设置 `PEXELS_API_KEY` 时使用 Pexels 素材片段 | 占位素材 |
-| visual: `aigc` | 尚未接入；`RUNNINGHUB_API_KEY` 会启用该供应商，但它仍写入占位内容 | 占位素材 |
+| visual | 默认生成 `oma-image` 静态图；当场景的 `visual.ref` 指向现有演示文稿目录时生成 `oma-slide` 帧；传入 `--visual stock` 且设置 `PEXELS_API_KEY` 时使用 Pexels 素材片段 | 占位素材 |
+| visual: `aigc` | 设置 `RUNNINGHUB_API_KEY` 且传入 `--visual aigc` 时选用；实时调用尚未接入，因此该供应商仍写入占位内容 | 占位素材 |
 | caption | 与 `timing.json` 对齐的 `.srt` 和 `.vtt`，使用脚本的语言 | 相同；尚未接入翻译到 `--locale` |
 | music | 运行 `oma video doctor --install-strudel` 后的 Strudel 背景音乐 | 无音乐轨道 |
 | capture | 你通过 `--capture <file>` 提供的录制文件 | 无：没有 `--capture` 时，demo 模式会打印录制说明并以退出码 3 退出 |
 | compositor | HyperFrames（受管）或 MoneyPrinterTurbo | 没有合成器回退，运行会失败并给出诊断 |
 
-不会自动处理凭据：录制时由你完成屏幕上的登录；URL 和查询令牌会在日志和清单中屏蔽。
+### 视觉链 {#visual-chain}
+
+`--visual` 和模式共同决定为每个场景遍历的供应商顺序：
+
+| `--visual` | 模式 | 顺序 |
+|------------|------|-------|
+| `auto`（默认） | `shorts`、`demo` | `providers.visual.order`（默认 `oma-image`、`pexels`、`pixelle`） |
+| `auto`（默认） | `explainer` | `oma-slide`、`oma-image`，随后 `providers.visual.order` |
+| `generate` | 任意 | `oma-image` |
+| `slide` | 任意 | `oma-slide`、`oma-image` |
+| `stock` | 任意 | `pexels`、`oma-image` |
+| `aigc` | 任意 | `pixelle`、`oma-image` |
+
+- 只有当某个供应商不可用或抛出异常时，链条才会继续向后推进。`oma-image` 和 `oma-slide` 始终可用，并且会写入占位内容而不是抛出异常，因此排在它们之后的供应商不会被触发。在默认顺序下，`oma-image` 会接管所有场景：使用 Pexels 需要传入 `--visual stock` 并配置 `PEXELS_API_KEY`，使用 Pixelle 需要传入 `--visual aigc` 并配置 `RUNNINGHUB_API_KEY`。
+- 只有当 `script.json` 中场景的 `visual.ref` 是现有演示文稿目录的路径时，`oma-slide` 才会导出对应帧；它不会自动生成演示文稿。导出的第一帧将成为该场景视觉画面，因此请为每个幻灯片场景准备独立的单页演示文稿目录。它处理的其他场景都会得到占位内容，这包括在 `--visual auto` 下没有对应演示文稿的 explainer 场景。请先用 `oma-slide` 构建演示文稿，或传入 `--visual generate` 生成 `oma-image` 静态图。
+- 占位内容会作为该场景的回退路径记录在 `warnings` 中。
+
+### Demo 采集与脱敏 {#demo-capture-and-masking}
+
+录制时由你完成屏幕上的登录，oma 不会自动处理任何凭据；URL 和查询令牌会在日志和清单中屏蔽。录屏画面中的个人信息仅会在 `--polish` 组合中屏蔽。不带 `--polish` 的 demo 运行会将原始录屏复制到输出 MP4；请务必先检查画面确认没有需要脱敏的信息再交付该文件，否则请加上 `--polish` 重新运行。
 
 字幕以**静态窗口提示**渲染，也就是当前帧处于活动状态的单行字幕，使用 CSS 换行，不做逐词动画。
 

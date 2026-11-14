@@ -5,6 +5,21 @@ description: 安装 oh-my-agent，选择技能和能力提供商，了解生成�
 
 # 安装
 
+若只处理单个任务，请先从[单个技能](./choose-setup.md#load-one-skill)开始。若需要项目钩子和团队工作流，请使用下方的运行时安装。[安装方式指南](./choose-setup.md)区分了指令加载、技能预设和 Claude Code 市场安装。
+
+Grok Bot 请使用 [Grok Bot 安装页面](/grok-bot/)。原生的 **Add to Grok Bot** 链接需要 Cursor 市场上架审批通过，待审期间不可用。针对 Bot 主机的 `oma install --target grok-bot` 说明见独立的[手动安装指南](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md)。下方的 Grok Build 运行时集成属于不同的安装目标。
+
+## 使用 AI 智能体安装 {#install-with-an-ai-agent}
+
+将以下内容粘贴到你的编码智能体中：
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[智能体安装指南](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md)涵盖了 CLI 准备、非交互式项目设置以及使用 `oma doctor` 进行验证。
+
 ## 前置要求 {#prerequisites}
 
 - **AI 驱动的 IDE 或 CLI**：至少安装一个受支持的主机，例如 Claude Code、Codex CLI、Qwen Code、Antigravity CLI（`agy`）、Cursor、OpenCode、Kimi Code CLI、Kiro、CommandCode、pi、GitHub Copilot 或 Hermes
@@ -79,30 +94,57 @@ bunx oh-my-agent@latest
 | **backend** | 带数据库的 API 或服务 | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
 | **mobile** | 仅移动应用 | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
 | **devops** | 基础设施、CI/CD 和可观测性工作 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **security** | 安全扫描、代码审查和修复 | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | 论文、市场研究以及 PDF/HWP 转换 | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | 设计素材、图像、语音和文字内容 | design, image, voice, academic-writing, translation, scm | 6 |
 
 预设是技能集合，不会为每项技能创建一个子智能体定义。`all` 预设从实时技能注册表展开，因此列表可以随着仓库增长。领域预设只包含该方向所需的技能。
 
+从命令行选择预设：
+
+```bash
+oma install --preset frontend --yes
+```
+
+`--preset` 使用上表中的名称，优先级高于交互式技能提示和非交互式的 `all` 默认值。未知名称会在安装开始前被拒绝。省略该选项则沿用现有的选择流程。该选项只选择技能；共享文件、智能体、工作流、钩子和提供方设置仍遵循运行时安装器。使用较小的预设重装时，会保留之前已安装的技能。自定义选择只能通过交互式菜单完成，`--preset` 不接受 `custom` 和空值。
+
+安装完成后，请查看已选技能列表和工作流可用性报告。只有当工作流所需的技能清单包含有效名称和说明时，该工作流才会公开暴露。现有保留的技能可以满足这些要求。条件引用会单独报告，不会扩展所选预设。此检查只覆盖清单；工具、提供方、凭据和执行仍需各自单独验证。
+
 ### 需要预设之外技能的工作流 {#workflows-that-need-skills-outside-a-preset}
 
-每个预设都会安装全部工作流和智能体定义，但有几个工作流会读取领域预设不安装的技能。选择领域预设前，请先查看此表：
+每个预设都会复制工作流和智能体定义，但只有所需技能可用的工作流才会公开对应的命令和提示词。例如，全新安装的 frontend 预设不会提供 `/work`，因为它缺少 `oma-coordination`；其已有的 PM 和 QA 技能已经满足其余入口要求。安装器会报告缺少的技能，而不会自动切换到 `all`。
 
-| 工作流 | 读取的技能 | 包含该技能的预设 |
+| 工作流 | 必需的入口技能 | 包含这些技能的预设 |
 |----------|-------------|-------------------------|
-| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
-| `/ultrawork`, `/ralph` | oma-coordination；它生成的 `refactor-engineer` 智能体使用 oma-refactor | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
+| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
-| `/security` | oma-security | all |
+| `/security` | oma-security | all, security |
 | `/recap` | oma-recap | all |
 | `/video` | oma-video | all |
-| `/convert`（PDF、HWP） | oma-pdf, oma-hwp | all, research |
 | `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
-| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/architecture` | oma-architecture | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
+| `/plan` | oma-pm | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/review` | oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
 | `/scm` | oma-scm | 所有预设 |
 
-之后要添加缺失的技能，请在项目根目录运行 `oma doctor`，接受缺失技能提示，然后选择 **Select individually**。
+分支级引用仍然只是建议性的。例如，`/convert` 会在检查输入后再选择 PDF、HWP 或视频工具；`/ralph` 和 `/ultrawork` 在重构分支上可能需要 `oma-refactor`。这些引用不是无条件的入口要求。
+
+运行 `oma doctor` 可诊断缺失或无效的清单。要添加缺失的技能，请运行 `oma install` 并选择 **Select individually**。修复清单后，运行 `oma link` 刷新工作流暴露列表；重新安装也会刷新它。对于 OMA 全局安装，请使用对应的 `--global` 作用域。移除不可用的 OMA 命令时，用户自有的命令会保留。
+
+### 领域插件 {#domain-plugins}
+
+Claude Code 市场用户在添加 `oh-my-agent` 市场后，可以选择领域入口：
+
+```bash
+claude plugin install oma-frontend@oh-my-agent
+# Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
+```
+
+领域入口包含 8 个 frontend、6 个 security 或 8 个 research 技能以及匹配的原生智能体选择。它们的会话引导程序会把该预设传给运行时安装器。共享运行时设置和现有已安装技能遵循上述安装器行为。`oma` 入口则保留完整插件。生成的 Codex 市场目录以及 Grok Build 和 ZCode 目录中也声明了相同的领域根入口。Antigravity CLI（对生成目录或 `oma-antigravity-plugin.tar.gz` 发布产物执行 `agy plugin install ./antigravity-plugin`）、Grok Build CLI、ZCode 和 Kimi Code（`/plugins install`）各自读取生成的清单；各宿主的具体步骤见[兼容 Claude 的插件宿主](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)。
+
+固定版本的宿主 CI 作业会在全新 runner 上注册本地市场、安装领域入口并检查生成的清单。这些检查不调用模型。运行时凭据、外部提供方以及首个任务的成功执行仍需各自验证。发布检查还要求每个领域根入口中的两份清单都与 CLI 版本一致，并配有 Release Please 版本更新器。
 
 无论选择哪个预设，共享资源（`_shared/`）都会安装。这些资源包括核心路由、上下文加载、提示结构、供应商检测、执行协议和内存协议。
 
@@ -296,9 +338,8 @@ agents:
 |-------|------|----------|-------------|
 | `language` | string | 是 | 响应语言代码。支持 en、ko、ja、zh、es、fr、de、pt、ru、nl、pl。 |
 | `model_preset` | string | 是 | 当前[模型预设](./glossary.md#model-preset)键。`auto` 遵循当前运行时；固定键包括 `free`、`antigravity`、`claude`、`codex`、`qwen`、`cursor`、`kiro` 和 `mixed`。也可以使用自定义预设键。参见[按智能体配置模型](../guide/per-agent-models.md)。 |
-| `default_cli` | string | 否 | 当显式智能体设置和选定预设未解析出供应商时，`oma agent spawn` 使用的回退 CLI。 |
-| `free` | map | 否 | `model_preset: free` 时使用的 FreeLLMAPI 网关设置；请把 API 密钥放在环境变量中。 |
-| `providers` | map | 否 | 能力提供商：`code_intelligence`（`serena` 或 `gortex`）、`code_intelligence_guard`（`block` 或 `off`）、`docs`（`context7`）、`web`（`native` 或 `brave`）以及 `semantic_memory`（`agentmemory`、`honcho` 或 `none`）。 |
+| `agents` | map | 否 | 按角色覆盖的模型设置；`agents.default` 包含 `cli`（当显式智能体设置与所选预设未解析出供应商时，`oma agent spawn` 使用的回退 CLI）以及默认的 `effort`、`thinking` 和 `memory`。 |
+| `providers` | map | 否 | 能力提供商：`code_intelligence`（`serena` 或 `gortex`）、`code_intelligence_guard`（`block` 或 `off`）、`docs`（`context7`）、`web`（`native` 或 `brave`）和 `semantic_memory`（`agentmemory`、`honcho` 或 `none`）；对应的凭据章节（`brave`、`exa`、`honcho`）；以及具名 LLM 提供商，如 `free`（`model_preset: free` 使用的 FreeLLMAPI 网关）。请把 API 密钥保留在环境变量中。 |
 | `date_format` | string | 否 | 时间戳格式（`ISO`、`US`、`EU`）。默认值：`ISO`。 |
 | `timezone` | string | 否 | 时区标识符（例如 `Asia/Seoul`）。省略时使用主机系统时区。 |
 | `auto_update_cli` | boolean | 否 | 是否允许例行 CLI 检查在后台更新。默认值：`true`（使用 `false` 退出）。 |
@@ -314,7 +355,7 @@ agents:
 
 ### 供应商解析 {#vendor-resolution}
 
-启动智能体时，CLI 按以下顺序解析设置：`agents.<id>`、选定的 `model_preset`、预设编排器回退值，然后是 `default_cli`。当 `model_preset: auto` 时，当前运行时的原生配置提供模型；未知运行时回退到 `default_cli`。完整矩阵见[按智能体配置模型](../guide/per-agent-models.md)。
+启动智能体时，CLI 按以下顺序解析设置：`agents.<id>`、选定的 `model_preset`、预设编排器回退值，然后是 `agents.default.cli`。当 `model_preset: auto` 时，当前运行时的原生配置提供模型；未知运行时回退到 `agents.default.cli`。完整矩阵见[按智能体配置模型](../guide/per-agent-models.md)。
 
 ---
 

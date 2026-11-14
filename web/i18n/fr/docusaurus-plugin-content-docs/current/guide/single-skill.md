@@ -6,13 +6,13 @@ description: Guide détaillé des tâches limitées à un seul domaine dans oh-m
 
 # Exécution d'une compétence unique
 
-Une compétence unique convient à un agent qui traite une tâche ciblée dans un seul domaine. Elle évite la charge d'orchestration et de coordination entre agents. L'hôte ou le workflow sélectionné peut router un prompt en langage naturel vers la compétence ; le système de hooks détecte lui-même les workflows et le comportement de routage dépend du runtime sélectionné.
+Une compétence unique convient à un agent qui traite une tâche ciblée dans un seul domaine. Elle évite la charge d'orchestration et de coordination entre agents. L'hôte ou le workflow sélectionné peut router un prompt en langage naturel vers la compétence ; le système de hooks ajoute des indices de compétence à partir de mots-clés et le comportement de routage dépend du runtime sélectionné.
 
 ## Parcours rapide
 
 1. Exécutez `oma doctor` une fois pour vérifier l'intégration de l'hôte sélectionné. Les avertissements facultatifs concernant les fournisseurs ne bloquent pas une tâche qui ne les utilise pas.
 2. Décrivez une modification autonome avec un **Objectif**, un **Contexte**, des **Contraintes** et une condition **Terminé quand** explicites.
-3. La compétence sélectionnée doit inspecter le dépôt, indiquer son périmètre lorsque le contrat d'exécution actif exige un `CHARTER_CHECK`, puis signaler les vérifications réellement exécutées.
+3. La compétence sélectionnée doit inspecter le dépôt, indiquer toute hypothèse ayant une incidence sur le résultat, puis signaler les vérifications réellement exécutées.
 4. Si la tâche s'étend aux frontières de l'API, de l'UI, de la base de données ou du mobile, arrêtez l'exécution de la compétence unique et passez à `/work` ou `/orchestrate`.
 
 Pour une exécution gérée qui semble bloquée, utilisez `oma agent status <session-id> [agent-id]`, puis consultez les reçus dans `.agents/state/agent-runs/` et le chemin de claim injecté avant de réessayer. Consultez les [valeurs par défaut importantes](../getting-started/important-defaults.md) pour le routage des fournisseurs et la récupération.
@@ -115,17 +115,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **Ressources chargées :**
    - `execution-protocol.md` (toujours) ;
    - `snippets.md` (motifs de formulaire et Zod, ainsi que les motifs de composants existants lorsque la compétence les fournit).
-4. **Contrat d'exécution (lorsqu'il est activé) :** il peut émettre un `CHARTER_CHECK` :
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **Implémentation :**
+4. **Implémentation :**
    - crée `src/features/auth/components/login-form.tsx` (composant client avec `"use client"`) ;
    - crée `src/features/auth/utils/login-schema.ts` (schéma Zod) ;
    - crée `src/features/auth/components/skeleton/login-form-skeleton.tsx` ;
@@ -133,7 +124,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - gère le formulaire avec `@tanstack/react-form` et la validation Zod ;
    - utilise les imports absolus avec `@/` ;
    - conserve un composant par fichier.
-6. **Vérification :**
+5. **Vérification :**
    - liste de contrôle : labels ARIA présents, titres sémantiques, navigation au clavier fonctionnelle ;
    - mobile : rendu correct dans une fenêtre de 320px ;
    - performances : aucun CLS ;
@@ -166,16 +157,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - `stack/snippets.md` correspondant ou `variants/{node,python,rust}/snippets.md` s'il est disponible ;
    - `stack/tech-stack.md` correspondant ou les références tech-stack de la variante s'il en existe.
 <!-- oma-docs:ignore-end -->
-5. **Contrat d'exécution (lorsqu'il est activé) :** il peut émettre un `CHARTER_CHECK` :
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **Implémentation :**
+5. **Implémentation :**
    - dépôt : `TaskRepository.find_by_user(user_id, cursor, status, limit)` avec une requête paramétrée ;
    - service : `TaskService.get_user_tasks(user_id, cursor, status, limit)` (wrapper de logique métier) ;
    - routeur : `GET /api/tasks` avec middleware d'authentification JWT, validation des entrées et formatage de la réponse ;
@@ -203,18 +185,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **Évaluation de la difficulté :** moyenne (écran de réglages, gestion d'état et fonctionnement hors ligne).
 3. **Ressources chargées :**
    - `execution-protocol.md` ;
-   - `snippets.md` (modèle d'écran et motif de provider Riverpod).
-4. **Contrat d'exécution (lorsqu'il est activé) :** il peut émettre un `CHARTER_CHECK` :
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (motifs d'écran, de provider Riverpod et de couche de données), ou `stack/snippets.md` lorsque `/stack-set` l'a généré ;
+   - `variants/flutter/tech-stack.md`.
 <!-- oma-docs:ignore-start -->
-5. **Implémentation :**
+4. **Implémentation :**
    - écran : `lib/features/settings/presentation/settings_screen.dart` (widget Stateless avec Riverpod) ;
    - providers : `lib/features/settings/providers/settings_provider.dart` ;
    - dépôt : `lib/features/settings/data/settings_repository.dart` ;
@@ -247,17 +221,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (structure des livrables) ;
    - `examples.md` ;
    - `anti-patterns.md` (à consulter pendant l'optimisation).
-4. **Contrat d'exécution (lorsqu'il est activé) :** il peut émettre un `CHARTER_CHECK` :
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **Workflow :** explorer (entités, relations, modes d'accès et estimations de volume) → concevoir (schémas externe, conceptuel et interne, contraintes et champs de cycle de vie) → optimiser (index pour les requêtes, stratégie de partitionnement, plan de sauvegarde et revue des anti-patterns).
-6. **Livrables :**
+4. **Workflow :** explorer (entités, relations, modes d'accès et estimations de volume) → concevoir (schémas externe, conceptuel et interne, contraintes et champs de cycle de vie) → optimiser (index pour les requêtes, stratégie de partitionnement, plan de sauvegarde et revue des anti-patterns).
+5. **Livrables :**
    - résumé du schéma externe (vues par rôle : administrateur, responsable de projet, membre de l'équipe) ;
    - schéma conceptuel avec ERD (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership, etc.) ;
    - schéma interne avec DDL physique, index et partitionnement ;
@@ -322,7 +287,7 @@ Surveillez ces signaux : ils indiquent qu'il faut passer d'une exécution à com
 | Signal | Ce que cela signifie | Action |
 |--------|----------------------|--------|
 | L'agent dit « cette tâche nécessite une modification backend » | La tâche comporte des dépendances entre domaines. | Passez à `/work` et ajoutez un agent backend. |
-| Le CHARTER_CHECK de l'agent contient des éléments « Must NOT do » qui sont en fait nécessaires | Le périmètre dépasse un seul domaine. | Planifiez toute la fonctionnalité avec `/plan` d'abord. |
+| L'agent signale des travaux laissés de côté parce qu'ils sortent du domaine de la compétence | Le périmètre dépasse un seul domaine. | Planifiez toute la fonctionnalité avec `/plan` d'abord. |
 | Une correction se propage à 3 fichiers ou plus entre plusieurs couches | Une correction touche plusieurs domaines. | Utilisez `/debug` avec un périmètre plus large, ou `/work`. |
 | L'agent découvre un désaccord sur le contrat d'API | Le frontend et le backend ne sont pas alignés. | Exécutez `/plan` pour définir les contrats, puis relancez les deux agents. |
 | Le quality gate échoue sur les points d'intégration | Les composants ne se connectent pas correctement. | Exécutez `/review`, ou ajoutez une passe QA : `oma agent spawn qa "Review the integration" SESSION_ID --read-only`. |

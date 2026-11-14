@@ -8,7 +8,7 @@ description: "Ustrukturyzowany, siedmiokrokowy workflow debugowania z triage wa�
 
 ## Kiedy używać workflowu debugowania
 
-Użyj `/debug` (albo powiedz w języku naturalnym „fix bug”, „fix error” lub „debug”), aby odtworzyć błąd, ustalić jego przyczynę, zastosować poprawkę, dodać test regresji i wyszukać podobne wzorce.
+Użyj `/debug`, aby zdiagnozować konkretny błąd. Zwykłe żądanie, takie jak „find the root cause”, ładuje umiejętność `oma-debug` przez podpowiedź umiejętności, ale tylko polecenie slash uruchamia ten workflow. Siedmiokrokowy workflow obejmuje triage ważności, diagnozę opartą na źródłach oraz walidację po poprawce.
 
 Workflow debugowania obsługuje wszystkich skonfigurowanych dostawców. Kroki 1–5 działają inline. Krok 6 (wyszukiwanie podobnych wzorców) może delegować zadanie do subagenta `debug-investigator`, gdy zakres skanu jest szeroki (co najmniej 10 plików albo błędy obejmują wiele domen), a następnie krok 7 zapisuje wynik w pamięci.
 

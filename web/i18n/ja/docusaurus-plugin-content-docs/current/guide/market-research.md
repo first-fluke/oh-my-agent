@@ -1,14 +1,14 @@
 ---
 title: "ガイド：市場調査（last30days エンジン）"
 sidebar_label: 市場調査
-description: oh-my-agent の oma-market スキルが、常に最新リリースへ自動更新される上流の mvanhorn/last30days エンジンでコミュニティの反応を調査する方法を説明します。market 設定セクション、oma market resolve / update / run、detect-trap ゲート、意図からフレームワークへの対応、失敗時の動作を扱います。
+description: oh-my-agent の oma-market スキルが、skills CLI 経由でスキルとして導入した上流の mvanhorn/last30days エンジンを使ってコミュニティの反応を調査する方法を説明します。market 設定セクション、oma market resolve / update / run、detect-trap ゲート、意図からフレームワークへの対応、失敗時の動作を扱います。
 ---
 
 # 市場調査
 
 `oma-market` は「直近 N 日間に、X について人々は実際に何を話しているか」という問いに答えます。Reddit（投票数と上位コメント）、X、YouTube の文字起こし、TikTok、Instagram、Hacker News、Polymarket、GitHub、arXiv、Techmeme、Digg、LinkedIn、StockTwits、Bluesky、Web など、実際の反応数を持つコミュニティソースから、困りごと、トレンド、競合への反応、発見を集めます。
 
-調査は上流の [**last30days**](https://github.com/mvanhorn/last30days-skill) エンジン（MIT、Python 3.12 以降）で実行されます。oh-my-agent はこれをフォークしません。**常に最新の管理コピー**を保持し、すべての実行をゲートし、その上に戦略フレームワークの層を加えます。リリース頻度、スター数、プロバイダーの対応範囲は上流プロジェクトに属し、変わる可能性があります。
+調査は上流の [**last30days**](https://github.com/mvanhorn/last30days-skill) エンジン（MIT、Python 3.12 以降）で実行されます。oh-my-agent はこれをフォークしません。エンジンは [skills CLI](https://github.com/vercel-labs/skills) 経由でエージェントスキルとしてインストールされ、oh-my-agent はすべての実行をゲートし、その上に戦略フレームワークの層を加えます。リリース頻度、スター数、プロバイダーの対応範囲は上流プロジェクトに属し、変わる可能性があります。
 
 ---
 
@@ -36,32 +36,38 @@ Cursor と Windsurf のコミュニティの反応を直近 90 日間で比較�
 
 ---
 
-## 常に最新のエンジンを使う（Python 3.12 以降が必要） {#always-the-latest-engine--nothing-to-install}
+## エンジンをインストールする（Python 3.12 以降が必要） {#always-the-latest-engine--nothing-to-install}
 
 ```bash
-# Illustrative output; the release tag, cache path, and Python version vary.
+oma market update   # installs last30days when missing, otherwise updates it
+# runs: bunx skills add mvanhorn/last30days-skill --skill last30days -g -y
+#   or: bunx skills update last30days -g -y
+```
+
+```bash
+# Illustrative output; the version, install path, and Python version vary.
 oma market resolve
 # engine:   last30days
-# reason:   last30days 3.21.1 via managed:v3.21.1 (current)
-# root:     ~/.cache/oma-market/last30days/v3.21.1
-# skill:    ~/.cache/oma-market/last30days/v3.21.1/SKILL.md
+# reason:   last30days 3.21.1 via home:~/.agents/skills
+# root:     ~/.agents/skills/last30days
+# skill:    ~/.agents/skills/last30days/SKILL.md
 # version:  3.21.1
 # python:   python3.14 (3.14.7, PATH)
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- キャッシュ: `~/.cache/oma-market/last30days/<tag>/` と `state.json`。
-- `resolve` は使用前に GitHub へ最新リリースを問い合わせます。確認は `check_interval_min`（デフォルト 60 分）ごとに 1 回までに制限されます。新しいタグがあれば専用ディレクトリにダウンロードし、古いタグを削除します。そうでなければキャッシュを再利用します。ネットワークに失敗した場合はキャッシュを使い、`stale` と報告します。
+- `resolve` はインストール済みのスキルディレクトリだけを参照し、ネットワークには一切アクセスしません。何もインストールされていない場合は `ok` にならず、インストールコマンドを示します。`oma market update` を実行する前にスキルが確認を求めます。
+- `oma update` はエンジンをインストールしません。更新するには `oma market update`（または `bunx skills update last30days -g -y`）を使います。
 - Python の選択順は `LAST30DAYS_PYTHON` → `market.python` → PATH 上の `python3.14`、`python3.13`、`python3.12`、`python3`、`python`（3.12 以上が必要）→ `uv python find '>=3.12'` です。見つからない場合、`resolve` は ok にならず、インストール方法を表示します。スキルは Web 検索だけの調査に劣化させず、停止します。
 - エンジンの設定と API キーは `~/.config/last30days/` にあります。上流のセットアップウィザードが同意を得て書き込むため、エンジン更新後も残ります。
 
-解決の順序は次のとおりです（最初に見つかったものを使います）。`market.path` → `LAST30DAYS_HOME` → **管理される最新コピー** → ユーザーがインストールしたコピー（プロジェクトおよび `~` の `.agents|.claude|.codex|.cursor|.qwen|.kiro/skills/last30days`、次に Claude Code のプラグインキャッシュ）。
+解決の順序は次のとおりです（最初に見つかったものを使います）。`market.path` → `LAST30DAYS_HOME` → インストール済みスキルディレクトリ（プロジェクト内の `.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days`、次に `~` 配下、次に `~/.config/agents/skills/last30days` と Claude Code のプラグインキャッシュ）。Claude Code プラグインとしてインストールされている場合は `oma market update` ではなく `/plugin` で更新します。
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+以前のリリースでは `~/.cache/oma-market/` 配下に独自のコピーを保持していました。現在は読み込まれないため、削除して問題ありません。
 
 ---
 
@@ -69,13 +75,12 @@ oma market run -- --help     # the engine's own flags (without `--`, oma prints 
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`、`channel`、`check_interval_min` は非推奨です。設定されていても検証は通りますが値は無視され、`resolve` はそれらが設定されているあいだ警告を表示します。
 
 ---
 
@@ -89,14 +94,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` はキーワードトラップや属性による買い物調査のトピックを拒否し（終了コード 2）、言い換えを提案します。トピックが空、または 200 文字を超える場合は終了コード 4 で終了します。
 2. `oma market resolve --json` でエンジンと Python を確認します。`ok: false` なら停止します。
 3. エージェントは解決されたエンジンの `SKILL.md` を上から最後まで読み、それに従います。対象は初回セットアップウィザード、WebSearch が使える場合の調査前のハンドル／サブレディット／ハッシュタグ解決、クエリ計画、前提条件ゲートです。
 4. `oma market run "<topic>" <flags> --emit=compact` は上流の `python3 scripts/last30days.py` 呼び出しと同じ引数を使います。`market.save_dir` の値から `--save-dir` が追加されます。
-5. 合成は上流の OUTPUT CONTRACT（1 行目のバッジ、順位付きの証拠クラスタ、LAWs 1〜8）に従います。その後、エンジンのクラスタだけを引用するフレームワークのセクションを oma が追加します。
+5. 合成は上流の OUTPUT CONTRACT（1 行目のバッジ、順位付きの証拠クラスタ、LAWs 1〜8）に従います。その後、エンジンの本文とエンジンのフッターの間に、エンジンのクラスタだけを引用するフレームワークのセクションを oma が追加します。
 
 | 意図 | エンジンへの指示 | フレームワーク |
 |---|---|---|
@@ -105,7 +110,7 @@ flowchart TD
 | competitor | `"A vs B"` → 上流の比較フロー | SWOT + Porter の 5F |
 | discovery | `--discover`、続けて `--drill` のフォローアップ | SWOT + PESTEL |
 
-6. 自己チェックを行い、`.agents/results/market/{topic-slug}-{YYYYMMDD}.md` に書き込みます。
+6. `.agents/results/market/{topic-slug}-{YYYYMMDD}.md` に書き込み、書き込んだファイルに対して自己チェックを実行します。ブリーフを配信する前に修正と再チェックを行います。
 
 ---
 
@@ -114,9 +119,9 @@ flowchart TD
 | 状況 | 結果 |
 |---|---|
 | detect-trap がトピックを拒否 | 言い換えを表示し、エンジンを実行しません。`--force` はユーザーが明示的に再確認した後だけ使います |
-| オフラインでエンジンのキャッシュがない | `ok: false`。オンラインになったら `oma market update` を一度実行します |
+| エンジンが未インストール | `ok: false` → `oma market update`（skills CLI でインストールします） |
 | Python 3.12 以降がない | インストール方法（brew / apt / `uv python install 3.12`）を含む `ok: false`。または `LAST30DAYS_PYTHON` / `market.python` を設定します。Web 検索だけの代替はありません |
-| リリース確認に失敗 | キャッシュされたエンジンを使い、`stale` と報告します |
+| `oma market update` が失敗 | skills CLI のエラーが表示されます。既存のインストールは引き続き動作します |
 | キーのないソース | エンジン内でスキップし、フッターに列挙します。上流のセットアップウィザードで有効にできます |
 
 ---
@@ -124,7 +129,7 @@ flowchart TD
 ## 次のステップ
 
 - [コンテンツと調査のワークフロー](./content-and-research.md) — ほかの調査やドキュメント作業に合った機能を選ぶ
-- [ダイアグラムエンジン](./diagram-engine.md) — archify で使われている同じ管理最新版パターン
+- [ダイアグラムエンジン](./diagram-engine.md) — archify で使われている同じ skills-CLI インストールパターン
 - [oma-config.yaml のセマンティクス](./oma-config-semantics.md) — `market:` セクションのマージ方法
 - [CLI コマンド：market](../cli-interfaces/commands.md#market) — オプションの一覧
 - 上流： [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

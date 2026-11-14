@@ -55,8 +55,8 @@ Installer hỏi **What type of project?** và đưa ra một [skill preset](../g
 
 Nếu preset gồm backend skill, bạn chọn variant ngôn ngữ:
 
-- **Python:** FastAPI/SQLAlchemy, mặc định.
-- **Node.js:** NestJS/Hono + Prisma/Drizzle.
+- **Python:** Litestar/SQLAlchemy (mặc định).
+- **Node.js:** NestJS + Prisma.
 - **Rust:** Axum/Actix-web.
 - **Khác / tự phát hiện:** Cấu hình sau bằng `/stack-set`.
 
@@ -119,6 +119,14 @@ Installer hiển thị summary mọi thứ đã cài:
 - Vị trí thư mục skill.
 - Symlink đã tạo.
 - Mục bị bỏ qua, nếu có.
+
+Install và update cũng di trú vị trí tài liệu cũ sang [bố cục artifact](./artifact-layout.md). Các file sẵn có được giữ lại khi trùng tên, và báo cáo gắn với bằng chứng thực thi vẫn ở đường dẫn ban đầu. Xem trước các thay đổi trước khi nâng cấp:
+
+```bash
+oma docs migrate --dry-run
+```
+
+Xem [Di trú dự án hiện có](./artifact-layout.md#migrate-an-existing-project) để biết đường dẫn nguồn, cách xử lý xung đột và lệnh thủ công.
 
 ---
 
@@ -381,11 +389,11 @@ Installer tải release tarball mới nhất từ GitHub release của oh-my-age
 
 ### 6. Cài config
 
-`installConfigs()` copy file phụ vào `.agents/config/`, tạo `.agents/mcp.json` và bootstrap config do user sở hữu `.agents/oma-config.yaml` hoặc `.agents/oma-config.cue`. File user hiện có được giữ trừ khi có `--force`; `oma update` cũng giữ config user và thêm top-level key của template khi cần.
+`installConfigs()` tạo `.agents/mcp.json` và bootstrap config do user sở hữu `.agents/oma-config.yaml` hoặc `.agents/oma-config.cue`. File user hiện có được giữ trừ khi có `--force`; `oma update` cũng giữ config user và thêm top-level key của template khi cần.
 
 ### 7. Cài skill
 
-Với mỗi skill được chọn, `installSkill()` copy thư mục skill vào `.agents/skills/{skill-name}/`. Nếu chọn variant, chẳng hạn Python cho backend, nó cũng tạo thư mục `stack/` với resource theo ngôn ngữ.
+Với mỗi skill được chọn, `installSkill()` copy thư mục skill vào `.agents/skills/{skill-name}/`. Nếu chọn variant (ví dụ Python cho backend), nó cũng copy variant đó vào thư mục `stack/` của skill và xóa thư mục `variants/` dư thừa. Skill được cài không kèm variant, chẳng hạn oma-mobile, giữ lại thư mục `variants/` để SKILL.md của nó đọc trực tiếp.
 
 ### 8. Adaptation theo vendor
 
@@ -424,3 +432,4 @@ Như mô tả ở đường CLI, install/update tùy chọn cấu hình global g
 - [Cấu hình model theo từng agent](./per-agent-models.md): chọn model và CLI cho từng agent
 - [Codex hook trust](./codex-hook-trust.md): bước `/hooks` một lần cho Codex
 - [Cập nhật tự động](./automated-updates.md): giữ bản cài luôn mới từ CI
+- [Bố cục artifact](./artifact-layout.md): vị trí tài liệu, nâng cấp trạng thái và di trú
