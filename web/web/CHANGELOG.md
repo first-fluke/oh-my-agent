@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.20.5](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.4...web-v11.20.5) (2026-11-14)
+
+
+### Documentation
+
+* describe how workflows and skill hints actually start ([2074964](https://github.com/first-fluke/oh-my-agent/commit/2074964ffff52391a767e46274f61586d6261b5c))
+* **i18n:** partially sync translations with the english docs ([0f961b7](https://github.com/first-fluke/oh-my-agent/commit/0f961b7540c4ce874a956fbe27c7622105f4e6a4))
+
 ## [11.20.4](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.3...web-v11.20.4) (2026-11-12)
 
 
