@@ -1,5 +1,31 @@
 # Changelog
 
+## [20.43.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.3...cli-v20.43.0) (2026-11-14)
+
+
+### Features
+
+* **skills:** move the python backend preset to litestar ([c13fc36](https://github.com/first-fluke/oh-my-agent/commit/c13fc367bf55776070aef7862884ad36fc35a4ee))
+
+
+### Bug Fixes
+
+* **agents:** give allowlisted subagents the code-intelligence tools ([8ea342c](https://github.com/first-fluke/oh-my-agent/commit/8ea342c107121c182e44d086606f1652877f8c3f))
+* **dashboard:** report the latest turn of a progress file ([c863395](https://github.com/first-fluke/oh-my-agent/commit/c863395357043033b5ddda9f37448e40fcbe3094))
+* **install:** keep the preset verify contract in stack.yaml ([128af89](https://github.com/first-fluke/oh-my-agent/commit/128af89d19d03d86c1719064164537e8934e135d))
+* **rules:** skip unscoped rules when generating claude rules ([6f68a51](https://github.com/first-fluke/oh-my-agent/commit/6f68a519327b97cc07bb5fefda93c8ce327b7d92))
+* **slide:** stop flagging allowlisted font stylesheets ([47ef13a](https://github.com/first-fluke/oh-my-agent/commit/47ef13adbd084d3541ba8a681743c4f42f666eb3))
+* **verify:** drop the charter preflight check ([814e1ec](https://github.com/first-fluke/oh-my-agent/commit/814e1ece7acceb8f222e3641fe5e395d07ddf070))
+* **video:** call image and slide with their current flags ([96e2f7d](https://github.com/first-fluke/oh-my-agent/commit/96e2f7d6edc3a89838b4240a9829505d939ed40a))
+* **workflows:** retire the tools workflow and mcp toolGroups ([9243e55](https://github.com/first-fluke/oh-my-agent/commit/9243e557a9898b1804f920e4bf618d0d27655396))
+
+
+### Documentation
+
+* describe how workflows and skill hints actually start ([2074964](https://github.com/first-fluke/oh-my-agent/commit/2074964ffff52391a767e46274f61586d6261b5c))
+* **i18n:** partially sync translations with the english docs ([0f961b7](https://github.com/first-fluke/oh-my-agent/commit/0f961b7540c4ce874a956fbe27c7622105f4e6a4))
+* **skills:** prune and correct skills, workflows, and shared protocols ([7220f96](https://github.com/first-fluke/oh-my-agent/commit/7220f960cf09b246ac9673f674ac1e546aac4676))
+
 ## [20.42.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.2...cli-v20.42.3) (2026-11-12)
 
 
