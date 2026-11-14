@@ -73,8 +73,10 @@ Giá trị trong ngoặc là `effort` của preset (Codex) hoặc `thinking: tru
 
 | `model_preset` | Có đặt `agents.<id>`? | Model gửi tới CLI | CLI chạy agent |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | Bị bỏ qua | `FREELLM_MODEL`, nếu không có thì `free.model`, nếu không có thì `auto` (mọi role) | `--vendor`, nếu không có thì `OMA_RUNTIME_VENDOR`, nếu không có thì runtime phát hiện được nếu đó là Codex, Claude hoặc Qwen, nếu không có thì `default_cli`, nếu không có thì `codex`. Chỉ chấp nhận `codex`, `claude` và `qwen`. |
-| `auto` | Không | Không có. Setting agent và session của chính vendor được áp dụng. | `--vendor`, nếu không có thì `OMA_RUNTIME_VENDOR` được hỗ trợ, nếu không có thì runtime phát hiện được, nếu không có thì `default_cli`, nếu không có thì `claude`. Giá trị không được hỗ trợ là lỗi. |
+| `free` | Model bị bỏ qua; `effort`, `thinking`, `memory` vẫn áp dụng | `FREELLM_MODEL`, nếu không có thì `providers.free.default_model`, nếu không có thì `auto` (mọi role) | `--vendor`, nếu không có thì `OMA_RUNTIME_VENDOR`, nếu không có thì runtime phát hiện được nếu đó là Codex, Claude hoặc Qwen, nếu không có thì `agents.default.cli`, nếu không có thì `codex`. Chỉ chấp nhận `codex`, `claude` và `qwen`. |
+| LLM provider `providers.<name>` | Model bị bỏ qua; `effort`, `thinking`, `memory` vẫn áp dụng | `default_model` của provider (mọi role); thiếu là lỗi | `--vendor`, nếu không có thì `OMA_RUNTIME_VENDOR`, nếu không có thì runtime phát hiện được, nếu không có thì `agents.default.cli`, nếu không có thì CLI đầu tiên mà `transport` của provider cho phép (`chat_completions` → Codex hoặc Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` → một trong ba). |
+| Bất kỳ | `model` là `<provider>/<model-id>` cho một entry `providers.<name>` | `<model-id>`, truyền cho CLI nguyên trạng | Quy tắc vendor của dòng phía trên; registry không được tra |
+| `auto` | Không | Không có. Setting agent và session của chính vendor được áp dụng. | `--vendor`, nếu không có thì `OMA_RUNTIME_VENDOR` được hỗ trợ, nếu không có thì runtime phát hiện được, nếu không có thì `agents.default.cli`, nếu không có thì `claude`. Giá trị không được hỗ trợ là lỗi. |
 | `auto` | Có | `model` của override | `cli` của model đó, sau đó áp dụng quy tắc vendor override bên dưới |
 | Built-in, alias hoặc custom | Không | Entry của preset cho role, nếu không có thì entry `orchestrator` của preset | `cli` của model đó, sau đó áp dụng quy tắc vendor override bên dưới |
 | Built-in, alias hoặc custom | Có | Entry của preset được shallow-merge với override (field của override thắng) | `cli` của model đó, sau đó áp dụng quy tắc vendor override bên dưới |
@@ -85,6 +87,7 @@ Cách các phần còn lại khớp vào:
 - **Tra cứu model.** Slug được tra trong `models:` trước, sau đó trong built-in registry. Slug không xác định, hoặc spec có `api_only: true`, sẽ dừng dispatch.
 - **Quy tắc vendor override.** Khi `--vendor` hoặc `OMA_RUNTIME_VENDOR` chỉ định một vendor cho dòng có model, `pi` luôn tiếp quản (chỉ với model của provider thật; xem [Dispatch qua pi](#dispatching-through-pi-transport-runtime)). Vendor khác chỉ tiếp quản nếu được liệt kê trong `supports.native_dispatch_from` của model. Nếu không, OMA cảnh báo và giữ `cli` riêng của model.
 - **Effort.** `effort` bị bỏ, kèm warning, với model mà CLI không có effort flag (Claude Code). Nó được giữ cho pi, vốn map nó sang `--thinking`.
+- **Mặc định.** `agents.default` cung cấp `effort`, `thinking` và `memory` cho mọi role không tự đặt các giá trị đó, ở mọi dòng phía trên, và `cli` của nó là vendor fallback mà các dòng gọi là `agents.default.cli` (`default_cli` cấp cao nhất cũ vẫn được đọc). Nó không bao giờ cung cấp model.
 
 ## Auto dispatch {#auto-dispatch}
 
@@ -107,25 +110,26 @@ Giữ `model_preset: auto` trong file shared và opt in ở local:
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
-
 
 File YAML tương đương:
 
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
 
+Khối `free:` cấp cao nhất cũ (dùng `model` thay cho `default_model`) vẫn được đọc, và `oma update` viết lại nó thành dạng này.
 
 Khởi động FreeLLMAPI riêng và export unified key là `FREELLM_API_KEY`. OMA cũng nhận `FREELLMAPI_API_KEY` của upstream khi chọn biến key mặc định; biến canonical thắng khi cả hai cùng đặt. `api_key_env` tùy biến chỉ đọc biến đó. Không đặt key thật trong config. `OMA_MODEL_PRESET` override preset. `FREELLM_BASE_URL` và `FREELLM_MODEL` override setting tương ứng trong file. Giá trị ví dụ là default, nên chỉ cần `model_preset: free` khi server và key đã sẵn sàng.
 
@@ -135,7 +139,7 @@ oma agent spawn backend "Review the API error handling" free-review --vendor cod
 ```
 
 
-Free mode dùng `free.model` cho mọi role do OMA dispatch, kể cả role đã pin `agents.*.model`. Nó không resolve pin đó thành thuê bao trả phí. Chọn `auto`, gateway model ID hoặc chain có tên như `auto:coding`, được tạo trước trong FreeLLMAPI.
+Free mode dùng `providers.free.default_model` cho mọi role do OMA dispatch, kể cả role đã pin `agents.*.model`. Nó không resolve pin đó thành thuê bao trả phí. Chọn `auto`, gateway model ID hoặc chain có tên như `auto:coding` (tạo chain đó trong FreeLLMAPI trước).
 
 Transport theo dòng `free` trong [Cách OMA resolve model và CLI của một agent](#how-oma-resolves-an-agents-model-and-cli). Chỉ transport Codex, Claude và Qwen được hỗ trợ. Chọn transport không hỗ trợ một cách explicit là lỗi.
 
@@ -155,9 +159,39 @@ Preset free cấu hình inference agent, không đổi embedding config của me
 
 Tham khảo upstream: [client setup](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md), [API and embedding families](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md).
 
+## LLM provider tùy chỉnh {#custom-llm-providers}
+
+`free` là một trường hợp của cơ chế chung: mọi endpoint tương thích OpenAI hoặc Anthropic có thể khai báo dưới `providers:` và các agent được spawn đi qua đó. Key là tên provider; value không bao giờ chứa secret.
+
+```yaml
+# .agents/oma-config.yaml
+providers:
+  code_intelligence: serena          # capability selectors stay strings
+  exaone:                            # an object = an LLM provider
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY      # the variable name, never the key
+    transport: chat_completions      # chat_completions | responses | anthropic_messages | multi
+    default_model: k-exaone_v2.5
+
+agents:
+  default: { effort: medium }        # tuning for every role that sets none
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+Hai cách dùng một provider:
+
+- **Định tuyến mọi role**: `model_preset: exaone`. Mỗi role chạy `default_model`; các pin `model` theo role bị bỏ qua (chúng sẽ thoát khỏi route) trong khi `effort`, `thinking` và `memory` theo role vẫn áp dụng. Provider không có `default_model` không thể là preset. Child kế thừa `OMA_MODEL_PRESET=<name>` để nested spawn giữ route.
+- **Định tuyến một role**: `agents.<id>.model: <name>/<model-id>`. Model id được truyền cho CLI nguyên trạng; registry và `models:` không được tra. Nested spawn của child đó không bị định tuyến lại.
+
+`transport` chọn CLI của child, vì mỗi CLI nói một protocol: `chat_completions` → Codex (dưới dạng provider `wire_api = "chat"`) hoặc Qwen; `responses` → Codex; `anthropic_messages` → Claude; `multi` → một trong ba (FreeLLMAPI phục vụ cả ba). `--vendor`, `OMA_RUNTIME_VENDOR`, runtime phát hiện được và `agents.default.cli` chọn trong các CLI được phép theo thứ tự đó; CLI mà transport không phục vụ được là lỗi, không bao giờ fallback âm thầm sang tài khoản riêng của CLI. Child nhận endpoint và key từ `api_key_env` chỉ trong environment và argument của chính nó (Codex: một bảng `model_providers.oma_<name>` đầy đủ; Claude: `ANTHROPIC_BASE_URL` và `ANTHROPIC_AUTH_TOKEN`; Qwen: `--openai-base-url` và `OPENAI_*`); environment của parent và các file setting của vendor không bị đụng tới, và setting Claude hoặc Qwen xung đột được báo trước khi thực thi. Spawn và review chạy cùng kiểm tra readiness `GET /models` đã xác thực như `free` ở nơi transport có danh sách model; endpoint trả 404 cho kiểm tra đó không bị coi là không khả dụng.
+
+Tham số sampling (`temperature`, `top_p`) không thuộc entry của provider: các CLI vendor không nhận chúng theo từng request, nên khai báo ở đây sẽ bị bỏ qua mà không báo.
+
+`free` giữ các đặc thù của nó: mặc định cho mọi field, các override `FREELLM_BASE_URL` / `FREELLM_MODEL`, alias `FREELLMAPI_API_KEY` của upstream, và khối `free:` cấp cao nhất cũ, được đọc thành `providers.free`.
+
 ## Override từng agent
 
-Dùng map `agents:` để override agent cụ thể trên preset đang hoạt động. Chỉ agent được liệt kê bị ảnh hưởng; phần còn lại theo vendor setting ở auto mode hoặc default của fixed preset.
+Dùng map `agents:` để override agent cụ thể trên preset đang hoạt động. Chỉ agent được liệt kê bị ảnh hưởng; phần còn lại theo vendor setting ở auto mode hoặc default của fixed preset đã chọn. Entry dành riêng `agents.default` mang `effort`, `thinking` và `memory` cho mọi role không tự đặt các giá trị đó, cùng `cli`, vendor được dùng khi không có gì khác chọn vendor; nó không bao giờ mang model.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -312,7 +346,21 @@ session:
 ```
 
 
-Khi đạt cap, `oma agent spawn` từ chối lần spawn tiếp theo và thất bại với `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Token usage được ước tính từ độ dài prompt, nên `spawn_count` là giới hạn dễ dự đoán nhất. Quy tắc field: [Session quota caps](/docs/guide/configuration-reference#session-quota-caps).
+Khi đạt cap, `oma agent spawn` từ chối lần spawn tiếp theo và thất bại với `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Các run ban đầu giữ một ước lượng theo độ dài prompt. Usage transcript native khi có sẽ thay ước lượng đó sau khi hoàn tất; quan sát không được hỗ trợ hoặc bị thiếu vẫn là ước lượng. Các cap này không ngắt child đang chạy và không bảo đảm giới hạn billing. `spawn_count` là giới hạn dễ dự đoán nhất. Quy tắc field: [Session quota caps](/docs/guide/configuration-reference#session-quota-caps).
+
+---
+
+## Ngân sách thực thi session {#session-execution-budget}
+
+Thêm `session.execution` để đặt giới hạn thời gian đã trôi chung cho dispatch CLI do OMA quản lý và verification:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+Hoặc đặt `deadline` thành timestamp ISO có timezone. Các lệnh `oma agent spawn`, `parallel`, `review`, `resume`, `begin` và `verify` cũng nhận `--timeout-seconds` hoặc `--deadline`. Deadline sớm nhất được giữ qua retry và resume; setup và các check dùng cùng ngân sách. Hủy hoặc timeout chặn thực thi tiếp theo của session đó. Agent native của vendor và job shell ngoài CLI được quản lý cần điều khiển của chính host. Xem [Session execution budget](/docs/guide/configuration-reference#session-execution-budget) về phạm vi và việc giữ artifact.
 
 ---
 

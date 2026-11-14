@@ -1,6 +1,6 @@
 ---
 title: Dlaczego oh-my-agent
-description: Wybierz oh-my-agent, gdy potrzebujesz umiejętności agentów należących do repozytorium, workflowów, wielodostawowego routingu i jawnej weryfikacji.
+description: Wybierz oh-my-agent, gdy potrzebujesz umiejętności agentów należących do repozytorium, workflowów, wielodostawowego dispatchu i jawnej weryfikacji.
 ---
 
 # Dlaczego oh-my-agent {#why-oh-my-agent}

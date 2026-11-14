@@ -1,62 +1,50 @@
 ---
 title: "Hướng dẫn: Codex Hook Trust"
 sidebar_label: Codex Hook Trust
-description: Vì sao Codex hook không chạy cho đến khi bạn xem xét một lần, điều gì xảy ra khi cập nhật và oh-my-agent tự động xử lý gì cho Codex subprocess được spawn.
+description: Cách Codex chặn hook sau trust, những gì oh-my-agent ghi để hook của nó chạy, và khi nào bạn vẫn cần tự review hook.
 ---
 
 # Hướng dẫn: Codex Hook Trust {#codex-hook-trust}
 
-Khi oh-my-agent cài đặt vào project, nó ghi hook config native của vendor, bao gồm `.codex/hooks.json` cho Codex CLI. Khác với Claude Code, Codex không tự chạy các hook này. Nó đặt mọi non-managed command hook sau Trust-On-First-Use (TOFU): hook chỉ chạy sau khi bạn đã xem xét và bật nó một lần.
+Khi oh-my-agent cài vào một project, nó ghi cấu hình hook native của vendor, gồm `.codex/hooks.json` cho Codex CLI. Codex không chạy một hook chỉ vì hook đã được cấu hình. Hai phê duyệt chặn hook, và cả hai nằm trong config người dùng (`$CODEX_HOME/config.toml`, mặc định `~/.codex/config.toml`). Một project không thể tự phê duyệt hook của chính nó:
 
-Đây là cơ chế an toàn phía Codex. Lần đầu cần xem xét và bật hook; hành vi khi oh-my-agent cập nhật được mô tả bên dưới.
+1. **Project trust.** Thư mục `.codex/` của project (`config.toml` và `hooks.json`) chỉ được tải cho project đã trusted: `[projects."<path>"] trust_level = "trusted"`.
+2. **Per-hook trust.** Mọi hook không phải managed, ở phạm vi project hoặc user, cần một entry `[hooks.state."<hooks.json path>:<event>:<group>:<handler>"]` có `trusted_hash` khớp khai báo hiện tại của hook (command, timeout, matcher, async flag, status message).
+
+Hook mới hoặc đã đổi hiện "Hooks need review" trong Codex TUI. `codex exec` bỏ qua hook đó mà không báo.
 
 ---
 
-## Bước một lần: xem xét hook trong Codex {#the-one-time-step-review-hooks-in-codex}
+## Những gì oh-my-agent ghi giúp bạn {#what-oh-my-agent-records-for-you}
 
-Sau khi `oma` (install), `oma link` hoặc `oma update` ghi `.codex/hooks.json` trong project mà Codex chưa từng thấy (với global install là `~/.codex/hooks.json`), hook **chưa** chạy. Bạn phải mở Codex và xem xét một lần:
+`oma install`, `oma update` và `oma link` ghi cả hai phê duyệt cho **hook của chính oh-my-agent**. Đó là các handler tên `oma-hook-*` hoặc chạy qua wrapper `oma-hook.sh`. Hash giống hash Codex tính khi bạn chọn "Trust all and continue", nên hook chạy ở session Codex đầu tiên mà không cần bước `/hooks`. Bản phát hành oh-my-agent sau này đổi command của hook sẽ ghi hash mới trong `oma update`, nên hook vẫn bật.
 
-1. Mở project trong Codex CLI.
-2. Chạy `/hooks` để mở hook browser (TUI).
-3. Xem các hook được liệt kê và bật chúng.
+oh-my-agent chỉ sửa các bảng bị ảnh hưởng trong `config.toml`. Nó đọc lại kết quả và để nguyên file nếu còn thứ khác sẽ đổi. Nó không bao giờ:
 
-Cho đến khi làm vậy, hook vẫn untrusted và bị bỏ qua âm thầm. Đây là lý do oh-my-agent in thông báo mỗi khi tạo hoặc thay đổi `.codex/hooks.json`:
+- phê duyệt hook bạn tự thêm vào cùng `hooks.json`,
+- trust một project bạn đã đánh dấu `trust_level = "untrusted"`,
+- bật lại hook bạn đã tắt (`enabled = false`),
+- đụng tới Codex trước khi Codex tạo thư mục home của nó.
+
+Cài global (`~/.codex/hooks.json`) chỉ nhận các entry per-hook, vì không có project để trust.
+
+---
+
+## Khi bạn vẫn tự review hook {#when-you-still-review-hooks-yourself}
+
+Nếu oh-my-agent không ghi được trust, nó in lý do kèm thông báo:
 
 ```text
-⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
+⚠ Codex hooks installed/updated but not trusted (<reason>) — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
-Kiểm tra file được tạo trước khi mở Codex:
-
-```bash
-test -s .codex/hooks.json && echo "Codex hooks are installed"
-oma link codex
-```
-
-Kết quả mong đợi là thông báo install/update, sau đó các hook xuất hiện trong Codex’s `/hooks` browser. `oma link codex` reconcile file được tạo; nó không thay thế quyết định trust một lần.
-
-**Lưu ý:** `--dangerously-bypass-hook-trust` không giúp ở đây. Cảnh báo của nó ("Enabled hooks may run without review") chỉ có nghĩa là bypass review cho hook đã được bật — nó không chạy hook chưa từng được review. `/hooks` browser là cách duy nhất để bật hook lần đầu.
-
-Bên dưới, Codex lưu quyết định trong `~/.codex/config.toml` dưới entry `[hooks.state]`, được định danh bởi path của hooks file, event, block và hook, cùng flag `enabled` và `trusted_hash` của command string.
+Các trường hợp thường gặp là `config.toml` không parse được, project bạn đánh dấu untrusted, hoặc Codex chưa từng được chạy. Khi đó mở project trong Codex, chạy `/hooks` và bật hook một lần. Rồi chạy `oma link codex` để các lần cập nhật sau giữ chúng trusted.
 
 ---
 
-## Điều gì xảy ra khi cập nhật {#what-happens-on-updates}
+## Process Codex mà oh-my-agent spawn {#codex-processes-oh-my-agent-spawns}
 
-Sau khi trust hook, bạn không cần lặp lại bước này ở mỗi lần cập nhật:
-
-- **Chạy lại `oma link` hoặc `oma update` giữ trust** miễn là hook command string không đổi. Codex so sánh hash đã lưu với command hiện tại; trùng khớp thì hook tiếp tục trusted.
-- **Nếu phiên bản oh-my-agent sau này thay đổi hook command string**, hash không còn khớp và hook đó âm thầm trở lại untrusted. Bạn sẽ thấy thông báo installer lần nữa và cần trust lại qua `/hooks`.
-
-Vì vậy review step chỉ cần ở lần đầu, và sau mỗi release thực sự thay đổi hook command.
-
----
-
-## oh-my-agent tự động xử lý gì {#what-oh-my-agent-automates-for-you}
-
-Khi oh-my-agent tự spawn một Codex subprocess — chẳng hạn cross-vendor agent được dispatch qua `oma agent spawn` — nó tự động truyền `--dangerously-bypass-hook-trust`. Nhờ vậy hook đã được kiểm tra của chính nó chạy qua các lần cập nhật mà không yêu cầu bạn trust lại thủ công.
-
-Flag này **chỉ** được áp dụng cho Codex process do oh-my-agent spawn. Nó không bao giờ được ghi vào `~/.codex/config.toml` hoặc project config, nên không ảnh hưởng các Codex session bạn tự khởi động.
+Khi oh-my-agent tự spawn một subprocess Codex (ví dụ `oma agent spawn`), nó cũng truyền `--dangerously-bypass-hook-trust`. Flag đó chạy các hook đã enabled mà không kiểm hash. Nó không bỏ project trust. Flag chỉ áp dụng cho process do oh-my-agent khởi động và không bao giờ được ghi vào config của bạn.
 
 ---
 
@@ -70,10 +58,10 @@ Các bản phát hành oh-my-agent cũ ghi `[features] codex_hooks = true` vào 
 
 | Tình huống | Bạn làm gì |
 |:----------|:------------|
-| Cài lần đầu / `.codex/hooks.json` lần đầu trong project | Mở Codex, chạy `/hooks`, bật hook một lần |
-| `oma update` với hook command không đổi | Không làm gì — trust được giữ |
-| `oma update` làm hook command đổi | Chạy lại `/hooks` để trust lại (installer in thông báo) |
-| Codex subprocess do oh-my-agent spawn | Không làm gì — bypass được áp dụng tự động |
+| Cài lần đầu trong một project | Không làm gì: installer đã ghi trust |
+| `oma update` đổi command của hook | Không làm gì: hash mới được ghi |
+| Installer in "not trusted (…)" | Sửa lý do, hoặc chạy `/hooks` một lần trong Codex |
+| Hook bạn thêm vào `.codex/hooks.json` | Tự review trong `/hooks` |
 
 ## Xem thêm {#see-also}
 

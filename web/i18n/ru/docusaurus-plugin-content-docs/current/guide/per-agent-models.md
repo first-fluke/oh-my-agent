@@ -74,8 +74,10 @@ model_preset: auto
 
 | `model_preset` | `agents.<id>` задан? | Модель, передаваемая в CLI | CLI, который запускает агента |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | Игнорируется | `FREELLM_MODEL`, иначе `free.model`, иначе `auto` (для каждой роли) | `--vendor`, иначе `OMA_RUNTIME_VENDOR`, иначе обнаруженный runtime, если это Codex, Claude или Qwen, иначе `default_cli`, иначе `codex`. Принимаются только `codex`, `claude` и `qwen`. |
-| `auto` | Нет | Никакая. Применяются собственные настройки агента и сессии поставщика. | `--vendor`, иначе поддерживаемый `OMA_RUNTIME_VENDOR`, иначе обнаруженный runtime, иначе `default_cli`, иначе `claude`. Неподдерживаемое значение — ошибка. |
+| `free` | Модель игнорируется; применяются `effort`, `thinking`, `memory` | `FREELLM_MODEL`, иначе `providers.free.default_model`, иначе `auto` (для каждой роли) | `--vendor`, иначе `OMA_RUNTIME_VENDOR`, иначе обнаруженный runtime, если это Codex, Claude или Qwen, иначе `agents.default.cli`, иначе `codex`. Принимаются только `codex`, `claude` и `qwen`. |
+| LLM-провайдер `providers.<name>` | Модель игнорируется; применяются `effort`, `thinking`, `memory` | `default_model` провайдера (для каждой роли); отсутствие — ошибка | `--vendor`, иначе `OMA_RUNTIME_VENDOR`, иначе обнаруженный runtime, иначе `agents.default.cli`, иначе первый CLI, который допускает `transport` провайдера (`chat_completions` → Codex или Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` → любой из трёх). |
+| Любой | `model` имеет вид `<provider>/<model-id>` для записи `providers.<name>` | `<model-id>`, передаётся в CLI как есть | Правило поставщика из строки выше; реестр не используется |
+| `auto` | Нет | Никакая. Применяются собственные настройки агента и сессии поставщика. | `--vendor`, иначе поддерживаемый `OMA_RUNTIME_VENDOR`, иначе обнаруженный runtime, иначе `agents.default.cli`, иначе `claude`. Неподдерживаемое значение — ошибка. |
 | `auto` | Да | `model` из переопределения | `cli` этой модели, затем правило переопределения поставщика ниже |
 | Встроенный, алиас или пользовательский | Нет | Запись пресета для роли, иначе запись `orchestrator` пресета | `cli` этой модели, затем правило переопределения поставщика ниже |
 | Встроенный, алиас или пользовательский | Да | Запись пресета, поверхностно объединённая с переопределением (поля переопределения побеждают) | `cli` этой модели, затем правило переопределения поставщика ниже |
@@ -86,6 +88,7 @@ model_preset: auto
 - **Поиск модели.** Слаг сначала ищется в `models:`, затем во встроенном реестре. Неизвестный слаг или спецификация с `api_only: true` останавливают диспетчеризацию.
 - **Правило переопределения поставщика.** Когда `--vendor` или `OMA_RUNTIME_VENDOR` называет поставщика для строки с моделью, `pi` всегда перехватывает запуск (только для моделей реальных провайдеров; см. [Диспетчеризацию через pi](#dispatching-through-pi-transport-runtime)). Любой другой поставщик перехватывает запуск, только если он указан в `supports.native_dispatch_from` модели. Иначе OMA выводит предупреждение и сохраняет собственный `cli` модели.
 - **Effort.** `effort` отбрасывается с предупреждением для моделей, у CLI которых нет флага effort (Claude Code). Для pi он сохраняется и сопоставляется с `--thinking`.
+- **Значения по умолчанию.** `agents.default` задаёт `effort`, `thinking` и `memory` каждой роли, которая не задаёт свои, во всех строках выше, а его `cli` — это запасной поставщик, который строки называют `agents.default.cli` (устаревший ключ верхнего уровня `default_cli` всё ещё читается). Модель он никогда не задаёт.
 
 ## Автоматическая диспетчеризация {#auto-dispatch}
 
@@ -108,10 +111,10 @@ OMA выбирает ближайший каталог конфигурации 
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
 
@@ -120,11 +123,14 @@ free: {
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
+
+Устаревший блок верхнего уровня `free:` (с `model` вместо `default_model`) всё ещё читается, и `oma update` переписывает его в эту форму.
 
 Запустите FreeLLMAPI отдельно и экспортируйте единый ключ как `FREELLM_API_KEY`. OMA также принимает `FREELLMAPI_API_KEY` от upstream, когда выбрана переменная ключа по умолчанию; если заданы обе, приоритет имеет каноническая переменная. Пользовательский `api_key_env` читает только указанную переменную. Сам ключ нельзя помещать в конфигурацию. `OMA_MODEL_PRESET` переопределяет пресет. `FREELLM_BASE_URL` и `FREELLM_MODEL` переопределяют соответствующие параметры файла. Значения в примере являются значениями по умолчанию, поэтому после запуска сервера и подготовки ключа достаточно одного `model_preset: free`.
 
@@ -133,7 +139,7 @@ oma doctor --profile
 oma agent spawn backend "Review the API error handling" free-review --vendor codex --read-only
 ```
 
-Режим free использует `free.model` для каждой роли, которую запускает OMA, включая роли с уже заданными `agents.*.model`. Эти привязки не разрешаются в платные подписки. Выберите `auto`, идентификатор модели шлюза или именованную цепочку шлюза, например `auto:coding` (сначала создайте эту цепочку в FreeLLMAPI).
+Режим free использует `providers.free.default_model` для каждой роли, которую запускает OMA, включая роли с уже заданными `agents.*.model`. Эти привязки не разрешаются в платные подписки. Выберите `auto`, идентификатор модели шлюза или именованную цепочку шлюза, например `auto:coding` (сначала создайте эту цепочку в FreeLLMAPI).
 
 Транспорт выбирается по строке `free` в разделе [Как OMA разрешает модель и CLI агента](#how-oma-resolves-an-agents-model-and-cli). Поддерживаются только транспорты Codex, Claude и Qwen. Явно выбранный неподдерживаемый транспорт вызывает ошибку.
 
@@ -153,9 +159,39 @@ Free-пресет настраивает inference агентов. Он не м�
 
 Ссылки upstream: [настройка клиентов](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md), [API и семейства embeddings](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md).
 
+## Пользовательские LLM-провайдеры {#custom-llm-providers}
+
+`free` — один случай общего механизма: любой endpoint, совместимый с OpenAI или Anthropic, можно объявить в `providers:`, и запущенные агенты пойдут через него. Ключ — имя провайдера; значение никогда не содержит секрет.
+
+```yaml
+# .agents/oma-config.yaml
+providers:
+  code_intelligence: serena          # capability selectors stay strings
+  exaone:                            # an object = an LLM provider
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY      # the variable name, never the key
+    transport: chat_completions      # chat_completions | responses | anthropic_messages | multi
+    default_model: k-exaone_v2.5
+
+agents:
+  default: { effort: medium }        # tuning for every role that sets none
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+Два способа использовать провайдера:
+
+- **Направить каждую роль**: `model_preset: exaone`. Каждая роль запускает `default_model`; закрепления `model` для отдельных ролей игнорируются (они вышли бы из маршрута), а `effort`, `thinking` и `memory` роли по-прежнему применяются. Провайдер без `default_model` не может быть пресетом. Дочерние процессы наследуют `OMA_MODEL_PRESET=<name>`, поэтому вложенные запуски сохраняют маршрут.
+- **Направить одну роль**: `agents.<id>.model: <name>/<model-id>`. Идентификатор модели передаётся в CLI как есть; реестр и `models:` не используются. Вложенные запуски этого дочернего процесса заново не маршрутизируются.
+
+`transport` выбирает дочерний CLI, потому что каждый CLI говорит на одном протоколе: `chat_completions` → Codex (как провайдер `wire_api = "chat"`) или Qwen; `responses` → Codex; `anthropic_messages` → Claude; `multi` → любой из трёх (FreeLLMAPI обслуживает все). `--vendor`, `OMA_RUNTIME_VENDOR`, обнаруженный runtime и `agents.default.cli` выбирают среди допустимых CLI в этом порядке; CLI, который transport не может обслужить, — ошибка, а не тихий переход на собственный аккаунт CLI. Дочерний процесс получает endpoint и ключ из `api_key_env` только в своём окружении и аргументах (Codex: полная таблица `model_providers.oma_<name>`; Claude: `ANTHROPIC_BASE_URL` и `ANTHROPIC_AUTH_TOKEN`; Qwen: `--openai-base-url` и `OPENAI_*`); окружение родителя и файлы настроек поставщика не затрагиваются, а конфликтующие настройки Claude или Qwen сообщаются до запуска. Spawn и review выполняют ту же аутентифицированную проверку готовности `GET /models`, что и `free`, если у transport есть список моделей; endpoint, который отвечает на неё 404, не считается недоступным.
+
+Параметры выборки (`temperature`, `top_p`) не входят в запись провайдера: CLI поставщиков не принимают их на каждый запрос, поэтому объявление здесь было бы молча проигнорировано.
+
+`free` сохраняет свои особенности: значения по умолчанию для каждого поля, переопределения `FREELLM_BASE_URL` / `FREELLM_MODEL`, upstream-псевдоним `FREELLMAPI_API_KEY` и устаревший блок верхнего уровня `free:`, который читается как `providers.free`.
+
 ## Переопределение отдельных агентов
 
-Используйте карту `agents:`, чтобы переопределить отдельных агентов поверх активного пресета. Изменяются только перечисленные агенты; остальные следуют настройкам поставщика в режиме auto или значениям выбранного фиксированного пресета.
+Используйте карту `agents:`, чтобы переопределить отдельных агентов поверх активного пресета. Изменяются только перечисленные агенты; остальные следуют настройкам поставщика в режиме auto или значениям выбранного фиксированного пресета. Зарезервированная запись `agents.default` несёт `effort`, `thinking` и `memory` для каждой роли, которая не задаёт свои, плюс `cli` — поставщика, который используется, когда ничто другое его не выбирает; модель она никогда не несёт.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -304,7 +340,21 @@ session:
       antigravity: 200000
 ```
 
-При достижении лимита `oma agent spawn` отказывается выполнять следующий запуск и завершается ошибкой `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Использование токенов оценивается по длине промпта, поэтому `spawn_count` — самый предсказуемый лимит. Правила полей: [Лимиты квоты сессии](/docs/guide/configuration-reference#session-quota-caps).
+При достижении лимита `oma agent spawn` отказывается выполнять следующий запуск и завершается ошибкой `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Запуски сначала резервируют оценку по длине prompt. Доступное использование из нативного transcript заменяет её после завершения; неподдерживаемые или отсутствующие наблюдения остаются оценками. Эти лимиты не прерывают уже запущенные дочерние процессы и не гарантируют лимит оплаты. `spawn_count` — самый предсказуемый лимит. Правила полей: [Лимиты квоты сессии](/docs/guide/configuration-reference#session-quota-caps).
+
+---
+
+## Бюджет времени выполнения сессии {#session-execution-budget}
+
+Добавьте `session.execution`, чтобы задать общий лимит прошедшего времени для управляемых OMA CLI-диспетчеризации и проверки:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+Либо задайте `deadline` как метку времени ISO с часовым поясом. Команды `oma agent spawn`, `parallel`, `review`, `resume`, `begin` и `verify` также принимают `--timeout-seconds` или `--deadline`. Самый ранний deadline сохраняется между повторными попытками и resume; подготовка и проверки расходуют тот же бюджет. Отмена или timeout блокируют дальнейшее выполнение этой сессии. Нативным агентам поставщика и shell-заданиям вне управляемого CLI нужны собственные средства управления хоста. Область и сохранение артефактов описаны в разделе [Бюджет времени выполнения сессии](/docs/guide/configuration-reference#session-execution-budget).
 
 ---
 

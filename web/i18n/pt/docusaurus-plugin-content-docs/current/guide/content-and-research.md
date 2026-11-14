@@ -6,7 +6,7 @@ description: Escolha o caminho certo do oh-my-agent, com seus pré-requisitos, p
 
 # Workflows de conteúdo e pesquisa
 
-Este guia encaminha tarefas de documentos, áudio, pesquisa, mídia e apresentação para o recurso responsável por elas. Comece pelo artefato de que precisa e use o menor comando ou ponto de entrada de skill que produza um resultado revisável. Os recursos que têm guia próprio apontam para ele na última coluna; os demais são cobertos nesta página.
+Escolha pelo artefato de que precisa e use o menor comando ou ponto de entrada de skill que produza um resultado revisável. Use o guia vinculado quando um recurso tiver uma página própria.
 
 | Necessidade | Ponto de entrada | Pré-requisitos | Primeiro resultado | Guia |
 |---|---|---|---|---|
@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Use `--slide <file>` para uma verificação de um único slide e `--report-file <path>` com saída JSON quando outro processo precisar dos achados. `slide import pptx <file>` inicia um workflow de importação; `slide asset fetch-video <url>` baixa um ativo de vídeo; `slide style list|preview|get <slug>` inspeciona estilos. A saída PPTX é baseada em raster, portanto não fornece camadas de texto ou formas editáveis. A validação e a exportação exigem Chrome/puppeteer; defina `OMA_CHROME_PATH` quando o executável não for encontrado. Se a validação não convergir após três iterações de correção automática, use os achados de geometria informados para editar o fragmento afetado.
 
+### PowerPoint editável (rota native-pptx)
+
+Quando o entregável precisa ser um arquivo PowerPoint editável, `oma-slide` muda para a rota `native-pptx`. A mesma rota preenche ou edita um PPTX existente preservando o design, transforma um PDF, DOCX, XLSX ou URL em um deck, monta uma marca, um estilo, um layout ou um template de deck reutilizável, e produz PPTX narrado ou MP4. Decks web, animados e do Canva continuam na rota HTML acima.
+
+A rota executa a skill upstream [ppt-master](https://github.com/hugohe3/ppt-master) (MIT, de Hugo He) sem modificá-la. `oma-slide` usa uma cópia instalada no catálogo de skills do runtime quando há uma; caso contrário, carrega a skill para a sessão com:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+O ppt-master escreve páginas SVG e exporta formas DrawingML nativas, caixas de texto, gráficos e tabelas, então o PPTX fica na pasta `exports/` do projeto, em `.agents/results/slides/<session-id>/`. Os scripts Python precisam dos pacotes do `requirements.txt` da skill; `oma-slide` pergunta antes de instalá-los em um ambiente virtual `uv`. Se você recusar, ele oferece a rota HTML. As imagens de IA nessa rota são geradas com `oma-image`, e os gates e a tela de confirmação do próprio ppt-master decidem o restante do fluxo.
+
 ## Fazer recap de conversas de agentes {#recap-agent-conversations}
 
 Use `/recap` (ou peça um recap ao agente) para resumos de trabalho baseados em evidências; ele executa `oma recap` para coletar o histórico. Uma data do calendário e uma janela móvel são entradas diferentes:
@@ -188,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` retorna prosa, Writing Notes e um Claim-Evidence Map. `revise` retorna os blocos original e revisado com alterações concretas. `review` retorna achados PASS/FAIL sobre estrutura de frases, verbos, modalização, especificidade, padrões anti-IA, clareza de parágrafos, ritmo e alinhamento entre afirmações e evidências. A skill lê um rascunho existente inteiro para revise/review, enfraquece ou remove afirmações sem suporte e encaminha a saída não inglesa para `oma-translation` depois da etapa em inglês.
 
-Use `oma scholar` para descoberta de fontes e evidências de sidecar antes de redigir. Se faltar uma citação ou rubrica, marque a afirmação como pendente ou peça a restrição ausente; não preencha a lacuna com uma fonte inventada. O artefato útil de conclusão é a prosa junto do mapa de evidências ou relatório de auditoria, em vez de um parágrafo genericamente “polido” sem suporte rastreável.
+Use `oma scholar` para descoberta de fontes e evidências de sidecar antes de redigir. Se faltar uma citação ou rubrica, marque a afirmação como pendente ou peça a restrição ausente; não preencha a lacuna com uma fonte inventada. Devolva a prosa com o mapa de evidências ou o relatório de auditoria para que os leitores possam rastrear as afirmações.
 
 ## Lista de recuperação {#recovery-checklist}
 

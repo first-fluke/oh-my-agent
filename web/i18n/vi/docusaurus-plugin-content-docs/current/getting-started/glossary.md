@@ -27,7 +27,7 @@ Skill preset là bộ skill mà installer thêm vào project, chẳng hạn `all
 
 ### Model preset {#model-preset}
 
-Model preset là giá trị `model_preset` trong `.agents/oma-config.yaml` (hoặc `.cue`). Giá trị này quyết định vendor và model mà mỗi agent sử dụng. `auto`, mặc định cho cài đặt mới, theo cấu hình agent và model native của runtime hiện tại; các preset cố định như `claude`, `codex` hoặc `mixed` ghim chúng lại. Override `agents.<id>` được ưu tiên hơn preset, trừ khi dùng `free`, khi đó `free.model` thay thế model được ghim cho từng agent. Xem [Preset có sẵn](../guide/per-agent-models.md#built-in-presets).
+Model preset là giá trị `model_preset` trong `.agents/oma-config.yaml` (hoặc `.cue`). Giá trị này quyết định vendor và model mà mỗi agent sử dụng. `auto`, mặc định cho cài đặt mới, theo cấu hình agent và model native của runtime hiện tại; các preset cố định như `claude`, `codex` hoặc `mixed` ghim chúng lại. Override `agents.<id>` được ưu tiên hơn preset, trừ khi dùng `free` hoặc một LLM provider `providers.<name>` khác, khi đó `default_model` của provider thay thế các pin model theo từng agent. Xem [Preset có sẵn](../guide/per-agent-models.md#built-in-presets).
 
 ## Thực thi workflow
 

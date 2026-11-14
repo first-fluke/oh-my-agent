@@ -169,8 +169,10 @@ oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .pat
 ### install（安装） {#install}
 
 ```text
-oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
+oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
+
+`--preset` 从十种[具名技能预设](../getting-started/installation.md#presets)中选择一种，并覆盖交互式技能提示和无人值守时的 `all` 默认值。未知名称、空值和 `custom` 会在安装前失败；逐项选择使用交互式 Custom 菜单。预设在选择技能的同时，保留运行时的共享文件、工作流和智能体定义、钩子、提供方以及已保留的技能。单个技能的临时指令加载见[选择设置](../getting-started/choose-setup.md)。
 
 交互式安装器会将所选的提供方设置写入 `.agents/oma-config.yaml`。若存在 `.agents/oma-config.cue`，它的优先级高于该文件，因此 CUE 配置中尚未包含的选择会写入被 gitignore 忽略的本地覆盖层 `.agents/oma-config.local.yaml`；浏览器 DevTools 选择和 `oma memory keys` 的 vault 引用也遵循同一规则，CLI 供应商选择和 `oma model propose --write` 则在没有 `oma-config.yaml` 时遵循该规则。提供方标志用于选择网页搜索、代码智能和语义内存集成；选中 Honcho 提供方时，`--honcho-url` 和 `--honcho-workspace` 用于配置 Honcho 内存服务。安装流程请求确认时，根级 `-y, --yes` 标志生效。
 

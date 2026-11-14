@@ -75,8 +75,10 @@ Als `OMA_MODEL_PRESET` is ingesteld, vervangt die eerst `model_preset` (zie [Con
 
 | `model_preset` | `agents.<id>` ingesteld? | Model dat naar de CLI wordt gestuurd | CLI die de agent uitvoert |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | Genegeerd | `FREELLM_MODEL`, anders `free.model`, anders `auto` (elke rol) | `--vendor`, anders `OMA_RUNTIME_VENDOR`, anders de gedetecteerde runtime als dat Codex, Claude of Qwen is, anders `default_cli`, anders `codex`. Alleen `codex`, `claude` en `qwen` worden geaccepteerd. |
-| `auto` | Nee | Geen. De eigen agent- en sessie-instellingen van de vendor gelden. | `--vendor`, anders een ondersteunde `OMA_RUNTIME_VENDOR`, anders de gedetecteerde runtime, anders `default_cli`, anders `claude`. Een niet-ondersteunde waarde is een fout. |
+| `free` | Model genegeerd; `effort`, `thinking` en `memory` gelden | `FREELLM_MODEL`, anders `providers.free.default_model`, anders `auto` (elke rol) | `--vendor`, anders `OMA_RUNTIME_VENDOR`, anders de gedetecteerde runtime als dat Codex, Claude of Qwen is, anders `agents.default.cli`, anders `codex`. Alleen `codex`, `claude` en `qwen` worden geaccepteerd. |
+| Een LLM-provider `providers.<name>` | Model genegeerd; `effort`, `thinking` en `memory` gelden | `default_model` van de provider (elke rol); ontbreken is een fout | `--vendor`, anders `OMA_RUNTIME_VENDOR`, anders de gedetecteerde runtime, anders `agents.default.cli`, anders de eerste CLI die `transport` van de provider toestaat (`chat_completions` → Codex of Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` → elk van de drie). |
+| Willekeurig | `model` is `<provider>/<model-id>` voor een invoer `providers.<name>` | `<model-id>`, ongewijzigd aan de CLI doorgegeven | De vendorregel van de rij hierboven; het register wordt niet geraadpleegd |
+| `auto` | Nee | Geen. De eigen agent- en sessie-instellingen van de vendor gelden. | `--vendor`, anders een ondersteunde `OMA_RUNTIME_VENDOR`, anders de gedetecteerde runtime, anders `agents.default.cli`, anders `claude`. Een niet-ondersteunde waarde is een fout. |
 | `auto` | Ja | Het `model` van de override | De `cli` van dat model, daarna de onderstaande vendor-overrideregel |
 | Ingebouwd, alias of aangepast | Nee | De entry van de preset voor de rol, anders de `orchestrator`-entry van de preset | De `cli` van dat model, daarna de onderstaande vendor-overrideregel |
 | Ingebouwd, alias of aangepast | Ja | De presetentry, oppervlakkig samengevoegd met de override (velden van de override winnen) | De `cli` van dat model, daarna de onderstaande vendor-overrideregel |
@@ -87,6 +89,7 @@ Zo passen de overige onderdelen erin:
 - **Model opzoeken.** Een slug wordt eerst in `models:` opgezocht en daarna in het ingebouwde register. Een onbekende slug, of een spec met `api_only: true`, stopt de dispatch.
 - **Vendor-overrideregel.** Wanneer `--vendor` of `OMA_RUNTIME_VENDOR` een vendor noemt voor een rij met een model, neemt `pi` het altijd over (alleen modellen van echte providers; zie [Dispatch via pi](#dispatching-through-pi-transport-runtime)). Elke andere vendor neemt het alleen over als die in `supports.native_dispatch_from` van het model staat. Anders geeft OMA een waarschuwing en behoudt het de eigen `cli` van het model.
 - **Effort.** `effort` wordt met een waarschuwing weggelaten voor modellen waarvan de CLI geen effort-vlag heeft (Claude Code). Voor pi blijft het behouden; pi zet het om naar `--thinking`.
+- **Standaarden.** `agents.default` levert `effort`, `thinking` en `memory` aan elke rol die er zelf geen instelt, in elke rij hierboven, en de `cli` daarvan is de vendorfallback die de rijen `agents.default.cli` noemen (de oudere top-level `default_cli` wordt nog gelezen). Die levert nooit een model.
 
 ## Automatische dispatch {#auto-dispatch}
 
@@ -109,24 +112,26 @@ Laat `model_preset: auto` in het gedeelde bestand staan en schakel de preset lok
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
-
 
 Het equivalente YAML-bestand is:
 
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
+
+Het oudere top-level blok `free:` (met `model` in plaats van `default_model`) wordt nog gelezen, en `oma update` herschrijft het naar deze vorm.
 
 
 Start FreeLLMAPI afzonderlijk en exporteer de uniforme sleutel als `FREELLM_API_KEY`. OMA accepteert ook upstreams `FREELLMAPI_API_KEY` wanneer de standaard sleutelvariabele is geselecteerd; de canonieke variabele wint als beide zijn ingesteld. Een aangepaste `api_key_env` leest alleen die variabele. Zet de sleutel zelf nooit in de configuratie. `OMA_MODEL_PRESET` overschrijft de preset. `FREELLM_BASE_URL` en `FREELLM_MODEL` overschrijven de bijbehorende bestandsinstellingen. De waarden in het voorbeeld zijn de standaardwaarden, dus `model_preset: free` alleen is voldoende wanneer de server en sleutel klaarstaan.
@@ -137,7 +142,7 @@ oma agent spawn backend "Review the API error handling" free-review --vendor cod
 ```
 
 
-Free-modus gebruikt `free.model` voor elke door OMA gedispatchte rol, ook voor rollen met bestaande `agents.*.model`-pinnen. Die pins worden niet opgelost via betaalde abonnementen. Kies `auto`, een gateway-model-ID of een benoemde gatewayketen zoals `auto:coding` (maak die keten eerst in FreeLLMAPI aan).
+Free-modus gebruikt `providers.free.default_model` voor elke door OMA gedispatchte rol, ook voor rollen met bestaande `agents.*.model`-pinnen. Die pins worden niet opgelost via betaalde abonnementen. Kies `auto`, een gateway-model-ID of een benoemde gatewayketen zoals `auto:coding` (maak die keten eerst in FreeLLMAPI aan).
 
 De transportkeuze volgt de rij `free` in [Hoe OMA het model en de CLI van een agent oplost](#how-oma-resolves-an-agents-model-and-cli). Alleen Codex-, Claude- en Qwen-transporten worden ondersteund. Een expliciet gekozen niet-ondersteund transport geeft een fout.
 
@@ -157,9 +162,39 @@ De free-preset configureert agent-inference. De embeddingconfiguratie van bestaa
 
 Upstreamverwijzingen: [client setup](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md), [API- en embeddingfamilies](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md).
 
+## Aangepaste LLM-providers {#custom-llm-providers}
+
+`free` is één geval van een algemener mechanisme: elk OpenAI- of Anthropic-compatibel endpoint kan onder `providers:` worden gedeclareerd, waarna gespawnde agenten erdoorheen worden gerouteerd. De sleutel is de providernaam; de waarde bevat nooit een geheim.
+
+```yaml
+# .agents/oma-config.yaml
+providers:
+  code_intelligence: serena          # capability selectors stay strings
+  exaone:                            # an object = an LLM provider
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY      # the variable name, never the key
+    transport: chat_completions      # chat_completions | responses | anthropic_messages | multi
+    default_model: k-exaone_v2.5
+
+agents:
+  default: { effort: medium }        # tuning for every role that sets none
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+Twee manieren om een provider te gebruiken:
+
+- **Elke rol routeren**: `model_preset: exaone`. Elke rol draait `default_model`; modelpinnen per rol worden genegeerd (die zouden de route verlaten) terwijl `effort`, `thinking` en `memory` per rol blijven gelden. Een provider zonder `default_model` kan geen preset zijn. Children erven `OMA_MODEL_PRESET=<name>`, zodat geneste spawns de route behouden.
+- **Eén rol routeren**: `agents.<id>.model: <name>/<model-id>`. De model-id wordt ongewijzigd aan de CLI doorgegeven; het register en `models:` worden niet geraadpleegd. Geneste spawns van dat child-proces worden niet opnieuw gerouteerd.
+
+`transport` kiest de child-CLI, omdat elke CLI één protocol spreekt: `chat_completions` → Codex (als provider met `wire_api = "chat"`) of Qwen; `responses` → Codex; `anthropic_messages` → Claude; `multi` → elk van de drie (FreeLLMAPI bedient ze alle). `--vendor`, `OMA_RUNTIME_VENDOR`, de gedetecteerde runtime en `agents.default.cli` kiezen in die volgorde uit de toegestane CLI's; een CLI die het transport niet kan bedienen is een fout, nooit een stille fallback naar het eigen account van de CLI. Het child-proces ontvangt het endpoint en de sleutel uit `api_key_env` alleen in de eigen omgeving en argumenten (Codex: een volledige tabel `model_providers.oma_<name>`; Claude: `ANTHROPIC_BASE_URL` en `ANTHROPIC_AUTH_TOKEN`; Qwen: `--openai-base-url` en `OPENAI_*`); de omgeving van de parent en de vendorinstellingenbestanden blijven onaangeroerd, en tegenstrijdige Claude- of Qwen-instellingen worden vóór uitvoering gemeld. Spawn en review voeren dezelfde geauthenticeerde gereedheidscontrole `GET /models` uit als `free`, waar het transport een modellijst heeft; een endpoint dat daarop 404 antwoordt, wordt niet als onbeschikbaar behandeld.
+
+Samplingparameters (`temperature`, `top_p`) horen niet bij de providerinvoer: de vendor-CLI's accepteren ze niet per verzoek, dus ze hier declareren zou stilzwijgend worden genegeerd.
+
+`free` houdt zijn eigen bijzonderheden: standaardwaarden voor elk veld, de overschrijvingen `FREELLM_BASE_URL` / `FREELLM_MODEL`, de upstream-alias `FREELLMAPI_API_KEY` en het verouderde top-level blok `free:`, dat als `providers.free` wordt gelezen.
+
 ## Afzonderlijke agenten overschrijven {#overriding-individual-agents}
 
-Gebruik de map `agents:` om specifieke agenten boven op de actieve preset te overschrijven. Alleen de agenten die je opsomt worden beïnvloed; de rest volgt in auto-modus de vendorinstellingen of gebruikt de standaardwaarden van de gekozen vaste preset.
+Gebruik de map `agents:` om specifieke agenten boven op de actieve preset te overschrijven. Alleen de agenten die je opsomt worden beïnvloed; de rest volgt in auto-modus de vendorinstellingen of gebruikt de standaardwaarden van de gekozen vaste preset. De gereserveerde invoer `agents.default` draagt `effort`, `thinking` en `memory` voor elke rol die er zelf geen instelt, plus `cli`, de vendor die wordt gebruikt wanneer niets anders er een kiest; die draagt nooit een model.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -314,7 +349,21 @@ session:
 ```
 
 
-Wanneer een limiet wordt bereikt, weigert `oma agent spawn` de volgende spawn en faalt met `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Tokengebruik wordt geschat op basis van de promptlengte, dus `spawn_count` is de meest voorspelbare limiet. Veldregels: [Sessiequotumlimieten](/docs/guide/configuration-reference#session-quota-caps).
+Wanneer een limiet wordt bereikt, weigert `oma agent spawn` de volgende spawn en faalt met `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Runs reserveren eerst een schatting op basis van de promptlengte. Beschikbaar gebruik uit een native transcript vervangt die schatting na voltooiing; niet-ondersteunde of ontbrekende waarnemingen blijven schattingen. Deze limieten onderbreken draaiende children niet en garanderen geen factuurlimiet. `spawn_count` is de meest voorspelbare limiet. Veldregels: [Sessiequotumlimieten](/docs/guide/configuration-reference#session-quota-caps).
+
+---
+
+## Uitvoeringsbudget van een sessie {#session-execution-budget}
+
+Voeg `session.execution` toe voor een gedeelde limiet op verstreken tijd voor door OMA beheerde CLI-dispatch en verificatie:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+Je kunt ook `deadline` instellen op een ISO-tijdstempel met tijdzone. De commando's `oma agent spawn`, `parallel`, `review`, `resume`, `begin` en `verify` accepteren ook `--timeout-seconds` of `--deadline`. De vroegste deadline blijft gelden over nieuwe pogingen en hervatten; setup en controles verbruiken hetzelfde budget. Annulering of een time-out blokkeert verdere uitvoering voor die sessie. Native vendoragenten en shelltaken buiten de beheerde CLI hebben de eigen controles van hun host nodig. Zie [Uitvoeringsbudget van een sessie](/docs/guide/configuration-reference#session-execution-budget) voor scope en het bewaren van artefacten.
 
 ---
 

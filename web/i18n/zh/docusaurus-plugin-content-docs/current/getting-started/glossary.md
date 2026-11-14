@@ -27,7 +27,7 @@ description: oh-my-agent 术语的简短定义，涵盖技能、工作流、预�
 
 ### 模型预设 {#model-preset}
 
-模型预设是 `.agents/oma-config.yaml`（或 `.cue`）中的 `model_preset` 值，决定每个智能体使用的供应商和模型。新安装默认使用 `auto`，它遵循当前运行时自身的智能体和模型设置；`claude`、`codex` 或 `mixed` 等固定预设则会固定这些设置。`agents.<id>` 覆盖项优先于预设，但 `free` 除外：在 `free` 下，`free.model` 会取代按智能体固定的模型。参见[内置预设](../guide/per-agent-models.md#built-in-presets)。
+模型预设是 `.agents/oma-config.yaml`（或 `.cue`）中的 `model_preset` 值，决定每个智能体使用的供应商和模型。新安装默认使用 `auto`，它遵循当前运行时自身的智能体和模型设置；`claude`、`codex` 或 `mixed` 等固定预设则会固定这些设置。`agents.<id>` 覆盖项优先于预设，但在 `free` 或其他 `providers.<name>` LLM 提供商下除外：此时该提供商的 `default_model` 会取代按智能体固定的模型。参见[内置预设](../guide/per-agent-models.md#built-in-presets)。
 
 ## 工作流执行 {#workflow-execution}
 
@@ -82,7 +82,7 @@ flowchart LR
 
 ### 运行记录与声明 {#run-record-and-claim}
 
-运行记录是单次智能体尝试的机器可读回执，保存在该配置文件的按项目状态目录 `~/.oma/u/<profile>/projects/<project-hash>/agent-runs/` 中（旧版本使用 `.agents/state/agent-runs/`）；`oma agent begin` 会创建它，并为任务契约保存快照。声明是智能体自己的报告，位于对应的 `.claim.json` 路径，状态为 `completed`、`partial`、`blocked` 或 `failed`，并附有变更文件、未解决的工作和产物。`oma agent finish` 会对照当前契约、验证回执和产物哈希检查声明，因此证据过时的声明不会保持 completed 状态。参见[智能体结果与恢复](../guide/agent-results-and-resume.md)。
+运行记录是单次智能体尝试的机器可读回执，保存在该配置档的按项目状态目录 `~/.oma/u/<profile>/projects/<project-hash>/agent-runs/` 中（旧版本使用 `.agents/state/agent-runs/`）；`oma agent begin` 会创建它，并为任务契约保存快照。声明是智能体自己的报告，位于对应的 `.claim.json` 路径，状态为 `completed`、`partial`、`blocked` 或 `failed`，并附有变更文件、未解决的工作和产物。`oma agent finish` 会对照当前契约、验证回执和产物哈希检查声明，因此证据过时的声明不会保持 completed 状态。参见[智能体结果与恢复](../guide/agent-results-and-resume.md)。
 
 ## 记忆与提供商 {#memory-and-providers}
 

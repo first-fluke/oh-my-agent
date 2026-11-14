@@ -93,7 +93,7 @@ sidebar_label: CLI 命令
 
 ### install（安装） {#install}
 
-不带参数运行 `oma` 会启动交互式运行时安装器。`oma install` 是显式形式，接受技能预设以及提供方选择选项。若只为单个任务临时加载指令，请参阅[选择安装方式](../getting-started/choose-setup.md)。
+不带参数运行 `oma` 会启动交互式运行时安装器。`oma install` 是显式形式，接受技能预设以及提供方选择选项。若只为单个任务临时加载指令，请参阅[选择设置](../getting-started/choose-setup.md)。
 
 ```bash
 oma

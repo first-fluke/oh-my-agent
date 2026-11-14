@@ -5,14 +5,20 @@ description: Wartości domyślne oh-my-agent wpływające na routing, wybór mod
 
 # Ważne wartości domyślne
 
-Wartości domyślne utrzymują stabilność konfiguracji użytkownika i są rozstrzygane w czasie działania, więc pominięty klucz może zachowywać się inaczej niż jawnie pusta wartość. Użyj tych informacji, gdy harness działa inaczej, niż oczekujesz.
+Te wartości domyślne dotyczą zainstalowanego runtime’u OMA. Załadowanie jednej umiejętności przez
+`skills use` dostarcza instrukcji bez konfigurowania hooków projektu, dostawców
+ani usług. Zacznij od [Wybierz konfigurację](./choose-setup.md), aby wybrać tę ścieżkę zadania
+albo instalację runtime’u.
+
+Wartości domyślne dobrano tak, aby pierwszy projekt był użyteczny, a konfiguracja należąca do użytkownika pozostawała stabilna. Są rozstrzygane w czasie działania, więc pominięty klucz może zachowywać się inaczej niż jawnie pusta wartość. Zacznij tutaj, gdy harness działa, ale inaczej, niż oczekujesz.
 
 ## Wartości domyślne wpływające na pierwsze uruchomienie
 
 | Obszar | Wartość domyślna | Skutek | Nadpisanie |
 |---|---|---|---|
-| Język odpowiedzi | `en` | Odpowiedzi agentów i workflowów są po angielsku, chyba że konfiguracja projektu wybiera inny obsługiwany język. Jawna instrukcja użytkownika albo sesji może nadal nadpisać domyślny język projektu, jeśli host lub workflow ją obsługuje. | `language` w `.agents/oma-config.yaml` albo `.cue` |
-| Routing modeli ([preset modelu](./glossary.md#model-preset)) | `auto` | Używana jest natywna konfiguracja agentów bieżącego runtime’u. Nieznane runtime’y korzystają z `default_cli`, gdy jest ustawione. | `model_preset`, `default_cli` albo `agents.<id>` |
+| Język odpowiedzi | Zapisany język, w przeciwnym razie język systemu; zapasowo `en` | Instalacja wykrywa język bez pytania. Locale regionalne są mapowane na obsługiwany język bazowy, np. `ko_KR.UTF-8` → `ko`; nieobsługiwane locale używają `en`. Język promptu użytkownika ma pierwszeństwo przed tym ustawieniem. | `language` w `.agents/oma-config.yaml` albo `.cue` |
+| Routing modeli ([preset modelu](./glossary.md#model-preset)) | `auto` | Używana jest natywna konfiguracja agentów bieżącego runtime’u. Nieznane runtime’y wracają do `agents.default.cli`, gdy jest ustawione. | `model_preset`, `agents.default.cli` albo `agents.<id>` |
+| Treść umiejętności ([preset umiejętności](./glossary.md#skill-preset)) | Interaktywny wybór; `all` przy instalacji nienadzorowanej, chyba że podano `--preset` | Preset wybiera umiejętności. Pliki współdzielone, wszystkie definicje workflowów i agentów, hooki oraz konfiguracja dostawców pozostają częścią instalacji runtime’u; pozostałe istniejące umiejętności są zachowywane. | `oma install --preset <name>`; zobacz [limity presetów](./installation.md#presets) |
 | Inteligencja kodu ([dostawca możliwości](./glossary.md#capability-provider)) | `serena` | Nowa instalacja próbuje zainstalować Serenę i podłącza jej konfigurację MCP. | `providers.code_intelligence: gortex` albo `serena` |
 | Strażnik wyszukiwania kodu | `block` | Dopóki skonfigurowany jest dostawca inteligencji kodu, hook PreToolUse odmawia użycia natywnych `Grep`/`Glob` oraz rekurencyjnego wyszukiwania w powłoce (`rg`, `grep -r`, `find -name`) i kieruje agenta do narzędzi dostawcy. Wyszukiwania ograniczone do potwierdzonych wykluczeń lub ścieżek spoza projektu są dozwolone. Hook nie reklamuje obejścia dla kodu źródłowego projektu. | `providers.code_intelligence_guard: off` |
 | Pamięć semantyczna | `agentmemory` | Instalacja i aktualizacja ponownie używają działającego endpointu AgentMemory albo instalują i uruchamiają zarządzaną usługę lokalną, a przed zakończeniem sukcesem sprawdzają jej gotowość. Jawne niestandardowe endpointy są sprawdzane bez zastępowania. | `providers.semantic_memory: honcho` albo `none`; `OMA_NO_AGENTMEMORY=1` pomija konfigurację AgentMemory. |
@@ -40,15 +46,15 @@ po załadowaniu plików. Nieprawidłowa lokalna konfiguracja zatrzymuje ładowan
 
 Routing modeli ma dwa szczególne przypadki przed kolejnością stałego presetu:
 
-- Przy `model_preset: auto` używana jest natywna konfiguracja agenta/modelu bieżącego runtime’u. Jawne nadpisania `agents.<id>` nadal mają pierwszeństwo; nieznany runtime może użyć `default_cli`.
-- Przy `model_preset: free` potomne uruchomienia używają lokalnej bramy FreeLLMAPI. `free.model` wybiera model bramy i zastępuje przypięcia modeli per agent; gdy go brakuje, używane jest `FREELLM_MODEL` albo zapasowa wartość dostawcy `auto`.
+- Przy `model_preset: auto` używana jest natywna konfiguracja agenta/modelu bieżącego runtime’u. Jawne nadpisania `agents.<id>` nadal mają pierwszeństwo; nieznany runtime może użyć `agents.default.cli`.
+- Przy `model_preset: free` (albo dowolnym innym dostawcy LLM `providers.<name>`) potomne uruchomienia używają tej bramy. `providers.free.default_model` wybiera model bramy i zastępuje przypięcia modeli per agent; gdy jest pominięty, używane jest `FREELLM_MODEL` albo zapasowa wartość dostawcy `auto`.
 
 Dla stałego albo własnego presetu obowiązuje następująca kolejność:
 
 1. Jawne nadpisanie `agents.<id>`.
 2. Pasujący wpis `model_preset`, wbudowany albo z `custom_presets`.
 3. Wpis `orchestrator` presetu, gdy rola nie ma własnego wpisu.
-4. `default_cli` jako zapasowy dostawca, gdy wcześniejsze poziomy nie rozstrzygną planu.
+4. `agents.default.cli` jako zapasowy dostawca, gdy wcześniejsze poziomy nie rozstrzygną planu.
 
 Preset `free` dostarcza wartości domyślne dla wszystkich trzech ustawień dostawcy: `base_url` to `http://127.0.0.1:31415/v1`, `api_key_env` to `FREELLM_API_KEY` (akceptowany jest też alias zgodności `FREELLMAPI_API_KEY`), a `model` to `auto`. Nadal potrzebny jest działający klucz API we wskazanej zmiennej środowiskowej; nie ma zapasowego dostawcy. Ustaw te wartości w `oma-config.local.yaml`, gdy mają pozostać lokalne dla komputera, albo użyj `FREELLM_BASE_URL` i `FREELLM_MODEL` do nadpisań na poziomie procesu.
 

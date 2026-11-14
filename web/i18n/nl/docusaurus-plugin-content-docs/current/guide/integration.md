@@ -364,11 +364,11 @@ Wanneer je `oma` uitvoert (de installopdracht), gebeurt precies het volgende:
 
 ### 1. Legacy-migratie
 
-De installer controleert of de oude map `.agent/` (enkelvoud) bestaat en migreert die zo nodig naar `.agents/` (meervoud). Dit is een eenmalige migratie voor gebruikers die vanaf oudere versies upgraden.
+De installer controleert of de oude map `.agent/` (enkelvoud) bestaat en migreert die zo nodig naar `.agents/` (meervoud). Hij past ook de [migratie van de artefactindeling](./artifact-layout.md#migrate-an-existing-project) toe, die beslissingsdocumenten en leesbare resultaatrapporten samenvoegt. Update gebruikt dezelfde migratie. Opnieuw uitvoeren laat een al gemigreerd project ongewijzigd.
 
 ### 2. Detectie van concurrerende tools
 
-De installer zoekt naar concurrerende tools en biedt aan ze te verwijderen om conflicten te voorkomen.
+Een interactieve installatie detecteert andere agenttools en vraagt of je ze wilt verwijderen. De standaard is ze te behouden, inclusief projectlokale mappen `.omc` en `.omx`. Verwijderen vereist een expliciete bevestiging; installaties met `--yes`, `OMA_YES` en CI behouden andere tools. `oma update` biedt niet aan ze te verwijderen.
 
 ### 3. Tarball downloaden
 
@@ -411,6 +411,8 @@ Codex beveiligt zijn hooks achter een eenmalige vertrouwensstap. `.codex/hooks.j
 - `.claude/skills/{skill}` -> `../../.agents/skills/{skill}`
 - `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
 - `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (als Copilot is geselecteerd)
+
+Qwen leest `.agents/skills/` rechtstreeks, dus OMA maakt geen links `.qwen/skills/oma-*` aan. Reconciliation verwijdert verouderde OMA-skilllinks en behoudt items van de gebruiker. Workflowlinks op `.qwen/skills/{workflow}/SKILL.md` blijven naar `.agents/workflows/{workflow}.md` wijzen.
 
 Vendor-native agentbestanden worden door `oma link`, `oma install` of `oma update` uit `.agents/agents/` gegenereerd en niet rechtstreeks als symlink aangemaakt.
 

@@ -122,7 +122,7 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 5. Demande si des liens symboliques GitHub Copilot sont souhaités.
 6. Télécharge la dernière archive depuis le registre.
 7. Installe les ressources partagées, workflows, configurations et compétences sélectionnées.
-8. Installe les adaptations de fournisseur pour les fournisseurs sélectionnés (paramètres locaux au projet ; aucune écriture silencieuse au niveau HOME).
+8. Installe les adaptations de fournisseur pour les fournisseurs sélectionnés. Voir les [effets de l'installation](../getting-started/installation.md#what-the-installer-also-does-by-default) pour les changements au niveau du projet et de HOME.
 9. Crée les liens symboliques CLI.
 10. Propose une configuration git **globale** recommandée (confirmation facultative) :
     - `rerere.enabled=true` — réutilisation des conflits de fusion multi-agents
@@ -131,11 +131,13 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. Propose de configurer MCP lorsque cela s’applique.
 12. Demande une étoile GitHub si `gh` est authentifié.
 
+Le résumé final liste les compétences sélectionnées et vérifie les manifestes de compétences référencés à partir des fichiers réellement présents, y compris les compétences conservées et les branches conditionnelles. Il signale les références de compétences de workflows ou d'agents manquantes ou illisibles et indique la commande doctor pour cette racine d'installation. Il s'agit d'une couverture statique des manifestes ; le contenu des ressources, les outils, les fournisseurs et l'exécution ne sont pas vérifiés.
+
 **Exemple :**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor
@@ -1130,6 +1132,8 @@ Lorsque plusieurs plans de session ou reçus d’exécution correspondent, la v�
 
 **Contrôles propres à chaque agent :**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | Type d’agent | Contrôles supplémentaires |
 |:-----------|:-----------------|
 | `backend` | Validation de syntaxe, détection d’injection SQL (motifs de SQL brut) et tests, à partir des commandes `verify` de `.agents/skills/oma-backend/stack/stack.yaml` (écrit par `/stack-set`). Ignorés si ce fichier est absent |
@@ -1138,6 +1142,7 @@ Lorsque plusieurs plans de session ou reçus d’exécution correspondent, la v�
 | `qa` | Aucune vérification mécanique ; enregistre une seule vérification `QA Report` en `PASS` |
 | `debug` | Exécute les tests Python ou frontend selon le type de projet détecté |
 | `pm` | Vérifie que `.agents/results/plan-{sessionId}.json` existe et contient un JSON valide |
+<!-- oma-docs:ignore-end -->
 
 **Format de sortie :**
 Chaque contrôle signale `PASS`, `FAIL`, `WARN` ou `SKIP` avec un message détaillé. Le résultat global est `ok: true` uniquement si aucun contrôle n’échoue.

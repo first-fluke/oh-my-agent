@@ -44,23 +44,23 @@ oma doctor --profile
 
 | キー | 型または受け付ける値 | 省略時のデフォルト | 用途 |
 | --- | --- | --- | --- |
-| `language` | string | `en` | ワークフローとスキルが使う応答言語。 |
+| `language` | string | `en` | ワークフローとスキルが使う応答言語。インストールは既存の値を残すか、確認なしでシステム言語から初期化します。 |
 | `translation_voice` | `formal`、`balanced`、`interpreter` | 同梱テンプレートでは `balanced` | `oma-translation` の文体選択。 |
 | `date_format` | `ISO`、`US`、`EU` | 同梱テンプレートでは `ISO`。省略時は明示的な上書きなし | 日付形式の設定。 |
 | `timezone` | IANA 名 | システムのタイムゾーン | スケジュールとレポートで使う日時。 |
 | `auto_update_cli` | boolean | `true` | CLI バージョンのバックグラウンド確認。`false` でオプトアウト。 |
 | `telemetry` | boolean | `false` | install、update、link の調整で使うベンダーテレメトリのオプトイン。 |
 | `model_preset` | 空でない string | 新しいテンプレートでは `auto` | 組み込みまたはカスタムのモデルプリセット。`OMA_MODEL_PRESET` は 1 プロセスだけ上書きします。 |
-| `free` | `base_url`、`api_key_env`、`model` | `http://127.0.0.1:31415/v1`、`FREELLM_API_KEY`、`auto` | プリセットが `free` の場合の FreeLLMAPI 設定。`FREELLM_BASE_URL` と `FREELLM_MODEL` はファイルの値を上書きします。キー名に秘密情報自体を入れません。[エージェントごとのモデル設定](/docs/guide/per-agent-models#freellmapi-preset)を参照してください。 |
-| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | ドキュメント、検索、コードインテリジェンス、意味メモリのプロバイダーを選択します。[プロバイダー](#providers)を参照してください。 |
-| `brave` | `api_key_env` または `api_key_vault` | 未設定 | Brave 検索の認証情報への参照。 |
-| `honcho` | `base_url`、`workspace_id`、`project_id`、`api_key_env`、`api_key_vault`、`timeout_ms`、`max_results`、`max_tokens`、`recall_mode` | [Honcho の詳細](#honcho-semantic-memory)を参照 | Honcho の意味メモリ接続設定。 |
-| `agents` | エージェント ID → `model`、任意の `effort`、`thinking`、`memory` | プリセットの解決結果 | 選択したプリセットに適用するエージェントごとの上書き。effort は `none`、`low`、`medium`、`high`、`xhigh`、memory は `user`、`project`、`local` です。 |
+| `free` | `base_url`、`api_key_env`、`model` | 未設定 | `providers.free` の古い書き方です（そこでの `model` は `default_model`）。引き続き読み込まれ、`oma update` が移動します。 |
+| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory`。`brave`、`exa`、`honcho` の認証情報セクション。それ以外の `<name>` は LLM プロバイダーオブジェクト | `context7`、`native`、`serena`、`block`、`agentmemory`。認証情報や LLM プロバイダーはなし | ドキュメント、検索、コードインテリジェンス、意味メモリのプロバイダーを選び、認証情報の参照を保持し、エージェントを通せる LLM エンドポイントを宣言します。[プロバイダー](#providers)を参照してください。 |
+| `brave`、`exa`、`honcho` | `providers` の下と同じ | 未設定 | `providers.brave`、`providers.exa`、`providers.honcho` の古いトップレベル表記。引き続き読み込まれ、`oma update` が移動します。 |
+| `agents` | エージェント ID → `model`、任意の `effort`、`thinking`、`memory`。`default` → `cli`、`effort`、`thinking`、`memory` | プリセットの解決結果。`default.cli` は `claude` にフォールバック（プロバイダー経路では `codex`） | 選択したプリセットに適用するエージェントごとの上書き。effort は `none`、`low`、`medium`、`high`、`xhigh`、memory は `user`、`project`、`local` です。`agents.default` は、自分で何も設定していないすべてのロールにこれらのフィールドを埋めます。その `cli`（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi` のいずれか）は、ほかに何も選ばないときに使うベンダーです。対象は、`auto` でランタイムを検出できない場合、またはプロバイダー経路で `--vendor`、`OMA_RUNTIME_VENDOR`、検出したランタイムの後です。`<provider>/<model-id>` 形式のモデルは、そのロールをその LLM プロバイダーへ通します。 |
 | `models` | モデルスラッグ → CLI マッピング | 未設定 | 対応するベンダー CLI 用のインラインモデル定義。 |
 | `custom_presets` | プリセット → description、任意の `extends`、`agent_defaults` | 未設定 | ユーザー定義プリセット。`extends` で組み込みプリセットを継承できます。 |
 | `vendors` | 選択したベンダー ID の `string[]`（YAML と CUE） | 省略時: `oma link` はリンク可能なすべてのベンダー、`oma update` はプロジェクトディレクトリが存在するベンダーを使う | `oma install` と `oma update` が投影するベンダー統合を選択します。ディスパッチの機能マップは管理対象のオーケストレーション設定にあります。[ベンダー選択とディスパッチメタデータ](#vendor-selection-and-dispatch-metadata)を参照してください。 |
-| `default_cli` | ベンダー ID（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi`） | `claude`。`free` トランスポートでは `codex` | ほかに何もベンダーを選ばないときに使うベンダー。`auto` でランタイムを検出できない場合、または `free` トランスポートで `--vendor`、`OMA_RUNTIME_VENDOR`、検出したランタイムのいずれも該当しない場合です。[OMA がエージェントのモデルと CLI を解決する方法](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)を参照してください。 |
-| `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 省略した各次元は上限なし | 次のエージェント起動前に確認するトークン数と起動数の上限。[セッションのクォータ上限](#session-quota-caps)を参照してください。 |
+| `default_cli` | ベンダー ID | 未設定 | `agents.default.cli` の古い書き方です。引き続き読み込まれ、`oma update` が移動します。 |
+| `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 省略した各次元は上限なし | 次のエージェント起動前に確認する、記録されたトークン使用量と起動数の上限。[セッションのクォータ上限](#session-quota-caps)を参照してください。 |
+| `diagnostic_feedback` | `enabled`、`host_diagnostics`、`timeout_ms` | 対応するターミナルホストでは自動、`false`、`1400` | ネイティブなファイル編集の前後で Serena の診断を比較します。[診断フィードバック](#diagnostic-feedback)を参照してください。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` の動作とスキャン除外。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP のトランスポートと更新動作。 |
 | `mcp.devtools_browsers` | `aside`、`chrome`、`firefox`、または `[]` | 未設定 = 既存の設定をそのままにする | 調整時に使うブラウザー DevTools MCP の選択。空のリストを明示すると、選択したブラウザーのエントリを削除します。 |
@@ -70,8 +70,8 @@ oma doctor --profile
 | `hwp` | `format`、`version.*`、`output.*` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#extract-hwp-family-documents)を参照 | Kordoc の形式、バージョンチャンネル、出力先。 |
 | `pdf` | `format`、`image_output`、`image_format`、`use_struct_tree`、`ocr.*`、`output.*` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#extract-pdf-content)を参照 | PDF 抽出、OCR、画像、上書きの設定。 |
 | `scholar` | `base_url` | スキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#search-and-validate-scholarly-material)を参照 | Knows エンドポイントのホスト。プロトコルの形はスキルが所有します。 |
-| `diagram` | `engine`、`explain_sidecar`、`archify.*` | スキルのデフォルト。[ダイアグラムエンジン](/docs/guide/diagram-engine)を参照 | Mermaid／archify の選択と管理エンジンの設定。 |
-| `market` | `managed`、`channel`、`check_interval_min`、`path`、`python`、`save_dir` | スキルのデフォルト。[市場調査](/docs/guide/market-research)を参照 | 管理対象 last30days エンジンの解決と結果の保存先。 |
+| `diagram` | `engine`、`explain_sidecar`、`archify.path`、`archify.quality`、`archify.open` | スキルのデフォルト。[ダイアグラムエンジン](/docs/guide/diagram-engine)を参照 | Mermaid／archify の選択と、archify の固定および品質の設定。廃止された `archify.managed`、`archify.channel`、`archify.check_interval_min` は通知付きで無視され、`oma update` が削除します。 |
+| `market` | `path`、`python`、`save_dir` | スキルのデフォルト。[市場調査](/docs/guide/market-research)を参照 | last30days エンジンの固定、インタープリター、結果の保存先。廃止された `managed`、`channel`、`check_interval_min` は通知付きで無視され、`oma update` が削除します。 |
 
 同梱テンプレートには、利用側が所有するブロックも含まれます。現在読み込まれるキーとデフォルトは次のとおりです。
 
@@ -98,13 +98,39 @@ oma doctor --profile
 | `code_intelligence_guard` | `block`、`off` | `block` |
 | `semantic_memory` | `agentmemory`、`honcho`、`none` | `agentmemory` |
 
+3 つの予約キーは、セレクターの認証情報または接続セクションを持ちます。`web` 向けの `providers.brave` と `providers.exa`（`api_key_env` または `api_key_vault`）、`semantic_memory` 向けの `providers.honcho`（[Honcho の意味メモリ](#honcho-semantic-memory)を参照）です。古いトップレベル表記も引き続き読み込まれます。
+
+`providers` のそれ以外のキーは **LLM プロバイダー**です。OpenAI 互換または Anthropic 互換のエンドポイントで、`oma agent spawn` は子 CLI を、その CLI 自身のアカウントではなくここへ通せます。値はオブジェクトです。
+
+| フィールド | 受け付ける値 | 必須 | 用途 |
+| --- | --- | --- | --- |
+| `base_url` | 認証情報、クエリ、フラグメントを含まない絶対 HTTP(S) URL。`/v1` がなければ追加される | はい | エンドポイント。 |
+| `api_key_env` | 環境変数名 | はい（`free` を除く。`free` のデフォルトは `FREELLM_API_KEY`） | キーの読み込み元。ファイル自体はキーを持ちません。`base_url` も `free` だけ任意です（`http://127.0.0.1:31415/v1`）。 |
+| `transport` | `chat_completions`（デフォルト）、`responses`、`anthropic_messages`、`multi` | いいえ | エンドポイントが話すワイヤプロトコル。子 CLI を選びます。`chat_completions` は Codex または Qwen、`responses` は Codex、`anthropic_messages` は Claude、`multi`（3 つすべてを提供するゲートウェイ）は Codex、Claude、または Qwen。 |
+| `default_model` | モデル ID | プロバイダーを `model_preset` として使うとき | `model_preset: <name>` のとき、すべてのロールが使うモデル。 |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free` はローカルの FreeLLMAPI ゲートウェイ向けの組み込みプロバイダーです。すべてのフィールドにデフォルトがあり、`FREELLM_BASE_URL` と `FREELLM_MODEL` がファイルを上書きします。レガシーなトップレベルの `free:` ブロックも引き続き読み込まれます（その `model` はここでの `default_model`）。[カスタム LLM プロバイダー](/docs/guide/per-agent-models#custom-llm-providers)を参照してください。
+
 `code_intelligence_guard` は PreToolUse の検索ガードを制御します。確認済みのプロバイダー除外対象、またはプロジェクト外のパスだけを対象にしたネイティブ検索は、迂回策を使わずに許可されます。ガードは Serena の除外設定と有効な gitignore ルール、または Gortex の除外一覧を読み取ります。ディレクトリ名から依存関係を推測することはありません。
 
 フックは `OMA_CI_ALLOW_NATIVE` の名前を挙げません。`OMA_CI_ALLOW_NATIVE=1` を前置したシェル検索がガードを迂回できるのは、プロジェクト外のリソースや、ガードが認識しなかった無視対象のパスに限られ、プロジェクトのソースは対象外です。
 
 ### Honcho の意味メモリ {#honcho-semantic-memory}
 
-`honcho` マップは `HonchoConfigSchema` で検証されます。キーと実効時の動作は次のとおりです。
+`providers.honcho` マップ（レガシーなトップレベルの `honcho` も引き続き読み込まれます）は `HonchoConfigSchema` で検証されます。キーと実効時の動作は次のとおりです。
 
 | キー | 形 | 実効デフォルトまたは制約 |
 | --- | --- | --- |
@@ -150,7 +176,42 @@ session:
       codex: 500000
 ```
 
-上限ローダーは、ユーザーの CUE レイヤー、ユーザーの YAML レイヤー、同梱デフォルトのフォールバックの順に確認します。起動前に OMA は `spawn_count`、合計 `tokens`、`per_vendor` を順番に確認します。使用量が上限以上になると上限に達したとみなし、次の起動をブロックして、先に到達した次元を報告します。使用量はトークンの集計であり、請求額の見積もりではありません。
+上限ローダーは、ユーザーの CUE レイヤー、ユーザーの YAML レイヤー、同梱デフォルトのフォールバックの順に確認します。起動前に OMA は `spawn_count`、合計 `tokens`、`per_vendor` を順番に確認します。使用量が上限以上になると上限に達したとみなし、次の起動をブロックして、先に到達した次元を報告します。
+
+OMA は実行開始時に入力トークンの見積もりを予約します。実行後に対応するネイティブなトランスクリプトがあれば、記録された入力、キャッシュ、出力の使用量がその見積もりを置き換え、起動数は追加しません。そうでなければ、記録はプロンプト長からの明示的な見積もりのままです。ネイティブなサブエージェントが取得範囲の外にある場合、観測したルートセッションの使用量は部分的とマークされます。したがってトークン上限は、利用できる観測に依存します。すでに動いている子を中断せず、請求の上限も保証しません。最も予測しやすい上限は `spawn_count` です。
+
+### セッションの実行予算 {#session-execution-budget}
+
+OMA が管理する CLI ディスパッチと検証の経過時間を制限するには、`session.execution` を設定します。正の `timeout_seconds` か、タイムゾーン付きの ISO 8601 `deadline` のいずれかを使います。
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+`oma agent spawn`、`parallel`、`review`、`resume`、`begin`、`verify` の各コマンドは `--timeout-seconds` または `--deadline` を受け付けます。準備、実行、リトライ、チェックは 1 つの絶対期限を共有します。設定、継承、保存のうち最も早い期限が優先され、リトライや再開で時計はリセットされません。`session.execution` と両方のフラグを省略すると、親が期限を渡していない限り、この次元は上限なしです。
+
+実行履歴は `.agents/state/executions/` に残ります。キャンセルまたはタイムアウトになると、そのセッションの以降の実行はブロックされ、停止理由が記録されます。これらの制御が対象にするのは、管理対象 CLI 経路から起動したプロセスです。ネイティブなベンダーエージェントと任意のシェルジョブには、ホスト側のキャンセル手段が必要です。CPU、RAM、ストレージの上限にはプロバイダーの対応が必要です。
+
+管理対象の子 CLI は `OMA_EXECUTION_DEADLINE`、`OMA_EXECUTION_STATE`、`OMA_EXECUTION_ID` を継承します。状態パスと実行 ID は、束ねられた継承参照になります。別の台帳、壊れた台帳、一致しない台帳は、書き込み前に拒否されます。OMA の子をラップするときは、継承した環境をすべて転送してください。これらの変数を設定しても、無関係なプログラムに期限の強制は追加されません。
+
+キャンセル時、OMA は受付を止め、所有する計算の終了を上限付きで試みます。ログ、結果、worktree、登録済みリソースのメタデータは残します。成果物や外部リソースの削除には、依頼か明示的な保持ポリシーが必要です。終了に失敗した場合は、完全に片付けたと報告せず、見える状態のままにします。
+
+### 診断フィードバック {#diagnostic-feedback}
+
+対応するターミナルホストでは、OMA はネイティブなファイル編集の前後でエラーと警告を比較し、新しく報告された診断を次のツールフィードバックへ注入します。Serena が有効なコードインテリジェンスプロバイダーであるとき（プロバイダー未指定時のデフォルト）、すでに動いていてプロジェクトが一致する Serena HTTP デーモンを使います。デーモンを起動したり、ビルドを実行したりはしません。Serena 自身のシンボリック編集は、すでに診断を返すため対象外です。
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+このフィードバックを止めるには `enabled: false` にします。ホストがすでに編集診断を渡す場合は `host_diagnostics: true` にします。Cursor と Antigravity は自動でスキップされます。プロジェクトローカルの上書きは、通常の設定レイヤーに従います。環境変数の上書きは `OMA_DIAGNOSTIC_FEEDBACK`、`OMA_HOST_DIAGNOSTICS`、`OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS` です。
+
+タイムアウトは、編集前または編集後のフック 1 回全体を対象とし、100〜10,000 ミリ秒に制限されます。遅いプロバイダーでは、より長いタイムアウトを使えます。失敗またはタイムアウトした検索はフィードバックを省略し、短いクールダウンを始めます。診断がきれいだったことには数えません。編集前のベースラインがない、または古い場合もフィードバックを省略します。各フックは最大 3 ファイルを確認し、新しいエラーまたは警告を最大 8 件報告します。
 
 ### ベンダー選択とディスパッチメタデータ {#vendor-selection-and-dispatch-metadata}
 

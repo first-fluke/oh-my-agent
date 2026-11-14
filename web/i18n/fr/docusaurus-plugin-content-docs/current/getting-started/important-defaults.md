@@ -5,14 +5,17 @@ description: Les valeurs par défaut d’oh-my-agent qui influencent le routage,
 
 # Valeurs par défaut importantes
 
+Ces valeurs par défaut s’appliquent à l’environnement d’exécution OMA installé. Charger une seule compétence avec `skills use` fournit des instructions sans configurer les hooks, les fournisseurs ni les services du projet. Commencez par [Choisir une configuration](./choose-setup.md) pour sélectionner ce parcours de tâche ou une installation de l’environnement d’exécution.
+
 Les valeurs par défaut sont choisies pour rendre un premier projet utilisable tout en stabilisant la configuration appartenant à l’utilisateur. Elles sont résolues à l’exécution : une clé omise peut donc se comporter différemment d’une valeur vide explicitement définie. Commencez ici lorsque le harnais fonctionne mais se comporte autrement que prévu.
 
 ## Valeurs par défaut qui influencent le premier lancement
 
 | Domaine | Valeur par défaut | Conséquence | Remplacement |
 |---|---|---|---|
-| Langue des réponses | `en` | Les réponses des agents et des workflows utilisent l’anglais, sauf si la configuration du projet sélectionne une autre langue prise en charge. Une instruction explicite de l’utilisateur ou de la session peut encore remplacer la langue du projet lorsque l’hôte ou le workflow le permet. | `language` dans `.agents/oma-config.yaml` ou `.cue` |
-| Routage des modèles ([preset de modèles](./glossary.md#model-preset)) | `auto` | La configuration native des agents de l’environnement d’exécution courant est utilisée. Les environnements inconnus reviennent à `default_cli` lorsqu’il est défini. | `model_preset`, `default_cli` ou `agents.<id>` |
+| Langue des réponses | Langue enregistrée, sinon langue du système ; repli `en` | L’installation détecte la langue sans invite. Les locales régionales sont ramenées à une langue de base prise en charge, par exemple `ko_KR.UTF-8` → `ko` ; les locales non prises en charge utilisent `en`. La langue du prompt de l’utilisateur est prioritaire sur ce réglage. | `language` dans `.agents/oma-config.yaml` ou `.cue` |
+| Routage des modèles ([preset de modèles](./glossary.md#model-preset)) | `auto` | La configuration native des agents de l’environnement d’exécution courant est utilisée. Les environnements inconnus reviennent à `agents.default.cli` lorsqu’il est défini. | `model_preset`, `agents.default.cli` ou `agents.<id>` |
+| Contenu des compétences ([preset de compétences](./glossary.md#skill-preset)) | Sélection interactive ; `all` pour une installation non interactive, sauf si `--preset` est fourni | Un preset sélectionne les compétences. Les fichiers partagés, toutes les définitions de workflows et d’agents, les hooks et la configuration des fournisseurs restent dans l’installation de l’environnement d’exécution ; les autres compétences déjà présentes sont conservées. | `oma install --preset <name>` ; voir [limites des presets](./installation.md#presets) |
 | Intelligence du code ([fournisseur de capacités](./glossary.md#capability-provider)) | `serena` | Une nouvelle installation tente d’installer Serena et relie sa configuration MCP. | `providers.code_intelligence: gortex` ou `serena` |
 | Garde de recherche de code | `block` | Tant qu’un fournisseur d’intelligence du code est configuré, un hook PreToolUse refuse les outils natifs `Grep`/`Glob` ainsi que la recherche récursive dans le shell (`rg`, `grep -r`, `find -name`), et oriente l’agent vers les outils du fournisseur. Les recherches limitées à des exclusions confirmées ou à des chemins situés hors du projet sont autorisées. Le hook ne mentionne aucun contournement pour le code source du projet. | `providers.code_intelligence_guard: off` |
 | Mémoire sémantique | `agentmemory` | L’installation et la mise à jour réutilisent un endpoint AgentMemory sain, ou installent et démarrent le service local géré, puis vérifient sa disponibilité avant de réussir. Les endpoints personnalisés explicites sont vérifiés sans être remplacés. | `providers.semantic_memory: honcho` ou `none` ; `OMA_NO_AGENTMEMORY=1` ignore la configuration d’AgentMemory. |
@@ -40,15 +43,15 @@ après le chargement des fichiers. Une configuration locale invalide interrompt 
 
 Le routage des modèles comporte deux cas particuliers avant l’ordre des presets fixes :
 
-- Avec `model_preset: auto`, la configuration native de l’agent et du modèle de l’environnement courant est utilisée. Les remplacements explicites `agents.<id>` restent prioritaires ; un environnement inconnu peut utiliser `default_cli`.
-- Avec `model_preset: free`, les créations d’enfants utilisent la passerelle locale FreeLLMAPI. `free.model` sélectionne le modèle de la passerelle et remplace les modèles épinglés par agent ; lorsqu’il est omis, `FREELLM_MODEL` ou le repli du fournisseur `auto` est utilisé.
+- Avec `model_preset: auto`, la configuration native de l’agent et du modèle de l’environnement courant est utilisée. Les remplacements explicites `agents.<id>` restent prioritaires ; un environnement inconnu peut utiliser `agents.default.cli`.
+- Avec `model_preset: free` (ou tout autre fournisseur LLM `providers.<name>`), les créations d’enfants utilisent cette passerelle. `providers.free.default_model` sélectionne le modèle de la passerelle et remplace les modèles épinglés par agent ; lorsqu’il est omis, `FREELLM_MODEL` ou le repli du fournisseur `auto` est utilisé.
 
 Pour un preset fixe ou personnalisé, l’ordre effectif est :
 
 1. Remplacement explicite `agents.<id>`.
 2. Entrée correspondant à `model_preset`, intégrée ou dans `custom_presets`.
 3. Entrée `orchestrator` du preset lorsqu’un rôle n’a pas d’entrée.
-4. `default_cli` comme repli du fournisseur lorsque les niveaux précédents ne résolvent pas de plan.
+4. `agents.default.cli` comme repli du fournisseur lorsque les niveaux précédents ne résolvent pas de plan.
 
 Le preset `free` fournit des valeurs par défaut pour les trois réglages du fournisseur : `base_url` vaut `http://127.0.0.1:31415/v1`, `api_key_env` vaut `FREELLM_API_KEY` (`FREELLMAPI_API_KEY` étant accepté comme alias de compatibilité) et `model` vaut `auto`. Une clé API utilisable dans la variable d’environnement sélectionnée reste requise ; aucun repli de fournisseur n’existe. Définissez ces valeurs dans `oma-config.local.yaml` lorsqu’elles doivent rester propres à la machine, ou utilisez `FREELLM_BASE_URL` et `FREELLM_MODEL` pour des remplacements au niveau du processus.
 

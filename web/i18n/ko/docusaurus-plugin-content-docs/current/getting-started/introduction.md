@@ -11,7 +11,9 @@ OMA는 호출하거나 해당 검사를 포함하는 워크플로우를 선택�
 
 전체 시스템은 프로젝트 내부의 이식 가능한 `.agents/` 디렉토리에 존재합니다. Claude Code, Codex CLI, Antigravity CLI 또는 IDE, Cursor, OpenCode, 기타 지원 도구 사이를 전환해도 에이전트 설정이 코드와 함께 이동합니다.
 
-처음이라면 [빠른 시작](./quick-start.md)부터 읽고 [중요한 기본값](./important-defaults.md)을 확인하세요. 설치는 [SSOT](./glossary.md#ssot)와 벤더 통합을 만들며, 첫 점검에는 `oma doctor`, 첫 태스크에는 작은 단일 도메인 변경을 사용하면 됩니다. 조율이 필요한 태스크에서만 `/work`나 `/orchestrate`로 확장하세요.
+처음이라면 [설정 선택](./choose-setup.md)부터 시작하세요. 현재 에이전트에서 태스크용 스킬 하나를 불러오거나, 훅과 워크플로우를 위해 런타임 스킬 프리셋을 고르거나, Claude Code 플러그인을 설치합니다. 임시 스킬 로딩은 지침과 지원 파일을 제공하며, CLI, 프로젝트 규칙, 외부 서비스 의존성은 그대로 명시됩니다. 런타임 설치는 [SSOT](./glossary.md#ssot)와 벤더 통합을 만듭니다.
+
+첫 태스크와 실제로 확인한 검사는 [빠른 시작](./quick-start.md)을 사용하세요. `oma doctor`는 런타임 설치를 확인합니다. [중요한 기본값](./important-defaults.md)은 프로바이더와 설정을 설명합니다. 조율이 필요하고 참조하는 스킬이 설치되어 있을 때 `/work`나 `/orchestrate`로 넘어가세요.
 
 ---
 

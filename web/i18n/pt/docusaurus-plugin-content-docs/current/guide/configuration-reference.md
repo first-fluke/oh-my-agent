@@ -44,23 +44,23 @@ As chaves a seguir são lidas pelo schema atual do runtime ou por consumidores d
 
 | Chave | Tipo ou valores aceitos | Padrão quando ausente | Finalidade |
 | --- | --- | --- | --- |
-| `language` | string | `en` | Idioma das respostas usado por workflows e skills. |
+| `language` | string | `en` | Idioma das respostas usado por workflows e skills. A instalação preserva um valor existente ou o inicializa a partir do idioma do sistema, sem perguntar. |
 | `translation_voice` | `formal`, `balanced`, `interpreter` | `balanced` no template distribuído | Seleção de voz para `oma-translation`. |
 | `date_format` | `ISO`, `US`, `EU` | `ISO` no template distribuído; a omissão não define uma substituição explícita | Preferência de formatação de datas. |
 | `timezone` | nome IANA | fuso horário do sistema | Datas usadas por agendamentos e relatórios. |
 | `auto_update_cli` | boolean | `true` | Verificações de versão da CLI em segundo plano; desative com `false`. |
 | `telemetry` | boolean | `false` | Ativação de telemetria do vendor usada pela instalação, atualização e reconciliação de links. |
 | `model_preset` | string não vazia | `auto` nos novos templates | Preset de modelo integrado ou personalizado. `OMA_MODEL_PRESET` o substitui em um processo. |
-| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Configurações do FreeLLMAPI quando o preset é `free`; `FREELLM_BASE_URL` e `FREELLM_MODEL` substituem os valores do arquivo, e o nome da chave nunca contém o segredo. Consulte [Configuração de modelos por agente](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Seleciona os providers de documentação, busca, inteligência de código e memória semântica. Consulte [Providers](#providers). |
-| `brave` | `api_key_env` ou `api_key_vault` | não definido | Referência da credencial de busca do Brave. |
-| `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Consulte [Detalhes do Honcho](#honcho-semantic-memory) | Configurações de conexão da memória semântica Honcho. |
-| `agents` | ID do agente → `model`, `effort`, `thinking`, `memory` opcionais | resolução do preset | Substituições por agente aplicadas sobre o preset selecionado. `effort` é `none`, `low`, `medium`, `high` ou `xhigh`; `memory` é `user`, `project` ou `local`. |
+| `free` | `base_url`, `api_key_env`, `model` | não definido | Grafia legada de `providers.free` (ali, `model` é `default_model`); ainda é lida, e `oma update` a move. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`; seções de credenciais `brave`, `exa`, `honcho`; qualquer outro `<name>` → objeto de provider de LLM | `context7`, `native`, `serena`, `block`, `agentmemory`; sem credenciais nem providers de LLM | Seleciona os providers de documentação, busca, inteligência de código e memória semântica, guarda as referências de credenciais e declara endpoints de LLM pelos quais os agentes podem ser encaminhados. Consulte [Providers](#providers). |
+| `brave`, `exa`, `honcho` | como em `providers` | não definido | Grafias legadas de nível superior de `providers.brave`, `providers.exa` e `providers.honcho`; ainda são lidas, e `oma update` as move. |
+| `agents` | ID do agente → `model`, `effort`, `thinking`, `memory` opcionais; `default` → `cli`, `effort`, `thinking`, `memory` | resolução do preset; `default.cli` recorre a `claude` (`codex` para uma rota de provider) | Substituições por agente aplicadas sobre o preset selecionado. `effort` é `none`, `low`, `medium`, `high` ou `xhigh`; `memory` é `user`, `project` ou `local`. `agents.default` preenche esses campos para todo papel que não os define, e o `cli` dele (um de `claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) é o vendor usado quando nada mais seleciona um: um runtime não detectado em `auto`, ou uma rota de provider depois de `--vendor`, `OMA_RUNTIME_VENDOR` e do runtime detectado. Um modelo `<provider>/<model-id>` encaminha o papel por esse provider de LLM. |
 | `models` | slug de modelo → mapeamento de CLI | não definido | Definições inline de modelos para CLIs de vendors compatíveis. |
 | `custom_presets` | preset → descrição, `extends` e `agent_defaults` opcionais | não definido | Presets definidos pelo usuário; `extends` pode herdar um preset integrado. |
 | `vendors` | `string[]` de IDs de vendors selecionados (YAML e CUE) | ausente: `oma link` usa todos os vendors vinculáveis, `oma update` usa os vendors cujos diretórios de projeto existem | Seleciona quais integrações de vendors `oma install` e `oma update` projetam. O mapa de capacidades de dispatch fica na configuração de orquestração gerenciada; consulte [Seleção de vendor e metadados de dispatch](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | ID de vendor (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` para o transporte `free` | Vendor usado quando nada mais seleciona um: um runtime não detectado em `auto`, ou o transporte `free` depois de `--vendor`, `OMA_RUNTIME_VENDOR` e do runtime detectado. Consulte [Como o OMA resolve o modelo e a CLI de um agente](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
-| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | cada dimensão omitida fica sem limite | Limites rígidos de tokens e spawns verificados antes do próximo spawn de agente; consulte [Limites de cota da sessão](#session-quota-caps). |
+| `default_cli` | ID de vendor | não definido | Grafia legada de `agents.default.cli`; ainda é lida, e `oma update` a move. |
+| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | cada dimensão omitida fica sem limite | Uso de tokens registrado e limites de spawn verificados antes do próximo spawn de agente; consulte [Limites de cota da sessão](#session-quota-caps). |
+| `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | automático para hosts de terminal compatíveis, `false`, `1400` | Compara os diagnósticos do Serena antes e depois de edições nativas de arquivo; consulte [Feedback de diagnóstico](#diagnostic-feedback). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Comportamento e exclusões de varredura de `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transporte MCP e comportamento de atualização do Serena. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` ou `[]` | não definido = manter a configuração existente | Seleção do MCP Browser DevTools durante a reconciliação. Uma lista vazia explícita remove as entradas de navegador selecionadas. |
@@ -70,8 +70,8 @@ As chaves a seguir são lidas pelo schema atual do runtime ou por consumidores d
 | `hwp` | `format`, `version.*`, `output.*` | padrão da skill; consulte [Workflows de conteúdo e pesquisa](/docs/guide/content-and-research#extract-hwp-family-documents) | Formato, canal de versão e local de saída do Kordoc. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | padrão da skill; consulte [Workflows de conteúdo e pesquisa](/docs/guide/content-and-research#extract-pdf-content) | Configurações de extração de PDF, OCR, imagem e substituição. |
 | `scholar` | `base_url` | padrão da skill; consulte [Workflows de conteúdo e pesquisa](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Host do endpoint Knows; o formato do protocolo continua pertencendo à skill. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.*` | padrão da skill; consulte [Diagram Engine](/docs/guide/diagram-engine) | Seleção do Mermaid/archify e configurações do engine gerenciado. |
-| `market` | `managed`, `channel`, `check_interval_min`, `path`, `python`, `save_dir` | padrão da skill; consulte [Pesquisa de mercado](/docs/guide/market-research) | Resolução do engine last30days gerenciado e local dos resultados. |
+| `diagram` | `engine`, `explain_sidecar`, `archify.path`, `archify.quality`, `archify.open` | padrão da skill; consulte [Diagram Engine](/docs/guide/diagram-engine) | Seleção do Mermaid/archify e configurações de pin/qualidade do archify. Os valores aposentados `archify.managed`, `archify.channel` e `archify.check_interval_min` são ignorados com um aviso, e `oma update` os remove. |
+| `market` | `path`, `python`, `save_dir` | padrão da skill; consulte [Pesquisa de mercado](/docs/guide/market-research) | Pin do engine last30days, interpretador e local dos resultados. Os valores aposentados `managed`, `channel` e `check_interval_min` são ignorados com um aviso, e `oma update` os remove. |
 
 O template distribuído também contém blocos pertencentes aos consumidores. Suas chaves e padrões atuais são:
 
@@ -98,13 +98,39 @@ Esses blocos são aceitos pelo passthrough de configuração e interpretados pel
 | `code_intelligence_guard` | `block`, `off` | `block` |
 | `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
 
+Três chaves reservadas guardam a seção de credencial ou conexão de um seletor: `providers.brave` e `providers.exa` (`api_key_env` ou `api_key_vault`) para `web`, e `providers.honcho` para `semantic_memory` (consulte [Memória semântica Honcho](#honcho-semantic-memory)). As grafias legadas de nível superior ainda são lidas.
+
+Qualquer outra chave em `providers` é um **provider de LLM**: um endpoint compatível com OpenAI ou Anthropic pelo qual `oma agent spawn` pode encaminhar uma CLI filha, em vez da conta da própria CLI. O valor é um objeto:
+
+| Campo | Valores aceitos | Obrigatório | Finalidade |
+| --- | --- | --- | --- |
+| `base_url` | URL HTTP(S) absoluta, sem credenciais, query ou fragmento; `/v1` é acrescentado quando falta | sim | O endpoint. |
+| `api_key_env` | nome da variável de ambiente | sim (exceto `free`, cujo padrão é `FREELLM_API_KEY`) | De onde a chave é lida; o arquivo nunca guarda a chave. `base_url` também é opcional somente para `free` (`http://127.0.0.1:31415/v1`). |
+| `transport` | `chat_completions` (padrão), `responses`, `anthropic_messages`, `multi` | não | O protocolo que o endpoint fala. Ele seleciona a CLI filha: `chat_completions` → Codex ou Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` (um gateway que atende os três) → Codex, Claude ou Qwen. |
+| `default_model` | ID do modelo | quando o provider é usado como `model_preset` | O modelo que todo papel usa com `model_preset: <name>`. |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free` é o provider integrado de um gateway FreeLLMAPI local: todos os campos têm padrão, `FREELLM_BASE_URL` e `FREELLM_MODEL` substituem o arquivo, e o bloco legado de nível superior `free:` ainda é lido (o `model` dele é `default_model` aqui); consulte [Providers de LLM personalizados](/docs/guide/per-agent-models#custom-llm-providers).
+
 `code_intelligence_guard` controla o guard de busca do PreToolUse. Buscas nativas restritas a exclusões confirmadas do provider ou a caminhos fora do projeto são permitidas sem precisar contornar o guard. O guard lê as exclusões do Serena e as regras de gitignore habilitadas, ou a listagem de exclusões do Gortex; ele não infere dependências a partir de nomes de diretórios.
 
 O hook não cita `OMA_CI_ALLOW_NATIVE`. Uma busca no shell prefixada com `OMA_CI_ALLOW_NATIVE=1` contorna o guard apenas para recursos fora do projeto ou caminhos ignorados que o guard não reconheceu, não para o código-fonte do projeto.
 
 ### Memória semântica Honcho {#honcho-semantic-memory}
 
-O mapa `honcho` é validado por `HonchoConfigSchema`. Os nomes das chaves e o comportamento efetivo em runtime são:
+O mapa `providers.honcho` (a grafia legada de nível superior `honcho` ainda é lida) é validado por `HonchoConfigSchema`. Os nomes das chaves e o comportamento efetivo em runtime são:
 
 | Chave | Formato | Padrão ou restrição efetiva |
 | --- | --- | --- |
@@ -150,7 +176,42 @@ session:
       codex: 500000
 ```
 
-O carregador de limites verifica primeiro a camada CUE do usuário, depois a camada YAML do usuário e, por fim, o fallback de padrões distribuídos. Antes de um spawn, o OMA verifica `spawn_count`, o total de `tokens` e `per_vendor`, nessa ordem. Um limite é atingido quando o uso é maior ou igual a ele; o OMA bloqueia o próximo spawn e informa qual dimensão venceu. O uso é contabilização de tokens, não uma estimativa de cobrança.
+O carregador de limites verifica primeiro a camada CUE do usuário, depois a camada YAML do usuário e, por fim, o fallback de padrões distribuídos. Antes de um spawn, o OMA verifica `spawn_count`, o total de `tokens` e `per_vendor`, nessa ordem. Um limite é atingido quando o uso é maior ou igual a ele; o OMA bloqueia o próximo spawn e informa qual dimensão venceu.
+
+O OMA reserva uma estimativa de tokens de entrada quando uma execução começa. Quando uma transcrição nativa suportada fica disponível depois da execução, o uso registrado de entrada, cache e saída substitui essa estimativa sem contar outro spawn. Caso contrário, o registro permanece explicitamente estimado a partir do tamanho do prompt. O uso observado da sessão raiz é marcado como parcial quando subagentes nativos ficam fora do escopo de captura. Os limites de tokens dependem, portanto, das observações disponíveis; eles não interrompem um filho que já está em execução nem garantem um teto de cobrança. `spawn_count` é o limite mais previsível.
+
+### Orçamento de execução da sessão {#session-execution-budget}
+
+Defina `session.execution` para limitar o tempo decorrido do dispatch e da verificação de CLI gerenciados pelo OMA. Use um `timeout_seconds` positivo ou um `deadline` ISO 8601 com fuso horário:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+Os comandos `oma agent spawn`, `parallel`, `review`, `resume`, `begin` e `verify` aceitam `--timeout-seconds` ou `--deadline`. Preparação, execução, novas tentativas e verificações compartilham um único deadline absoluto. O deadline mais cedo, entre o configurado, o herdado e o persistido, vence; novas tentativas e retomadas não reiniciam o relógio. Omita `session.execution` e as duas flags para deixar essa dimensão sem limite, salvo se o pai tiver fornecido um deadline.
+
+O histórico de execução fica em `.agents/state/executions/`. Cancelamento ou timeout bloqueia a execução seguinte nessa sessão e registra o motivo da parada. Esses controles cobrem processos iniciados pelo caminho da CLI gerenciada. Agentes nativos do vendor e jobs arbitrários de shell precisam do mecanismo de cancelamento do próprio host; limites de CPU, RAM e armazenamento exigem suporte do provider.
+
+CLIs filhas gerenciadas herdam `OMA_EXECUTION_DEADLINE`, `OMA_EXECUTION_STATE` e `OMA_EXECUTION_ID`. O caminho do estado e o ID de execução formam uma referência de herança vinculada; um ledger estranho, malformado ou incompatível é rejeitado antes da escrita. Encaminhe o ambiente herdado completo ao encapsular um filho do OMA. Definir essas variáveis não acrescenta a aplicação do deadline a um programa não relacionado.
+
+No cancelamento, o OMA interrompe a admissão e tenta o encerramento delimitado da computação de que é dono. Ele preserva logs, resultados, worktrees e metadados de recursos registrados. Apagar artefatos ou recursos externos exige um pedido ou uma política explícita de retenção. Um encerramento sem sucesso permanece visível, em vez de ser reportado como limpeza completa.
+
+### Feedback de diagnóstico {#diagnostic-feedback}
+
+Em hosts de terminal compatíveis, o OMA compara erros e avisos antes e depois de edições nativas de arquivo e injeta os diagnósticos recém-reportados no feedback seguinte da ferramenta. Ele usa um daemon HTTP do Serena já em execução e correspondente ao projeto quando Serena é o provider efetivo de inteligência de código (o padrão quando nenhum provider é especificado). Ele nunca inicia um daemon nem executa um build. As edições simbólicas do próprio Serena ficam de fora, porque já fornecem diagnósticos.
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+Defina `enabled: false` para desativar este feedback. Defina `host_diagnostics: true` quando o host já fornece diagnósticos de edição; Cursor e Antigravity são ignorados automaticamente. As substituições locais do projeto seguem as camadas normais de configuração. As substituições de ambiente são `OMA_DIAGNOSTIC_FEEDBACK`, `OMA_HOST_DIAGNOSTICS` e `OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS`.
+
+O timeout cobre cada hook completo de pré-edição ou pós-edição e fica limitado a 100–10.000 milissegundos. Providers lentos podem usar um timeout maior. Uma consulta com falha ou timeout pula o feedback e inicia um cooldown curto; ela não conta como um resultado de diagnóstico limpo. Baselines de pré-edição ausentes ou desatualizadas também pulam o feedback. Cada hook verifica no máximo três arquivos e reporta no máximo oito erros ou avisos novos.
 
 ### Seleção de vendor e metadados de dispatch {#vendor-selection-and-dispatch-metadata}
 

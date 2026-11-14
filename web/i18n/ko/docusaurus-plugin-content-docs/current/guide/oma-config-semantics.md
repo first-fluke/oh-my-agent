@@ -112,12 +112,12 @@ cue export --out json .agents/oma-config.cue   # what the CUE layer evaluates to
 
 ## 참고 사항
 
-- `oma-config.yaml`의 `language`는 에이전트 응답 언어를 제어합니다. 설치 및 업데이트 경고 메시지를 결정하는 데는 사용되지 **않습니다**. 설치 시점에는 `oma-config.yaml`이 아직 로드되지 않으므로, 해당 메시지는 시스템 로케일(`$LANG`)을 기준으로 합니다.
+- `oma-config.yaml`의 `language`는 에이전트 응답 언어를 제어합니다. 설치는 대화형 모드와 무인 모드 모두에서 저장된 값을 유지합니다. 새 설치는 `LC_ALL`, `LC_MESSAGES`, `LANG` 순으로 읽고, 하나도 없으면 런타임 로케일로 폴백합니다. 지역, 문자 체계, 인코딩 접미사는 지원하는 기본 언어로 대응하고, 지원하지 않는 로케일과 `C`, `POSIX`는 `en`을 씁니다. 언어를 묻는 프롬프트는 없습니다. 설치와 업데이트 경고 메시지는 시스템 로케일(`$LANG`)을 사용합니다.
 - `auto_update_cli`는 글로벌 기본값보다 프로젝트 오버라이드를 먼저 사용하며, 어느 범위에서도 설정하지 않으면 기본적으로 활성화됩니다.
 - `telemetry`(기본값 `false`)는 각 벤더 자체의 opt-out으로 연결되며, `oma install` / `oma update` / `oma link`가 값을 씁니다. Claude는 `DISABLE_TELEMETRY`와 `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`, Gemini와 Qwen은 `privacy.usageStatisticsEnabled`, Codex는 `analytics.enabled`와 `feedback.enabled`, Grok은 `[features] telemetry`, Antigravity(agy)는 `~/.gemini/antigravity-cli/settings.json`의 `enableTelemetry`를 씁니다. `telemetry: true`로 두면 해당 벤더에 대한 oma의 opt-out을 제거해 다시 수집에 동의합니다.
-- `diagram`(engine `auto` / `archify` / `mermaid`, `explain_sidecar`, `archify.managed|channel|check_interval_min|path|quality|open`)은 `video` / `image`와 같은 sparse skill-오버라이드 섹션입니다. [Diagram Engine](/docs/guide/diagram-engine)을 참고하세요.
-- `video.hyperframes.check_interval_min`은 실행별 HyperFrames 툴체인과 heygen-com/hyperframes의 최신 버전 확인(`oma video compose`, `oma update`) 빈도를 제한합니다. 배포된 CUE 스키마는 아직 `video.hyperframes`를 정의하지 않으므로 `cue export`가 스키마 블록 안에서 이 키를 거부합니다(`field not allowed`). `oma-config.yaml`이나 local YAML 오버레이에서 설정하세요.
-- `market`(`managed|channel|check_interval_min|path|python|save_dir`)은 `oma market`의 기반인 항상 최신 `last30days` engine을 설정합니다. [Market Research](/docs/guide/market-research)를 참고하세요.
+- `diagram`(engine `auto` / `archify` / `mermaid`, `explain_sidecar`, `archify.path|quality|open`)은 `video` / `image`와 같은 sparse skill-오버라이드 섹션입니다. `archify.managed|channel|check_interval_min`은 더 이상 쓰이지 않으며 무시됩니다. [Diagram Engine](/docs/guide/diagram-engine)을 참고하세요.
+- `video.hyperframes.check_interval_min`은 실행별 HyperFrames 툴체인(`oma video compose`, `oma update`)의 최신 버전 확인 빈도를 제한합니다. heygen-com/hyperframes 스킬은 skills-CLI로 설치합니다. 배포된 CUE 스키마는 아직 `video.hyperframes`를 정의하지 않으므로 `cue export`가 스키마 블록 안에서 이 키를 거부합니다(`field not allowed`). `oma-config.yaml`이나 local YAML 오버레이에서 설정하세요.
+- `market`(`path|python|save_dir`)은 `oma market`이 쓰는 설치된 `last30days` 엔진을 설정합니다. `managed|channel|check_interval_min`은 더 이상 쓰이지 않으며 무시됩니다. [Market Research](/docs/guide/market-research)를 참고하세요.
 - 타입이 지정된 런타임 스키마는 `providers`, `free`, `agents`, `models`, `custom_presets`, `vendors`, `session`, `docs`와 필요한 값만 담는 스킬 섹션을 다룹니다. 배포 템플릿에는 `scm`, `memory`, `serena_reaper`, `mcp`처럼 각 사용처가 소유하는 블록도 있으며, 그 하위 키는 해당 사용처가 관리합니다. 이 목록에서 키를 추론하지 말고 [설정 레퍼런스](/docs/guide/configuration-reference)와 해당 블록의 기능 가이드를 참고하세요.
 - `oma-config.yaml`을 직접 편집하는 것은 안전합니다. `oma install`과 `oma update`는 정규식 수준의 필드 치환을 사용하며, 자신이 관리하지 않는 사용자 편집 키(예: 커스텀 `agents:` 오버라이드, `session.quota_cap`)는 그대로 보존합니다.
 - `oma update`는 배포 템플릿에는 있지만 사용자 파일에는 없는 최상위 키를 `# Added by oma update` marker 아래에 템플릿 기본값으로 덧붙입니다. 이미 있는 키는 절대 건드리지 않으므로 기존 내용은 바이트 단위로 그대로 유지됩니다. 일부러 지운 키는 템플릿 기본값으로 다시 나타나므로, 제외하려면 키를 지우는 대신 값을 명시적으로 지정하세요.

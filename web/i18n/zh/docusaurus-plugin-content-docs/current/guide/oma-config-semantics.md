@@ -110,12 +110,12 @@ cue export --out json .agents/oma-config.cue   # what the CUE layer evaluates to
 
 ## 说明 {#notes}
 
-- `oma-config.yaml` 中的 `language` 控制智能体响应语言。它**不**用于确定安装或更新警告消息，这些消息使用系统区域设置（`$LANG`），因为安装时尚未加载 `oma-config.yaml`。
+- `oma-config.yaml` 中的 `language` 控制智能体响应语言。安装在交互模式和无人值守模式下都会保留已保存的值。新安装依次读取 `LC_ALL`、`LC_MESSAGES`、`LANG`，都未设置时回退到运行时语言环境。区域、文字和编码后缀会映射到受支持的基础语言；不支持的语言环境、`C` 和 `POSIX` 使用 `en`。没有语言提示。安装和更新的警告消息使用系统语言环境（`$LANG`）。
 - `auto_update_cli` 先使用项目覆盖值，再使用全局默认值；两个作用域都未设置时默认启用。
 - `telemetry`（默认 `false`）映射为各供应商自己的退出选项，由 `oma install`、`oma update` 和 `oma link` 写入：Claude 使用 `DISABLE_TELEMETRY` 与 `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`，Gemini/Qwen 使用 `privacy.usageStatisticsEnabled`，Codex 使用 `analytics.enabled` 与 `feedback.enabled`，Grok 使用 `[features] telemetry`，Antigravity（agy）在 `~/.gemini/antigravity-cli/settings.json` 中使用 `enableTelemetry`。设置 `telemetry: true` 会移除 oma 为该供应商写入的退出设置，重新启用遥测。
-- `diagram`（引擎 `auto` / `archify` / `mermaid`、`explain_sidecar`、`archify.managed|channel|check_interval_min|path|quality|open`）是类似 `video` / `image` 的稀疏技能覆盖段；请参见[图表引擎](/docs/guide/diagram-engine)。
-- `video.hyperframes.check_interval_min` 会限制每次运行的 HyperFrames 工具链和 heygen-com/hyperframes 的最新版本检查频率（`oma video compose`、`oma update`）。随附的 CUE schema 尚未定义 `video.hyperframes`，因此 `cue export` 会在 schema 块中拒绝它（`field not allowed`）；请在 `oma-config.yaml` 或本地 YAML 覆盖层中设置。
-- `market`（`managed|channel|check_interval_min|path|python|save_dir`）配置 `oma market` 背后的始终最新 `last30days` 引擎；请参见[市场研究](/docs/guide/market-research)。
+- `diagram`（引擎 `auto` / `archify` / `mermaid`、`explain_sidecar`、`archify.path|quality|open`）是类似 `video` / `image` 的稀疏技能覆盖段；`archify.managed|channel|check_interval_min` 已弃用并被忽略。请参见[图表引擎](/docs/guide/diagram-engine)。
+- `video.hyperframes.check_interval_min` 会限制每次运行的 HyperFrames 工具链的最新版本检查频率（`oma video compose`、`oma update`）；heygen-com/hyperframes 技能通过 skills CLI 安装。随附的 CUE schema 尚未定义 `video.hyperframes`，因此 `cue export` 会在 schema 块中拒绝它（`field not allowed`）；请在 `oma-config.yaml` 或本地 YAML 覆盖层中设置。
+- `market`（`path|python|save_dir`）配置 `oma market` 背后已安装的 `last30days` 引擎；`managed|channel|check_interval_min` 已弃用并被忽略。请参见[市场研究](/docs/guide/market-research)。
 - 类型化运行时 schema 涵盖 `providers`、`free`、`agents`、`models`、`custom_presets`、`vendors`、`session`、`docs` 和稀疏技能段。随附模板还包含 `scm`、`memory`、`serena_reaper` 和 `mcp` 等由消费者负责的区块，其嵌套键由各自消费者管理。不要从此列表推断键，请使用[配置参考](/docs/guide/configuration-reference)和相应功能指南。
 - 直接编辑 `oma-config.yaml` 是安全的。`oma install` 和 `oma update` 以正则级字段替换，并保留不由其管理的用户键（例如自定义 `agents:` 覆盖和 `session.quota_cap`）。
 - `oma update` 还会追加随附模板已定义但你的文件缺少的顶层键（使用模板默认值），并放在 `# Added by oma update` 标记下。已有键不会修改，现有内容保持字节级不变。你主动删除的键会以模板默认值重新出现；若要退出，请显式设置该键的值，不要删除该键。

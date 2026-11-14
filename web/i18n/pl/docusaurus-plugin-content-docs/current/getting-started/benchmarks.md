@@ -74,7 +74,7 @@ Sędziowie spec i visual uruchamiani są 3 razy na każdy harness przez `judge-m
 1. **Nadpisanie promptu superpowers** — niezbędne, by harness zadziałał w trybie nieinteraktywnym (jego umiejętność brainstormingu z `<HARD-GATE>` blokuje pojedyncze uruchomienia). Wynik odzwierciedla "co potrafi superpowers po obejściu bramki", a nie czyste porównanie jeden do jednego.
 2. **Uśrednianie wielu sędziów dla spec + visual, pojedynczy przebieg journey** — sędziowanie ścieżek użytkownika wymaga działającego dev-servera, więc pozostaje jednoprzebiegowe. Różnice w journey poniżej ~2 punktów traktuj jako szum. Liczba próbek to 1 build na harness.
 3. **Normalizacja kosztów** — oś wydajności używa kosztu na plik; absolutny koszt ($1.28–$8.19 dla całej piątki) nie jest odzwierciedlony w wyniku.
-4. **Kara `lint-clean` dla oma jest celowa** — oma świadomie pozostawia egzekwowanie lintu/typecheck hookom git (husky + lint-staged) oraz CI, zamiast wbudowywać reguły specyficzne dla ESLint w umiejętności agentów. Pojedynczy benchmark karze to wynikiem -5 w `lint-clean`, ale w realnym workflow te same problemy zostałyby zablokowane przez pre-push przed dotarciem do zdalnego repozytorium.
+4. **Kara `lint-clean` dla oma jest celowa**: oma świadomie pozostawia egzekwowanie lintu i typecheck hookom git (hk) oraz CI, zamiast wbudowywać reguły specyficzne dla ESLint w umiejętności agentów. Pojedynczy benchmark karze to wynikiem -5 w `lint-clean`, ale w realnym workflow te same problemy zostałyby zablokowane przez pre-push przed dotarciem do zdalnego repozytorium.
 
 ---
 

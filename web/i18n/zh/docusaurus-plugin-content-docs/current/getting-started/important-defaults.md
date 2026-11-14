@@ -6,14 +6,17 @@ sidebar_label: 重要默认值
 
 # 重要默认值
 
-默认值的目标是让首个项目可以使用，同时保持用户拥有的配置稳定。默认值在运行时解析，因此省略某个键和明确设置空值可能产生不同的行为。当脚手架可以运行却与预期不同时，从这里开始排查。
+这些默认值适用于已安装的 OMA 运行时。用 `skills use` 加载单个技能只提供指令，不会配置项目钩子、提供方或服务。先从[选择设置](./choose-setup.md)确定这条任务路径或运行时安装。
+
+默认值的目标是让首个项目可以使用，同时保持用户拥有的配置稳定。默认值在运行时解析，因此省略某个键和明确设置空值可能产生不同的行为。当 harness 可以运行却与预期不同时，从这里开始排查。
 
 ## 影响首次运行的默认值 {#defaults-that-affect-the-first-run}
 
 | 区域 | 默认值 | 影响 | 覆盖方式 |
 |---|---|---|---|
-| 响应语言 | `en` | 除非项目配置选择了其他受支持语言，否则智能体和工作流使用英语。宿主或工作流支持时，明确的用户或会话语言指令仍可覆盖项目默认值。 | `.agents/oma-config.yaml` 或 `.cue` 中的 `language` |
-| 模型路由（[模型预设](./glossary.md#model-preset)） | `auto` | 使用当前运行时的原生智能体配置。设置了 `default_cli` 时，未知运行时回退到它。 | `model_preset`、`default_cli` 或 `agents.<id>` |
+| 响应语言 | 已保存的语言，否则为系统语言；回退到 `en` | 安装时不询问即可检测语言。区域语言环境会映射到受支持的基础语言，例如 `ko_KR.UTF-8` → `ko`；不支持的语言环境使用 `en`。用户提示的语言优先于这项设置。 | `.agents/oma-config.yaml` 或 `.cue` 中的 `language` |
+| 模型路由（[模型预设](./glossary.md#model-preset)） | `auto` | 使用当前运行时的原生智能体配置。未知运行时在已设置时回退到 `agents.default.cli`。 | `model_preset`、`agents.default.cli` 或 `agents.<id>` |
+| 技能内容（[技能预设](./glossary.md#skill-preset)） | 交互式选择；无人值守安装时为 `all`，除非指定了 `--preset` | 预设选择技能。共享文件、全部工作流和智能体定义、钩子以及提供方设置仍属于运行时安装；其他已有技能会保留。 | `oma install --preset <name>`；参见[预设限制](./installation.md#presets) |
 | 代码智能（[能力提供方](./glossary.md#capability-provider)） | `serena` | 新安装会尝试安装 Serena，并接入其 MCP 配置。 | `providers.code_intelligence: gortex` 或 `serena` |
 | 代码搜索保护 | `block` | 只要配置了代码智能提供方，PreToolUse 钩子就会拒绝原生 `Grep`/`Glob` 和递归 shell 搜索（`rg`、`grep -r`、`find -name`），并引导智能体改用提供方的工具。仅限已确认排除项或项目之外路径的搜索会被放行。该钩子不会提示针对项目源代码的绕过方式。 | `providers.code_intelligence_guard: off` |
 | 语义内存 | `agentmemory` | 安装和更新会复用健康的 AgentMemory 端点，或安装并启动托管的本地服务，然后在成功前检查就绪状态。显式的自定义端点只会被检查，不会被替换。 | `providers.semantic_memory: honcho` 或 `none`；`OMA_NO_AGENTMEMORY=1` 会跳过 AgentMemory 设置。 |
@@ -36,15 +39,15 @@ OMA 从 `$OMA_HOME/.agents/`（默认为 `~/.oma/.agents/`）加载全局默认�
 
 在固定预设顺序之前，模型路由有两个特殊情况：
 
-- `model_preset: auto` 使用当前运行时的原生智能体和模型配置。明确的 `agents.<id>` 覆盖仍优先；未知运行时可以使用 `default_cli`。
-- `model_preset: free` 时，子进程通过本地 FreeLLMAPI 网关生成。`free.model` 选择网关模型并替换每个智能体的模型固定值；省略它时使用 `FREELLM_MODEL`，或使用提供方回退值 `auto`。
+- `model_preset: auto` 使用当前运行时的原生智能体和模型配置。明确的 `agents.<id>` 覆盖仍优先；未知运行时可以使用 `agents.default.cli`。
+- `model_preset: free`（或其他 `providers.<name>` LLM 提供方）时，子进程使用该网关。`providers.free.default_model` 选择网关模型，并替换每个智能体的模型固定值；省略它时使用 `FREELLM_MODEL`，或使用提供方回退值 `auto`。
 
 对于固定或自定义预设，有效优先级如下：
 
 1. `agents.<id>` 的显式覆盖。
 2. 匹配的 `model_preset` 条目，包括内置预设或 `custom_presets`。
 3. 当某个角色没有条目时，使用预设的 `orchestrator` 条目。
-4. 前面各层无法解析计划时，使用 `default_cli` 作为供应商回退值。
+4. 前面各层无法解析计划时，使用 `agents.default.cli` 作为供应商回退值。
 
 `free` 预设为三个提供方设置提供默认值：`base_url` 为 `http://127.0.0.1:31415/v1`，`api_key_env` 为 `FREELLM_API_KEY`（兼容别名 `FREELLMAPI_API_KEY` 也接受），`model` 为 `auto`。所选环境变量中仍必须有可用 API 密钥；不存在供应商回退。需要保持机器本地时，将这些值写入 `oma-config.local.yaml`，或使用 `FREELLM_BASE_URL` 和 `FREELLM_MODEL` 进行进程级覆盖。
 

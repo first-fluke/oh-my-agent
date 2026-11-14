@@ -27,7 +27,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 - **uv**: menedżer pakietów Pythona (skrypt bootstrapu zaproponuje instalację, jeśli go brakuje)
 - **Dostawca inteligencji kodu**: domyślnym dostawcą jest Serena. Obsługiwany jest także Gortex, jeśli zostanie wybrany w konfiguracji dostawcy. Instalator może skonfigurować Serenę przez `uv tool install`; gdy brakuje opcjonalnej zależności, kontynuuje z ostrzeżeniem. Przy wybranym Gortex `oma install` i `oma update` w trybie projektu rejestrują projekt w demonie Gortex (`gortex track`), gdy nie jest jeszcze śledzony, i dodają wygenerowane przez OMA katalogi do listy wykluczeń tego projektu za pośrednictwem CLI Gortex; nic nie jest zapisywane w drzewie projektu. Sam Gortex trzeba zainstalować osobno.
 
-Instalator grupuje integracje według możliwości. Dostawcy hooków to Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro i Qwen; OpenCode i pi używają mostków rozszerzeń; GitHub Copilot i Hermes otrzymują dowiązania do umiejętności, a ZCode — polecenia workflowów. Możesz wybrać wielu dostawców, ale pierwsze zadanie wymaga tylko hosta, którego planujesz używać.
+Instalator grupuje integracje według możliwości. Dostawcy hooków to Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro i Qwen; OpenCode i pi używają mostków rozszerzeń; Hermes otrzymuje dowiązania do umiejętności; a ZCode otrzymuje polecenia workflowów. Możesz wybrać wielu dostawców, ale pierwsze zadanie wymaga tylko hosta, którego planujesz używać.
 
 ---
 
@@ -339,9 +339,8 @@ agents:
 |-------|------|----------|-------------|
 | `language` | string | Tak | Kod języka odpowiedzi. Obsługuje en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
 | `model_preset` | string | Tak | Aktywny klucz [presetu modeli](./glossary.md#model-preset). `auto` podąża za bieżącym runtime'em; stałe klucze to `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` i `mixed`. Prawidłowe są także niestandardowe klucze presetów. Zobacz [Modele per agent](../guide/per-agent-models.md). |
-| `default_cli` | string | Nie | Zapasowe CLI dla `oma agent spawn`, gdy jawne ustawienia agenta i wybrany preset nie rozstrzygną dostawcy. |
-| `free` | map | Nie | Ustawienia bramy FreeLLMAPI używane przy `model_preset: free`; klucze API przechowuj w zmiennych środowiskowych. |
-| `providers` | map | Nie | Dostawcy możliwości: `code_intelligence` (`serena` lub `gortex`), `code_intelligence_guard` (`block` lub `off`), `docs` (`context7`), `web` (`native` lub `brave`) oraz `semantic_memory` (`agentmemory`, `honcho` lub `none`). |
+| `agents` | map | Nie | Nadpisania modeli per rola; `agents.default` zawiera `cli` (zapasowe CLI dla `oma agent spawn`, gdy jawne ustawienia agenta i wybrany preset nie rozstrzygną dostawcy) oraz domyślne `effort`, `thinking` i `memory`. |
+| `providers` | map | Nie | Dostawcy możliwości: `code_intelligence` (`serena` albo `gortex`), `code_intelligence_guard` (`block` albo `off`), `docs` (`context7`), `web` (`native` albo `brave`) oraz `semantic_memory` (`agentmemory`, `honcho` albo `none`); ich sekcje poświadczeń (`brave`, `exa`, `honcho`); oraz nazwani dostawcy LLM, tacy jak `free` (brama FreeLLMAPI używana przez `model_preset: free`). Klucze API przechowuj w zmiennych środowiskowych. |
 | `date_format` | string | Nie | Format znacznika czasu (`ISO`, `US`, `EU`). Domyślnie: `ISO`. |
 | `timezone` | string | Nie | Identyfikator strefy czasowej (np. `Asia/Seoul`). Pominięte wartości używają strefy czasowej systemu hosta. |
 | `auto_update_cli` | boolean | Nie | Czy rutynowe sprawdzenia CLI mogą aktualizować je w tle. Domyślnie: `true` (wyłącz przez `false`). |
@@ -357,7 +356,7 @@ agents:
 
 ### Rozstrzyganie dostawcy {#vendor-resolution}
 
-Podczas uruchamiania agenta CLI rozstrzyga ustawienia w tej kolejności: `agents.<id>`, wybrany `model_preset`, zapasowa konfiguracja orkiestratora presetu, a następnie `default_cli`. Przy `model_preset: auto` model dostarcza natywna konfiguracja bieżącego runtime'u; nieznany runtime przechodzi do `default_cli`. Pełną macierz opisano w [Modelach per agent](../guide/per-agent-models.md).
+Podczas uruchamiania agenta CLI rozstrzyga ustawienia w tej kolejności: `agents.<id>`, wybrany `model_preset`, zapasowa konfiguracja orkiestratora presetu, a następnie `agents.default.cli`. Przy `model_preset: auto` model dostarcza natywna konfiguracja bieżącego runtime'u; nieznany runtime przechodzi do `agents.default.cli`. Pełną macierz opisano w [Modelach per agent](../guide/per-agent-models.md).
 
 
 ---

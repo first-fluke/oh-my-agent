@@ -44,23 +44,23 @@ oma doctor --profile
 
 | Ключ | Тип или допустимые значения | По умолчанию при отсутствии | Назначение |
 | --- | --- | --- | --- |
-| `language` | string | `en` | Язык ответов, используемый workflow и skills. |
+| `language` | string | `en` | Язык ответов, используемый workflow и skills. Установка сохраняет существующее значение или инициализирует его из системного языка без запроса. |
 | `translation_voice` | `formal`, `balanced`, `interpreter` | `balanced` в поставляемом шаблоне | Выбор голоса для `oma-translation`. |
 | `date_format` | `ISO`, `US`, `EU` | `ISO` в поставляемом шаблоне; отсутствие ключа не задаёт явное переопределение | Предпочтительный формат даты. |
 | `timezone` | имя IANA | системный часовой пояс | Даты, используемые расписаниями и отчётами. |
 | `auto_update_cli` | boolean | `true` | Фоновые проверки версии CLI; для отказа задайте `false`. |
 | `telemetry` | boolean | `false` | Включение телеметрии вендора, используемое при install, update и синхронизации link. |
 | `model_preset` | непустой string | `auto` в новых шаблонах | Встроенный или пользовательский preset моделей. `OMA_MODEL_PRESET` переопределяет его для одного процесса. |
-| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Настройки FreeLLMAPI при preset `free`; `FREELLM_BASE_URL` и `FREELLM_MODEL` переопределяют значения файла, а имя ключа никогда не содержит секрет. См. [конфигурацию моделей по агентам](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Выбор провайдеров документации, поиска, code intelligence и semantic memory. См. [Провайдеры](#providers). |
-| `brave` | `api_key_env` или `api_key_vault` | не задано | Ссылка на credential поиска Brave. |
-| `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | См. [сведения о Honcho](#honcho-semantic-memory) | Настройки подключения semantic memory Honcho. |
-| `agents` | ID агента → `model`, необязательные `effort`, `thinking`, `memory` | разрешение preset | Переопределения по агентам поверх выбранного preset. effort — `none`, `low`, `medium`, `high` или `xhigh`; memory — `user`, `project` или `local`. |
+| `free` | `base_url`, `api_key_env`, `model` | не задано | Устаревшее написание `providers.free` (там `model` — это `default_model`); всё ещё читается, и `oma update` переносит его. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`; разделы учётных данных `brave`, `exa`, `honcho`; любой другой `<name>` → объект LLM-провайдера | `context7`, `native`, `serena`, `block`, `agentmemory`; без учётных данных и LLM-провайдеров | Выбор провайдеров документации, поиска, code intelligence и semantic memory, хранение ссылок на их учётные данные и объявление LLM endpoint, через которые можно направлять агентов. См. [Провайдеры](#providers). |
+| `brave`, `exa`, `honcho` | как в `providers` | не задано | Устаревшие написания верхнего уровня для `providers.brave`, `providers.exa` и `providers.honcho`; всё ещё читаются, и `oma update` переносит их. |
+| `agents` | ID агента → `model`, необязательные `effort`, `thinking`, `memory`; `default` → `cli`, `effort`, `thinking`, `memory` | разрешение preset; `default.cli` переходит к `claude` (`codex` для маршрута провайдера) | Переопределения по агентам поверх выбранного preset. effort — `none`, `low`, `medium`, `high` или `xhigh`; memory — `user`, `project` или `local`. `agents.default` заполняет эти поля для каждой роли, которая их не задаёт, а его `cli` (один из `claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) — vendor, используемый, когда ничто другое его не выбирает: необнаруженный runtime при `auto` или маршрут провайдера после `--vendor`, `OMA_RUNTIME_VENDOR` и обнаруженного runtime. Модель `<provider>/<model-id>` направляет роль через этого LLM-провайдера. |
 | `models` | slug модели → отображение CLI | не задано | Встроенные определения моделей для поддерживаемых CLI-вендоров. |
 | `custom_presets` | preset → description, необязательные `extends`, `agent_defaults` | не задано | Пользовательские preset; `extends` может наследовать встроенный preset. |
 | `vendors` | `string[]` выбранных ID vendor (YAML и CUE) | при отсутствии: `oma link` использует все vendor, доступные для link, `oma update` — vendor, у которых есть каталоги проекта | Выбор интеграций vendor, которые проектируют `oma install` и `oma update`. Карта capabilities dispatch находится в управляемой конфигурации orchestration; см. [выбор vendor и метаданные dispatch](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | ID vendor (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` для transport `free` | Vendor, используемый, когда ничто другое его не выбирает: необнаруженный runtime при `auto` или transport `free` после `--vendor`, `OMA_RUNTIME_VENDOR` и обнаруженного runtime. См. [как OMA разрешает модель и CLI агента](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
-| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | каждый пропущенный размер не ограничен | Жёсткие лимиты token и spawn, проверяемые перед следующим spawn агента; см. [лимиты квоты сессии](#session-quota-caps). |
+| `default_cli` | ID vendor | не задано | Устаревшее написание `agents.default.cli`; всё ещё читается, и `oma update` переносит его. |
+| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | каждый пропущенный размер не ограничен | Записанное использование token и лимиты spawn, проверяемые перед следующим spawn агента; см. [лимиты квоты сессии](#session-quota-caps). |
+| `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | автоматически для поддерживаемых терминальных host, `false`, `1400` | Сравнение диагностики Serena до и после нативных правок файлов; см. [диагностическую обратную связь](#diagnostic-feedback). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Поведение `oma docs verify` и исключения сканирования. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Transport MCP Serena и поведение обновления. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` или `[]` | не задано = оставить существующую настройку | Выбор Browser DevTools MCP при reconciliation. Явный пустой список удаляет выбранные записи browser. |
@@ -70,8 +70,8 @@ oma doctor --profile
 | `hwp` | `format`, `version.*`, `output.*` | default skill; см. [workflow контента и исследований](/docs/guide/content-and-research#extract-hwp-family-documents) | Формат Kordoc, канал версии и расположение output. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | default skill; см. [workflow контента и исследований](/docs/guide/content-and-research#extract-pdf-content) | Извлечение PDF, OCR, изображения и параметры перезаписи. |
 | `scholar` | `base_url` | default skill; см. [workflow контента и исследований](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Host endpoint Knows; форма протокола принадлежит skill. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.*` | default skill; см. [Diagram Engine](/docs/guide/diagram-engine) | Выбор Mermaid/archify и настройки управляемого engine. |
-| `market` | `managed`, `channel`, `check_interval_min`, `path`, `python`, `save_dir` | default skill; см. [Исследование рынка](/docs/guide/market-research) | Разрешение управляемого engine last30days и расположение результатов. |
+| `diagram` | `engine`, `explain_sidecar`, `archify.path`, `archify.quality`, `archify.open` | default skill; см. [Diagram Engine](/docs/guide/diagram-engine) | Выбор Mermaid/archify и настройки pin и качества archify. Устаревшие `archify.managed`, `archify.channel` и `archify.check_interval_min` игнорируются с уведомлением, и `oma update` удаляет их. |
+| `market` | `path`, `python`, `save_dir` | default skill; см. [Исследование рынка](/docs/guide/market-research) | Pin engine last30days, интерпретатор и расположение результатов. Устаревшие `managed`, `channel` и `check_interval_min` игнорируются с уведомлением, и `oma update` удаляет их. |
 
 Поставляемый шаблон также содержит блоки, принадлежащие consumer. Их текущие ключи и значения по умолчанию:
 
@@ -98,13 +98,39 @@ oma doctor --profile
 | `code_intelligence_guard` | `block`, `off` | `block` |
 | `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
 
+Три зарезервированных ключа хранят раздел учётных данных или подключения для селектора: `providers.brave` и `providers.exa` (`api_key_env` или `api_key_vault`) для `web` и `providers.honcho` для `semantic_memory` (см. [Семантическая память Honcho](#honcho-semantic-memory)). Их устаревшие написания верхнего уровня всё ещё читаются.
+
+Любой другой ключ в `providers` — это **LLM-провайдер**: endpoint, совместимый с OpenAI или Anthropic, через который `oma agent spawn` может направить дочерний CLI вместо собственного аккаунта этого CLI. Значение — объект:
+
+| Поле | Допустимые значения | Обязательно | Назначение |
+| --- | --- | --- | --- |
+| `base_url` | абсолютный HTTP(S) URL без учётных данных, query и fragment; `/v1` добавляется, если отсутствует | да | Endpoint. |
+| `api_key_env` | имя переменной окружения | да (кроме `free`, где по умолчанию `FREELLM_API_KEY`) | Откуда читается ключ; файл никогда не хранит ключ. `base_url` тоже необязателен только для `free` (`http://127.0.0.1:31415/v1`). |
+| `transport` | `chat_completions` (по умолчанию), `responses`, `anthropic_messages`, `multi` | нет | Протокол, на котором говорит endpoint. Он выбирает дочерний CLI: `chat_completions` → Codex или Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` (шлюз, обслуживающий все три) → Codex, Claude или Qwen. |
+| `default_model` | ID модели | когда провайдер используется как `model_preset` | Модель, которую использует каждая роль при `model_preset: <name>`. |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free` — встроенный провайдер для локального шлюза FreeLLMAPI: у каждого поля есть значение по умолчанию, `FREELLM_BASE_URL` и `FREELLM_MODEL` переопределяют файл, а устаревший блок верхнего уровня `free:` всё ещё читается (его `model` здесь — `default_model`); см. [Пользовательские LLM-провайдеры](/docs/guide/per-agent-models#custom-llm-providers).
+
 `code_intelligence_guard` управляет защитой поиска PreToolUse. Нативный поиск, ограниченный подтверждёнными исключениями провайдера или путями вне проекта, разрешён без обхода. Защита читает исключения Serena и включённые правила gitignore либо список исключений Gortex; она не определяет зависимости по именам каталогов.
 
 Хук не называет `OMA_CI_ALLOW_NATIVE`. Shell-поиск с префиксом `OMA_CI_ALLOW_NATIVE=1` обходит защиту только для ресурсов вне проекта или игнорируемых путей, которые защита не распознала, но не для исходного кода проекта.
 
 ### Semantic memory Honcho {#honcho-semantic-memory}
 
-Карта `honcho` проверяется через `HonchoConfigSchema`. Имена ключей и фактическое поведение runtime:
+Карта `providers.honcho` (устаревший ключ верхнего уровня `honcho` всё ещё читается) проверяется через `HonchoConfigSchema`. Имена ключей и фактическое поведение runtime:
 
 | Ключ | Форма | Фактическое значение по умолчанию или ограничение |
 | --- | --- | --- |
@@ -150,7 +176,42 @@ session:
       codex: 500000
 ```
 
-Loader лимитов проверяет пользовательский слой CUE, затем пользовательский слой YAML, затем fallback поставляемого шаблона. Перед spawn OMA в таком порядке проверяет `spawn_count`, общий `tokens` и `per_vendor`. Лимит считается достигнутым, когда usage больше или равен ему; OMA блокирует следующий spawn и сообщает сработавшее измерение. Usage — это учёт token, а не оценка счёта.
+Loader лимитов проверяет пользовательский слой CUE, затем пользовательский слой YAML, затем fallback поставляемого шаблона. Перед spawn OMA в таком порядке проверяет `spawn_count`, общий `tokens` и `per_vendor`. Лимит считается достигнутым, когда usage больше или равен ему; OMA блокирует следующий spawn и сообщает сработавшее измерение.
+
+OMA резервирует оценку входных token в начале запуска. Когда после запуска доступен поддерживаемый нативный transcript, записанное использование input, cache и output заменяет эту оценку и не считает ещё один spawn. Иначе запись остаётся явно оценённой по длине prompt. Наблюдаемое использование корневой сессии помечается как частичное, когда нативные субагенты вне области захвата. Поэтому лимиты token зависят от доступных наблюдений; они не прерывают уже запущенный дочерний процесс и не гарантируют лимит оплаты. `spawn_count` — самый предсказуемый лимит.
+
+### Бюджет времени выполнения сессии {#session-execution-budget}
+
+Задайте `session.execution`, чтобы ограничить прошедшее время управляемой OMA CLI-диспетчеризации и проверки. Используйте либо положительный `timeout_seconds`, либо ISO 8601 `deadline` с часовым поясом:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+Команды `oma agent spawn`, `parallel`, `review`, `resume`, `begin` и `verify` принимают `--timeout-seconds` или `--deadline`. Подготовка, выполнение, повторные попытки и проверки делят один абсолютный deadline. Побеждает самый ранний настроенный, унаследованный или сохранённый deadline; повторные попытки и resume не сбрасывают часы. Опустите `session.execution` и оба флага, чтобы оставить это измерение без лимита, если родитель не передал deadline.
+
+История выполнения хранится в `.agents/state/executions/`. Отмена или timeout блокирует дальнейшее выполнение в этой сессии и записывает причину остановки. Эти средства охватывают процессы, запущенные через управляемый путь CLI. Нативным агентам поставщика и произвольным shell-заданиям нужен механизм отмены их хоста; лимиты CPU, RAM и хранилища требуют поддержки провайдера.
+
+Управляемые дочерние CLI наследуют `OMA_EXECUTION_DEADLINE`, `OMA_EXECUTION_STATE` и `OMA_EXECUTION_ID`. Путь состояния и ID выполнения образуют связанную ссылку наследования; чужой, некорректный или несовпадающий ledger отклоняется до записи. При обёртке дочернего процесса OMA передавайте полное унаследованное окружение. Установка этих переменных не добавляет контроль deadline несвязанной программе.
+
+При отмене OMA прекращает допуск и пытается ограниченно завершить принадлежащие ей вычисления. Она сохраняет логи, результаты, worktree и зарегистрированные метаданные ресурсов. Удаление артефактов или внешних ресурсов требует запроса или явной политики хранения. Неуспешное завершение остаётся видимым, а не сообщается как полная очистка.
+
+### Диагностическая обратная связь {#diagnostic-feedback}
+
+Для поддерживаемых терминальных host OMA сравнивает ошибки и предупреждения до и после нативных правок файлов и внедряет новые диагностики в следующую обратную связь инструмента. Она использует уже запущенный, совпадающий с проектом HTTP-демон Serena, когда Serena — действующий провайдер code intelligence (значение по умолчанию, если провайдер не задан). Она никогда не запускает демон и не выполняет сборку. Собственные символьные правки Serena исключены, потому что они уже дают диагностику.
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+Задайте `enabled: false`, чтобы отключить эту обратную связь. Задайте `host_diagnostics: true`, когда host уже предоставляет диагностику правок; Cursor и Antigravity пропускаются автоматически. Локальные переопределения проекта следуют обычным слоям конфигурации. Переопределения окружения: `OMA_DIAGNOSTIC_FEEDBACK`, `OMA_HOST_DIAGNOSTICS` и `OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS`.
+
+Timeout охватывает каждый полный хук до или после правки и ограничен 100–10 000 миллисекундами. Медленные провайдеры могут использовать больший timeout. Неудачный или превысивший время поиск пропускает обратную связь и начинает короткий cooldown; он не считается чистым результатом диагностики. Отсутствующие или устаревшие базовые линии до правки тоже пропускают обратную связь. Каждый хук проверяет не более трёх файлов и сообщает не более восьми новых ошибок или предупреждений.
 
 ### Выбор vendor и метаданные dispatch {#vendor-selection-and-dispatch-metadata}
 

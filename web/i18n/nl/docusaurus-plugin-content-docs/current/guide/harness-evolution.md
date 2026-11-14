@@ -8,7 +8,7 @@ description: Schakel geplande skillverbeteringen met een vast budget in op basis
 
 OMA kan evidence verzamelen uit bijgehouden agentruns en mislukkingen verwerken in een geplande feedbackcyclus. Automatische skillwijzigingen staan **uit totdat je ze voor een project inschakelt**. Elke cyclus heeft een eindig budget aan modelaanroepen en een toegepaste wijziging moet de bestaande evaluatiegates voor skills doorstaan.
 
-Het geautomatiseerde pad verbetert skilldocumenten. Wijzigingen aan de procedure van de optimizer of maintainer blijven een afzonderlijke, handmatig aangeroepen [meta-optimalisatie](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate).
+Het geautomatiseerde pad past geëvalueerde wijzigingen toe op skilldocumenten. Wijzigingen aan de procedure van de optimizer of maintainer vereisen de afzonderlijke, handmatig aangeroepen [meta-optimalisatie](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate).
 
 ## Een project inschakelen {#enable-a-project}
 
@@ -62,7 +62,7 @@ Een uitgeschakeld project voert geen modelwerk uit via het evolutiecommando, ook
 
 ## Wat er automatisch gebeurt {#what-happens-automatically}
 
-Het diagram toont één cyclus, ongeacht of de scheduler die start of je hem handmatig uitvoert.
+Een cyclus draait volgens schema of handmatig.
 
 ```mermaid
 flowchart TD

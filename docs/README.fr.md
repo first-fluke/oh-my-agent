@@ -1,20 +1,55 @@
-# oh-my-agent : une équipe de spécialistes pour l'agent de code que tu utilises déjà
+# oh-my-agent
+
+**Livre plus de 400 commits par jour.**
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
 [English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**oh-my-agent (`oma`) est un harness indépendant des vendors qui ajoute une équipe de spécialistes à l'agent de code que tu utilises déjà : Claude Code, Codex CLI, Cursor et 11 autres.** Un planificateur découpe le travail, des ingénieurs construisent en parallèle, un relecteur vérifie le résultat et un débogueur corrige les causes racines. Il fait aussi de la recherche sourcée, des decks de slides, des vidéos et des images. La plupart des étapes laissent un fichier que tu peux ouvrir et, dans les workflows de longue durée, un gate peut renvoyer l'agent au travail jusqu'à ce que ton propre script `test`, `lint` ou `typecheck` passe.
+<a id="install"></a>
+## Installation
 
-[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
+### Pour les humains
 
-Lance ceci depuis la racine de ton projet :
+Lance ceci depuis la racine de ton projet.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
-Lance ensuite `oma doctor` et tape `/plan add user accounts with a settings page` dans ton agent. [Tes 5 premières minutes](#your-first-5-minutes) détaille la marche à suivre.
+### Pour les agents IA
+
+Colle ceci dans ton agent de code :
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+Le [guide d'installation pour agent](./agent-install.md) couvre la configuration non interactive et la vérification. Si tu es l'agent, lis ce guide et fais l'installation.
+
+Ouvre ensuite ton agent et tape `/orchestrate build a TODO app with login`.
+
+oh-my-agent (`oma`) transforme Claude Code, Codex CLI, Cursor et 11 autres agents de code en une équipe. Un planificateur découpe le travail, des ingénieurs construisent en parallèle, un relecteur vérifie le résultat et un débogueur corrige la cause racine.
+
+<a id="start-with-your-task"></a>
+## Commence par ta tâche
+
+Choisis une tâche. Charge un skill dans l'agent que tu utilises déjà, ou installe toute l'équipe.
+
+| Ta tâche | Point de départ | Première demande |
+|---|---|---|
+| [Relire du code écrit par une IA](../web/docs/tasks/review-ai-code.md) | `bunx skills use first-fluke/oh-my-agent@oma-qa` | « Relis ce diff pour les bugs et les contrôles manquants. Cite les lignes concernées. » |
+| [Concevoir un écran d'administration](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | « Relis la hiérarchie et la densité du tableau de notre page d'administration. » |
+| [Corriger un test en échec](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | « Reproduis cet échec de test, corrige sa cause et lance les contrôles concernés. » |
+| Relire les frontières du système | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | « Relis la frontière entre notre API et le worker. » |
+| Faire tourner toute l'équipe | [Installer oma](#install) | `/orchestrate add login to this app` |
+
+Lance la commande `skills use` dans le terminal de ton agent. Elle charge ce seul skill. Pour l'équipe complète avec les workflows, [installe oma](#install). Les autres options sont dans [Choisir une configuration](../web/docs/getting-started/choose-setup.md).
+
+[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
+
+Après l'installation, lance `oma doctor`. [Tes 5 premières minutes](#your-first-5-minutes) commencent par une tâche en lecture seule, avant les workflows d'équipe.
 
 ## Ce que tu obtiens
 
@@ -26,14 +61,13 @@ Les **workflows**, c'est ce que tu tapes (ou que tu dis, tout simplement). Ils f
 | **20 workflows** | Des slash commands, de `/brainstorm` et `/plan` à `/review`, `/debug` et `/scm`. Les quatre modes multi-agents se lancent aussi quand une simple demande les nomme | « ultrawork: add rate limiting » |
 | **33 skills** | Du savoir-faire métier qui ne se charge que lorsqu'une tâche en a besoin : UI, APIs, schémas, Terraform, CI, sécurité, git, observabilité | se charge tout seul, p. ex. « add a Terraform S3 bucket » |
 | **Des fichiers que tu peux ouvrir** | Plans, documents de conception, contrats d'API, ADR, notes de bug, résultats par agent, preuves de sécurité, explicateurs HTML, récapitulatifs | `ls .agents/results` |
-| **Vérifications des workflows** | Dans les workflows de longue durée, ton propre script `test`, `lint` ou `typecheck` doit réussir avant que l'agent puisse s'arrêter. `oma ralph verify` vérifie qu'une exécution `/ralph` a laissé ses fichiers de plan, de QA et de refactor | `/ultrawork …`, puis `oma goal set --gate test` |
 | **Recherche et contenu** | Recherche sourcée, études de marché, articles scientifiques, decks de slides, vidéos MP4, images, voix en local, PDF/HWP vers Markdown | `/video`, `/convert` |
 | **Un dossier, 14 runtimes** | Un seul répertoire `.agents/` portable, écrit dans les fichiers de configuration propres à chaque runtime | `oma link cursor` |
 
-**[Installation](#install)** · **[5 premières minutes](#your-first-5-minutes)** · **[L'équipe](#meet-the-team)** · **[Quel workflow ?](#how-the-team-works-together)** · **[Tout ce qu'il contient](#everything-in-the-box)** · **[Compatibilité](#works-with)** · **[Vérification](#verification-not-narration)** · **[FAQ](#faq)** · **[Docs](https://first-fluke.github.io/oh-my-agent/)**
+**[Installation](#install)** · **[5 premières minutes](#your-first-5-minutes)** · **[L'équipe](#meet-the-team)** · **[Quel workflow ?](#how-the-team-works-together)** · **[Tout ce qu'il contient](#everything-in-the-box)** · **[Compatibilité](#works-with)** · **[FAQ](#faq)** · **[Docs](https://firstfluke.com/oh-my-agent/)**
 
-<a id="install"></a>
-## Installation
+<a id="installation-details"></a>
+## Détails d'installation
 
 Le script installe [bun](https://bun.sh) s'il manque, installe la commande `oma` globalement (`bun install --global oh-my-agent`, étape sautée si `oma` est déjà dans ton PATH), puis lance la configuration interactive. La commande globale compte : les hooks (détection de mots-clés, le Stop gate) et plusieurs workflows appellent `oma`, et les hooks ne font silencieusement rien quand ils ne la trouvent pas. Si tu te passes du script, installe-la toi-même avec `bun install --global oh-my-agent` (`npm install --global oh-my-agent` ou `brew install oh-my-agent` fonctionnent aussi).
 
@@ -55,7 +89,15 @@ Sous Windows, l'installateur masque Antigravity, Hermes et Kimi, et le wrapper d
 
 </details>
 
-La langue de réponse est conservée si elle est déjà configurée ; sinon, elle est détectée automatiquement à partir de la langue du système. La configuration te demande les runtimes d'agents à connecter, les fournisseurs de capacités, un MCP navigateur, un preset de modèles et un preset de skills. **Choisis `All` comme preset de skills si tu hésites** : les workflows sont toujours installés, et plusieurs d'entre eux (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) ont besoin de skills que seul `All` inclut.
+La configuration conserve ta langue de réponse enregistrée ou la détecte depuis le système. Elle demande quels runtimes d'agents brancher, les fournisseurs de capacités, un MCP navigateur, un preset de modèles et un preset de skills. **Choisis `All` pour les références de skills utilisées par tous les workflows** : les presets de domaine en omettent certains. La disponibilité des fournisseurs et la vérification des tâches restent des contrôles distincts.
+
+Choisis un preset explicitement quand tu veux les skills d'un domaine :
+
+```bash
+oma install --preset frontend --yes
+```
+
+Cela sélectionne les huit skills du preset frontend. L'installateur configure quand même le runtime, les fournisseurs et les fichiers de workflows partagés, et conserve les skills déjà installés. La sélection personnalisée est disponible dans l'installateur interactif. Voir les [valeurs de presets](../web/docs/getting-started/installation.md#presets) et les [dépendances des workflows](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 <details>
 <summary>Ce que fait aussi l'installateur par défaut</summary>
@@ -66,12 +108,13 @@ La langue de réponse est conservée si elle est déjà configurée ; sinon, ell
 - Demande avant de lier des skills dans les dossiers des vendors de ton répertoire personnel (Antigravity, Hermes, Kimi). Dans `$HOME` sans `--global`, il demande une confirmation.
 - Écrit certains fichiers hors du projet sans demander : `~/.claude.json` (marque le projet comme espace de travail Claude Code de confiance), `~/.serena/` (contexte OMA, taille minimale des réponses, enregistrement du projet), `~/.cursor/cli-config.json` (désactive l'attribution des commits de Cursor), `~/.grok/config.toml` (télémétrie) et `~/.gemini/antigravity-cli/` (HUD), chacun uniquement pour un vendor que tu as sélectionné.
 - Écrit des **désactivations de télémétrie** dans les paramètres des vendors (Claude `DISABLE_TELEMETRY=1`, qui désactive aussi Claude Code Remote Control ; statistiques d'utilisation de Gemini, Qwen, Codex et Grok). Définis `telemetry: true` pour garder les valeurs par défaut des vendors.
+- Désactive la **sauvegarde automatique de mémoire de Qwen Code** en ajoutant `memory.enableManagedAutoMemory: false` lorsque le réglage est absent. Les préférences explicites `true` ou `false` et les autres réglages de mémoire sont conservés.
 - Ajoute à `.claude/settings.json` les paramètres Claude Code non définis, dont `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` et des flags env qui désactivent l'auto memory, l'adaptive thinking, le signalement d'erreurs et les instructions git intégrées. Les valeurs que tu as déjà définies sont conservées.
 - Ajoute un **trailer de co-auteur** : l'attribution des commits de Claude Code devient `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` et les PR reçoivent une ligne "Generated with oh-my-agent". Définis `scm.co_author.enabled: false` pour le désactiver.
 - Installe dans `.githooks/` un **garde commit-msg** qui rejette les adresses `Co-authored-by` non listées, et définit `git config --local core.hooksPath .githooks` quand aucun autre hook n'est actif. Définis `scm.co_author.enforce_hook: false` pour t'en dispenser.
 - `oma update` met à jour la CLI `oma` en arrière-plan (`auto_update_cli: false` ou `OMA_SKIP_VERSION_CHECK=1` pour l'arrêter) et exécute `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`).
 - Avec Serena dans le mode `bridge` par défaut, la première session d'agent qui démarre un serveur Serena partagé enregistre un **minuteur de nettoyage** qui arrête toutes les 5 minutes les serveurs Serena partagés inactifs (launchd `dev.oma.serena-daemon-gc`, minuteur utilisateur systemd `oma-serena-daemon-gc.timer` ou tâche planifiée Windows `OMA Serena Daemon GC`). Définis `serena.mode: stdio` pour te passer du serveur partagé et de son minuteur. `oma uninstall` ne supprime pas le minuteur.
-- Les exécutions non interactives (`-y`, `OMA_YES=1`, `CI=true`) utilisent le preset de skills `All`, `model_preset: auto` et Python comme langage backend. Elles ne sélectionnent aucun MCP navigateur (et sautent le script d'installation d'Aside), sauf si `mcp.devtools_browsers` en liste déjà un.
+- Les exécutions non interactives (`-y`, `OMA_YES=1`, `CI=true`) utilisent le preset de skills `All`, sauf si `--preset` en choisit un autre, plus `model_preset: auto` et Python comme langage backend. Elles ne sélectionnent aucun MCP navigateur (et sautent le script d'installation d'Aside), sauf si `mcp.devtools_browsers` en liste déjà un.
 
 </details>
 
@@ -99,22 +142,23 @@ Parmi les presets nommés, seul `All` inclut coordination, orchestration, docs, 
 <a id="your-first-5-minutes"></a>
 ## Tes 5 premières minutes
 
-1. **Installe** avec la commande ci-dessus.
-2. **Vérifie l'installation :**
+1. **Choisis ta configuration.** Pour la tâche ci-dessous, charge `oma-scm` avec `bunx skills use first-fluke/oh-my-agent@oma-scm`, ou utilise la commande d'installation du runtime ci-dessus. [Choisir une configuration](../web/docs/getting-started/choose-setup.md) explique les deux chemins.
+2. **Pour une installation du runtime, vérifie l'installation :**
 
    ```bash
    oma doctor
    ```
 
-   Tu devrais voir `CLI Status` (quelles CLI d'agents sont installées et connectées) et `Skills Status` (par exemple `Skills (33/33 installed, 33 complete)`). Si `oma` est introuvable, ouvre un nouveau terminal (l'installateur vient peut-être d'ajouter `~/.bun/bin` à ton PATH) ou lance `bun install --global oh-my-agent`.
-3. **Ouvre ton agent dans le projet et demande un plan :**
+   Le rapport montre l'état de la CLI et des fichiers de skills. Ses comptes de skills reflètent les fichiers présents, y compris les skills conservés ; ils peuvent différer de la sélection du preset courant. Si `oma` est introuvable, ouvre un nouveau terminal ou lance `bun install --global oh-my-agent`.
+3. **Ouvre un dépôt Git existant et lance une tâche en lecture seule.** `oma-scm` est inclus dans chaque preset nommé ; inclus-le quand tu utilises la sélection Custom.
 
    ```text
-   /plan add user accounts with a settings page
+   Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
    ```
-4. **Regarde ce que tu as obtenu.** `/plan` s'exécute dans la session courante. Pour un travail qui touche plusieurs domaines, comme celui-ci, il écrit `.agents/results/plan-<session-id>.json` et un tracker dans `docs/plans/work/<NNN>-<name>.md`. Une petite demande limitée à un seul domaine reçoit une recommandation directe au lieu d'un fichier de plan.
 
-Ces étapes produisent un premier plan. Tu peux le poursuivre avec `/work` ou `/orchestrate`.
+4. **Vérifie le résultat.** La branche et les changements rapportés doivent correspondre à la sortie Git. Charger des instructions ou terminer l'installation n'établit pas que cette tâche a tourné.
+
+Pour un travail plus large, choisis un workflow dont les skills référencés sont installés. Commence par `/plan` lorsque son skill de planification est présent, puis poursuis avec `/work` ou `/orchestrate` lorsque leurs dépendances sont disponibles.
 
 <a id="meet-the-team"></a>
 ## Fais connaissance avec l'équipe
@@ -163,7 +207,7 @@ Chaque étape passe un fichier à la suivante. `/brainstorm` enregistre une conc
 | Juste un plan | `/plan` | Un fichier de plan pour un travail multi-domaines, ou une recommandation directe pour un petit travail |
 | Un build mené par le PM, que tu suis étape par étape | `/work` | Le PM, puis les ingénieurs palier par palier, puis la QA. Les constats CRITICAL et HIGH partent dans une boucle de correction (jusqu'à 5 cycles) |
 | Un build parallèle sans avoir à intervenir | `/orchestrate` | Seules les tâches dont les vérifications passent comptent comme terminées ; chaque tâche a droit à 3 tentatives au plus, puis elle est marquée partielle ou en échec |
-| Le maximum de rigueur | `/ultrawork` | Cinq phases à gates (PLAN, IMPL, VERIFY, REFINE, SHIP) ; chaque revue s'exécute dans une session de relecteur neuve |
+| Un workflow en cinq phases | `/ultrawork` | Cinq phases à gates (PLAN, IMPL, VERIFY, REFINE, SHIP) ; chaque revue s'exécute dans une session de relecteur neuve |
 | « Ne t'arrête pas avant que ce soit vraiment fini » | `/ralph` | Répète `/ultrawork` avec un juge en contexte neuf, lancé séparément, jusqu'à ce que chaque critère passe ; s'arrête avec un rapport partiel quand des critères sont bloqués ou après 5 itérations |
 | L'équipe sur minuterie | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Un log Markdown par exécution dans `~/.oma/schedule/runs/<id>/` |
 
@@ -171,7 +215,7 @@ Une slash command lance un workflow. Une simple demande ne le fait pas, mais sur
 
 `/orchestrate`, `/work`, `/ultrawork` et `/ralph` sont **persistants** quand tu les invoques par leur nom, en slash command ou en texte libre (« ultrawork: add rate limiting »). L'agent est alors renvoyé au travail quand il essaie de s'arrêter trop tôt (jusqu'à 5 fois ou pendant 2 heures), jusqu'à ce que tu dises **« workflow done »**. Ces quatre workflows sont les seuls qu'une simple phrase peut lancer, et uniquement par leur nom.
 
-Le [benchmark](../benchmarks/README.md) utilisait un prompt, Claude Code avec cinq configurations d’extensions dont la configuration de base, `claude-opus-4-6` et un build par configuration. oma a obtenu 80,6 contre 70,7 pour Claude Code seul. Le coût était de 4,04 $ contre 2,37 $ (soit 1,7 fois plus) et le temps d’exécution était 1,8 fois plus long.
+**Mesuré, avec des réserves.** Dans le [benchmark](../benchmarks/README.md) (un prompt, Claude Code avec cinq configurations d'extensions différentes dont la configuration de base, `claude-opus-4-6`, un build chacune), oma a obtenu 80,6 contre 70,7 pour Claude Code seul, pour 1,7 fois le coût (4,04 $ contre 2,37 $) et 1,8 fois le temps.
 
 <details>
 <summary>Les 20 workflows</summary>
@@ -202,36 +246,6 @@ Le [benchmark](../benchmarks/README.md) utilisait un prompt, Claude Code avec ci
 `oma verify triggers` évalue la précision du déclenchement sur un corpus annoté de 212 prompts en anglais et en coréen. La CI échoue si le taux de false-fire dépasse 10 % ou si celui de missed-fire dépasse 20 %. Lors de la dernière mesure, ces taux étaient de **0 % de missed-fire et 0 % de false-fire**. Référence complète : [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
-
-<a id="see-it-work"></a>
-## En action
-
-Une session `/ultrawork` à titre d'illustration. Le bloc `[OMA PERSISTENT MODE: ULTRAWORK]` reprend exactement le format qu'affiche le Stop hook ; les autres lignes sont paraphrasées :
-
-```text
-you    /ultrawork add rate limiting to POST /login
-agent  runs `oma goal set --gate test`
-agent  PLAN writes .agents/results/plan-<run-id>.json
-agent  IMPL -> VERIFY -> REFINE -> SHIP  (each review runs in a fresh reviewer session)
-agent  "Rate limiting added. All tests pass."
-oma    [OMA PERSISTENT MODE: ULTRAWORK]
-       Stop gate 'test' FAILED (reinforcement 1/5).
-       Fix the failures below, then finish the workflow — the stop is allowed only when the gate passes.
-       --- gate output (tail) ---
-       FAIL  src/auth/login.test.ts > returns 429 after 5 attempts
-       To abandon instead: delete .agents/state/ultrawork-state-<host-session>.json or say "workflow done".
-agent  fixes the limiter and stops again
-oma    `test` exits 0: stop allowed, gate.passed appended to the session log
-```
-
-Ensuite, `oma state list` retrouve la session et `oma state get <oma-sid>` (l'ID qu'affiche `state list`) affiche chaque événement de gate. Sous `/ralph`, `oma ralph verify --json` vérifie aussi que les phases ont laissé leurs fichiers derrière elles (sortie tronquée) :
-
-```json
-{ "ok": false,
-  "missing": [{ "id": "A3", "description": "a distinct QA agent ran (VERIFY phase)",
-                "pattern": ".agents/state/memories/result-qa*.md or .agents/results/result-qa*.md",
-                "status": "missing" }] }
-```
 
 <a id="everything-in-the-box"></a>
 ## Tout ce qu'il contient
@@ -340,6 +354,7 @@ Ces pipelines signalent une source ou une clé vendor manquante au lieu de renvo
 <summary><strong>Agents parallèles, sessions et dashboards</strong></summary>
 
 - `oma agent spawn <role> "<task>" <sid>` exécute un rôle sur Antigravity, Claude Code, Codex, Cursor, Grok, Kimi Code, Kiro, OpenCode, pi ou Qwen Code, avec `--isolation worktree` et `--fallback-vendors`. `oma agent parallel` en lance plusieurs à la fois. Ces 10 cibles de dispatch font partie des 14 intégrations de l’installateur.
+- Ajoute `--read-only` pour exiger une restriction du fournisseur avant le lancement. Codex utilise son bac à sable en lecture seule, Claude utilise le mode plan, et Pi exclut `edit`, `write`, `bash` et `powershell`. Les autres CLI exigent un `read_only_flag` explicite ; un flag absent, vide ou connu comme conflictuel arrête le dispatch. Les flags personnalisés déclarent leur prise en charge dans ta CLI ou ton wrapper. Les exclusions d'outils de Pi ne restreignent pas les outils d'extension ou MCP arbitraires ; OMA n'ajoute pas de bac à sable du système d'exploitation.
 - `oma state list --all-projects` et `oma state get <sid>` : les sessions et chaque événement enregistré.
 - `oma dashboard terminal` / `oma dashboard web` : statut des agents en direct (le dashboard web n'écoute que sur `127.0.0.1`). [Guide du dashboard](../web/docs/guide/dashboard-monitoring.md).
 - `oma stats get` (métriques de productivité), `oma retro` (une rétrospective git), `oma recap --window 7d` (ce que tu as fait dans tes outils IA).
@@ -546,70 +561,6 @@ agents:
 - `kiro` ne figure pas dans le menu de l'installateur ; définis-le dans le fichier de configuration.
 - `oma doctor --profile` affiche le modèle résolu pour chaque rôle.
 - Guide complet : [Modèles par agent](https://first-fluke.github.io/oh-my-agent/docs/guide/per-agent-models/)
-
-</details>
-
-<a id="verification-not-narration"></a>
-## Vérifications et preuves
-
-oh-my-agent vérifie les artefacts des workflows. [En action](#see-it-work) montre un exemple du Stop gate.
-
-OMA enregistre aussi les métadonnées des appels d’outils et les condensats des payloads pour les exécutions du harness Claude Code et Codex suivies, distingue l’utilisation de tokens rapportée des estimations et évalue les régressions des skills. Ces fonctions +1 couvrent les couches ; la couverture des traces varie selon le runtime et l’exécution.
-
-À l’exception du juge piloté par prompt, les vérifications mécaniques utilisent les codes de sortie (0 indique la réussite) et vérifient la présence des fichiers requis. Elles ne demandent pas à un LLM si le travail semble correct.
-
-| Mécanisme | Ce qu'il vérifie | Source |
-|-----------|----------------|--------|
-| **Stop-hook gate** | Pendant un workflow persistant, `oma goal set --gate test` (ou `lint`, `typecheck`) n'autorise l'arrêt que si le script package.json du même nom sort avec le code 0 en moins de 25 s. | [`persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Gate d'artefacts** | `oma ralph verify --json` vérifie la présence des enregistrements de phase, du JSON du plan et des fichiers de résultat d'un **agent QA distinct** et d'un **agent refactor distinct**, chacun rattaché à des exécutions d'agent enregistrées. | [`ralph.md`](../.agents/workflows/ralph.md) |
-| **Juge piloté par prompt** | Non mécanique : le prompt de `/ralph` demande à l'orchestrateur de lancer un juge en contexte neuf qui revérifie **chaque** critère à chaque itération. Rien ne vérifie que ce lancement a eu lieu. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Event log** | Dans une session OMA, chaque gate passé, chaque gate échoué et chaque décision ajoutent une ligne JSON au fichier `events.jsonl` de la session. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Vérifications par agent** | `oma verify agent <type>` exécute Scope Check, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs et TDD Evidence, plus des vérifications propres au type comme TypeScript, Any Types, SQL Injection et les tests. | `oma verify agent --help` |
-
-> Le Stop hook enregistre les événements de gate dans la session OMA ouverte au démarrage du workflow persistant. L'écriture des événements se fait au mieux. Si cette session n'a pas pu être créée (stderr affiche `[oma] L1 session activation failed`), un gate qui échoue bloque quand même l'arrêt, mais aucune ligne `gate.failed` n'est écrite. Avant de te fier à la trace, ou de la montrer en démo, vérifie que `oma state list` affiche une session active ; `oma state get <sid>` affiche alors ses événements.
-
-<details>
-<summary>Limites, détails et façon dont le Stop hook décide</summary>
-
-**Limites du Stop gate :**
-
-- Le Stop gate ne s'applique qu'aux workflows persistants (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`). Sans `oma goal set --gate`, il se contente de relancer l'agent pour qu'il continue. `/ultrawork` demande à l'agent de définir un gate quand le projet dispose d'une vérification peu coûteuse, mais rien ne l'impose. Lance `oma goal set --gate test` toi-même si tu veux en être sûr ; les autres workflows persistants n'en définissent jamais.
-- Seuls les mots-clés `typecheck`, `test` et `lint` sont acceptés, et ils lancent le script package.json de ce nom. Sans package.json, ou sans script de ce nom, le gate ne s'exécute pas. Les projets non JS ont besoin d'un script wrapper dans un package.json.
-- Le blocage est levé et consigné comme échoué après 5 relances, 2 heures ou l’épuisement de `--budget-minutes`.
-- Budgets : `session.quota_cap` plafonne les tokens, le nombre de spawns et les tokens par vendor ; l'orchestrateur refuse le spawn suivant dès qu'une dimension est dépassée.
-
-**Gate d’artefacts.** Sans artefact, l’exécution de la phase n’est pas attestée. La vérification refactor passe aussi en `skip-recorded` quand le log de session consigne une raison de sauter REFINE.
-
-**Juge piloté par prompt.** Le prompt de `/ralph` demande à l’orchestrateur de lancer le juge comme agent séparé, avec un contexte neuf et uniquement les critères. Le juge doit revérifier tous les critères à chaque itération, y compris ceux déjà validés, car corriger un critère peut en faire régresser un autre. `oma ralph verify` contrôle uniquement les artefacts EXEC ; il ne vérifie pas si le juge a été lancé. Si un runtime ne peut pas démarrer de sous-agents, il doit juger inline et consigner `ralph.judge-inline-fallback`. `/ralph` s’arrête après 5 itérations avec un rapport partiel.
-
-**Event log.** Retrouve la session avec `oma state list` et lis-la avec `oma state get <sid>`. Chaque événement est estampillé avec le vendor et l'id de session du runtime. L'emplacement du fichier dépend de `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE` et des anciens dossiers de session locaux au projet, alors ne le code pas en dur.
-
-**Vérifications par agent.** Types : `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`. La commande sort avec le code 1 dès qu'une vérification échoue ; TODO/FIXME Comments et Inline Styles ne font qu'avertir.
-
-<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
-<!-- oma-docs:ignore-start -->
-- `backend` : `<Language> Syntax`, `SQL Injection` (motifs de SQL brut) et `<Language> Tests`, à partir des commandes de `stack/stack.yaml`. Sans ce fichier (génère-le avec `/stack-set`), elles sont ignorées.
-- `frontend` : les commandes de syntaxe et de test de `stack/stack.yaml` (sous `oma-frontend`, ou sous `angular-developer` si ce skill est installé), ou TypeScript (`tsc --noEmit`) et Frontend Tests (Vitest). Inline Styles et Any Types s'exécutent toujours.
-- `mobile` : les commandes de syntaxe et de test de `stack/stack.yaml`, ou Flutter/Dart Analysis et Flutter Tests.
-- `debug` : Python Tests (pytest via uv) ou Frontend Tests (Vitest).
-- `pm` : PM Plan (le fichier de plan est un JSON valide).
-- `qa` : aucune vérification mécanique.
-<!-- oma-docs:ignore-end -->
-
-```mermaid
-flowchart TD
-    S[Agent tries to stop] --> P{Persistent workflow active?}
-    P -- no --> A[Stop allowed]
-    P -- yes --> D{User or agent said workflow done?}
-    D -- yes --> A
-    D -- no --> R{Budget spent, state older than 2 h, or 5 blocks reached?}
-    R -- yes --> F[Stop allowed, logged as gate.failed]
-    R -- no --> G{Gate set and package.json script exists?}
-    G -- no --> B1[Blocked: workflow still active]
-    G -- yes --> X{Script exits 0 within 25 s?}
-    X -- yes --> OK[Stop allowed, logged as gate.passed]
-    X -- no --> B2[Blocked with output tail, logged as gate.failed]
-```
 
 </details>
 

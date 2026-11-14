@@ -39,23 +39,23 @@ oma doctor --profile
 
 | 键 | 类型或接受的值 | 缺省时的默认值 | 用途 |
 | --- | --- | --- | --- |
-| `language` | string | `en` | 工作流和技能使用的响应语言。 |
+| `language` | string | `en` | 工作流和技能使用的响应语言。安装会保留已有值，或在不询问的情况下按系统语言初始化。 |
 | `translation_voice` | `formal`、`balanced`、`interpreter` | 随附模板中为 `balanced` | `oma-translation` 的语气选择。 |
 | `date_format` | `ISO`、`US`、`EU` | 随附模板中为 `ISO`；省略时不留下显式覆盖 | 日期格式偏好。 |
 | `timezone` | IANA 名称 | system time zone | 计划任务和报告使用的日期。 |
 | `auto_update_cli` | boolean | `true` | 后台 CLI 版本检查；使用 `false` 退出。 |
 | `telemetry` | boolean | `false` | 安装、更新和链接协调时使用的供应商遥测选择。 |
 | `model_preset` | 非空字符串 | 新模板中为 `auto` | 内置或自定义模型预设。`OMA_MODEL_PRESET` 可为单个进程覆盖它。 |
-| `free` | `base_url`、`api_key_env`、`model` | `http://127.0.0.1:31415/v1`、`FREELLM_API_KEY`、`auto` | 预设为 `free` 时的 FreeLLMAPI 设置；`FREELLM_BASE_URL` 和 `FREELLM_MODEL` 会覆盖文件值，键名永远不包含密钥。请参阅[按智能体配置模型](/docs/guide/per-agent-models#freellmapi-preset)。 |
-| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory` | `context7`、`native`、`serena`、`block`、`agentmemory` | 选择文档、搜索、代码智能和语义内存提供方。请参阅[提供方](#providers)。 |
-| `brave` | `api_key_env` 或 `api_key_vault` | unset | Brave 搜索凭据引用。 |
-| `honcho` | `base_url`、`workspace_id`、`project_id`、`api_key_env`、`api_key_vault`、`timeout_ms`、`max_results`、`max_tokens`、`recall_mode` | 请参阅[Honcho 详情](#honcho-semantic-memory) | Honcho 语义内存连接设置。 |
-| `agents` | 智能体 ID → `model`，可选的 `effort`、`thinking`、`memory` | 由预设解析 | 在所选预设之上应用的每个智能体覆盖。effort 可为 `none`、`low`、`medium`、`high` 或 `xhigh`；memory 可为 `user`、`project` 或 `local`。 |
+| `free` | `base_url`、`api_key_env`、`model` | unset | `providers.free` 的旧写法（其中 `model` 即 `default_model`）；仍会被读取，`oma update` 会把它移走。 |
+| `providers` | `docs`、`web`、`code_intelligence`、`code_intelligence_guard`、`semantic_memory`；`brave`、`exa`、`honcho` 凭据区块；其他任意 `<name>` → LLM 提供方对象 | `context7`、`native`、`serena`、`block`、`agentmemory`；无凭据或 LLM 提供方 | 选择文档、搜索、代码智能和语义内存提供方，保存它们的凭据引用，并声明智能体可以经其路由的 LLM 端点。请参阅[提供方](#providers)。 |
+| `brave`、`exa`、`honcho` | 与 `providers` 下相同 | unset | `providers.brave`、`providers.exa` 和 `providers.honcho` 的旧顶层写法；仍会被读取，`oma update` 会把它们移走。 |
+| `agents` | 智能体 ID → `model`，可选的 `effort`、`thinking`、`memory`；`default` → `cli`、`effort`、`thinking`、`memory` | 预设解析；`default.cli` 回退为 `claude`（提供方路由时为 `codex`） | 在所选预设之上应用的每个智能体覆盖。`effort` 为 `none`、`low`、`medium`、`high` 或 `xhigh`；`memory` 为 `user`、`project` 或 `local`。`agents.default` 为每个未自行设置这些字段的角色填入它们，它的 `cli`（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi` 之一）就是没有其他方式选定供应商时使用的供应商：`auto` 下未检测到运行时，或提供方路由在 `--vendor`、`OMA_RUNTIME_VENDOR` 和检测到的运行时之后。`<provider>/<model-id>` 形式的模型会把该角色路由到对应的 LLM 提供方。 |
 | `models` | 模型 slug → CLI 映射 | unset | 支持的供应商 CLI 的内联模型定义。 |
 | `custom_presets` | 预设 → description，可选的 `extends`、`agent_defaults` | unset | 用户定义的预设；`extends` 可以继承内置预设。 |
 | `vendors` | 所选供应商 ID 的 `string[]`（YAML 和 CUE） | 缺省时：`oma link` 使用所有可链接供应商，`oma update` 使用项目目录已存在的供应商 | 选择 `oma install` 和 `oma update` 投影哪些供应商集成。调度能力映射位于托管编排配置中，请参阅[供应商选择和调度元数据](#vendor-selection-and-dispatch-metadata)。 |
-| `default_cli` | 供应商 ID（`claude`、`codex`、`cursor`、`antigravity`、`qwen`、`grok`、`kimi`、`kiro`、`opencode`、`pi`） | `claude`；`free` 传输为 `codex` | 没有其他方式选定供应商时使用的供应商：`auto` 下未检测到运行时，或 `free` 传输在依次检查 `--vendor`、`OMA_RUNTIME_VENDOR` 和检测到的运行时之后。请参阅[OMA 如何解析智能体的模型和 CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)。 |
-| `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 每个省略的维度都不设上限 | 在下一次智能体生成前检查硬性 token 和生成次数限制；请参阅[会话配额上限](#session-quota-caps)。 |
+| `default_cli` | 供应商 ID | unset | `agents.default.cli` 的旧写法；仍会被读取，`oma update` 会把它移走。 |
+| `session.quota_cap` | `tokens`、`spawn_count`、`per_vendor: map<string, integer>` | 每个省略的维度都不设上限 | 在下一次智能体生成前检查已记录的 token 用量和生成次数限制；请参阅[会话配额上限](#session-quota-caps)。 |
+| `diagnostic_feedback` | `enabled`、`host_diagnostics`、`timeout_ms` | 支持的终端宿主自动启用，`false`，`1400` | 比较原生文件编辑前后的 Serena 诊断；请参阅[诊断反馈](#diagnostic-feedback)。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` 的行为和扫描排除项。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP 传输和更新行为。 |
 | `mcp.devtools_browsers` | `aside`、`chrome`、`firefox` 或 `[]` | unset = 保留现有设置 | 协调时选择浏览器 DevTools MCP。明确的空列表会移除所选浏览器条目。 |
@@ -65,8 +65,8 @@ oma doctor --profile
 | `hwp` | `format`、`version.*`、`output.*` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc 格式、版本通道和输出位置。 |
 | `pdf` | `format`、`image_output`、`image_format`、`use_struct_tree`、`ocr.*`、`output.*` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#extract-pdf-content) | PDF 提取、OCR、图像和覆盖设置。 |
 | `scholar` | `base_url` | 技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Knows 端点主机；协议形状仍由技能拥有。 |
-| `diagram` | `engine`、`explain_sidecar`、`archify.*` | 技能默认值；请参阅[图表引擎](/docs/guide/diagram-engine) | Mermaid/archify 选择和托管引擎设置。 |
-| `market` | `managed`、`channel`、`check_interval_min`、`path`、`python`、`save_dir` | 技能默认值；请参阅[市场研究](/docs/guide/market-research) | 托管 last30days 引擎解析和结果位置。 |
+| `diagram` | `engine`、`explain_sidecar`、`archify.path`、`archify.quality`、`archify.open` | 技能默认值；请参阅[图表引擎](/docs/guide/diagram-engine) | Mermaid/archify 选择，以及 archify 的固定路径和质量设置。已退役的 `archify.managed`、`archify.channel` 和 `archify.check_interval_min` 会被忽略并给出提示，`oma update` 会移除它们。 |
+| `market` | `path`、`python`、`save_dir` | 技能默认值；请参阅[市场研究](/docs/guide/market-research) | last30days 引擎的固定路径、解释器和结果位置。已退役的 `managed`、`channel` 和 `check_interval_min` 会被忽略并给出提示，`oma update` 会移除它们。 |
 
 随附模板还包含由消费者拥有的区块。它们当前读取的键和默认值如下：
 
@@ -93,13 +93,39 @@ oma doctor --profile
 | `code_intelligence_guard` | `block`、`off` | `block` |
 | `semantic_memory` | `agentmemory`、`honcho`、`none` | `agentmemory` |
 
+三个保留键存放选择器的凭据或连接区块：`providers.brave` 和 `providers.exa`（`api_key_env` 或 `api_key_vault`）用于 `web`，`providers.honcho` 用于 `semantic_memory`（见[Honcho 语义内存](#honcho-semantic-memory)）。它们的旧顶层写法仍会被读取。
+
+`providers` 下的其他任意键都是 **LLM 提供方**：兼容 OpenAI 或 Anthropic 的端点，`oma agent spawn` 可以让子 CLI 经它路由，而不是使用该 CLI 自己的账户。值是对象：
+
+| 字段 | 接受的值 | 是否必填 | 用途 |
+| --- | --- | --- | --- |
+| `base_url` | 不含凭据、查询或片段的绝对 HTTP(S) URL；缺少时会追加 `/v1` | 是 | 端点。 |
+| `api_key_env` | 环境变量名称 | 是（`free` 除外，它默认使用 `FREELLM_API_KEY`） | 读取密钥的位置；文件中从不存放密钥。同样，只有 `free` 可以省略 `base_url`（`http://127.0.0.1:31415/v1`）。 |
+| `transport` | `chat_completions`（默认）、`responses`、`anthropic_messages`、`multi` | 否 | 端点使用的线路协议。它决定子 CLI：`chat_completions` → Codex 或 Qwen，`responses` → Codex，`anthropic_messages` → Claude，`multi`（同时提供这三种协议的网关）→ Codex、Claude 或 Qwen。 |
+| `default_model` | 模型 ID | 当该提供方被用作 `model_preset` 时 | `model_preset: <name>` 下每个角色使用的模型。 |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free` 是本地 FreeLLMAPI 网关的内置提供方：每个字段都有默认值，`FREELLM_BASE_URL` 和 `FREELLM_MODEL` 会覆盖文件中的值，旧的顶层 `free:` 块仍会被读取（其中的 `model` 在这里是 `default_model`）；见[自定义 LLM 提供方](/docs/guide/per-agent-models#custom-llm-providers)。
+
 `code_intelligence_guard` 控制 PreToolUse 搜索保护。限定在已确认的提供方排除项或项目之外路径的原生搜索，无需绕过即可放行。该保护会读取 Serena 的排除项和已启用的 gitignore 规则，或 Gortex 的排除列表；它不会根据目录名推断依赖项。
 
 该钩子不会提及 `OMA_CI_ALLOW_NATIVE`。以 `OMA_CI_ALLOW_NATIVE=1` 为前缀的 shell 搜索，仅对项目之外的资源或保护未能识别的被忽略路径绕过保护，对项目源代码无效。
 
 ### Honcho 语义内存 {#honcho-semantic-memory}
 
-`honcho` 映射由 `HonchoConfigSchema` 验证。键名和有效的运行时行为如下：
+`providers.honcho` 映射（旧的顶层 `honcho` 仍会被读取）由 `HonchoConfigSchema` 验证。键名和有效的运行时行为如下：
 
 | 键 | 形状 | 有效默认值或限制 |
 | --- | --- | --- |
@@ -145,7 +171,42 @@ session:
       codex: 500000
 ```
 
-上限加载器依次检查用户 CUE 层、用户 YAML 层，然后检查随附默认值回退。在生成子进程前，OMA 按 `spawn_count`、总 `tokens`、`per_vendor` 的顺序检查。使用量大于或等于上限时就达到限制；OMA 会阻止下一次生成，并报告先达到的维度。使用量是 token 记账，不是计费估算。
+上限加载器依次检查用户 CUE 层、用户 YAML 层，然后检查随附默认值回退。在生成子进程前，OMA 按 `spawn_count`、总 `tokens`、`per_vendor` 的顺序检查。使用量大于或等于上限时就达到限制；OMA 会阻止下一次生成，并报告先达到的维度。
+
+OMA 在一次运行开始时预留输入 token 估算。运行结束后，如果有受支持的原生记录，已记录的输入、缓存和输出用量会替换该估算，且不再另计一次生成。否则该记录会明确保持为按提示长度得出的估算。原生子智能体不在捕获范围内时，观察到的根会话用量会标为部分数据。因此 token 上限取决于能拿到的观测；它们不会中断已经在运行的子进程，也不保证计费上限。`spawn_count` 是最可预测的限制。
+
+### 会话执行预算 {#session-execution-budget}
+
+设置 `session.execution`，为 OMA 管理的 CLI 调度和验证限制经过的时间。使用正数 `timeout_seconds`，或带时区的 ISO 8601 `deadline`：
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+`oma agent spawn`、`parallel`、`review`、`resume`、`begin` 和 `verify` 命令接受 `--timeout-seconds` 或 `--deadline`。准备、执行、重试和检查共用一个绝对截止时间。已配置、继承或已持久化的截止时间里，最早的那个生效；重试和恢复不会重置时钟。省略 `session.execution` 和这两个标志时，该维度不设上限，除非父进程已经提供截止时间。
+
+执行历史保留在 `.agents/state/executions/` 下。取消或超时会阻止该会话继续执行，并记录停止原因。这些控制只覆盖经托管 CLI 路径启动的进程。原生供应商智能体和任意 shell 任务需要宿主自己的取消机制；CPU、内存和存储上限需要提供方支持。
+
+托管的子 CLI 会继承 `OMA_EXECUTION_DEADLINE`、`OMA_EXECUTION_STATE` 和 `OMA_EXECUTION_ID`。状态路径和执行 ID 构成一条绑定的继承引用；外来、格式错误或不匹配的账本会在写入前被拒绝。包装 OMA 子进程时，转发完整的继承环境。设置这些变量不会让无关程序也执行截止时间。
+
+取消时，OMA 会停止准入，并尝试在限定范围内终止自己拥有的计算。日志、结果、工作树和已登记的资源元数据都会保留。删除产物或外部资源需要提出请求，或有明确的保留策略。未能完成的终止会保持可见，而不会被报告为已经完全清理。
+
+### 诊断反馈 {#diagnostic-feedback}
+
+在受支持的终端宿主上，OMA 比较原生文件编辑前后的错误和警告，并把新报告的诊断注入下一次工具反馈。当 Serena 是实际生效的代码智能提供方时（未指定提供方时的默认值），它使用已经在运行、且匹配当前项目的 Serena HTTP 守护进程。它从不启动守护进程，也不运行构建。Serena 自己的符号编辑不参与比较，因为它们已经提供诊断。
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+设置 `enabled: false` 会关闭此反馈。宿主已经提供编辑诊断时，设置 `host_diagnostics: true`；Cursor 和 Antigravity 会自动跳过。项目本地覆盖遵循常规配置层。环境变量覆盖为 `OMA_DIAGNOSTIC_FEEDBACK`、`OMA_HOST_DIAGNOSTICS` 和 `OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS`。
+
+该超时适用于每一次完整的编辑前或编辑后钩子，范围是 100 到 10,000 毫秒。较慢的提供方可以使用更大的超时。查找失败或超时会跳过反馈并开始一段短冷却；这不算一次干净的诊断结果。缺少或过期的编辑前基线也会跳过反馈。每个钩子最多检查三个文件，最多报告八条新的错误或警告。
 
 ### 供应商选择和调度元数据 {#vendor-selection-and-dispatch-metadata}
 

@@ -269,7 +269,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-Maintainer và Proposer của `oma skill optimize` resolve role `opt-agent`. Map `agents:` không có key `opt` (config schema từ chối key không xác định), nên role này luôn theo `model_preset` đang hoạt động, hoặc `default_cli` khi dùng `model_preset: auto`. Khi không có `agents.eval`, role `eval` dùng cùng fallback đó. Việc thăng cấp cần `isolation: enforced`, điều mà chỉ protected profile của Claude và Codex native cung cấp (xem [Skill isolation](#skill-isolation-keeping-the-baseline-honest)).
+Maintainer và Proposer của `oma skill optimize` resolve role `opt-agent`. Map `agents:` không có key `opt` (config schema từ chối key không xác định), nên role này luôn theo `model_preset` đang hoạt động, hoặc `agents.default.cli` khi dùng `model_preset: auto`. Khi không có `agents.eval`, role `eval` dùng cùng fallback đó. Việc thăng cấp cần `isolation: enforced`, điều mà chỉ protected profile của Claude và Codex native cung cấp (xem [Skill isolation](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Đo negative transfer {#negative-transfer-measurement}
 
@@ -459,6 +459,6 @@ Các thông báo này đến từ `oma skill eval` và `oma skill optimize`.
 | `[oma skill eval] dispatch timed out after <N>s.` | Một arm hoặc judge call vượt quá `OMA_SKILL_EVAL_TIMEOUT_MS`. | Nâng `OMA_SKILL_EVAL_TIMEOUT_MS` cho các fixture cần câu trả lời dài. |
 | `Choose either --live or --mock` | Đã truyền cả hai flag. | Chỉ truyền một trong hai. |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` chạy mà không có `--live`. | Thêm `--live`, hoặc dùng `oma skill eval --mock` cho các check offline. |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Role `opt-agent` resolve tới một vendor không có protected text transport. | Chọn một `model_preset` (hoặc, với `model_preset: auto`, một `default_cli`) resolve tới Claude hoặc Codex. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Role `opt-agent` resolve tới một vendor không có protected text transport. | Chọn một `model_preset` (hoặc, với `model_preset: auto`, một `agents.default.cli`) resolve tới Claude hoặc Codex. |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (không ghi gì) | `--apply` trên một skill `oma-*` mà không có `--yes`. | Giữ diff của dry-run và đưa nó lên upstream, hoặc chạy lại với `--yes`. |
 | `[oma skill opt] an active project overlay owns this skill; ...` | [Project harness evolution](./harness-evolution.md) đã cài một overlay cho skill này. | Chạy `oma skill rollback --skill <id>` trước, hoặc để evolution cycle áp dụng thay đổi. |

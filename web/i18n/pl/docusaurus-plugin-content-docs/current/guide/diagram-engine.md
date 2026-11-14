@@ -6,7 +6,7 @@ description: Jak oh-my-agent wybiera między Mermaid a opcjonalną umiejętnośc
 
 # Silnik diagramów
 
-`/architecture` (ADR-y, rekomendacje, przeglądy) i `/explain` (objaśnienia zmian kodu) emitują diagramy strukturalne. W przypadku `/architecture` są to zawsze bloki **Mermaid** wewnątrz artefaktu Markdown (`/explain` rysuje własne diagramy inline SVG), a — gdy można rozstrzygnąć [archify](https://github.com/tt-a1i/archify) — dodatkowo **interaktywny, zwalidowany diagram HTML** obok artefaktu: z motywem ciemnym/jasnym, przesuwaniem i powiększaniem, wyszukiwaniem, śledzeniem relacji, eksportem PNG/SVG/WebM oraz renderowaniem z typowanej specyfikacji JSON.
+`/architecture` (ADR-y, rekomendacje, przeglądy) i `/explain` (objaśnienia zmian kodu) tworzą diagramy strukturalne. Artefakt `/architecture` zawsze zawiera blok **Mermaid** w Markdownie, a workflow `/explain` rysuje diagramy inline SVG. Gdy [archify](https://github.com/tt-a1i/archify) zostaje rozstrzygnięty, workflow architektury emituje też **interaktywny, zwalidowany diagram HTML** obok artefaktu. Używa typowanej specyfikacji JSON i obsługuje motywy ciemny oraz jasny, przesuwanie i powiększanie, wyszukiwanie, śledzenie relacji oraz eksport PNG/SVG/WebM.
 
 Mermaid nigdy nie znika: to tekstowy SSOT obecny w Markdownie i diffach Git. archify jest artefaktem pochodnym.
 

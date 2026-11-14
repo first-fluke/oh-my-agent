@@ -6,7 +6,7 @@ description: Jak pisać fixture’y zadań ewaluacyjnych dla oma skill eval, kon
 
 # Ewaluacja użyteczności umiejętności
 
-`oma skill eval` mierzy, czy załadowanie umiejętności rzeczywiście poprawia wyniki zadań agenta. Odpowiada na inne pytanie niż `oma skill audit` (które pyta „czy dwie umiejętności są redundantne?”): pyta „czy ta umiejętność pomaga?”.
+`oma skill eval` porównuje wyniki zadań z jedną umiejętnością i bez niej. `oma skill audit` sprawdza, czy dwa opisy umiejętności są redundantne.
 
 Projekt opiera się na dwóch wynikach badań: WikiSkill (arXiv:2608.27454) rozdziela surowe doświadczenie, trwałą wiedzę i wykonywalne umiejętności, zachowując bramki holdout dla ewolucji; SkillLens (arXiv:2605.23899) pokazuje, że użyteczność umiejętności jest niezależna od odrębności opisu — odrębna umiejętność może być bezużyteczna, a nakładająca się umiejętność może nadal pomagać.
 
@@ -271,7 +271,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-Maintainer i Proposer w `oma skill optimize` rozstrzygają rolę `opt-agent`. Mapa `agents:` nie ma klucza `opt` (schemat konfiguracji odrzuca nieznane klucze), więc ta rola zawsze podąża za aktywnym `model_preset` albo za `default_cli` przy `model_preset: auto`. Bez `agents.eval` rola `eval` używa tej samej ścieżki zastępczej. Promocja wymaga `isolation: enforced`, które zapewniają tylko chronione profile Claude i natywny Codex (zobacz [Izolacja umiejętności](#skill-isolation-keeping-the-baseline-honest)).
+Maintainer i Proposer w `oma skill optimize` rozstrzygają rolę `opt-agent`. Mapa `agents:` nie ma klucza `opt` (schemat konfiguracji odrzuca nieznane klucze), więc ta rola zawsze podąża za aktywnym `model_preset` albo za `agents.default.cli` przy `model_preset: auto`. Bez `agents.eval` rola `eval` używa tej samej ścieżki zastępczej. Promocja wymaga `isolation: enforced`, które zapewniają tylko chronione profile Claude i natywny Codex (zobacz [Izolacja umiejętności](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Pomiar negative transfer
 
@@ -468,6 +468,6 @@ Te komunikaty pochodzą z `oma skill eval` i `oma skill optimize`.
 | `[oma skill eval] dispatch timed out after <N>s.` | Wywołanie wariantu albo sędziego przekroczyło `OMA_SKILL_EVAL_TIMEOUT_MS`. | Zwiększ `OMA_SKILL_EVAL_TIMEOUT_MS` dla fixture’ów wymagających długich odpowiedzi. |
 | `Choose either --live or --mock` | Przekazano obie flagi. | Przekaż tylko jedną z nich. |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` uruchomiono bez `--live`. | Dodaj `--live` albo użyj `oma skill eval --mock` do kontroli offline. |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Rola `opt-agent` rozstrzyga się na dostawcę bez chronionego transportu tekstowego. | Wybierz `model_preset` (albo, przy `model_preset: auto`, `default_cli`), który rozstrzyga się na Claude albo Codex. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Rola `opt-agent` rozstrzyga się na dostawcę bez chronionego transportu tekstowego. | Wybierz `model_preset` (albo, przy `model_preset: auto`, `agents.default.cli`), który rozstrzyga się na Claude albo Codex. |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (nic nie zostaje zapisane) | `--apply` na umiejętności `oma-*` bez `--yes`. | Zachowaj diff z dry-run i przekaż go upstream albo uruchom ponownie z `--yes`. |
 | `[oma skill opt] an active project overlay owns this skill; ...` | [Ewolucja harnessu projektu](./harness-evolution.md) zainstalowała nakładkę dla tej umiejętności. | Najpierw uruchom `oma skill rollback --skill <id>` albo pozwól, aby cykl ewolucji zastosował zmianę. |

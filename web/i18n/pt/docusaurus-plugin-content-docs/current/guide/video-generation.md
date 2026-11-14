@@ -88,9 +88,10 @@ Outras ferramentas que chamam `oma video generate --output json` analisam um env
 
 ---
 
-## HyperFrames sempre atualizado — você escreve a composição
+<a id="always-latest-hyperframes--you-author-the-composition"></a>
+## Toolchain HyperFrames gerenciada e autoria da composição
 
-O oh-my-agent não distribui **nenhum código de composição HyperFrames**. Cada execução recebe seu próprio projeto em `<runDir>/hyperframes/`, criado por `oma video compose` na versão mais recente do HyperFrames do npm (cache da toolchain em `~/.cache/oma-video/hyperframes/<version>/`, compartilhado por um symlink `node_modules`), com [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) em HEAD (`~/.cache/oma-video/hyperframes-skills/`). O agente escreve o código-fonte da composição gerada seguindo o `AUTHORING.md` do scaffold, as skills e a especificação do modo em `.agents/skills/oma-video/resources/hyperframes-authoring/`.
+O oh-my-agent não distribui **nenhum código de composição HyperFrames**. Cada execução recebe seu próprio projeto em `<runDir>/hyperframes/`, criado por `oma video compose` no HyperFrames mais recente do npm (cache da toolchain em `~/.cache/oma-video/hyperframes/<version>/`, compartilhado por um symlink `node_modules`) e as skills `hyperframes` e `hyperframes-cli` de [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes), instaladas pela [CLI de skills](https://github.com/vercel-labs/skills). O agente escreve o código-fonte da composição gerada seguindo o `AUTHORING.md` do scaffold, as skills e a especificação do modo em `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -99,14 +100,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- As verificações da versão mais recente (npm + GitHub) são limitadas por `video.hyperframes.check_interval_min` (padrão 60; `0` = a cada compose). `oma update` respeita o intervalo; `oma video doctor --upgrade` força uma verificação; execuções offline usam a toolchain em cache e informam `stale`.
+- As verificações da versão mais recente da toolchain (npm) são limitadas por `video.hyperframes.check_interval_min` (padrão 60; `0` = a cada compose). `oma update` respeita o intervalo; `oma video doctor --upgrade` força uma verificação; execuções offline usam a toolchain em cache e informam `stale`.
+- Skills: `oma video doctor --install` instala as que faltam (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` também atualiza as já instaladas; `oma update` só atualiza skills que já estão instaladas. Sem elas, o `AUTHORING.md` aponta para a documentação upstream. A cópia antiga em `~/.cache/oma-video/hyperframes-skills/` não é mais lida e pode ser excluída.
 - A reprodutibilidade mora no diretório de execução: `render-spec.json`, o código da composição escrito e a versão da toolchain registrada nos metadados do pacote HyperFrames gerado. Renderizar novamente a mesma execução reutiliza esse contrato; uma nova execução verifica o HyperFrames mais recente.
 - Uma falha de lint ou renderização **não** é escondida atrás de um placeholder (isso existe somente para `OMA_VIDEO_MOCK=1`): `oma video render` sai com código 1 e os diagnósticos, e o agente corrige a composição usando as skills mais recentes. Uma quebra em uma nova release do HyperFrames é um bug de composição, nunca motivo para fixar a versão.
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---

@@ -1,20 +1,54 @@
-# oh-my-agent: ทีมผู้เชี่ยวชาญสำหรับเอเจนต์เขียนโค้ดที่คุณใช้อยู่แล้ว
+# oh-my-agent
+
+**ส่งได้กว่า 400 คอมมิตต่อวัน**
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
-[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md)
+[English](../README.md) | [한국어](./README.ko.md) | [中文](./README.zh.md) | [Português](./README.pt.md) | [日本語](./README.ja.md) | [Français](./README.fr.md) | [Español](./README.es.md) | [Nederlands](./README.nl.md) | [Polski](./README.pl.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md) | [Tiếng Việt](./README.vi.md) | [ภาษาไทย](./README.th.md)
 
-**oh-my-agent (`oma`) เป็น harness ที่ไม่ผูกกับผู้ให้บริการรายใด โดยเพิ่มทีมผู้เชี่ยวชาญให้กับเอเจนต์เขียนโค้ดที่คุณใช้อยู่แล้ว ได้แก่ Claude Code, Codex CLI, Cursor และอีก 11 runtime** ผู้วางแผนแบ่งงานออกเป็นส่วนๆ วิศวกรลงมือสร้างแบบขนาน ผู้รีวิวตรวจผลลัพธ์ และผู้ดีบักแก้ที่สาเหตุต้นตอ นอกจากนี้ยังทำงานวิจัยพร้อมแหล่งอ้างอิง สไลด์ วิดีโอ และภาพได้ด้วย ขั้นตอนส่วนใหญ่ทิ้งไฟล์ที่คุณเปิดดูได้ไว้ และในเวิร์กโฟลว์ที่รันนาน gate สามารถส่งเอเจนต์กลับไปทำงานต่อจนกว่าสคริปต์ `test`, `lint` หรือ `typecheck` ของคุณเองจะผ่าน
+<a id="install"></a>
+## การติดตั้ง
 
-[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
+### สำหรับคน
 
-รันคำสั่งนี้จากรูทของโปรเจกต์:
+รันคำสั่งนี้จากรูทของโปรเจกต์
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
 ```
 
-จากนั้นรัน `oma doctor` แล้วพิมพ์ `/plan add user accounts with a settings page` ในเอเจนต์ของคุณ ส่วน [5 นาทีแรกของคุณ](#your-first-5-minutes) จะพาทำทีละขั้นตอน
+### สำหรับเอเจนต์ AI
+
+วางข้อความนี้ลงในเอเจนต์เขียนโค้ดของคุณ:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[คู่มือติดตั้งสำหรับเอเจนต์](./agent-install.md) ครอบคลุมการตั้งค่าแบบไม่โต้ตอบและการตรวจสอบ ถ้าคุณคือเอเจนต์ ให้อ่านคู่มือนั้นแล้วทำการติดตั้ง
+
+จากนั้นเปิดเอเจนต์แล้วพิมพ์ `/orchestrate build a TODO app with login`
+
+oh-my-agent (`oma`) เปลี่ยน Claude Code, Codex CLI, Cursor และเอเจนต์เขียนโค้ดอีก 11 ตัวให้เป็นทีม ผู้วางแผนแบ่งงาน วิศวกรสร้างแบบขนาน ผู้รีวิวตรวจผลลัพธ์ และผู้ดีบักแก้ที่สาเหตุต้นตอ
+
+## เริ่มจากงานของคุณ
+
+เลือกงาน โหลด skill เดียวเข้าเอเจนต์ที่คุณใช้อยู่ หรือติดตั้งทั้งทีม
+
+| งานของคุณ | เริ่มที่นี่ | คำขอแรก |
+|---|---|---|
+| [รีวิวโค้ดที่ AI เขียน](../web/docs/tasks/review-ai-code.md) | `bunx skills use first-fluke/oh-my-agent@oma-qa` | "Review this diff for bugs and missing checks. Cite the affected lines." |
+| [ออกแบบหน้าแอดมิน](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
+| [แก้เทสต์ที่ล้มเหลว](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
+| รีวิวขอบเขตของระบบ | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
+| รันทั้งทีม | [ติดตั้ง oma](#install) | `/orchestrate add login to this app` |
+
+รันคำสั่ง `skills use` ในเทอร์มินัลของเอเจนต์ คำสั่งนี้โหลด skill นั้นเพียงตัวเดียว สำหรับทั้งทีมพร้อมเวิร์กโฟลว์ ให้[ติดตั้ง oma](#install) ทางเลือกอื่นอยู่ใน[เลือกวิธีตั้งค่า](../web/docs/getting-started/choose-setup.md)
+
+[![Oh-My-Agent: A 6+1-Layer Harness Architecture](./assets/architecture/oh-my-agent-architecture.png)](./assets/architecture/oh-my-agent-architecture.svg)
+
+หลังติดตั้งแล้ว ให้รัน `oma doctor` [5 นาทีแรกของคุณ](#your-first-5-minutes) เริ่มจากงานแบบอ่านอย่างเดียว ก่อนเวิร์กโฟลว์ของทีม
 
 ## สิ่งที่คุณจะได้รับ
 
@@ -26,16 +60,14 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 | **20 เวิร์กโฟลว์** | คำสั่ง slash ตั้งแต่ `/brainstorm` และ `/plan` ไปจนถึง `/review`, `/debug` และ `/scm` ส่วนโหมดหลายเอเจนต์ทั้งสี่ยังเริ่มได้เมื่อคำขอธรรมดาเรียกชื่อโหมดนั้น | "ultrawork: add rate limiting" |
 | **33 skill** | ความรู้เฉพาะโดเมนที่โหลดเฉพาะเมื่องานต้องใช้: UI, API, schema, Terraform, CI, ความปลอดภัย, git, observability | โหลดเอง เช่น "add a Terraform S3 bucket" |
 | **ไฟล์ที่คุณเปิดดูได้** | แผนงาน เอกสารดีไซน์ API contract, ADR บันทึกบัค ผลลัพธ์รายเอเจนต์ หลักฐานด้านความปลอดภัย เอกสารอธิบาย HTML และสรุปงาน | `ls .agents/results` |
-| **การตรวจเวิร์กโฟลว์** | ในเวิร์กโฟลว์ที่รันนาน สคริปต์ `test`, `lint` หรือ `typecheck` ของคุณเองต้องผ่านก่อนเอเจนต์จะหยุดได้ ส่วน `oma ralph verify` ตรวจว่าการรัน `/ralph` ทิ้งไฟล์แผน QA และ refactor ไว้ | `/ultrawork …` แล้วตามด้วย `oma goal set --gate test` |
 | **งานวิจัยและคอนเทนต์** | การค้นหาพร้อมแหล่งอ้างอิง วิจัยตลาด งานวิจัยวิชาการ สไลด์ วิดีโอ MP4 ภาพ เสียงบนเครื่อง และการแปลง PDF/HWP เป็น Markdown | `/video`, `/convert` |
 | **โฟลเดอร์เดียว 14 runtime** | ไดเรกทอรี `.agents/` ที่พกพาไปได้เพียงชุดเดียว ซึ่งถูกเขียนลงไฟล์คอนฟิกของแต่ละ runtime เอง | `oma link cursor` |
 
-**[ติดตั้ง](#install)** · **[5 นาทีแรก](#your-first-5-minutes)** · **[ทีม](#meet-the-team)** · **[ใช้เวิร์กโฟลว์ไหนดี?](#how-the-team-works-together)** · **[ทุกอย่างในชุด](#everything-in-the-box)** · **[ใช้งานร่วมกับ](#works-with)** · **[การตรวจสอบ](#verification-not-narration)** · **[FAQ](#faq)** · **[เอกสาร](https://first-fluke.github.io/oh-my-agent/)**
+**[ติดตั้ง](#install)** · **[5 นาทีแรก](#your-first-5-minutes)** · **[ทีม](#meet-the-team)** · **[ใช้เวิร์กโฟลว์ไหนดี?](#how-the-team-works-together)** · **[ทุกอย่างในชุด](#everything-in-the-box)** · **[ใช้งานร่วมกับ](#works-with)** · **[FAQ](#faq)** · **[เอกสาร](https://firstfluke.com/oh-my-agent/)**
 
-<a id="install"></a>
-## การติดตั้ง
+## รายละเอียดการติดตั้ง
 
-สคริปต์จะติดตั้ง [bun](https://bun.sh) ให้ถ้ายังไม่มี ติดตั้งคำสั่ง `oma` แบบ global (`bun install --global oh-my-agent` โดยข้ามขั้นนี้ถ้ามี `oma` ใน PATH อยู่แล้ว) จากนั้นเริ่มการตั้งค่าแบบอินเทอร์แอกทีฟ คำสั่ง global นี้สำคัญ เพราะ hook ต่างๆ (การตรวจจับคำสำคัญ, Stop gate) และเวิร์กโฟลว์หลายตัวเรียกใช้ `oma` และ hook จะไม่ทำอะไรเลยแบบเงียบๆ ถ้าหามันไม่เจอ ถ้าคุณไม่ใช้สคริปต์ ให้ติดตั้งเองด้วย `bun install --global oh-my-agent` (ใช้ `npm install --global oh-my-agent` หรือ `brew install oh-my-agent` ก็ได้เช่นกัน)
+สคริปต์จะติดตั้ง [bun](https://bun.sh) ให้ถ้ายังไม่มี ติดตั้งคำสั่ง `oma` แบบ global (`bun install --global oh-my-agent` โดยข้ามขั้นนี้ถ้ามี `oma` ใน PATH อยู่แล้ว) จากนั้นเริ่มการตั้งค่าแบบอินเทอร์แอกทีฟ hook (การตรวจจับคำสำคัญและ Stop gate) และเวิร์กโฟลว์หลายตัวเรียกใช้คำสั่ง `oma` ที่ติดตั้งแบบ global ถ้าหาคำสั่งนี้ไม่เจอ hook จะไม่ทำอะไรเลยแบบเงียบๆ ถ้าคุณไม่ใช้สคริปต์ ให้ติดตั้งเองด้วย `bun install --global oh-my-agent` (ใช้ `npm install --global oh-my-agent` หรือ `brew install oh-my-agent` ก็ได้เช่นกัน)
 
 <details>
 <summary>Windows หรือการติดตั้งโดยไม่ใช้สคริปต์</summary>
@@ -55,7 +87,15 @@ oma
 
 </details>
 
-ภาษาที่ใช้ตอบกลับจะใช้ค่าที่ตั้งไว้เดิม หรือเลือกอัตโนมัติตามภาษาของระบบ การตั้งค่าจะถาม agent runtime ที่จะเชื่อมต่อ, capability provider, browser MCP, preset ของโมเดล และ preset ของ skill **ถ้าไม่แน่ใจ ให้เลือก `All` เป็น preset ของ skill** เพราะเวิร์กโฟลว์จะถูกติดตั้งเสมอ และบางตัว (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`, `/docs`, `/security`) ต้องใช้ skill ที่มีเฉพาะใน `All`
+การตั้งค่าจะคงภาษาที่ใช้ตอบกลับที่บันทึกไว้ หรือตรวจจับจากระบบ จากนั้นถามว่าจะเชื่อม agent runtime ใด, capability provider, browser MCP, preset ของโมเดล และ preset ของ skill **เลือก `All` เพื่อให้ได้ skill reference ที่ทุกเวิร์กโฟลว์ใช้**: preset ตามโดเมนจะไม่มี skill บางตัว ความพร้อมของ provider และการตรวจสอบงานยังแยกเป็นการตรวจคนละชุด
+
+เลือก preset ให้ชัดเมื่อต้องการ skill ของโดเมนใดโดเมนหนึ่ง:
+
+```bash
+oma install --preset frontend --yes
+```
+
+คำสั่งนี้เลือก skill แปดตัวของ preset frontend ตัวติดตั้งยังตั้งค่า runtime, provider และไฟล์เวิร์กโฟลว์ที่ใช้ร่วมกัน และเก็บ skill ที่ติดตั้งไว้ก่อนหน้า การเลือกแบบ Custom ทำได้ในตัวติดตั้งแบบอินเทอร์แอกทีฟ ดู [ค่า preset](../web/docs/getting-started/installation.md#presets) และ [การพึ่งพาของเวิร์กโฟลว์](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)
 
 <details>
 <summary>สิ่งที่ตัวติดตั้งทำเพิ่มเติมโดยค่าเริ่มต้น</summary>
@@ -66,12 +106,13 @@ oma
 - ถามก่อนลิงก์ skill เข้าโฟลเดอร์ของ vendor ในโฮมไดเรกทอรี (Antigravity, Hermes, Kimi) ถ้าอยู่ใน `$HOME` โดยไม่มี `--global` จะขอให้ยืนยัน
 - เขียนไฟล์บางไฟล์นอกโปรเจกต์โดยไม่ถาม ได้แก่ `~/.claude.json` (ทำเครื่องหมายว่าโปรเจกต์เป็น workspace ของ Claude Code ที่เชื่อถือได้), `~/.serena/` (context ของ OMA, ขนาดคำตอบขั้นต่ำ, การลงทะเบียนโปรเจกต์), `~/.cursor/cli-config.json` (ปิด commit attribution ของ Cursor), `~/.grok/config.toml` (telemetry) และ `~/.gemini/antigravity-cli/` (HUD) โดยแต่ละไฟล์จะเขียนเฉพาะเมื่อคุณเลือก vendor นั้น
 - เขียน **การ opt-out telemetry** ลงในการตั้งค่าของ vendor (Claude ใช้ `DISABLE_TELEMETRY=1` ซึ่งจะปิด Claude Code Remote Control ด้วย ส่วน Gemini, Qwen, Codex และ Grok จะปิดสถิติการใช้งาน) ตั้ง `telemetry: true` หากต้องการคงค่าเริ่มต้นของ vendor
+- ปิด **การบันทึก memory อัตโนมัติของ Qwen Code** โดยเพิ่ม `memory.enableManagedAutoMemory: false` เมื่อยังไม่มีการตั้งค่านั้น ค่าที่ระบุไว้ชัดเป็น `true` หรือ `false` และการตั้งค่า memory อื่นจะยังคงอยู่
 - เพิ่มการตั้งค่า Claude Code ที่ยังไม่ได้ตั้งลงใน `.claude/settings.json` รวมถึง `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` และ env flag ที่ปิด auto memory, adaptive thinking, การรายงานข้อผิดพลาด และคำสั่ง git ในตัว ค่าที่คุณตั้งไว้แล้วจะยังคงอยู่
 - เพิ่ม **co-author trailer**: commit attribution ของ Claude Code จะกลายเป็น `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>` และ PR จะมีบรรทัด "Generated with oh-my-agent" ตั้ง `scm.co_author.enabled: false` เพื่อปิด
 - ติดตั้ง **commit-msg guard** ใน `.githooks/` ซึ่งปฏิเสธที่อยู่ `Co-authored-by` ที่ไม่อยู่ในรายการ และตั้ง `git config --local core.hooksPath .githooks` เมื่อไม่มี hook อื่นทำงานอยู่ ตั้ง `scm.co_author.enforce_hook: false` หากไม่ต้องการใช้
 - `oma update` จะอัปเดต `oma` CLI ในเบื้องหลัง (ใช้ `auto_update_cli: false` หรือ `OMA_SKIP_VERSION_CHECK=1` เพื่อหยุด) และรัน `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`)
 - เมื่อ Serena อยู่ในโหมด `bridge` ซึ่งเป็นค่าเริ่มต้น เซสชัน agent แรกที่เริ่ม Serena server แบบใช้ร่วมกันจะลงทะเบียน **cleanup timer** ที่หยุด Serena server แบบใช้ร่วมกันซึ่งว่างอยู่ทุก 5 นาที (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer` หรือ Windows scheduled task `OMA Serena Daemon GC`) ตั้ง `serena.mode: stdio` เพื่อข้าม server แบบใช้ร่วมกันและ timer ของมัน `oma uninstall` จะไม่ลบ timer นี้
-- การรันแบบไม่โต้ตอบ (`-y`, `OMA_YES=1`, `CI=true`) จะใช้ preset ของ skill แบบ `All`, `model_preset: auto` และใช้ Python เป็นภาษาฝั่ง backend และจะไม่เลือก browser MCP ใดเลย (และข้ามสคริปต์ติดตั้ง Aside) เว้นแต่ `mcp.devtools_browsers` จะมีรายการอยู่แล้ว
+- การรันแบบไม่โต้ตอบ (`-y`, `OMA_YES=1`, `CI=true`) ใช้ preset ของ skill แบบ `All` เว้นแต่ `--preset` จะเลือกค่าอื่น พร้อม `model_preset: auto` และใช้ Python เป็นภาษาฝั่ง backend และจะไม่เลือก browser MCP ใดเลย (และข้ามสคริปต์ติดตั้ง Aside) เว้นแต่ `mcp.devtools_browsers` จะมีรายการอยู่แล้ว
 
 </details>
 
@@ -99,22 +140,23 @@ oma
 <a id="your-first-5-minutes"></a>
 ## 5 นาทีแรกของคุณ
 
-1. **ติดตั้ง** ด้วยคำสั่งด้านบน
-2. **ตรวจสอบการติดตั้ง:**
+1. **เลือกวิธีตั้งค่า** สำหรับงานด้านล่าง ให้โหลด `oma-scm` ด้วย `bunx skills use first-fluke/oh-my-agent@oma-scm` หรือใช้คำสั่งติดตั้ง runtime ด้านบน [เลือกวิธีตั้งค่า](../web/docs/getting-started/choose-setup.md) อธิบายทั้งสองทาง
+2. **ถ้าติดตั้งแบบ runtime ให้ตรวจสอบการติดตั้ง:**
 
    ```bash
    oma doctor
    ```
 
-   คุณควรเห็น `CLI Status` (agent CLI ตัวไหนติดตั้งและล็อกอินแล้วบ้าง) และ `Skills Status` (เช่น `Skills (33/33 installed, 33 complete)`) ถ้าหา `oma` ไม่เจอ ให้เปิดเทอร์มินัลใหม่ (ตัวติดตั้งอาจเพิ่งเพิ่ม `~/.bun/bin` ลงใน PATH) หรือรัน `bun install --global oh-my-agent`
-3. **เปิดเอเจนต์ในโปรเจกต์แล้วขอแผนงาน:**
+   รายงานแสดงสถานะของ CLI และไฟล์ skill จำนวน skill สะท้อนไฟล์ที่มีอยู่ รวมถึง skill ที่เก็บไว้ จึงอาจไม่ตรงกับที่ preset ปัจจุบันเลือก ถ้าหา `oma` ไม่เจอ ให้เปิดเทอร์มินัลใหม่หรือรัน `bun install --global oh-my-agent`
+3. **เปิด Git repository ที่มีอยู่แล้ว แล้วรันงานแบบอ่านอย่างเดียวหนึ่งงาน** `oma-scm` รวมอยู่ในทุก preset ที่มีชื่อ เมื่อเลือกแบบ Custom ให้รวม skill นี้ด้วย
 
    ```text
-   /plan add user accounts with a settings page
+   Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
    ```
-4. **ดูว่าได้อะไรออกมา** `/plan` รันในเซสชันปัจจุบัน สำหรับงานที่ครอบคลุมหลายส่วนอย่างงานนี้ มันจะเขียน `.agents/results/plan-<session-id>.json` และ tracker ที่ `docs/plans/work/<NNN>-<name>.md` ส่วนคำขอเล็กๆ ที่อยู่ในส่วนเดียวจะได้คำแนะนำโดยตรงแทนไฟล์แผน
 
-สำหรับงานที่มีหลายส่วน ให้ใช้แผนนี้กับ `/work` หรือ `/orchestrate`
+4. **ตรวจผลลัพธ์** branch และการเปลี่ยนแปลงที่รายงานควรตรงกับเอาต์พุตของ Git การโหลดคำสั่งหรือการติดตั้งที่เสร็จแล้วยังไม่ได้ยืนยันว่างานนี้รันไปแล้ว
+
+สำหรับงานที่ใหญ่ขึ้น ให้เลือกเวิร์กโฟลว์ที่ skill ซึ่งอ้างอิงไว้ถูกติดตั้งแล้ว เมื่อมี skill สำหรับวางแผน ให้เริ่มที่ `/plan` จากนั้นไปต่อด้วย `/work` หรือ `/orchestrate` เมื่อ dependency ของสองเวิร์กโฟลว์นั้นพร้อม
 
 <a id="meet-the-team"></a>
 ## รู้จักทีม
@@ -202,36 +244,6 @@ oma
 `oma verify triggers` ประเมินตัวตรวจจับด้วยชุดข้อมูล prompt ภาษาอังกฤษและภาษาเกาหลี 212 รายการที่ติดป้ายกำกับไว้ และ CI จะล้มเหลวหากอัตรา false-fire เกิน 10% หรืออัตรา missed-fire เกิน 20% ผลวัดล่าสุด: **0% missed-fire, 0% false-fire** เอกสารอ้างอิงฉบับเต็ม: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)
 
 </details>
-
-<a id="see-it-work"></a>
-## ดูการทำงานจริง
-
-ตัวอย่างเซสชัน `/ultrawork` บล็อก `[OMA PERSISTENT MODE: ULTRAWORK]` คือรูปแบบที่ Stop hook พิมพ์ออกมาจริงทุกตัวอักษร ส่วนบรรทัดอื่นเป็นการถอดความ:
-
-```text
-you    /ultrawork add rate limiting to POST /login
-agent  runs `oma goal set --gate test`
-agent  PLAN writes .agents/results/plan-<run-id>.json
-agent  IMPL -> VERIFY -> REFINE -> SHIP  (each review runs in a fresh reviewer session)
-agent  "Rate limiting added. All tests pass."
-oma    [OMA PERSISTENT MODE: ULTRAWORK]
-       Stop gate 'test' FAILED (reinforcement 1/5).
-       Fix the failures below, then finish the workflow — the stop is allowed only when the gate passes.
-       --- gate output (tail) ---
-       FAIL  src/auth/login.test.ts > returns 429 after 5 attempts
-       To abandon instead: delete .agents/state/ultrawork-state-<host-session>.json or say "workflow done".
-agent  fixes the limiter and stops again
-oma    `test` exits 0: stop allowed, gate.passed appended to the session log
-```
-
-หลังจากนั้น `oma state list` จะหาเซสชันเจอ และ `oma state get <oma-sid>` (ID ที่ `state list` แสดงออกมา) จะแสดง event ของ gate ทั้งหมด ภายใต้ `/ralph` คำสั่ง `oma ralph verify --json` ยังตรวจด้วยว่าแต่ละเฟสทิ้งไฟล์ของตัวเองไว้หรือไม่ (ตัดเอาต์พุตให้สั้นลง):
-
-```json
-{ "ok": false,
-  "missing": [{ "id": "A3", "description": "a distinct QA agent ran (VERIFY phase)",
-                "pattern": ".agents/state/memories/result-qa*.md or .agents/results/result-qa*.md",
-                "status": "missing" }] }
-```
 
 <a id="everything-in-the-box"></a>
 ## ทุกอย่างในชุด
@@ -340,6 +352,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 <summary><strong>เอเจนต์แบบขนาน เซสชัน และแดชบอร์ด</strong></summary>
 
 - `oma agent spawn <role> "<task>" <sid>` รันบทบาทบน Antigravity, Claude Code, Codex, Cursor, Grok, Kimi Code, Kiro, OpenCode, pi หรือ Qwen Code พร้อม `--isolation worktree` และ `--fallback-vendors` ส่วน `oma agent parallel` รันหลายบทบาทพร้อมกัน เป้าหมาย dispatch ทั้ง 10 รายการนี้เป็นส่วนหนึ่งของการเชื่อมต่อ 14 รายการในตัวติดตั้ง
+- เพิ่ม `--read-only` เพื่อบังคับให้มีข้อจำกัดของ vendor ก่อนเริ่มรัน Codex ใช้ sandbox แบบอ่านอย่างเดียว Claude ใช้ plan mode และ Pi ตัด `edit`, `write`, `bash` และ `powershell` ออก CLI อื่นต้องระบุ `read_only_flag` ให้ชัด ถ้าไม่มี ค่าว่าง หรือเป็น flag ที่รู้ว่าขัดแย้งกัน การ dispatch จะหยุด flag ที่กำหนดเองต้องประกาศว่ารองรับใน CLI หรือ wrapper ของคุณ การตัดเครื่องมือของ Pi ไม่ได้จำกัด extension หรือเครื่องมือ MCP อื่นตามอำเภอใจ และ OMA ไม่ได้เพิ่ม sandbox ของระบบปฏิบัติการ
 - `oma state list --all-projects` และ `oma state get <sid>`: เซสชันและทุก event ที่บันทึกไว้
 - `oma dashboard terminal` / `oma dashboard web`: สถานะเอเจนต์แบบเรียลไทม์ (แดชบอร์ดเว็บ listen เฉพาะ `127.0.0.1`) [คู่มือแดชบอร์ด](../web/docs/guide/dashboard-monitoring.md)
 - `oma stats get` (ตัวชี้วัดประสิทธิภาพการทำงาน), `oma retro` (retrospective จาก git), `oma recap --window 7d` (สิ่งที่คุณทำข้ามเครื่องมือ AI)
@@ -546,70 +559,6 @@ agents:
 - `kiro` ไม่มีในเมนูของตัวติดตั้ง ให้ตั้งค่าในไฟล์คอนฟิก
 - `oma doctor --profile` แสดงโมเดลที่ resolve แล้วของแต่ละบทบาท
 - คู่มือฉบับเต็ม: [โมเดลต่อเอเจนต์](https://first-fluke.github.io/oh-my-agent/docs/guide/per-agent-models/)
-
-</details>
-
-<a id="verification-not-narration"></a>
-## การตรวจสอบ
-
-OMA ตรวจสอบอาร์ติแฟกต์ที่เวิร์กโฟลว์สร้างขึ้น [ดูการทำงานจริง](#see-it-work) แสดงการทำงานของ Stop gate
-
-OMA ยังบันทึก metadata ของการเรียกใช้เครื่องมือและ digest ของ payload สำหรับการรัน harness ของ Claude Code และ Codex ที่มีการติดตาม แยกการใช้ token ที่รายงานออกจากค่าประมาณ และประเมิน regression ของ skill ฟังก์ชัน +1 เหล่านี้ครอบคลุมหลายชั้น ส่วน trace ที่ครอบคลุมจะแตกต่างกันตาม runtime และการรัน
-
-การตรวจส่วนใหญ่ทำงานโดยอัตโนมัติ คำสั่งจบด้วย exit code 0 หรือรหัสอื่น ส่วนไฟล์มีอยู่บนดิสก์หรือไม่ก็ไม่มี prompt judge เป็นข้อยกเว้น การตรวจเชิงกลไกไม่ได้ถาม LLM ว่างาน "ดูถูกต้องแล้วหรือยัง"
-
-| กลไก | ตรวจสอบอะไร | แหล่งที่มา |
-|-----------|----------------|--------|
-| **Stop-hook gate** | ระหว่าง persistent workflow คำสั่ง `oma goal set --gate test` (หรือ `lint`, `typecheck`) จะอนุญาตให้หยุดก็ต่อเมื่อสคริปต์นั้นใน package.json จบด้วย exit code 0 ภายใน 25 วินาที | [`persistent-mode.ts`](../.agents/hooks/core/persistent-mode.ts) |
-| **Artifact gate** | `oma ralph verify --json` ตรวจหาบันทึกของเฟส ไฟล์ JSON ของแผน และไฟล์ผลลัพธ์จาก **QA agent คนละตัว** และ **refactor agent คนละตัว** โดยแต่ละอย่างผูกกับการรันเอเจนต์ที่บันทึกไว้ | [`ralph.md`](../.agents/workflows/ralph.md) |
-| **ผู้ตัดสินที่ถูกสั่งผ่าน prompt** | ไม่ใช่เชิงกลไก: prompt ของ `/ralph` สั่งให้ออร์เคสเตรเตอร์ spawn ผู้ตัดสินที่มีคอนเท็กซ์ใหม่ ซึ่งตรวจซ้ำ **ทุก** เกณฑ์ในทุก iteration ไม่มีสิ่งใดตรวจสอบว่าการ spawn นั้นเกิดขึ้นจริง | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
-| **Event log** | ในเซสชัน OMA ทุกครั้งที่ gate ผ่าน gate ไม่ผ่าน และทุกการตัดสินใจ จะเพิ่ม JSON หนึ่งบรรทัดลงใน `events.jsonl` ของเซสชันนั้น | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **การตรวจรายเอเจนต์** | `oma verify agent <type>` รัน Scope Check, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs และ TDD Evidence บวกกับการตรวจเฉพาะประเภท เช่น TypeScript, Any Types, SQL Injection และเทสต์ | `oma verify agent --help` |
-
-> **การบันทึก event ของเซสชัน:** Stop hook จะบันทึก event ของ gate ไว้ภายใต้เซสชัน OMA ที่เปิดขึ้นตอนที่ persistent workflow เริ่มทำงาน การเขียน event เป็นแบบ best-effort หากสร้างเซสชันนั้นไม่สำเร็จ (stderr จะแสดง `[oma] L1 session activation failed`) gate ที่ไม่ผ่านก็ยังบล็อกการหยุดอยู่ดี แต่จะไม่มีการเขียนบรรทัด `gate.failed` ลงไป ก่อนจะพึ่งพาร่องรอยนี้หรือนำไปเดโม ให้ตรวจสอบว่า `oma state list` แสดงเซสชันที่ยังทำงานอยู่ จากนั้น `oma state get <sid>` จะแสดง event ของเซสชันนั้น
-
-<details>
-<summary>ข้อจำกัด รายละเอียด และวิธีที่ Stop hook ตัดสินใจ</summary>
-
-**ข้อจำกัด:**
-
-- Stop gate ใช้กับ persistent workflow เท่านั้น (`/orchestrate`, `/work`, `/ultrawork`, `/ralph`) ถ้าไม่มี `oma goal set --gate` มันจะแค่ prompt ให้เอเจนต์ทำต่อ `/ultrawork` บอกให้เอเจนต์ตั้ง gate เมื่อโปรเจกต์มีการตรวจที่ทำได้ไม่แพง แต่ไม่มีอะไรบังคับ ถ้าต้องการความแน่ใจ ให้รัน `oma goal set --gate test` เอง ส่วน persistent workflow ตัวอื่นไม่เคยตั้ง gate เลย
-- รับเฉพาะคำสำคัญ `typecheck`, `test` และ `lint` และจะรันสคริปต์ใน package.json ที่มีชื่อเดียวกัน ถ้าไม่มี package.json หรือไม่มีสคริปต์ชื่อนั้น gate จะไม่ถูกรัน โปรเจกต์ที่ไม่ใช่ JS ต้องมี wrapper script ใน package.json
-- ระบบจะปลดการบล็อกและบันทึกว่าล้มเหลวหลังย้ำเตือนครบ 5 ครั้ง ผ่านไป 2 ชั่วโมง หรือเมื่อ `--budget-minutes` หมด
-- งบประมาณ: `session.quota_cap` จำกัด token, จำนวน spawn และ token ต่อผู้ให้บริการ ออร์เคสเตรเตอร์จะปฏิเสธการ spawn ครั้งถัดไปเมื่อมิติใดมิติหนึ่งเกินเพดาน
-
-**Artifact gate** ถ้าไม่มีอาร์ติแฟกต์ แสดงว่าเฟสนั้นไม่ได้รัน การตรวจ refactor ยังผ่านในสถานะ `skip-recorded` ได้ด้วย เมื่อ log ของเซสชันบันทึกเหตุผลที่ข้าม REFINE ไว้
-
-**ผู้ตัดสินที่ถูกสั่งผ่าน prompt** prompt ของเวิร์กโฟลว์ `/ralph` สั่งให้ออร์เคสเตรเตอร์ spawn ผู้ตัดสินเป็นเอเจนต์แยกที่มีคอนเท็กซ์ใหม่หมด ให้รับรู้เพียงเกณฑ์เท่านั้น (ไม่ให้รู้เลยว่าฝ่ายลงมือทำอ้างว่าแก้อะไรไปบ้าง) และให้ตรวจสอบซ้ำ **ทุก** เกณฑ์ในทุก iteration รวมถึงเกณฑ์ที่ PASS ไปแล้ว เพราะการแก้เกณฑ์หนึ่งอาจทำให้อีกเกณฑ์เกิด regression ไม่มีสิ่งใดตรวจสอบว่าการ spawn นั้นเกิดขึ้นจริงหรือไม่: `oma ralph verify` ใช้ gate กับอาร์ติแฟกต์ของเฟส EXEC ไม่ใช่กับผู้ตัดสิน และ runtime ที่ spawn subagent ไม่ได้จะถูกสั่งให้ตัดสินแบบ inline แล้วบันทึก `ralph.judge-inline-fallback` ส่วน `/ralph` จะหยุดหลังครบ 5 iteration พร้อมรายงานบางส่วน
-
-**Event log** ค้นหาเซสชันด้วย `oma state list` และอ่านด้วย `oma state get <sid>` แต่ละ event ประทับ vendor และ session id ของ runtime ไว้ ตำแหน่งของไฟล์ขึ้นอยู่กับ `OMA_HOME`, `OMA_STATE_HOME`, `OMA_PROFILE` และโฟลเดอร์เซสชันแบบเก่าที่อยู่ภายในโปรเจกต์ ดังนั้นอย่า hardcode ตำแหน่งนี้ไว้
-
-**การตรวจรายเอเจนต์** ประเภท: `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm` คำสั่งจะจบด้วย exit code 1 เมื่อมีการตรวจใดไม่ผ่าน ส่วน TODO/FIXME Comments และ Inline Styles จะแค่เตือน
-
-<!-- Stack manifests in this list are optional outputs of /stack-set, not shipped files. -->
-<!-- oma-docs:ignore-start -->
-- `backend`: `<Language> Syntax`, `SQL Injection` (รูปแบบ raw SQL) และ `<Language> Tests` จากคำสั่งใน `stack/stack.yaml` ถ้าไม่มีไฟล์นี้ (สร้างได้ด้วย `/stack-set`) การตรวจเหล่านี้จะถูกข้าม
-- `frontend`: คำสั่ง syntax และเทสต์ใน `stack/stack.yaml` (ใต้ `oma-frontend` หรือใต้ `angular-developer` เมื่อติดตั้ง skill นั้นไว้) หรือ TypeScript (`tsc --noEmit`) และ Frontend Tests (Vitest) ส่วน Inline Styles และ Any Types จะรันเสมอ
-- `mobile`: คำสั่ง syntax และเทสต์ใน `stack/stack.yaml` หรือ Flutter/Dart Analysis และ Flutter Tests
-- `debug`: Python Tests (pytest ผ่าน uv) หรือ Frontend Tests (Vitest)
-- `pm`: PM Plan (ไฟล์แผนเป็น JSON ที่ถูกต้อง)
-- `qa`: ไม่มีการตรวจเชิงกลไก
-<!-- oma-docs:ignore-end -->
-
-```mermaid
-flowchart TD
-    S[Agent tries to stop] --> P{Persistent workflow active?}
-    P -- no --> A[Stop allowed]
-    P -- yes --> D{User or agent said workflow done?}
-    D -- yes --> A
-    D -- no --> R{Budget spent, state older than 2 h, or 5 blocks reached?}
-    R -- yes --> F[Stop allowed, logged as gate.failed]
-    R -- no --> G{Gate set and package.json script exists?}
-    G -- no --> B1[Blocked: workflow still active]
-    G -- yes --> X{Script exits 0 within 25 s?}
-    X -- yes --> OK[Stop allowed, logged as gate.passed]
-    X -- no --> B2[Blocked with output tail, logged as gate.failed]
-```
 
 </details>
 

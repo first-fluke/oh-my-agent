@@ -8,7 +8,7 @@ description: Как skill oma-market проводит исследование �
 
 `oma-market` собирает данные о проблемах, трендах, отношении к конкурентам и новых возможностях за последние N дней по реальным показателям вовлечённости в сообществах: Reddit (upvotes и лучшие comments), X, YouTube transcripts, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web и другие.
 
-Исследование выполняется через upstream engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent не форкает этот проект, а поддерживает управляемую копию, проверяет каждый запуск gate и добавляет слой стратегических frameworks. Частота release, число stars и покрытие provider принадлежат upstream project и могут меняться.
+Исследование выполняется через upstream engine [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent не форкает его: engine устанавливается как навык агента через [skills CLI](https://github.com/vercel-labs/skills), а oh-my-agent проверяет каждый запуск и добавляет сверху слой стратегических framework. Частота релизов, число звёзд и покрытие провайдеров принадлежат upstream-проекту и могут меняться.
 
 ---
 
@@ -64,10 +64,10 @@ oma market resolve
 Порядок разрешения (побеждает первое совпадение): `market.path` → `LAST30DAYS_HOME` → установленные каталоги навыков (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` в проекте, затем под `~`, затем `~/.config/agents/skills/last30days` и plugin cache Claude Code). Установка через plugin Claude Code обновляется командой `/plugin`, а не через `oma market update`.
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+В более ранних релизах своя копия лежала в `~/.cache/oma-market/`. Она больше не читается; её можно удалить.
 
 ---
 
@@ -75,13 +75,12 @@ oma market run -- --help     # the engine's own flags (without `--`, oma prints 
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`, `channel` и `check_interval_min` устарели: они по-прежнему проходят валидацию, но игнорируются, а `resolve` выводит предупреждение, пока они заданы.
 
 ---
 
@@ -120,9 +119,9 @@ flowchart TD
 | Ситуация | Результат |
 |---|---|
 | Тема отклонена detect-trap | Показывается переформулировка; engine не запускается. `--force` — только после явного повторного подтверждения пользователя |
-| Нет engine в cache и нет сети | `ok: false` → выполните `oma market update`, когда появится сеть |
+| Engine не установлен | `ok: false` → `oma market update` (устанавливает его через skills CLI) |
 | Нет Python 3.12+ | `ok: false` с подсказкой по установке (brew / apt / `uv python install 3.12`) или задайте `LAST30DAYS_PYTHON` / `market.python`; замены одним web search нет |
-| Проверка release не удалась | Используется engine из cache со статусом `stale` |
+| `oma market update` не удался | Показывается ошибка skills CLI; уже существующая установка продолжает работать |
 | Источники без key | Пропускаются внутри engine и перечисляются в footer; включите их через upstream setup wizard |
 
 ---
@@ -130,7 +129,7 @@ flowchart TD
 ## Дальнейшие шаги
 
 - [Workflow для контента и исследований](./content-and-research.md) — выбор подходящей возможности для других задач исследования и работы с документами
-- [Diagram Engine](./diagram-engine.md) — тот же паттерн управляемого последнего release для archify
+- [Diagram Engine](./diagram-engine.md) — тот же паттерн установки через skills CLI для archify
 - [Семантика oma-config.yaml](./oma-config-semantics.md) — как объединяется раздел `market:`
 - [CLI Commands: market](../cli-interfaces/commands.md#market) — полный список опций
 - Upstream: [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

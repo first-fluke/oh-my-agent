@@ -74,8 +74,10 @@ model_preset: auto
 
 | `model_preset` | `agents.<id>` 설정 여부 | CLI에 전달되는 모델 | 에이전트를 실행하는 CLI |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | 무시됨 | `FREELLM_MODEL`, 없으면 `free.model`, 없으면 `auto`(모든 역할) | `--vendor`, 없으면 `OMA_RUNTIME_VENDOR`, 없으면 감지된 런타임(Codex, Claude, Qwen인 경우), 없으면 `default_cli`, 없으면 `codex`. `codex`, `claude`, `qwen`만 허용됩니다. |
-| `auto` | 아니오 | 없음. 벤더 자체의 에이전트와 세션 설정이 적용됩니다. | `--vendor`, 없으면 지원되는 `OMA_RUNTIME_VENDOR`, 없으면 감지된 런타임, 없으면 `default_cli`, 없으면 `claude`. 지원되지 않는 값은 오류입니다. |
+| `free` | 모델은 무시되고 `effort`, `thinking`, `memory`는 적용됨 | `FREELLM_MODEL`, 없으면 `providers.free.default_model`, 없으면 `auto`(모든 역할) | `--vendor`, 없으면 `OMA_RUNTIME_VENDOR`, 없으면 감지된 런타임(Codex, Claude, Qwen인 경우), 없으면 `agents.default.cli`, 없으면 `codex`. `codex`, `claude`, `qwen`만 허용됩니다. |
+| `providers.<name>` LLM 프로바이더 | 모델은 무시되고 `effort`, `thinking`, `memory`는 적용됨 | 프로바이더의 `default_model`(모든 역할). 없으면 오류 | `--vendor`, 없으면 `OMA_RUNTIME_VENDOR`, 없으면 감지된 런타임, 없으면 `agents.default.cli`, 없으면 프로바이더 `transport`가 허용하는 첫 CLI(`chat_completions` → Codex 또는 Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` → 셋 중 하나). |
+| 아무 값 | `model`이 `providers.<name>` 항목의 `<provider>/<model-id>` | `<model-id>`를 CLI에 그대로 전달 | 위 행의 벤더 규칙. registry는 조회하지 않음 |
+| `auto` | 아니오 | 없음. 벤더 자체의 에이전트와 세션 설정이 적용됩니다. | `--vendor`, 없으면 지원되는 `OMA_RUNTIME_VENDOR`, 없으면 감지된 런타임, 없으면 `agents.default.cli`, 없으면 `claude`. 지원되지 않는 값은 오류입니다. |
 | `auto` | 예 | 오버라이드의 `model` | 해당 모델의 `cli`, 그다음 아래의 벤더 오버라이드 규칙 |
 | 빌트인, alias, 커스텀 | 아니오 | 해당 역할의 프리셋 항목, 없으면 프리셋의 `orchestrator` 항목 | 해당 모델의 `cli`, 그다음 아래의 벤더 오버라이드 규칙 |
 | 빌트인, alias, 커스텀 | 예 | 프리셋 항목에 오버라이드를 얕게 병합한 값(오버라이드 필드가 우선) | 해당 모델의 `cli`, 그다음 아래의 벤더 오버라이드 규칙 |
@@ -86,6 +88,7 @@ model_preset: auto
 - **모델 조회.** 슬러그는 먼저 `models:`에서, 그다음 빌트인 registry에서 찾습니다. 알 수 없는 슬러그이거나 `api_only: true`인 스펙이면 디스패치를 중단합니다.
 - **벤더 오버라이드 규칙.** 모델 기반 행에서 `--vendor` 또는 `OMA_RUNTIME_VENDOR`가 벤더를 지정하면, `pi`는 항상 실행을 넘겨받습니다(실제 프로바이더 모델만 해당. [pi를 통한 디스패치](#dispatching-through-pi-transport-runtime) 참고). 다른 벤더는 모델의 `supports.native_dispatch_from`에 나열된 경우에만 넘겨받습니다. 그렇지 않으면 OMA는 경고하고 모델 자체의 `cli`를 유지합니다.
 - **Effort.** CLI에 effort 플래그가 없는 모델(Claude Code)에서는 경고와 함께 `effort`를 버립니다. pi에서는 유지하며, pi가 이를 `--thinking`으로 매핑합니다.
+- **기본값.** `agents.default`는 위 모든 행에서 자체 값을 하나도 설정하지 않은 역할에 `effort`, `thinking`, `memory`를 제공합니다. 그 `cli`가 각 행에서 `agents.default.cli`라고 부르는 벤더 폴백입니다. 예전 최상위 `default_cli`도 여전히 읽습니다. 모델은 제공하지 않습니다.
 
 ## 자동 디스패치 {#auto-dispatch}
 
@@ -108,10 +111,10 @@ OMA는 가장 가까운 프로젝트 설정 디렉토리를 선택합니다. 그
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
 
@@ -120,11 +123,14 @@ free: {
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
+
+예전 최상위 `free:` 블록(`default_model` 대신 `model`)도 여전히 읽히며, `oma update`가 이 형태로 다시 씁니다.
 
 FreeLLMAPI를 별도로 시작하고 통합 키를 `FREELLM_API_KEY`로 export하세요. 기본 키 변수를 선택한 경우 OMA는 upstream의 `FREELLMAPI_API_KEY`도 받으며, 둘 다 설정되어 있으면 표준 변수가 우선합니다. 사용자 지정 `api_key_env`는 해당 변수만 읽습니다. 키 자체는 절대 설정 파일에 넣지 마세요. `OMA_MODEL_PRESET`은 프리셋을 오버라이드합니다. `FREELLM_BASE_URL`과 `FREELLM_MODEL`은 각각 해당 파일 설정을 오버라이드합니다. 예시의 값이 기본값이므로, 서버와 키가 준비되어 있으면 `model_preset: free`만으로 충분합니다.
 
@@ -133,7 +139,7 @@ oma doctor --profile
 oma agent spawn backend "Review the API error handling" free-review --vendor codex --read-only
 ```
 
-Free 모드는 기존 `agents.*.model` 고정이 있는 역할을 포함해 OMA가 디스패치하는 모든 역할에 `free.model`을 사용합니다. 그 고정 값을 유료 구독으로 해석하지 않습니다. `auto`, 게이트웨이 모델 ID, 또는 `auto:coding` 같은 이름 있는 게이트웨이 체인을 선택하세요(체인은 FreeLLMAPI에서 먼저 만들어야 합니다).
+Free 모드는 기존 `agents.*.model` 고정이 있는 역할을 포함해 OMA가 디스패치하는 모든 역할에 `providers.free.default_model`을 사용합니다. 그 고정 값을 유료 구독으로 해석하지 않습니다. `auto`, 게이트웨이 모델 ID, 또는 `auto:coding` 같은 이름 있는 게이트웨이 체인을 선택하세요(체인은 FreeLLMAPI에서 먼저 만들어야 합니다).
 
 Transport는 [OMA가 에이전트의 모델과 CLI를 해석하는 방식](#how-oma-resolves-an-agents-model-and-cli)의 `free` 행을 따릅니다. Codex, Claude, Qwen transport만 지원됩니다. 명시적으로 선택한 미지원 transport는 오류입니다.
 
@@ -153,9 +159,39 @@ free 프리셋은 에이전트 추론을 설정합니다. 기존 메모리 서�
 
 Upstream 참고 자료: [클라이언트 설정](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md), [API와 임베딩 계열](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md).
 
+## 커스텀 LLM 프로바이더 {#custom-llm-providers}
+
+`free`는 일반적인 메커니즘의 한 예입니다. OpenAI 또는 Anthropic과 호환되는 엔드포인트는 `providers:` 아래에 선언하고, 스폰된 에이전트를 그 경로로 보낼 수 있습니다. 키는 프로바이더 이름이고, 값에는 비밀을 넣지 않습니다.
+
+```yaml
+# .agents/oma-config.yaml
+providers:
+  code_intelligence: serena          # capability selectors stay strings
+  exaone:                            # an object = an LLM provider
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY      # the variable name, never the key
+    transport: chat_completions      # chat_completions | responses | anthropic_messages | multi
+    default_model: k-exaone_v2.5
+
+agents:
+  default: { effort: medium }        # tuning for every role that sets none
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+프로바이더를 쓰는 방법은 두 가지입니다.
+
+- **모든 역할을 보냅니다.** `model_preset: exaone`. 각 역할은 `default_model`로 실행됩니다. 역할별 `model` 고정은 경로를 벗어나므로 무시되고, 역할별 `effort`, `thinking`, `memory`는 그대로 적용됩니다. `default_model`이 없는 프로바이더는 프리셋이 될 수 없습니다. 자식은 `OMA_MODEL_PRESET=<name>`을 상속하므로 중첩 스폰도 같은 경로를 유지합니다.
+- **역할 하나만 보냅니다.** `agents.<id>.model: <name>/<model-id>`. 모델 ID는 CLI에 그대로 전달되며, registry와 `models:`는 조회하지 않습니다. 그 자식의 중첩 스폰은 다시 라우팅되지 않습니다.
+
+`transport`가 자식 CLI를 고릅니다. CLI마다 하나의 프로토콜을 쓰기 때문입니다. `chat_completions`는 Codex(`wire_api = "chat"` 프로바이더) 또는 Qwen, `responses`는 Codex, `anthropic_messages`는 Claude, `multi`는 셋 중 하나입니다(FreeLLMAPI는 셋을 모두 제공합니다). `--vendor`, `OMA_RUNTIME_VENDOR`, 감지된 런타임, `agents.default.cli`가 이 순서대로 허용된 CLI 중에서 고릅니다. transport가 지원하지 않는 CLI는 오류이며, 그 CLI 자신의 계정으로 조용히 폴백하지 않습니다. 자식은 엔드포인트와 `api_key_env`의 키를 자신의 환경과 인자에만 받습니다. Codex는 완전한 `model_providers.oma_<name>` 테이블, Claude는 `ANTHROPIC_BASE_URL`과 `ANTHROPIC_AUTH_TOKEN`, Qwen은 `--openai-base-url`과 `OPENAI_*`입니다. 부모 환경과 벤더 설정 파일은 그대로 두고, 충돌하는 Claude 또는 Qwen 설정은 실행 전에 보고합니다. 스폰과 리뷰는 transport에 모델 목록이 있을 때 `free`와 같은 인증된 `GET /models` 준비 검사를 실행합니다. 이 요청에 404를 반환하는 엔드포인트는 사용 불가로 보지 않습니다.
+
+샘플링 파라미터(`temperature`, `top_p`)는 프로바이더 항목에 포함되지 않습니다. 벤더 CLI가 요청마다 받지 않으므로 여기에 선언해도 조용히 무시됩니다.
+
+`free`는 자기만의 세부 사항을 유지합니다. 모든 필드의 기본값, `FREELLM_BASE_URL` / `FREELLM_MODEL` 오버라이드, upstream `FREELLMAPI_API_KEY` 별칭, 그리고 `providers.free`로 읽히는 레거시 최상위 `free:` 블록입니다.
+
 ## 개별 에이전트 오버라이드 {#overriding-individual-agents}
 
-`agents:` 맵을 사용해 활성 프리셋 위에 특정 에이전트만 오버라이드합니다. 나열한 에이전트만 영향을 받고, 나머지는 auto 모드에서는 벤더 설정을, 고정 프리셋을 선택했다면 그 프리셋 기본값을 따릅니다.
+`agents:` 맵을 사용해 활성 프리셋 위에 특정 에이전트만 오버라이드합니다. 나열한 에이전트만 영향을 받고, 나머지는 auto 모드에서는 벤더 설정을, 고정 프리셋을 선택했다면 그 프리셋 기본값을 따릅니다. 예약된 `agents.default` 항목은 자체 값을 하나도 설정하지 않은 모든 역할에 `effort`, `thinking`, `memory`를 담고, 다른 곳에서 벤더를 고르지 않을 때 쓰는 `cli`도 담습니다. 모델은 담지 않습니다.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -314,7 +350,21 @@ session:
       antigravity: 200000
 ```
 
-상한에 도달하면 `oma agent spawn`은 다음 스폰을 거부하고 `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`로 실패합니다. 토큰 사용량은 프롬프트 길이로 추정하므로 `spawn_count`가 가장 예측 가능한 상한입니다. 필드 규칙: [세션 쿼터 상한](/docs/guide/configuration-reference#session-quota-caps).
+상한에 도달하면 `oma agent spawn`은 다음 스폰을 거부하고 `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`로 실패합니다. 실행은 처음에 프롬프트 길이 추정치를 예약합니다. 네이티브 트랜스크립트 사용량을 알 수 있으면 완료 후 그 값으로 바꿉니다. 지원하지 않거나 관측값이 없으면 추정치로 남습니다. 이 상한은 실행 중인 자식을 중단하지 않으며 청구 한도를 보장하지도 않습니다. `spawn_count`가 가장 예측 가능한 상한입니다. 필드 규칙: [세션 쿼터 상한](/docs/guide/configuration-reference#session-quota-caps).
+
+---
+
+## 세션 실행 예산 {#session-execution-budget}
+
+OMA가 관리하는 CLI 디스패치와 검증에 공유 경과 시간 한도를 두려면 `session.execution`을 추가합니다.
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+또는 `deadline`을 시간대가 포함된 ISO 타임스탬프로 설정합니다. `oma agent spawn`, `parallel`, `review`, `resume`, `begin`, `verify` 명령도 `--timeout-seconds` 또는 `--deadline`을 받습니다. 가장 이른 deadline은 재시도와 재개에 걸쳐 유지되며, 준비와 검사도 같은 예산을 소비합니다. 취소나 타임아웃이 발생하면 그 세션의 이후 실행이 막힙니다. 네이티브 벤더 에이전트와 관리되는 CLI 밖의 셸 작업은 호스트 자신의 제어가 필요합니다. 범위와 산출물 보존은 [세션 실행 예산](/docs/guide/configuration-reference#session-execution-budget)을 참고하세요.
 
 ---
 

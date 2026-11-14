@@ -66,7 +66,7 @@ De bootstrap gaat door na fouten met optionele dependencies en geeft vervolgcomm
 - **commit-msg-guard**: `.githooks/commit-msg` weigert `Co-authored-by`-adressen die niet in `.githooks/co-authors.allow` of `scm.co_author.email` staan. `git config --local core.hooksPath .githooks` wordt alleen ingesteld als er geen andere hooks actief zijn; anders toont oma hoe je de guard koppelt. Stel `scm.co_author.enforce_hook: false` in om je af te melden.
 - **Updates op de achtergrond**: `oma update` werkt de `oma`-CLI op de achtergrond bij (`auto_update_cli: false` of `OMA_SKIP_VERSION_CHECK=1` om dat te stoppen) en voert `uv tool upgrade serena-agent --prerelease=allow` uit (`serena.auto_update: false` om dat te stoppen).
 - **Serena-opruimtimer**: met Serena in de standaardmodus `bridge` registreert de eerste agentsessie die een gedeelde Serena-server start een timer die inactieve gedeelde Serena-servers elke 5 minuten stopt (launchd `dev.oma.serena-daemon-gc`, systemd-user-timer `oma-serena-daemon-gc.timer` of geplande taak in Windows `OMA Serena Daemon GC`). Stel `serena.mode: stdio` in om de gedeelde server en de timer over te slaan. `oma uninstall` verwijdert de timer niet.
-- **Niet-interactieve runs** (`-y`, `OMA_YES=1`, `CI=true`) gebruiken de skillpreset `All`, `model_preset: auto` en Python als backendtaal. Ze selecteren geen browser-MCP (en slaan het installatiescript van Aside over), tenzij `mcp.devtools_browsers` er al een bevat.
+- **Niet-interactieve runs** (`-y`, `OMA_YES=1`, `CI=true`) gebruiken de skillpreset `All`, tenzij `--preset` een andere kiest, plus `model_preset: auto` en Python als backendtaal. Ze selecteren geen browser-MCP (en slaan het installatiescript van Aside over), tenzij `mcp.devtools_browsers` er al een bevat.
 
 ---
 

@@ -27,7 +27,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 - **uv**: Python 패키지 매니저 (없으면 부트스트랩 스크립트가 설치를 제안)
 - **코드 인텔리전스 프로바이더**: Serena가 기본 프로바이더입니다. 프로바이더 설정에서 선택하면 Gortex도 지원합니다. 설치 프로그램은 `uv tool install`로 Serena를 부트스트랩할 수 있으며 선택적 의존성을 사용할 수 없을 때 경고 후 계속합니다. Gortex를 선택하면 프로젝트 모드의 `oma install`과 `oma update`가 아직 추적되지 않은 프로젝트를 Gortex 데몬에 등록하고(`gortex track`), OMA가 생성한 디렉토리를 Gortex CLI로 해당 프로젝트의 제외 목록에 추가합니다. 프로젝트 트리에는 아무것도 쓰지 않습니다. Gortex 자체는 별도로 설치해야 합니다.
 
-설치 프로그램은 기능별로 통합을 분류합니다. 훅 벤더는 Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro, Qwen이고, OpenCode와 pi는 확장 브리지를 사용하며, GitHub Copilot과 Hermes에는 스킬 링크를 제공하고, ZCode에는 워크플로우 명령을 제공합니다. 여러 벤더를 선택할 수 있지만 첫 태스크에는 사용할 호스트만 있으면 됩니다.
+설치 프로그램은 기능별로 통합을 분류합니다. 훅 벤더는 Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro, Qwen입니다. OpenCode와 pi는 확장 브리지를 사용하고, Hermes는 스킬 링크를 받으며, ZCode는 워크플로우 명령을 받습니다. 여러 벤더를 선택할 수 있지만 첫 태스크에는 사용할 호스트만 있으면 됩니다.
 
 ---
 
@@ -355,7 +355,7 @@ agents:
 
 ### 벤더 해석
 
-에이전트를 스폰할 때 CLI는 `agents.<id>`, 선택한 `model_preset`, 프리셋의 오케스트레이터 폴백, `default_cli` 순서로 설정을 해석합니다. `model_preset: auto`이면 현재 런타임의 네이티브 설정이 모델을 제공하며, 알 수 없는 런타임은 `default_cli`로 폴백합니다. 전체 매트릭스는 [에이전트별 모델](../guide/per-agent-models.md)을 참고하세요.
+에이전트를 스폰할 때 CLI는 `agents.<id>`, 선택한 `model_preset`, 프리셋의 오케스트레이터 폴백, `agents.default.cli` 순서로 설정을 해석합니다. `model_preset: auto`이면 현재 런타임의 네이티브 설정이 모델을 제공하며, 알 수 없는 런타임은 `agents.default.cli`로 폴백합니다. 전체 매트릭스는 [에이전트별 모델](../guide/per-agent-models.md)을 참고하세요.
 
 ---
 

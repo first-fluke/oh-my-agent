@@ -1,14 +1,14 @@
 ---
 title: "快速开始"
-description: "从安装到验证，运行一个范围明确的任务，包含预期输出和恢复步骤。"
+description: "选择一个技能或运行时预设，然后运行一个范围明确的首次任务，并核对实际观察到的验证结果。"
 sidebar_label: 快速开始
 ---
 
 # 快速开始
 
-用一个聚焦的任务来检查结果。可以在你已经在用的编码智能体中加载一个技能；需要项目钩子、专业智能体和工作流时，再安装运行时。[选择安装方式](./choose-setup.md)说明了可用的路径及其依赖。
+用一个聚焦的任务来检查结果。可以在你已经在用的编码智能体中加载一个技能；需要项目钩子、专业智能体和工作流时，再安装运行时。[选择设置](./choose-setup.md)说明了可用的路径及其依赖。
 
-## 1. 选择安装方式 {#1-install}
+## 1. 选择设置 {#1-install}
 
 对于下面的只读 Git 任务，让你的智能体加载该技能，并阅读其说明和支持目录：
 
@@ -90,7 +90,7 @@ Use oma-scm to inspect this repository's current branch and working tree. Do not
 
 ## 4. 在扩大规模前了解运行时默认值 {#4-know-the-runtime-defaults-before-scaling-up}
 
-临时加载技能不会配置这些运行时默认值。需要项目钩子、提供方设置或团队工作流时，请使用[选择安装方式](./choose-setup.md)中的运行时路径。
+临时加载技能不会配置这些运行时默认值。需要项目钩子、提供方设置或团队工作流时，请使用[选择设置](./choose-setup.md)中的运行时路径。
 
 OMA 默认使用 `model_preset: auto`、用于代码智能的 Serena、用于语义内存的 Agent Memory、原生网页搜索，并禁用遥测。Serena 使用共享的 `bridge` 传输，并会自动更新，除非另行配置。浏览器 DevTools MCP 需要选择启用；新的交互式设置会先提供 Aside。有关影响和覆盖键，请参阅[重要默认值](./important-defaults.md)。
 
@@ -98,7 +98,7 @@ OMA 默认使用 `model_preset: auto`、用于代码智能的 Serena、用于语
 
 ## 后续步骤 {#next-steps}
 
-- [选择安装方式](./choose-setup.md)，了解单个技能、运行时预设或 Claude Code 插件
+- [选择设置](./choose-setup.md)，了解单个技能、运行时预设或 Claude Code 插件
 - [重要默认值](./important-defaults.md)，了解优先级、提供方和恢复选择
 - [安装](./installation.md)，了解预设、供应商设置、全局安装和更新
 - [智能体](../core-concepts/agents.md)，了解 33 个技能包和调度角色

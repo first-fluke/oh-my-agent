@@ -112,12 +112,12 @@ cue export --out json .agents/oma-config.cue   # what the CUE layer evaluates to
 
 ## 注意点
 
-- `oma-config.yaml` の `language` はエージェントの応答言語を制御します。インストールや更新の警告メッセージの決定には**使いません**。インストール時点では `oma-config.yaml` がまだ読み込まれていないため、これらのメッセージはシステムロケール（`$LANG`）を使います。
+- `oma-config.yaml` の `language` は、エージェントの応答言語を制御します。インストールは、対話でも無人でも、保存済みの値を維持します。新規インストールは `LC_ALL`、`LC_MESSAGES`、次に `LANG` を読み、どれも未設定ならランタイムのロケールに戻します。地域、文字体系、エンコーディングの接尾辞は、対応する基本言語に対応付けます。未対応のロケール、`C`、`POSIX` は `en` を使います。言語の確認プロンプトはありません。インストールと更新の警告メッセージは、システムロケール（`$LANG`）を使います。
 - `auto_update_cli` はグローバルのデフォルトより先にプロジェクトの上書きを使い、どちらのスコープでも設定されていなければ有効になります。
 - `telemetry`（デフォルトは `false`）は、各ベンダーのオプトアウト設定に対応します。`oma install`、`oma update`、`oma link` が設定を書き込みます。Claude では `DISABLE_TELEMETRY` と `CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY`、Gemini と Qwen では `privacy.usageStatisticsEnabled`、Codex では `analytics.enabled` と `feedback.enabled`、Grok では `[features] telemetry`、Antigravity（agy）では `~/.gemini/antigravity-cli/settings.json` の `enableTelemetry` を使います。`telemetry: true` にすると、そのベンダーに対して oma が設定したオプトアウトを削除し、再びオプトインします。
-- `diagram`（エンジンは `auto` / `archify` / `mermaid`、設定は `explain_sidecar`、`archify.managed|channel|check_interval_min|path|quality|open`）は、`video` や `image` と同じスパースなスキル上書きセクションです。[ダイアグラムエンジン](/docs/guide/diagram-engine)を参照してください。
-- `video.hyperframes.check_interval_min` は、1 回の実行で使う HyperFrames ツールチェーンと heygen-com/hyperframes の最新バージョン確認を調整します（`oma video compose`、`oma update`）。配布される CUE スキーマはまだ `video.hyperframes` を定義していないため、`cue export` はスキーマブロック内のこのキーを拒否します（`field not allowed`）。`oma-config.yaml` またはローカルの YAML オーバーレイで設定してください。
-- `market`（`managed|channel|check_interval_min|path|python|save_dir`）は、`oma market` が使う常に最新の `last30days` エンジンを設定します。[市場調査](/docs/guide/market-research)を参照してください。
+- `diagram`（エンジンは `auto` / `archify` / `mermaid`、設定は `explain_sidecar`、`archify.path|quality|open`）は、`video` や `image` と同じスパースなスキル上書きセクションです。`archify.managed|channel|check_interval_min` は非推奨で、無視されます。[ダイアグラムエンジン](/docs/guide/diagram-engine)を参照してください。
+- `video.hyperframes.check_interval_min` は、1 回の実行で使う HyperFrames ツールチェーンの最新バージョン確認を間引きます（`oma video compose`、`oma update`）。heygen-com/hyperframes のスキルは skills-CLI でインストールします。配布される CUE スキーマはまだ `video.hyperframes` を定義していないため、`cue export` はスキーマブロック内のこのキーを拒否します（`field not allowed`）。`oma-config.yaml` またはローカルの YAML オーバーレイで設定してください。
+- `market`（`path|python|save_dir`）は、`oma market` が使うインストール済みの `last30days` エンジンを設定します。`managed|channel|check_interval_min` は非推奨で、無視されます。[市場調査](/docs/guide/market-research)を参照してください。
 - 型付きランタイムスキーマは `providers`、`free`、`agents`、`models`、`custom_presets`、`vendors`、`session`、`docs` とスパースなスキルセクションを対象とします。配布テンプレートには `scm`、`memory`、`serena_reaper`、`mcp` など、利用側が所有するブロックも含まれます。これらのネストしたキーは各利用側が管理します。この一覧からキーの存在を推測せず、[設定リファレンス](/docs/guide/configuration-reference)と該当機能のガイドを参照してください。
 - `oma-config.yaml` を直接編集しても問題ありません。`oma install` と `oma update` は正規表現レベルでフィールドを置き換え、管理対象でないユーザー編集済みのキー（カスタムの `agents:` オーバーライドや `session.quota_cap` など）を保持します。
 - `oma update` は、配布テンプレートに定義されていて手元のファイルにないトップレベルキーを、テンプレートのデフォルト値とともに `# Added by oma update` マーカーの下へ追加します。すでに存在するキーは変更せず、既存の内容をバイト単位で保持します。意図的に削除したキーはテンプレートのデフォルト値で再び現れるため、オプトアウトする場合はキーを削除せず値を明示してください。

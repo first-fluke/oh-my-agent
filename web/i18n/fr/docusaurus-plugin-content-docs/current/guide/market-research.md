@@ -6,9 +6,9 @@ description: Comment la compétence oma-market d’oh-my-agent mène une recherc
 
 # Étude de marché
 
-`oma-market` recherche les points de douleur, les tendances, le sentiment envers les concurrents et les sujets émergents signalés sur la période de N jours choisie. Il s’appuie sur des sources communautaires avec des mesures d’engagement, notamment Reddit (upvotes et commentaires principaux), X, les transcriptions YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits et Bluesky, ainsi que sur le web.
+`oma-market` répond à « que disent vraiment les gens de X au cours des N derniers jours » : points de douleur, tendances, sentiment envers les concurrents, découverte. Il s’appuie sur des sources communautaires avec de vrais chiffres d’engagement : Reddit (upvotes et commentaires principaux), X, transcriptions YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, le web, et d’autres.
 
-La recherche s’exécute sur le moteur amont [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent ne le fork pas : il conserve une copie gérée du moteur. La compétence applique à chaque exécution son contrôle de sujet et ajoute une couche de cadres stratégiques. La cadence des versions, le nombre d’étoiles et la couverture des fournisseurs dépendent du projet amont et peuvent changer.
+La recherche elle-même s’exécute sur le moteur amont [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent ne le fork pas : le moteur est installé comme compétence d’agent via le [CLI skills](https://github.com/vercel-labs/skills), et oh-my-agent contrôle chaque exécution puis ajoute une couche de cadres stratégiques. La cadence des versions, le nombre d’étoiles et la couverture des fournisseurs appartiennent au projet amont et peuvent changer.
 
 ---
 
@@ -75,13 +75,12 @@ Les versions précédentes conservaient leur propre copie sous `~/.cache/oma-mar
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`, `channel` et `check_interval_min` sont obsolètes : ils restent validés mais sont ignorés, et `resolve` affiche un avertissement tant qu’ils sont définis.
 
 ---
 
@@ -120,9 +119,9 @@ flowchart TD
 | Situation | Résultat |
 |---|---|
 | Sujet refusé par detect-trap | Reformulation affichée ; le moteur ne s’exécute pas. `--force` uniquement après reconfirmation explicite de l’utilisateur |
-| Aucun moteur en cache et mode hors ligne | `ok: false` → lancer `oma market update` une fois en ligne |
-| Aucun Python 3.12+ | `ok: false` avec indication d’installation (brew / apt / `uv python install 3.12`), ou définissez `LAST30DAYS_PYTHON` / `market.python` ; aucun remplacement limité à la recherche web |
-| La vérification de version échoue | Moteur en cache utilisé, signalé comme `stale` |
+| Moteur non installé | `ok: false` → `oma market update` (l’installe avec le CLI skills) |
+| Aucun Python 3.12+ | `ok: false` avec indication d’installation (brew / apt / `uv python install 3.12`), ou définissez `LAST30DAYS_PYTHON` / `market.python` ; aucun substitut limité à la recherche web |
+| `oma market update` échoue | L’erreur du CLI skills est affichée ; une installation existante continue de fonctionner |
 | Sources sans clés | Ignorées dans le moteur et listées dans le pied de page ; activez-les via l’assistant de configuration amont |
 
 ---
@@ -130,7 +129,7 @@ flowchart TD
 ## Étapes suivantes
 
 - [Workflows de contenu et de recherche](./content-and-research.md) — choisir la bonne capacité pour les autres tâches de recherche et de documents
-- [Moteur de diagrammes](./diagram-engine.md) — le même modèle de dernière version gérée pour archify
+- [Moteur de diagrammes](./diagram-engine.md) — le même modèle d’installation via le CLI skills pour archify
 - [Sémantique de oma-config.yaml](./oma-config-semantics.md) — comment la section `market:` est fusionnée
 - [Commandes CLI : market](../cli-interfaces/commands.md#market) — liste complète des options
 - Amont : [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

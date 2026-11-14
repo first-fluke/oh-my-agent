@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 需要单页检查时使用 `--slide <file>`，其他进程需要结果时，将 `--report-file <path>` 与 JSON 输出配合使用。`slide import pptx <file>` 会启动导入工作流；`slide asset fetch-video <url>` 会下载视频素材；`slide style list|preview|get <slug>` 会检查样式。PPTX 输出基于栅格，因此不提供可编辑的文本或形状图层。验证和导出需要 Chrome/puppeteer；可执行文件无法自动发现时设置 `OMA_CHROME_PATH`。如果验证经过三次自动修复仍无法收敛，请根据报告的几何问题编辑受影响的片段。
 
+### 可编辑的 PowerPoint（native-pptx 路线） {#editable-powerpoint-native-pptx-route}
+
+交付物必须是可编辑的 PowerPoint 文件时，`oma-slide` 切换到 `native-pptx` 路线。同一路线也负责：在保留原有设计的同时填写或编辑已有 PPTX，把 PDF、DOCX、XLSX 或 URL 转成演示文稿，构建可复用的品牌、样式、布局或演示文稿模板，以及带旁白的 PPTX 或 MP4。网页、动画和 Canva 演示文稿仍走上面的 HTML 路线。
+
+该路线运行上游 [ppt-master](https://github.com/hugohe3/ppt-master) 技能（MIT，作者 Hugo He），并且不修改它。运行时技能目录里已有副本时，`oma-slide` 使用该副本；否则在本次会话中这样加载：
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master 编写 SVG 页面，并导出原生的 DrawingML 形状、文本框、图表和表格，因此 PPTX 落在项目 `.agents/results/slides/<session-id>/` 下的 `exports/` 目录。它的 Python 脚本需要该技能 `requirements.txt` 里的包；`oma-slide` 会先询问，再把它们装进 `uv` 虚拟环境。如果你拒绝，它会改提供 HTML 路线。这条路线上的 AI 图像用 `oma-image` 生成，其余流程由 ppt-master 自己的关卡和确认界面决定。
+
 ## 回顾智能体对话 {#recap-agent-conversations}
 
 使用 `/recap`（或请智能体做回顾）生成基于证据的工作摘要；它会运行 `oma recap` 收集历史记录。日历日期和滚动时间窗口是不同的输入：

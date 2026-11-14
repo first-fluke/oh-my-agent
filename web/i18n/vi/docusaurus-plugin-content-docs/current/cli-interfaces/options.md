@@ -168,8 +168,10 @@ Dùng `select(.supportsDryRun? == true)` theo cách tương tự để tìm các
 ### install
 
 ```text
-oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
+oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
+
+`--preset` chọn một trong mười [skill preset có tên](../getting-started/installation.md#presets) và ghi đè prompt skill tương tác cùng mặc định `all` khi không giám sát. Tên không xác định, giá trị rỗng và `custom` thất bại trước khi cài đặt; chọn từng skill dùng menu Custom tương tác. Preset chọn skill trong khi giữ file dùng chung của runtime, định nghĩa workflow/agent, hook, provider và skill đã giữ lại. Xem [Chọn cách thiết lập](../getting-started/choose-setup.md) để tải instruction của một skill tạm thời.
 
 Trình cài đặt tương tác ghi các thiết lập provider đã chọn vào `.agents/oma-config.yaml`. Khi có `.agents/oma-config.cue`, tệp đó được ưu tiên hơn, nên các lựa chọn mà cấu hình CUE chưa có sẽ được ghi vào lớp phủ cục bộ bị gitignore `.agents/oma-config.local.yaml`; lựa chọn DevTools của trình duyệt và tham chiếu vault của `oma memory keys` cũng theo cùng quy tắc, còn lựa chọn vendor CLI và `oma model propose --write` theo quy tắc này khi không có `oma-config.yaml`. Các flag provider chọn integration cho web-search, code-intelligence và semantic-memory; `--honcho-url` và `--honcho-workspace` cấu hình dịch vụ memory Honcho khi provider đó được chọn. Flag gốc `-y, --yes` được áp dụng khi luồng cài đặt yêu cầu xác nhận.
 

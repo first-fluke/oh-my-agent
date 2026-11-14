@@ -8,7 +8,7 @@ description: Activer des améliorations de compétences planifiées et budgété
 
 OMA peut collecter des preuves à partir des exécutions d’agents suivies et traiter les échecs dans un cycle de retour planifié. Les modifications automatiques de compétences sont **désactivées tant que vous ne les activez pas pour un projet**. Chaque cycle dispose d’un budget fini d’appels de modèle, et une modification appliquée doit franchir les portes d’évaluation de compétence existantes.
 
-Le chemin automatisé améliore les documents de compétence. Les modifications de la procédure de l’optimiseur ou du Maintainer restent une [méta-optimisation](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate) distincte, invoquée manuellement.
+Le chemin automatisé applique aux documents de compétence des modifications déjà évaluées. Les modifications de la procédure de l’optimiseur ou du Maintainer exigent la [méta-optimisation](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate) distincte, invoquée manuellement.
 
 ## Activer un projet
 

@@ -5,6 +5,21 @@ description: Cài đặt oh-my-agent, chọn skill và provider, hiểu các t�
 
 # Cài đặt
 
+Với một task, hãy bắt đầu từ [một skill](./choose-setup.md#load-one-skill). Với hook của project và workflow của team, dùng bản cài runtime bên dưới. [Hướng dẫn thiết lập](./choose-setup.md) tách việc tải instruction, skill preset và cài đặt marketplace Claude Code.
+
+Với Grok Bot, dùng [trang cài đặt Grok Bot](/grok-bot/). Liên kết native **Add to Grok Bot** cần listing Cursor Marketplace đã được duyệt; liên kết này chưa có khi đăng ký còn đang chờ. [Hướng dẫn cài thủ công](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md) riêng giải thích `oma install --target grok-bot` cho máy của Bot. Tích hợp runtime của Grok Build bên dưới là một target cài đặt khác.
+
+## Cài bằng AI agent {#install-with-an-ai-agent}
+
+Dán đoạn này vào coding agent của bạn:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[Hướng dẫn cài cho agent](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md) bao gồm chuẩn bị CLI, thiết lập project không tương tác và xác minh bằng `oma doctor`.
+
 ## Điều kiện tiên quyết
 
 - **IDE hoặc CLI có AI**: ít nhất một host được hỗ trợ như Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot hoặc Hermes
@@ -12,7 +27,7 @@ description: Cài đặt oh-my-agent, chọn skill và provider, hiểu các t�
 - **uv**: trình quản lý package Python (bootstrap script đề nghị cài khi thiếu)
 - **Provider code intelligence**: Serena là provider mặc định. Gortex cũng được hỗ trợ khi chọn trong cấu hình provider. Installer có thể bootstrap Serena bằng `uv tool install`; nếu dependency tùy chọn không khả dụng, installer vẫn tiếp tục và đưa ra cảnh báo. Khi chọn Gortex, `oma install` và `oma update` ở project mode đăng ký project với Gortex daemon (`gortex track`) nếu project chưa được theo dõi, đồng thời thêm các thư mục do OMA tạo vào danh sách loại trừ của project đó thông qua Gortex CLI; không có gì được ghi vào cây thư mục của project. Bản thân Gortex phải được cài riêng.
 
-Installer nhóm các tích hợp theo capability. Vendor hook gồm Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro và Qwen; OpenCode và pi dùng extension bridge; GitHub Copilot và Hermes nhận link skill; ZCode nhận workflow command. Bạn có thể chọn nhiều vendor, nhưng task đầu tiên chỉ cần host bạn định dùng.
+Installer nhóm các tích hợp theo capability. Vendor hook gồm Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro và Qwen; OpenCode và pi dùng extension bridge; Hermes nhận link skill; ZCode nhận workflow command. Bạn có thể chọn nhiều vendor, nhưng task đầu tiên chỉ cần host bạn định dùng.
 
 ---
 
@@ -51,7 +66,7 @@ Bootstrap vẫn tiếp tục sau lỗi dependency tùy chọn và báo các lệ
 - **Commit-msg guard**: `.githooks/commit-msg` từ chối các địa chỉ `Co-authored-by` không có trong `.githooks/co-authors.allow` hoặc `scm.co_author.email`. `git config --local core.hooksPath .githooks` chỉ được đặt khi không có hook nào khác đang hoạt động; nếu có, oma sẽ in ra cách nối guard vào chuỗi hook. Đặt `scm.co_author.enforce_hook: false` nếu không muốn dùng.
 - **Cập nhật ở chế độ nền**: `oma update` cập nhật `oma` CLI ở chế độ nền (`auto_update_cli: false` hoặc `OMA_SKIP_VERSION_CHECK=1` để dừng) và chạy `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` để dừng).
 - **Cleanup timer của Serena**: khi Serena ở chế độ `bridge` mặc định, phiên agent đầu tiên khởi động một Serena server dùng chung sẽ đăng ký một timer dừng các Serena server dùng chung đang rảnh mỗi 5 phút (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer` hoặc Windows scheduled task `OMA Serena Daemon GC`). Đặt `serena.mode: stdio` để bỏ qua server dùng chung và timer của nó. `oma uninstall` không gỡ timer này.
-- **Các lần chạy không tương tác** (`-y`, `OMA_YES=1`, `CI=true`) dùng skill preset `All`, `model_preset: auto` và Python làm ngôn ngữ backend. Chúng không chọn browser MCP nào (và bỏ qua script cài Aside) trừ khi `mcp.devtools_browsers` đã có sẵn một mục.
+- **Các lần chạy không tương tác** (`-y`, `OMA_YES=1`, `CI=true`) dùng skill preset `All` trừ khi `--preset` chọn preset khác, cộng `model_preset: auto` và Python làm ngôn ngữ backend. Chúng không chọn browser MCP nào (và bỏ qua script cài Aside) trừ khi `mcp.devtools_browsers` đã liệt kê một mục.
 
 ---
 
@@ -79,30 +94,57 @@ Chọn preset khớp với công việc mà repository cần. Tên skill bên d�
 | **backend** | API hoặc service có database | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
 | **mobile** | Chỉ ứng dụng mobile | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
 | **devops** | Công việc hạ tầng, CI/CD và observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **security** | Quét bảo mật, review mã và khắc phục | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Paper, nghiên cứu thị trường và chuyển đổi PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Design asset, hình ảnh, giọng nói và nội dung viết | design, image, voice, academic-writing, translation, scm | 6 |
 
 Preset là các bundle skill, không tạo một định nghĩa subagent cho mỗi skill. Preset `all` mở rộng từ registry skill đang chạy, nên danh sách có thể tăng cùng repository. Preset domain chỉ bao gồm skill cần cho trọng tâm đó.
 
+Chọn preset từ dòng lệnh:
+
+```bash
+oma install --preset frontend --yes
+```
+
+`--preset` dùng các tên trong bảng và được ưu tiên hơn prompt skill tương tác cùng mặc định `all` khi không tương tác. Tên không xác định bị từ chối trước khi cài đặt bắt đầu. Bỏ qua tùy chọn này thì giữ luồng chọn hiện có. Tùy chọn chọn skill; file dùng chung, agent, workflow, hook và thiết lập provider vẫn theo installer runtime. Cài lại với preset nhỏ hơn vẫn giữ các skill đã cài trước đó. Chọn tùy chỉnh chỉ có trong menu tương tác; `--preset` không chấp nhận `custom` và giá trị rỗng.
+
+Sau khi cài, hãy đọc danh sách skill đã chọn và báo cáo workflow còn dùng được. Một workflow chỉ được đưa ra khi các manifest skill bắt buộc có tên và mô tả hợp lệ. Skill hiện có được giữ lại có thể đáp ứng các yêu cầu đó. Tham chiếu có điều kiện được báo riêng và không mở rộng preset đã chọn. Kiểm tra này bao quát manifest; tool, provider, credential và việc thực thi vẫn cần kiểm tra riêng.
+
 ### Workflow cần skill nằm ngoài preset {#workflows-that-need-skills-outside-a-preset}
 
-Mọi preset đều cài tất cả định nghĩa workflow và agent, nhưng một số workflow đọc skill mà preset domain không cài. Hãy xem bảng này trước khi chọn một preset domain:
+Mọi preset đều sao chép định nghĩa workflow và agent. Command và prompt chỉ được đưa ra cho workflow có đủ skill bắt buộc. Ví dụ, bản cài frontend mới để `/work` không dùng được vì thiếu `oma-coordination`; skill PM và QA hiện có đã đáp ứng các yêu cầu đầu vào còn lại. Installer báo skill còn thiếu mà không chuyển sang `all`.
 
-| Workflow | Đọc skill | Preset bao gồm skill đó |
+| Workflow | Skill đầu vào bắt buộc | Preset có các skill đó |
 |----------|-------------|-------------------------|
-| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
-| `/ultrawork`, `/ralph` | oma-coordination; agent `refactor-engineer` mà nó spawn dùng oma-refactor | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
+| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
-| `/security` | oma-security | all |
+| `/security` | oma-security | all, security |
 | `/recap` | oma-recap | all |
 | `/video` | oma-video | all |
-| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
 | `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
-| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/architecture` | oma-architecture | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
+| `/plan` | oma-pm | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/review` | oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
 | `/scm` | oma-scm | mọi preset |
 
-Để thêm skill còn thiếu sau này, chạy `oma doctor` từ project root, chấp nhận lời nhắc về skill bị thiếu và chọn **Select individually**.
+Tham chiếu theo nhánh vẫn mang tính tham khảo. Ví dụ, `/convert` chọn tool PDF, HWP hoặc video sau khi xem input; `/ralph` và `/ultrawork` có thể cần `oma-refactor` cho nhánh refactor. Các tham chiếu này không phải yêu cầu đầu vào vô điều kiện.
+
+Chạy `oma doctor` để chẩn đoán manifest thiếu hoặc không hợp lệ. Để thêm skill còn thiếu, chạy `oma install` và chọn **Select individually**. Sau khi sửa manifest, chạy `oma link` để làm mới việc đưa workflow ra; cài lại cũng làm mới. Với cài đặt global của OMA, dùng scope `--global` tương ứng. Command của người dùng hiện có được giữ khi các command OMA không dùng được bị gỡ.
+
+### Plugin theo domain {#domain-plugins}
+
+Người dùng marketplace Claude Code có thể chọn một entry domain sau khi thêm marketplace `oh-my-agent`:
+
+```bash
+claude plugin install oma-frontend@oh-my-agent
+# Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
+```
+
+Các entry domain chứa 8 skill frontend, 6 skill security hoặc 8 skill research, cùng một lựa chọn native agent tương ứng. Bootstrap session của chúng truyền preset đó cho installer runtime. Thiết lập runtime dùng chung và các skill đã cài hiện có tuân theo hành vi installer mô tả ở trên. Entry `oma` giữ nguyên plugin đầy đủ. Cùng các root domain đó được khai báo trong catalog marketplace Codex được sinh ra, và trong catalog Grok Build cùng ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` trên cây đã emit hoặc asset release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode và Kimi Code (`/plugins install`) mỗi cái đọc manifest được sinh riêng; xem [Host plugin tương thích Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) để biết bước chính xác theo từng host.
+
+Các job CI của host được ghim đăng ký marketplace cục bộ trên runner mới, cài entry domain và kiểm tra inventory thu được. Các kiểm tra này chạy không gọi model. Credential runtime, provider bên ngoài và task đầu tiên thành công vẫn cần xác minh riêng. Kiểm tra release cũng yêu cầu cả hai manifest trong mỗi root domain khớp phiên bản CLI và có updater phiên bản của Release Please.
 
 Tài nguyên dùng chung (`_shared/`) luôn được cài đặt bất kể preset. Chúng gồm định tuyến cốt lõi, tải context, cấu trúc prompt, phát hiện vendor, protocol thực thi và protocol memory.
 
@@ -296,9 +338,8 @@ agents:
 |-------|------|----------|-------------|
 | `language` | string | Có | Mã ngôn ngữ phản hồi. Hỗ trợ en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
 | `model_preset` | string | Có | Key [model preset](./glossary.md#model-preset) đang hoạt động. `auto` theo runtime hiện tại; key cố định gồm `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` và `mixed`. Key preset tùy chỉnh cũng hợp lệ. Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md). |
-| `default_cli` | string | Không | CLI fallback cho `oma agent spawn` khi setting agent tường minh và preset đã chọn không resolve được vendor. |
-| `free` | map | Không | Setting gateway FreeLLMAPI khi `model_preset: free`; giữ API key trong biến môi trường. |
-| `providers` | map | Không | Provider capability: `code_intelligence` (`serena` hoặc `gortex`), `code_intelligence_guard` (`block` hoặc `off`), `docs` (`context7`), `web` (`native` hoặc `brave`) và `semantic_memory` (`agentmemory`, `honcho` hoặc `none`). |
+| `agents` | map | Không | Override model theo role; `agents.default` giữ `cli` (CLI fallback cho `oma agent spawn` khi setting agent tường minh và preset đã chọn không resolve được vendor) cùng `effort`, `thinking` và `memory` mặc định. |
+| `providers` | map | Không | Provider capability: `code_intelligence` (`serena` hoặc `gortex`), `code_intelligence_guard` (`block` hoặc `off`), `docs` (`context7`), `web` (`native` hoặc `brave`) và `semantic_memory` (`agentmemory`, `honcho` hoặc `none`); các section credential của chúng (`brave`, `exa`, `honcho`); và các LLM provider có tên như `free` (gateway FreeLLMAPI mà `model_preset: free` dùng). Giữ API key trong biến môi trường. |
 | `date_format` | string | Không | Định dạng timestamp (`ISO`, `US`, `EU`). Mặc định: `ISO`. |
 | `timezone` | string | Không | Định danh timezone (ví dụ `Asia/Seoul`). Giá trị bỏ trống dùng timezone của hệ thống host. |
 | `auto_update_cli` | boolean | Không | Cho phép kiểm tra CLI định kỳ cập nhật trong background hay không. Mặc định: `true` (tắt bằng `false`). |
@@ -314,7 +355,7 @@ agents:
 
 ### Resolve vendor
 
-Khi spawn agent, CLI resolve setting theo thứ tự: `agents.<id>`, `model_preset` đã chọn, fallback orchestrator của preset, rồi `default_cli`. Với `model_preset: auto`, cấu hình native của runtime hiện tại cung cấp model; runtime không biết sẽ fallback về `default_cli`. Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md) để biết ma trận đầy đủ.
+Khi spawn agent, CLI resolve setting theo thứ tự: `agents.<id>`, `model_preset` đã chọn, fallback orchestrator của preset, rồi `agents.default.cli`. Với `model_preset: auto`, cấu hình native của runtime hiện tại cung cấp model; runtime không biết sẽ fallback về `agents.default.cli`. Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md) để biết ma trận đầy đủ.
 
 ---
 

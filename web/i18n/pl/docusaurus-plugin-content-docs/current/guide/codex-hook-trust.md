@@ -1,62 +1,50 @@
 ---
 title: "Przewodnik: zaufanie hookom Codex"
 sidebar_label: Zaufanie hookom Codex
-description: Dlaczego hooki Codex nie działają, dopóki raz ich nie przejrzysz, co dzieje się podczas aktualizacji i co oh-my-agent automatyzuje dla uruchamianych podprocesów Codex.
+description: Jak Codex bramkuje hooki zaufaniem, co oh-my-agent zapisuje, aby jego hooki działały, i kiedy nadal trzeba przejrzeć hooki samodzielnie.
 ---
 
 # Przewodnik: zaufanie hookom Codex
 
-Gdy oh-my-agent instaluje się w projekcie, zapisuje natywne dla dostawców konfiguracje hooków, w tym `.codex/hooks.json` dla CLI Codex. W przeciwieństwie do Claude Code Codex nie uruchamia tych hooków automatycznie. Każdy niezarządzany hook polecenia jest chroniony przez Trust-On-First-Use (TOFU): hook działa dopiero po jednorazowym przejrzeniu i włączeniu.
+Gdy oh-my-agent instaluje się w projekcie, zapisuje natywne dla dostawców konfiguracje hooków, w tym `.codex/hooks.json` dla CLI Codex. Codex nie uruchamia hooka tylko dlatego, że jest skonfigurowany. Bramkują go dwie zgody, obie w konfiguracji użytkownika (`$CODEX_HOME/config.toml`, domyślnie `~/.codex/config.toml`). Projekt nie może zatwierdzić własnych hooków:
 
-To mechanizm bezpieczeństwa po stronie Codex. Hooki wymagają jednorazowego przejrzenia, a ponownie po aktualizacji tylko wtedy, gdy zmieni się polecenie.
+1. **Zaufanie do projektu.** Katalog `.codex/` projektu (jego `config.toml` i `hooks.json`) ładuje się tylko dla zaufanego projektu: `[projects."<path>"] trust_level = "trusted"`.
+2. **Zaufanie per hook.** Każdy niezarządzany hook, w zakresie projektu albo użytkownika, potrzebuje wpisu `[hooks.state."<hooks.json path>:<event>:<group>:<handler>"]`, którego `trusted_hash` zgadza się z bieżącą deklaracją hooka (polecenie, timeout, matcher, flaga async, komunikat statusu).
+
+Nowy albo zmieniony hook pokazuje w TUI Codex „Hooks need review”. `codex exec` po cichu go pomija.
 
 ---
 
-## Jednorazowy krok: przejrzyj hooki w Codex
+## Co oh-my-agent zapisuje
 
-Po tym, jak `oma` (install), `oma link` albo `oma update` zapisze `.codex/hooks.json` w projekcie, którego Codex wcześniej nie widział (przy instalacji globalnej `~/.codex/hooks.json`), hooki **jeszcze nie działają**. Otwórz Codex i przejrzyj je raz:
+`oma install`, `oma update` i `oma link` zapisują obie zgody dla **własnych hooków oh-my-agent**. To handlery o nazwach `oma-hook-*` albo uruchamiane przez wrapper `oma-hook.sh`. Skrót jest tym samym, który Codex oblicza po wyborze „Trust all and continue”, więc hooki działają w pierwszej sesji Codex bez kroku `/hooks`. Późniejsze wydanie oh-my-agent, które zmienia polecenie hooka, zapisuje nowy skrót podczas `oma update`, więc hooki pozostają włączone.
 
-1. Otwórz projekt w CLI Codex.
-2. Uruchom `/hooks`, aby otworzyć przeglądarkę hooków (TUI).
-3. Przejrzyj wymienione hooki i włącz je.
+oh-my-agent edytuje w `config.toml` tylko objęte tabele. Ponownie odczytuje wynik i pozostawia plik nietknięty, gdy cokolwiek innego miałoby się zmienić. Nigdy:
 
-Do tego czasu hooki pozostają niezaufane i są po cichu pomijane. Dlatego oh-my-agent wypisuje komunikat za każdym razem, gdy tworzy albo zmienia `.codex/hooks.json`:
+- nie zatwierdza hooka dodanego samodzielnie do tego samego `hooks.json`,
+- nie ufa projektowi oznaczonemu `trust_level = "untrusted"`,
+- nie włącza ponownie hooka wyłączonego (`enabled = false`),
+- nie dotyka Codex, zanim Codex utworzy swój katalog domowy.
+
+Instalacja globalna (`~/.codex/hooks.json`) dostaje wyłącznie wpisy per hook, bo nie ma projektu, któremu można zaufać.
+
+---
+
+## Kiedy nadal przeglądasz hooki samodzielnie
+
+Jeśli oh-my-agent nie mógł zapisać zaufania, wypisuje powód wraz z komunikatem:
 
 ```text
-⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
+⚠ Codex hooks installed/updated but not trusted (<reason>) — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
-Przed otwarciem Codex sprawdź wygenerowany plik:
-
-```bash
-test -s .codex/hooks.json && echo "Codex hooks are installed"
-oma link codex
-```
-
-Oczekiwany wynik to komunikat instalacji/aktualizacji, a następnie hooki w przeglądarce `/hooks` Codex. `oma link codex` uzgadnia wygenerowany plik; nie zastępuje jednorazowej decyzji o zaufaniu.
-
-**Uwaga:** `--dangerously-bypass-hook-trust` tutaj nie pomaga. Jego ostrzeżenie („Enabled hooks may run without review”) oznacza tylko obejście przeglądu hooków już włączonych — nie uruchomi hooka, którego nigdy nie przejrzano. Przeglądarka `/hooks` jest jedynym sposobem pierwszego włączenia hooka.
-
-W tle Codex zapisuje decyzję w `~/.codex/config.toml`, w wpisie `[hooks.state]` kluczowanym ścieżką pliku hooków, zdarzeniem, blokiem i hookiem, wraz z flagą `enabled` oraz wartością `trusted_hash` dla ciągu polecenia.
+Typowe przypadki to `config.toml`, którego nie da się sparsować, projekt oznaczony jako niezaufany albo Codex, który jeszcze nie był uruchomiony. Wtedy otwórz projekt w Codex, uruchom `/hooks` i włącz hooki raz. Następnie uruchom `oma link codex`, aby późniejsze aktualizacje utrzymywały ich zaufanie.
 
 ---
 
-## Co dzieje się podczas aktualizacji
+## Procesy Codex uruchamiane przez oh-my-agent
 
-Po zaufaniu hookom nie trzeba powtarzać tego kroku przy każdej aktualizacji:
-
-- **Ponowne uruchomienie `oma link` albo `oma update` zachowuje zaufanie**, dopóki ciągi poleceń hooków się nie zmienią. Codex porównuje zapisany skrót z bieżącym poleceniem; zgodność pozostawia hook zaufany.
-- **Jeśli przyszła wersja oh-my-agent zmieni ciąg polecenia hooka**, skróty przestaną się zgadzać i ten hook po cichu znów stanie się niezaufany. Ponownie zobaczysz komunikat instalatora i trzeba będzie jeszcze raz zaufać hookowi przez `/hooks`.
-
-Krok przeglądu jest więc wymagany tylko pierwszy raz, a później po wydaniu, które rzeczywiście zmieni polecenie hooka.
-
----
-
-## Co oh-my-agent automatyzuje
-
-Gdy oh-my-agent sam uruchamia podproces Codex — na przykład agenta innego dostawcy zleconego przez `oma agent spawn` — automatycznie przekazuje `--dangerously-bypass-hook-trust`. Dzięki temu jego własne, sprawdzone hooki mogą działać po aktualizacjach bez ręcznego ponownego zaufania.
-
-Ta flaga jest stosowana **wyłącznie** do procesów Codex uruchamianych przez oh-my-agent. Nigdy nie jest zapisywana w `~/.codex/config.toml` ani w konfiguracji projektu, więc nie wpływa na sesje Codex uruchamiane samodzielnie.
+Gdy oh-my-agent sam uruchamia podproces Codex (na przykład `oma agent spawn`), przekazuje też `--dangerously-bypass-hook-trust`. Ta flaga uruchamia włączone hooki bez sprawdzania skrótu. Nie znosi zaufania do projektu. Flaga dotyczy wyłącznie procesów uruchamianych przez oh-my-agent i nigdy nie jest zapisywana w konfiguracji.
 
 ---
 
@@ -70,10 +58,10 @@ Starsze wydania oh-my-agent zapisywały `[features] codex_hooks = true` w konfig
 
 | Sytuacja | Co robisz |
 |:----------|:------------|
-| Pierwsza instalacja / pierwszy `.codex/hooks.json` w projekcie | Otwórz Codex, uruchom `/hooks` i raz włącz hooki |
-| `oma update` bez zmian w poleceniach hooków | Nic — zaufanie zostaje zachowane |
-| `oma update`, które zmienia polecenie hooka | Ponownie uruchom `/hooks`, aby zaufać hookowi (instalator wypisze komunikat) |
-| Podproces Codex uruchomiony przez oh-my-agent | Nic — obejście jest stosowane automatycznie |
+| Pierwsza instalacja w projekcie | Nic: zaufanie zapisuje instalator |
+| `oma update`, które zmienia polecenie hooka | Nic: nowy skrót zostaje zapisany |
+| Instalator wypisuje „not trusted (…)” | Napraw powód albo raz uruchom `/hooks` w Codex |
+| Hook dodany do `.codex/hooks.json` | Przejrzyj go samodzielnie w `/hooks` |
 
 ## Zobacz także
 

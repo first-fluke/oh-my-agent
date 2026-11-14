@@ -5,8 +5,6 @@ description: Definiciones breves de los términos de oh-my-agent, como habilidad
 
 # Glosario
 
-Cada entrada ofrece una definición breve y enlaza con la página que trata el término en profundidad. Cuando una palabra significa cosas distintas en distintas partes de OMA, la entrada lo indica.
-
 ## Componentes básicos
 
 ### Habilidad (skill) {#skill}
@@ -29,7 +27,7 @@ Un preset de habilidades es el conjunto de habilidades que el instalador añade 
 
 ### Preset de modelos {#model-preset}
 
-El preset de modelos es el valor de `model_preset` en `.agents/oma-config.yaml` (o `.cue`). Decide qué proveedor y qué modelo usa cada agente. `auto`, el valor predeterminado en las instalaciones nuevas, sigue la configuración de agentes y modelos del propio runtime actual; los presets fijos como `claude`, `codex` o `mixed` los fijan. Las sobrescrituras `agents.<id>` tienen prioridad sobre el preset, excepto con `free`, donde `free.model` reemplaza los modelos fijados por agente. Consulta [Presets integrados](../guide/per-agent-models.md#built-in-presets).
+El preset de modelos es el valor de `model_preset` en `.agents/oma-config.yaml` (o `.cue`). Decide qué proveedor y qué modelo usa cada agente. `auto`, el valor predeterminado en las instalaciones nuevas, sigue la configuración de agentes y modelos del propio runtime actual; los presets fijos como `claude`, `codex` o `mixed` los fijan. Las sobrescrituras `agents.<id>` tienen prioridad sobre el preset, excepto con `free` u otro proveedor LLM `providers.<name>`, donde el `default_model` del proveedor reemplaza los modelos fijados por agente. Consulta [Presets integrados](../guide/per-agent-models.md#built-in-presets).
 
 ## Ejecución de flujos de trabajo
 

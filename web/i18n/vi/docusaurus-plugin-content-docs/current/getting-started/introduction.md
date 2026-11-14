@@ -5,13 +5,15 @@ description: Tổng quan toàn diện về oh-my-agent, framework điều phối
 
 # Giới thiệu
 
-oh-my-agent là framework điều phối đa agent dành cho IDE và công cụ CLI có AI, phân phối công việc qua 33 gói skill và 13 vai trò dispatch chuẩn. Mười hai tệp định nghĩa subagent được kiểm soát trong repository cung cấp các persona có thể tái sử dụng cho triển khai, review, lập kế hoạch, gỡ lỗi, tài liệu, nghiên cứu và hạ tầng. `research-explorer.md` ánh xạ tới vai trò chuẩn `explore`; `orchestrator` là vai trò điều phối ở runtime và không có tệp định nghĩa riêng.
+oh-my-agent là framework điều phối đa agent dành cho IDE và công cụ CLI có AI. Thay vì dựa vào một trợ lý AI duy nhất cho mọi việc, oh-my-agent phân phối công việc qua 33 gói skill và 13 vai trò dispatch chuẩn. Mười hai tệp định nghĩa subagent được kiểm soát trong repository cung cấp các persona có thể tái sử dụng cho triển khai, review, lập kế hoạch, gỡ lỗi, tài liệu, nghiên cứu và hạ tầng. `research-explorer.md` ánh xạ tới vai trò chuẩn `explore`; `orchestrator` là vai trò điều phối ở runtime và không có tệp định nghĩa riêng.
 
 OMA cung cấp các kiểm tra cơ học khi bạn gọi chúng hoặc chọn workflow có chứa chúng. `oma verify agent <agent-type>` chạy các kiểm tra cho loại agent đã chọn; `/ralph` thêm xác minh dựa trên artifact và vòng [judge](./glossary.md#judge); Stop hook của vendor đang bật ([stop gate](./glossary.md#stop-gate)) có thể giữ workflow mở trong khi các kiểm tra đã cấu hình chạy. Chỉ tải skill không tạo thành điều kiện chấp nhận, và prompt thông thường không tự động chạy mọi cổng kiểm tra của workflow. Hãy dùng tiêu chí chấp nhận của workflow và các tệp kết quả để quyết định việc gì đã hoàn tất.
 
 Toàn bộ hệ thống nằm trong thư mục di động `.agents/` bên trong dự án. Bạn có thể chuyển giữa Claude Code, Codex CLI, Antigravity CLI hoặc IDE, Cursor, OpenCode và các công cụ được hỗ trợ khác, còn cấu hình agent đi cùng mã nguồn.
 
-Nếu mới dùng OMA, hãy bắt đầu với [Quick Start](./quick-start.md), rồi đọc [Important Defaults](./important-defaults.md). Việc cài đặt tạo [SSOT](./glossary.md#ssot) và các tích hợp vendor; kiểm tra hữu ích đầu tiên là `oma doctor`, còn tác vụ hữu ích đầu tiên là một thay đổi nhỏ trong một domain. Chỉ chuyển sang `/work` hoặc `/orchestrate` khi tác vụ cần điều phối.
+Bắt đầu từ [Chọn cách thiết lập](./choose-setup.md): tải một skill cho một task trong agent hiện tại, chọn skill preset của runtime cho hook và workflow, hoặc cài plugin Claude Code. Việc tải skill tạm thời cung cấp instruction và file hỗ trợ; dependency của CLI, rule dự án và dịch vụ bên ngoài vẫn được nêu rõ. Cài runtime tạo [SSOT](./glossary.md#ssot) và các tích hợp vendor.
+
+Dùng [Quick Start](./quick-start.md) cho task đầu tiên và các kiểm tra đã quan sát. `oma doctor` kiểm tra một bản cài runtime; [Các mặc định quan trọng](./important-defaults.md) giải thích provider và cấu hình của nó. Chuyển sang `/work` hoặc `/orchestrate` khi cần điều phối và các skill được tham chiếu đã được cài.
 
 ---
 
@@ -23,7 +25,7 @@ Các trợ lý lập trình AI truyền thống thường xử lý frontend, bac
 - **Không rõ quyền sở hữu**: tác vụ liên domain không có ranh giới rõ ràng cho từng phần
 - **Điều phối thủ công**: các tính năng phức tạp trải rộng nhiều domain cần host hoặc người dùng tự chọn các lần bàn giao
 
-oh-my-agent giải quyết bằng chuyên môn hóa:
+OMA gán domain cho skill và định tuyến công việc của task tới agent:
 
 1. **Mỗi skill có một domain chính.** Skill frontend biết React/Next.js, shadcn/ui, TailwindCSS v4 và kiến trúc FSD-lite. Skill backend biết mẫu Repository-Service-Router, truy vấn tham số hóa và xác thực JWT. Các domain có thể giao nhau ở ranh giới, vì vậy hãy dùng tiêu chí chấp nhận của tác vụ để quyết định khi nào cần skill thứ hai hoặc workflow điều phối.
 
@@ -221,7 +223,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Nguồn: `.agents/hooks/core/keyword-detector.ts` (bỏ qua slash command, khớp trigger, gợi ý workflow liên tục), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` và các tệp workflow dưới `.agents/workflows/`. Không phải workflow nào cũng có mọi cổng kiểm tra: `/orchestrate` chạy verify script, `/review` chạy QA review, còn `/ralph` thêm [judge](./glossary.md#judge).
+Nguồn: `.agents/hooks/core/keyword-detector.ts` (bỏ qua slash command, khớp tên mode tường minh), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` và các tệp workflow dưới `.agents/workflows/`. Không phải workflow nào cũng có mọi cổng kiểm tra: `/orchestrate` chạy verify script, `/review` chạy QA review, còn `/ralph` thêm [judge](./glossary.md#judge).
 
 ---
 

@@ -8,7 +8,7 @@ description: "基于 OMA 运行证据，按计划、按预算改进技能，并�
 
 OMA 可以从被跟踪的智能体运行中收集证据，并在计划好的反馈周期里处理失败。技能的自动修改**在你为项目启用之前保持关闭**。每个周期都有有限的模型调用预算，被应用的修改必须通过现有的技能评估关卡。
 
-自动路径改进的是技能文档。对优化器或维护者流程本身的修改，仍属于单独手动调用的[元优化](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate)。
+自动路径会把已评估的修改应用到技能文档。对优化器或维护者流程本身的修改，仍属于单独手动调用的[元优化](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate)。
 
 ## 启用项目 {#enable-a-project}
 
@@ -62,7 +62,7 @@ oma harness evolution disable
 
 ## 自动发生的事情 {#what-happens-automatically}
 
-下图展示一个周期，无论它由调度器触发还是由你手动运行。
+周期按计划运行，也可以手动运行。
 
 ```mermaid
 flowchart TD

@@ -74,8 +74,10 @@ Los valores entre paréntesis son el `effort` del preset (Codex) o `thinking: tr
 
 | `model_preset` | ¿Está definido `agents.<id>`? | Modelo enviado a la CLI | CLI que ejecuta el agente |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | Se ignora | `FREELLM_MODEL`; si no, `free.model`; si no, `auto` (todos los roles) | `--vendor`; si no, `OMA_RUNTIME_VENDOR`; si no, el runtime detectado si es Codex, Claude o Qwen; si no, `default_cli`; si no, `codex`. Solo se aceptan `codex`, `claude` y `qwen`. |
-| `auto` | No | Ninguno. Se aplican los ajustes de agente y de sesión del propio proveedor. | `--vendor`; si no, un `OMA_RUNTIME_VENDOR` compatible; si no, el runtime detectado; si no, `default_cli`; si no, `claude`. Un valor no compatible es un error. |
+| `free` | Se ignora el modelo; se aplican `effort`, `thinking` y `memory` | `FREELLM_MODEL`; si no, `providers.free.default_model`; si no, `auto` (todos los roles) | `--vendor`; si no, `OMA_RUNTIME_VENDOR`; si no, el runtime detectado si es Codex, Claude o Qwen; si no, `agents.default.cli`; si no, `codex`. Solo se aceptan `codex`, `claude` y `qwen`. |
+| Un proveedor LLM `providers.<name>` | Se ignora el modelo; se aplican `effort`, `thinking` y `memory` | El `default_model` del proveedor (todos los roles); si falta, es un error | `--vendor`; si no, `OMA_RUNTIME_VENDOR`; si no, el runtime detectado; si no, `agents.default.cli`; si no, la primera CLI que admita el `transport` del proveedor (`chat_completions` → Codex o Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` → cualquiera de los tres). |
+| Cualquiera | `model` es `<provider>/<model-id>` de una entrada `providers.<name>` | `<model-id>`, pasado a la CLI tal cual | La regla de proveedor de la fila anterior; no se consulta el registro |
+| `auto` | No | Ninguno. Se aplican los ajustes de agente y de sesión del propio proveedor. | `--vendor`; si no, un `OMA_RUNTIME_VENDOR` compatible; si no, el runtime detectado; si no, `agents.default.cli`; si no, `claude`. Un valor no compatible es un error. |
 | `auto` | Sí | El `model` de la sobrescritura | La `cli` de ese modelo y, después, la regla de sobrescritura de proveedor de más abajo |
 | Integrado, alias o personalizado | No | La entrada del preset para el rol; si no, la entrada `orchestrator` del preset | La `cli` de ese modelo y, después, la regla de sobrescritura de proveedor de más abajo |
 | Integrado, alias o personalizado | Sí | La entrada del preset combinada de forma superficial con la sobrescritura (ganan los campos de la sobrescritura) | La `cli` de ese modelo y, después, la regla de sobrescritura de proveedor de más abajo |
@@ -86,6 +88,7 @@ Cómo encajan las demás piezas:
 - **Búsqueda del modelo.** Un slug se busca primero en `models:` y después en el registro integrado. Un slug desconocido, o una especificación con `api_only: true`, detiene el despacho.
 - **Regla de sobrescritura de proveedor.** Cuando `--vendor` u `OMA_RUNTIME_VENDOR` nombra un proveedor para una fila respaldada por un modelo, `pi` siempre toma el control (solo modelos de proveedores reales; consulta [Despachar mediante pi](#dispatching-through-pi-transport-runtime)). Cualquier otro proveedor toma el control solo si figura en `supports.native_dispatch_from` del modelo. En caso contrario, OMA emite una advertencia y conserva la `cli` propia del modelo.
 - **Esfuerzo.** `effort` se descarta, con una advertencia, en los modelos cuya CLI no tiene flag de esfuerzo (Claude Code). Se conserva para pi, que lo asigna a `--thinking`.
+- **Valores predeterminados.** `agents.default` aporta `effort`, `thinking` y `memory` a cada rol que no define los suyos, en todas las filas anteriores, y su `cli` es el fallback de proveedor que las filas llaman `agents.default.cli` (se sigue leyendo el `default_cli` de nivel superior anterior). Nunca aporta un modelo.
 
 ## Despacho automático {#auto-dispatch}
 
@@ -108,10 +111,10 @@ Mantén `model_preset: auto` en el archivo compartido y actívalo localmente:
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
 
@@ -120,11 +123,14 @@ El archivo YAML equivalente es:
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
+
+El bloque `free:` de nivel superior anterior (con `model` en lugar de `default_model`) se sigue leyendo, y `oma update` lo reescribe a esta forma.
 
 Inicia FreeLLMAPI por separado y exporta su clave unificada como `FREELLM_API_KEY`. OMA también acepta `FREELLMAPI_API_KEY` de upstream cuando se selecciona la variable de clave predeterminada; la variable canónica gana si ambas están definidas. Un `api_key_env` personalizado solo lee esa variable. Nunca pongas la clave en la configuración. `OMA_MODEL_PRESET` sobrescribe el preset. `FREELLM_BASE_URL` y `FREELLM_MODEL` sobrescriben los valores del archivo. Los valores del ejemplo son los predeterminados, por lo que basta con `model_preset: free` cuando el servidor y la clave estén listos.
 
@@ -133,7 +139,7 @@ oma doctor --profile
 oma agent spawn backend "Review the API error handling" free-review --vendor codex --read-only
 ```
 
-El modo free usa `free.model` para todos los roles que OMA despacha, incluidos los que tienen valores fijados en `agents.*.model`. No resuelve esos valores en suscripciones de pago. Elige `auto`, un ID de modelo del gateway o una cadena de gateway con nombre, como `auto:coding` (crea esa cadena antes en FreeLLMAPI).
+El modo free usa `providers.free.default_model` para todos los roles que OMA despacha, incluidos los que tienen valores fijados en `agents.*.model`. No resuelve esos valores en suscripciones de pago. Elige `auto`, un ID de modelo del gateway o una cadena de gateway con nombre, como `auto:coding` (crea esa cadena antes en FreeLLMAPI).
 
 El transporte sigue la fila `free` de [Cómo resuelve OMA el modelo y la CLI de un agente](#how-oma-resolves-an-agents-model-and-cli). Solo se admiten los transportes de Codex, Claude y Qwen. Seleccionar explícitamente un transporte no compatible produce un error.
 
@@ -153,9 +159,39 @@ El preset free configura la inferencia de los agentes. No cambia la configuraci�
 
 Referencias upstream: [configuración del cliente](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md), [familias de API y embeddings](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md).
 
+## Proveedores LLM personalizados {#custom-llm-providers}
+
+`free` es una instancia de un mecanismo general: cualquier endpoint compatible con OpenAI o Anthropic puede declararse bajo `providers:` y los agentes generados se enrutan a través de él. La clave es el nombre del proveedor; el valor nunca contiene un secreto.
+
+```yaml
+# .agents/oma-config.yaml
+providers:
+  code_intelligence: serena          # capability selectors stay strings
+  exaone:                            # an object = an LLM provider
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY      # the variable name, never the key
+    transport: chat_completions      # chat_completions | responses | anthropic_messages | multi
+    default_model: k-exaone_v2.5
+
+agents:
+  default: { effort: medium }        # tuning for every role that sets none
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+Dos formas de usar un proveedor:
+
+- **Enrutar todos los roles**: `model_preset: exaone`. Cada rol ejecuta `default_model`; se ignoran los `model` fijados por rol (escaparían de la ruta) y siguen aplicándose el `effort`, `thinking` y `memory` por rol. Un proveedor sin `default_model` no puede ser un preset. Los hijos heredan `OMA_MODEL_PRESET=<name>` para que los spawns anidados conserven la ruta.
+- **Enrutar un rol**: `agents.<id>.model: <name>/<model-id>`. El id del modelo se pasa a la CLI tal cual; no se consultan el registro ni `models:`. Los spawns anidados de ese hijo no se vuelven a enrutar.
+
+`transport` elige la CLI hija, porque cada CLI habla un protocolo: `chat_completions` → Codex (como proveedor `wire_api = "chat"`) o Qwen; `responses` → Codex; `anthropic_messages` → Claude; `multi` → cualquiera de los tres (FreeLLMAPI sirve los tres). `--vendor`, `OMA_RUNTIME_VENDOR`, el runtime detectado y `agents.default.cli` eligen entre las CLI permitidas, en ese orden; una CLI que el transporte no pueda servir es un error, nunca un fallback silencioso a la cuenta propia de la CLI. El hijo recibe el endpoint y la clave de `api_key_env` solo en su propio entorno y en sus argumentos (Codex: una tabla completa `model_providers.oma_<name>`; Claude: `ANTHROPIC_BASE_URL` y `ANTHROPIC_AUTH_TOKEN`; Qwen: `--openai-base-url` y `OPENAI_*`); el entorno del proceso principal y los archivos de ajustes del proveedor no se tocan, y los ajustes de Claude o Qwen en conflicto se informan antes de la ejecución. Spawn y review ejecutan la misma comprobación autenticada `GET /models` que `free` cuando el transporte tiene una lista de modelos; un endpoint que responde 404 no se trata como no disponible.
+
+Los parámetros de muestreo (`temperature`, `top_p`) no forman parte de la entrada del proveedor: las CLI de los proveedores no los aceptan por petición, así que declararlos aquí se ignoraría en silencio.
+
+`free` conserva sus particularidades: valores predeterminados para cada campo, las sobrescrituras `FREELLM_BASE_URL` / `FREELLM_MODEL`, el alias upstream `FREELLMAPI_API_KEY` y el bloque heredado `free:` de nivel superior, que se lee como `providers.free`.
+
 ## Sobrescribir agentes individuales {#overriding-individual-agents}
 
-Usa el mapa `agents:` para sobrescribir agentes concretos por encima del preset activo. Solo se ven afectados los agentes que enumeres; el resto sigue los ajustes del proveedor en modo `auto` o los valores predeterminados del preset fijo seleccionado.
+Usa el mapa `agents:` para sobrescribir agentes concretos por encima del preset activo. Solo se ven afectados los agentes que enumeres; el resto sigue los ajustes del proveedor en modo `auto` o los valores predeterminados del preset fijo seleccionado. La entrada reservada `agents.default` lleva `effort`, `thinking` y `memory` para cada rol que no define los suyos, más `cli`, el proveedor que se usa cuando nada más selecciona uno; nunca lleva un modelo.
 
 ```yaml
 # .agents/oma-config.yaml
@@ -304,7 +340,21 @@ session:
       antigravity: 200000
 ```
 
-Cuando se alcanza un límite, `oma agent spawn` rechaza el siguiente spawn y falla con `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. El uso de tokens se estima a partir de la longitud del prompt, por lo que `spawn_count` es el límite más predecible. Reglas de los campos: [Límites de cuota de sesión](/docs/guide/configuration-reference#session-quota-caps).
+Cuando se alcanza un límite, `oma agent spawn` rechaza el siguiente spawn y falla con `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)`. Las ejecuciones reservan al principio una estimación a partir de la longitud del prompt. El uso disponible de la transcripción nativa la sustituye al terminar; las observaciones no compatibles o ausentes siguen siendo estimaciones. Estos límites no interrumpen a los hijos en ejecución ni garantizan un límite de facturación. `spawn_count` es el límite más predecible. Reglas de los campos: [Límites de cuota de sesión](/docs/guide/configuration-reference#session-quota-caps).
+
+---
+
+## Presupuesto de ejecución de sesión {#session-execution-budget}
+
+Añade `session.execution` para un límite compartido de tiempo transcurrido en el despacho de CLI gestionado por OMA y en la verificación:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+También puedes definir `deadline` como una marca de tiempo ISO con zona horaria. Los comandos `oma agent spawn`, `parallel`, `review`, `resume`, `begin` y `verify` también aceptan `--timeout-seconds` o `--deadline`. El deadline más temprano persiste entre reintentos y reanudaciones; la preparación y las comprobaciones consumen el mismo presupuesto. Una cancelación o un tiempo agotado bloquea la ejecución posterior de esa sesión. Los agentes nativos del proveedor y los trabajos de shell fuera de la CLI gestionada necesitan los controles de su propio host. Consulta [Presupuesto de ejecución de sesión](/docs/guide/configuration-reference#session-execution-budget) para el alcance y la retención de artefactos.
 
 ---
 

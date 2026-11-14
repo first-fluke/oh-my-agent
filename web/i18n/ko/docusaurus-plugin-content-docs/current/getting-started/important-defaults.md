@@ -5,14 +5,17 @@ description: 라우팅, 모델 선택, 프로바이더, 업데이트, 텔레메�
 
 # 중요한 기본값
 
+이 기본값은 설치된 OMA 런타임에 적용됩니다. `skills use`로 스킬 하나만 불러오면 지침은 제공되지만 프로젝트 훅, 프로바이더, 서비스는 설정되지 않습니다. 그 작업 경로나 런타임 설치를 고르려면 [설정 선택](./choose-setup.md)부터 시작하세요.
+
 첫 프로젝트를 바로 사용할 수 있도록 기본값을 정하고, 사용자가 소유한 설정은 안정적으로 유지합니다. 기본값은 런타임에 해석되므로 키를 생략했을 때와 빈 값을 명시했을 때의 동작이 다를 수 있습니다. OMA는 작동하지만 예상과 다르게 동작할 때 이 페이지부터 확인하세요.
 
 ## 첫 실행에 영향을 주는 기본값
 
 | 영역 | 기본값 | 결과 | 오버라이드 |
 |---|---|---|---|
-| 응답 언어 | `en` | 프로젝트 설정이 다른 지원 언어를 선택하지 않으면 에이전트와 워크플로우가 영어로 응답합니다. 호스트나 워크플로우가 지원하는 경우 사용자의 명시적인 언어 지시나 세션 언어가 프로젝트 기본값을 덮어쓸 수 있습니다. | `.agents/oma-config.yaml` 또는 `.cue`의 `language` |
-| 모델 라우팅([모델 프리셋](./glossary.md#model-preset)) | `auto` | 현재 런타임의 네이티브 에이전트 설정을 사용합니다. 알 수 없는 런타임은 `default_cli`가 설정된 경우 그 값으로 폴백합니다. | `model_preset`, `default_cli`, `agents.<id>` |
+| 응답 언어 | 저장된 언어, 없으면 시스템 언어. 폴백은 `en` | 설치할 때 묻지 않고 언어를 감지합니다. `ko_KR.UTF-8` → `ko`처럼 지역 로케일은 지원하는 기본 언어로 대응하고, 지원하지 않는 로케일은 `en`을 씁니다. 사용자가 프롬프트에 쓴 언어가 이 설정보다 우선합니다. | `.agents/oma-config.yaml` 또는 `.cue`의 `language` |
+| 모델 라우팅([모델 프리셋](./glossary.md#model-preset)) | `auto` | 현재 런타임의 네이티브 에이전트 설정을 사용합니다. 알 수 없는 런타임은 `agents.default.cli`가 설정된 경우 그 값으로 폴백합니다. | `model_preset`, `agents.default.cli`, `agents.<id>` |
+| 스킬 내용([스킬 프리셋](./glossary.md#skill-preset)) | 대화형으로 선택합니다. `--preset`을 주지 않은 무인 설정은 `all` | 프리셋은 스킬을 고릅니다. 공유 파일, 워크플로우와 에이전트 정의 전체, 훅, 프로바이더 설정은 런타임 설치에 그대로 포함되고, 이미 있는 다른 스킬은 유지됩니다. | `oma install --preset <name>`. [프리셋 한계](./installation.md#presets)를 참고하세요. |
 | 코드 인텔리전스([기능 프로바이더](./glossary.md#capability-provider)) | `serena` | 새로 설치하면 Serena 설치를 시도하고 MCP 설정을 연결합니다. | `providers.code_intelligence: gortex` 또는 `serena` |
 | 코드 검색 가드 | `block` | 코드 인텔리전스 프로바이더가 설정된 동안에는 PreToolUse 훅이 네이티브 `Grep`/`Glob`과 재귀 셸 검색(`rg`, `grep -r`, `find -name`)을 거부하고, 에이전트가 프로바이더의 도구를 쓰도록 안내합니다. 확인된 제외 대상 안에서만 이루어지는 검색과 프로젝트 밖 경로의 검색은 허용됩니다. 훅은 프로젝트 소스용 우회 방법을 안내하지 않습니다. | `providers.code_intelligence_guard: off` |
 | 시맨틱 메모리 | `agentmemory` | 설치와 업데이트 시 정상 동작하는 AgentMemory 엔드포인트를 재사용하거나 관리형 로컬 서비스를 설치하고 시작한 다음, 준비 상태를 확인한 뒤에 성공으로 처리합니다. 명시적으로 지정한 사용자 정의 엔드포인트는 교체하지 않고 확인만 합니다. | `providers.semantic_memory: honcho` 또는 `none`. `OMA_NO_AGENTMEMORY=1`이면 AgentMemory 설정을 건너뜁니다. |
@@ -40,15 +43,15 @@ OMA는 `$OMA_HOME/.agents/`(기본값 `~/.oma/.agents/`)에서 전역 기본값�
 
 고정 프리셋 순서를 적용하기 전에 모델 라우팅에는 두 가지 예외가 있습니다.
 
-- `model_preset: auto`이면 현재 런타임의 네이티브 에이전트/모델 설정을 사용합니다. 명시적인 `agents.<id>` 오버라이드는 여전히 우선하며, 알 수 없는 런타임은 `default_cli`를 사용할 수 있습니다.
-- `model_preset: free`이면 자식 스폰이 로컬 FreeLLMAPI 게이트웨이를 사용합니다. `free.model`은 게이트웨이 모델을 선택하고 에이전트별 모델 고정을 대체합니다. 생략하면 `FREELLM_MODEL` 또는 프로바이더 폴백 `auto`를 사용합니다.
+- `model_preset: auto`이면 현재 런타임의 네이티브 에이전트/모델 설정을 사용합니다. 명시적인 `agents.<id>` 오버라이드는 여전히 우선하며, 알 수 없는 런타임은 `agents.default.cli`를 사용할 수 있습니다.
+- `model_preset: free`(또는 다른 `providers.<name>` LLM 프로바이더)이면 자식 스폰이 그 게이트웨이를 사용합니다. `providers.free.default_model`이 게이트웨이 모델을 선택하고 에이전트별 모델 고정을 대체합니다. 생략하면 `FREELLM_MODEL` 또는 프로바이더 폴백 `auto`를 사용합니다.
 
 고정 또는 사용자 정의 프리셋에서 실제 순서는 다음과 같습니다.
 
 1. `agents.<id>`의 명시적 오버라이드
 2. 일치하는 `model_preset` 항목, 빌트인 또는 `custom_presets`
 3. 역할에 항목이 없을 때 프리셋의 `orchestrator` 항목
-4. 앞선 단계에서 계획이 해석되지 않을 때 벤더 폴백으로 사용하는 `default_cli`
+4. 앞선 단계에서 계획이 해석되지 않을 때 벤더 폴백으로 사용하는 `agents.default.cli`
 
 `free` 프리셋은 세 프로바이더 설정 모두에 기본값을 제공합니다. `base_url`은 `http://127.0.0.1:31415/v1`, `api_key_env`는 `FREELLM_API_KEY`이며 호환성 별칭으로 `FREELLMAPI_API_KEY`도 허용되고, `model`은 `auto`입니다. 선택한 환경 변수에 사용할 수 있는 API 키가 여전히 필요하며 벤더 폴백은 없습니다. 시스템별로 남겨야 하는 값은 `oma-config.local.yaml`에 설정하거나 프로세스 수준 오버라이드에 `FREELLM_BASE_URL`과 `FREELLM_MODEL`을 사용하세요.
 

@@ -74,7 +74,7 @@ Spec- en visuele judges draaien 3 keer per harness via `judge-multi.sh` en de sc
 1. **superpowers prompt-override** — noodzakelijk om de harness in niet-interactieve modus te laten functioneren (de `<HARD-GATE>` brainstorming-skill blokkeert single-shot-runs). Het resultaat weerspiegelt "wat superpowers kan zodra de gate is omzeild", en is dus geen zuivere appels-met-appels-vergelijking.
 2. **Multi-judge averaging op spec + visueel, single-run journey** — journey-judging vereist een live dev-server en blijft daarom single-run. Behandel journey-verschillen onder ~2 punten als ruis. De steekproefomvang is 1 build per harness.
 3. **Kostennormalisatie** — de efficiëntie-as gebruikt kosten per bestand; de absolute kosten ($1.28–$8.19 over de 5) zijn niet in de score verwerkt.
-4. **De `lint-clean`-aftrek van oma is opzettelijk** — oma laat lint- en typecheckhandhaving bewust over aan git hooks (husky + lint-staged) en CI, in plaats van ESLint-specifieke regels in agent-skills op te nemen. De single-run-benchmark bestraft dit met -5 in `lint-clean`, maar in een echte workflow zouden dezelfde problemen door pre-push worden geblokkeerd voordat ze de remote bereiken.
+4. **De `lint-clean`-aftrek van oma is opzettelijk** — oma laat lint- en typecheckhandhaving bewust over aan git hooks (hk) en CI, in plaats van ESLint-specifieke regels in agent-skills op te nemen. De single-run-benchmark bestraft dit met -5 in `lint-clean`, maar in een echte workflow zouden dezelfde problemen door pre-push worden geblokkeerd voordat ze de remote bereiken.
 
 ---
 

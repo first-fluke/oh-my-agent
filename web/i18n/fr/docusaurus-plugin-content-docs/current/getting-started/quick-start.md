@@ -5,7 +5,7 @@ description: Choisissez une compétence ou un preset de runtime, puis exécutez 
 
 # Démarrage rapide
 
-Utilisez cette page pour exécuter une tâche ciblée et vérifier le résultat. Chargez une compétence dans l’agent de codage que vous utilisez déjà, ou installez le runtime lorsque vous avez besoin de hooks de projet, d’agents spécialisés et de workflows. [Choisir une configuration](./choose-setup.md) explique les parcours disponibles et leurs dépendances.
+Utilisez une tâche ciblée pour vérifier le résultat. Chargez une compétence dans l’agent de codage que vous utilisez déjà, ou installez le runtime lorsque vous avez besoin de hooks de projet, d’agents spécialisés et de workflows. [Choisir une configuration](./choose-setup.md) explique les parcours disponibles et leurs dépendances.
 
 ## 1. Choisir la configuration {#1-install}
 
@@ -100,6 +100,6 @@ Si une tâche gérée se bloque, commencez par `oma agent status <session-id> [a
 - [Choisir une configuration](./choose-setup.md) pour une seule compétence, un preset de runtime ou le plugin Claude Code
 - [Valeurs par défaut importantes](./important-defaults.md) pour la priorité, les fournisseurs et les choix de récupération
 - [Installation](./installation.md) pour les presets, la configuration des fournisseurs, les installations globales et les mises à jour
-- [Agents](../core-concepts/agents.md) pour les 33 paquets de compétences et rôles de répartition
+- [Agents](../core-concepts/agents.md) pour les 33 paquets de compétences et les rôles de dispatch
 - [Workflows](../core-concepts/workflows.md) pour la planification, l’exécution parallèle, l’assurance qualité et les modes persistants
 - [Dépannage](../guide/troubleshooting.md) lorsque l’installation, un fournisseur ou un hook ne se comporte pas comme prévu

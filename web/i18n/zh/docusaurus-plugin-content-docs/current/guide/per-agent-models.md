@@ -74,8 +74,10 @@ model_preset: auto
 
 | `model_preset` | 是否设置 `agents.<id>`？ | 发送给 CLI 的模型 | 运行智能体的 CLI |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | 忽略 | `FREELLM_MODEL`，否则 `free.model`，否则 `auto`（所有角色） | `--vendor`，否则 `OMA_RUNTIME_VENDOR`，否则检测到的运行时（若为 Codex、Claude 或 Qwen），否则 `default_cli`，否则 `codex`。只接受 `codex`、`claude` 和 `qwen`。 |
-| `auto` | 否 | 无。由供应商自身的智能体和会话设置决定。 | `--vendor`，否则受支持的 `OMA_RUNTIME_VENDOR`，否则检测到的运行时，否则 `default_cli`，否则 `claude`。不受支持的值会报错。 |
+| `free` | 忽略模型；`effort`、`thinking`、`memory` 仍然生效 | `FREELLM_MODEL`，否则 `providers.free.default_model`，否则 `auto`（所有角色） | `--vendor`，否则 `OMA_RUNTIME_VENDOR`，否则检测到的运行时（若为 Codex、Claude 或 Qwen），否则 `agents.default.cli`，否则 `codex`。只接受 `codex`、`claude` 和 `qwen`。 |
+| `providers.<name>` LLM 提供方 | 忽略模型；`effort`、`thinking`、`memory` 仍然生效 | 该提供方的 `default_model`（所有角色）；缺失则报错 | `--vendor`，否则 `OMA_RUNTIME_VENDOR`，否则检测到的运行时，否则 `agents.default.cli`，否则该提供方 `transport` 允许的第一个 CLI（`chat_completions` 为 Codex 或 Qwen，`responses` 为 Codex，`anthropic_messages` 为 Claude，`multi` 为三者之一）。 |
+| 任意 | `model` 为某个 `providers.<name>` 条目的 `<provider>/<model-id>` | `<model-id>`，原样传给 CLI | 上一行的供应商规则；不查询注册表 |
+| `auto` | 否 | 无。由供应商自身的智能体和会话设置决定。 | `--vendor`，否则受支持的 `OMA_RUNTIME_VENDOR`，否则检测到的运行时，否则 `agents.default.cli`，否则 `claude`。不受支持的值会报错。 |
 | `auto` | 是 | 覆盖中的 `model` | 该模型的 `cli`，然后应用下文的供应商覆盖规则 |
 | 内置、别名或自定义 | 否 | 预设中该角色的条目，否则预设的 `orchestrator` 条目 | 该模型的 `cli`，然后应用下文的供应商覆盖规则 |
 | 内置、别名或自定义 | 是 | 预设条目与覆盖浅合并（覆盖字段优先） | 该模型的 `cli`，然后应用下文的供应商覆盖规则 |
@@ -86,6 +88,7 @@ model_preset: auto
 - **模型查找。** slug 先在 `models:` 中查找，再在内置注册表中查找。未知 slug 或带有 `api_only: true` 的规范会停止调度。
 - **供应商覆盖规则。** 当 `--vendor` 或 `OMA_RUNTIME_VENDOR` 为基于模型的行指定供应商时，`pi` 总是接管（仅限真实供应商模型；参见[通过 pi 调度](#dispatching-through-pi-transport-runtime)）。其他供应商只有在列于模型的 `supports.native_dispatch_from` 中时才会接管。否则 OMA 会发出警告，并保留模型自身的 `cli`。
 - **推理强度。** 对于 CLI 没有推理强度标志的模型（Claude Code），`effort` 会被丢弃并发出警告。pi 会保留它，并映射为 `--thinking`。
+- **默认值。** `agents.default` 为上面每一行中未自行设置这些字段的角色提供 `effort`、`thinking` 和 `memory`，它的 `cli` 就是各行所称的供应商回退 `agents.default.cli`（仍会读取旧的顶层 `default_cli`）。它从不提供模型。
 
 ## 自动调度 {#auto-dispatch}
 
@@ -108,10 +111,10 @@ OMA 选择最近的项目配置目录。在该目录内，共享 CUE 中设置�
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
 
@@ -120,11 +123,14 @@ free: {
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
+
+旧的顶层 `free:` 块（用 `model` 而不是 `default_model`）仍会被读取，`oma update` 会把它改写成这种形式。
 
 单独启动 FreeLLMAPI，并将统一密钥导出为 `FREELLM_API_KEY`。选择默认密钥变量时，OMA 也接受上游的 `FREELLMAPI_API_KEY`；两者同时设置时，以规范变量为准。自定义 `api_key_env` 时只读取该变量。永远不要把密钥本身写入配置。`OMA_MODEL_PRESET` 会覆盖预设。`FREELLM_BASE_URL` 和 `FREELLM_MODEL` 会分别覆盖文件中的设置。示例值就是默认值，因此服务器和密钥准备就绪后，仅设置 `model_preset: free` 即可。
 
@@ -133,7 +139,7 @@ oma doctor --profile
 oma agent spawn backend "Review the API error handling" free-review --vendor codex --read-only
 ```
 
-Free 模式对所有由 OMA 调度的角色使用 `free.model`，包括已有 `agents.*.model` 固定值的角色。它不会将这些固定值解析到付费订阅中。可以选择 `auto`、网关模型 ID，或 `auto:coding` 这类命名网关链（需先在 FreeLLMAPI 中创建该链）。
+Free 模式对所有由 OMA 调度的角色使用 `providers.free.default_model`，包括已有 `agents.*.model` 固定值的角色。它不会将这些固定值解析到付费订阅中。可以选择 `auto`、网关模型 ID，或 `auto:coding` 这类命名网关链（需先在 FreeLLMAPI 中创建该链）。
 
 传输遵循 [OMA 如何解析智能体的模型和 CLI](#how-oma-resolves-an-agents-model-and-cli) 中的 `free` 行。仅支持 Codex、Claude 和 Qwen 传输。显式选择不受支持的传输会报错。
 
@@ -153,9 +159,39 @@ Free 预设配置智能体推理，不会改变现有记忆服务的嵌入配置
 
 上游参考：[客户端设置](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md)、[API 和嵌入模型系列](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md)。
 
+## 自定义 LLM 提供方 {#custom-llm-providers}
+
+`free` 是一套通用机制中的一个实例：任何兼容 OpenAI 或 Anthropic 的端点都可以声明在 `providers:` 下，并把生成的智能体路由过去。键是提供方名称；值里绝不存放密钥。
+
+```yaml
+# .agents/oma-config.yaml
+providers:
+  code_intelligence: serena          # capability selectors stay strings
+  exaone:                            # an object = an LLM provider
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY      # the variable name, never the key
+    transport: chat_completions      # chat_completions | responses | anthropic_messages | multi
+    default_model: k-exaone_v2.5
+
+agents:
+  default: { effort: medium }        # tuning for every role that sets none
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+使用提供方有两种方式：
+
+- **路由每个角色**：`model_preset: exaone`。每个角色都运行 `default_model`；按角色固定的 `model` 会被忽略（否则会逃出这条路由），而按角色的 `effort`、`thinking` 和 `memory` 仍然生效。没有 `default_model` 的提供方不能作为预设。子进程继承 `OMA_MODEL_PRESET=<name>`，因此嵌套生成会保持这条路由。
+- **路由一个角色**：`agents.<id>.model: <name>/<model-id>`。模型 id 原样传给 CLI；不查询注册表和 `models:`。该子进程的嵌套生成不会被重新路由。
+
+`transport` 决定子进程 CLI，因为每个 CLI 只说一种协议：`chat_completions` 对应 Codex（作为 `wire_api = "chat"` 提供方）或 Qwen；`responses` 对应 Codex；`anthropic_messages` 对应 Claude；`multi` 对应三者之一（FreeLLMAPI 全部提供）。`--vendor`、`OMA_RUNTIME_VENDOR`、检测到的运行时和 `agents.default.cli` 按这个顺序在允许的 CLI 中选择；传输无法服务的 CLI 会报错，绝不会静默回退到该 CLI 自己的账户。子进程只在自己的环境和参数中收到端点以及 `api_key_env` 中的密钥（Codex：完整的 `model_providers.oma_<name>` 表；Claude：`ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN`；Qwen：`--openai-base-url` 和 `OPENAI_*`）；父进程环境和供应商设置文件保持不动，冲突的 Claude 或 Qwen 设置会在执行前报告。spawn 和 review 会在传输有模型列表时，运行与 `free` 相同的已认证 `GET /models` 就绪检查；对这次检查返回 404 的端点不会被当作不可用。
+
+采样参数（`temperature`、`top_p`）不属于提供方条目：供应商 CLI 不按请求接受它们，在这里声明会被静默忽略。
+
+`free` 保留自己的细节：每个字段的默认值、`FREELLM_BASE_URL` / `FREELLM_MODEL` 覆盖、上游的 `FREELLMAPI_API_KEY` 别名，以及旧的顶层 `free:` 块（读取时当作 `providers.free`）。
+
 ## 覆盖单个智能体 {#overriding-individual-agents}
 
-使用 `agents:` 映射在活动预设之上覆盖指定智能体。只有列出的智能体会受到影响；其余智能体在自动模式下遵循供应商设置，或遵循选定固定预设的默认值。
+使用 `agents:` 映射在活动预设之上覆盖指定智能体。只有列出的智能体会受到影响；其余智能体在自动模式下遵循供应商设置，或遵循选定固定预设的默认值。保留的 `agents.default` 条目为未自行设置这些字段的每个角色提供 `effort`、`thinking` 和 `memory`，外加 `cli`，也就是没有其他方式选定供应商时使用的供应商；它从不携带模型。
 
 ```yaml
 # .agents/oma-config.yaml
@@ -304,7 +340,21 @@ session:
       antigravity: 200000
 ```
 
-达到上限后，`oma agent spawn` 会拒绝下一次生成，并以 `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)` 失败。token 用量根据提示长度估算，因此 `spawn_count` 是最可预测的限制。字段规则见：[会话配额上限](/docs/guide/configuration-reference#session-quota-caps)。
+达到上限后，`oma agent spawn` 会拒绝下一次生成，并以 `[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)` 失败。运行一开始会按提示长度预留估算用量。完成后，可用的原生记录用量会替换它；不支持或缺失的观测仍保持为估算。这些上限不会中断正在运行的子进程，也不保证账单上限。`spawn_count` 是最可预测的限制。字段规则见：[会话配额上限](/docs/guide/configuration-reference#session-quota-caps)。
+
+---
+
+## 会话执行预算 {#session-execution-budget}
+
+为 OMA 托管的 CLI 调度和验证加上共享的已用时间限制时，添加 `session.execution`：
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+也可以把 `deadline` 设为带时区的 ISO 时间戳。`oma agent spawn`、`parallel`、`review`、`resume`、`begin` 和 `verify` 命令也接受 `--timeout-seconds` 或 `--deadline`。最早的截止时间会在重试和恢复之间保持；设置和检查消耗同一份预算。取消或超时会阻止该会话继续执行。原生供应商智能体，以及托管 CLI 之外的 shell 作业，需要宿主自己的控制。范围和产物保留见[会话执行预算](/docs/guide/configuration-reference#session-execution-budget)。
 
 ---
 

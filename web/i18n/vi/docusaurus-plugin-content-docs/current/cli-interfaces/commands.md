@@ -92,16 +92,18 @@ Khi một lệnh chuyển các đối số còn lại cho một công cụ khác
 
 ### install
 
-`oma` không kèm đối số sẽ khởi chạy trình cài đặt tương tác. `oma install` là dạng tường minh và nhận các tùy chọn chọn provider.
+`oma` không kèm đối số sẽ khởi chạy installer runtime tương tác. `oma install` là dạng tường minh và nhận một skill preset cùng các tùy chọn chọn provider. Để tải instruction tạm thời cho một task, dùng [Chọn cách thiết lập](../getting-started/choose-setup.md).
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Tùy chọn | Giá trị chấp nhận |
 |:-------|:----------------|
+| `--preset <name>` | Một trong mười [skill preset có tên](../getting-started/installation.md#presets), chẳng hạn `frontend`, `research` hoặc `all`. Chọn Custom từng skill dùng menu tương tác. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,15 +112,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 Khi bị bỏ qua, `--web-search`, `--code-intelligence` và `--semantic-memory` giữ nguyên lựa chọn provider đã lưu. `--honcho-url` và `--honcho-workspace` cấu hình một kết nối Honcho mới khi provider đó được chọn. Flag gốc `-y, --yes` bỏ qua các prompt và dùng giá trị mặc định; `--global` nhắm tới `$OMA_HOME/.agents/` (mặc định `~/.oma/.agents/`). Bản cài đặt project vẫn ở `<cwd>/.agents/` ngay cả khi đã đặt `OMA_HOME`.
 
+`--preset` được ưu tiên hơn prompt skill tương tác và mặc định `all` khi không giám sát. Tên không xác định, giá trị rỗng và `custom` bị từ chối trước khi cài đặt. Nó chọn nội dung skill; nó không lọc file dùng chung, định nghĩa workflow/agent, hook hay thiết lập provider, và giữ các skill đã cài khác. [Phụ thuộc workflow](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset) vì vậy có thể khác bundle đã chọn.
+
 **Hoạt động:**
 1. Kiểm tra thư mục legacy `.agent/` và di chuyển sang `.agents/` nếu tìm thấy.
-2. Phát hiện và đề xuất gỡ bỏ các công cụ cạnh tranh.
-3. Hỏi loại project (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+2. Ở chế độ tương tác, phát hiện các công cụ agent khác và hỏi có gỡ chúng không (mặc định: giữ). `--yes`, `OMA_YES` và cài đặt CI giữ chúng; `oma update` không đề nghị gỡ.
+3. Dùng `--preset` khi được cung cấp; nếu không, hỏi skill preset hoặc chọn Custom từng skill ở chế độ tương tác. Thiết lập không giám sát mặc định là `all`.
 4. Nếu chọn backend, hỏi biến thể ngôn ngữ (Python, Node.js, Rust, Other).
 5. Hỏi về symlink cho GitHub Copilot.
 6. Tải tarball mới nhất từ registry.
 7. Cài đặt tài nguyên dùng chung, workflow, config và các skill đã chọn.
-8. Cài đặt vendor adaptation cho các vendor đã chọn (setting cục bộ trong project; không âm thầm ghi cấu hình vendor ở cấp HOME).
+8. Cài đặt vendor adaptation cho các vendor đã chọn. Xem [tác động của cài đặt](../getting-started/installation.md#what-the-installer-also-does-by-default) cho thay đổi ở project và cấp HOME.
 9. Tạo symlink CLI.
 10. Đề xuất git config **toàn cục** được khuyến nghị (cần xác nhận để opt-in):
     - `rerere.enabled=true` — tái sử dụng cách giải quyết merge conflict khi nhiều agent cùng làm việc
@@ -127,11 +131,13 @@ Khi bị bỏ qua, `--web-search`, `--code-intelligence` và `--semantic-memory`
 11. Đề xuất cấu hình MCP khi phù hợp.
 12. Đề nghị star repo trên GitHub nếu `gh` đã được xác thực.
 
+Tóm tắt cuối liệt kê các skill đã chọn và kiểm tra manifest skill được tham chiếu bằng các file thực sự có mặt, gồm skill được giữ lại và nhánh có điều kiện. Nó báo các tham chiếu skill của workflow/agent bị thiếu hoặc không đọc được và chỉ tới lệnh doctor cho root cài đặt đó. Đây là độ phủ manifest tĩnh; nội dung resource, tool, provider và việc thực thi không được xác minh.
+
 **Ví dụ:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor

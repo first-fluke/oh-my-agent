@@ -74,7 +74,7 @@ Spec과 visual judge는 `judge-multi.sh`를 통해 harness당 3회 실행되며,
 1. **superpowers 프롬프트 오버라이드**: 비대화형 모드에서 harness가 동작하기 위해 필요한 조치였습니다(해당 harness의 `<HARD-GATE>` brainstorming 스킬이 단발성 실행을 차단합니다). 결과는 "게이트를 우회한 후 superpowers가 발휘할 수 있는 성능"을 반영하며, 순수한 동일 조건 비교는 아닙니다.
 2. **spec과 visual은 다중 judge 평균, journey는 단일 실행**: journey 평가는 라이브 dev server가 필요하므로 단일 실행을 유지합니다. journey 점수 차이가 약 2점 미만이면 노이즈로 보아야 합니다. 표본 크기는 harness당 빌드 1회입니다.
 3. **비용 정규화**: efficiency 항목은 파일당 비용을 사용하며, 절대 비용(5개 harness에서 $1.28~$8.19 범위)은 점수에 반영되지 않습니다.
-4. **oma의 `lint-clean` 감점은 의도된 결과**: oma는 ESLint 전용 규칙을 에이전트 스킬에 내장하는 대신, lint/typecheck 강제는 git hook(husky + lint-staged)과 CI에 위임하도록 의도적으로 설계되어 있습니다. 단발성 벤치마크에서는 이 부분이 `lint-clean`에서 -5점으로 감점되지만, 실제 워크플로우에서는 동일한 이슈가 pre-push 단계에서 차단되어 원격 저장소에 도달하지 않습니다.
+4. **oma의 `lint-clean` 감점은 의도된 결과**: oma는 ESLint 전용 규칙을 에이전트 스킬에 넣지 않고, lint/typecheck 적용을 git hook(hk)과 CI에 맡기도록 의도적으로 설계되어 있습니다. 단발성 벤치마크에서는 이 부분이 `lint-clean`에서 -5점으로 감점되지만, 실제 워크플로우에서는 동일한 이슈가 pre-push 단계에서 차단되어 원격 저장소에 도달하지 않습니다.
 
 ---
 

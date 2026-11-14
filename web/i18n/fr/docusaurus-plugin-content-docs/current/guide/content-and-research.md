@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Utilisez `--slide <file>` pour une vérification sur une seule diapositive et `--report-file <path>` avec une sortie JSON lorsqu’un autre processus a besoin des résultats. `slide import pptx <file>` démarre un workflow d’importation ; `slide asset fetch-video <url>` télécharge un élément vidéo ; `slide style list|preview|get <slug>` examine les styles. La sortie PPTX est fondée sur un raster et ne fournit donc ni texte ni calques de formes modifiables. La validation et l’export nécessitent Chrome/puppeteer ; définissez `OMA_CHROME_PATH` lorsque l’exécutable n’est pas détectable. Si la validation ne converge pas après trois itérations d’auto-correction, utilisez les problèmes de géométrie signalés pour modifier le fragment concerné.
 
+### PowerPoint modifiable (route native-pptx)
+
+Lorsque le livrable doit être un fichier PowerPoint modifiable, `oma-slide` bascule sur sa route `native-pptx`. La même route remplit ou modifie un PPTX existant en conservant sa conception, transforme un PDF, DOCX, XLSX ou une URL en deck, construit une marque, un style, une mise en page ou un modèle de deck réutilisable, et produit un PPTX ou un MP4 narré. Les decks web, animés et Canva restent sur la route HTML ci-dessus.
+
+La route exécute la compétence amont [ppt-master](https://github.com/hugohe3/ppt-master) (MIT, par Hugo He) sans la modifier. `oma-slide` utilise une copie installée du catalogue de compétences de votre environnement lorsqu’il y en a une ; sinon elle charge la compétence pour la session avec :
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master rédige des pages SVG et exporte des formes DrawingML natives, des zones de texte, des graphiques et des tableaux, de sorte que le PPTX arrive dans le dossier `exports/` du projet sous `.agents/results/slides/<session-id>/`. Ses scripts Python ont besoin des paquets listés dans le `requirements.txt` de la compétence ; `oma-slide` demande confirmation avant de les installer dans un environnement virtuel `uv`. Si vous refusez, elle propose la route HTML à la place. Les images IA de cette route sont générées avec `oma-image`, et les portes ainsi que l’écran de confirmation propres à ppt-master décident du reste du flux.
+
 ## Récapituler les conversations d’agents {#recap-agent-conversations}
 
 Utilisez `/recap` (ou demandez un récapitulatif à l’agent) pour des synthèses de travail fondées sur les preuves ; il exécute `oma recap` pour collecter l’historique. Une date calendaire et une fenêtre glissante sont des entrées différentes :
@@ -178,7 +190,7 @@ Pour la documentation, traduisez la page anglaise stable après la mise en place
 
 ## Rédiger ou auditer une écriture académique {#draft-or-audit-academic-writing}
 
-Utilisez `oma-academic-writing` pour les essais, rapports, revues de littérature, analyses, synthèses, conclusions et révisions en anglais. Sélectionnez un mode et fournissez la grille ou les contraintes de source :
+Utilisez `oma-academic-writing` pour les essais, rapports, revues de littérature, analyses, synthèses exécutives, conclusions et révisions en anglais. Sélectionnez un mode et fournissez la grille ou les contraintes de source :
 
 ```text
 Draft a literature review in draft mode from these sources. Include a Claim-Evidence Map.
@@ -188,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` renvoie la prose, des Writing Notes et une Claim-Evidence Map. `revise` renvoie les blocs original et révisé ainsi que les changements concrets. `review` renvoie les constats PASS/FAIL pour la structure des phrases, les verbes, le hedging, la spécificité, les motifs anti-IA, la clarté des paragraphes, le rythme et l’alignement des claims et des preuves. La compétence lit entièrement un brouillon existant pour revise/review, affaiblit ou retire les claims non étayés et transmet les sorties non anglaises à `oma-translation` après le passage anglais.
 
-Utilisez `oma scholar` pour découvrir les sources et les preuves sidecar avant de rédiger. Si une citation ou une grille manque, marquez le claim comme en attente ou demandez la contrainte manquante ; ne comblez pas le manque avec une source inventée. L’artefact de fin utile est la prose accompagnée de la carte des preuves ou du rapport d’audit, plutôt qu’un paragraphe générique « poli » sans soutien traçable.
+Utilisez `oma scholar` pour découvrir les sources et les preuves sidecar avant de rédiger. Si une citation ou une grille manque, marquez le claim comme en attente ou demandez la contrainte manquante ; ne comblez pas le manque avec une source inventée. Renvoyez la prose avec sa carte des preuves ou son rapport d’audit, afin que les lecteurs puissent retracer ses claims.
 
 ## Liste de récupération
 

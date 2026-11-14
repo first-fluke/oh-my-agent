@@ -269,7 +269,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-De Maintainer en Proposer van `oma skill optimize` lossen de rol `opt-agent` op. De map `agents:` heeft geen sleutel `opt` (het configuratieschema weigert onbekende sleutels), dus deze rol volgt altijd de actieve `model_preset`, of `default_cli` bij `model_preset: auto`. Zonder `agents.eval` gebruikt de rol `eval` dezelfde fallback. Promotie vereist `isolation: enforced`, wat alleen de beschermde Claude- en native Codex-profielen bieden (zie [Skillisolatie](#skill-isolation-keeping-the-baseline-honest)).
+De Maintainer en Proposer van `oma skill optimize` lossen de rol `opt-agent` op. De map `agents:` heeft geen sleutel `opt` (het configuratieschema weigert onbekende sleutels), dus deze rol volgt altijd de actieve `model_preset`, of `agents.default.cli` bij `model_preset: auto`. Zonder `agents.eval` gebruikt de rol `eval` dezelfde fallback. Promotie vereist `isolation: enforced`, wat alleen de beschermde Claude- en native Codex-profielen bieden (zie [Skillisolatie](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Meting van negative transfer {#negative-transfer-measurement}
 
@@ -459,6 +459,6 @@ Deze meldingen komen van `oma skill eval` en `oma skill optimize`.
 | `[oma skill eval] dispatch timed out after <N>s.` | Een arm- of judge-aanroep overschreed `OMA_SKILL_EVAL_TIMEOUT_MS`. | Verhoog `OMA_SKILL_EVAL_TIMEOUT_MS` voor fixtures die lange antwoorden nodig hebben. |
 | `Choose either --live or --mock` | Beide vlaggen zijn meegegeven. | Geef er één mee. |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` draaide zonder `--live`. | Voeg `--live` toe, of gebruik `oma skill eval --mock` voor offline controles. |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | De rol `opt-agent` wordt opgelost naar een vendor zonder beschermd teksttransport. | Kies een `model_preset` (of, bij `model_preset: auto`, een `default_cli`) die naar Claude of Codex oplost. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | De rol `opt-agent` wordt opgelost naar een vendor zonder beschermd teksttransport. | Kies een `model_preset` (of, bij `model_preset: auto`, een `agents.default.cli`) die naar Claude of Codex oplost. |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (er wordt niets geschreven) | `--apply` op een `oma-*`-skill zonder `--yes`. | Bewaar de dry-run-diff en lever die upstream aan, of voer opnieuw uit met `--yes`. |
 | `[oma skill opt] an active project overlay owns this skill; ...` | [Project-harness-evolutie](./harness-evolution.md) heeft een overlay voor deze skill geïnstalleerd. | Voer eerst `oma skill rollback --skill <id>` uit, of laat de evolutiecyclus de wijziging toepassen. |

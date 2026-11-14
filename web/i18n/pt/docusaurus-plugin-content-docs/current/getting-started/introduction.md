@@ -5,7 +5,7 @@ description: "Uma visão abrangente do oh-my-agent, framework de orquestração 
 
 # Introdução
 
-oh-my-agent é um framework de orquestração multiagente para IDEs e ferramentas de CLI com IA. O oh-my-agent distribui o trabalho entre 33 pacotes de skills e 13 papéis canônicos de dispatch. Doze arquivos de definição de subagentes versionados oferecem personas reutilizáveis para implementação, revisão, planejamento, depuração, documentação, pesquisa e infraestrutura. `research-explorer.md` corresponde ao papel canônico `explore`; `orchestrator` é um papel de coordenação em tempo de execução sem um arquivo de definição separado.
+oh-my-agent é um framework de orquestração multiagente para IDEs e ferramentas de CLI com IA. Em vez de depender de um único assistente de IA para tudo, o oh-my-agent distribui o trabalho entre 33 pacotes de skills e 13 papéis canônicos de dispatch. Doze arquivos de definição de subagentes versionados oferecem personas reutilizáveis para implementação, revisão, planejamento, depuração, documentação, pesquisa e infraestrutura. `research-explorer.md` corresponde ao papel canônico `explore`; `orchestrator` é um papel de coordenação em tempo de execução sem um arquivo de definição separado.
 
 O OMA fornece verificações mecânicas quando você as solicita ou escolhe um workflow que as inclui. `oma verify agent <agent-type>` executa as verificações para o tipo de agente selecionado; `/ralph` adiciona verificação baseada em artefatos e um loop de [juiz](./glossary.md#judge); os hooks Stop de vendors habilitados (o [portão de parada](./glossary.md#stop-gate)) podem manter um workflow aberto enquanto suas verificações configuradas são executadas. O simples carregamento de uma skill não estabelece a aceitação, e um prompt comum não executa automaticamente todos os portões do workflow. Use os critérios de aceitação do workflow e os arquivos resultantes para decidir o que está concluído.
 
@@ -25,7 +25,7 @@ Assistentes tradicionais de programação com IA costumam lidar com frontend, ba
 - **Responsabilidade indefinida**: uma tarefa que atravessa domínios não tem um limite explícito para cada parte
 - **Coordenação manual**: funcionalidades complexas que abrangem vários domínios precisam de handoffs escolhidos pelo host ou pelo usuário
 
-O oh-my-agent resolve isso com especialização:
+O OMA atribui domínios a skills e encaminha o trabalho das tarefas aos agentes:
 
 1. **Cada skill tem um domínio principal.** A skill de frontend conhece React/Next.js, shadcn/ui, TailwindCSS v4 e a arquitetura FSD-lite. A skill de backend conhece o padrão Repository-Service-Router, consultas parametrizadas e autenticação JWT. Os domínios podem se sobrepor nas fronteiras; use os critérios de aceitação da tarefa para decidir quando é preciso uma segunda skill ou um workflow de coordenação.
 
@@ -129,7 +129,7 @@ Os 12 arquivos de definição versionados cobrem os 13 papéis de tempo de execu
 
 | Agente | Função | Principais capacidades |
 |-------|------|------------------------|
-| **oma-market** | Inteligência de sinais da comunidade | Executa o mecanismo upstream `last30days` (Reddit com upvotes e comentários reais, X, YouTube transcripts, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web e outros) por meio de `oma market run`; o OMA mantém o mecanismo sempre na versão mais recente (`~/.cache/oma-market/`), aplica `detect-trap` a cada execução, classifica a intenção (dor / tendência / concorrente / descoberta) e adiciona seções SWOT / 5 Forças de Porter / PESTEL. Produz um briefing único em conformidade com LAW em `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
+| **oma-market** | Inteligência de sinais da comunidade | Executa o mecanismo upstream `last30days` (Reddit com upvotes e comentários reais, X, YouTube transcripts, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, web e outros) por meio de `oma market run`; o mecanismo é uma instalação da CLI de skills (`oma market update`), e o oma aplica `detect-trap` a cada execução, classifica a intenção (dor / tendência / concorrente / descoberta) e adiciona seções SWOT / 5 Forças de Porter / PESTEL. Produz um briefing único em conformidade com LAW em `.agents/results/market/{slug}-{YYYYMMDD}.md`. |
 
 ### Geração de mídia e conteúdo
 
@@ -204,7 +204,7 @@ A criação de agentes se adapta a cada vendor selecionado por meio da detecçã
 
 ## Como uma solicitação flui
 
-O diagrama mostra o que acontece entre um prompt e um resultado concluído. O hook de palavras-chave, o injetor de skills e o hook Stop só são executados em hosts cuja integração de hooks está habilitada. O hook de palavras-chave e o injetor de skills são executados em sequência sobre o mesmo prompt, e o contexto que eles injetam é combinado.
+O hook de palavras-chave, o injetor de skills e o hook Stop só são executados em hosts cuja integração de hooks está habilitada. O hook de palavras-chave e o injetor de skills são executados em sequência sobre o mesmo prompt, e o contexto que eles injetam é combinado.
 
 ```mermaid
 flowchart TD
@@ -222,7 +222,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Fontes: `.agents/hooks/core/keyword-detector.ts` (ignora comandos de barra, faz a correspondência de gatilhos e a sugestão de workflows persistentes), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` e os arquivos de workflow em `.agents/workflows/`. Nem todo workflow tem todos os portões: `/orchestrate` executa o script de verificação, `/review` executa a revisão de QA e `/ralph` adiciona o [juiz](./glossary.md#judge).
+Fontes: `.agents/hooks/core/keyword-detector.ts` (ignora comandos de barra, correspondência explícita do nome do modo), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` e os arquivos de workflow em `.agents/workflows/`. Nem todo workflow tem todos os portões: `/orchestrate` executa o script de verificação, `/review` executa a revisão de QA e `/ralph` adiciona o [juiz](./glossary.md#judge).
 
 ---
 

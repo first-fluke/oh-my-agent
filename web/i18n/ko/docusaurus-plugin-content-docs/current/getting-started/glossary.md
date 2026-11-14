@@ -27,7 +27,7 @@ description: 스킬, 워크플로우, 프리셋, OMA 세션과 벤더 세션, �
 
 ### 모델 프리셋 {#model-preset}
 
-모델 프리셋은 `.agents/oma-config.yaml`(또는 `.cue`)의 `model_preset` 값입니다. 각 에이전트가 어떤 벤더와 모델을 사용할지 결정합니다. 새 설치의 기본값인 `auto`는 현재 런타임 자체의 에이전트 및 모델 설정을 따르고, `claude`, `codex`, `mixed` 같은 고정 프리셋은 이를 고정합니다. `agents.<id>` 오버라이드가 프리셋보다 우선하지만, `free`에서는 `free.model`이 에이전트별 모델 고정을 대체합니다. [빌트인 프리셋](../guide/per-agent-models.md#built-in-presets)을 참고하세요.
+모델 프리셋은 `.agents/oma-config.yaml`(또는 `.cue`)의 `model_preset` 값입니다. 각 에이전트가 어떤 벤더와 모델을 사용할지 결정합니다. 새 설치의 기본값인 `auto`는 현재 런타임 자체의 에이전트 및 모델 설정을 따르고, `claude`, `codex`, `mixed` 같은 고정 프리셋은 이를 고정합니다. `agents.<id>` 오버라이드는 프리셋보다 우선합니다. 다만 `free`나 다른 `providers.<name>` LLM 프로바이더에서는 프로바이더의 `default_model`이 에이전트별 모델 고정을 대체합니다. [빌트인 프리셋](../guide/per-agent-models.md#built-in-presets)을 참고하세요.
 
 ## 워크플로우 실행
 

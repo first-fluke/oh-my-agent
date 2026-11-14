@@ -33,7 +33,7 @@ No Windows PowerShell, execute:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-A configuração interativa pergunta o idioma das respostas, vendors de CLI, [providers de capacidade](./glossary.md#capability-provider), [preset de modelo](./glossary.md#model-preset), [preset de skills](./glossary.md#skill-preset) do projeto e qualquer variante de stack. Na primeira execução, mantenha os padrões, selecione o vendor que você já usa e escolha o preset de projeto mais próximo do repositório. Consulte [Presets](./installation.md#presets) para as skills de cada preset e para os [workflows que precisam de skills fora de um preset](./installation.md#workflows-that-need-skills-outside-a-preset).
+A configuração preserva um idioma de resposta existente ou detecta o idioma do sistema automaticamente. A configuração interativa pergunta os vendors de CLI, [providers de capacidade](./glossary.md#capability-provider), [preset de modelo](./glossary.md#model-preset), [preset de skills](./glossary.md#skill-preset) do projeto e qualquer variante de stack. Na primeira execução, mantenha os padrões, selecione o vendor que você já usa e escolha o preset de projeto mais próximo do repositório. Consulte [Presets](./installation.md#presets) para as skills de cada preset e para os [workflows que precisam de skills fora de um preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Se você já tem `bun`, use o instalador diretamente:
 
@@ -98,7 +98,6 @@ Se uma tarefa gerenciada parar, comece com `oma agent status <session-id> [agent
 ## Próximos passos
 
 - [Escolha uma configuração](./choose-setup.md) para uma skill, um preset de runtime ou o plugin do Claude Code
-
 - [Padrões importantes](./important-defaults.md) para precedência, providers e escolhas de recuperação
 - [Instalação](./installation.md) para presets, configuração de vendors, instalações globais e atualizações
 - [Agentes](../core-concepts/agents.md) para os 33 pacotes de skills e papéis de dispatch

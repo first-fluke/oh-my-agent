@@ -5,14 +5,17 @@ description: Các mặc định của oh-my-agent ảnh hưởng đến routing,
 
 # Các mặc định quan trọng
 
+Các mặc định này áp dụng cho runtime OMA đã cài. Tải một skill bằng `skills use` chỉ cung cấp instruction, không cấu hình hook, provider hay service của project. Bắt đầu từ [Chọn cách thiết lập](./choose-setup.md) để chọn đường task đó hoặc một bản cài runtime.
+
 Các mặc định được chọn để dự án đầu tiên có thể sử dụng ngay mà vẫn giữ ổn định cấu hình do người dùng sở hữu. Chúng được resolve trong runtime, vì vậy khóa bị bỏ qua có thể hoạt động khác với giá trị rỗng được ghi rõ. Hãy bắt đầu ở đây khi harness hoạt động nhưng hành vi khác với dự kiến.
 
 ## Các mặc định ảnh hưởng đến lần chạy đầu tiên
 
 | Phạm vi | Mặc định | Hệ quả | Ghi đè |
 |---|---|---|---|
-| Ngôn ngữ phản hồi | `en` | Phản hồi của agent và workflow dùng tiếng Anh trừ khi cấu hình dự án chọn ngôn ngữ được hỗ trợ khác. Chỉ dẫn ngôn ngữ rõ ràng từ người dùng hoặc session vẫn có thể ghi đè mặc định dự án khi host/workflow hỗ trợ. | `language` trong `.agents/oma-config.yaml` hoặc `.cue` |
-| Model routing ([model preset](./glossary.md#model-preset)) | `auto` | Dùng cấu hình agent/model native của runtime hiện tại. Runtime không xác định sẽ dùng `default_cli` nếu có. | `model_preset`, `default_cli` hoặc `agents.<id>` |
+| Ngôn ngữ phản hồi | Ngôn ngữ đã lưu, nếu không thì ngôn ngữ hệ thống; fallback `en` | Install phát hiện ngôn ngữ mà không hỏi. Locale vùng ánh xạ sang ngôn ngữ cơ sở được hỗ trợ, chẳng hạn `ko_KR.UTF-8` → `ko`; locale không được hỗ trợ dùng `en`. Ngôn ngữ trong prompt của người dùng được ưu tiên hơn thiết lập này. | `language` trong `.agents/oma-config.yaml` hoặc `.cue` |
+| Model routing ([model preset](./glossary.md#model-preset)) | `auto` | Dùng cấu hình agent native của runtime hiện tại. Runtime không xác định fallback sang `agents.default.cli` khi key đó đã được đặt. | `model_preset`, `agents.default.cli` hoặc `agents.<id>` |
+| Nội dung skill ([skill preset](./glossary.md#skill-preset)) | Chọn tương tác; `all` cho thiết lập không giám sát trừ khi có `--preset` | Một preset chọn skill. File dùng chung, mọi định nghĩa workflow và agent, hook và thiết lập provider vẫn thuộc bản cài runtime; các skill hiện có khác được giữ lại. | `oma install --preset <name>`; xem [giới hạn preset](./installation.md#presets) |
 | Code intelligence ([capability provider](./glossary.md#capability-provider)) | `serena` | Cài đặt mới cố gắng cài Serena và kết nối cấu hình MCP của nó. | `providers.code_intelligence: gortex` hoặc `serena` |
 | Code-search guard | `block` | Khi đã cấu hình provider code intelligence, hook PreToolUse từ chối `Grep`/`Glob` native và việc tìm kiếm shell đệ quy (`rg`, `grep -r`, `find -name`), đồng thời hướng agent sang các tool của provider. Các lệnh tìm kiếm chỉ nằm trong mục loại trừ đã được xác nhận hoặc ở path ngoài project thì được cho phép. Hook không quảng bá cách bypass đối với source của project. | `providers.code_intelligence_guard: off` |
 | Semantic memory | `agentmemory` | Install và update tái sử dụng endpoint AgentMemory đang hoạt động tốt, hoặc cài đặt và khởi động service local được quản lý, rồi kiểm tra readiness trước khi báo thành công. Endpoint tùy chỉnh được chỉ định rõ sẽ được kiểm tra mà không bị thay thế. | `providers.semantic_memory: honcho` hoặc `none`; `OMA_NO_AGENTMEMORY=1` bỏ qua thiết lập AgentMemory. |
@@ -40,15 +43,15 @@ sau khi load file. Cấu hình local không hợp lệ sẽ dừng việc load.
 
 Model routing có hai trường hợp đặc biệt trước thứ tự preset cố định:
 
-- Với `model_preset: auto`, dùng cấu hình agent/model native của runtime hiện tại. Ghi đè rõ `agents.<id>` vẫn được ưu tiên; runtime không xác định có thể dùng `default_cli`.
-- Với `model_preset: free`, child spawn dùng local FreeLLMAPI gateway. `free.model` chọn model gateway và thay thế các per-agent model pin; nếu bỏ qua, dùng `FREELLM_MODEL` hoặc provider fallback `auto`.
+- Với `model_preset: auto`, dùng cấu hình agent và model native của runtime hiện tại. Ghi đè rõ `agents.<id>` vẫn được ưu tiên; runtime không xác định có thể dùng `agents.default.cli`.
+- Với `model_preset: free` (hoặc LLM provider `providers.<name>` khác), child spawn dùng gateway đó. `providers.free.default_model` chọn model của gateway và thay thế các pin model theo agent; khi bỏ qua, dùng `FREELLM_MODEL` hoặc fallback `auto` của provider.
 
 Với preset cố định hoặc tùy chỉnh, thứ tự hiệu lực là:
 
 1. Ghi đè rõ `agents.<id>`.
 2. Entry của `model_preset` tương ứng, built-in hoặc `custom_presets`.
 3. Entry `orchestrator` của preset khi role không có entry riêng.
-4. `default_cli` làm vendor fallback khi các cấp trước không resolve được plan.
+4. `agents.default.cli` làm vendor fallback khi các cấp trước không resolve được plan.
 
 Preset `free` cung cấp mặc định cho cả ba thiết lập provider: `base_url` là `http://127.0.0.1:31415/v1`, `api_key_env` là `FREELLM_API_KEY` (chấp nhận `FREELLMAPI_API_KEY` như alias tương thích), và `model` là `auto`. Vẫn cần API key sử dụng được trong biến môi trường đã chọn; không có vendor fallback. Đặt các giá trị này trong `oma-config.local.yaml` khi chúng chỉ nên thuộc máy local, hoặc dùng `FREELLM_BASE_URL` và `FREELLM_MODEL` để ghi đè theo process.
 

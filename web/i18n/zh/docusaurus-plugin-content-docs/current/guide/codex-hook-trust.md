@@ -1,68 +1,56 @@
 ---
 title: "指南：Codex 钩子信任"
 sidebar_label: Codex 钩子信任
-description: "说明 Codex 钩子为什么要先由你审阅一次才会运行、更新时会发生什么，以及 oh-my-agent 会为生成的 Codex 子进程自动处理哪些事项。"
+description: "Codex 如何用信任拦住钩子、oh-my-agent 记录了什么才能让钩子运行，以及你仍需要自己审阅钩子的时机。"
 ---
 
 # 指南：Codex 钩子信任
 
-oh-my-agent 安装到项目时，会写入供应商原生的钩子配置，其中包括 Codex CLI 使用的 `.codex/hooks.json`。与 Claude Code 不同，Codex 不会自动运行这些钩子。它会通过首次使用信任（TOFU）机制保护每个非托管命令钩子：钩子只有在你审阅并启用一次后才会运行。
+oh-my-agent 安装到项目时，会写入供应商原生的钩子配置，其中包括 Codex CLI 的 `.codex/hooks.json`。Codex 不会仅仅因为钩子已配置就运行它。两道批准会拦住它，而且两者都写在你的用户配置里（`$CODEX_HOME/config.toml`，默认 `~/.codex/config.toml`）。项目不能批准自己的钩子：
 
-这是 Codex 侧的安全机制。首次使用前需要审阅并启用钩子；后续更新的行为见下文。
+1. **项目信任。** 项目的 `.codex/` 目录（其中的 `config.toml` 和 `hooks.json`）只对受信任的项目加载：`[projects."<path>"] trust_level = "trusted"`。
+2. **按钩子信任。** 项目范围或用户范围内的每个非托管钩子，都需要一条 `[hooks.state."<hooks.json path>:<event>:<group>:<handler>"]` 条目，其 `trusted_hash` 必须与钩子当前声明一致（命令、超时、matcher、async 标志、状态消息）。
+
+新建或变更的钩子会在 Codex TUI 中显示 “Hooks need review”。`codex exec` 会静默地把它排除在外。
 
 ---
 
-## 一次性步骤：在 Codex 中审阅钩子 {#the-one-time-step-review-hooks-in-codex}
+## oh-my-agent 为你记录的内容 {#what-oh-my-agent-records-for-you}
 
-在 Codex 尚未见过的项目中，`oma`（安装）、`oma link` 或 `oma update` 写入 `.codex/hooks.json`（全局安装时为 `~/.codex/hooks.json`）后，钩子**还不会**运行。你必须打开 Codex 并审阅一次：
+`oma install`、`oma update` 和 `oma link` 会为 **oh-my-agent 自己的钩子**写入这两项批准。这些处理器名为 `oma-hook-*`，或通过 `oma-hook.sh` 包装器运行。这个哈希与你选择 “Trust all and continue” 时 Codex 计算的哈希相同，因此钩子会在第一次 Codex 会话中运行，不需要 `/hooks` 这一步。之后的 oh-my-agent 版本如果改了钩子命令，会在 `oma update` 期间记录新哈希，钩子因此保持开启。
 
-1. 在 Codex CLI 中打开项目。
-2. 运行 `/hooks`，打开钩子浏览器（TUI）。
-3. 审阅列出的钩子并启用它们。
+oh-my-agent 只编辑 `config.toml` 中受影响的表。它会重新读取结果；如果还会改动其他内容，就保持文件不动。它绝不会：
 
-在完成这一步前，钩子会保持不受信任并被静默跳过。这就是 oh-my-agent 每次创建或修改 `.codex/hooks.json` 时打印提示的原因：
+- 批准你自己加到同一份 `hooks.json` 里的钩子，
+- 信任你标记为 `trust_level = "untrusted"` 的项目，
+- 重新启用你关掉的钩子（`enabled = false`），
+- 在 Codex 创建自己的主目录之前去改动 Codex。
+
+全局安装（`~/.codex/hooks.json`）只得到按钩子的条目，因为没有可信任的项目。
+
+---
+
+## 你仍需自己审阅钩子的时机 {#when-you-still-review-hooks-yourself}
+
+如果 oh-my-agent 无法记录信任，它会连同原因一起打印这条通知：
 
 ```text
-⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
+⚠ Codex hooks installed/updated but not trusted (<reason>) — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
-打开 Codex 前先验证生成的文件：
-
-```bash
-test -s .codex/hooks.json && echo "Codex hooks are installed"
-oma link codex
-```
-
-预期结果是先出现安装/更新提示，然后在 Codex 的 `/hooks` 浏览器中看到这些钩子。`oma link codex` 会协调生成的文件，但不会替你做一次性信任决定。
-
-**注意：**`--dangerously-bypass-hook-trust` 在这里没有帮助。它的警告（“已启用的钩子可能未经审阅就运行”）表示它只能绕过对已启用钩子的审阅；从未审阅过的钩子仍不会运行。首次启用钩子的唯一方式是使用 `/hooks` 浏览器。
-
-在底层，Codex 会在 `~/.codex/config.toml` 的 `[hooks.state]` 条目中保存你的决定，该条目按钩子文件路径、事件、区块和 hook 标识；其中包含 `enabled` 标志和命令字符串的 `trusted_hash`。
+常见情况是它无法解析的 `config.toml`、你标记为不受信任的项目，或 Codex 还没有运行过。这时在 Codex 中打开项目，运行 `/hooks`，并启用这些钩子一次。然后运行 `oma link codex`，让之后的更新继续保持它们受信任。
 
 ---
 
-## 更新时会发生什么 {#what-happens-on-updates}
+## oh-my-agent 启动的 Codex 进程 {#codex-processes-oh-my-agent-spawns}
 
-信任钩子后，不需要在每次更新时重复这一步：
-
-- **重新运行 `oma link` 或 `oma update` 会保留信任**，前提是钩子命令字符串没有改变。Codex 会将保存的哈希与当前命令比较；匹配时钩子仍受信任。
-- **如果未来版本的 oh-my-agent 修改了钩子命令字符串**，哈希将不再匹配，该钩子会静默恢复为不受信任。你会再次看到安装器提示，并需要通过 `/hooks` 重新信任。
-
-因此，审阅步骤只在首次使用时需要，或者在实际改变钩子的版本发布后再次需要。
-
----
-
-## oh-my-agent 会自动为你处理的事项 {#what-oh-my-agent-automates-for-you}
-
-当 oh-my-agent 自行生成 Codex 子进程时，例如通过 `oma agent spawn` 调度跨供应商智能体，它会自动传递 `--dangerously-bypass-hook-trust`。这样，自己的已审查钩子可以在更新之间运行，不会要求你手动重新信任。
-
-此标志**只**应用于由 oh-my-agent 生成的 Codex 进程。它绝不会写入你的 `~/.codex/config.toml` 或项目配置，因此不会影响你自行启动的 Codex 会话。
+当 oh-my-agent 自己启动 Codex 子进程时（例如 `oma agent spawn`），它也会传入 `--dangerously-bypass-hook-trust`。该标志会在不做哈希检查的情况下运行已启用的钩子。它不会解除项目信任。该标志只适用于 oh-my-agent 启动的进程，绝不会写入你的配置。
 
 ---
 
 ## 不需要 `[features] hooks` 标志 {#no-features-hooks-flag-needed}
 
-旧版 oh-my-agent 会在 Codex 配置中写入 `[features] codex_hooks = true`。Codex 0.124 将该标志重命名为 `hooks`，并让钩子成为稳定、默认启用的功能，因此不再需要任何标志。oh-my-agent 不会写入这两个键中的任何一个，并会在发现已弃用的 `codex_hooks` 和 `child_agents_md` 标志时将其从 `[features]` 表中移除。
+旧版 oh-my-agent 会在 Codex 配置中写入 `[features] codex_hooks = true`。Codex 0.124 将该标志重命名为 `hooks`，并让钩子成为稳定、默认开启的功能，因此不再需要任何标志。oh-my-agent 不会写入这两个键，并会在 `[features]` 表中发现已弃用的 `codex_hooks` 和 `child_agents_md` 标志时将其移除。
 
 ---
 
@@ -70,10 +58,10 @@ oma link codex
 
 | 情况 | 你要做什么 |
 |:----------|:------------|
-| 首次安装或项目中首次出现 `.codex/hooks.json` | 打开 Codex，运行 `/hooks`，启用这些钩子一次 |
-| `oma update` 且钩子命令未改变 | 无需操作，信任会保留 |
-| `oma update` 改变了钩子命令 | 再次运行 `/hooks` 重新信任（安装器会打印提示） |
-| oh-my-agent 生成的 Codex 子进程 | 无需操作，会自动应用绕过标志 |
+| 项目中的首次安装 | 无需操作：信任由安装器记录 |
+| 改变了钩子命令的 `oma update` | 无需操作：新哈希已被记录 |
+| 安装器打印 “not trusted (…)” | 修复该原因，或在 Codex 中运行一次 `/hooks` |
+| 你加到 `.codex/hooks.json` 的钩子 | 自己在 `/hooks` 中审阅 |
 
 ## 另请参阅 {#see-also}
 

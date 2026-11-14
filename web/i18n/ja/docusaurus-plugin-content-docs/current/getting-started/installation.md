@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 - **uv**: Python パッケージマネージャー。ない場合はブートストラップスクリプトが導入を提案します。
 - **コードインテリジェンスプロバイダー**: デフォルトは Serena です。プロバイダー設定で選択すれば Gortex も使えます。インストーラーは `uv tool install` で Serena を導入できます。任意の依存関係が利用できなくても、警告を出して処理を続けます。Gortex を選択している場合、プロジェクトモードの `oma install` と `oma update` は、まだ追跡されていないプロジェクトを Gortex デーモンに登録します（`gortex track`）。あわせて、OMA が生成するディレクトリを、Gortex CLI 経由でそのプロジェクトの除外リストに追加します。プロジェクトツリーには何も書き込みません。Gortex 自体は別途インストールする必要があります。
 
-インストーラーは統合を機能別に扱います。フックベンダーは Antigravity、Claude、Codex、CommandCode、Cursor、Grok、Kimi、Kiro、Qwen、Copilot です。OpenCode と pi は拡張ブリッジを使い、Hermes にはスキルリンクを作り、ZCode にはワークフローコマンドを渡します。複数のベンダーを選べますが、最初のタスクに必要なのは使う予定のホストだけです。
+インストーラーは統合を機能別に扱います。フックベンダーは Antigravity、Claude、Codex、CommandCode、Copilot、Cursor、Grok、Kimi、Kiro、Qwen です。OpenCode と pi は拡張ブリッジを使い、Hermes にはスキルリンクを作り、ZCode にはワークフローコマンドを渡します。複数のベンダーを選べますが、最初のタスクに必要なのは使う予定のホストだけです。
 
 ---
 

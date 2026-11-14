@@ -34,7 +34,7 @@ Os nomes canônicos abaixo vêm de `oma describe`. Somente estes caminhos separa
 
 ## Superfície atual dos comandos
 
-Este mapa facilita a navegação pelas referências detalhadas abaixo e a descoberta de famílias menos comuns. Use `--help` de cada família ou `oma describe <path>` para conhecer a gramática exata dos argumentos; [Opções CLI](./options.md) contém a matriz completa de opções do registro.
+Use `--help` de cada família ou `oma describe <path>` para conhecer a gramática exata dos argumentos; [Opções CLI](./options.md) contém a matriz completa de opções do registro.
 
 | Família | Caminhos registrados |
 |:-------|:-----------------|
@@ -92,46 +92,63 @@ Quando um comando delega os argumentos restantes a outra ferramenta, o registro 
 
 ### install
 
-`oma` sem argumentos inicia o instalador interativo. `oma install` é a forma explícita e aceita opções para selecionar vendors.
+`oma` sem argumentos inicia o instalador interativo de runtime. `oma install`
+é a forma explícita e aceita um preset de skills e opções de seleção de providers.
+Para carregar instruções temporárias de uma tarefa, use [Escolher uma configuração](../getting-started/choose-setup.md).
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Opção | Valores aceitos |
 |:-------|:----------------|
+| `--preset <name>` | Um dos dez [presets de skills nomeados](../getting-started/installation.md#presets), como `frontend`, `research` ou `all`. A seleção individual Custom usa o menu interativo. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
 | `--honcho-url <url>` | Origem da API do Honcho (padrão para uma nova conexão: `http://127.0.0.1:8000`) |
 | `--honcho-workspace <id>` | ID do workspace do Honcho (padrão para uma nova conexão: `oma`) |
 
-`--web-search`, `--code-intelligence` e `--semantic-memory` mantêm a escolha de vendor registrada quando são omitidas. `--honcho-url` e `--honcho-workspace` configuram uma nova conexão Honcho quando esse vendor é selecionado. A opção raiz `-y, --yes` ignora os prompts e usa os valores padrão; `--global` tem como alvo `$OMA_HOME/.agents/` (padrão `~/.oma/.agents/`). A instalação de projeto permanece em `<cwd>/.agents/` mesmo quando `OMA_HOME` está definido.
+`--web-search`, `--code-intelligence` e `--semantic-memory` mantêm a escolha de provider salva quando são omitidos. `--honcho-url` e `--honcho-workspace` configuram uma nova conexão Honcho quando esse provider é selecionado. A flag raiz `-y, --yes` ignora os prompts e usa os padrões; `--global` tem como alvo `$OMA_HOME/.agents/` (padrão `~/.oma/.agents/`). A instalação de projeto permanece em `<cwd>/.agents/` mesmo quando `OMA_HOME` está definido.
+
+`--preset` tem prioridade sobre o prompt interativo de skills e sobre o padrão
+`all` do modo não supervisionado. Nomes desconhecidos, valores vazios e `custom` são rejeitados antes
+da instalação. Ele seleciona o conteúdo das skills; não filtra arquivos compartilhados,
+definições de workflow/agente, hooks nem a configuração de providers, e mantém as outras skills já
+instaladas. As [dependências de workflow](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)
+podem, portanto, diferir do pacote selecionado.
 
 **O que o comando faz:**
-1. Procura um diretório antigo `.agent/` e migra-o para `.agents/` se ele existir.
-2. Detecta ferramentas concorrentes e propõe removê-las.
-3. Solicita o tipo de projeto (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
-4. Se o backend for selecionado, solicita a variante de linguagem (Python, Node.js, Rust, Other).
-5. Pergunta se links simbólicos do GitHub Copilot são desejados.
-6. Baixa o arquivo mais recente do registro.
-7. Instala os recursos compartilhados, workflows, configurações e skills selecionados.
-8. Instala as adaptações de vendor para os vendors selecionados (configurações locais do projeto; nenhuma escrita silenciosa no nível HOME).
-9. Cria os links simbólicos da CLI.
-10. Propõe uma configuração git **global** recomendada (confirmação opcional):
+1. Procura um diretório legado `.agent/` e migra-o para `.agents/` se o encontrar.
+2. No modo interativo, detecta outras ferramentas de agente e pergunta se deve desinstalá-las (padrão: manter). Instalações com `--yes`, `OMA_YES` e CI as mantêm; `oma update` não oferece remoção.
+3. Usa `--preset` quando ele é informado; caso contrário, no modo interativo pede um preset de skills ou a seleção individual Custom. A configuração não supervisionada usa `all` por padrão.
+4. Se o backend for selecionado, pede a variante de linguagem (Python, Node.js, Rust, Other).
+5. Pergunta sobre os symlinks do GitHub Copilot.
+6. Baixa o tarball mais recente do registro.
+7. Instala recursos compartilhados, workflows, configurações e as skills selecionadas.
+8. Instala as adaptações de vendor para os vendors selecionados. Veja os [efeitos da instalação](../getting-started/installation.md#what-the-installer-also-does-by-default) para as mudanças no projeto e no nível HOME.
+9. Cria os symlinks da CLI.
+10. Oferece a configuração git **global** recomendada (confirmação opcional):
     - `rerere.enabled=true` — reutilização de conflitos de merge entre agentes
     - `init.defaultBranch=main` — branch padrão consistente para novos repositórios
-    - Completamente ignorada com `--yes` / CI (instruções de correção manual são exibidas no lugar)
-11. Propõe configurar MCP quando aplicável.
+    - Ignorada por completo com `--yes` / CI (em vez disso, imprime dicas de correção manual)
+11. Oferece configurar o MCP quando aplicável.
 12. Pede uma estrela no GitHub se `gh` estiver autenticado.
+
+O resumo final lista as skills selecionadas e confere os manifests de skills referenciados
+usando os arquivos realmente presentes, inclusive skills mantidas e ramificações
+condicionais. Ele reporta referências de skills de workflow/agente ausentes ou ilegíveis e
+aponta para o comando doctor dessa raiz de instalação. Isso é cobertura estática de manifest;
+conteúdo de recursos, ferramentas, providers e execução não são verificados.
 
 **Exemplo:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor
@@ -1125,6 +1142,8 @@ Quando vários planos de sessão ou recibos de execução correspondem, a verifi
 
 **Verificações específicas de cada agente:**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | Tipo de agente | Verificações adicionais |
 |:-----------|:-----------------|
 | `backend` | Validação de sintaxe, detecção de injeção de SQL (padrões de SQL cru) e testes, tudo a partir dos comandos `verify` em `.agents/skills/oma-backend/stack/stack.yaml` (gerado por `/stack-set`). Ignorados quando esse arquivo não existe |
@@ -1133,6 +1152,7 @@ Quando vários planos de sessão ou recibos de execução correspondem, a verifi
 | `qa` | Nenhuma checagem mecânica; registra uma única checagem `QA Report` como `PASS` |
 | `debug` | Executa os testes de Python ou de frontend conforme o tipo de projeto detectado |
 | `pm` | Verifica se `.agents/results/plan-{sessionId}.json` existe e contém um JSON válido |
+<!-- oma-docs:ignore-end -->
 
 **Formato de saída:**
 Cada verificação informa `PASS`, `FAIL`, `WARN` ou `SKIP` com uma mensagem detalhada. O resultado global é `ok: true` somente se nenhuma verificação falhar.

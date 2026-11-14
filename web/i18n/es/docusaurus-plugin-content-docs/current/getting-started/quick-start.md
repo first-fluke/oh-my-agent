@@ -1,11 +1,11 @@
 ---
 title: Inicio rápido
-description: Ejecuta una tarea acotada desde la instalación hasta la verificación, con la salida esperada y la recuperación.
+description: Elige una skill o un preset de runtime y ejecuta una primera tarea acotada con verificación observada.
 ---
 
 # Inicio rápido
 
-Usa esta página para ejecutar una tarea pequeña y verificar el resultado. Carga una skill en el agente de código que ya usas, o instala el runtime cuando necesites hooks de proyecto, agentes especialistas y flujos de trabajo. [Elegir una configuración](./choose-setup.md) explica las rutas disponibles y sus dependencias.
+Usa una tarea concreta para comprobar el resultado. Carga una skill en el agente de código que ya usas, o instala el runtime cuando necesites hooks de proyecto, agentes especialistas y flujos de trabajo. [Elegir una configuración](./choose-setup.md) explica las rutas disponibles y sus dependencias.
 
 ## 1. Elige la configuración {#1-install}
 
@@ -33,7 +33,7 @@ En Windows PowerShell, ejecuta:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-La configuración interactiva pregunta por el idioma de respuesta, los proveedores de CLI, los [proveedores de capacidades](./glossary.md#capability-provider), el [preset de modelos](./glossary.md#model-preset), el [preset de skills](./glossary.md#skill-preset) del proyecto y cualquier variante de stack. Para la primera ejecución, conserva los valores predeterminados, selecciona el proveedor que ya usas y elige el preset de proyecto más cercano al repositorio. Consulta [Presets](./installation.md#presets) para ver las skills de cada preset y los [workflows que necesitan skills fuera de un preset](./installation.md#workflows-that-need-skills-outside-a-preset).
+La configuración conserva un idioma de respuesta existente o detecta el idioma del sistema automáticamente. La configuración interactiva pregunta por los proveedores de CLI, los [proveedores de capacidades](./glossary.md#capability-provider), el [preset de modelos](./glossary.md#model-preset), el [preset de skills](./glossary.md#skill-preset) del proyecto y cualquier variante de stack. Para la primera ejecución, conserva los valores predeterminados, selecciona el proveedor que ya usas y elige el preset de proyecto más cercano al repositorio. Consulta [Presets](./installation.md#presets) para ver las skills de cada preset y los [workflows que necesitan skills fuera de un preset](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Si ya tienes `bun`, usa directamente el instalador:
 
@@ -91,7 +91,7 @@ Para una tarea que cruce los límites de API y UI, selecciona `/work` o `/orches
 
 La carga temporal de una skill no configura estos valores predeterminados del runtime. Para hooks de proyecto, configuración de proveedores o flujos de trabajo en equipo, usa la ruta del runtime en [Elegir una configuración](./choose-setup.md).
 
-OMA empieza con `model_preset: auto`, Serena para la inteligencia de código, Agent Memory para la memoria semántica, búsqueda web nativa y la telemetría desactivada. Serena usa el transporte compartido `bridge` y se actualiza automáticamente, salvo que se configure de otro modo. El MCP de DevTools del navegador está desactivado por defecto; una configuración interactiva nueva ofrece Aside primero. Consulta [Valores predeterminados importantes](./important-defaults.md) para conocer las consecuencias y las claves de sobrescritura.
+OMA empieza con `model_preset: auto`, Serena para la inteligencia de código, Agent Memory para la memoria semántica, búsqueda web nativa y la telemetría desactivada. Serena usa el transporte compartido `bridge` y se actualiza automáticamente, salvo que se configure de otro modo. El MCP de DevTools del navegador es opt-in; una configuración interactiva nueva ofrece Aside primero. Consulta [Valores predeterminados importantes](./important-defaults.md) para conocer las consecuencias y las claves de sobrescritura.
 
 Si una tarea gestionada se atasca, empieza con `oma agent status <session-id> [agent-id]` y después inspecciona su receipt en `.agents/state/agent-runs/` y la ruta de claim estructurado inyectada. Esos registros muestran la ejecución, la tarea, el workspace, el código de salida y el estado de verificación. Los archivos legibles `result-*.md` y `progress-*.md` de `.agents/state/memories/` aportan contexto cuando existen. Vuelve a ejecutar solo el comando fallido más pequeño después de confirmar que la ejecución ya no está activa. Un [flujo persistente](./glossary.md#persistent-workflow) sigue activo hasta completarse o hasta que digas `workflow done`; consulta [Flujos de trabajo](../core-concepts/workflows.md#persistent-mode-mechanics) para recuperar el archivo de estado.
 

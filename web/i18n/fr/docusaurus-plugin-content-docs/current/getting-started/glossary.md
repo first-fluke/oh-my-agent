@@ -5,8 +5,6 @@ description: Définitions courtes des termes d’oh-my-agent, notamment les comp
 
 # Glossaire
 
-Chaque entrée donne une définition courte et renvoie à la page qui traite le terme en détail. Lorsqu’un mot a des sens différents selon les parties d’OMA, l’entrée le précise.
-
 ## Éléments de base {#building-blocks}
 
 ### Compétence {#skill}
@@ -29,7 +27,7 @@ Un preset de compétences est l’ensemble de compétences que l’installateur 
 
 ### Preset de modèles {#model-preset}
 
-Le preset de modèles est la valeur `model_preset` de `.agents/oma-config.yaml` (ou `.cue`). Il détermine le fournisseur et le modèle utilisés par chaque agent. `auto`, la valeur par défaut des nouvelles installations, suit les réglages d’agents et de modèles propres au runtime courant ; les presets fixes comme `claude`, `codex` ou `mixed` les figent. Les surcharges `agents.<id>` ont priorité sur le preset, sauf avec `free`, où `free.model` remplace les modèles fixés par agent. Voir [Presets intégrés](../guide/per-agent-models.md#built-in-presets).
+Le preset de modèles est la valeur `model_preset` de `.agents/oma-config.yaml` (ou `.cue`). Il détermine le fournisseur et le modèle utilisés par chaque agent. `auto`, la valeur par défaut des nouvelles installations, suit les réglages d’agents et de modèles propres au runtime courant ; les presets fixes comme `claude`, `codex` ou `mixed` les figent. Les surcharges `agents.<id>` ont priorité sur le preset, sauf avec `free` ou un autre fournisseur LLM `providers.<name>`, où le `default_model` du fournisseur remplace les modèles fixés par agent. Voir [Presets intégrés](../guide/per-agent-models.md#built-in-presets).
 
 ## Exécution des workflows {#workflow-execution}
 

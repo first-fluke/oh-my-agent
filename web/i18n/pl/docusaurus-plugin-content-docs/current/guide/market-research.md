@@ -8,7 +8,7 @@ description: Jak umiejętność oma-market prowadzi badania sygnałów społeczn
 
 `oma-market` odpowiada na pytanie „co ludzie naprawdę mówią o X w ciągu ostatnich N dni” — o problemach, trendach, nastawieniu wobec konkurencji i odkrywaniu — korzystając ze źródeł społecznościowych z rzeczywistymi liczbami zaangażowania: Reddit (upvoty i najpopularniejsze komentarze), X, transkrypcje YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, sieć i inne.
 
-Same badania działają na upstreamowym silniku [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent nie tworzy jego forka: utrzymuje **zawsze najnowszą zarządzaną kopię**, zabezpiecza każde uruchomienie bramką i dodaje warstwę frameworków strategicznych. Częstotliwość wydań, liczba gwiazdek i pokrycie dostawców należą do projektu upstream i mogą się zmieniać.
+Same badania działają na upstreamowym silniku [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent nie tworzy jego forka: silnik jest instalowany jako umiejętność agenta przez [CLI skills](https://github.com/vercel-labs/skills), a oh-my-agent zabezpiecza każde uruchomienie bramką i dodaje warstwę frameworków strategicznych. Częstotliwość wydań, liczba gwiazdek i pokrycie dostawców należą do projektu upstream i mogą się zmieniać.
 
 ---
 
@@ -17,8 +17,8 @@ Same badania działają na upstreamowym silniku [**last30days**](https://github.
 Poproś agenta zwykłym językiem. Frazy takie jak „badania rynku”, „problemy użytkowników”, „analiza konkurencji”, „głos klienta” albo „wykrywanie trendów” (ang. „market research”, „pain points”, „competitor analysis”, „voice of customer”, „trend detection”) aktywują umiejętność `oma-market`:
 
 ```text
-Znajdź główne problemy, które programiści zgłaszali w ciągu ostatnich 30 dni w związku z VS Code remote containers.
-Porównaj nastroje społeczności wobec Cursor vs Windsurf w ciągu ostatnich 90 dni, frameworks swot,5f.
+Find the top pain points developers report about VS Code remote containers in the last 30 days.
+Compare Cursor vs Windsurf community sentiment over the last 90 days, frameworks swot,5f.
 ```
 
 | Sterowanie | Efekt |
@@ -64,10 +64,10 @@ oma market resolve
 Kolejność rozstrzygania (wygrywa pierwsze trafienie): `market.path` → `LAST30DAYS_HOME` → katalogi zainstalowanych umiejętności (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` w projekcie, następnie pod `~`, a potem `~/.config/agents/skills/last30days` i cache wtyczki Claude Code). Instalacja wtyczki Claude Code jest aktualizowana przez `/plugin`, a nie `oma market update`.
 
 ```bash
-oma market update            # force a check / download now
-oma market resolve --offline # never touch the network
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)
 ```
+
+Wcześniejsze wydania trzymały własną kopię w `~/.cache/oma-market/`. Nie jest już odczytywana; możesz ją usunąć.
 
 ---
 
@@ -75,13 +75,12 @@ oma market run -- --help     # the engine's own flags (without `--`, oma prints 
 
 ```yaml
 market:
-  managed: true                   # false = never download; pins / skill dirs only
-  channel: stable                 # stable (latest Release) | main (HEAD)
-  check_interval_min: 60          # 0 = check on every call
   path: null                      # explicit engine dir (pin)
   python: null                    # interpreter override
   save_dir: .agents/results/market/raw
 ```
+
+`managed`, `channel` i `check_interval_min` są przestarzałe: nadal przechodzą walidację, ale są ignorowane, a `resolve` wypisuje ostrzeżenie, dopóki są ustawione.
 
 ---
 
@@ -120,9 +119,9 @@ flowchart TD
 | Sytuacja | Wynik |
 |---|---|
 | Temat odrzucony przez detect-trap | Pokazane przeformułowanie; silnik nie jest uruchamiany. `--force` dopiero po jawnym ponownym potwierdzeniu użytkownika |
-| Brak silnika w cache i tryb offline | `ok: false` → raz online uruchom `oma market update` |
+| Silnik nie jest zainstalowany | `ok: false` → `oma market update` (instaluje go przez CLI skills) |
 | Brak Pythona 3.12+ | `ok: false` ze wskazówką instalacji (brew / apt / `uv python install 3.12`) albo ustaw `LAST30DAYS_PYTHON` / `market.python`; brak zastępstwa w postaci samego wyszukiwania w sieci |
-| Sprawdzenie wydania nie powiedzie się | Używany jest silnik z cache, zgłoszony jako `stale` |
+| `oma market update` kończy się niepowodzeniem | Pokazywany jest błąd CLI skills; istniejąca instalacja nadal działa |
 | Źródła bez kluczy | Pomijane wewnątrz silnika i wymienione w stopce; włącz je przez upstreamowy kreator konfiguracji |
 
 ---
@@ -130,7 +129,7 @@ flowchart TD
 ## Następne kroki
 
 - [Workflowy treści i badań](./content-and-research.md) — wybierz właściwą możliwość dla innych zadań badawczych i dokumentowych
-- [Silnik diagramów](./diagram-engine.md) — ten sam wzorzec zarządzanego najnowszego wydania dla archify
+- [Silnik diagramów](./diagram-engine.md) — ten sam wzorzec instalacji przez CLI skills dla archify
 - [Semantyka oma-config.yaml](./oma-config-semantics.md) — jak scalana jest sekcja `market:`
 - [Polecenia CLI: market](../cli-interfaces/commands.md#market) — pełna lista opcji
 - Upstream: [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

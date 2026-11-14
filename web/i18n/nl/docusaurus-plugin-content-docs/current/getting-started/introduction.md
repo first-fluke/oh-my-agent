@@ -11,7 +11,9 @@ OMA biedt mechanische controles wanneer je ze aanroept of een workflow selecteer
 
 Het volledige systeem staat in een draagbare `.agents/`-directory binnen je project. Schakel tussen Claude Code, Codex CLI, Antigravity CLI of IDE, Cursor, OpenCode en andere ondersteunde tools; je agentconfiguratie reist met je code mee.
 
-Ben je nieuw met OMA, begin dan met [Snel starten](./quick-start.md) en lees daarna [Belangrijke standaardinstellingen](./important-defaults.md). De installatie maakt de [SSOT](./glossary.md#ssot) en vendorintegraties aan; de eerste nuttige controle is `oma doctor`, en de eerste nuttige taak is één kleine wijziging binnen één domein. Gebruik `/work` of `/orchestrate` pas wanneer de taak coördinatie nodig heeft.
+Begin met [Een setup kiezen](./choose-setup.md): laad één skill voor een taak in je huidige agent, kies een runtime-skillpreset voor hooks en workflows, of installeer de Claude Code-plugin. Tijdelijk laden van een skill levert instructies en ondersteuningsbestanden; afhankelijkheden van de CLI, projectregels en externe services blijven expliciet. Een runtime-installatie maakt de [SSOT](./glossary.md#ssot) en vendorintegraties aan.
+
+Gebruik [Snel starten](./quick-start.md) voor een eerste taak en de waargenomen controles. `oma doctor` controleert een runtime-installatie; [Belangrijke standaardinstellingen](./important-defaults.md) legt de providers en configuratie uit. Ga naar `/work` of `/orchestrate` wanneer coördinatie nodig is en de skills waarnaar ze verwijzen zijn geïnstalleerd.
 
 ---
 
@@ -23,7 +25,7 @@ Traditionele AI-codeerassistenten behandelen frontend, backend, database, beveil
 - **Onduidelijk eigenaarschap**: een taak over meerdere domeinen heeft geen expliciete grens voor elk onderdeel
 - **Handmatige coördinatie**: voor complexe features over meerdere domeinen moeten de host of de gebruiker handoffs kiezen
 
-oh-my-agent lost dit op met specialisatie:
+OMA wijst domeinen toe aan skills en routeert taakwerk naar agenten:
 
 1. **Elke skill heeft een primair domein.** De frontend-skill kent React/Next.js, shadcn/ui, TailwindCSS v4 en FSD-lite-architectuur. De backend-skill kent het Repository-Service-Router-patroon, geparametriseerde queries en JWT-authenticatie. Domeinen kunnen elkaar aan grenzen overlappen; gebruik daarom de acceptatiecriteria van de taak om te bepalen wanneer een tweede skill of een coördinerende workflow nodig is.
 
@@ -202,7 +204,7 @@ Agent-spawning past zich aan elke geselecteerde vendor aan via vendordetectie en
 
 ## Hoe een verzoek verloopt
 
-Het diagram laat zien wat er gebeurt tussen een prompt en een afgerond resultaat. De keyword-hook, de skill-injector en de Stop-hook draaien alleen op hosts waarvan de hookintegratie is ingeschakeld. De keyword-hook en de skill-injector draaien na elkaar op dezelfde prompt, en hun geïnjecteerde context wordt gecombineerd.
+De keyword-hook, de skill-injector en de Stop-hook draaien alleen op hosts waarvan de hookintegratie is ingeschakeld. De keyword-hook en de skill-injector draaien na elkaar op dezelfde prompt, en hun geïnjecteerde context wordt gecombineerd.
 
 ```mermaid
 flowchart TD

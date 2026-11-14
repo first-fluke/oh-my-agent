@@ -6,7 +6,7 @@ description: Comment oh-my-agent choisit entre Mermaid et la compétence agent f
 
 # Moteur de diagrammes
 
-`/architecture` (ADR, recommandations, revues) et `/explain` (explicateurs de modifications de code) produisent des diagrammes structurels. `/architecture` insère toujours des blocs **Mermaid** dans l’artefact Markdown ; `/explain` dessine ses propres diagrammes SVG inline. Lorsqu’[archify](https://github.com/tt-a1i/archify) peut être résolu, OMA génère aussi un **diagramme HTML interactif et validé** à côté de l’artefact. Il propose un thème sombre ou clair, le déplacement et le zoom, la recherche, le traçage des relations, l’export PNG/SVG/WebM et le rendu depuis une spécification JSON typée.
+`/architecture` (ADR, recommandations, revues) et `/explain` (explicateurs de modifications de code) produisent des diagrammes structurels. L’artefact `/architecture` inclut toujours un bloc **Mermaid** dans le Markdown, et le workflow `/explain` dessine des diagrammes SVG inline. Lorsqu’[archify](https://github.com/tt-a1i/archify) se résout, le workflow d’architecture émet aussi un **diagramme HTML interactif et validé** à côté de l’artefact. Il utilise une spécification JSON typée et prend en charge les thèmes sombre et clair, le déplacement et le zoom, la recherche, le traçage des relations et l’export PNG/SVG/WebM.
 
 Mermaid reste le SSOT textuel dans le Markdown et les diffs git. archify produit un artefact dérivé.
 

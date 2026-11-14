@@ -5,14 +5,20 @@ description: Los valores predeterminados de oh-my-agent que afectan al enrutamie
 
 # Valores predeterminados importantes
 
+Estos valores predeterminados se aplican al runtime de OMA instalado. Cargar una skill con
+`skills use` aporta instrucciones sin configurar hooks, proveedores
+ni servicios del proyecto. Empieza por [Elegir una configuración](./choose-setup.md) para seleccionar esa
+ruta de tarea o una instalación del runtime.
+
 Los valores predeterminados están pensados para que el primer proyecto sea utilizable y, a la vez, mantener estables las configuraciones propiedad del usuario. Se resuelven en tiempo de ejecución, por lo que una clave omitida puede comportarse de forma distinta de un valor vacío explícito. Empieza aquí cuando el harness funciona, pero se comporta de forma distinta de lo esperado.
 
 ## Valores que afectan a la primera ejecución
 
 | Área | Valor predeterminado | Consecuencia | Sobrescritura |
 |---|---|---|---|
-| Idioma de respuesta | `en` | Las respuestas de los agentes y los flujos de trabajo usan inglés, salvo que la configuración del proyecto seleccione otro idioma compatible. Una instrucción explícita del usuario o de la sesión aún puede sobrescribir el valor predeterminado del proyecto cuando el host o el flujo de trabajo lo admite. | `language` en `.agents/oma-config.yaml` o `.cue` |
-| Enrutamiento de modelos ([preset de modelos](./glossary.md#model-preset)) | `auto` | Se usa la configuración nativa de agentes del runtime actual. Los runtimes desconocidos recurren a `default_cli` cuando está definido. | `model_preset`, `default_cli` o `agents.<id>` |
+| Idioma de respuesta | Idioma guardado o, si no hay, idioma del sistema; fallback `en` | La instalación detecta el idioma sin preguntar. Las configuraciones regionales se asignan a un idioma base compatible, como `ko_KR.UTF-8` → `ko`; las configuraciones no compatibles usan `en`. El idioma del prompt del usuario tiene prioridad sobre este ajuste. | `language` en `.agents/oma-config.yaml` o `.cue` |
+| Enrutamiento de modelos ([preset de modelos](./glossary.md#model-preset)) | `auto` | Se usa la configuración nativa de agentes del runtime actual. Los runtimes desconocidos recurren a `agents.default.cli` cuando está definido. | `model_preset`, `agents.default.cli` o `agents.<id>` |
+| Contenido de skills ([preset de skills](./glossary.md#skill-preset)) | Selección interactiva; `all` en una configuración desatendida, salvo que se pase `--preset` | Un preset selecciona skills. Los archivos compartidos, todas las definiciones de workflows y agentes, los hooks y la configuración de proveedores siguen formando parte de la instalación del runtime; las demás skills existentes se conservan. | `oma install --preset <name>`; consulta [límites de los presets](./installation.md#presets) |
 | Inteligencia de código ([proveedor de capacidades](./glossary.md#capability-provider)) | `serena` | Una instalación nueva intenta instalar Serena y configura su MCP. | `providers.code_intelligence: gortex` o `serena` |
 | Guard de búsqueda de código | `block` | Mientras haya un proveedor de inteligencia de código configurado, un hook PreToolUse deniega `Grep`/`Glob` nativos y la búsqueda recursiva en shell (`rg`, `grep -r`, `find -name`), y dirige al agente a las herramientas del proveedor. Se permiten las búsquedas limitadas a exclusiones confirmadas o a rutas fuera del proyecto. El hook no anuncia ninguna forma de omitirlo para el código fuente del proyecto. | `providers.code_intelligence_guard: off` |
 | Memoria semántica | `agentmemory` | La instalación y la actualización reutilizan un endpoint de AgentMemory en buen estado o instalan e inician el servicio local gestionado, y después comprueban que esté listo antes de terminar con éxito. Los endpoints personalizados explícitos se comprueban sin reemplazarlos. | `providers.semantic_memory: honcho` o `none`; `OMA_NO_AGENTMEMORY=1` omite la configuración de AgentMemory. |
@@ -40,15 +46,15 @@ después de cargar los archivos. Una configuración local no válida detiene la 
 
 El enrutamiento de modelos tiene dos casos especiales antes del orden de presets fijos:
 
-- Con `model_preset: auto`, se usa la configuración nativa de agente o modelo del runtime actual. Las sobrescrituras explícitas de `agents.<id>` siguen teniendo prioridad; un runtime desconocido puede usar `default_cli`.
-- Con `model_preset: free`, los hijos usan el gateway local de FreeLLMAPI. `free.model` selecciona el modelo del gateway y reemplaza las asignaciones de modelo por agente; si se omite, se usa `FREELLM_MODEL` o el fallback del proveedor `auto`.
+- Con `model_preset: auto`, se usa la configuración nativa de agente o modelo del runtime actual. Las sobrescrituras explícitas de `agents.<id>` siguen teniendo prioridad; un runtime desconocido puede usar `agents.default.cli`.
+- Con `model_preset: free` (o cualquier otro proveedor LLM `providers.<name>`), los hijos usan ese gateway. `providers.free.default_model` selecciona el modelo del gateway y reemplaza las asignaciones de modelo por agente; si se omite, se usa `FREELLM_MODEL` o el fallback del proveedor `auto`.
 
 Para un preset fijo o personalizado, el orden efectivo es:
 
 1. La sobrescritura explícita `agents.<id>`.
 2. La entrada coincidente de `model_preset`, integrada o en `custom_presets`.
 3. La entrada `orchestrator` del preset cuando un rol no tiene entrada propia.
-4. `default_cli` como fallback del proveedor cuando los niveles anteriores no resuelven un plan.
+4. `agents.default.cli` como fallback del proveedor cuando los niveles anteriores no resuelven un plan.
 
 El preset `free` proporciona valores predeterminados para los tres ajustes del proveedor: `base_url` es `http://127.0.0.1:31415/v1`, `api_key_env` es `FREELLM_API_KEY` (se acepta `FREELLMAPI_API_KEY` como alias de compatibilidad) y `model` es `auto`. Aun así, se necesita una clave API utilizable en la variable de entorno seleccionada; no existe un fallback de proveedor. Define estos valores en `oma-config.local.yaml` cuando deban permanecer locales a la máquina, o usa `FREELLM_BASE_URL` y `FREELLM_MODEL` para sobrescrituras por proceso.
 

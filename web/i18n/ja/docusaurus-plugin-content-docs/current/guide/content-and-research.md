@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 1 枚だけ確認するには `--slide <file>` を使い、別のプロセスが結果を必要とする JSON 出力には `--report-file <path>` を使います。`slide import pptx <file>` はインポートワークフローを開始し、`slide asset fetch-video <url>` は動画アセットをダウンロードします。`slide style list|preview|get <slug>` はスタイルを確認します。PPTX 出力はラスターベースなので、編集可能なテキストや図形レイヤーはありません。検証とエクスポートには Chrome／puppeteer が必要です。実行ファイルを検出できない場合は `OMA_CHROME_PATH` を設定します。3 回の自動修正で検証が収束しない場合は、表示されたジオメトリの問題を使って該当フラグメントを編集します。
 
+### 編集可能な PowerPoint（native-pptx ルート） {#editable-powerpoint-native-pptx-route}
+
+成果物が編集可能な PowerPoint ファイルでなければならないとき、`oma-slide` は `native-pptx` ルートに切り替えます。同じルートは、既存の PPTX のデザインを保ったまま記入または編集すること、PDF、DOCX、XLSX、URL をデッキにすること、再利用できるブランド、スタイル、レイアウト、デッキテンプレートを作ること、ナレーション付きの PPTX または MP4 を出力することも扱います。Web、アニメーション、Canva のデッキは、上の HTML ルートのままです。
+
+このルートは、上流の [ppt-master](https://github.com/hugohe3/ppt-master) スキル（MIT、Hugo He）を変更せずに実行します。`oma-slide` は、ランタイムのスキルカタログにインストール済みのコピーがあればそれを使います。なければ、セッション用に次のコマンドでスキルを読み込みます。
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master は SVG ページを作成し、ネイティブの DrawingML 図形、テキストボックス、チャート、表を書き出します。PPTX は、`.agents/results/slides/<session-id>/` 配下のプロジェクトの `exports/` フォルダーに置かれます。Python スクリプトには、スキルの `requirements.txt` にあるパッケージが必要です。`oma-slide` は、それらを `uv` の仮想環境へインストールする前に確認します。断った場合は、代わりに HTML ルートを提案します。このルートの AI 画像は `oma-image` で生成します。残りの流れは、ppt-master 自身のゲートと確認画面が決めます。
+
 ## エージェントの会話を回顧する {#recap-agent-conversations}
 
 証拠に基づく作業サマリーには `/recap` を使います（またはエージェントに回顧を依頼します）。履歴の収集には `oma recap` が実行されます。カレンダー日とローリング期間は別の入力です。

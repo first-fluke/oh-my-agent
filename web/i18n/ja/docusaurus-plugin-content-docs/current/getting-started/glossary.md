@@ -27,7 +27,7 @@ description: oh-my-agent の用語を短く定義します。スキル、ワー�
 
 ### モデルプリセット {#model-preset}
 
-モデルプリセットは、`.agents/oma-config.yaml`（または `.cue`）の `model_preset` の値です。各エージェントが使うベンダーとモデルを決めます。新規インストールのデフォルトである `auto` は、現在のランタイム自身のエージェント設定とモデル設定に従います。`claude`、`codex`、`mixed` などの固定プリセットはそれらを固定します。`agents.<id>` のオーバーライドはプリセットより優先されます。ただし `free` では、`free.model` がエージェントごとのモデル指定を置き換えます。詳しくは[組み込みプリセット](../guide/per-agent-models.md#built-in-presets)を参照してください。
+モデルプリセットは、`.agents/oma-config.yaml`（または `.cue`）の `model_preset` の値です。各エージェントが使うベンダーとモデルを決めます。新規インストールのデフォルトである `auto` は、現在のランタイム自身のエージェント設定とモデル設定に従います。`claude`、`codex`、`mixed` などの固定プリセットはそれらを固定します。`agents.<id>` のオーバーライドはプリセットより優先されます。ただし `free`、または他の `providers.<name>` LLM プロバイダーでは、プロバイダーの `default_model` がエージェントごとのモデル指定を置き換えます。詳しくは[組み込みプリセット](../guide/per-agent-models.md#built-in-presets)を参照してください。
 
 ## ワークフローの実行
 
@@ -78,7 +78,7 @@ flowchart LR
 
 ### チャーター {#charter}
 
-チャーター（charter）は、コードを書く前に出力する固定のプリフライトブロック（`CHARTER_CHECK`）です。oh-my-agent では不要であり、エージェント定義で決まった形式のプリフライト出力は求められません。エージェントは共有の実行ポリシーに従い、重要な前提を明示し、情報の欠落が正しさやスコープを左右する場合にだけ質問し、その回答に依存する作業だけを一時停止します。スポーンされたサブエージェントはユーザーに直接質問できないため、欠けている事実を `blocked` または `partial` の結果で報告します。詳しくは[承認と確認](../core-concepts/agents.md#charter-preflight-charter_check)を参照してください。
+チャーター（charter）は、コードを書く前に出力する固定のプリフライトブロック（`CHARTER_CHECK`）です。oh-my-agent では不要であり、エージェント定義で決まった形式のプリフライト出力は求められません。エージェントは共有の実行ポリシーに従い、重要な前提を明示し、情報の欠落が正しさやスコープを左右する場合にだけ質問し、その回答に依存する作業だけを一時停止します。スポーンされたサブエージェントはユーザーに直接質問できないため、欠けている事実を `blocked` または `partial` の結果で報告します。詳しくは[承認と明確化](../core-concepts/agents.md#charter-preflight-charter_check)を参照してください。
 
 ### 実行記録と申告 {#run-record-and-claim}
 

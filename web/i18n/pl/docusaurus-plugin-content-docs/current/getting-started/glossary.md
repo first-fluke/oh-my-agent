@@ -5,8 +5,6 @@ description: Krótkie definicje pojęć oh-my-agent, w tym umiejętności, workf
 
 # Słownik {#glossary}
 
-Jeśli słowo znaczy co innego w różnych częściach OMA, wpis to zaznacza.
-
 ## Elementy składowe {#building-blocks}
 
 ### Umiejętność (skill) {#skill}
@@ -29,7 +27,7 @@ Preset umiejętności to zestaw umiejętności, który instalator dodaje do proj
 
 ### Preset modelu {#model-preset}
 
-Preset modelu to wartość `model_preset` w `.agents/oma-config.yaml` (lub `.cue`). Decyduje, którego dostawcy i modelu używa każdy agent. `auto`, domyślny dla nowych instalacji, stosuje własne ustawienia agentów i modeli bieżącego runtime'u; stałe presety, takie jak `claude`, `codex` czy `mixed`, przypinają je na sztywno. Nadpisania `agents.<id>` mają pierwszeństwo przed presetem, z wyjątkiem `free`, gdzie `free.model` zastępuje przypięcia modeli per agent. Zobacz [Wbudowane presety](../guide/per-agent-models.md#built-in-presets).
+Preset modelu to wartość `model_preset` w `.agents/oma-config.yaml` (lub `.cue`). Decyduje, którego dostawcy i modelu używa każdy agent. `auto`, domyślny dla nowych instalacji, stosuje własne ustawienia agentów i modeli bieżącego runtime'u; stałe presety, takie jak `claude`, `codex` czy `mixed`, przypinają je na sztywno. Nadpisania `agents.<id>` mają pierwszeństwo przed presetem, z wyjątkiem `free` albo innego dostawcy LLM `providers.<name>`, gdzie `default_model` tego dostawcy zastępuje przypięcia modeli per agent. Zobacz [Wbudowane presety](../guide/per-agent-models.md#built-in-presets).
 
 ## Wykonywanie workflowów {#workflow-execution}
 

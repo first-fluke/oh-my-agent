@@ -44,23 +44,23 @@ Các khóa sau được runtime schema hiện tại hoặc consumer OMA được
 
 | Khóa | Kiểu hoặc giá trị được chấp nhận | Mặc định khi thiếu | Mục đích |
 | --- | --- | --- | --- |
-| `language` | string | `en` | Ngôn ngữ phản hồi được workflow và skill dùng. |
+| `language` | string | `en` | Ngôn ngữ phản hồi được workflow và skill dùng. Install giữ giá trị hiện có hoặc khởi tạo từ ngôn ngữ hệ thống mà không hỏi. |
 | `translation_voice` | `formal`, `balanced`, `interpreter` | `balanced` trong template được phát hành | Chọn giọng cho `oma-translation`. |
 | `date_format` | `ISO`, `US`, `EU` | `ISO` trong template được phát hành; bỏ qua nghĩa là không có override rõ ràng | Tùy chọn định dạng ngày. |
 | `timezone` | tên IANA | múi giờ hệ thống | Thời gian được dùng trong schedule và report. |
 | `auto_update_cli` | boolean | `true` | Kiểm tra phiên bản CLI nền; opt out bằng `false`. |
 | `telemetry` | boolean | `false` | Opt in telemetry của vendor dùng trong install, update và link reconciliation. |
 | `model_preset` | string không rỗng | `auto` trong template mới | Model preset built-in hoặc tùy chỉnh. `OMA_MODEL_PRESET` ghi đè trong một process. |
-| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | Thiết lập FreeLLMAPI khi preset là `free`; `FREELLM_BASE_URL` và `FREELLM_MODEL` ghi đè giá trị trong file, còn tên khóa không bao giờ chứa secret. Xem [Cấu hình model theo agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Chọn provider cho documentation, search, code intelligence và semantic memory. Xem [Providers](#providers). |
-| `brave` | `api_key_env` hoặc `api_key_vault` | chưa đặt | Tham chiếu credential tìm kiếm Brave. |
-| `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Xem [Chi tiết Honcho](#honcho-semantic-memory) | Thiết lập kết nối Honcho semantic memory. |
-| `agents` | agent ID → `model`, tùy chọn `effort`, `thinking`, `memory` | preset resolution | Override theo agent được áp dụng lên preset đã chọn. `effort` là `none`, `low`, `medium`, `high` hoặc `xhigh`; `memory` là `user`, `project` hoặc `local`. |
+| `free` | `base_url`, `api_key_env`, `model` | chưa đặt | Cách viết cũ của `providers.free` (`model` ở đó là `default_model`); vẫn được đọc, và `oma update` chuyển nó. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`; các section credential `brave`, `exa`, `honcho`; mọi `<name>` khác → object LLM provider | `context7`, `native`, `serena`, `block`, `agentmemory`; không có credential hay LLM provider | Chọn provider documentation, search, code-intelligence và semantic-memory, giữ tham chiếu credential của chúng, và khai báo endpoint LLM mà agent có thể được định tuyến qua. Xem [Providers](#providers). |
+| `brave`, `exa`, `honcho` | như dưới `providers` | chưa đặt | Cách viết cấp cao nhất cũ của `providers.brave`, `providers.exa` và `providers.honcho`; vẫn được đọc, và `oma update` chuyển chúng. |
+| `agents` | agent ID → `model`, tùy chọn `effort`, `thinking`, `memory`; `default` → `cli`, `effort`, `thinking`, `memory` | preset resolution; `default.cli` fallback về `claude` (`codex` cho route provider) | Override theo agent được áp dụng lên preset đã chọn. `effort` là `none`, `low`, `medium`, `high` hoặc `xhigh`; `memory` là `user`, `project` hoặc `local`. `agents.default` điền các field đó cho mọi role không tự đặt, và `cli` của nó (một trong `claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) là vendor được dùng khi không có gì khác chọn: runtime không phát hiện được dưới `auto`, hoặc route provider sau `--vendor`, `OMA_RUNTIME_VENDOR` và runtime đã phát hiện. Model dạng `<provider>/<model-id>` định tuyến role qua LLM provider đó. |
 | `models` | model slug → CLI mapping | chưa đặt | Định nghĩa model inline cho vendor CLI được hỗ trợ. |
 | `custom_presets` | preset → description, tùy chọn `extends`, `agent_defaults` | chưa đặt | Preset do người dùng định nghĩa; `extends` có thể kế thừa built-in. |
 | `vendors` | `string[]` gồm vendor ID được chọn (YAML và CUE) | khi thiếu: `oma link` dùng mọi vendor có thể link, `oma update` dùng các vendor đã có thư mục trong project | Chọn vendor integration mà `oma install` và `oma update` project. Capability map cho dispatch nằm trong managed orchestration config; xem [Vendor selection và dispatch metadata](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | vendor ID (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` cho transport `free` | Vendor được dùng khi không có gì khác chọn vendor: runtime không phát hiện được dưới `auto`, hoặc transport `free` sau `--vendor`, `OMA_RUNTIME_VENDOR` và runtime đã phát hiện. Xem [How OMA resolves an agent's model and CLI](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
-| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | mỗi dimension bị bỏ qua là không giới hạn | Token và spawn limit cứng được kiểm tra trước agent spawn tiếp theo; xem [Session quota caps](#session-quota-caps). |
+| `default_cli` | vendor ID | chưa đặt | Cách viết cũ của `agents.default.cli`; vẫn được đọc, và `oma update` chuyển nó. |
+| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | mỗi dimension bị bỏ qua là không giới hạn | Token usage đã ghi và giới hạn spawn được kiểm tra trước agent spawn tiếp theo; xem [Session quota caps](#session-quota-caps). |
+| `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | tự động với terminal host được hỗ trợ, `false`, `1400` | So sánh diagnostic Serena trước và sau các lần sửa file native; xem [Diagnostic feedback](#diagnostic-feedback). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Hành vi và phạm vi loại trừ khi scan của `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP transport và hành vi cập nhật. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` hoặc `[]` | chưa đặt = giữ nguyên setup hiện có | Chọn Browser DevTools MCP khi reconciliation. List rỗng rõ ràng sẽ xóa browser entry đã chọn. |
@@ -70,8 +70,8 @@ Các khóa sau được runtime schema hiện tại hoặc consumer OMA được
 | `hwp` | `format`, `version.*`, `output.*` | skill default; xem [Workflow nội dung và nghiên cứu](/docs/guide/content-and-research#extract-hwp-family-documents) | Định dạng Kordoc, kênh version và vị trí output. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | skill default; xem [Workflow nội dung và nghiên cứu](/docs/guide/content-and-research#extract-pdf-content) | Thiết lập trích xuất PDF, OCR, image và overwrite. |
 | `scholar` | `base_url` | skill default; xem [Workflow nội dung và nghiên cứu](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Host endpoint Knows; protocol shape do skill sở hữu. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.*` | skill default; xem [Diagram Engine](/docs/guide/diagram-engine) | Chọn Mermaid/archify và thiết lập managed engine. |
-| `market` | `managed`, `channel`, `check_interval_min`, `path`, `python`, `save_dir` | skill default; xem [Nghiên cứu thị trường](/docs/guide/market-research) | Resolve managed last30days engine và vị trí lưu kết quả. |
+| `diagram` | `engine`, `explain_sidecar`, `archify.path`, `archify.quality`, `archify.open` | skill default; xem [Diagram Engine](/docs/guide/diagram-engine) | Chọn Mermaid/archify và thiết lập pin/chất lượng archify. Các khóa đã ngừng `archify.managed`, `archify.channel` và `archify.check_interval_min` bị bỏ qua kèm thông báo, và `oma update` xóa chúng. |
+| `market` | `path`, `python`, `save_dir` | skill default; xem [Nghiên cứu thị trường](/docs/guide/market-research) | Pin engine last30days, interpreter và vị trí kết quả. Các khóa đã ngừng `managed`, `channel` và `check_interval_min` bị bỏ qua kèm thông báo, và `oma update` xóa chúng. |
 
 Template được phát hành cũng có các block do consumer sở hữu. Các khóa và mặc định hiện tại:
 
@@ -98,13 +98,39 @@ Các block này được chấp nhận qua configuration passthrough và đượ
 | `code_intelligence_guard` | `block`, `off` | `block` |
 | `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
 
+Ba khóa dành riêng giữ section credential hoặc kết nối của một selector: `providers.brave` và `providers.exa` (`api_key_env` hoặc `api_key_vault`) cho `web`, và `providers.honcho` cho `semantic_memory` (xem [Semantic memory Honcho](#honcho-semantic-memory)). Cách viết cấp cao nhất cũ của chúng vẫn được đọc.
+
+Mọi khóa khác dưới `providers` là một **LLM provider**: endpoint tương thích OpenAI hoặc Anthropic mà `oma agent spawn` có thể định tuyến CLI của child qua đó thay vì tài khoản riêng của CLI. Giá trị là một object:
+
+| Field | Giá trị được chấp nhận | Bắt buộc | Mục đích |
+| --- | --- | --- | --- |
+| `base_url` | URL HTTP(S) tuyệt đối, không có credential, query hay fragment; `/v1` được nối thêm khi thiếu | có | Endpoint. |
+| `api_key_env` | tên biến môi trường | có (trừ `free`, mặc định `FREELLM_API_KEY`) | Nơi đọc key; file không bao giờ giữ key. `base_url` cũng chỉ tùy chọn với `free` (`http://127.0.0.1:31415/v1`). |
+| `transport` | `chat_completions` (mặc định), `responses`, `anthropic_messages`, `multi` | không | Wire protocol mà endpoint nói. Nó chọn CLI của child: `chat_completions` → Codex hoặc Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` (gateway phục vụ cả ba) → Codex, Claude hoặc Qwen. |
+| `default_model` | model ID | khi provider được dùng làm `model_preset` | Model mà mọi role dùng dưới `model_preset: <name>`. |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free` là provider built-in cho gateway FreeLLMAPI cục bộ: mọi field đều có mặc định, `FREELLM_BASE_URL` và `FREELLM_MODEL` ghi đè file, và khối `free:` cấp cao nhất cũ vẫn được đọc (`model` của nó là `default_model` ở đây); xem [LLM provider tùy chỉnh](/docs/guide/per-agent-models#custom-llm-providers).
+
 `code_intelligence_guard` điều khiển guard tìm kiếm PreToolUse. Các lệnh tìm kiếm native chỉ nằm trong mục loại trừ provider đã xác nhận hoặc ở path ngoài project được cho phép mà không cần bypass. Guard đọc các mục loại trừ của Serena và các rule gitignore đang bật, hoặc danh sách loại trừ của Gortex; nó không suy ra dependency từ tên thư mục.
 
 Hook không nêu tên `OMA_CI_ALLOW_NATIVE`. Lệnh tìm kiếm shell có tiền tố `OMA_CI_ALLOW_NATIVE=1` chỉ bypass guard đối với tài nguyên ngoài project hoặc các path bị ignore mà guard không nhận ra, không áp dụng cho source của project.
 
 ### Semantic memory Honcho {#honcho-semantic-memory}
 
-Map `honcho` được xác thực bởi `HonchoConfigSchema`. Tên khóa và hành vi runtime hiệu lực:
+Map `providers.honcho` (khóa cấp cao nhất `honcho` cũ, vẫn được đọc) được xác thực bởi `HonchoConfigSchema`. Tên khóa và hành vi runtime hiệu lực:
 
 | Khóa | Hình dạng | Mặc định hoặc ràng buộc hiệu lực |
 |---|---|---|
@@ -150,7 +176,42 @@ session:
       codex: 500000
 ```
 
-Cap loader kiểm tra user CUE layer, sau đó user YAML layer, rồi shipped defaults fallback. Trước một spawn, OMA kiểm tra `spawn_count`, tổng `tokens` và `per_vendor` theo thứ tự đó. Limit đạt khi usage lớn hơn hoặc bằng nó; OMA chặn spawn tiếp theo và báo dimension thắng. Usage là token accounting, không phải ước tính billing.
+Cap loader kiểm tra user CUE layer, sau đó user YAML layer, rồi shipped defaults fallback. Trước một spawn, OMA kiểm tra `spawn_count`, tổng `tokens` và `per_vendor` theo thứ tự đó. Limit đạt khi usage lớn hơn hoặc bằng nó; OMA chặn spawn tiếp theo và báo dimension thắng.
+
+OMA giữ một ước lượng input-token khi run bắt đầu. Khi có transcript native được hỗ trợ sau run, usage input, cache và output đã ghi thay ước lượng đó mà không tính thêm một spawn. Nếu không, bản ghi vẫn được ước lượng rõ từ độ dài prompt. Usage của root session đã quan sát được đánh dấu partial khi native subagent nằm ngoài phạm vi capture. Vì vậy token cap phụ thuộc vào quan sát có được; chúng không ngắt child đang chạy và không bảo đảm giới hạn billing. `spawn_count` là giới hạn dễ dự đoán nhất.
+
+### Ngân sách thực thi session {#session-execution-budget}
+
+Đặt `session.execution` để giới hạn thời gian đã trôi cho dispatch CLI do OMA quản lý và verification. Dùng một `timeout_seconds` dương hoặc `deadline` ISO 8601 có timezone:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+Các lệnh `oma agent spawn`, `parallel`, `review`, `resume`, `begin` và `verify` nhận `--timeout-seconds` hoặc `--deadline`. Chuẩn bị, thực thi, retry và các check dùng chung một deadline tuyệt đối. Deadline được cấu hình, kế thừa hoặc đã lưu sớm nhất thắng; retry và resume không đặt lại đồng hồ. Bỏ `session.execution` và cả hai flag để để dimension này không giới hạn, trừ khi parent đã cung cấp deadline.
+
+Lịch sử thực thi được giữ dưới `.agents/state/executions/`. Hủy hoặc timeout chặn thực thi tiếp theo trong session đó và ghi lý do dừng. Các điều khiển này bao quát process được khởi động qua đường CLI được quản lý. Agent native của vendor và job shell tùy ý cần cơ chế hủy của host; giới hạn CPU, RAM và storage cần hỗ trợ của provider.
+
+CLI child được quản lý kế thừa `OMA_EXECUTION_DEADLINE`, `OMA_EXECUTION_STATE` và `OMA_EXECUTION_ID`. Path trạng thái và execution ID tạo một tham chiếu kế thừa đã gắn; ledger lạ, sai dạng hoặc không khớp bị từ chối trước khi ghi. Khi bọc một child OMA, hãy chuyển tiếp toàn bộ environment được kế thừa. Đặt các biến này không thêm việc thực thi deadline cho một chương trình không liên quan.
+
+Khi hủy, OMA dừng nhận thêm và cố kết thúc có giới hạn phần tính toán mà nó sở hữu. Nó giữ log, kết quả, worktree và metadata tài nguyên đã đăng ký. Xóa artifact hoặc tài nguyên bên ngoài cần một yêu cầu hoặc chính sách retention rõ ràng. Việc kết thúc không thành công vẫn được nhìn thấy thay vì được báo là đã dọn sạch.
+
+### Diagnostic feedback {#diagnostic-feedback}
+
+Với terminal host được hỗ trợ, OMA so sánh error và warning trước và sau các lần sửa file native rồi đưa diagnostic mới được báo vào phản hồi tool tiếp theo. Nó dùng Serena HTTP daemon đang chạy, khớp project, khi Serena là code-intelligence provider hiệu lực (mặc định khi không chỉ định provider). Nó không bao giờ khởi động daemon hay chạy build. Các lần sửa symbolic của chính Serena bị loại vì chúng đã cung cấp diagnostic.
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+Đặt `enabled: false` để tắt phản hồi này. Đặt `host_diagnostics: true` khi host đã cung cấp diagnostic của lần sửa; Cursor và Antigravity được bỏ qua tự động. Override theo project tuân theo các layer cấu hình thông thường. Environment override là `OMA_DIAGNOSTIC_FEEDBACK`, `OMA_HOST_DIAGNOSTICS` và `OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS`.
+
+Timeout bao quát mỗi hook pre-edit hoặc post-edit hoàn chỉnh và bị giới hạn 100–10.000 millisecond. Provider chậm có thể dùng timeout lớn hơn. Tra cứu thất bại hoặc hết giờ bỏ qua phản hồi và bắt đầu cooldown ngắn; nó không tính là kết quả diagnostic sạch. Baseline pre-edit thiếu hoặc cũ cũng bỏ qua phản hồi. Mỗi hook kiểm tra tối đa ba file và báo tối đa tám error hoặc warning mới.
 
 ### Vendor selection và dispatch metadata {#vendor-selection-and-dispatch-metadata}
 

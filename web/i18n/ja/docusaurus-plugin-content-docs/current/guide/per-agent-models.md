@@ -74,8 +74,10 @@ model_preset: auto
 
 | `model_preset` | `agents.<id>` の設定 | CLI に渡すモデル | エージェントを実行する CLI |
 |:---------------|:-------------------|:----------------------|:------------------------|
-| `free` | 無視される | `FREELLM_MODEL`、なければ `free.model`、なければ `auto`（すべてのロール） | `--vendor`、なければ `OMA_RUNTIME_VENDOR`、なければ検出したランタイム（Codex、Claude、Qwen の場合）、なければ `default_cli`、なければ `codex`。受け付けるのは `codex`、`claude`、`qwen` だけ。 |
-| `auto` | なし | なし。ベンダー固有のエージェント設定とセッション設定が適用される。 | `--vendor`、なければサポート対象の `OMA_RUNTIME_VENDOR`、なければ検出したランタイム、なければ `default_cli`、なければ `claude`。サポートされない値はエラー。 |
+| `free` | モデルは無視される。`effort`、`thinking`、`memory` は適用される | `FREELLM_MODEL`、なければ `providers.free.default_model`、なければ `auto`（すべてのロール） | `--vendor`、なければ `OMA_RUNTIME_VENDOR`、なければ検出したランタイムが Codex、Claude、Qwen のいずれかならそれ、なければ `agents.default.cli`、なければ `codex`。受け付けるのは `codex`、`claude`、`qwen` だけ。 |
+| `providers.<name>` の LLM プロバイダー | モデルは無視される。`effort`、`thinking`、`memory` は適用される | プロバイダーの `default_model`（すべてのロール）。未設定はエラー | `--vendor`、なければ `OMA_RUNTIME_VENDOR`、なければ検出したランタイム、なければ `agents.default.cli`、なければプロバイダーの `transport` が許す最初の CLI（`chat_completions` は Codex または Qwen、`responses` は Codex、`anthropic_messages` は Claude、`multi` は 3 つのいずれか）。 |
+| 任意 | `model` が `providers.<name>` エントリの `<provider>/<model-id>` | `<model-id>`。CLI にそのまま渡す | 上の行のベンダー規則。レジストリは参照しない |
+| `auto` | なし | なし。ベンダー固有のエージェント設定とセッション設定が適用される。 | `--vendor`、なければサポート対象の `OMA_RUNTIME_VENDOR`、なければ検出したランタイム、なければ `agents.default.cli`、なければ `claude`。サポートされない値はエラー。 |
 | `auto` | あり | 上書きの `model` | そのモデルの `cli`。その後、下記のベンダー上書き規則を適用 |
 | 組み込み、エイリアス、カスタム | なし | そのロールに対するプリセットのエントリ、なければプリセットの `orchestrator` エントリ | そのモデルの `cli`。その後、下記のベンダー上書き規則を適用 |
 | 組み込み、エイリアス、カスタム | あり | プリセットのエントリに上書きを浅くマージしたもの（上書きのフィールドが優先） | そのモデルの `cli`。その後、下記のベンダー上書き規則を適用 |
@@ -86,6 +88,7 @@ model_preset: auto
 - **モデルの検索。** スラッグはまず `models:`、次に組み込みレジストリで検索されます。未知のスラッグ、または `api_only: true` の仕様では、ディスパッチが停止します。
 - **ベンダー上書き規則。** モデルに基づく行で `--vendor` または `OMA_RUNTIME_VENDOR` がベンダーを指定した場合、`pi` は常に優先されます（実プロバイダーのモデルのみ。[pi を介したディスパッチ](#dispatching-through-pi-transport-runtime)を参照）。それ以外のベンダーが優先されるのは、モデルの `supports.native_dispatch_from` に記載されている場合だけです。そうでなければ OMA は警告し、モデル自身の `cli` を維持します。
 - **Effort。** CLI に effort フラグがないモデル（Claude Code）では、`effort` は警告付きで破棄されます。pi では維持され、`--thinking` に対応付けられます。
+- **デフォルト。** `agents.default` は、自分で何も設定していないすべてのロールに、上のどの行でも `effort`、`thinking`、`memory` を渡します。その `cli` は、各行が `agents.default.cli` と呼ぶベンダーのフォールバックです（古いトップレベルの `default_cli` も引き続き読みます）。モデルを渡すことはありません。
 
 ## 自動ディスパッチ
 
@@ -108,10 +111,10 @@ OMA は最も近いプロジェクト設定ディレクトリを選びます。�
 ```cue
 // .agents/oma-config.local.cue
 model_preset: "free"
-free: {
-    base_url:    "http://127.0.0.1:31415/v1"
-    api_key_env: "FREELLM_API_KEY"
-    model:       "auto"
+providers: free: {
+    base_url:      "http://127.0.0.1:31415/v1"
+    api_key_env:   "FREELLM_API_KEY"
+    default_model: "auto"
 }
 ```
 
@@ -120,11 +123,14 @@ free: {
 ```yaml
 # .agents/oma-config.local.yaml
 model_preset: free
-free:
-  base_url: http://127.0.0.1:31415/v1
-  api_key_env: FREELLM_API_KEY
-  model: auto
+providers:
+  free:
+    base_url: http://127.0.0.1:31415/v1
+    api_key_env: FREELLM_API_KEY
+    default_model: auto
 ```
+
+古いトップレベルの `free:` ブロック（`default_model` ではなく `model`）も引き続き読み込まれ、`oma update` がこの形に書き換えます。
 
 FreeLLMAPI を別途起動し、統一キーを `FREELLM_API_KEY` として export します。デフォルトのキー変数が選択されている場合、OMA は upstream の `FREELLMAPI_API_KEY` も受け付けます。両方が設定されていれば、正規の変数が優先されます。カスタムの `api_key_env` を指定した場合は、その変数だけを読み込みます。キーそのものを設定ファイルに書かないでください。`OMA_MODEL_PRESET` はプリセットを上書きします。`FREELLM_BASE_URL` と `FREELLM_MODEL` は、それぞれファイルの設定を上書きします。例にある値はデフォルトなので、サーバーとキーの準備ができていれば `model_preset: free` だけで十分です。
 
@@ -133,7 +139,7 @@ oma doctor --profile
 oma agent spawn backend "Review the API error handling" free-review --vendor codex --read-only
 ```
 
-Free モードは、既存の `agents.*.model` の固定指定があるロールも含め、OMA がディスパッチするすべてのロールで `free.model` を使います。固定指定を有料サブスクリプション向けに解決することはありません。`auto`、ゲートウェイのモデル ID、`auto:coding` のような名前付きゲートウェイチェーンのいずれかを選びます。名前付きチェーンは、あらかじめ FreeLLMAPI で作成してください。
+Free モードは、既存の `agents.*.model` の固定指定があるロールも含め、OMA がディスパッチするすべてのロールで `providers.free.default_model` を使います。固定指定を有料サブスクリプション向けに解決することはありません。`auto`、ゲートウェイのモデル ID、`auto:coding` のような名前付きゲートウェイチェーンのいずれかを選びます。名前付きチェーンは、あらかじめ FreeLLMAPI で作成してください。
 
 トランスポートは、[OMA がエージェントのモデルと CLI を解決する方法](#how-oma-resolves-an-agents-model-and-cli)の `free` の行に従います。サポートされるトランスポートは Codex、Claude、Qwen だけです。サポートされないトランスポートを明示するとエラーになります。
 
@@ -153,9 +159,39 @@ Free プリセットはエージェントの推論を設定します。既存の
 
 上流の参考資料： [クライアントのセットアップ](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/clients/01-agent-clients.md)、[API と埋め込みモデルの系統](https://github.com/tashfeenahmed/freellmapi/blob/main/docs/en/api/01-rest-api.md)。
 
+## カスタム LLM プロバイダー {#custom-llm-providers}
+
+`free` は一般的な仕組みの一例です。OpenAI 互換または Anthropic 互換のエンドポイントなら、`providers:` の下に宣言し、スポーンしたエージェントをそこへ通せます。キーはプロバイダー名で、値に秘密情報は入れません。
+
+```yaml
+# .agents/oma-config.yaml
+providers:
+  code_intelligence: serena          # capability selectors stay strings
+  exaone:                            # an object = an LLM provider
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY      # the variable name, never the key
+    transport: chat_completions      # chat_completions | responses | anthropic_messages | multi
+    default_model: k-exaone_v2.5
+
+agents:
+  default: { effort: medium }        # tuning for every role that sets none
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+プロバイダーの使い方は 2 つあります。
+
+- **すべてのロールを通す**: `model_preset: exaone`。各ロールは `default_model` で動きます。ロールごとの `model` 固定は無視されます（経路から外れてしまうため）。ロールごとの `effort`、`thinking`、`memory` は引き続き適用されます。`default_model` がないプロバイダーはプリセットになれません。子プロセスは `OMA_MODEL_PRESET=<name>` を継承するので、ネストしたスポーンも同じ経路を保ちます。
+- **1 つのロールを通す**: `agents.<id>.model: <name>/<model-id>`。モデル ID は CLI にそのまま渡されます。レジストリと `models:` は参照しません。その子のネストしたスポーンは、再び経路を変えません。
+
+`transport` は子の CLI を選びます。各 CLI が話すプロトコルは 1 つだからです。`chat_completions` は Codex（`wire_api = "chat"` プロバイダーとして）または Qwen、`responses` は Codex、`anthropic_messages` は Claude、`multi` は 3 つのいずれかです（FreeLLMAPI はすべてに対応します）。`--vendor`、`OMA_RUNTIME_VENDOR`、検出したランタイム、`agents.default.cli` の順で、許される CLI の中から選びます。トランスポートが扱えない CLI はエラーになり、CLI 自身のアカウントへ静かに戻ることはありません。子プロセスは、自分の環境と引数だけで、エンドポイントと `api_key_env` のキーを受け取ります（Codex は完全な `model_providers.oma_<name>` テーブル、Claude は `ANTHROPIC_BASE_URL` と `ANTHROPIC_AUTH_TOKEN`、Qwen は `--openai-base-url` と `OPENAI_*`）。親の環境とベンダーの設定ファイルには触れず、競合する Claude または Qwen の設定は実行前に報告します。spawn と review は、トランスポートにモデル一覧がある場合、`free` と同じ認証済み `GET /models` の準備確認を実行します。それに 404 を返すエンドポイントは、利用不可とは扱いません。
+
+サンプリングパラメーター（`temperature`、`top_p`）はプロバイダーエントリに含まれません。ベンダー CLI はリクエスト単位でこれらを受け付けないため、ここで宣言しても静かに無視されます。
+
+`free` には固有の点があります。すべてのフィールドのデフォルト、`FREELLM_BASE_URL` と `FREELLM_MODEL` の上書き、上流の `FREELLMAPI_API_KEY` エイリアス、レガシーなトップレベルの `free:` ブロックです。このブロックは `providers.free` として読み込まれます。
+
 ## 個別のエージェントを上書きする
 
-`agents:` マップを使うと、有効なプリセットの上に特定のエージェントだけを上書きできます。記載したエージェントだけが影響を受け、残りは auto モードではベンダー設定に従い、固定プリセットでは選択したプリセットのデフォルトに従います。
+`agents:` マップを使うと、有効なプリセットの上に特定のエージェントだけを上書きできます。記載したエージェントだけが影響を受け、残りは auto モードではベンダー設定に従い、固定プリセットでは選択したプリセットのデフォルトに従います。予約済みの `agents.default` エントリは、自分で何も設定していないすべてのロールに `effort`、`thinking`、`memory` を渡し、ほかに何もベンダーを選ばないときに使う `cli` も持ちます。モデルは持ちません。
 
 ```yaml
 # .agents/oma-config.yaml
@@ -304,7 +340,21 @@ session:
       antigravity: 200000
 ```
 
-上限に達すると、`oma agent spawn` は次の spawn を拒否し、`[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)` で失敗します。トークン使用量はプロンプトの長さから推定されるため、最も予測しやすい上限は `spawn_count` です。フィールドの規則は[セッションのクォータ上限](/docs/guide/configuration-reference#session-quota-caps)を参照してください。
+上限に達すると、`oma agent spawn` は次の spawn を拒否し、`[session-cost] Quota cap exceeded for session <id>: <dimension> (current: N, limit: M)` で失敗します。実行は最初にプロンプト長の見積もりを予約します。完了後、利用できるネイティブなトランスクリプトの使用量がそれを置き換えます。未対応、または観測がない場合は見積もりのままです。これらの上限は、実行中の子を中断せず、請求の上限も保証しません。最も予測しやすい上限は `spawn_count` です。フィールドの規則は[セッションのクォータ上限](/docs/guide/configuration-reference#session-quota-caps)を参照してください。
+
+---
+
+## セッションの実行予算
+
+OMA が管理する CLI ディスパッチと検証に、共有の経過時間の上限を設けるには `session.execution` を追加します。
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+代わりに、`deadline` をタイムゾーン付きの ISO タイムスタンプにすることもできます。`oma agent spawn`、`parallel`、`review`、`resume`、`begin`、`verify` の各コマンドは `--timeout-seconds` または `--deadline` も受け付けます。最も早い期限は、リトライと再開をまたいで保持されます。セットアップとチェックは同じ予算を消費します。キャンセルまたはタイムアウトになると、そのセッションの以降の実行はブロックされます。ネイティブなベンダーエージェントと、管理対象 CLI の外にあるシェルジョブには、ホスト自身の制御が必要です。範囲と成果物の保持については、[セッションの実行予算](/docs/guide/configuration-reference#session-execution-budget)を参照してください。
 
 ---
 

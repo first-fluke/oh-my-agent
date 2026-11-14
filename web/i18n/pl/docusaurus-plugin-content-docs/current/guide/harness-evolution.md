@@ -8,7 +8,7 @@ description: Włącz zaplanowane, objęte budżetem ulepszenia umiejętności na
 
 OMA może zbierać dowody ze śledzonych uruchomień agentów i przetwarzać porażki w zaplanowanym cyklu sprzężenia zwrotnego. Automatyczne zmiany umiejętności są **wyłączone, dopóki nie włączysz ich dla projektu**. Każdy cykl ma skończony budżet wywołań modeli, a zastosowana zmiana musi przejść istniejące bramki ewaluacji umiejętności.
 
-Zautomatyzowana ścieżka ulepsza dokumenty umiejętności. Zmiany procedury optymalizatora lub maintainera pozostają osobną, wywoływaną ręcznie [metaoptymalizacją](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate).
+Zautomatyzowana ścieżka stosuje ocenione zmiany do dokumentów umiejętności. Zmiany procedury optymalizatora lub maintainera wymagają osobnej, wywoływanej ręcznie [metaoptymalizacji](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate).
 
 ## Włączanie dla projektu
 

@@ -1,62 +1,50 @@
 ---
-title: "ガイド：Codex フックの信頼設定"
-sidebar_label: Codex フックの信頼設定
-description: Codex フックが一度確認するまで実行されない理由、更新時の動作、oh-my-agent が起動した Codex サブプロセスに対して自動化する内容を説明します。
+title: "ガイド：Codex フックの信頼"
+sidebar_label: Codex フックの信頼
+description: Codex が信頼の承認でフックを制御する仕組み、oh-my-agent が自身のフックを実行できるよう記録する内容、自分でフックを確認する必要がある場合を説明します。
 ---
 
-# ガイド：Codex フックの信頼設定
+# ガイド：Codex フックの信頼
 
-oh-my-agent をプロジェクトにインストールすると、Codex CLI 用の `.codex/hooks.json` など、ベンダー固有のフック設定を書き込みます。Claude Code と違い、Codex はこれらのフックを自動実行しません。管理対象ではないコマンドフックは Trust-On-First-Use（TOFU）によって制御され、1 度確認して有効にした後でのみ実行されます。
+oh-my-agent をプロジェクトにインストールすると、Codex CLI 用の `.codex/hooks.json` を含む、ベンダー固有のフック設定を書き込みます。Codex は、設定されているという理由だけではフックを実行しません。2 つの承認が制御し、どちらもユーザー設定（`$CODEX_HOME/config.toml`、デフォルトは `~/.codex/config.toml`）にあります。プロジェクトが自分のフックを自分で承認することはできません。
 
-これは Codex 側の安全機構であり、oh-my-agent の制限ではありません。
+1. **プロジェクトの信頼。** プロジェクトの `.codex/` フォルダー（`config.toml` と `hooks.json`）が読み込まれるのは、信頼されたプロジェクトだけです。`[projects."<path>"] trust_level = "trusted"` が必要です。
+2. **フックごとの信頼。** プロジェクト範囲でもユーザー範囲でも、管理対象ではないフックにはすべて `[hooks.state."<hooks.json path>:<event>:<group>:<handler>"]` エントリが必要です。その `trusted_hash` は、フックの現在の宣言（command、timeout、matcher、async フラグ、status message）と一致しなければなりません。
+
+新しいフック、または変更されたフックは、Codex TUI に「Hooks need review」と表示されます。`codex exec` はそれを出さず、静かに対象から外します。
 
 ---
 
-## 最初に 1 回だけ行う操作：Codex でフックを確認する
+## oh-my-agent が記録する内容
 
-`oma`（インストール）、`oma link`、または `oma update` が、Codex がまだ認識していないプロジェクトに `.codex/hooks.json` を書き込んだ直後（グローバルインストールでは `~/.codex/hooks.json`）は、フックはまだ**実行されません**。Codex を開き、次の手順で 1 度確認してください。
+`oma install`、`oma update`、`oma link` は、**oh-my-agent 自身のフック**について両方の承認を書き込みます。対象は `oma-hook-*` という名前のハンドラー、または `oma-hook.sh` ラッパー経由で動くハンドラーです。ハッシュは、Codex で「Trust all and continue」を選んだときに Codex が計算する値と同じです。そのため、最初の Codex セッションから `/hooks` の手順なしでフックが動きます。後の oh-my-agent リリースでフックのコマンドが変わった場合、`oma update` のときに新しいハッシュを記録するので、フックは有効なままです。
 
-1. Codex CLI でプロジェクトを開きます。
-2. `/hooks` を実行してフックブラウザー（TUI）を開きます。
-3. 表示されたフックを確認して有効にします。
+oh-my-agent が編集するのは `config.toml` の影響を受けるテーブルだけです。結果を読み直し、それ以外が変わる場合はファイルをそのままにします。次のことはしません。
 
-この操作を行うまで、フックは信頼されていない状態で、静かにスキップされます。そのため、`.codex/hooks.json` を作成または変更するたびに、oh-my-agent は次の通知を表示します。
+- 同じ `hooks.json` に自分で追加したフックを承認する
+- `trust_level = "untrusted"` とマークしたプロジェクトを信頼する
+- 無効にしたフック（`enabled = false`）を再び有効にする
+- Codex がホームディレクトリを作る前に Codex の設定へ触れる
+
+グローバルインストール（`~/.codex/hooks.json`）では、信頼するプロジェクトがないため、フックごとのエントリだけを書き込みます。
+
+---
+
+## 自分でフックを確認する場合
+
+oh-my-agent が信頼を記録できなかった場合は、理由を添えて次の通知を出します。
 
 ```text
-⚠ Codex hooks installed/updated — run codex and use /hooks to trust them (untrusted hooks do not run).
+⚠ Codex hooks installed/updated but not trusted (<reason>) — run codex and use /hooks to trust them (untrusted hooks do not run).
 ```
 
-Codex を開く前に、生成されたファイルを確認します。
-
-```bash
-test -s .codex/hooks.json && echo "Codex hooks are installed"
-oma link codex
-```
-
-期待される結果は、インストールまたは更新の通知に続いて、Codex の `/hooks` ブラウザーにフックが表示されることです。`oma link codex` は生成ファイルを調整しますが、初回の信頼設定を置き換えるものではありません。
-
-**注意：** `--dangerously-bypass-hook-trust` はここでは役に立ちません。警告の「Enabled hooks may run without review」（有効なフックは確認なしで実行されることがあります）という文は、すでに有効なフックに対する確認だけを省略するという意味です。一度も確認されていないフックは実行されません。初回にフックを有効にできるのは `/hooks` ブラウザーだけです。
-
-Codex は内部で、フックファイルのパス、イベント、ブロック、フックの組み合わせで識別される `[hooks.state]` エントリとして、決定を `~/.codex/config.toml` に保存します。このエントリには `enabled` フラグと、コマンド文字列の `trusted_hash` が含まれます。
+よくある原因は、解析できない `config.toml`、未信頼とマークしたプロジェクト、Codex をまだ一度も実行していないことです。その場合は Codex でプロジェクトを開き、`/hooks` を実行してフックを一度有効にします。その後 `oma link codex` を実行すると、以降の更新でも信頼が維持されます。
 
 ---
 
-## 更新時の動作
+## oh-my-agent が起動する Codex プロセス
 
-一度フックを信頼すれば、更新のたびに同じ操作を繰り返す必要はありません。
-
-- **`oma link` または `oma update` を再実行しても信頼状態は維持されます。** ただし、フックのコマンド文字列が変わらない場合に限ります。Codex は保存したハッシュと現在のコマンドを比較し、一致すれば信頼済みのままにします。
-- **oh-my-agent の将来のバージョンでフックのコマンド文字列が変わった場合**、ハッシュが一致しなくなるため、そのフックは静かに未信頼へ戻ります。インストーラーの通知が再び表示されるので、`/hooks` で信頼し直してください。
-
-つまり、確認が必要なのは最初の 1 度と、フックのコマンドを実際に変更したリリースの後だけです。
-
----
-
-## oh-my-agent が自動で行うこと
-
-oh-my-agent 自身が Codex サブプロセスを起動する場合（たとえば `oma agent spawn` を通じてベンダーをまたぐエージェントをディスパッチする場合）、`--dangerously-bypass-hook-trust` を自動的に渡します。これにより、oh-my-agent が検証済みの自身のフックを、更新後も手動で信頼し直さずに実行できます。
-
-このフラグは、oh-my-agent が起動した Codex プロセスに**だけ**適用されます。`~/.codex/config.toml` やプロジェクト設定には書き込まれないため、自分で起動した Codex セッションには影響しません。
+oh-my-agent 自身が Codex サブプロセスを起動する場合（たとえば `oma agent spawn`）、`--dangerously-bypass-hook-trust` も渡します。このフラグは、ハッシュ確認なしで有効なフックを実行します。プロジェクトの信頼は外しません。フラグが適用されるのは oh-my-agent が起動したプロセスだけで、設定ファイルには書き込まれません。
 
 ---
 
@@ -70,10 +58,10 @@ oh-my-agent 自身が Codex サブプロセスを起動する場合（たとえ�
 
 | 状況 | 行うこと |
 |:----------|:------------|
-| 初回インストール、またはプロジェクトで初めて `.codex/hooks.json` を作成した場合 | Codex を開き、`/hooks` を実行してフックを 1 回有効にする |
-| フックのコマンドが変わらない `oma update` | 何もしない。信頼状態は維持される |
-| フックのコマンドが変わる `oma update` | `/hooks` をもう一度実行して信頼し直す（インストーラーが通知を表示） |
-| oh-my-agent が起動した Codex サブプロセス | 何もしない。自動でバイパスが適用される |
+| プロジェクトへの初回インストール | 何もしない。インストーラーが信頼を記録する |
+| フックのコマンドを変える `oma update` | 何もしない。新しいハッシュが記録される |
+| インストーラーが「not trusted (…)」と表示する | 原因を直すか、Codex で `/hooks` を一度実行する |
+| `.codex/hooks.json` に自分で追加したフック | `/hooks` で自分で確認する |
 
 ## 関連項目
 

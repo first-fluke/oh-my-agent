@@ -271,7 +271,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-El Maintainer y el Proposer de `oma skill optimize` resuelven el rol `opt-agent`. El mapa `agents:` no tiene clave `opt` (el esquema de configuración rechaza las claves desconocidas), así que este rol siempre sigue el `model_preset` activo, o `default_cli` con `model_preset: auto`. Sin `agents.eval`, el rol `eval` usa la misma alternativa. La promoción necesita `isolation: enforced`, que solo proporcionan los perfiles protegidos de Claude y de Codex nativo (consulta [Aislamiento de la skill](#skill-isolation-keeping-the-baseline-honest)).
+El Maintainer y el Proposer de `oma skill optimize` resuelven el rol `opt-agent`. El mapa `agents:` no tiene clave `opt` (el esquema de configuración rechaza las claves desconocidas), así que este rol siempre sigue el `model_preset` activo, o `agents.default.cli` con `model_preset: auto`. Sin `agents.eval`, el rol `eval` usa la misma alternativa. La promoción necesita `isolation: enforced`, que solo proporcionan los perfiles protegidos de Claude y de Codex nativo (consulta [Aislamiento de la skill](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Medición de la transferencia negativa {#negative-transfer-measurement}
 
@@ -461,6 +461,6 @@ Estos mensajes proceden de `oma skill eval` y `oma skill optimize`.
 | `[oma skill eval] dispatch timed out after <N>s.` | Un brazo o una llamada al juez superó `OMA_SKILL_EVAL_TIMEOUT_MS`. | Aumenta `OMA_SKILL_EVAL_TIMEOUT_MS` para los fixtures que necesiten respuestas largas. |
 | `Choose either --live or --mock` | Se pasaron ambos flags. | Pasa solo uno de ellos. |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` se ejecutó sin `--live`. | Añade `--live`, o usa `oma skill eval --mock` para comprobaciones sin conexión. |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | El rol `opt-agent` se resuelve en un proveedor sin transporte de texto protegido. | Elige un `model_preset` (o, con `model_preset: auto`, un `default_cli`) que se resuelva en Claude o Codex. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | El rol `opt-agent` se resuelve en un proveedor sin transporte de texto protegido. | Elige un `model_preset` (o, con `model_preset: auto`, un `agents.default.cli`) que se resuelva en Claude o Codex. |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (no se escribe nada) | `--apply` sobre una skill `oma-*` sin `--yes`. | Conserva el diff de dry-run y envíalo upstream, o vuelve a ejecutar con `--yes`. |
 | `[oma skill opt] an active project overlay owns this skill; ...` | La [evolución del harness del proyecto](./harness-evolution.md) instaló un overlay para esta skill. | Ejecuta primero `oma skill rollback --skill <id>`, o deja que el ciclo de evolución aplique el cambio. |

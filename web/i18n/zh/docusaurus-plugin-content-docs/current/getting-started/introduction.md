@@ -1,6 +1,6 @@
 ---
 title: 简介
-description: 全面介绍 oh-my-agent，这个面向 AI IDE 和 CLI 的多智能体编排框架提供 33 个技能包、12 个子智能体定义、渐进式技能加载和跨 IDE 可移植性。
+description: 全面介绍 oh-my-agent。这个多智能体编排框架把 AI 编程助手变成专业工程团队，提供 33 个技能包、12 个子智能体定义、渐进式技能加载和跨 IDE 可移植性。
 ---
 
 # 简介
@@ -11,7 +11,9 @@ oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架，可将�
 
 整个系统位于项目内可移植的 `.agents/` 目录中。你可以在 Claude Code、Codex CLI、Antigravity CLI 或 IDE、Cursor、OpenCode 以及其他受支持工具之间切换，智能体配置会随代码一起迁移。
 
-如果你刚开始使用 OMA，请先阅读[快速开始](./quick-start.md)，再阅读[重要默认值](./important-defaults.md)。安装会创建[唯一事实来源（SSOT）](./glossary.md#ssot)和供应商集成；第一次应运行的检查是 `oma doctor`，第一次任务应是一个范围明确的小型单领域改动。只有在任务需要协调时，才切换到 `/work` 或 `/orchestrate`。
+从[选择设置](./choose-setup.md)开始：在当前智能体里为一项任务加载一个技能，选择带钩子和工作流的运行时技能预设，或安装 Claude Code 插件。临时加载技能会提供说明和支持文件；CLI、项目规则和外部服务依赖仍然是明确的。运行时安装会创建 [SSOT](./glossary.md#ssot)和供应商集成。
+
+第一次任务及其实际检查见[快速开始](./quick-start.md)。`oma doctor` 检查运行时安装；[重要默认值](./important-defaults.md)说明它的提供方和配置。需要协调且所引用的技能已经安装时，再转到 `/work` 或 `/orchestrate`。
 
 ---
 

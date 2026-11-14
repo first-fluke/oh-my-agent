@@ -5,8 +5,6 @@ description: Definições curtas dos termos do oh-my-agent, incluindo skills, wo
 
 # Glossário
 
-Cada entrada traz uma definição curta e um link para a página que trata do termo em profundidade. Quando uma palavra tem significados diferentes em partes diferentes do OMA, a entrada indica isso.
-
 ## Blocos fundamentais
 
 ### Skill {#skill}
@@ -29,7 +27,7 @@ Um preset de skills é o conjunto de skills que o instalador adiciona a um proje
 
 ### Preset de modelo {#model-preset}
 
-O preset de modelo é o valor de `model_preset` em `.agents/oma-config.yaml` (ou `.cue`). Ele decide qual vendor e qual modelo cada agente usa. `auto`, o padrão para novas instalações, segue as configurações de agente e de modelo do próprio runtime atual; presets fixos como `claude`, `codex` ou `mixed` as fixam. Overrides em `agents.<id>` têm prioridade sobre o preset, exceto com `free`, em que `free.model` substitui os modelos fixados por agente. Consulte [Presets integrados](../guide/per-agent-models.md#built-in-presets).
+O preset de modelo é o valor de `model_preset` em `.agents/oma-config.yaml` (ou `.cue`). Ele decide qual vendor e qual modelo cada agente usa. `auto`, o padrão para novas instalações, segue as configurações de agente e de modelo do próprio runtime atual; presets fixos como `claude`, `codex` ou `mixed` as fixam. Overrides em `agents.<id>` têm prioridade sobre o preset, exceto com `free` ou outro provider de LLM `providers.<name>`, em que o `default_model` do provider substitui os pins de modelo por agente. Consulte [Presets integrados](../guide/per-agent-models.md#built-in-presets).
 
 ## Execução de workflows
 

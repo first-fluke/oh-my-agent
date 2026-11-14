@@ -271,7 +271,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-`oma skill optimize` 的 Maintainer 和 Proposer 解析 `opt-agent` 角色。`agents:` 映射中没有 `opt` 键（配置模式会拒绝未知键），因此该角色始终遵循当前的 `model_preset`，在 `model_preset: auto` 下则遵循 `default_cli`。没有 `agents.eval` 时，`eval` 角色使用同样的回退。晋升需要 `isolation: enforced`，而只有受保护的 Claude 和原生 Codex 配置档能提供它（参见[技能隔离](#skill-isolation-keeping-the-baseline-honest)）。
+`oma skill optimize` 的 Maintainer 和 Proposer 解析 `opt-agent` 角色。`agents:` 映射中没有 `opt` 键（配置模式会拒绝未知键），因此该角色始终遵循当前的 `model_preset`，在 `model_preset: auto` 下则遵循 `agents.default.cli`。没有 `agents.eval` 时，`eval` 角色使用同样的回退。晋升需要 `isolation: enforced`，而只有受保护的 Claude 和原生 Codex 配置档能提供它（参见[技能隔离](#skill-isolation-keeping-the-baseline-honest)）。
 
 #### 负迁移测量 {#negative-transfer-measurement}
 
@@ -461,6 +461,6 @@ mock 的确定性来自于：在 `--live --record` 期间将 judge 的二元判�
 | `[oma skill eval] dispatch timed out after <N>s.` | 某个分支或 judge 调用超过了 `OMA_SKILL_EVAL_TIMEOUT_MS`。 | 对需要长答案的 fixture，调高 `OMA_SKILL_EVAL_TIMEOUT_MS`。 |
 | `Choose either --live or --mock` | 同时传入了两个标志。 | 只传入其中一个。 |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` 在没有 `--live` 的情况下运行。 | 添加 `--live`，或使用 `oma skill eval --mock` 做离线检查。 |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` 角色解析到了没有受保护文本传输的供应商。 | 选择能解析到 Claude 或 Codex 的 `model_preset`（在 `model_preset: auto` 下则选择 `default_cli`）。 |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` 角色解析到了没有受保护文本传输的供应商。 | 选择能解析到 Claude 或 Codex 的 `model_preset`（在 `model_preset: auto` 下则选择 `agents.default.cli`）。 |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...`（不写入任何内容） | 在没有 `--yes` 的情况下对 `oma-*` 技能使用了 `--apply`。 | 保留 dry-run diff 并提交给上游，或带 `--yes` 重新运行。 |
 | `[oma skill opt] an active project overlay owns this skill; ...` | [项目 harness 演进](./harness-evolution.md)已为该技能安装了覆盖层。 | 先运行 `oma skill rollback --skill <id>`，或让演进周期应用该更改。 |

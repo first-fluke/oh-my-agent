@@ -27,7 +27,7 @@ O [guia de instalação por agente](https://github.com/first-fluke/oh-my-agent/b
 - **uv**: gerenciador de pacotes Python (o script de bootstrap oferece a instalação quando estiver ausente)
 - **Provider de inteligência de código**: Serena é o provider padrão. Gortex também é compatível quando selecionado na configuração de providers. O instalador pode inicializar o Serena com `uv tool install`; quando uma dependência opcional não está disponível, ele continua e exibe um aviso. Com o Gortex selecionado, `oma install` e `oma update` em modo de projeto registram o projeto no daemon do Gortex (`gortex track`) quando ele ainda não está rastreado e adicionam os diretórios gerados pelo OMA à lista de exclusão desse projeto por meio da CLI do Gortex; nada é gravado na árvore do projeto. O próprio Gortex precisa ser instalado separadamente.
 
-O instalador agrupa as integrações por capacidade. Os vendors de hooks incluem Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro e Qwen; OpenCode e pi usam bridges de extensão; Hermes recebe links para skills; e ZCode recebe comandos de workflow. Você pode selecionar mais de um vendor, mas a primeira tarefa precisa apenas do host que pretende usar.
+O instalador agrupa as integrações por capacidade. Os vendors de hooks incluem Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro e Qwen; OpenCode e pi usam bridges de extensão; Hermes recebe links para skills; e ZCode recebe comandos de workflow. Você pode selecionar mais de um vendor, mas a primeira tarefa precisa apenas do host que pretende usar.
 
 ---
 
@@ -66,7 +66,7 @@ O bootstrap continua depois de falhas em dependências opcionais e informa os co
 - **Guarda de commit-msg**: `.githooks/commit-msg` rejeita endereços `Co-authored-by` que não estão em `.githooks/co-authors.allow` nem em `scm.co_author.email`. `git config --local core.hooksPath .githooks` só é definido quando nenhum outro hook está ativo; caso contrário, o oma mostra como encadear a guarda. Defina `scm.co_author.enforce_hook: false` para desativar.
 - **Atualizações em segundo plano**: `oma update` atualiza a CLI `oma` em segundo plano (`auto_update_cli: false` ou `OMA_SKIP_VERSION_CHECK=1` para interromper) e executa `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` para interromper).
 - **Timer de limpeza do Serena**: com o Serena no modo `bridge` padrão, a primeira sessão de agente que inicia um servidor Serena compartilhado registra um timer que para os servidores Serena compartilhados ociosos a cada 5 minutos (launchd `dev.oma.serena-daemon-gc`, timer de usuário do systemd `oma-serena-daemon-gc.timer` ou tarefa agendada do Windows `OMA Serena Daemon GC`). Defina `serena.mode: stdio` para dispensar o servidor compartilhado e o timer. `oma uninstall` não remove o timer.
-- **Execuções não interativas** (`-y`, `OMA_YES=1`, `CI=true`) usam o preset de skills `All`, `model_preset: auto` e Python como linguagem de backend. Elas não selecionam nenhum browser MCP (e pulam o script de instalação do Aside), a menos que `mcp.devtools_browsers` já liste um.
+- **Execuções não interativas** (`-y`, `OMA_YES=1`, `CI=true`) usam o preset de skills `All`, salvo se `--preset` selecionar outro, além de `model_preset: auto` e Python como linguagem de backend. Elas não selecionam nenhum browser MCP (e pulam o script de instalação do Aside), a menos que `mcp.devtools_browsers` já liste um.
 
 ---
 

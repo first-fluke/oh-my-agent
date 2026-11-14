@@ -75,7 +75,7 @@ Les juges spec et visuel s'exécutent 3 fois par harnais via `judge-multi.sh` et
 1. **Surcharge du prompt de superpowers** : elle était nécessaire pour que le harnais fonctionne en mode non interactif (sa compétence de brainstorming `<HARD-GATE>` bloque les exécutions en une seule passe). Le résultat indique donc ce que superpowers peut faire une fois cette barrière contournée, et non une comparaison parfaitement équivalente.
 2. **Moyenne de plusieurs juges pour spec et visuel, parcours évalué une seule fois** : l'évaluation du parcours nécessite un serveur de développement actif et reste donc unique. Considérez comme du bruit les écarts de parcours inférieurs à environ 2 points. L'échantillon est d'un build par harnais.
 3. **Normalisation du coût** : l'axe d'efficacité utilise le coût par fichier ; le coût absolu ($1.28–$8.19 sur les 5) n'entre pas dans le score.
-4. **La pénalité `lint-clean` d'oma est intentionnelle** : oma laisse délibérément l'application du lint et du typecheck aux git hooks (husky + lint-staged) et à la CI, au lieu d'intégrer des règles propres à ESLint dans les compétences d'agents. Le benchmark en une seule passe pénalise ce choix de -5 pour `lint-clean`, mais dans un workflow réel les mêmes problèmes seraient bloqués par pre-push avant d'atteindre le dépôt distant.
+4. **La pénalité `lint-clean` d'oma est intentionnelle** : oma laisse délibérément l'application du lint et du typecheck aux git hooks (hk) et à la CI, au lieu d'intégrer des règles propres à ESLint dans les compétences d'agents. Le benchmark en une seule passe pénalise ce choix de -5 pour `lint-clean`, mais dans un workflow réel les mêmes problèmes seraient bloqués par pre-push avant d'atteindre le dépôt distant.
 
 ---
 

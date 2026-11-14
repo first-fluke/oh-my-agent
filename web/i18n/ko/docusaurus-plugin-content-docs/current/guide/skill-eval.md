@@ -271,7 +271,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-`oma skill optimize`의 Maintainer와 Proposer는 `opt-agent` 역할을 해석합니다. `agents:` 맵에는 `opt` 키가 없으므로(설정 스키마가 알 수 없는 키를 거부합니다) 이 역할은 항상 활성 `model_preset`을 따르며, `model_preset: auto`에서는 `default_cli`를 따릅니다. `agents.eval`이 없으면 `eval` 역할도 같은 폴백을 사용합니다. 승격에는 `isolation: enforced`가 필요하며, 이는 보호된 Claude 프로필과 네이티브 Codex 프로필만 제공합니다([스킬 격리](#skill-isolation-keeping-the-baseline-honest) 참고).
+`oma skill optimize`의 Maintainer와 Proposer는 `opt-agent` 역할을 해석합니다. `agents:` 맵에는 `opt` 키가 없으므로(설정 스키마가 알 수 없는 키를 거부합니다) 이 역할은 항상 활성 `model_preset`을 따르며, `model_preset: auto`에서는 `agents.default.cli`를 따릅니다. `agents.eval`이 없으면 `eval` 역할도 같은 폴백을 사용합니다. 승격에는 `isolation: enforced`가 필요하며, 이는 보호된 Claude 프로필과 네이티브 Codex 프로필만 제공합니다([스킬 격리](#skill-isolation-keeping-the-baseline-honest) 참고).
 
 #### 음의 전이 측정 {#negative-transfer-measurement}
 
@@ -461,6 +461,6 @@ mock 실행이 커버리지 부족을 보고하면 폐기되었거나 누락된 
 | `[oma skill eval] dispatch timed out after <N>s.` | 갈래 또는 judge 호출이 `OMA_SKILL_EVAL_TIMEOUT_MS`를 초과함. | 긴 답이 필요한 픽스처라면 `OMA_SKILL_EVAL_TIMEOUT_MS`를 높이세요. |
 | `Choose either --live or --mock` | 두 플래그를 모두 전달함. | 둘 중 하나만 전달하세요. |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize`를 `--live` 없이 실행함. | `--live`를 추가하거나, 오프라인 검사에는 `oma skill eval --mock`을 쓰세요. |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` 역할이 보호된 텍스트 전송 경로가 없는 벤더로 해석됨. | Claude 또는 Codex로 해석되는 `model_preset`(또는 `model_preset: auto`에서는 `default_cli`)을 선택하세요. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` 역할이 보호된 텍스트 전송 경로가 없는 벤더로 해석됨. | Claude 또는 Codex로 해석되는 `model_preset`(또는 `model_preset: auto`에서는 `agents.default.cli`)을 선택하세요. |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (아무것도 쓰지 않음) | `--yes` 없이 `oma-*` 스킬에 `--apply`를 실행함. | dry-run diff를 보관해 업스트림에 반영하거나, `--yes`로 다시 실행하세요. |
 | `[oma skill opt] an active project overlay owns this skill; ...` | [프로젝트 하네스 진화](./harness-evolution.md)가 이 스킬에 오버레이를 설치함. | 먼저 `oma skill rollback --skill <id>`를 실행하거나, 진화 사이클이 변경을 적용하도록 두세요. |

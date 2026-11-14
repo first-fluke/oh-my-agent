@@ -27,7 +27,7 @@ Een skillpreset is de bundel skills die de installer aan een project toevoegt, z
 
 ### Modelpreset {#model-preset}
 
-De modelpreset is de waarde `model_preset` in `.agents/oma-config.yaml` (of `.cue`). Die bepaalt welke vendor en welk model elke agent gebruikt. `auto`, de standaard voor nieuwe installaties, volgt de eigen agent- en modelinstellingen van de huidige runtime; vaste presets zoals `claude`, `codex` of `mixed` leggen ze vast. Overrides onder `agents.<id>` gaan voor op de preset, behalve bij `free`, waar `free.model` de modelpins per agent vervangt. Zie [Ingebouwde presets](../guide/per-agent-models.md#built-in-presets).
+De modelpreset is de waarde `model_preset` in `.agents/oma-config.yaml` (of `.cue`). Die bepaalt welke vendor en welk model elke agent gebruikt. `auto`, de standaard voor nieuwe installaties, volgt de eigen agent- en modelinstellingen van de huidige runtime; vaste presets zoals `claude`, `codex` of `mixed` leggen ze vast. Overrides onder `agents.<id>` gaan voor op de preset, behalve bij `free` of een andere LLM-provider onder `providers.<name>`, waar `default_model` van de provider de modelpins per agent vervangt. Zie [Ingebouwde presets](../guide/per-agent-models.md#built-in-presets).
 
 ## Workflowuitvoering
 

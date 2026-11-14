@@ -271,7 +271,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-`oma skill optimize` の Maintainer と Proposer は `opt-agent` ロールを解決します。`agents:` マップには `opt` キーがありません（設定スキーマは未知のキーを拒否します）。そのため、このロールは常にアクティブな `model_preset` に従い、`model_preset: auto` では `default_cli` に従います。`agents.eval` がない場合、`eval` ロールも同じフォールバックを使います。昇格には `isolation: enforced` が必要で、これを提供するのは保護された Claude とネイティブ Codex のプロファイルだけです（[スキルの隔離](#skill-isolation-keeping-the-baseline-honest)を参照）。
+`oma skill optimize` の Maintainer と Proposer は `opt-agent` ロールを解決します。`agents:` マップには `opt` キーがありません（設定スキーマは未知のキーを拒否します）。そのため、このロールは常にアクティブな `model_preset` に従い、`model_preset: auto` では `agents.default.cli` に従います。`agents.eval` がない場合、`eval` ロールも同じフォールバックを使います。昇格には `isolation: enforced` が必要で、これを提供するのは保護された Claude とネイティブ Codex のプロファイルだけです（[スキルの隔離](#skill-isolation-keeping-the-baseline-honest)を参照）。
 
 #### 負の転移の測定
 
@@ -461,6 +461,6 @@ oma skill eval --skill oma-scholar --json --require-coverage
 | `[oma skill eval] dispatch timed out after <N>s.` | 実験群または judge の呼び出しが `OMA_SKILL_EVAL_TIMEOUT_MS` を超えた。 | 長い回答が必要なフィクスチャでは `OMA_SKILL_EVAL_TIMEOUT_MS` を引き上げる。 |
 | `Choose either --live or --mock` | 両方のフラグを渡した。 | どちらか一方を渡す。 |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` を `--live` なしで実行した。 | `--live` を追加するか、オフラインでの確認には `oma skill eval --mock` を使う。 |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` ロールが、保護されたテキストトランスポートを持たないベンダーに解決される。 | Claude または Codex に解決される `model_preset`（`model_preset: auto` の場合は `default_cli`）を選ぶ。 |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | `opt-agent` ロールが、保護されたテキストトランスポートを持たないベンダーに解決される。 | Claude または Codex に解決される `model_preset`（`model_preset: auto` の場合は `agents.default.cli`）を選ぶ。 |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...`（何も書き込まれない） | `oma-*` スキルに `--yes` なしで `--apply` を使った。 | dry-run の diff を残してアップストリームに提出するか、`--yes` を付けて再実行する。 |
 | `[oma skill opt] an active project overlay owns this skill; ...` | [プロジェクトのハーネス進化](./harness-evolution.md)がこのスキルにオーバーレイをインストールした。 | 先に `oma skill rollback --skill <id>` を実行するか、進化サイクルに変更を適用させる。 |

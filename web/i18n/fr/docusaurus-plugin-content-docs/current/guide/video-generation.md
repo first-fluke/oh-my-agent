@@ -88,7 +88,8 @@ D’autres outils qui exécutent `oma video generate --output json` analysent un
 
 ---
 
-## HyperFrames toujours à jour — vous écrivez la composition
+<a id="always-latest-hyperframes--you-author-the-composition"></a>
+## Chaîne d’outils HyperFrames gérée et rédaction de la composition
 
 oh-my-agent ne fournit **aucun code de composition HyperFrames**. Chaque exécution obtient son propre projet à `<runDir>/hyperframes/`, échafaudé par `oma video compose` sur le dernier HyperFrames npm (cache de chaîne `~/.cache/oma-video/hyperframes/<version>/`, partagé via un lien symbolique `node_modules`) et les compétences `hyperframes` et `hyperframes-cli` de [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) installées via la [CLI skills](https://github.com/vercel-labs/skills). L’agent écrit la source de composition générée en suivant `AUTHORING.md` de l’échafaudage, les compétences et la spécification du mode dans `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
@@ -107,7 +108,7 @@ oma video render <runDir> --output json    # lint → render with the cached Hyp
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---

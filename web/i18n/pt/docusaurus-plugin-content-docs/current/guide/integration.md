@@ -166,7 +166,7 @@ Para o Qwen Code, as definições Markdown geradas ficam em `.qwen/agents/`. Sel
 
 O Qwen Code usa o mesmo `code-intelligence-primer` dos outros vendors. Assim como o Claude Code, ele registra o primer compartilhado em `SessionStart` e `UserPromptSubmit`: a orientação é injetada uma vez por sessão e novamente após a compactação. O primer segue o provider configurado (Serena ou Gortex), inclui orientação sobre deferred tools e permite fallback nativo quando o provider está indisponível ou sofre timeout. O Qwen não adiciona um bloqueio separado de busca de código nem rastreamento de resultados do provider.
 
-Depois de atualizar a CLI, execute `oma link qwen` para regenerar as configurações de hook e o wrapper e, em seguida, inicie uma nova sessão do Qwen. Os testes de saída dos hooks verificam o contrato de integração; eles não garantem qual ferramenta um modelo vai escolher.
+Depois de atualizar a CLI, execute `oma link qwen` para regenerar as configurações de hook e o wrapper e, em seguida, inicie uma nova sessão do Qwen. O Qwen Code só executa os hooks do projeto depois que você aprova essa configuração exata (`~/.qwen/hookApprovals.json`); `oma link` registra essa aprovação para os hooks que escreveu, então nem a primeira sessão interativa nem `qwen -p` deixam de executá-los. Ele nunca aprova hooks que o oma não escreveu e nunca substitui uma rejeição que você fez no Qwen. Os testes de saída dos hooks verificam o contrato de integração; eles não garantem qual ferramenta um modelo vai escolher.
 
 ### Etapa 3: configure as preferências do usuário
 
@@ -310,7 +310,7 @@ Quando `oma update` atualiza `.agents/`, toda IDE que aponta para ele recebe a m
 
 ### Depois da instalação
 
-1. **Revise o que foi criado.** Execute `git status` para ver todos os arquivos novos. O instalador só cria arquivos em `.agents/`, `.claude/` e, opcionalmente, `.github/`.
+1. **Revise o que mudou.** Execute `git status` para inspecionar o SSOT, os arquivos de integração dos vendors e qualquer migração de documentos. Para artefatos de runtime ignorados, revise também o resumo da migração.
 2. **Confira o `.gitignore`.** Em um repositório git, install/update/link acrescentam automaticamente ao `.gitignore` da raiz as entradas de runtime (`.antigravitycli/`, `.agents/results/`, `.agents/state/`, `.agents/backup/`, `docs/plans/`); verifique se elas foram adicionadas. A maioria das equipes versiona `.agents/` e `.claude/` para compartilhar a configuração. A entrada que fica a seu critério é `.serena/`: o Serena administra seu próprio cache por meio de um `.serena/.gitignore` interno, então você pode versionar `.serena/project.yml` (configuração compartilhada do projeto) ou ignorar o diretório inteiro:
 
 ```gitignore
@@ -372,11 +372,11 @@ Ao executar `oma` (o comando de instalação), isto é exatamente o que acontece
 
 ### 1. Migração legada
 
-O instalador procura o diretório antigo `.agent/` (singular) e o migra para `.agents/` (plural), se encontrá-lo. Essa migração ocorre uma única vez para quem está atualizando de versões anteriores.
+O instalador procura o diretório antigo `.agent/` (singular) e o migra para `.agents/` (plural), se encontrá-lo. Ele também aplica a [migração do layout de artefatos](./artifact-layout.md#migrate-an-existing-project), que consolida documentos de decisão e relatórios de resultado legíveis por pessoas. O update usa a mesma migração. Executá-la de novo deixa um projeto já migrado inalterado.
 
 ### 2. Detecção de concorrentes
 
-O instalador procura ferramentas concorrentes e oferece removê-las para evitar conflitos.
+A instalação interativa detecta outras ferramentas de agente e pergunta se deve desinstalá-las. O padrão é mantê-las, inclusive os diretórios locais do projeto `.omc` e `.omx`. A remoção exige uma confirmação explícita; instalações com `--yes`, `OMA_YES` e CI mantêm as outras ferramentas. `oma update` não oferece desinstalá-las.
 
 ### 3. Download do tarball
 
@@ -420,6 +420,8 @@ O Codex protege seus hooks por uma etapa única de confiança; portanto, `.codex
 - `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
 - `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (se o Copilot estiver selecionado)
 
+O Qwen lê `.agents/skills/` diretamente, então o OMA não cria links `.qwen/skills/oma-*`. A reconciliação remove links legados de skills do OMA e preserva entradas pertencentes ao usuário. Os links de workflow em `.qwen/skills/{workflow}/SKILL.md` continuam apontando para `.agents/workflows/{workflow}.md`.
+
 Os arquivos de agentes nativos dos vendors são gerados a partir de `.agents/agents/` por `oma link`, `oma install` ou `oma update`, em vez de serem ligados diretamente.
 
 ### 10. Workflows globais
@@ -439,3 +441,4 @@ Como descrito acima no caminho pela CLI, install/update configura opcionalmente 
 - [Configuração de modelos por agente](./per-agent-models.md): escolha o modelo e a CLI de cada agente
 - [Confiança nos hooks do Codex](./codex-hook-trust.md): a etapa única de `/hooks` do Codex
 - [Atualizações automáticas](./automated-updates.md): mantenha a instalação atualizada a partir do CI
+- [Layout de artefatos](./artifact-layout.md): locais dos documentos, promoção e migração

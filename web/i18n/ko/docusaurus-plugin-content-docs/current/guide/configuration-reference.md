@@ -44,23 +44,23 @@ oma doctor --profile
 
 | 키 | 타입 또는 허용 값 | 생략했을 때 기본값 | 목적 |
 | --- | --- | --- | --- |
-| `language` | 문자열 | `en` | 워크플로우와 스킬이 사용하는 응답 언어입니다. |
+| `language` | 문자열 | `en` | 워크플로우와 스킬이 사용하는 응답 언어입니다. 설치는 기존 값을 유지하거나, 묻지 않고 시스템 언어로 초기화합니다. |
 | `translation_voice` | `formal`, `balanced`, `interpreter` | 배포 템플릿에서는 `balanced` | `oma-translation`의 문체를 선택합니다. |
 | `date_format` | `ISO`, `US`, `EU` | 배포 템플릿에서는 `ISO`; 생략하면 명시적인 지정 없음 | 날짜 표시 형식을 정합니다. |
 | `timezone` | IANA 시간대 이름 | 시스템 시간대 | 예약 작업과 보고서의 날짜에 적용할 시간대입니다. |
 | `auto_update_cli` | 불리언 | `true` | 백그라운드에서 CLI 버전을 확인합니다. `false`로 끌 수 있습니다. |
 | `telemetry` | 불리언 | `false` | 설치·업데이트·연동 파일을 갱신할 때 벤더의 텔레메트리 수집 설정에 동의할지 정합니다. |
 | `model_preset` | 비어 있지 않은 문자열 | 새 템플릿에서는 `auto` | 기본 제공 또는 사용자 정의 모델 프리셋입니다. `OMA_MODEL_PRESET`으로 현재 프로세스에서만 바꿀 수 있습니다. |
-| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | `free` 프리셋의 FreeLLMAPI 연결 설정입니다. `FREELLM_BASE_URL`과 `FREELLM_MODEL`이 파일 값보다 우선합니다. API 키 자체가 아닌 환경 변수 이름을 지정합니다. [에이전트별 모델 설정](/docs/guide/per-agent-models#freellmapi-preset)을 참고하세요. |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | 문서 조회, 웹 검색, 코드 분석, 의미 기반 메모리에 사용할 프로바이더를 선택합니다. [프로바이더](#providers)를 참고하세요. |
-| `brave` | `api_key_env` 또는 `api_key_vault` | 지정 없음 | Brave 검색 인증정보를 어디에서 읽을지 지정합니다. |
-| `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | [Honcho 세부 설정](#honcho-semantic-memory) 참고 | Honcho 의미 기반 메모리의 연결 설정입니다. |
-| `agents` | 에이전트 ID → `model`, 선택적 `effort`, `thinking`, `memory` | 프리셋에 따라 결정 | 선택한 프리셋 위에 적용할 에이전트별 설정입니다. `effort`는 `none`, `low`, `medium`, `high`, `xhigh`, `memory`는 `user`, `project`, `local`을 허용합니다. |
+| `free` | `base_url`, `api_key_env`, `model` | 지정 없음 | `providers.free`의 예전 표기입니다. 그쪽의 `model`은 `default_model`입니다. 여전히 읽히며 `oma update`가 옮깁니다. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`, `brave`·`exa`·`honcho` 자격 증명 섹션, 그 외 `<name>` → LLM 프로바이더 객체 | `context7`, `native`, `serena`, `block`, `agentmemory`. 자격 증명이나 LLM 프로바이더는 없음 | 문서, 검색, 코드 인텔리전스, 시맨틱 메모리 프로바이더를 고르고, 자격 증명 참조를 담으며, 에이전트를 보낼 LLM 엔드포인트를 선언합니다. [프로바이더](#providers)를 참고하세요. |
+| `brave`, `exa`, `honcho` | `providers` 아래와 같음 | 지정 없음 | `providers.brave`, `providers.exa`, `providers.honcho`의 예전 최상위 표기입니다. 여전히 읽히며 `oma update`가 옮깁니다. |
+| `agents` | 에이전트 ID → `model`, 선택적 `effort`, `thinking`, `memory`. `default` → `cli`, `effort`, `thinking`, `memory` | 프리셋 해석. `default.cli`는 `claude`로 폴백(`codex`는 프로바이더 경로) | 선택한 프리셋 위에 적용할 에이전트별 설정입니다. `effort`는 `none`, `low`, `medium`, `high`, `xhigh`이고 `memory`는 `user`, `project`, `local`입니다. `agents.default`는 자체 값을 하나도 설정하지 않은 모든 역할에 그 필드를 채우고, `cli`(`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi` 중 하나)는 다른 곳에서 벤더를 고르지 않을 때 씁니다. `auto`에서 런타임을 감지하지 못한 경우, 또는 프로바이더 경로에서 `--vendor`, `OMA_RUNTIME_VENDOR`, 감지된 런타임 다음입니다. `<provider>/<model-id>` 모델은 그 역할을 해당 LLM 프로바이더로 보냅니다. |
 | `models` | 모델 식별자 → CLI 매핑 | 지정 없음 | 지원하는 벤더 CLI에서 사용할 모델을 직접 정의합니다. |
 | `custom_presets` | 프리셋 → `description`, 선택적 `extends`, `agent_defaults` | 지정 없음 | 사용자 정의 프리셋입니다. `extends`로 기본 제공 프리셋을 상속할 수 있습니다. |
 | `vendors` | 선택한 벤더 ID의 `string[]` (YAML과 CUE) | 생략 시: `oma link`는 연동 가능한 모든 벤더, `oma update`는 프로젝트 디렉토리가 있는 벤더를 사용 | `oma install`과 `oma update`가 어떤 벤더의 연동 파일을 생성할지 선택합니다. 벤더별 실행 방식은 관리되는 오케스트레이션 설정에 있습니다. [벤더 선택 및 디스패치 메타데이터](#vendor-selection-and-dispatch-metadata)를 참고하세요. |
-| `default_cli` | 벤더 ID(`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `free` 전송에서는 `codex` | 다른 방법으로 벤더가 정해지지 않을 때 사용하는 벤더입니다. `auto`에서 런타임을 감지하지 못한 경우, 또는 `--vendor`, `OMA_RUNTIME_VENDOR`, 감지된 런타임 다음 순서의 `free` 전송에 해당합니다. [OMA가 에이전트의 모델과 CLI를 해석하는 방법](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli)을 참고하세요. |
-| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | 생략한 항목은 제한 없음 | 다음 에이전트를 실행하기 전에 확인하는 토큰 수와 실행 횟수의 엄격한 상한입니다. [세션 사용량 상한](#session-quota-caps)을 참고하세요. |
+| `default_cli` | 벤더 ID | 지정 없음 | `agents.default.cli`의 예전 표기입니다. 여전히 읽히며 `oma update`가 옮깁니다. |
+| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | 생략한 항목은 제한 없음 | 다음 에이전트 스폰 전에 확인하는 기록된 토큰 사용량과 스폰 상한입니다. [세션 사용량 상한](#session-quota-caps)을 참고하세요. |
+| `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | 지원하는 터미널 호스트에서는 자동, `false`, `1400` | 네이티브 파일 편집 전후의 Serena 진단을 비교합니다. [진단 피드백](#diagnostic-feedback)을 참고하세요. |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | `oma docs verify`의 동작과 검사 제외 항목입니다. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena MCP의 전송 방식과 업데이트 동작입니다. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` 또는 `[]` | 지정하지 않으면 기존 설정 유지 | 연동 설정을 갱신할 때 사용할 브라우저 DevTools MCP를 선택합니다. 명시적인 빈 목록은 선택된 브라우저 항목을 제거합니다. |
@@ -70,8 +70,8 @@ oma doctor --profile
 | `hwp` | `format`, `version.*`, `output.*` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#extract-hwp-family-documents) 참고 | Kordoc 형식, 버전 채널, 출력 위치입니다. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#extract-pdf-content) 참고 | PDF 추출, OCR, 이미지, 덮어쓰기 설정입니다. |
 | `scholar` | `base_url` | 스킬 기본값; [콘텐츠 및 리서치 워크플로우](/docs/guide/content-and-research#search-and-validate-scholarly-material) 참고 | Knows 연결 주소의 호스트입니다. 프로토콜 구조는 스킬에서 정합니다. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.*` | 스킬 기본값; [다이어그램 엔진](/docs/guide/diagram-engine) 참고 | Mermaid/archify 선택과 관리되는 엔진의 설정입니다. |
-| `market` | `managed`, `channel`, `check_interval_min`, `path`, `python`, `save_dir` | 스킬 기본값; [시장 조사](/docs/guide/market-research) 참고 | 관리되는 last30days 엔진을 찾는 방법과 결과 저장 위치입니다. |
+| `diagram` | `engine`, `explain_sidecar`, `archify.path`, `archify.quality`, `archify.open` | 스킬 기본값; [다이어그램 엔진](/docs/guide/diagram-engine) 참고 | Mermaid/archify 선택과 archify 고정·품질 설정입니다. 폐기된 `archify.managed`, `archify.channel`, `archify.check_interval_min`은 안내와 함께 무시되며 `oma update`가 제거합니다. |
+| `market` | `path`, `python`, `save_dir` | 스킬 기본값; [시장 조사](/docs/guide/market-research) 참고 | last30days 엔진 고정, 인터프리터, 결과 위치입니다. 폐기된 `managed`, `channel`, `check_interval_min`은 안내와 함께 무시되며 `oma update`가 제거합니다. |
 
 배포 템플릿에는 개별 기능이 해석하는 설정 블록도 있습니다. 현재 키와 기본값은 다음과 같습니다.
 
@@ -98,13 +98,39 @@ oma doctor --profile
 | `code_intelligence_guard` | `block`, `off` | `block` |
 | `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
 
+선택자용 자격 증명 또는 연결 섹션을 담는 예약 키는 세 개입니다. `web`용 `providers.brave`와 `providers.exa`(`api_key_env` 또는 `api_key_vault`), `semantic_memory`용 `providers.honcho`([Honcho 의미 기반 메모리](#honcho-semantic-memory) 참고)입니다. 예전 최상위 표기도 여전히 읽습니다.
+
+`providers` 아래의 다른 키는 **LLM 프로바이더**입니다. OpenAI 또는 Anthropic과 호환되는 엔드포인트로, `oma agent spawn`이 자식 CLI를 그 CLI 자신의 계정 대신 이 경로로 보낼 수 있습니다. 값은 객체입니다.
+
+| 필드 | 허용 값 | 필수 | 목적 |
+| --- | --- | --- | --- |
+| `base_url` | 자격 증명, 쿼리, 프래그먼트가 없는 절대 HTTP(S) URL. 없으면 `/v1`을 붙임 | 예 | 엔드포인트입니다. |
+| `api_key_env` | 환경 변수 이름 | 예(`free`는 예외이며 기본값은 `FREELLM_API_KEY`) | 키를 읽는 위치입니다. 파일에는 키를 넣지 않습니다. `base_url`도 `free`에서만 선택입니다(`http://127.0.0.1:31415/v1`). |
+| `transport` | `chat_completions`(기본값), `responses`, `anthropic_messages`, `multi` | 아니오 | 엔드포인트가 쓰는 와이어 프로토콜입니다. 자식 CLI를 고릅니다. `chat_completions` → Codex 또는 Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi`(셋을 모두 제공하는 게이트웨이) → Codex, Claude, Qwen입니다. |
+| `default_model` | 모델 ID | 프로바이더를 `model_preset`으로 쓸 때 | `model_preset: <name>`에서 모든 역할이 쓰는 모델입니다. |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free`는 로컬 FreeLLMAPI 게이트웨이용 빌트인 프로바이더입니다. 모든 필드에 기본값이 있고, `FREELLM_BASE_URL`과 `FREELLM_MODEL`이 파일 값을 덮어쓰며, 레거시 최상위 `free:` 블록도 여전히 읽습니다. 그 `model`이 여기서의 `default_model`입니다. [커스텀 LLM 프로바이더](/docs/guide/per-agent-models#custom-llm-providers)를 참고하세요.
+
 `code_intelligence_guard`는 PreToolUse 검색 가드를 제어합니다. 확인된 프로바이더 제외 대상이나 프로젝트 밖 경로로 한정된 네이티브 검색은 우회 없이 허용됩니다. 가드는 Serena의 제외 설정과 활성화된 gitignore 규칙, 또는 Gortex의 제외 목록을 읽으며, 디렉토리 이름으로 의존성을 추정하지 않습니다.
 
 훅은 `OMA_CI_ALLOW_NATIVE`를 언급하지 않습니다. `OMA_CI_ALLOW_NATIVE=1`을 앞에 붙인 셸 검색이 가드를 우회하는 대상은 프로젝트 밖 리소스와 가드가 인식하지 못한 무시 대상 경로뿐이며, 프로젝트 소스는 해당하지 않습니다.
 
 ### Honcho 의미 기반 메모리 {#honcho-semantic-memory}
 
-`honcho` 맵은 `HonchoConfigSchema`로 검증됩니다. 키 이름과 실제 실행 동작은 다음과 같습니다.
+`providers.honcho` 맵(예전 최상위 `honcho`도 여전히 읽음)은 `HonchoConfigSchema`로 검증됩니다. 키 이름과 실제 실행 동작은 다음과 같습니다.
 
 | 키 | 형태 | 실제 기본값 또는 제약 |
 | --- | --- | --- |
@@ -150,7 +176,42 @@ session:
       codex: 500000
 ```
 
-상한은 사용자 CUE 설정, 사용자 YAML 설정, 배포된 기본 설정 순으로 확인합니다. 에이전트를 실행하기 전에 OMA는 `spawn_count`, 전체 `tokens`, `per_vendor`를 이 순서로 검사합니다. 사용량이 설정값 이상이면 다음 실행을 막고 처음으로 상한에 도달한 항목을 보고합니다. 이 사용량은 청구 금액의 추정치가 아니라 기록된 토큰 수입니다.
+상한은 사용자 CUE 설정, 사용자 YAML 설정, 배포된 기본 설정 순으로 확인합니다. 에이전트를 실행하기 전에 OMA는 `spawn_count`, 전체 `tokens`, `per_vendor`를 이 순서로 검사합니다. 사용량이 설정값 이상이면 다음 실행을 막고 처음으로 상한에 도달한 항목을 보고합니다.
+
+실행이 시작되면 OMA는 입력 토큰 추정치를 예약합니다. 실행 후 지원되는 네이티브 트랜스크립트를 쓸 수 있으면, 기록된 입력·캐시·출력 사용량이 그 추정치를 대체하고 스폰은 다시 세지 않습니다. 그렇지 않으면 기록은 프롬프트 길이로 명시적으로 추정된 상태로 남습니다. 네이티브 서브에이전트가 수집 범위 밖에 있으면 관측된 루트 세션 사용량은 partial로 표시됩니다. 따라서 토큰 상한은 쓸 수 있는 관측에 의존합니다. 이미 실행 중인 자식을 중단하지 않으며 청구 한도를 보장하지도 않습니다. `spawn_count`가 가장 예측 가능한 상한입니다.
+
+### 세션 실행 예산 {#session-execution-budget}
+
+OMA가 관리하는 CLI 디스패치와 검증의 경과 시간을 제한하려면 `session.execution`을 설정합니다. 양의 `timeout_seconds` 또는 시간대가 있는 ISO 8601 `deadline` 중 하나를 사용합니다.
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+`oma agent spawn`, `parallel`, `review`, `resume`, `begin`, `verify` 명령은 `--timeout-seconds` 또는 `--deadline`을 받습니다. 준비, 실행, 재시도, 검사는 하나의 절대 deadline을 공유합니다. 설정된 값, 상속된 값, 저장된 값 중 가장 이른 deadline이 우선하며, 재시도와 재개는 시계를 초기화하지 않습니다. `session.execution`과 두 플래그를 모두 생략하면 부모가 deadline을 넘기지 않은 한 이 차원은 제한되지 않습니다.
+
+실행 이력은 `.agents/state/executions/` 아래에 남습니다. 취소나 타임아웃은 그 세션의 이후 실행을 막고 중지 이유를 기록합니다. 이 제어는 관리되는 CLI 경로로 시작한 프로세스를 다룹니다. 네이티브 벤더 에이전트와 임의의 셸 작업은 호스트의 취소 수단이 필요하고, CPU·RAM·저장소 상한은 프로바이더 지원이 필요합니다.
+
+관리되는 자식 CLI는 `OMA_EXECUTION_DEADLINE`, `OMA_EXECUTION_STATE`, `OMA_EXECUTION_ID`를 상속합니다. 상태 경로와 실행 ID가 묶인 상속 참조를 이루며, 다른 세션의 원장이나 형식이 잘못된 원장, 서로 맞지 않는 원장은 쓰기 전에 거부됩니다. OMA 자식을 감쌀 때는 상속된 환경을 모두 전달하세요. 이 변수를 설정해도 관련 없는 프로그램에 deadline 적용이 추가되지는 않습니다.
+
+취소되면 OMA는 신규 진입을 멈추고, 소유한 계산을 제한된 범위에서 종료하려고 합니다. 로그, 결과, worktree, 등록된 리소스 메타데이터는 유지합니다. 산출물이나 외부 리소스를 지우려면 요청이나 명시적인 보존 정책이 필요합니다. 종료가 실패하면 완전히 정리된 것으로 보고하지 않고 그대로 보이게 둡니다.
+
+### 진단 피드백 {#diagnostic-feedback}
+
+지원하는 터미널 호스트에서는 OMA가 네이티브 파일 편집 전후의 오류와 경고를 비교하고, 새로 보고된 진단을 다음 도구 피드백에 넣습니다. Serena가 유효한 코드 인텔리전스 프로바이더일 때(프로바이더를 지정하지 않으면 기본값) 이미 실행 중이고 프로젝트가 일치하는 Serena HTTP 데몬을 사용합니다. 데몬을 시작하거나 빌드를 실행하지는 않습니다. Serena 자신의 심볼 편집은 이미 진단을 제공하므로 제외합니다.
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+이 피드백을 끄려면 `enabled: false`로 설정합니다. 호스트가 이미 편집 진단을 제공하면 `host_diagnostics: true`로 설정합니다. Cursor와 Antigravity는 자동으로 건너뜁니다. 프로젝트 로컬 오버라이드는 일반적인 설정 계층을 따릅니다. 환경 변수 오버라이드는 `OMA_DIAGNOSTIC_FEEDBACK`, `OMA_HOST_DIAGNOSTICS`, `OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS`입니다.
+
+타임아웃은 편집 전 또는 편집 후 훅 전체를 다루며 100~10,000밀리초로 제한됩니다. 느린 프로바이더는 더 큰 타임아웃을 쓸 수 있습니다. 조회가 실패하거나 시간 초과되면 피드백을 건너뛰고 짧은 대기 시간을 시작합니다. 깨끗한 진단 결과로 세지 않습니다. 편집 전 기준선이 없거나 오래되어도 피드백을 건너뜁니다. 각 훅은 파일을 최대 3개까지 확인하고, 새 오류나 경고를 최대 8개까지 보고합니다.
 
 ### 벤더 선택 및 디스패치 메타데이터 {#vendor-selection-and-dispatch-metadata}
 

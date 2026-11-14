@@ -5,14 +5,19 @@ description: De standaardinstellingen van oh-my-agent die routing, modelselectie
 
 # Belangrijke standaardinstellingen
 
+Deze standaardinstellingen gelden voor de geïnstalleerde OMA-runtime. Eén skill laden met
+`skills use` levert instructies, zonder projecthooks, providers of services te configureren.
+Begin bij [Een setup kiezen](./choose-setup.md) om dat taakpad of een runtime-installatie te kiezen.
+
 De standaardinstellingen maken een eerste project bruikbaar en houden configuratie van de gebruiker stabiel. Ze worden tijdens runtime bepaald, waardoor een ontbrekende sleutel anders kan werken dan een expliciete lege waarde. Begin hier als de harness werkt, maar zich anders gedraagt dan je verwacht.
 
 ## Standaardinstellingen die de eerste run beïnvloeden
 
 | Onderdeel | Standaard | Gevolg | Overschrijven |
 |---|---|---|---|
-| Antwoordtaal | `en` | Agent- en workflowantwoorden gebruiken Engels tenzij de projectconfiguratie een andere ondersteunde taal kiest. Een expliciete taalopdracht van de gebruiker of sessie kan de projectstandaard nog overschrijven wanneer de host of workflow dat ondersteunt. | `language` in `.agents/oma-config.yaml` of `.cue` |
-| Modelrouting ([modelpreset](./glossary.md#model-preset)) | `auto` | De native agentconfiguratie van de huidige runtime wordt gebruikt. Onbekende runtimes vallen terug op `default_cli` als dat is ingesteld. | `model_preset`, `default_cli` of `agents.<id>` |
+| Antwoordtaal | Opgeslagen taal, anders de systeemtaal; fallback `en` | De installatie detecteert de taal zonder te vragen. Regionale locales worden gekoppeld aan een ondersteunde basistaal, zoals `ko_KR.UTF-8` → `ko`; niet-ondersteunde locales gebruiken `en`. De taal van de prompt van de gebruiker heeft voorrang op deze instelling. | `language` in `.agents/oma-config.yaml` of `.cue` |
+| Modelrouting ([modelpreset](./glossary.md#model-preset)) | `auto` | De native agentconfiguratie van de huidige runtime wordt gebruikt. Onbekende runtimes vallen terug op `agents.default.cli` wanneer die is ingesteld. | `model_preset`, `agents.default.cli` of `agents.<id>` |
+| Skillinhoud ([skillpreset](./glossary.md#skill-preset)) | Interactieve selectie; `all` bij een onbeheerde setup, tenzij `--preset` is opgegeven | Een preset selecteert skills. Gedeelde bestanden, alle workflow- en agentdefinities, hooks en de providerconfiguratie blijven onderdeel van de runtime-installatie; andere bestaande skills blijven behouden. | `oma install --preset <name>`; zie [presetgrenzen](./installation.md#presets) |
 | Code-intelligence ([capabilityprovider](./glossary.md#capability-provider)) | `serena` | Een nieuwe installatie probeert Serena te installeren en de MCP-configuratie ervan te koppelen. | `providers.code_intelligence: gortex` of `serena` |
 | Code-search guard | `block` | Zolang een code-intelligenceprovider is geconfigureerd, weigert een PreToolUse-hook de native `Grep`/`Glob` en recursief zoeken via de shell (`rg`, `grep -r`, `find -name`) en verwijst die de agent naar de tools van de provider. Zoekopdrachten die beperkt blijven tot bevestigde uitsluitingen of paden buiten het project zijn toegestaan. De hook vermeldt geen bypass voor de broncode van het project. | `providers.code_intelligence_guard: off` |
 | Semantisch geheugen | `agentmemory` | Installatie en update hergebruiken een gezond AgentMemory-endpoint of installeren en starten de beheerde lokale service, en controleren daarna de gereedheid voordat ze slagen. Expliciete aangepaste endpoints worden gecontroleerd zonder ze te vervangen. | `providers.semantic_memory: honcho` of `none`; `OMA_NO_AGENTMEMORY=1` slaat de AgentMemory-setup over. |
@@ -40,15 +45,15 @@ na het laden van de bestanden. Door een ongeldige lokale configuratie stopt het 
 
 Voor modelrouting gelden vóór de volgorde van vaste presets twee bijzondere gevallen:
 
-- Met `model_preset: auto` wordt de native agent/modelconfiguratie van de huidige runtime gebruikt. Expliciete overrides via `agents.<id>` hebben nog steeds voorrang; een onbekende runtime kan `default_cli` gebruiken.
-- Met `model_preset: free` gebruiken child-spawns de lokale FreeLLMAPI-gateway. `free.model` kiest het gatewaymodel en vervangt modelpinnen per agent; als de waarde ontbreekt, wordt `FREELLM_MODEL` of de providerfallback `auto` gebruikt.
+- Met `model_preset: auto` wordt de native agent-/modelconfiguratie van de huidige runtime gebruikt. Expliciete overrides via `agents.<id>` hebben nog steeds voorrang; een onbekende runtime kan `agents.default.cli` gebruiken.
+- Met `model_preset: free` (of een andere LLM-provider onder `providers.<name>`) gebruiken child-spawns die gateway. `providers.free.default_model` kiest het gatewaymodel en vervangt modelpinnen per agent; als de waarde ontbreekt, wordt `FREELLM_MODEL` of de providerfallback `auto` gebruikt.
 
 Voor een vaste of aangepaste preset is de effectieve volgorde:
 
 1. Expliciete override via `agents.<id>`.
 2. De overeenkomende invoer van `model_preset`, ingebouwd of uit `custom_presets`.
 3. De `orchestrator`-invoer van de preset wanneer een rol geen eigen invoer heeft.
-4. `default_cli` als fallback voor de vendor wanneer de eerdere niveaus geen plan opleveren.
+4. `agents.default.cli` als vendorfallback wanneer de eerdere niveaus geen plan opleveren.
 
 De `free`-preset levert standaardwaarden voor alle drie de providerinstellingen: `base_url` is `http://127.0.0.1:31415/v1`, `api_key_env` is `FREELLM_API_KEY` (`FREELLMAPI_API_KEY` wordt ook als compatibiliteitsalias geaccepteerd) en `model` is `auto`. Een bruikbare API-sleutel in de geselecteerde omgevingsvariabele blijft vereist; er is geen fallback naar een vendor. Stel deze waarden in `oma-config.local.yaml` in als ze lokaal op de machine moeten blijven, of gebruik `FREELLM_BASE_URL` en `FREELLM_MODEL` als procesoverschrijvingen.
 

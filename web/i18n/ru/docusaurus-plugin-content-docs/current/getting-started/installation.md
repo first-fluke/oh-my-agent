@@ -5,6 +5,21 @@ description: Установите oh-my-agent, выберите навыки и 
 
 # Установка
 
+Для одной задачи начните с [одного навыка](./choose-setup.md#load-one-skill). Для хуков проекта и командных рабочих процессов используйте установку runtime ниже. [Руководство по настройке](./choose-setup.md) разделяет загрузку инструкций, пресеты навыков и установку из marketplace Claude Code.
+
+Для Grok Bot используйте [страницу установки Grok Bot](/grok-bot/). Нативная ссылка **Add to Grok Bot** требует одобренного листинга в Cursor Marketplace; пока регистрация не завершена, она недоступна. Отдельное [руководство по ручной установке](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md) объясняет `oma install --target grok-bot` для компьютера Bot. Интеграция runtime Grok Build ниже — это другая цель установки.
+
+## Установка с помощью AI-агента
+
+Вставьте это в своего coding agent:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+[Руководство по установке для агента](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md) описывает подготовку CLI, неинтерактивную настройку проекта и проверку с помощью `oma doctor`.
+
 ## Предварительные требования
 
 - **IDE или CLI с поддержкой AI**: хотя бы один поддерживаемый хост, например Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot или Hermes
@@ -12,7 +27,7 @@ description: Установите oh-my-agent, выберите навыки и 
 - **uv**: менеджер пакетов Python (bootstrap-скрипт предложит установить его, если он отсутствует)
 - **Провайдер code intelligence**: провайдером по умолчанию является Serena. Также поддерживается Gortex, если он выбран в конфигурации провайдеров. Установщик может подготовить Serena через `uv tool install`; если необязательная зависимость недоступна, он продолжит работу с предупреждением. Если выбран Gortex, в режиме проекта `oma install` и `oma update` регистрируют проект в демоне Gortex (`gortex track`), если он ещё не отслеживается, и добавляют сгенерированные OMA каталоги в список исключений этого проекта через Gortex CLI; в дерево проекта ничего не записывается. Сам Gortex необходимо устанавливать отдельно.
 
-Установщик группирует интеграции по возможностям. К hook-провайдерам относятся Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro и Qwen; OpenCode и pi используют extension bridge; GitHub Copilot и Hermes получают ссылки на навыки, а ZCode — команды рабочих процессов. Можно выбрать несколько поставщиков, но для первой задачи достаточно хоста, которым вы планируете пользоваться.
+Установщик группирует интеграции по возможностям. К hook-поставщикам относятся Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro и Qwen; OpenCode и pi используют extension bridges; Hermes получает ссылки на навыки, а ZCode — команды рабочих процессов. Можно выбрать несколько поставщиков, но для первой задачи достаточно хоста, которым вы планируете пользоваться.
 
 ---
 
@@ -51,7 +66,7 @@ Bootstrap продолжает работу после сбоев необяза
 - **Commit-msg guard**: `.githooks/commit-msg` отклоняет адреса `Co-authored-by`, которых нет ни в `.githooks/co-authors.allow`, ни в `scm.co_author.email`. `git config --local core.hooksPath .githooks` задаётся только тогда, когда другие хуки не активны; иначе oma выводит, как подключить guard в цепочку. Чтобы отказаться, задайте `scm.co_author.enforce_hook: false`.
 - **Фоновые обновления**: `oma update` обновляет CLI `oma` в фоне (`auto_update_cli: false` или `OMA_SKIP_VERSION_CHECK=1`, чтобы это остановить) и запускает `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false`, чтобы это остановить).
 - **Таймер очистки Serena**: когда Serena работает в режиме `bridge` по умолчанию, первая сессия агента, запустившая общий сервер Serena, регистрирует таймер, который каждые 5 минут останавливает простаивающие общие серверы Serena (launchd `dev.oma.serena-daemon-gc`, пользовательский таймер systemd `oma-serena-daemon-gc.timer` или запланированная задача Windows `OMA Serena Daemon GC`). Задайте `serena.mode: stdio`, чтобы не запускать общий сервер и его таймер. `oma uninstall` не удаляет этот таймер.
-- **Неинтерактивные запуски** (`-y`, `OMA_YES=1`, `CI=true`) используют пресет навыков `All`, `model_preset: auto` и Python как язык бэкенда. Они не выбирают browser MCP (и пропускают скрипт установки Aside), если в `mcp.devtools_browsers` ещё нет ни одного.
+- **Неинтерактивные запуски** (`-y`, `OMA_YES=1`, `CI=true`) используют пресет навыков `All`, если `--preset` не выбирает другой, плюс `model_preset: auto` и Python как язык бэкенда. Они не выбирают browser MCP (и пропускают скрипт установки Aside), если в `mcp.devtools_browsers` ещё нет ни одного.
 
 ---
 
@@ -79,30 +94,57 @@ bunx oh-my-agent@latest
 | **backend** | API или сервис с базой данных | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
 | **mobile** | Только мобильное приложение | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
 | **devops** | Работа с инфраструктурой, CI/CD и observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **security** | Сканирование безопасности, ревью кода и исправления | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Научные статьи, исследование рынка и конвертация PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Дизайн-ассеты, изображения, голос и текстовый контент | design, image, voice, academic-writing, translation, scm | 6 |
 
 Пресеты — это наборы навыков; они не создают отдельное определение субагента для каждого навыка. Пресет `all` строится из актуального реестра навыков, поэтому список может расти вместе с репозиторием. Предметные пресеты включают только навыки для соответствующего фокуса.
 
+Выберите пресет из командной строки:
+
+```bash
+oma install --preset frontend --yes
+```
+
+`--preset` использует имена из таблицы и имеет приоритет над интерактивным запросом навыков и неинтерактивным значением по умолчанию `all`. Неизвестное имя отклоняется до начала установки. Если опцию опустить, сохраняется существующий поток выбора. Опция выбирает навыки; общие файлы, агенты, рабочие процессы, хуки и настройка провайдеров по-прежнему следуют установщику runtime. Повторная установка с меньшим пресетом сохраняет ранее установленные навыки. Пользовательский выбор доступен только через интерактивное меню; `custom` и пустые значения `--preset` не принимает.
+
+После установки прочитайте список выбранных навыков и отчёт о доступности рабочих процессов. Рабочий процесс открывается, только если манифесты требуемых навыков имеют корректные имена и описания. Уже сохранённые навыки могут удовлетворять этим требованиям. Условные ссылки сообщаются отдельно и не расширяют выбранный пресет. Эта проверка охватывает манифесты; инструменты, провайдеры, учётные данные и выполнение всё ещё нуждаются в собственных проверках.
+
 ### Рабочие процессы, которым нужны навыки вне пресета {#workflows-that-need-skills-outside-a-preset}
 
-Каждый пресет устанавливает все определения рабочих процессов и агентов, но несколько рабочих процессов читают навык, который предметные пресеты не устанавливают. Сверьтесь с этой таблицей, прежде чем выбирать предметный пресет:
+Каждый пресет копирует определения рабочих процессов и агентов. Команды и prompt открываются только для рабочих процессов, чьи требуемые навыки доступны. Например, свежая установка frontend оставляет `/work` недоступным, потому что в ней нет `oma-coordination`; уже имеющиеся навыки PM и QA удовлетворяют остальным требованиям входа. Установщик сообщает об этом недостающем навыке и не переключается на `all`.
 
-| Рабочий процесс | Читает навык | Пресеты, которые его включают |
+| Рабочий процесс | Навыки, обязательные для входа | Пресеты, которые их включают |
 |----------|-------------|-------------------------|
-| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
-| `/ultrawork`, `/ralph` | oma-coordination; запускаемый им агент `refactor-engineer` использует oma-refactor | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
+| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
-| `/security` | oma-security | all |
+| `/security` | oma-security | all, security |
 | `/recap` | oma-recap | all |
 | `/video` | oma-video | all |
-| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
 | `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
-| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/architecture` | oma-architecture | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
+| `/plan` | oma-pm | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/review` | oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
 | `/scm` | oma-scm | все пресеты |
 
-Чтобы добавить недостающий навык позже, запустите `oma doctor` из корня проекта, согласитесь на предложение установить недостающий навык и выберите **Select individually**.
+Ссылки, зависящие от ветки, остаются рекомендательными. Например, `/convert` выбирает инструменты PDF, HWP или video после проверки входных данных; `/ralph` и `/ultrawork` могут потребовать `oma-refactor` для ветки рефакторинга. Эти ссылки не являются безусловными требованиями входа.
+
+Запустите `oma doctor`, чтобы диагностировать отсутствующие или недействительные манифесты. Чтобы добавить недостающий навык, выполните `oma install` и выберите **Select individually**. После исправления манифеста выполните `oma link`, чтобы обновить доступность рабочих процессов; повторная установка тоже её обновляет. Для глобальной установки OMA используйте соответствующую область `--global`. Существующие пользовательские команды сохраняются, когда недоступные команды OMA удаляются.
+
+### Предметные плагины
+
+Пользователи marketplace Claude Code могут выбрать предметную точку входа после добавления marketplace `oh-my-agent`:
+
+```bash
+claude plugin install oma-frontend@oh-my-agent
+# Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
+```
+
+Предметные точки входа содержат 8 навыков frontend, 6 навыков security или 8 навыков research и соответствующий набор нативных агентов. Их session bootstrap передаёт этот пресет установщику runtime. Общая настройка runtime и уже установленные навыки следуют поведению установщика, описанному выше. Запись `oma` сохраняет полный плагин. Те же предметные корни объявлены в сгенерированном каталоге marketplace Codex и в каталогах Grok Build и ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` на сгенерированном дереве или архив релиза `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode и Kimi Code (`/plugins install`) читают каждый свой сгенерированный манифест; точные шаги для каждого хоста см. в разделе [Хосты плагинов, совместимые с Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts).
+
+Закреплённые CI-задания хостов регистрируют локальный marketplace на чистых runner, устанавливают предметные точки входа и проверяют получившийся инвентарь. Эти проверки выполняются без вызовов модели. Учётные данные runtime, внешние провайдеры и успешная первая задача всё ещё нуждаются в собственной проверке. Проверки релиза также требуют, чтобы оба манифеста в каждом предметном корне совпадали с версией CLI и имели updater версии Release Please.
 
 Общие ресурсы (`_shared/`) устанавливаются при любом пресете. В них входят базовая маршрутизация, загрузка контекста, структура prompt, обнаружение поставщиков, протоколы выполнения и протокол памяти.
 
@@ -295,10 +337,9 @@ agents:
 | Поле | Тип | Обязательно | Описание |
 |-------|------|----------|-------------|
 | `language` | string | Да | Код языка ответов. Поддерживаются en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
-| `model_preset` | string | Да | Ключ активного [пресета моделей](./glossary.md#model-preset). `auto` следует настройкам модели текущего runtime; фиксированные ключи включают `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` и `mixed`. Допустимы и пользовательские ключи пресетов. См. [модели для агентов](../guide/per-agent-models.md). |
-| `default_cli` | string | Нет | Резервный CLI для `oma agent spawn`, если явные настройки агента и выбранный пресет не определяют поставщика. |
-| `free` | map | Нет | Настройки шлюза FreeLLMAPI, используемые при `model_preset: free`; API-ключи следует хранить в переменных окружения. |
-| `providers` | map | Нет | Провайдеры возможностей: `code_intelligence` (`serena` или `gortex`), `code_intelligence_guard` (`block` или `off`), `docs` (`context7`), `web` (`native` или `brave`) и `semantic_memory` (`agentmemory`, `honcho` или `none`). |
+| `model_preset` | string | Да | Ключ активного [пресета моделей](./glossary.md#model-preset). `auto` следует текущему runtime; фиксированные ключи включают `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` и `mixed`. Допустимы и пользовательские ключи пресетов. См. [модели для агентов](../guide/per-agent-models.md). |
+| `agents` | map | Нет | Переопределения модели для роли; `agents.default` хранит `cli` (запасной CLI для `oma agent spawn`, когда явные настройки агента и выбранный пресет не определяют поставщика), а также `effort`, `thinking` и `memory` по умолчанию. |
+| `providers` | map | Нет | Провайдеры возможностей: `code_intelligence` (`serena` или `gortex`), `code_intelligence_guard` (`block` или `off`), `docs` (`context7`), `web` (`native` или `brave`) и `semantic_memory` (`agentmemory`, `honcho` или `none`); их разделы учётных данных (`brave`, `exa`, `honcho`); и именованные LLM-провайдеры, такие как `free` (шлюз FreeLLMAPI, который использует `model_preset: free`). API-ключи храните в переменных окружения. |
 | `date_format` | string | Нет | Формат временных меток (`ISO`, `US`, `EU`). По умолчанию: `ISO`. |
 | `timezone` | string | Нет | Идентификатор часового пояса (например, `Asia/Seoul`). Если значение не задано, используется часовой пояс системы хоста. |
 | `auto_update_cli` | boolean | Нет | Могут ли обычные проверки CLI обновляться в фоне. По умолчанию: `true` (отключите значением `false`). |
@@ -314,7 +355,7 @@ agents:
 
 ### Разрешение поставщика
 
-При запуске агента CLI разрешает настройки в таком порядке: `agents.<id>`, выбранный `model_preset`, резервный orchestrator пресета, затем `default_cli`. При `model_preset: auto` модель предоставляет нативная конфигурация текущего runtime; неизвестный runtime переключается на `default_cli`. Полную матрицу см. в [моделях для агентов](../guide/per-agent-models.md).
+При запуске агента CLI разрешает настройки в таком порядке: `agents.<id>`, выбранный `model_preset`, резервный orchestrator пресета, затем `agents.default.cli`. При `model_preset: auto` модель предоставляет нативная конфигурация текущего runtime; неизвестный runtime переходит к `agents.default.cli`. Полную матрицу см. в [моделях для агентов](../guide/per-agent-models.md).
 
 ---
 

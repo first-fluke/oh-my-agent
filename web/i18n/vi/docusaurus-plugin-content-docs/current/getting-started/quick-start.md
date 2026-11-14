@@ -83,7 +83,7 @@ Use oma-scm to inspect this repository's current branch and working tree. Do not
 
 So sánh branch và các thay đổi được báo cáo với output Git thực tế. Agent cần báo cáo các lệnh đã chạy cùng exit status của chúng. Task chỉ đọc này không cần test mã hay build.
 
-Một prompt thông thường không khởi động workflow nào; nơi prompt hook được bật, nó chỉ thêm gợi ý skill mang tính tham khảo. Host hoặc workflow đã chọn thực hiện skill routing, vì vậy prompt tùy ý của host không đảm bảo có hook hoặc skill cụ thể. Execution contract vẫn phải kiểm tra quy ước của repository, chỉ thực hiện thay đổi trong phạm vi và báo cáo kết quả xác minh. File và lệnh chính xác phụ thuộc vào dự án.
+Một prompt thông thường không khởi động workflow nào; nơi prompt hook được bật, nó chỉ thêm gợi ý skill mang tính tham khảo. Host hoặc workflow đã chọn thực hiện skill routing, vì vậy prompt tùy ý của host không đảm bảo có hook hoặc skill cụ thể. Execution contract vẫn phải kiểm tra quy ước của repository, tôn trọng phạm vi chỉ đọc đã yêu cầu và báo cáo các kiểm tra đã quan sát. File và lệnh chính xác phụ thuộc vào dự án.
 
 Với task đi qua ranh giới API và UI, hãy chọn rõ `/work` hoặc `/orchestrate`. Với một domain duy nhất, tiếp tục với [Thực thi một skill](../guide/single-skill.md). [Hướng dẫn sử dụng](../guide/usage.md) có các ví dụ dài hơn.
 

@@ -74,7 +74,7 @@ Los jueces de especificación y visual se ejecutan 3 veces por harness vía `jud
 1. **Override del prompt de superpowers** — necesario para que el harness funcione en modo no interactivo (su skill de brainstorming `<HARD-GATE>` bloquea las ejecuciones single-shot). El resultado refleja "lo que superpowers puede hacer una vez que se omite el gate", no una comparación pura entre iguales.
 2. **Promedio multi-juez en spec + visual, journey de una sola ejecución** — la evaluación del journey requiere un dev server activo, por lo que se mantiene en una sola ejecución. Trata las diferencias de journey por debajo de ~2 puntos como ruido. El tamaño de la muestra es 1 build por harness.
 3. **Normalización del costo** — el eje de eficiencia usa costo por archivo; el costo absoluto ($1.28–$8.19 entre los 5) no se refleja en el puntaje.
-4. **La penalización `lint-clean` de oma es intencional** — oma deliberadamente delega la aplicación de lint/typecheck a los git hooks (husky + lint-staged) y a CI, en lugar de incorporar reglas específicas de ESLint en las skills de los agentes. El benchmark de una sola ejecución penaliza esto con -5 en `lint-clean`, pero en un flujo de trabajo real los mismos problemas serían bloqueados por pre-push antes de llegar al remoto.
+4. **La penalización `lint-clean` de oma es intencional** — oma deja deliberadamente la aplicación de lint/typecheck a los git hooks (hk) y a CI, en lugar de incorporar reglas específicas de ESLint en las skills de los agentes. El benchmark de una sola ejecución penaliza esto con -5 en `lint-clean`, pero en un flujo de trabajo real los mismos problemas serían bloqueados por pre-push antes de llegar al remoto.
 
 ---
 

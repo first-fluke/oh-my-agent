@@ -44,23 +44,23 @@ De huidige runtimeschema’s of meegeleverde OMA-consumers lezen de volgende sle
 
 | Sleutel | Type of geaccepteerde waarden | Standaard bij afwezigheid | Doel |
 | --- | --- | --- | --- |
-| `language` | string | `en` | Antwoordtaal voor workflows en skills. |
+| `language` | string | `en` | Antwoordtaal voor workflows en skills. De installatie behoudt een bestaande waarde of initialiseert die vanuit de systeemtaal zonder te vragen. |
 | `translation_voice` | `formal`, `balanced`, `interpreter` | `balanced` in het meegeleverde template | Stemkeuze voor `oma-translation`. |
 | `date_format` | `ISO`, `US`, `EU` | `ISO` in het meegeleverde template; afwezigheid laat geen expliciete override achter | Voorkeur voor datumnotatie. |
 | `timezone` | IANA-naam | systeemtijdzone | Datums die door planningen en rapporten worden gebruikt. |
 | `auto_update_cli` | boolean | `true` | Achtergrondcontroles op CLI-versies; opt-out met `false`. |
 | `telemetry` | boolean | `false` | Opt-in voor vendor-telemetrie tijdens installatie, updates en linkreconciliatie. |
 | `model_preset` | niet-lege string | `auto` in nieuwe templates | Ingebouwde of aangepaste modelpreset. `OMA_MODEL_PRESET` overschrijft deze voor één proces. |
-| `free` | `base_url`, `api_key_env`, `model` | `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY`, `auto` | FreeLLMAPI-instellingen wanneer de preset `free` is; `FREELLM_BASE_URL` en `FREELLM_MODEL` overschrijven bestandswaarden en de sleutelnaam bevat nooit het geheim. Zie [Modelconfiguratie per agent](/docs/guide/per-agent-models#freellmapi-preset). |
-| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` | `context7`, `native`, `serena`, `block`, `agentmemory` | Selecteert providers voor documentatie, search, code-intelligence en semantisch geheugen. Zie [Providers](#providers). |
-| `brave` | `api_key_env` of `api_key_vault` | niet ingesteld | Verwijzing naar de Brave-searchcredential. |
-| `honcho` | `base_url`, `workspace_id`, `project_id`, `api_key_env`, `api_key_vault`, `timeout_ms`, `max_results`, `max_tokens`, `recall_mode` | Zie [Honcho-details](#honcho-semantic-memory) | Verbindingsinstellingen voor Honcho-semantisch geheugen. |
-| `agents` | agent-ID → `model`, optioneel `effort`, `thinking`, `memory` | resolutie van de preset | Overrides per agent boven op de geselecteerde preset. Effort is `none`, `low`, `medium`, `high` of `xhigh`; memory is `user`, `project` of `local`. |
+| `free` | `base_url`, `api_key_env`, `model` | niet ingesteld | Verouderde spelling van `providers.free` (`model` is daar `default_model`); wordt nog gelezen, en `oma update` verplaatst de sleutel. |
+| `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`; credentialsecties `brave`, `exa`, `honcho`; elke andere `<name>` → LLM-providerobject | `context7`, `native`, `serena`, `block`, `agentmemory`; geen credentials of LLM-providers | Selecteert providers voor documentatie, search, code-intelligence en semantisch geheugen, bewaart hun credentialverwijzingen en declareert LLM-endpoints waar agenten naartoe gerouteerd kunnen worden. Zie [Providers](#providers). |
+| `brave`, `exa`, `honcho` | zoals onder `providers` | niet ingesteld | Verouderde top-level spellingen van `providers.brave`, `providers.exa` en `providers.honcho`; worden nog gelezen, en `oma update` verplaatst ze. |
+| `agents` | agent-ID → `model`, optioneel `effort`, `thinking`, `memory`; `default` → `cli`, `effort`, `thinking`, `memory` | resolutie van de preset; `default.cli` valt terug op `claude` (`codex` voor een providerroute) | Overrides per agent boven op de geselecteerde preset. Effort is `none`, `low`, `medium`, `high` of `xhigh`; memory is `user`, `project` of `local`. `agents.default` vult die velden voor elke rol die er zelf geen instelt, en de `cli` daarvan (een van `claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) is de vendor wanneer niets anders er een kiest: een niet-gedetecteerde runtime onder `auto`, of een providerroute na `--vendor`, `OMA_RUNTIME_VENDOR` en de gedetecteerde runtime. Een model in de vorm `<provider>/<model-id>` routeert de rol via die LLM-provider. |
 | `models` | modelslug → CLI-koppeling | niet ingesteld | Inline modeldefinities voor ondersteunde vendor-CLI’s. |
 | `custom_presets` | preset → description, optioneel `extends`, `agent_defaults` | niet ingesteld | Door gebruikers gedefinieerde presets; `extends` kan erven van een ingebouwde preset. |
 | `vendors` | `string[]` met geselecteerde vendor-ID’s (YAML en CUE) | afwezig: `oma link` gebruikt elke linkbare vendor, `oma update` gebruikt vendors waarvan de projectmappen bestaan | Selecteert welke vendorintegraties `oma install` en `oma update` projecteren. De capabilitymap voor dispatch staat in de beheerde orchestratieconfiguratie; zie [Vendorkeuze en dispatchmetadata](#vendor-selection-and-dispatch-metadata). |
-| `default_cli` | vendor-ID (`claude`, `codex`, `cursor`, `antigravity`, `qwen`, `grok`, `kimi`, `kiro`, `opencode`, `pi`) | `claude`; `codex` voor het `free`-transport | Vendor die wordt gebruikt wanneer niets anders er een kiest: een niet-gedetecteerde runtime onder `auto`, of het `free`-transport na `--vendor`, `OMA_RUNTIME_VENDOR` en de gedetecteerde runtime. Zie [Hoe OMA het model en de CLI van een agent bepaalt](/docs/guide/per-agent-models#how-oma-resolves-an-agents-model-and-cli). |
-| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | elke ontbrekende dimensie heeft geen limiet | Harde token- en spawnlimieten die vóór de volgende agent-spawn worden gecontroleerd; zie [Sessie-quota caps](#session-quota-caps). |
+| `default_cli` | vendor-ID | niet ingesteld | Verouderde spelling van `agents.default.cli`; wordt nog gelezen, en `oma update` verplaatst de sleutel. |
+| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | elke ontbrekende dimensie heeft geen limiet | Geregistreerd tokengebruik en spawnlimieten die vóór de volgende agent-spawn worden gecontroleerd; zie [Sessie-quota caps](#session-quota-caps). |
+| `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | automatisch voor ondersteunde terminalhosts, `false`, `1400` | Vergelijkt Serena-diagnostiek vóór en na native bestandsbewerkingen; zie [Diagnostische feedback](#diagnostic-feedback). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Gedrag en scanuitsluitingen van `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena-MCP-transport en updategedrag. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` of `[]` | niet ingesteld = bestaande setup behouden | Selectie van Browser DevTools MCP tijdens reconciliatie. Een expliciete lege lijst verwijdert geselecteerde browservermeldingen. |
@@ -70,8 +70,8 @@ De huidige runtimeschema’s of meegeleverde OMA-consumers lezen de volgende sle
 | `hwp` | `format`, `version.*`, `output.*` | standaard van de skill; zie [Inhouds- en onderzoeksworkflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc-formaat, versiekanaal en uitvoerlocatie. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | standaard van de skill; zie [Inhouds- en onderzoeksworkflows](/docs/guide/content-and-research#extract-pdf-content) | PDF-extractie, OCR-, image- en overschrijfinstellingen. |
 | `scholar` | `base_url` | standaard van de skill; zie [Inhouds- en onderzoeksworkflows](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Host van het Knows-endpoint; de protocolvorm blijft eigendom van de skill. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.*` | standaard van de skill; zie [Diagram Engine](/docs/guide/diagram-engine) | Mermaid/archify-keuze en instellingen van de beheerde engine. |
-| `market` | `managed`, `channel`, `check_interval_min`, `path`, `python`, `save_dir` | standaard van de skill; zie [Market Research](/docs/guide/market-research) | Resolutie van de beheerde last30days-engine en locatie van resultaten. |
+| `diagram` | `engine`, `explain_sidecar`, `archify.path`, `archify.quality`, `archify.open` | standaard van de skill; zie [Diagram Engine](/docs/guide/diagram-engine) | Mermaid/archify-keuze en pin- en kwaliteitsinstellingen van archify. De buiten gebruik gestelde sleutels `archify.managed`, `archify.channel` en `archify.check_interval_min` worden met een melding genegeerd, en `oma update` verwijdert ze. |
+| `market` | `path`, `python`, `save_dir` | standaard van de skill; zie [Market Research](/docs/guide/market-research) | Pin van de last30days-engine, interpreter en resultaatlocatie. De buiten gebruik gestelde sleutels `managed`, `channel` en `check_interval_min` worden met een melding genegeerd, en `oma update` verwijdert ze. |
 
 Het meegeleverde template bevat ook blokken waarvan de consumer eigenaar is. Hun huidige sleutels en standaardwaarden zijn:
 
@@ -98,13 +98,39 @@ Deze blokken worden via de configuratiepassthrough geaccepteerd en door hun feat
 | `code_intelligence_guard` | `block`, `off` | `block` |
 | `semantic_memory` | `agentmemory`, `honcho`, `none` | `agentmemory` |
 
+Drie gereserveerde sleutels bevatten de credential- of verbindingssectie voor een selector: `providers.brave` en `providers.exa` (`api_key_env` of `api_key_vault`) voor `web`, en `providers.honcho` voor `semantic_memory` (zie [Honcho-semantisch geheugen](#honcho-semantic-memory)). Hun verouderde top-level spellingen worden nog gelezen.
+
+Elke andere sleutel onder `providers` is een **LLM-provider**: een OpenAI- of Anthropic-compatibel endpoint waar `oma agent spawn` een child-CLI doorheen kan routeren in plaats van via het eigen account van die CLI. De waarde is een object:
+
+| Veld | Geaccepteerde waarden | Vereist | Doel |
+| --- | --- | --- | --- |
+| `base_url` | absolute HTTP(S)-URL zonder credentials, query of fragment; `/v1` wordt toegevoegd wanneer die ontbreekt | ja | Het endpoint. |
+| `api_key_env` | naam van een omgevingsvariabele | ja (behalve `free`, dat standaard `FREELLM_API_KEY` gebruikt) | Waar de sleutel vandaan wordt gelezen; het bestand bevat de sleutel nooit. `base_url` is eveneens alleen voor `free` optioneel (`http://127.0.0.1:31415/v1`). |
+| `transport` | `chat_completions` (standaard), `responses`, `anthropic_messages`, `multi` | nee | Het wireprotocol dat het endpoint spreekt. Het selecteert de child-CLI: `chat_completions` → Codex of Qwen, `responses` → Codex, `anthropic_messages` → Claude, `multi` (een gateway die alle drie bedient) → Codex, Claude of Qwen. |
+| `default_model` | model-ID | wanneer de provider als `model_preset` wordt gebruikt | Het model dat elke rol gebruikt onder `model_preset: <name>`. |
+
+```yaml
+providers:
+  code_intelligence: serena
+  exaone:
+    base_url: https://api.exaone.ai/v1
+    api_key_env: EXAONE_API_KEY
+    transport: chat_completions
+    default_model: k-exaone_v2.5
+agents:
+  default: { effort: medium }
+  backend: { model: exaone/k-exaone_v2.5 }
+```
+
+`free` is de ingebouwde provider voor een lokale FreeLLMAPI-gateway: elk veld heeft een standaard, `FREELLM_BASE_URL` en `FREELLM_MODEL` overschrijven het bestand, en het verouderde top-level blok `free:` wordt nog gelezen (de `model` daarvan is hier `default_model`); zie [Aangepaste LLM-providers](/docs/guide/per-agent-models#custom-llm-providers).
+
 `code_intelligence_guard` bepaalt de PreToolUse-zoekguard. Native zoekopdrachten die beperkt blijven tot bevestigde uitsluitingen van de provider of paden buiten het project zijn zonder bypass toegestaan. De guard leest Serena-uitsluitingen en ingeschakelde gitignore-regels, of de uitsluitlijst van Gortex; hij leidt geen dependencies af uit mapnamen.
 
 De hook noemt `OMA_CI_ALLOW_NATIVE` niet. Een shellzoekopdracht met prefix `OMA_CI_ALLOW_NATIVE=1` omzeilt de guard alleen voor resources buiten het project of genegeerde paden die de guard niet heeft herkend, niet voor de broncode van het project.
 
 ### Honcho-semantisch geheugen {#honcho-semantic-memory}
 
-De map `honcho` wordt gevalideerd door `HonchoConfigSchema`. De sleutelnamen en het effectieve runtimegedrag zijn:
+De map `providers.honcho` (verouderde top-level `honcho`, nog gelezen) wordt gevalideerd door `HonchoConfigSchema`. De sleutelnamen en het effectieve runtimegedrag zijn:
 
 | Sleutel | Vorm | Effectieve standaard of beperking |
 | --- | --- | --- |
@@ -150,7 +176,42 @@ session:
       codex: 500000
 ```
 
-De cap-loader controleert eerst de CUE-laag van de gebruiker, daarna de YAML-laag van de gebruiker en vervolgens de fallback met de meegeleverde standaardwaarden. Voor een spawn controleert OMA in die volgorde `spawn_count`, het totale aantal `tokens` en `per_vendor`. Een limiet is bereikt wanneer het gebruik groter dan of gelijk aan de limiet is; OMA blokkeert de volgende spawn en meldt welke dimensie de grens bepaalde. Het gebruik is tokenadministratie, geen schatting van de factuur.
+De cap-loader controleert eerst de CUE-laag van de gebruiker, daarna de YAML-laag van de gebruiker en vervolgens de fallback met de meegeleverde standaardwaarden. Voor een spawn controleert OMA in die volgorde `spawn_count`, het totale aantal `tokens` en `per_vendor`. Een limiet is bereikt wanneer het gebruik groter dan of gelijk aan de limiet is; OMA blokkeert de volgende spawn en meldt welke dimensie de grens bepaalde.
+
+OMA reserveert bij de start van een run een schatting van de inputtokens. Wanneer na de run een ondersteund native transcript beschikbaar is, vervangt het geregistreerde input-, cache- en outputgebruik die schatting zonder een extra spawn te tellen. Anders blijft het record expliciet geschat op basis van de promptlengte. Waargenomen gebruik van de rootsessie wordt als partial gemarkeerd wanneer native subagenten buiten de vastleggingscope vallen. Tokencaps hangen dus af van de beschikbare waarnemingen; ze onderbreken een al draaiend child-proces niet en garanderen geen factuurlimiet. `spawn_count` is de meest voorspelbare limiet.
+
+### Uitvoeringsbudget van een sessie {#session-execution-budget}
+
+Stel `session.execution` in om de verstreken tijd te begrenzen voor door OMA beheerde CLI-dispatch en verificatie. Gebruik ofwel een positieve `timeout_seconds`, ofwel een ISO 8601-`deadline` met tijdzone:
+
+```yaml
+session:
+  execution:
+    timeout_seconds: 1800
+```
+
+De commando's `oma agent spawn`, `parallel`, `review`, `resume`, `begin` en `verify` accepteren `--timeout-seconds` of `--deadline`. Voorbereiding, uitvoering, nieuwe pogingen en controles delen één absolute deadline. De vroegste geconfigureerde, geërfde of vastgelegde deadline wint; nieuwe pogingen en hervatten zetten de klok niet terug. Laat `session.execution` en beide vlaggen weg om deze dimensie zonder limiet te laten, tenzij de parent een deadline heeft meegegeven.
+
+De uitvoeringsgeschiedenis blijft bewaard onder `.agents/state/executions/`. Annulering of een time-out blokkeert verdere uitvoering in die sessie en legt de stopreden vast. Deze controles gelden voor processen die via het beheerde CLI-pad zijn gestart. Native vendoragenten en willekeurige shelltaken hebben het annuleringsmechanisme van hun host nodig; limieten voor CPU, RAM en opslag vereisen ondersteuning van de provider.
+
+Beheerde child-CLI's erven `OMA_EXECUTION_DEADLINE`, `OMA_EXECUTION_STATE` en `OMA_EXECUTION_ID`. Het statuspad en de uitvoerings-ID vormen samen een gebonden erfenisverwijzing; een vreemd, misvormd of niet-overeenkomend grootboek wordt geweigerd voordat er wordt geschreven. Geef de volledige geërfde omgeving door wanneer je een OMA-child inpakt. Het instellen van deze variabelen voegt geen deadlinehandhaving toe aan een programma dat er niets mee te maken heeft.
+
+Bij annulering stopt OMA de toelating en probeert het begrensd de eigen berekening te beëindigen. Logs, resultaten, worktrees en geregistreerde resourcemetadata blijven behouden. Artefacten of externe resources verwijderen vereist een verzoek of een expliciet retentiebeleid. Een beëindiging die niet slaagt blijft zichtbaar en wordt niet als volledig opgeruimd gerapporteerd.
+
+### Diagnostische feedback {#diagnostic-feedback}
+
+Op ondersteunde terminalhosts vergelijkt OMA fouten en waarschuwingen vóór en na native bestandsbewerkingen en injecteert nieuw gemelde diagnostiek in de volgende toolfeedback. Het gebruikt een al draaiende, bij het project passende Serena-HTTP-daemon wanneer Serena de effectieve code-intelligenceprovider is (de standaard wanneer geen provider is opgegeven). Het start nooit een daemon en voert geen build uit. De eigen symbolische bewerkingen van Serena zijn uitgesloten, omdat die al diagnostiek leveren.
+
+```yaml
+diagnostic_feedback:
+  enabled: true
+  host_diagnostics: false
+  timeout_ms: 1400
+```
+
+Stel `enabled: false` in om deze feedback uit te schakelen. Stel `host_diagnostics: true` in wanneer de host al bewerkingsdiagnostiek levert; Cursor en Antigravity worden automatisch overgeslagen. Projectlokale overrides volgen de normale configuratielagen. Omgevingsoverschrijvingen zijn `OMA_DIAGNOSTIC_FEEDBACK`, `OMA_HOST_DIAGNOSTICS` en `OMA_DIAGNOSTIC_FEEDBACK_TIMEOUT_MS`.
+
+De time-out dekt elke volledige pre-edit- of post-edit-hook en is beperkt tot 100–10.000 milliseconden. Trage providers kunnen een grotere time-out gebruiken. Een mislukte of verlopen lookup slaat feedback over en start een korte cooldown; die telt niet als een schoon diagnostisch resultaat. Ontbrekende of verouderde pre-edit-baselines slaan feedback eveneens over. Elke hook controleert hoogstens drie bestanden en meldt hoogstens acht nieuwe fouten of waarschuwingen.
 
 ### Vendorkeuze en dispatchmetadata {#vendor-selection-and-dispatch-metadata}
 
@@ -227,6 +288,10 @@ mcp:
 ## Regels voor updates en eigenaarschap {#update-and-ownership-rules}
 
 `.agents/oma-config.yaml` is eigendom van de gebruiker. `oma update` behoudt bestaande inhoud en kan nieuw meegeleverde top-level-templatesleutels toevoegen onder een marker `# Added by oma update`. `oma update --force` kan gebruikersconfiguratie, MCP-configuratie en stackmappen vervangen; gebruik dit alleen als je die aanpassingen bewust wilt resetten. Lokale overlaybestanden blijven de privéplek voor machinespecifieke waarden.
+
+Zet geen API-sleutels in dit bestand. Gebruik de velden `api_key_env` of `api_key_vault` en bewaar de eigenlijke credential in de genoemde geheime opslag of in de omgeving.
+
+Zie voor de details van modelresolutie [Modelconfiguratie per agent](/docs/guide/per-agent-models). Zie voor de semantiek van de lagen en het gedrag bij fouten [Semantiek van oma-config](/docs/guide/oma-config-semantics).
 
 Zet geen API-sleutels in dit bestand. Gebruik velden `api_key_env` of `api_key_vault` en bewaar de echte credential in de verwezen secretstore of omgeving.
 

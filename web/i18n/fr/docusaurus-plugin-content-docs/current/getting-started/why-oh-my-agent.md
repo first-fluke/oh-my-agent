@@ -1,7 +1,7 @@
 ---
 title: Pourquoi choisir oh-my-agent
 sidebar_label: Pourquoi oh-my-agent
-description: Choisissez oh-my-agent lorsque votre dépôt a besoin de compétences et de workflows d'agents versionnés, du dispatch multi-fournisseur et d'une vérification explicite.
+description: Choisissez oh-my-agent lorsque vous avez besoin de compétences et de workflows d'agents détenus par le dépôt, d'un dispatch multi-fournisseur et d'une vérification explicite.
 ---
 
 # Pourquoi choisir oh-my-agent

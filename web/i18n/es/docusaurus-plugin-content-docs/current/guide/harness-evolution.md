@@ -8,7 +8,7 @@ description: Activa mejoras de skills programadas y con presupuesto a partir de 
 
 OMA puede recopilar evidencia de las ejecuciones de agentes rastreadas y procesar los fallos en un ciclo de retroalimentación programado. Los cambios automáticos de skills están **desactivados hasta que los actives en un proyecto**. Cada ciclo tiene un presupuesto finito de llamadas de modelo, y un cambio aplicado debe superar los gates de evaluación de skills existentes.
 
-La ruta automatizada mejora los documentos de las skills. Los cambios en el procedimiento del optimizador o del maintainer siguen siendo una [metaoptimización](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate) independiente que se invoca manualmente.
+La ruta automatizada aplica los cambios evaluados a los documentos de las skills. Los cambios en el procedimiento del optimizador o del maintainer requieren la [metaoptimización](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate) independiente, que se invoca de forma manual.
 
 ## Activar un proyecto
 
@@ -63,7 +63,6 @@ Un proyecto desactivado no ejecuta trabajo de modelo mediante el comando de evol
 ## Qué ocurre automáticamente
 
 El ciclo se ejecuta por el programador o de forma manual.
-
 
 ```mermaid
 flowchart TD
