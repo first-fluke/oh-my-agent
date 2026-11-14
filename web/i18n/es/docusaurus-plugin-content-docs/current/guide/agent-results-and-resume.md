@@ -8,7 +8,7 @@ description: Registra el trabajo de los agentes mediante declaraciones de result
 
 OMA trata el resultado de un agente como un pequeño registro de evidencia, no solo como el código de salida del proceso. Una ejecución registra los identificadores de tarea y sesión, la huella del workspace, los registros de verificación (receipts), los archivos modificados, el trabajo sin resolver y los hashes de los artefactos. Esto permite que un coordinador reutilice una tarea completada solo mientras su contrato de aceptación y sus entradas sigan coincidiendo.
 
-Usa directamente este ciclo de vida cuando ejecutes un agente nativo. Los flujos de trabajo y `oma agent spawn` crean los mismos registros y dejan la finalización de la ejecución gestionada al coordinador padre. Para los términos que se usan aquí, consulta [Registro de ejecución y claim](../getting-started/glossary.md#run-record-and-claim) y [Plan](../getting-started/glossary.md#plan) en el glosario.
+Usa directamente este ciclo de vida cuando ejecutes un agente nativo. Los flujos de trabajo y `oma agent spawn` crean los mismos registros y dejan la finalización de la ejecución gestionada al coordinador padre. Para los términos que se usan aquí, consulta [Registro de ejecución y declaración de resultados](../getting-started/glossary.md#run-record-and-claim) y [Plan](../getting-started/glossary.md#plan) en el glosario.
 
 ## El ciclo de vida de un vistazo
 

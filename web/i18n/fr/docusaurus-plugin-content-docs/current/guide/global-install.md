@@ -45,7 +45,7 @@ Existing per-project installs are not affected.
 ? Proceed with the global install? (y/N)
 ```
 
-Confirmez pour continuer. L'installation suit ensuite le même parcours interactif qu'une installation de projet (langue, preset de modèle, type de projet et sélection du fournisseur).
+Confirmez pour continuer. L'installation suit ensuite le même parcours interactif qu'une installation de projet (langue, preset de modèles, type de projet et sélection du fournisseur).
 
 Après une installation réussie, les étapes suivantes sont affichées :
 

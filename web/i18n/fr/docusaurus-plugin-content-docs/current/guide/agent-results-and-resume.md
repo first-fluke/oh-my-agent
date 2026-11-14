@@ -81,7 +81,7 @@ Remplacez `SESSION_ID` par l’identifiant de session utilisé dans le plan. La 
 }
 ```
 
-Les valeurs entre chevrons sont des placeholders ; utilisez les valeurs réelles affichées par votre exécution. Un démarrage réussi crée l’enregistrement de l’exécution sous `.agents/state/agent-runs/` et capture un instantané du contrat de tâche. Le chemin du claim est toujours le chemin de l’enregistrement d’exécution avec `.claim.json` à la place de `.json`.
+Les valeurs entre chevrons sont des placeholders ; utilisez les valeurs réelles affichées par votre exécution. Un démarrage réussi crée l’enregistrement d’exécution sous `.agents/state/agent-runs/` et capture un instantané du contrat de tâche. Le chemin du claim est toujours le chemin de l’enregistrement d’exécution avec `.claim.json` à la place de `.json`.
 
 ## Charger le contexte et exécuter la tâche
 

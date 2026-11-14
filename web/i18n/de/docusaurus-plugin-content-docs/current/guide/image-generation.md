@@ -30,7 +30,7 @@ Der Skill aktiviert sich bei Formulierungen wie „generate an image“, „crea
 
 ---
 
-## Vendoren im Überblick
+## Vendors im Überblick
 
 Der Skill ist CLI-first: Wenn die native CLI eines Vendors rohe Bild-Bytes zurückgeben kann, wird der Subprozess-Pfad gegenüber einem direkten API-Key bevorzugt.
 
@@ -40,9 +40,9 @@ Der Skill ist CLI-first: Wenn die native CLI eines Vendors rohe Bild-Bytes zurü
 | `codex` | CLI-first über `codex exec` (ChatGPT OAuth) | `gpt-image-2` | `codex login` (kein API-Key erforderlich) | Wird Ihrem ChatGPT-Plan in Rechnung gestellt |
 | `antigravity` | `agy`-CLI über das Gemini-Code-Assist-Abonnement | Das Modell wird intern von `agy` ausgewählt | `agy` installiert und angemeldet | Keine Kosten pro Bild über Code Assist |
 
-So wählt `--vendor` die Vendoren für einen Lauf aus:
+So wählt `--vendor` die Vendors für einen Lauf aus:
 
-| `--vendor` | Laufende Vendoren | Output-Ordner | Exit 5, wenn |
+| `--vendor` | Laufende Vendors | Output-Ordner | Exit 5, wenn |
 |---|---|---|---|
 | `auto` (Standard) | jeder Vendor, dessen Gesundheitsprüfung besteht | `{timestamp}-{shortid}-compare/`, wenn zwei oder mehr laufen | kein Vendor gesund ist |
 | `all` | jeder aktivierte Vendor | `{timestamp}-{shortid}-compare/`, wenn zwei oder mehr laufen | ein angeforderter Vendor nicht gesund ist |
@@ -111,7 +111,7 @@ Sie müssen sich keine CLI-Flags merken. Formulieren Sie es in Alltagssprache, u
 | Sie sagen | Skill leitet ab |
 |---|---|
 | "mit codex" / "mit gpt-image-2" / "kostenloses flux" | `--vendor codex` / `--vendor pollinations` |
-| "über Vendoren vergleichen" / "nebeneinander" | `--vendor all` |
+| "über Vendors vergleichen" / "nebeneinander" | `--vendor all` |
 | "Hochformat" / "Querformat" / "1024×1536" | `--size 1024x1536` / `--size 1536x1024` |
 | "hohe Qualität" / "Entwurf" | `--quality high` / `--quality low` |
 | "drei Varianten" / "gib mir 3" | `-n 3` |
@@ -122,7 +122,7 @@ Sie müssen sich keine CLI-Flags merken. Formulieren Sie es in Alltagssprache, u
 Beispiele:
 
 > "Generiere einen minimalistischen Sonnenaufgang über Bergen für den Landing-Hero, Querformat, hohe Qualität."
-> "Vergleiche ein Produktfoto einer Keramiktasse über alle Vendoren, jeweils drei Varianten."
+> "Vergleiche ein Produktfoto einer Keramiktasse über alle Vendors, jeweils drei Varianten."
 > "Mach dieses Otterfoto mit codex dramatisch und nächtlich." (mit angehängter Referenz)
 
 Der Agent [löst das Briefing auf](#clarification-protocol), füllt Lücken mit Standardwerten und ruft `oma image generate` mit den abgeleiteten Flags auf. Verwenden Sie den Slash-Befehl, wenn Sie die exakten Flag-Werte explizit kontrollieren möchten.
@@ -204,7 +204,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 ### Wo angehängte Bilder liegen
 
-- **Claude Code**: `~/.claude/image-cache/<session>/N.png`, in Systemnachrichten als `[Image: source: <path>]` angezeigt. Session-bezogen; an einen dauerhaften Speicherort kopieren, wenn Sie es später wiederverwenden möchten.
+- **Claude Code**: `~/.claude/image-cache/<session>/N.png`, in Systemnachrichten als `[Image: source: <path>]` angezeigt. Sitzungsbezogen; an einen dauerhaften Speicherort kopieren, wenn Sie es später wiederverwenden möchten.
 - **Antigravity**: Workspace-Upload-Verzeichnis (die IDE zeigt den genauen Pfad an)
 - **Codex CLI als Host**: muss explizit übergeben werden; In-Conversation-Anhänge werden nicht weitergeleitet
 
@@ -276,10 +276,10 @@ Was genau an den Anbieter gesendet wurde, sehen Sie im Feld `prompt` in `manifes
 | Exit-Code `4` bei `--reference` | `pollinations` lehnt Referenzen ab oder Datei zu groß / falsches Format | Auf `--vendor codex` oder `--vendor antigravity` wechseln. Jede Referenz muss ≤ 5 MB und im Format PNG/JPEG/GIF/WebP sein. |
 | `--reference` wird nicht erkannt | Lokale CLI ist veraltet | `oma update` ausführen und erneut versuchen. Nicht auf eine Beschreibung in Prosa zurückfallen. |
 | Kostenbestätigung blockiert Automatisierung | Lauf ist auf ≥ `$0.20` geschätzt | `-y` übergeben oder `OMA_IMAGE_YES=1` setzen. Besser: auf das kostenlose `pollinations` umsteigen. |
-| `--vendor all` bricht sofort ab | Einer der angeforderten Vendoren ist nicht gesund (Strict-Modus) | Den fehlenden Vendor installieren/anmelden oder einen spezifischen `--vendor` wählen. |
+| `--vendor all` bricht sofort ab | Einer der angeforderten Vendors ist nicht gesund (Strict-Modus) | Den fehlenden Vendor installieren/anmelden oder einen spezifischen `--vendor` wählen. |
 | Output wird in unerwartetes Verzeichnis geschrieben | Standard ist `.agents/results/images/{timestamp}-{shortid}/` | `--output-dir <dir>` übergeben. Pfade außerhalb von `$PWD` benötigen `--allow-external-output`. |
 | `--out path "…" is outside $PWD. Use --allow-external-out to override.` (Exit 1) | `--output-dir` zeigt aus dem Projekt heraus | Mit `--allow-external-output` erneut ausführen (die Meldung nennt noch den alten Flag-Namen) oder ein Verzeichnis innerhalb des Projekts wählen. |
-| Mehrere Vendoren liefen und der Ordner endet auf `-compare` | `--vendor auto` führt jeden gesunden Vendor aus | Genau einen `--vendor` übergeben, um nur einen Vendor auszuführen. |
+| Mehrere Vendors liefen und der Ordner endet auf `-compare` | `--vendor auto` führt jeden gesunden Vendor aus | Genau einen `--vendor` übergeben, um nur einen Vendor auszuführen. |
 | Antigravity schlägt trotz bestandener Gesundheitsprüfung fehl | `agy --version` bestätigt die Installation, nicht die Anmeldung | Bei Gemini Code Assist anmelden, dann mit `oma image doctor` und `--vendor antigravity` erneut versuchen. |
 
 ---

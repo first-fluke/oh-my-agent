@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-设置会保留已有的响应语言，或自动检测系统语言。交互式设置会询问 CLI 供应商、[能力提供方](./glossary.md#capability-provider)、[模型预设](./glossary.md#model-preset)、项目[技能预设](./glossary.md#skill-preset)以及任何技术栈变体。首次运行时保留默认值，选择你已经在使用的供应商，并选择与该仓库最接近的项目预设。各预设包含的技能，以及[需要预设之外技能的工作流](./installation.md#workflows-that-need-skills-outside-a-preset)，请参阅[预设](./installation.md#presets)。
+设置会保留已有的响应语言，或自动检测系统语言。交互式设置会询问 CLI 供应商、[能力提供商](./glossary.md#capability-provider)、[模型预设](./glossary.md#model-preset)、项目[技能预设](./glossary.md#skill-preset)以及任何技术栈变体。首次运行时保留默认值，选择你已经在使用的供应商，并选择与该仓库最接近的项目预设。各预设包含的技能，以及[需要预设之外技能的工作流](./installation.md#workflows-that-need-skills-outside-a-preset)，请参阅[预设](./installation.md#presets)。
 
 如果你已经有 `bun`，可以直接使用安装器：
 

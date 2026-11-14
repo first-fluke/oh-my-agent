@@ -522,7 +522,7 @@ Die Abdeckungsmatrix umfasst vier Schichten (L3, L4, Mesh, L7), vier Grenzen (Mu
 
 Dies sind Workflow-Standards; Modell-, Vendor-, Parallelitäts- und Budgeteinstellungen werden aus der Projektkonfiguration aufgelöst.
 
-**Workflow-Phasen:** Plan → Referenzen (Referenzen pro Aufgabe auswählen) → Setup (Sitzungs- und Task-Board-Artefakte) → Ausführung (bereite Aufgaben innerhalb von MAX_PARALLEL dispatchen) → Überwachung → Verifikation (Review-Schleife) → Sammlung (Claims und run-bezogene Berichte).
+**Workflow-Phasen:** Plan → Referenzen (Referenzen pro Aufgabe auswählen) → Setup (Sitzungs- und Task-Board-Artefakte) → Ausführung (bereite Aufgaben innerhalb von MAX_PARALLEL dispatchen) → Überwachung → Verifikation (Review-Schleife) → Sammlung (Ergebnisdeklarationen und run-bezogene Berichte).
 
 **Aufgaben-Referenzen:** Jede Aufgabe wird mit den Intent-Signaturen der installierten Skills abgeglichen, und der Koordinator wählt die benötigten Referenzen aus. Ein eindeutig passender Skill genügt; der Satz wird nur erweitert, wenn die Klassifizierung unsicher ist oder eine Abhängigkeit eine weitere Domäne erfordert. Die Auswahl und ihre Begründung werden als Koordinationsnotizen im Task-Board festgehalten; der Launcher erzwingt sie nicht.
 
@@ -989,7 +989,7 @@ Beim Ausführen eines Multi-Agenten-Workflows (`/orchestrate` oder `/work`):
 4. **Fortschritt überwacht**: Der Orchestrator bevorzugt Abschlussbenachrichtigungen des Hosts; bei `oma agent spawn`-Läufen ohne solche fragt ein Koordinator geänderte run-bezogene Dateien `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` mit begrenztem Backoff ab. Native Claude-Code-Subagenten kehren synchron zurück
 5. **Spätere Stufen** starten, sobald ihre Abhängigkeiten abgeschlossen sind
 6. **Review-Schleife** läuft für jeden abgeschlossenen Agenten (siehe unten)
-7. **Ergebnisse gesammelt** aus run-bezogenen Ergebnisdateien und strukturierten Claims
+7. **Ergebnisse gesammelt** aus run-bezogenen Ergebnisdateien und strukturierten Ergebnisdeklarationen
 8. **Abschlussbericht** mit Sitzungszusammenfassung, geänderten Dateien, verbleibenden Problemen
 
 ### Agenten-zu-Agenten-Review-Schleife {#agent-to-agent-review-loop}
@@ -1010,19 +1010,19 @@ flowchart TD
     review -->|PASS| accept["Accept result"]
 ```
 
-Der Selbstcheck ist rein mechanisch. Designqualität und Akzeptanzkriterien werden im QA-Gegen-Review beurteilt, weil Agenten ihre eigene Ausgabe tendenziell überschätzen.
+Der Selbstcheck ist rein mechanisch. Designqualität und Akzeptanzkriterien werden im QA-Cross-Review beurteilt, weil Agenten ihre eigene Ausgabe tendenziell überschätzen.
 
 | Zähler | Max | Bei Überschreitung |
 |---------|-----|-------------|
-| Selbstcheck- und Korrekturzyklen | 3 | Unabhängig davon an das Gegen-Review eskalieren |
-| Ablehnungen im Gegen-Review | 2 | Dem Benutzer mit der Review-Historie melden |
+| Selbstcheck- und Korrekturzyklen | 3 | Unabhängig davon an das Cross-Review eskalieren |
+| Ablehnungen im Cross-Review | 2 | Dem Benutzer mit der Review-Historie melden |
 | Schleifendurchläufe insgesamt | 5 | Wiederherstellung stoppen; fehlgeschlagene Prüfungen erhalten und `partial` oder `failed` zurückgeben |
 
 ---
 
-## Agenten-Definitionen {#agent-definitions}
+## Agentendefinitionen {#agent-definitions}
 
-`.agents/agents/` enthält 12 eingecheckte Subagent-Definitionen als Quelle der Wahrheit, eine pro Rolle in der Tabelle [Dispatch-Rollen](#dispatch-roles). Jede Datei legt die Identität des Agenten und `skills:` fest, enthält einen Abschnitt zum Ausführungsprotokoll, der auf die gemeinsame Ausführungsrichtlinie und den Ergebnisvertrag verweist, sowie Domänenregeln; einige ergänzen eine Architektur- oder Prozesszusammenfassung. Sie werden beim Starten von Subagenten über das Task-/Agent-Tool (Claude Code) oder die CLI verwendet, und OMA projiziert sie in die [nativen Agentendateien](#native-agent-files) jeder Laufzeit.
+`.agents/agents/` enthält 12 eingecheckte Subagentendefinitionen als Quelle der Wahrheit, eine pro Rolle in der Tabelle [Dispatch-Rollen](#dispatch-roles). Jede Datei legt die Identität des Agenten und `skills:` fest, enthält einen Abschnitt zum Ausführungsprotokoll, der auf die gemeinsame Ausführungsrichtlinie und den Ergebnisvertrag verweist, sowie Domänenregeln; einige ergänzen eine Architektur- oder Prozesszusammenfassung. Sie werden beim Starten von Subagenten über das Task-/Agent-Tool (Claude Code) oder die CLI verwendet, und OMA projiziert sie in die [nativen Agentendefinitionen](#native-agent-files) jeder Laufzeit.
 
 ---
 

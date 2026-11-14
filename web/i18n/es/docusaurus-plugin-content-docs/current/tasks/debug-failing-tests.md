@@ -7,7 +7,7 @@ description: Reproduce un fallo de test, aísla su causa, aplica una corrección
 
 Usa `oma-debug` cuando tengas un comando que falla, un stack trace o un resultado incorrecto que se puede repetir.
 
-## Cargar la skill
+## Cargar la habilidad
 
 Pide a tu agente de código que ejecute este comando y lea sus instrucciones y su directorio de apoyo:
 
@@ -43,6 +43,6 @@ Comprueba que la regresión falla con el comportamiento original y pasa con la c
 
 ## Dependencias y paso siguiente
 
-El agente usa el runner de tests de tu proyecto y las herramientas de navegación de código configuradas. El ejemplo requiere Bun y las dependencias de desarrollo del repositorio ya existentes. Estos fixtures del plugin se omiten en Windows; usa un test que falle y que admita tu plataforma. Cargar la skill no instala dependencias ni repara un servicio ausente.
+El agente usa el runner de tests de tu proyecto y las herramientas de navegación de código configuradas. El ejemplo requiere Bun y las dependencias de desarrollo del repositorio ya existentes. Estos fixtures del plugin se omiten en Windows; usa un test que falle y que admita tu plataforma. Cargar la habilidad no instala dependencias ni repara un servicio ausente.
 
 Consulta el [ejemplo de reparación de hooks del plugin](https://firstfluke.com/oh-my-agent/docs/examples/plugin-hook-repair/) para el cambio de código real y los límites de los fixtures. Para la ejecución gestionada o los hooks de proyecto, [elige una configuración de runtime](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) que incluya `oma-debug`.

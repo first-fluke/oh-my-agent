@@ -24,7 +24,7 @@ description: OMA 사용 가이드입니다. 독자 관점의 태스크 선택, �
 | 에러 메시지가 있는 버그 | `/debug`와 함께 에러 및 재현 단계 전달 | [버그 수정](./bug-fixing.md) |
 | 실행 중인 에이전트 지켜보기 | `oma dashboard terminal` | [대시보드 모니터링](./dashboard-monitoring.md) |
 | 에이전트 결과 감사 또는 재개 | `oma agent resume SESSION_ID --dry-run` | [결과 확인과 재개](./agent-results-and-resume.md) |
-| OMA 문서 찾기 또는 마이그레이션 | `oma docs migrate --dry-run` | [아티팩트 레이아웃](./artifact-layout.md) |
+| OMA 문서 찾기 또는 마이그레이션 | `oma docs migrate --dry-run` | [산출물 레이아웃](./artifact-layout.md) |
 | 무언가 실패함 | `oma doctor --json` | [문제 해결](./troubleshooting.md) |
 
 ---
@@ -248,7 +248,7 @@ oma stats get
 | `/orchestrate` | 지속 | 계획을 불러오거나 생성한 뒤 병렬 실행을 위임하고 모니터링·검증합니다 | 자동 병렬 조율에 적합한 독립 태스크 |
 | `/work` | 지속 | 승인된 범위 안에서 단계별 멀티 도메인 계획, 구현, QA를 진행합니다 | 여러 도메인에 걸쳐 조율된 전달이 필요한 기능 |
 | `/ultrawork` | 지속 | 5단계, 17스텝 품질 워크플로우와 12개 격리된 리뷰 체크포인트를 실행합니다 | 최대 품질이 필요한 전달, 프로덕션에 중요한 코드 |
-| `/plan` | 비지속 | PM 주도 태스크 분해, API 컨트랙트, `docs/plans/work/`의 추적 계획 아티팩트(순번 `NNN-name.md`, 수명 주기를 나타내는 Status 필드)를 만듭니다 | 복잡한 멀티 에이전트 작업 전, 진행과 결정 로그를 추적해야 하는 복잡한 기능 |
+| `/plan` | 비지속 | PM 주도 태스크 분해, API 컨트랙트, `docs/plans/work/`의 추적 계획 산출물(순번 `NNN-name.md`, 수명 주기를 나타내는 Status 필드)를 만듭니다 | 복잡한 멀티 에이전트 작업 전, 진행과 결정 로그를 추적해야 하는 복잡한 기능 |
 | `/brainstorm` | 비지속 | 2~3가지 제안과 `docs/decisions/`의 초안으로 접근 방식을 탐색합니다 | 구현 접근 방식을 정하기 전 |
 | `/deepinit` | 비지속 | 전체 프로젝트 초기화(AGENTS.md, ARCHITECTURE.md, docs/)를 수행합니다 | 기존 코드베이스에 oh-my-agent를 설정할 때 |
 | `/review` | 비지속 | OWASP 보안, 성능, 접근성, 코드 품질을 검토하는 QA 파이프라인입니다. 범위는 요청에서 가져오며 기본값은 현재 변경 사항입니다 | 코드 병합 전 또는 배포 전 리뷰 |
@@ -390,7 +390,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 
 접근 방식 제안과 ADR은 `docs/decisions/`에 두고 `draft`, `accepted`, `superseded` 같은 `Status` 필드를 사용합니다. UI 디자인은 `DESIGN.md`에 둡니다. 작업 계획은 `docs/plans/work/`에, 채택된 API 컨트랙트는 `docs/plans/contracts/`에 둡니다.
 
-실행 보고서와 컨트랙트 초안은 `.agents/results/`에 둡니다. 문서가 유지 관리되는 프로젝트 레퍼런스가 되면 관련 `docs/` 디렉토리로 옮기고 이전 위치에 링크를 남기세요. 전체 레이아웃과 마이그레이션 명령은 [아티팩트 레이아웃](./artifact-layout.md)을 참고하세요.
+실행 보고서와 컨트랙트 초안은 `.agents/results/`에 둡니다. 문서가 유지 관리되는 프로젝트 레퍼런스가 되면 관련 `docs/` 디렉토리로 옮기고 이전 위치에 링크를 남기세요. 전체 레이아웃과 마이그레이션 명령은 [산출물 레이아웃](./artifact-layout.md)을 참고하세요.
 
 ### 워크스페이스
 
@@ -452,7 +452,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 - 에러 메시지가 있는 버그: [버그 수정](./bug-fixing.md)
 - 실행 지켜보기: [대시보드 모니터링](./dashboard-monitoring.md)
 - 에이전트 결과 감사 또는 재개: [결과 확인과 재개](./agent-results-and-resume.md)
-- OMA 문서 찾기 또는 마이그레이션: [아티팩트 레이아웃](./artifact-layout.md)
+- OMA 문서 찾기 또는 마이그레이션: [산출물 레이아웃](./artifact-layout.md)
 - 무언가 실패함: [문제 해결](./troubleshooting.md)
 - 프로젝트 통합 세부사항: [통합 가이드](./integration.md)
 - 이 가이드에서 쓰는 용어: [용어집](../getting-started/glossary.md)

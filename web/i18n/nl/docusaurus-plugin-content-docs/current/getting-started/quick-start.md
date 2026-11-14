@@ -33,7 +33,7 @@ Voer in Windows PowerShell het volgende uit:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-Setup behoudt een bestaande antwoordtaal of detecteert de systeemtaal automatisch. De interactieve setup vraagt naar CLI-vendors, [capabilityproviders](./glossary.md#capability-provider), [modelpreset](./glossary.md#model-preset), [skillpreset](./glossary.md#skill-preset) voor het project en eventuele stackvariant. Houd voor een eerste run de standaardwaarden aan, selecteer de vendor die je al gebruikt en kies de projectpreset die het beste bij de repository past. Zie [Presets](./installation.md#presets) voor de skills van elke preset en voor [workflows die skills buiten een preset nodig hebben](./installation.md#workflows-that-need-skills-outside-a-preset).
+Setup behoudt een bestaande antwoordtaal of detecteert de systeemtaal automatisch. De interactieve setup vraagt naar CLI-vendors, [capability-providers](./glossary.md#capability-provider), [modelpreset](./glossary.md#model-preset), [skillpreset](./glossary.md#skill-preset) voor het project en eventuele stackvariant. Houd voor een eerste run de standaardwaarden aan, selecteer de vendor die je al gebruikt en kies de projectpreset die het beste bij de repository past. Zie [Presets](./installation.md#presets) voor de skills van elke preset en voor [workflows die skills buiten een preset nodig hebben](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Als je `bun` al hebt, gebruik je de installer rechtstreeks:
 

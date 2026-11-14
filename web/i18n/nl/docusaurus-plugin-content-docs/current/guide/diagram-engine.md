@@ -6,9 +6,9 @@ description: Hoe oh-my-agent kiest tussen Mermaid en de optionele agent-skill tt
 
 # Diagramengine {#diagram-engine}
 
-`/architecture` (ADR's, aanbevelingen, reviews) en `/explain` (uitleggers van codewijzigingen) produceren structurele diagrammen. Het `/architecture`-artifact bevat altijd een **Mermaid**-blok in Markdown, en de `/explain`-workflow tekent inline SVG-diagrammen. Wanneer [archify](https://github.com/tt-a1i/archify) wordt opgelost, levert de architectuurworkflow daarnaast een **interactief, gevalideerd HTML-diagram** naast het artifact op. Het gebruikt een getypeerde JSON-specificatie en ondersteunt thema's voor donker/licht, pan-zoom, zoeken, relaties volgen en PNG/SVG/WebM-export.
+`/architecture` (ADR's, aanbevelingen, reviews) en `/explain` (uitleggers van codewijzigingen) produceren structurele diagrammen. Het `/architecture`-artefact bevat altijd een **Mermaid**-blok in Markdown, en de `/explain`-workflow tekent inline SVG-diagrammen. Wanneer [archify](https://github.com/tt-a1i/archify) wordt opgelost, levert de architectuurworkflow daarnaast een **interactief, gevalideerd HTML-diagram** naast het artefact op. Het gebruikt een getypeerde JSON-specificatie en ondersteunt thema's voor donker/licht, pan-zoom, zoeken, relaties volgen en PNG/SVG/WebM-export.
 
-Mermaid verdwijnt nooit: het is de tekstuele SSOT in Markdown en in git-diffs. archify is een afgeleid artifact.
+Mermaid verdwijnt nooit: het is de tekstuele SSOT in Markdown en in git-diffs. archify is een afgeleid artefact.
 
 ---
 
@@ -128,7 +128,7 @@ flowchart TD
 
 ### `/architecture` {#architecture}
 
-Alleen voor structurele beslissingen (grenzen, afhankelijkheden, datastroom). Output staat naast het Markdown-artifact onder `.agents/results/architecture/`:
+Alleen voor structurele beslissingen (grenzen, afhankelijkheden, datastroom). Output staat naast het Markdown-artefact onder `.agents/results/architecture/`:
 
 ```text
 adr-notification-service.md            # Mermaid block + "Interactive:" link
@@ -147,7 +147,7 @@ Opt-in, omdat het eigen contract van de explainer (één zelfstandig bestand, th
 Wanneer het diagram een tech-stack- of infrastructuurtopologie is waarvan de knooppunten vendorproducten zijn (AWS, Vercel, Postgres, …) en je om logo's vraagt, neemt `/architecture` de **stack-route** in plaats van archify. Het voert de upstream agent-skill [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) uit (MIT; Python 3.9+, netwerktoegang voor logo's) op dezelfde manier als `oma-slide` ppt-master uitvoert: er is geen oma-commando en geen configuratiekey. De routetabel staat in `.agents/skills/_shared/conditional/diagram-engine.md`.
 
 - Resolutie: eerst de skillcatalogus van de runtime, anders `bunx skills use caru-ini/stack-diagram@stack-diagram`. Als die niet kan worden opgelost, valt de workflow terug op de archify ↔ Mermaid-beslissing hierboven en meldt dat.
-- Output: `<artifact-stem>.stack.html` naast het Markdown-artifact, gekoppeld onder de sectie Diagram als `Stack: …`. Het Mermaid-blok blijft de SSOT.
+- Output: `<artifact-stem>.stack.html` naast het Markdown-artefact, gekoppeld onder de sectie Diagram als `Stack: …`. Het Mermaid-blok blijft de SSOT.
 - Alleen HTML. De PNG-export en de screenshotcontrole van upstream hebben Playwright + Chromium nodig; oma installeert of draait ze nooit.
 - De upload naar de upstream-galerij (`share.py`) wordt overgeslagen, tenzij je expliciet vraagt om te publiceren.
 - Grenzen: 2 build-pogingen, 5 minuten in totaal; een schone run van `build.py` geldt als acceptatie.

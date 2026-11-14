@@ -108,11 +108,11 @@ oma agent spawn AGENT "print the resolved runtime and stop" SESSION --read-only
 | De vendor-CLI is niet geauthenticeerd | De vendorsessie is verlopen of nooit ingesteld | Authenticeer opnieuw met exact het vendorcommando dat `oma doctor` vermeldt |
 | Een modeloverride wordt geweigerd | De override gebruikt niet de door het schema geaccepteerde vorm `owner/model`, of de vendor ervan ondersteunt het geselecteerde CLI-transport niet | Gebruik de vorm `owner/model` met een vendor die het transport ondersteunt |
 | `model_preset: free` bereikt zijn gateway niet | De opgeloste gateway-URL of het model klopt niet, of de geconfigureerde omgevingsvariabele voor de API-sleutel is leeg | Controleer de gateway-URL en het model met `oma doctor --profile` en zet daarna de sleutel in de omgevingsvariabele |
-| Een child sluit af zonder result-artifact | De child heeft zijn claim niet op het geïnjecteerde pad geschreven | Bekijk de rundirectory en de status van de parent (zie hieronder) |
+| Een child sluit af zonder result-artefact | De child heeft zijn claim niet op het geïnjecteerde pad geschreven | Bekijk de rundirectory en de status van de parent (zie hieronder) |
 
 Als je de `free`-map weglaat, zijn de standaardwaarden `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY` en model `auto`; zet de API-sleutel zelf nooit in YAML.
 
-Een gespawnde child krijgt de runidentiteit en resultinstructies, schrijft de claim op het geïnjecteerde pad en meldt zijn artifacts; de parent finaliseert de beheerde receipt nadat de exitcode is vastgelegd. Read-only children retourneren `OMA_RESULT_JSON: ...`; die regel wordt als inspectie geregistreerd en voldoet niet aan uitvoerbare verificatie.
+Een gespawnde child krijgt de runidentiteit en resultinstructies, schrijft de claim op het geïnjecteerde pad en meldt zijn artefacten; de parent finaliseert de beheerde receipt nadat de exitcode is vastgelegd. Read-only children retourneren `OMA_RESULT_JSON: ...`; die regel wordt als inspectie geregistreerd en voldoet niet aan uitvoerbare verificatie.
 
 ## Hooks zijn geïnstalleerd maar voeren niet uit {#hooks-are-installed-but-do-not-run}
 
@@ -192,7 +192,7 @@ oma agent resume SESSION_ID --dry-run
 
 | Symptoom | Oorzaak | Oplossing |
 |---------|-------|-----|
-| Een voltooide claim wordt afgewezen of gedegradeerd | Een mislukte receipt, gewijzigde inputs, ontbrekende artifacts, onopgeloste punten of een gewijzigd taakcontract | Voer vóór het afronden `oma agent verify RUN_ID --required` uit en los op wat de receipt meldt |
+| Een voltooide claim wordt afgewezen of gedegradeerd | Een mislukte receipt, gewijzigde inputs, ontbrekende artefacten, onopgeloste punten of een gewijzigd taakcontract | Voer vóór het afronden `oma agent verify RUN_ID --required` uit en los op wat de receipt meldt |
 | Hervatten laat een taak op `blocked` staan | Automatisch hervatten vereist `retry_policy: "safe"`, een opnieuw uitvoerbare prompt en resterende pogingen | Lees de reden in het dry-run-rapport. Het plan wordt na de eerste dispatch bevroren, dus stel `retry_policy` in het plan van een nieuwe sessie in, of voer de taak handmatig opnieuw uit |
 | Hervatten probeert een taak niet opnieuw | Een live proces, of een onderbroken native poging zonder duidelijk partial- of failed-resultaat, blijft ongemoeid om dubbel werk te voorkomen | Wacht op het live proces, of finaliseer eerst de native poging |
 

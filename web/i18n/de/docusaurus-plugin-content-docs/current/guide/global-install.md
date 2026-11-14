@@ -28,7 +28,7 @@ oma doctor --global --json
 oma doctor --global --profile
 ```
 
-Der erste Befehl meldet den Zustand der Installation und der Vendoren; der Profilbefehl zeigt den von den Agenten verwendeten Modellplan. Behalten Sie `--global` (oder `-g`) bei: Ohne diese Option prüfen beide Befehle das Projekt im aktuellen Verzeichnis, wobei dessen Konfiguration über die globalen Standardwerte gelegt wird.
+Der erste Befehl meldet den Zustand der Installation und der Vendors; der Profilbefehl zeigt den von den Agenten verwendeten Modellplan. Behalten Sie `--global` (oder `-g`) bei: Ohne diese Option prüfen beide Befehle das Projekt im aktuellen Verzeichnis, wobei dessen Konfiguration über die globalen Standardwerte gelegt wird.
 
 ## Erstmalige Einrichtung
 
@@ -174,7 +174,7 @@ die in Discovery-Links umgewandelt werden: Ihr ursprünglicher Inhalt wird unter
 Skill wird. Vorhandene Zieldateien werden nicht überschrieben; Konflikte und Daten in Verwendung
 werden für einen erneuten Versuch gemeldet. Vault-Indizes
 führen Schlüsselnamen zusammen, ohne geheime Werte aus dem OS-Schlüsselbund zu verschieben. Benutzer-Skills
-und fremde Links bleiben an Ort und Stelle; Authentifizierungsdateien der Vendoren werden nicht
+und fremde Links bleiben an Ort und Stelle; Authentifizierungsdateien der Vendors werden nicht
 verschoben. Laufzeitleser verwenden nur
 die neuen Pfade.
 

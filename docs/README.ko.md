@@ -11,7 +11,7 @@
 
 ### 직접 설치하기
 
-런타임을 설치하려면 프로젝트 루트에서 다음을 실행하세요.
+프로젝트 루트에서 다음을 실행하세요.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.sh | bash
@@ -140,7 +140,7 @@ oma install --preset frontend --yes
 <a id="your-first-5-minutes"></a>
 ## 처음 5분
 
-1. **설치 범위를 고릅니다.** 아래 작업만 하려면 `bunx skills use first-fluke/oh-my-agent@oma-scm`으로 `oma-scm`을 불러오세요. 프로젝트 훅과 워크플로우가 필요하면 위의 런타임 설치 커맨드를 사용하세요. [설치 방식 선택](../web/docs/getting-started/choose-setup.md)에서 두 경로를 확인할 수 있습니다.
+1. **설치 범위를 고릅니다.** 아래 작업을 하려면 `bunx skills use first-fluke/oh-my-agent@oma-scm`으로 `oma-scm`을 불러오거나, 위의 런타임 설치 커맨드를 사용하세요. [설치 방식 선택](../web/docs/getting-started/choose-setup.md)에서 두 경로를 설명합니다.
 2. **런타임을 설치했다면 상태를 확인합니다.**
 
    ```bash
@@ -156,7 +156,7 @@ oma install --preset frontend --yes
 
 4. **결과를 확인합니다.** 보고한 브랜치와 변경 내역이 실제 Git 출력과 일치해야 합니다. 지침을 불러왔거나 설치가 끝났다는 사실만으로 작업 실행이 확인되지는 않습니다.
 
-더 큰 작업에는 필요한 스킬이 설치된 워크플로우를 선택하세요. 계획 스킬이 있으면 `/plan`으로 시작하고, 의존성을 갖춘 뒤 `/work`나 `/orchestrate`로 이어 갈 수 있습니다.
+더 큰 작업에는 필요한 스킬이 설치된 워크플로우를 선택하세요. 계획 스킬이 있으면 `/plan`으로 시작하고, 해당 의존성을 사용할 수 있을 때 `/work`나 `/orchestrate`로 이어 갈 수 있습니다.
 
 <a id="meet-the-team"></a>
 ## 팀 소개

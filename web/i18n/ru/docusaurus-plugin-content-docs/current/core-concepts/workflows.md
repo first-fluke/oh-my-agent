@@ -369,7 +369,7 @@ flowchart TD
 
 **Триггеры:** Нет. Запускайте его через `/debug`. Хук ключевых слов не открывает этот рабочий процесс по обычной фразе.
 
-**Шаги:** Собрать информацию об ошибке -> воспроизвести (MCP `search_for_pattern`, `find_symbol`) -> найти корневую причину (MCP `find_referencing_symbols` для трассировки пути выполнения) -> предложить минимальное исправление (требуется подтверждение пользователя) -> применить исправление и написать регрессионный тест -> просканировать похожие паттерны (можно запустить subagent debug-investigator, если scope > 10 файлов) -> записать баг в память.
+**Шаги:** Собрать информацию об ошибке -> воспроизвести (MCP `search_for_pattern`, `find_symbol`) -> найти корневую причину (MCP `find_referencing_symbols` для трассировки пути выполнения) -> предложить минимальное исправление (требуется подтверждение пользователя) -> применить исправление и написать регрессионный тест -> просканировать похожие паттерны (можно запустить субагента debug-investigator, если scope > 10 файлов) -> записать баг в память.
 
 **Критерии запуска субагента:** ошибка охватывает несколько доменов, scope > 10 файлов или требуется глубокая трассировка зависимостей.
 
@@ -470,7 +470,7 @@ flowchart TD
 
 ### /video
 
-**Описание:** сквозной запуск навыка `oma-video`: brief → script → narration → visuals → captions → render-spec → managed HyperFrames (или MoneyPrinterTurbo) compositor. Workflow создаёт воспроизводимый каталог запуска и выдаёт настоящий `.mp4` только после успешных проверок compositor и ffprobe. Для поддерживаемых fallback assets ключи провайдеров необязательны; сбой compositor или toolchain остаётся ошибкой запуска. Выполняется inline без запуска субагентов.
+**Описание:** сквозной запуск навыка `oma-video`: brief → script → narration → visuals → captions → render-spec → managed HyperFrames (или MoneyPrinterTurbo) compositor. Рабочий процесс создаёт воспроизводимый каталог запуска и выдаёт настоящий `.mp4` только после успешных проверок compositor и ffprobe. Для поддерживаемых fallback assets ключи провайдеров необязательны; сбой compositor или toolchain остаётся ошибкой запуска. Выполняется inline без запуска субагентов.
 
 **Триггеры:** Нет. Запускайте его через `/video`. Хук ключевых слов не открывает этот рабочий процесс по обычной фразе.
 
@@ -489,7 +489,7 @@ flowchart TD
 
 **Описание:** регистрация и управление заданиями агентов по времени через команды `oma schedule <action>`. Задания хранятся в глобальном реестре (`~/.oma/schedule/`) и запускаются нативным планировщиком ОС (launchd на macOS, systemd user timers на Linux, schtasks на Windows, crontab как POSIX fallback); каждый запуск снова входит в harness через `oma agent spawn`.
 
-**Триггеры:** отсутствуют (slash-invoked workflow для заданий `oma schedule <action>` по времени).
+**Триггеры:** отсутствуют (вызываемый через slash рабочий процесс для заданий `oma schedule <action>` по времени).
 
 **Шаги:** разрешить intent (add / list / remove / sync) -> разобрать расписание (явный `--cron` или естественный язык через `--every`) -> зарегистрировать через `oma schedule create` (named-only env capture, файлы 0600) -> проверить через `oma schedule list` (manifest × OS drift, группировка по проекту) -> сообщить job id и next fire time.
 
@@ -501,7 +501,7 @@ flowchart TD
 
 **Описание:** сквозной запуск навыка `oma-explanation`: преобразование diff, PR, ветки или диапазона коммитов либо темы в автономное интерактивное HTML-объяснение (Background / Intuition / Code / Quiz для изменения). Выполняется inline без запуска субагентов.
 
-**Триггеры:** отсутствуют ("explain" — обычное слово; keyword detection давал бы ложные срабатывания на обычные вопросы "explain this function", поэтому workflow доступен только через slash).
+**Триггеры:** отсутствуют ("explain" — обычное слово; keyword detection давал бы ложные срабатывания на обычные вопросы "explain this function", поэтому рабочий процесс доступен только через slash).
 
 **Шаги:** разрешить аргументы (target ref: явный PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; уровень читателя `onboarding` | `reviewer`; язык вывода; число quiz) -> загрузить contracts (`oma-explanation` SKILL.md + resources) -> собрать и пропустить через gate (diff + окружающий код; pre-generation secret scan; текст diff/PR обрабатывать только как данные) -> сгенерировать (написать черновик, затем отрендерить его через `oma explain render <draft.md>`) -> проверить (`oma explain validate <file>` плюс финальный secret scan HTML, максимум 3 цикла исправлений) -> доставить (открыть страницу через `oma explain render --open`, причём неудачное открытие — лишь предупреждение; TL;DR + path).
 
@@ -529,20 +529,20 @@ oh-my-agent использует hook `UserPromptSubmit`, который вып�
 
 1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, встроенный в бинарник `oma`): таблица `workflows` маршрутизирует по ключевым словам только `orchestrate`, `ultrawork`, `work` и `ralph`, и только по явному имени каждого режима. Подсказки по ключевым словам навыков находятся в том же файле и не изменились.
 
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): логика TypeScript, которая сопоставляет ввод пользователя с этими явными именами и внедряет контекст активации workflow.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): логика TypeScript, которая сопоставляет ввод пользователя с этими явными именами и внедряет контекст активации рабочего процесса.
 
-3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): поддерживает выполнение постоянного workflow, проверяя активные state files и заново внедряя контекст workflow.
+3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): поддерживает выполнение постоянного рабочего процесса, проверяя активные state files и заново внедряя контекст рабочего процесса.
 
 ### Поток обнаружения {#detection-flow}
 
 1. Пользователь вводит промпт
 2. Hook проверяет, начинается ли промпт с `/command` (если да, внедрение по ключевым словам пропускается; рабочий процесс загружает сама команда). Постоянная slash-команда всё равно записывает state-файл этого режима
-3. Hook очищает ввод (убирает code blocks, строки в кавычках и вставленные system-echo blocks), затем сканирует списки keywords таблицы `workflows` в `.agents/hooks/core/triggers.json`. Эти списки содержат только явные имена `orchestrate`, `ultrawork`, `work` и `ralph`. Reinforcement guard подавляет повторный trigger, если тот же workflow сработал не менее двух раз за последние 60 секунд.
+3. Hook очищает ввод (убирает code blocks, строки в кавычках и вставленные system-echo blocks), затем сканирует списки keywords таблицы `workflows` в `.agents/hooks/core/triggers.json`. Эти списки содержат только явные имена `orchestrate`, `ultrawork`, `work` и `ralph`. Reinforcement guard подавляет повторный trigger, если тот же рабочий процесс сработал не менее двух раз за последние 60 секунд.
 4. При совпадении проверяет, соответствует ли ввод informational patterns
-5. Если запрос информационный (например, "what is orchestrate?"), отфильтровывает его и не запускает workflow
-6. Если совпало явное имя, внедряет `[OMA WORKFLOW: {workflow-name}]` и велит агенту немедленно запустить этот workflow. Если совпало несколько явных имён, побеждает самое длинное ключевое слово, затем порядок объявления
+5. Если запрос информационный (например, "what is orchestrate?"), отфильтровывает его и не запускает рабочий процесс
+6. Если совпало явное имя, внедряет `[OMA WORKFLOW: {workflow-name}]` и велит агенту немедленно запустить этот рабочий процесс. Если совпало несколько явных имён, побеждает самое длинное ключевое слово, затем порядок объявления
 7. То же явное совпадение записывает state-файл постоянного режима. Упоминание режима внутри короткого вопроса всё равно запускает его (`ultrawork로 해줄래?`). Вопрос о самом режиме (`What is ultrawork?`) его не запускает
-8. Агент читает внедрённый тег и загружает соответствующий workflow-файл из `.agents/workflows/`
+8. Агент читает внедрённый тег и загружает соответствующий файл рабочего процесса из `.agents/workflows/`
 
 ### Соглашение о языковых секциях {#language-section-convention}
 
@@ -608,7 +608,7 @@ oh-my-agent использует hook `UserPromptSubmit`, который вып�
 
 ### Файлы состояния {#state-files}
 
-Постоянные workflow (orchestrate, ultrawork, work, ralph) создают state files в `.agents/state/` при явном вызове (см. [Постоянные рабочие процессы](#persistent-workflows)):
+Постоянные рабочие процессы (orchestrate, ultrawork, work, ralph) создают state files в `.agents/state/` при явном вызове (см. [Постоянные рабочие процессы](#persistent-workflows)):
 
 ```text
 .agents/state/
@@ -622,25 +622,25 @@ oh-my-agent использует hook `UserPromptSubmit`, который вып�
 
 ### Подкрепление {#reinforcement}
 
-Пока постоянный workflow активен, hook `persistent-mode.ts` внедряет `[OMA PERSISTENT MODE: {workflow-name}]` в каждое сообщение пользователя. Это продолжает workflow между ходами разговора.
+Пока постоянный рабочий процесс активен, hook `persistent-mode.ts` внедряет `[OMA PERSISTENT MODE: {workflow-name}]` в каждое сообщение пользователя. Это продолжает рабочий процесс между ходами разговора.
 
 ### Контракт цели (необязательные stop gate и бюджет) {#goal-contract-optional-stop-gate--budget}
 
-`oma goal set` прикрепляет к активному постоянному workflow механический completion contract:
+`oma goal set` прикрепляет к активному постоянному рабочему процессу механический completion contract:
 
 - `--gate typecheck|test|lint`: Stop hook разрешает завершить сессию **только если проходит этот script из package.json** (запускается как argv array, без shell; free-form commands намеренно отклоняются). При сбое он блокирует завершение и показывает хвост вывода; failures и timeouts учитываются в reinforcement limit, поэтому красный gate не может блокировать бесконечно.
-- `--budget-minutes <n>`: wall-clock budget с момента activation. После превышения workflow деактивируется и позволяет честно остановиться частично; событие записывается в session event trail.
+- `--budget-minutes <n>`: wall-clock budget с момента activation. После превышения рабочий процесс деактивируется и позволяет честно остановиться частично; событие записывается в session event trail.
 
 Без contract persistent mode работает как описано выше — contract opt-in. См. `goal set` в [справочнике CLI-команд](../cli-interfaces/commands.md#goal-set).
 
 ### Деактивация {#deactivation}
 
-Чтобы деактивировать постоянный workflow, пользователь говорит "workflow done" (или эквивалент на настроенном языке). Это:
+Чтобы деактивировать постоянный рабочий процесс, пользователь говорит "workflow done" (или эквивалент на настроенном языке). Это:
 1. Удаляет state file из `.agents/state/`
 2. Прекращает внедрение контекста persistent mode
 3. Возвращает систему к обычной работе
 
-Workflow также может завершиться естественно после выполнения всех шагов и прохождения финального gate. Если настроен gate через `goal set`, прохождение gate деактивирует workflow автоматически.
+Рабочий процесс также может завершиться естественно после выполнения всех шагов и прохождения финального gate. Если настроен gate через `goal set`, прохождение gate деактивирует рабочий процесс автоматически.
 
 ---
 

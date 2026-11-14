@@ -378,5 +378,5 @@ Windows에서는 oma가 `schtasks`로 작업을 등록합니다. 작업 스케�
 
 ## 함께 보기
 
-- [프로젝트 하네스 진화](./harness-evolution.md) — 예산 범위 안에서 스킬 개선을 실행하는 내장 `__builtin__` 작업.
-- [하네스 평가](./harness-eval.md) — 평가 명령들이 서로 어떻게 맞물리는지.
+- [프로젝트 하네스 진화](./harness-evolution.md): 예산 범위 안에서 스킬 개선을 실행하는 내장 `__builtin__` 작업.
+- [하네스 평가](./harness-eval.md): 평가 명령들이 서로 어떻게 맞물리는지.

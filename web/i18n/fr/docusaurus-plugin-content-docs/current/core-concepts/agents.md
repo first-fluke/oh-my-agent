@@ -1020,7 +1020,7 @@ L’auto-vérification est uniquement mécanique. La qualité du design et les c
 
 ---
 
-## Définitions des agents {#agent-definitions}
+## Définitions d’agents {#agent-definitions}
 
 `.agents/agents/` contient 12 définitions de sous-agents suivies dans le dépôt et faisant foi, une par rôle du tableau [Rôles de dispatch](#dispatch-roles). Chaque fichier définit l’identité de l’agent et ses `skills:`, une section de protocole d’exécution qui renvoie à la politique d’exécution partagée et au contrat de résultat, ainsi que des règles de domaine ; certains ajoutent un résumé d’architecture ou de processus. Ils sont utilisés pour lancer des sous-agents via l’outil Task/Agent (Claude Code) ou le CLI, et OMA les projette vers les [fichiers d’agents natifs](#native-agent-files) de chaque runtime.
 

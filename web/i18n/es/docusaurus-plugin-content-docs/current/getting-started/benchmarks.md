@@ -15,7 +15,7 @@ Cinco harnesses de Claude Code construyeron el mismo MVP de plataforma de aprend
 
 | Harness | Mecanismo |
 |---|---|
-| `vanilla` | Claude Code puro, sin plugin/skill (línea base) |
+| `vanilla` | Claude Code puro, sin plugin/habilidad (línea base) |
 | `oma` | `oh-my-agent` sembrado desde la fuente (`.agents/` + `.claude/`) |
 | `omc` | `oh-my-claudecode` vía `--plugin-dir` |
 | `ecc` | `everything-claude-code` instalado en `~/.claude/` |
@@ -60,8 +60,8 @@ Las comparaciones completas pantalla por pantalla (world builder, panel de IA, g
 | Eje | Peso | Señales clave | Herramientas |
 |---|---|---|---|
 | **Funcional** | 35 | salida del build, arranque del dev-server (HTTP 200 ≤45s), 5 verificaciones de user-journey, lint, ts-clean | `pm install/build/lint`, curl, chrome-devtools MCP, `tsc --noEmit` |
-| **Especificación** | 15 | 13 entregables explícitos del prompt, bonus por API real | LLM judge con extractor JSON con llaves balanceadas |
-| **Visual** | 20 | anti-patrones, UX amigable para niños, consistencia del design system, accesibilidad | LLM judge sobre capturas de pantalla |
+| **Especificación** | 15 | 13 entregables explícitos del prompt, bonus por API real | juez LLM con extractor JSON con llaves balanceadas |
+| **Visual** | 20 | anti-patrones, UX amigable para niños, consistencia del design system, accesibilidad | juez LLM sobre capturas de pantalla |
 | **Ingeniería** | 20 | amplitud del código, TS strict, tamaño máximo de archivo + profundidad de carpetas, marcadores deferred-stub, sin claves hardcoded | análisis estático (jq + grep + find) |
 | **Eficiencia** | 10 | turnos para completar, duración wall-clock, costo por archivo | JSON de resultado de `claude -p` |
 
@@ -71,10 +71,10 @@ Los jueces de especificación y visual se ejecutan 3 veces por harness vía `jud
 
 ## Advertencias
 
-1. **Override del prompt de superpowers** — necesario para que el harness funcione en modo no interactivo (su skill de brainstorming `<HARD-GATE>` bloquea las ejecuciones single-shot). El resultado refleja "lo que superpowers puede hacer una vez que se omite el gate", no una comparación pura entre iguales.
+1. **Override del prompt de superpowers** — necesario para que el harness funcione en modo no interactivo (su habilidad de brainstorming `<HARD-GATE>` bloquea las ejecuciones single-shot). El resultado refleja "lo que superpowers puede hacer una vez que se omite el gate", no una comparación pura entre iguales.
 2. **Promedio multi-juez en spec + visual, journey de una sola ejecución** — la evaluación del journey requiere un dev server activo, por lo que se mantiene en una sola ejecución. Trata las diferencias de journey por debajo de ~2 puntos como ruido. El tamaño de la muestra es 1 build por harness.
 3. **Normalización del costo** — el eje de eficiencia usa costo por archivo; el costo absoluto ($1.28–$8.19 entre los 5) no se refleja en el puntaje.
-4. **La penalización `lint-clean` de oma es intencional** — oma deja deliberadamente la aplicación de lint/typecheck a los git hooks (hk) y a CI, en lugar de incorporar reglas específicas de ESLint en las skills de los agentes. El benchmark de una sola ejecución penaliza esto con -5 en `lint-clean`, pero en un flujo de trabajo real los mismos problemas serían bloqueados por pre-push antes de llegar al remoto.
+4. **La penalización `lint-clean` de oma es intencional** — oma deja deliberadamente la aplicación de lint/typecheck a los git hooks (hk) y a CI, en lugar de incorporar reglas específicas de ESLint en las habilidades de los agentes. El benchmark de una sola ejecución penaliza esto con -5 en `lint-clean`, pero en un flujo de trabajo real los mismos problemas serían bloqueados por pre-push antes de llegar al remoto.
 
 ---
 

@@ -50,7 +50,7 @@ Les clés suivantes sont lues par le schéma d’exécution actuel ou par les co
 | `timezone` | nom IANA | fuseau horaire du système | Dates utilisées par les plannings et les rapports. |
 | `auto_update_cli` | booléen | `true` | Vérifications en arrière-plan de la version du CLI ; désactivez avec `false`. |
 | `telemetry` | booléen | `false` | Activation de la télémétrie des fournisseurs utilisée par l’installation, la mise à jour et la réconciliation des liens. |
-| `model_preset` | chaîne non vide | `auto` dans les nouveaux modèles | Preset de modèle intégré ou personnalisé. `OMA_MODEL_PRESET` le remplace pour un seul processus. |
+| `model_preset` | chaîne non vide | `auto` dans les nouveaux modèles | Preset de modèles intégré ou personnalisé. `OMA_MODEL_PRESET` le remplace pour un seul processus. |
 | `free` | `base_url`, `api_key_env`, `model` | non défini | Ancienne forme de `providers.free` (`model` y est `default_model`) ; encore lue, et `oma update` la déplace. |
 | `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory` ; sections d’identifiants `brave`, `exa`, `honcho` ; tout autre `<name>` → objet de fournisseur LLM | `context7`, `native`, `serena`, `block`, `agentmemory` ; aucun identifiant ni fournisseur LLM | Sélectionne les fournisseurs de documentation, de recherche, d’intelligence du code et de mémoire sémantique, conserve leurs références d’identifiants et déclare les endpoints LLM par lesquels les agents peuvent être routés. Consultez [Fournisseurs](#providers). |
 | `brave`, `exa`, `honcho` | comme sous `providers` | non défini | Anciennes formes de premier niveau de `providers.brave`, `providers.exa` et `providers.honcho` ; encore lues, et `oma update` les déplace. |

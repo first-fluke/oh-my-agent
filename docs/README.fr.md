@@ -69,7 +69,7 @@ Les **workflows**, c'est ce que tu tapes (ou que tu dis, tout simplement). Ils f
 <a id="installation-details"></a>
 ## Détails d'installation
 
-Le script installe [bun](https://bun.sh) s'il manque, installe la commande `oma` globalement (`bun install --global oh-my-agent`, étape sautée si `oma` est déjà dans ton PATH), puis lance la configuration interactive. La commande globale compte : les hooks (détection de mots-clés, le Stop gate) et plusieurs workflows appellent `oma`, et les hooks ne font silencieusement rien quand ils ne la trouvent pas. Si tu te passes du script, installe-la toi-même avec `bun install --global oh-my-agent` (`npm install --global oh-my-agent` ou `brew install oh-my-agent` fonctionnent aussi).
+Le script installe [bun](https://bun.sh) s'il manque, installe la commande `oma` globalement (`bun install --global oh-my-agent`, étape sautée si `oma` est déjà dans ton PATH), puis lance la configuration interactive. Les hooks (détection de mots-clés et le Stop gate) et plusieurs workflows appellent la commande `oma` installée globalement. Les hooks ne font silencieusement rien s'ils ne la trouvent pas. Si tu te passes du script, installe-la toi-même avec `bun install --global oh-my-agent` (`npm install --global oh-my-agent` ou `brew install oh-my-agent` fonctionnent aussi).
 
 <details>
 <summary>Windows, ou sans le script d'installation</summary>

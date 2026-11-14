@@ -6,9 +6,9 @@ description: oh-my-agent がアーキテクチャ、シーケンス、データ�
 
 # ダイアグラムエンジン
 
-`/architecture`（ADR、推奨、レビュー）と `/explain`（コード変更の解説）は構造図を出力します。`/architecture` アーティファクトには **Mermaid** ブロックが必ず含まれ、`/explain` ワークフローはインライン SVG 図を描きます。[archify](https://github.com/tt-a1i/archify) を解決できる場合、アーキテクチャワークフローはアーティファクトの隣に**インタラクティブで検証済みの HTML 図**も出力します。型付き JSON 仕様から描画され、ダーク／ライトテーマ、パンとズーム、検索、関係の追跡、PNG／SVG／WebM エクスポートに対応します。
+`/architecture`（ADR、推奨、レビュー）と `/explain`（コード変更の解説）は構造図を出力します。`/architecture` 成果物には **Mermaid** ブロックが必ず含まれ、`/explain` ワークフローはインライン SVG 図を描きます。[archify](https://github.com/tt-a1i/archify) を解決できる場合、アーキテクチャワークフローは成果物の隣に**インタラクティブで検証済みの HTML 図**も出力します。型付き JSON 仕様から描画され、ダーク／ライトテーマ、パンとズーム、検索、関係の追跡、PNG／SVG／WebM エクスポートに対応します。
 
-Mermaid がなくなることはありません。Markdown と git diff に残るテキストの SSOT です。archify は派生アーティファクトです。
+Mermaid がなくなることはありません。Markdown と git diff に残るテキストの SSOT です。archify は派生成果物です。
 
 ---
 
@@ -128,7 +128,7 @@ flowchart TD
 
 ### `/architecture` {#architecture}
 
-境界、依存関係、データフローなど、構造上の意思決定だけに使います。Markdown アーティファクトの隣の `.agents/results/architecture/` に出力します。
+境界、依存関係、データフローなど、構造上の意思決定だけに使います。Markdown 成果物の隣の `.agents/results/architecture/` に出力します。
 
 ```text
 adr-notification-service.md            # Mermaid block + "Interactive:" link
@@ -147,7 +147,7 @@ adr-notification-service.archify.html  # delivered viewer
 図がベンダー製品（AWS、Vercel、Postgres など）をノードとする技術スタックやインフラのトポロジーで、ロゴを依頼した場合、`/architecture` は archify ではなく**スタック経路**を取ります。`oma-slide` が ppt-master を実行するのと同じ方法で、上流の [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) エージェントスキル（MIT。Python 3.9 以降、ロゴ取得のためのネットワークアクセスが必要）を実行します。oma コマンドも設定キーもありません。経路表は `.agents/skills/_shared/conditional/diagram-engine.md` にあります。
 
 - 解決: まずランタイムのスキルカタログ、なければ `bunx skills use caru-ini/stack-diagram@stack-diagram`。解決できない場合、ワークフローは上記の archify ↔ Mermaid の判断にフォールバックし、その旨を報告します。
-- 出力: Markdown アーティファクトの隣の `<artifact-stem>.stack.html`。Diagram セクションの下に `Stack: …` としてリンクされます。Mermaid ブロックが SSOT のままです。
+- 出力: Markdown 成果物の隣の `<artifact-stem>.stack.html`。Diagram セクションの下に `Stack: …` としてリンクされます。Mermaid ブロックが SSOT のままです。
 - HTML のみです。上流の PNG エクスポートとスクリーンショット確認には Playwright と Chromium が必要ですが、oma はそれらをインストールも実行もしません。
 - 上流のギャラリーへのアップロード（`share.py`）は、明示的に公開を依頼しない限りスキップします。
 - 上限: ビルド試行 2 回、合計 5 分。`build.py` が正常に完了することが受け入れ条件です。

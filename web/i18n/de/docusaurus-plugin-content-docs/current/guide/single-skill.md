@@ -15,7 +15,7 @@ Die Ausführung mit einem einzelnen Skill weist einem Agenten eine fokussierte A
 3. Der ausgewählte Skill untersucht das Repository, nennt jede Annahme, die das Ergebnis beeinflusst, und meldet, welche Prüfungen tatsächlich liefen.
 4. Wenn die Aufgabe API-, UI-, Datenbank- oder Mobile-Grenzen überschreitet, beenden Sie den Einzel-Skill-Lauf und wechseln Sie zu `/work` oder `/orchestrate`.
 
-Bei hängenden verwalteten Läufen verwenden Sie `oma agent status <session-id> [agent-id]` und prüfen Sie vor einem erneuten Versuch die Belege in `.agents/state/agent-runs/` sowie den injizierten Claim-Pfad. Siehe [Wichtige Defaults](../getting-started/important-defaults.md) zum Anbieter- und Wiederherstellungsverhalten.
+Bei hängenden verwalteten Läufen verwenden Sie `oma agent status <session-id> [agent-id]` und prüfen Sie vor einem erneuten Versuch die Ausführungsbelege in `.agents/state/agent-runs/` sowie den injizierten Pfad der Ergebnisdeklaration. Siehe [Wichtige Defaults](../getting-started/important-defaults.md) zum Anbieter- und Wiederherstellungsverhalten.
 
 ---
 

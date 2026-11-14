@@ -112,7 +112,7 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 `--web-search`、`--code-intelligence`、`--semantic-memory` を省略すると保存済みのプロバイダー選択を使います。そのプロバイダーを選んだ場合、`--honcho-url` と `--honcho-workspace` で新しい Honcho 接続を設定します。ルートの `-y, --yes` はプロンプトを省略してデフォルトを使い、`--global` は `$OMA_HOME/.agents/`（デフォルトは `~/.oma/.agents/`）を対象にします。`OMA_HOME` を設定していても、プロジェクトへのインストール先は `<cwd>/.agents/` のままです。
 
-`--preset` は、インタラクティブなスキルプロンプトと、無人実行時のデフォルトである `all` より優先されます。未知の名前、空の値、`custom` はインストール前に拒否されます。このオプションはスキルの内容を選ぶもので、共有ファイル、ワークフローとエージェントの定義、フック、プロバイダーのセットアップは絞り込まず、インストール済みの他のスキルも残します。そのため、[ワークフローの依存関係](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)は、選択したバンドルと異なる場合があります。
+`--preset` は、インタラクティブなスキルプロンプトと、無人実行時のデフォルトである `all` より優先されます。未知の名前、空の値、`custom` はインストール前に拒否されます。このオプションはスキルの内容を選ぶもので、共有ファイル、ワークフローとエージェント定義、フック、プロバイダーのセットアップは絞り込まず、インストール済みの他のスキルも残します。そのため、[ワークフローの依存関係](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)は、選択したバンドルと異なる場合があります。
 
 **動作:**
 1. 古い `.agent/` ディレクトリを確認し、見つかった場合は `.agents/` へ移行します。
@@ -580,7 +580,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 | `--vendor <vendor>` | CLI ベンダーの上書き: `antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok`、`pi` |
 | `-w, --workspace <path>` | エージェントの作業ディレクトリ。省略時はモノレポ設定から自動検出します。 |
 | `--resumed-from <run-id>` | 再試行を直前の実行の run ID に関連付けます。 |
-| `--task-id <id>` | セッション計画のタスク ID。省略時はエージェント ID です。 |
+| `--task-id <id>` | セッションプランのタスク ID。省略時はエージェント ID です。 |
 | `--isolation <mode>` | 起動ごとの分離モード。現在は `worktree` に対応し、`${tmpdir}/oma-worktrees/{sessionId}/{agentId}` に `oma/{sessionId}/{agentId}` ブランチの新しい Git worktree を作ってそこでエージェントを実行します。終了後も worktree は保持され、マージまたは破棄のコマンドを確認用に表示します（自動マージはしません）。 |
 | `--read-only` | 起動したエージェントを非破壊ツールに制限します（自動承認フラグを抑止します）。`oma skill eval --live` が 2 つの評価アームで内部的に使います。 |
 | `--fallback-vendors <vendors>` | 最大 3 つの設定済み CLI ベンダーを順序付きカンマ区切りで指定するフォールバックチェーンを有効にします。継続には、認識済みのクォータ・レート制限・一時的障害と、新しい安全な引き継ぎチェックポイントが必要です。 |
@@ -1153,7 +1153,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | フラグ | 説明 | デフォルト |
 |:-----|:-----------|:--------|
 | `-w, --workspace <path>` | 検証対象の workspace パス | カレントディレクトリ |
-| `--session-id <id>` | セッション計画とレポートを選択します。 | |
+| `--session-id <id>` | セッションプランとレポートを選択します。 | |
 | `--task-id <id>` | 1 つのタスクの範囲とレポートを選択します。セッション ID または実行 ID が必要です。 | |
 | `--run-id <id>` | 実行レポートを正確に選択し、ローカルの受領記録からセッションとタスクを推定します。 | |
 | `--json` | JSON として出力します。 | |
@@ -1161,7 +1161,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 **動作:** 指定したエージェント種別に設定されたチェック（テスト、静的検査、担当範囲への適合を含む）を実行します。タスクまたは実行を選択した場合でも、workspace のコードチェックは workspace を検査します。
 
-複数のセッション計画または実行の受領記録が一致した場合、ファイル名で選ばずに検証を失敗させ、明示的な識別子を求めます。レポートのない新しい実行は、以前の実行のレポートを再利用できません。`--run-id` は、受領記録のセッション/タスクを使う前に、そのエージェントと workspace を確認します。ローカルの受領記録がない場合は、3 つの ID をすべて指定してください。範囲指定のない従来の TDD レポートは、従来の `.agents/plan.json` 計画でのみ受け付けます。
+複数のセッションプランまたは実行の受領記録が一致した場合、ファイル名で選ばずに検証を失敗させ、明示的な識別子を求めます。レポートのない新しい実行は、以前の実行のレポートを再利用できません。`--run-id` は、受領記録のセッション/タスクを使う前に、そのエージェントと workspace を確認します。ローカルの受領記録がない場合は、3 つの ID をすべて指定してください。範囲指定のない従来の TDD レポートは、従来の `.agents/plan.json` プランでのみ受け付けます。
 
 `verify triggers` はラベル付きプロンプトコーパスに対するキーワード検出の精度を測定します。割合のしきい値がゲートになります。登録パスは `verify agent` で、旧トップレベル表記 `oma verify <agent-type>` は `Unexpected argument` で拒否されます。
 
@@ -1879,7 +1879,7 @@ oma agent finish "<run-id>" "<claim-path>"
 oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context` はグラフで選択したコンテキストを読み込み、`begin` は実行 ID と申告パスを出力して開始します。`verify` はその実行 ID を受け取り、固定チェック（`--required`）を実行するか、`--affected` で絞るか、`--` の後のコマンドを実行してその終了コードを記録します。`finish` は実行 ID と申告ファイルのパスを受け取ります。`agent resume <session-id> --dry-run` は準備済みで再利用可能なタスクを報告し、`agent resume <session-id> --max-attempts <n>`（デフォルト `3`）は計画が許可するタスクだけを再試行します。`agent verify` と `agent resume` は、別のプロジェクトを対象にする `--project-root <path>` を受け付けます。計画と申告形式は [エージェントの結果と再開](../guide/agent-results-and-resume.md) を参照してください。これらは OMA 実行契約用で、通常の作業には `agent spawn`、`agent parallel`、`agent review` を使えます。
+`agent context` はグラフで選択したコンテキストを読み込み、`begin` は実行 ID と申告パスを出力して開始します。`verify` はその実行 ID を受け取り、固定チェック（`--required`）を実行するか、`--affected` で絞るか、`--` の後のコマンドを実行してその終了コードを記録します。`finish` は実行 ID と申告ファイルのパスを受け取ります。`agent resume <session-id> --dry-run` は準備済みで再利用可能なタスクを報告し、`agent resume <session-id> --max-attempts <n>`（デフォルト `3`）はプランが許可するタスクだけを再試行します。`agent verify` と `agent resume` は、別のプロジェクトを対象にする `--project-root <path>` を受け付けます。プランと申告形式は [エージェントの結果と再開](../guide/agent-results-and-resume.md) を参照してください。これらは OMA 実行契約用で、通常の作業には `agent spawn`、`agent parallel`、`agent review` を使えます。
 
 ### memory {#memory}
 

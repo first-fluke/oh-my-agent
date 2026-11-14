@@ -1,10 +1,10 @@
 ---
-title: 아티팩트 레이아웃
-sidebar_label: 아티팩트 레이아웃
+title: 산출물 레이아웃
+sidebar_label: 산출물 레이아웃
 description: OMA가 유지 문서, 실행 보고서, 런타임 상태를 두는 위치와, 레거시 위치를 옮기는 방법을 설명합니다.
 ---
 
-# 아티팩트 레이아웃 {#artifact-layout}
+# 산출물 레이아웃 {#artifact-layout}
 
 OMA는 세 위치를 사용합니다. 유지하는 프로젝트 문서는 `docs/`, 사람이 읽는 실행 보고서는 `.agents/results/`, 조율과 실행 증거는 `.agents/state/`입니다. 아래 경로는 프로젝트 루트 기준입니다.
 
@@ -19,7 +19,7 @@ OMA는 세 위치를 사용합니다. 유지하는 프로젝트 문서는 `docs/
 
 의사결정 문서에는 `Status` 필드를 두어 `draft`, `accepted`, `superseded`를 기록하세요. 대체된 결정은 그대로 두고 대체 문서에 링크를 걸어, 그 근거를 계속 볼 수 있게 합니다. OMA에서 `design`은 UI 디자인을 가리키며, 기술 제안과 ADR은 `docs/decisions/`를 함께 씁니다.
 
-`docs/README.md` 같은 프로젝트 문서 색인으로 유지 문서에 링크하세요. 아티팩트 마이그레이션은 기존 파일을 옮길 뿐, 색인을 만들거나 문서 상태를 바꾸지 않습니다.
+`docs/README.md` 같은 프로젝트 문서 색인으로 유지 문서에 링크하세요. 산출물 마이그레이션은 기존 파일을 옮길 뿐, 색인을 만들거나 문서 상태를 바꾸지 않습니다.
 
 ## 실행 보고서와 런타임 상태 {#execution-reports-and-runtime-state}
 

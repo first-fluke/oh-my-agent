@@ -335,7 +335,7 @@ Na de migratie worden `.agents/config/defaults.yaml`, `.agents/config/models.yam
 
 ## Sessiequotum {#session-quota-cap}
 
-Voeg `session.quota_cap` toe aan `oma-config.yaml` om het onbeperkt starten van subagents te begrenzen:
+Voeg `session.quota_cap` toe aan `oma-config.yaml` om het onbeperkt starten van subagenten te begrenzen:
 
 ```yaml
 session:

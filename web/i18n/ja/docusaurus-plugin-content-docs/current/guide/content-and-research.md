@@ -64,7 +64,7 @@ uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full \
   "<input.pdf>" --format markdown --output-dir "$OUT"
 ```
 
-成功したアーティファクトは、選択した出力ディレクトリの Markdown またはテキストファイルです。ページ数と品質に関する注意も添えられます。暗号化された PDF には、ロックを解除したコピーまたはパスワードが必要です。大きなファイルではページ範囲と出力ディレクトリを分け、繰り返しの実行が同じベース名を上書きしないようにします。OCR の推測を原文の事実として扱わず、不確実または欠落した表を報告してください。
+成功した成果物は、選択した出力ディレクトリの Markdown またはテキストファイルです。ページ数と品質に関する注意も添えられます。暗号化された PDF には、ロックを解除したコピーまたはパスワードが必要です。大きなファイルではページ範囲と出力ディレクトリを分け、繰り返しの実行が同じベース名を上書きしないようにします。OCR の推測を原文の事実として扱わず、不確実または欠落した表を報告してください。
 
 ## HWP 系文書を抽出する {#extract-hwp-family-documents}
 
@@ -200,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` は文章、執筆ノート、主張と証拠の対応表を返します。`revise` は原文と改稿ブロックに加えて具体的な変更を返します。`review` は文構造、動詞、ヘッジ、具体性、アンチ AI パターン、段落の明瞭さ、リズム、主張と証拠の整合について PASS／FAIL の所見を返します。スキルは改稿またはレビューで既存の下書きを全文読み、根拠のない主張を弱めるか削除し、英語以外の出力は英語の工程後に `oma-translation` へ渡します。
 
-下書き前のソース発見とサイドカーの証拠には `oma scholar` を使います。引用またはルーブリックがない場合は主張を保留と記録するか、不足する制約を尋ねてください。空白を架空のソースで埋めてはいけません。役に立つ完了アーティファクトは、一般的に「洗練」しただけで追跡できない文章ではなく、証拠マップまたは監査レポートを伴う文章です。
+下書き前のソース発見とサイドカーの証拠には `oma scholar` を使います。引用またはルーブリックがない場合は主張を保留と記録するか、不足する制約を尋ねてください。空白を架空のソースで埋めてはいけません。役に立つ完了成果物は、一般的に「洗練」しただけで追跡できない文章ではなく、証拠マップまたは監査レポートを伴う文章です。
 
 ## 復旧チェックリスト
 
@@ -210,12 +210,12 @@ Review this draft in review mode and return the compliance report with recommend
 | ローカルスキルが接続できない | 内容の依頼を変える前に、所有するローカルサービスまたは CLI（`Voicebox`、`Chrome`、`uvx`、`bunx`）を確認します。 |
 | リサーチ結果が薄い | クエリを広げ、フォールバック／ソースの状態を確認し、不確実性をレポートに残します。 |
 | スライドのエクスポートが失敗する | `oma slide validate --workspace <dir> --output json` を実行し、ジオメトリまたはフォントの所見を修正してからエクスポートします。 |
-| 回顧が完了を過大評価する | 実行記録とアーティファクトを再確認します。プロンプトやツール呼び出しだけでは完了の証拠になりません。 |
+| 回顧が完了を過大評価する | 受領記録と成果物を再確認します。プロンプトやツール呼び出しだけでは完了の証拠になりません。 |
 | 翻訳でコード構文が変わった | 保護された名前を復元し、構造チェックを再実行してから文章をレビューします。 |
 | アカデミック文章に根拠のない主張がある | 主張を削除またはヘッジし、scholar の経路で証拠を加えて主張と証拠の対応表を再実行します。 |
 
 ## 次のステップ
 
-- [画像生成](./image-generation.md)、[動画生成](./video-generation.md)、[コード解説](./code-explainer.md)、[ダイアグラムエンジン](./diagram-engine.md)、[市場調査](./market-research.md) — 上の表にある機能のガイド
-- [CLI コマンド](../cli-interfaces/commands.md)と [CLI オプション](../cli-interfaces/options.md) — 登録済み CLI の完全なパスとオプションの別名
-- [設定リファレンス](./configuration-reference.md) — `pdf`、`hwp`、`voice`、`scholar` の設定セクション
+- [画像生成](./image-generation.md)、[動画生成](./video-generation.md)、[コード解説](./code-explainer.md)、[ダイアグラムエンジン](./diagram-engine.md)、[市場調査](./market-research.md)：上の表にある機能のガイド
+- [CLI コマンド](../cli-interfaces/commands.md)と [CLI オプション](../cli-interfaces/options.md)：登録済み CLI の完全なパスとオプションの別名
+- [設定リファレンス](./configuration-reference.md)：`pdf`、`hwp`、`voice`、`scholar` の設定セクション

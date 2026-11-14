@@ -5,7 +5,7 @@ description: Los valores predeterminados de oh-my-agent que afectan al enrutamie
 
 # Valores predeterminados importantes
 
-Estos valores predeterminados se aplican al runtime de OMA instalado. Cargar una skill con
+Estos valores predeterminados se aplican al runtime de OMA instalado. Cargar una habilidad con
 `skills use` aporta instrucciones sin configurar hooks, proveedores
 ni servicios del proyecto. Empieza por [Elegir una configuración](./choose-setup.md) para seleccionar esa
 ruta de tarea o una instalación del runtime.
@@ -18,12 +18,12 @@ Los valores predeterminados están pensados para que el primer proyecto sea util
 |---|---|---|---|
 | Idioma de respuesta | Idioma guardado o, si no hay, idioma del sistema; fallback `en` | La instalación detecta el idioma sin preguntar. Las configuraciones regionales se asignan a un idioma base compatible, como `ko_KR.UTF-8` → `ko`; las configuraciones no compatibles usan `en`. El idioma del prompt del usuario tiene prioridad sobre este ajuste. | `language` en `.agents/oma-config.yaml` o `.cue` |
 | Enrutamiento de modelos ([preset de modelos](./glossary.md#model-preset)) | `auto` | Se usa la configuración nativa de agentes del runtime actual. Los runtimes desconocidos recurren a `agents.default.cli` cuando está definido. | `model_preset`, `agents.default.cli` o `agents.<id>` |
-| Contenido de skills ([preset de skills](./glossary.md#skill-preset)) | Selección interactiva; `all` en una configuración desatendida, salvo que se pase `--preset` | Un preset selecciona skills. Los archivos compartidos, todas las definiciones de workflows y agentes, los hooks y la configuración de proveedores siguen formando parte de la instalación del runtime; las demás skills existentes se conservan. | `oma install --preset <name>`; consulta [límites de los presets](./installation.md#presets) |
+| Contenido de habilidades ([preset de habilidades](./glossary.md#skill-preset)) | Selección interactiva; `all` en una configuración desatendida, salvo que se pase `--preset` | Un preset selecciona habilidades. Los archivos compartidos, todas las definiciones de flujos de trabajo y agentes, los hooks y la configuración de proveedores siguen formando parte de la instalación del runtime; las demás habilidades existentes se conservan. | `oma install --preset <name>`; consulta [límites de los presets](./installation.md#presets) |
 | Inteligencia de código ([proveedor de capacidades](./glossary.md#capability-provider)) | `serena` | Una instalación nueva intenta instalar Serena y configura su MCP. | `providers.code_intelligence: gortex` o `serena` |
 | Guard de búsqueda de código | `block` | Mientras haya un proveedor de inteligencia de código configurado, un hook PreToolUse deniega `Grep`/`Glob` nativos y la búsqueda recursiva en shell (`rg`, `grep -r`, `find -name`), y dirige al agente a las herramientas del proveedor. Se permiten las búsquedas limitadas a exclusiones confirmadas o a rutas fuera del proyecto. El hook no anuncia ninguna forma de omitirlo para el código fuente del proyecto. | `providers.code_intelligence_guard: off` |
 | Memoria semántica | `agentmemory` | La instalación y la actualización reutilizan un endpoint de AgentMemory en buen estado o instalan e inician el servicio local gestionado, y después comprueban que esté listo antes de terminar con éxito. Los endpoints personalizados explícitos se comprueban sin reemplazarlos. | `providers.semantic_memory: honcho` o `none`; `OMA_NO_AGENTMEMORY=1` omite la configuración de AgentMemory. |
 | Búsqueda web | `native` | La búsqueda usa el canal web nativo del runtime, salvo que se seleccione un proveedor. | `providers.web` |
-| Proveedor de documentación | `context7` | Las consultas de documentación usan Context7 cuando una skill lo solicita. | `providers.docs` |
+| Proveedor de documentación | `context7` | Las consultas de documentación usan Context7 cuando una habilidad lo solicita. | `providers.docs` |
 | Telemetría | desactivada | OMA escribe la configuración de exclusión del proveedor durante el enlazado. | `telemetry: true` |
 | Actualización automática del CLI | activada | El CLI busca actualizaciones, salvo que se desactive. | `auto_update_cli: false` |
 | Formato de fecha | `ISO` | Las fechas usan el formato ISO cuando el proyecto no define otro formato. | `date_format: US` o `EU` |

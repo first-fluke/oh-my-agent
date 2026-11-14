@@ -6,9 +6,9 @@ description: Agentenarbeit mit überprüfbaren Ergebnisdeklarationen protokollie
 
 # Agentenergebnisse und Fortsetzen
 
-OMA behandelt ein Agentenergebnis als kleinen Evidenzdatensatz und nicht nur als Exit-Code des Prozesses. Ein Lauf zeichnet Task- und Sitzungs-IDs, den Workspace-Fingerprint, Verifizierungsbelege (Receipts), geänderte Dateien, offene Arbeit und Artefakt-Hashes auf. Dadurch kann ein Koordinator eine erledigte Aufgabe nur so lange wiederverwenden, wie ihr Abnahmevertrag und ihre Eingaben noch übereinstimmen.
+OMA behandelt ein Agentenergebnis als kleinen Evidenzdatensatz und nicht nur als Exit-Code des Prozesses. Ein Lauf zeichnet Task- und Sitzungs-IDs, den Workspace-Fingerprint, Verifizierungs-Ausführungsbelege (Receipts), geänderte Dateien, offene Arbeit und Artefakt-Hashes auf. Dadurch kann ein Koordinator eine erledigte Aufgabe nur so lange wiederverwenden, wie ihr Abnahmevertrag und ihre Eingaben noch übereinstimmen.
 
-Verwenden Sie diesen Lebenszyklus direkt, wenn Sie einen nativen Agenten ausführen. Workflows und `oma agent spawn` erzeugen dieselben Datensätze für Sie und überlassen die abschließende Verarbeitung des verwalteten Laufs dem übergeordneten Koordinator. Die hier verwendeten Begriffe finden Sie im Glossar unter [Laufdatensatz und Claim](../getting-started/glossary.md#run-record-and-claim) und [Plan](../getting-started/glossary.md#plan).
+Verwenden Sie diesen Lebenszyklus direkt, wenn Sie einen nativen Agenten ausführen. Workflows und `oma agent spawn` erzeugen dieselben Datensätze für Sie und überlassen die abschließende Verarbeitung des verwalteten Laufs dem übergeordneten Koordinator. Die hier verwendeten Begriffe finden Sie im Glossar unter [Laufdatensatz und Ergebnisdeklaration](../getting-started/glossary.md#run-record-and-claim) und [Plan](../getting-started/glossary.md#plan).
 
 ## Lebenszyklus im Überblick
 
@@ -18,7 +18,7 @@ Verwenden Sie diesen Lebenszyklus direkt, wenn Sie einen nativen Agenten ausfüh
 | 2. Start | `oma agent begin AGENT TASK SESSION_ID --workspace .` | Laufdatensatz mit Status `running` | `runId`, `claimPath` |
 | 3. Kontext (optional) | `oma agent context AGENT --difficulty Medium` | Nichts | Prompt-Kontext |
 | 4. Verifizieren | `oma agent verify RUN_ID --required` | Ein Ausführungsbeleg pro Prüfung | Exit-Code |
-| 5. Claim | JSON unter `claimPath` schreiben | Claim-Datei | Nichts |
+| 5. Ergebnisdeklaration | JSON unter `claimPath` schreiben | Ergebnisdeklarationsdatei | Nichts |
 | 6. Abschließen | `oma agent finish RUN_ID CLAIM_PATH` | Endstatus | `status` |
 | 7. Wiederherstellen | `oma agent resume SESSION_ID --dry-run`, danach ohne `--dry-run` | Wiederherstellungs-Checkpoint und Sitzungs-Lease | Status pro Aufgabe |
 
@@ -37,7 +37,7 @@ flowchart TD
   finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
 ```
 
-Ein Claim kann auch direkt `partial` oder `failed` melden. Finish stuft einen Claim nie herauf: Es stuft einen `completed`-Claim herab, dessen Belege nicht standhalten, und ein Exit-Code ungleich null macht jeden Lauf zu `failed`.
+Eine Ergebnisdeklaration kann auch direkt `partial` oder `failed` melden. Finish stuft eine Ergebnisdeklaration nie herauf: Es stuft eine `completed`-Ergebnisdeklaration herab, deren Belege nicht standhalten, und ein Exit-Code ungleich null macht jeden Lauf zu `failed`.
 
 ## Nativen Lauf starten {#start-a-native-run}
 
@@ -155,7 +155,7 @@ Nehmen Sie wesentliche Entscheidungen in das optionale Array `decisions` der Erg
 ]
 ```
 
-Der übergeordnete Prozess speichert jede Entscheidung als Ereignis `decision.made` in der Sitzung des Laufs und hängt die tatsächlichen Agenten-, Task- und Lauf-IDs an. Fehlt eine erforderliche Entscheidung, bleibt das Ergebnis partial, auch wenn die ausführbaren Prüfungen bestehen. Entscheidungen aus einer anderen Aufgabe oder einem anderen Versuch können die Anforderung nicht erfüllen. Der Ausführungsbeleg schreibt die IDs und Inhalts-Hashes der Entscheidungsereignisse fest; bei der Wiederverwendung wird geprüft, ob diese Ereignisse noch existieren, gültig sind und unveränderte Inhalte haben. Optionale Entscheidungen werden ebenfalls aufgezeichnet. Schreibgeschützte Agenten geben dasselbe Array in ihrem `OMA_RESULT_JSON`-Claim zurück, damit der übergeordnete Prozess es speichern kann.
+Der übergeordnete Prozess speichert jede Entscheidung als Ereignis `decision.made` in der Sitzung des Laufs und hängt die tatsächlichen Agenten-, Task- und Lauf-IDs an. Fehlt eine erforderliche Entscheidung, bleibt das Ergebnis partial, auch wenn die ausführbaren Prüfungen bestehen. Entscheidungen aus einer anderen Aufgabe oder einem anderen Versuch können die Anforderung nicht erfüllen. Der Ausführungsbeleg schreibt die IDs und Inhalts-Hashes der Entscheidungsereignisse fest; bei der Wiederverwendung wird geprüft, ob diese Ereignisse noch existieren, gültig sind und unveränderte Inhalte haben. Optionale Entscheidungen werden ebenfalls aufgezeichnet. Schreibgeschützte Agenten geben dasselbe Array in ihrer `OMA_RESULT_JSON`-Ergebnisdeklaration zurück, damit der übergeordnete Prozess es speichern kann.
 
 Finalisieren Sie einen nativen Lauf nach dem Schreiben der Ergebnisdeklaration:
 
@@ -217,7 +217,7 @@ Das Fortsetzen startet einen neuen Versuch; die unterbrochene Modellunterhaltung
 | Situation | Aktion | Erwartetes Ergebnis |
 | --- | --- | --- |
 | Eine erforderliche Prüfung ist fehlgeschlagen | Aufgabe korrigieren, erneut `oma agent verify RUN_ID --required` ausführen und danach mit einer neuen Ergebnisdeklaration abschließen. | Der neueste Ausführungsbeleg ersetzt das fehlgeschlagene Ergebnis, wenn der Workspace-Fingerprint aktuell ist. |
-| Der Prozess endet vor einem Claim | Lauf als partial oder failed markieren und danach `oma agent resume SESSION_ID --dry-run` ausführen. | Der alte Versuch bleibt erhalten; eine sichere Aufgabe ist `ready`, eine manuelle Aufgabe `blocked`. |
+| Der Prozess endet vor einer Ergebnisdeklaration | Lauf als partial oder failed markieren und danach `oma agent resume SESSION_ID --dry-run` ausführen. | Der alte Versuch bleibt erhalten; eine sichere Aufgabe ist `ready`, eine manuelle Aufgabe `blocked`. |
 | Eine Abhängigkeit hat sich geändert | Abhängigkeit erneut ausführen und den Bericht wieder prüfen. | Die Wiederverwendung abhängiger Aufgaben wird ungültig, auch wenn ihre eigenen Dateien unverändert sind. |
 | Plan oder Eingaben haben sich geändert | Nach Stabilisierung des Plans einen neuen Lauf starten. | Der neue Lauf speichert den neuen Vertrag; alte Belege werden nicht wiederverwendet. |
 | Eine Aufgabe benötigt eine Entscheidung | Mit Erklärung als `blocked` aufzeichnen. | Das Fortsetzen lässt sie blockiert, bis Entscheidung und Prompt verfügbar sind. |

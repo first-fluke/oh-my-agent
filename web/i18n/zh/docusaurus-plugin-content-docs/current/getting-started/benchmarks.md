@@ -60,19 +60,19 @@ description: 五个 Claude Code 框架基于完全相同的提示构建同一款
 | 维度 | 权重 | 关键信号 | 工具链 |
 |---|---|---|---|
 | **功能** | 35 | 构建退出码、dev 服务器启动（HTTP 200 ≤45s）、5 项用户旅程检查、lint、ts-clean | `pm install/build/lint`、curl、chrome-devtools MCP、`tsc --noEmit` |
-| **规格** | 15 | 13 项明确的提示交付物、真实 API 加分项 | LLM 评审 + 大括号平衡的 JSON 提取器 |
-| **视觉** | 20 | 反模式、儿童友好的 UX、设计系统一致性、无障碍性 | 基于截图的 LLM 评审 |
+| **规格** | 15 | 13 项明确的提示交付物、真实 API 加分项 | LLM judge + 大括号平衡的 JSON 提取器 |
+| **视觉** | 20 | 反模式、儿童友好的 UX、设计系统一致性、无障碍性 | 基于截图的 LLM judge |
 | **工程** | 20 | 代码广度、TS strict、最大文件大小 + 文件夹深度、deferred-stub 标记、不存在硬编码密钥 | 静态分析（jq + grep + find） |
 | **效率** | 10 | 完成所需轮次、墙钟时长、文件均摊成本 | `claude -p` 结果 JSON |
 
-规格与视觉评审通过 `judge-multi.sh` 在每个框架上运行 3 轮，逐项分数取多轮平均。实现位于 [`benchmarks/scoring/multiaxis/`](https://github.com/first-fluke/oh-my-agent/tree/main/benchmarks/scoring/multiaxis)。
+规格与视觉 judge 通过 `judge-multi.sh` 在每个框架上运行 3 轮，逐项分数取多轮平均。实现位于 [`benchmarks/scoring/multiaxis/`](https://github.com/first-fluke/oh-my-agent/tree/main/benchmarks/scoring/multiaxis)。
 
 ---
 
 ## 注意事项 {#caveats}
 
 1. **superpowers 的提示覆盖**：这是该框架在非交互模式下正常运作的必要条件（其 `<HARD-GATE>` 头脑风暴技能会阻断单次运行）。其结果反映的是“绕过该关卡后 superpowers 能做到什么”，并非纯粹的同等条件对比。
-2. **规格与视觉采用多轮评审平均，用户旅程仅单轮**：用户旅程评审需要一个运行中的 dev 服务器，因此保持单轮。约 2 分以内的旅程差距可视为噪声。每个框架的样本量为 1 次构建。
+2. **规格与视觉采用多 judge 平均，用户旅程仅单轮**：用户旅程 judge 需要一个运行中的 dev 服务器，因此保持单轮。约 2 分以内的旅程差距可视为噪声。每个框架的样本量为 1 次构建。
 3. **成本归一化**：效率维度采用文件均摊成本计算，绝对成本（5 个框架介于 $1.28 至 $8.19 之间）并未反映在最终分数中。
 4. **oma 的 `lint-clean` 扣分是有意为之**：oma 刻意将 lint/typecheck 的强制执行交给 git hooks（hk）和 CI，而不是把 ESLint 特定规则塞进智能体技能中。单轮基准测试因此在 `lint-clean` 上扣 5 分；但在真实工作流中，相同的问题会在 pre-push 阶段就被拦截，根本不会到达远端。
 

@@ -24,7 +24,7 @@ description: 読者が先にタスクを選ぶための手順、単一スキル�
 | エラーメッセージが出ているバグ | `/debug` とエラー内容、再現手順 | [バグ修正](./bug-fixing.md) |
 | 実行中のエージェントを見守る | `oma dashboard terminal` | [ダッシュボード監視](./dashboard-monitoring.md) |
 | エージェントの結果を監査または再開する | `oma agent resume SESSION_ID --dry-run` | [結果と再開](./agent-results-and-resume.md) |
-| OMA ドキュメントの検索や移行 | `oma docs migrate --dry-run` | [アーティファクト配置](./artifact-layout.md) |
+| OMA ドキュメントの検索や移行 | `oma docs migrate --dry-run` | [成果物の配置](./artifact-layout.md) |
 | 何かが失敗した | `oma doctor --json` | [トラブルシューティング](./troubleshooting.md) |
 
 ---
@@ -306,7 +306,7 @@ oma stats get
 | **oma-architecture** | システム境界、トレードオフ、ADR | `.agents/results/architecture/` のレポート、`docs/decisions/` の意思決定記録 |
 | **oma-backend** | API、認証、サーバーロジック、マイグレーション | Router / Service / Repository の変更と検証 |
 | **oma-brainstorm** | 曖昧なアイデアとアプローチ比較 | `docs/decisions/` の決定ドラフト |
-| **oma-coordination** | `/work`、`/orchestrate`、`/ultrawork` の共有調整ルール、手動の段階的調整 | 計画の再利用、契約の整合、ワークスペース所有権、QA ハンドオフの指針 |
+| **oma-coordination** | `/work`、`/orchestrate`、`/ultrawork` の共有調整ルール、手動の段階的調整 | プランの再利用、契約の整合、ワークスペース所有権、QA ハンドオフの指針 |
 | **oma-db** | スキーマ設計、ERD、クエリ調整、容量計画 | スキーマ文書、マイグレーション、復旧計画 |
 | **oma-debug** | バグの再現と根本原因分析 | 最小修正、回帰の根拠、類似パターンスキャン |
 | **oma-security** | ソース、エージェントスキル、MCP のセキュリティスキャン。ペネトレーションテストはレビュー済みのユーザー提供ランタイムプラットフォームに対してのみ実施 | 検証済みの指摘とスキャンゲートの設定 |
@@ -379,18 +379,18 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 2. `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md` からベンダー固有の実行プロトコルを注入
 3. SKILL.md のコアルール、実行プロトコル、タスクに関係するリソースを使ってエージェントのプロンプトを構成
 4. エージェントを独立した CLI プロセスとしてスポーン
-5. `.agents/state/agent-runs/` に構造化された実行記録を保存し、申告パスを注入
+5. `.agents/state/agent-runs/` に構造化された受領記録を保存し、申告パスを注入
 6. エージェントが構造化された結果の申告を書き、人間向けの進捗と結果の Markdown は補足として保存
 
 ### プロジェクトメモリストア
 
-エージェントは `.agents/state/memories/` の永続ファイル（古いプロジェクトでは `.serena/memories/` にフォールバック）で調整します。このディレクトリにはセッション概要、タスクボード、進捗、教訓、実験記録が保存されます。人間向けの `result-{agentId}-{taskId}-{runId}-{sessionId}.md` レポートは `.agents/results/` に置かれます。CLI スポーンでは `.agents/state/agent-runs/` の構造化された実行記録と申告が引き続き正本であり、凍結された実行プランは `.agents/state/agent-plans/` に残ります。エージェントはネイティブのファイルツールでこれらのファイルを読み書きし、ツールの対応付けは `.agents/mcp.json → memoryConfig.tools` で設定できます。
+エージェントは `.agents/state/memories/` の永続ファイル（古いプロジェクトでは `.serena/memories/` にフォールバック）で調整します。このディレクトリにはセッション概要、タスクボード、進捗、教訓、実験記録が保存されます。人間向けの `result-{agentId}-{taskId}-{runId}-{sessionId}.md` レポートは `.agents/results/` に置かれます。CLI スポーンでは `.agents/state/agent-runs/` の構造化された受領記録と申告が引き続き正本であり、凍結された実行プランは `.agents/state/agent-plans/` に残ります。エージェントはネイティブのファイルツールでこれらのファイルを読み書きし、ツールの対応付けは `.agents/mcp.json → memoryConfig.tools` で設定できます。
 
 ### ドキュメントとレポート
 
 アプローチの提案や ADR には `docs/decisions/` を使い、`draft`、`accepted`、`superseded` などの `Status` フィールドを付けます。UI デザインは `DESIGN.md` に置きます。作業プランは `docs/plans/work/`、採用された API コントラクトは `docs/plans/contracts/` に置きます。
 
-実行レポートやコントラクトのドラフトは `.agents/results/` に置きます。ドキュメントが保守対象のリファレンスになった場合は、対応する `docs/` ディレクトリへ移動し、元の場所にリンクを残してください。完全な配置と移行コマンドは[アーティファクト配置](./artifact-layout.md)を参照してください。
+実行レポートやコントラクトのドラフトは `.agents/results/` に置きます。ドキュメントが保守対象のリファレンスになった場合は、対応する `docs/` ディレクトリへ移動し、元の場所にリンクを残してください。完全な配置と移行コマンドは[成果物の配置](./artifact-layout.md)を参照してください。
 
 ### ワークスペース
 
@@ -452,7 +452,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 - エラーメッセージが出ているバグ：[バグ修正](./bug-fixing.md)
 - 実行を見守る：[ダッシュボード監視](./dashboard-monitoring.md)
 - エージェントの結果を監査または再開する：[結果と再開](./agent-results-and-resume.md)
-- OMA ドキュメントの検索や移行：[アーティファクト配置](./artifact-layout.md)
+- OMA ドキュメントの検索や移行：[成果物の配置](./artifact-layout.md)
 - 何かが失敗した：[トラブルシューティング](./troubleshooting.md)
 - プロジェクト統合の詳細：[統合ガイド](./integration.md)
 - このガイドで使う用語：[用語集](../getting-started/glossary.md)

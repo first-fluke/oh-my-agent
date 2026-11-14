@@ -36,12 +36,12 @@ Verwenden Sie einen Projekt-Dokumentindex, etwa `docs/README.md`, um auf die gep
 | `.agents/results/api-contracts/` | Entwürfe von API-Verträgen |
 | `.agents/results/plan-{sessionId}.json` | Aktueller Aufgabenplan |
 | `.agents/state/memories/` | Sitzungszusammenfassungen, Task-Boards, Fortschritt, Lessons und Experimentaufzeichnungen |
-| Laufzeit `agent-runs/` | Strukturierte Belege (Receipts), Ergebnisdeklarationen (Claims) und Verifikationsbelege |
+| Laufzeit `agent-runs/` | Strukturierte Ausführungsbelege (Receipts), Ergebnisdeklarationen (Claims) und Verifikationsbelege |
 | Laufzeit `agent-plans/` | Eingefrorene Ausführungspläne |
 
 Berichtsunterverzeichnisse bleiben nach Domäne getrennt. Menschenlesbare Berichte ergänzen die strukturierten Belege; sie belegen eine verifizierte Fertigstellung nicht allein. Siehe [Agentenergebnisse und Fortsetzen](../agent-results-and-resume/).
 
-Aktuelle Belege (Receipts) und eingefrorene Pläne liegen im Projektzustandsverzeichnis des aktiven Profils. Ältere Projekte können sie unter `.agents/state/` behalten. Diese Migration ändert ihre Speicher- und Verifikationsbindung nicht.
+Aktuelle Ausführungsbelege (Receipts) und eingefrorene Pläne liegen im Projektzustandsverzeichnis des aktiven Profils. Ältere Projekte können sie unter `.agents/state/` behalten. Diese Migration ändert ihre Speicher- und Verifikationsbindung nicht.
 
 ## Ein gepflegtes Dokument hochstufen
 
@@ -84,4 +84,4 @@ Die Migration erhält vorhandene Zieldateien. Wenn eine andere Datei denselben N
 
 Sie aktualisiert unterstützte Markdown-Links und Pfadverweise in verschobenen Dokumenten, in Markdown-Koordinationsnotizen, in `docs/**/*.md` sowie in `README*.md` und `AGENTS.md` im Stamm. Prüfen Sie diese Änderungen mit dem Migrationsbericht und dem Git-Diff. Strukturierte Laufzeitbelege und UI-Dateien `DESIGN.md` sind vom Umschreiben der Verweise ausgenommen. Vorhandene Blöcke `oma-docs:ignore-start` / `oma-docs:ignore-end` bewahren Beispiele von Legacy-Pfaden.
 
-Prüfen Sie den Bericht auf zurückgestellte Dateien. Ein Ergebnisbericht, auf den strukturierte Ausführungsbelege verweisen, bleibt an seinem ursprünglichen Pfad, damit der aufgezeichnete Beleg (Receipt) und der Hash gültig bleiben. Belege (Receipts), Ergebnisdeklarationen (Claims), eingefrorene Ausführungspläne und andere Laufzeitbelege bleiben an ihrem Ort. Die Migration stuft Vertragsentwürfe nicht hoch, nimmt Entscheidungen nicht an und ändert das UI-Designsystem nicht.
+Prüfen Sie den Bericht auf zurückgestellte Dateien. Ein Ergebnisbericht, auf den strukturierte Ausführungsbelege verweisen, bleibt an seinem ursprünglichen Pfad, damit der aufgezeichnete Ausführungsbeleg (Receipt) und der Hash gültig bleiben. Ausführungsbelege (Receipts), Ergebnisdeklarationen (Claims), eingefrorene Ausführungspläne und andere Laufzeitbelege bleiben an ihrem Ort. Die Migration stuft Vertragsentwürfe nicht hoch, nimmt Entscheidungen nicht an und ändert das UI-Designsystem nicht.

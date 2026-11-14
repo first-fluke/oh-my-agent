@@ -17,7 +17,7 @@ description: oh-my-agent の用語を短く定義します。スキル、ワー�
 
 ### エージェント定義 {#agent-definition}
 
-エージェント定義は、`.agents/agents/` にあるリポジトリ管理のサブエージェントファイルです（`backend-engineer.md`、`qa-reviewer.md` など）。エージェントの役割、読み込むスキル（`skills:` フロントマター）、実行プロトコルのセクション、ドメインルールを定めます。OMA はこれらのファイルを `.claude/agents/*.md` や `.codex/agents/*.toml` などのベンダーネイティブ形式に変換します。ドキュメントでは「エージェント」という語を、ディスパッチのロール（`backend`、`qa`、`explore`）や `oma-backend` のようなスキルにも使います。詳しくは[エージェント定義](../core-concepts/agents.md#agent-definitions)を参照してください。
+エージェント定義は、`.agents/agents/` にあるリポジトリ管理のサブエージェントファイルです（`backend-engineer.md`、`qa-reviewer.md` など）。エージェントの役割、読み込むスキル（`skills:` フロントマター）、実行プロトコルのセクション、ドメインルールを定めます。OMA はこれらのファイルを `.claude/agents/*.md` や `.codex/agents/*.toml` などのベンダーネイティブ形式に変換します。ドキュメントでは「エージェント」という語を、ディスパッチロール（`backend`、`qa`、`explore`）や `oma-backend` のようなスキルにも使います。詳しくは[エージェント定義](../core-concepts/agents.md#agent-definitions)を参照してください。
 
 ## プリセット
 

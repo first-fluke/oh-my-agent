@@ -284,7 +284,7 @@ Was `oma update --ci` intern tut:
 5. Bewahrt benutzerdefinierte Dateien auf (außer bei `--force`): `oma-config.yaml`, `mcp.json` und Stack-Verzeichnisse.
 6. Kopiert neue Dateien über das vorhandene `.agents/`-Verzeichnis.
 7. Stellt die aufbewahrten Dateien wieder her.
-8. Aktualisiert Vendor-Anpassungen (Hooks, Einstellungen, Agenten-Definitionen) für die Vendoren in der Liste `vendors:` der Konfiguration (eine leere Liste bedeutet keine). Ohne Liste `vendors:` werden nur Vendoren aktualisiert, deren Projektverzeichnisse bereits existieren.
+8. Aktualisiert Vendor-Anpassungen (Hooks, Einstellungen, Agentendefinitionen) für die Vendors in der Liste `vendors:` der Konfiguration (eine leere Liste bedeutet keine). Ohne Liste `vendors:` werden nur Vendors aktualisiert, deren Projektverzeichnisse bereits existieren.
 9. Erneuert CLI-Symlinks.
 
 Die Action ruft `oma update --ci` ohne `--with-new-skills` auf. Dadurch wird die installierte Skill-Menge aktualisiert und es werden neu verfügbare Skills gemeldet. Führen Sie `oma update --with-new-skills` bewusst aus, wenn ein Projekt neue Skills als Teil des Updates hinzufügen soll.

@@ -1,7 +1,7 @@
 ---
 title: "Guía: Motor de diagramas (archify)"
 sidebar_label: Diagramas
-description: "Cómo elige oh-my-agent entre Mermaid y la skill opcional de agente tt-a1i/archify para diagramas de arquitectura, secuencia y flujo de datos: la sección de configuración de diagramas, oma diagram resolve / oma diagram archify, su uso por /architecture y /explain, el ciclo acotado de validar, reparar y entregar, y la ruta stack mediante la skill upstream Caru-ini/stack-diagram para pósteres de stack tecnológico con logotipos de proveedores."
+description: "Cómo elige oh-my-agent entre Mermaid y la habilidad opcional de agente tt-a1i/archify para diagramas de arquitectura, secuencia y flujo de datos: la sección de configuración de diagramas, oma diagram resolve / oma diagram archify, su uso por /architecture y /explain, el ciclo acotado de validar, reparar y entregar, y la ruta stack mediante la habilidad upstream Caru-ini/stack-diagram para pósteres de stack tecnológico con logotipos de proveedores."
 ---
 
 # Motor de diagramas
@@ -15,10 +15,10 @@ Mermaid sigue siendo la SSOT textual en Markdown y en los diffs de Git. archify 
 <a id="always-the-latest-archify--nothing-to-install"></a>
 ## Instalar archify {#install-archify}
 
-archify es una skill de agente con licencia MIT (Node ≥ 18 y cero dependencias de runtime). oh-my-agent usa la copia instalada mediante la [skills CLI](https://github.com/vercel-labs/skills) y no mantiene ninguna copia propia:
+archify es una habilidad de agente con licencia MIT (Node ≥ 18 y cero dependencias de runtime). oh-my-agent usa la copia instalada mediante la [skills CLI](https://github.com/vercel-labs/skills) y no mantiene ninguna copia propia:
 
 - `oma diagram update` instala archify cuando falta (`bunx skills add tt-a1i/archify --skill archify -g -y`) y, en caso contrario, lo actualiza (`bunx skills update archify -g -y`).
-- `oma diagram resolve` solo lee los directorios de skills instalados y nunca accede a la red. Sin una instalación, `auto` recurre a Mermaid e indica el comando de instalación.
+- `oma diagram resolve` solo lee los directorios de habilidades instalados y nunca accede a la red. Sin una instalación, `auto` recurre a Mermaid e indica el comando de instalación.
 - `oma update` no instala archify.
 
 ```bash
@@ -38,7 +38,7 @@ Orden de resolución (gana el primer resultado, idéntico en todos los runtimes 
 
 1. `diagram.archify.path` en `oma-config.yaml`: anclaje explícito
 2. Variable de entorno `ARCHIFY_HOME`: anclaje explícito
-3. Directorios de skills instalados: proyecto `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` / `.gemini` / `.copilot` `/skills/archify`, después los mismos bajo `~`, y después `~/.config/agents/skills/archify` y `~/.raven/workspace/skills/archify`
+3. Directorios de habilidades instalados: proyecto `.agents` / `.claude` / `.codex` / `.cursor` / `.qwen` / `.kiro` / `.gemini` / `.copilot` `/skills/archify`, después los mismos bajo `~`, y después `~/.config/agents/skills/archify` y `~/.raven/workspace/skills/archify`
 
 <!-- oma-docs:ignore-start -->
 Para que haya un resultado, el directorio de archify instalado o anclado debe contener `bin/archify.mjs`.
@@ -144,9 +144,9 @@ Es opcional, porque el contrato del explicador (un único archivo autocontenido 
 
 ## Pósteres de stack (stack-diagram) {#stack-posters-stack-diagram}
 
-Cuando el diagrama es una topología de stack tecnológico o de infraestructura cuyos nodos son productos de proveedores (AWS, Vercel, Postgres, …) y pides logotipos, `/architecture` toma la **ruta stack** en lugar de archify. Ejecuta la skill de agente upstream [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+, acceso a red para los logotipos) del mismo modo en que `oma-slide` ejecuta ppt-master: no hay comando de oma ni clave de configuración. La tabla de rutas vive en `.agents/skills/_shared/conditional/diagram-engine.md`.
+Cuando el diagrama es una topología de stack tecnológico o de infraestructura cuyos nodos son productos de proveedores (AWS, Vercel, Postgres, …) y pides logotipos, `/architecture` toma la **ruta stack** en lugar de archify. Ejecuta la habilidad de agente upstream [Caru-ini/stack-diagram](https://github.com/Caru-ini/stack-diagram) (MIT; Python 3.9+, acceso a red para los logotipos) del mismo modo en que `oma-slide` ejecuta ppt-master: no hay comando de oma ni clave de configuración. La tabla de rutas vive en `.agents/skills/_shared/conditional/diagram-engine.md`.
 
-- Resolución: primero el catálogo de skills del runtime; si no, `bunx skills use caru-ini/stack-diagram@stack-diagram`. Si no se puede resolver, el flujo de trabajo recurre a la decisión archify ↔ Mermaid anterior y lo indica.
+- Resolución: primero el catálogo de habilidades del runtime; si no, `bunx skills use caru-ini/stack-diagram@stack-diagram`. Si no se puede resolver, el flujo de trabajo recurre a la decisión archify ↔ Mermaid anterior y lo indica.
 - Salida: `<artifact-stem>.stack.html` junto al artefacto Markdown, enlazado en la sección Diagrama como `Stack: …`. El bloque Mermaid sigue siendo la SSOT.
 - Solo HTML. La exportación PNG y la comprobación de capturas de pantalla del upstream necesitan Playwright + Chromium; oma nunca los instala ni los ejecuta.
 - La subida a la galería del upstream (`share.py`) se omite salvo que pidas publicar explícitamente.

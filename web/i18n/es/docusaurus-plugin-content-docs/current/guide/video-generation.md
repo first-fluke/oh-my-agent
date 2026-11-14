@@ -8,7 +8,7 @@ description: "Guía completa de generación de vídeo de oh-my-agent: un router 
 
 `oma-video` es el router de vídeo de oh-my-agent. A partir de un brief de una línea, compone un guion, narración, elementos visuales y subtítulos, y después registra el plan en un directorio de ejecución. Las etapas de proveedor no requieren necesariamente una clave y pueden usar alternativas locales o deterministas; un MP4 real sigue necesitando un compositor funcional y una composición válida.
 
-La skill se activa con «shorts», «reels», «screencast» o con frases como «make a video», «explainer video», «demo video», «walkthrough video» o «video from README», o cuando otra skill necesita un vídeo como efecto secundario.
+La habilidad se activa con «shorts», «reels», «screencast» o con frases como «make a video», «explainer video», «demo video», «walkthrough video» o «video from README», o cuando otra habilidad necesita un vídeo como efecto secundario.
 
 > **En resumen:** `oma video generate` planifica una ejecución y prepara los recursos. Con el compositor HyperFrames predeterminado no codifica un MP4: escribe `<runDir>/hyperframes/index.html` (el flujo de trabajo `/video` lo hace por ti) y después ejecuta `oma video render <runDir>`. En la primera ejecución, empieza con `oma video doctor --install`.
 
@@ -90,7 +90,7 @@ Otras herramientas que ejecutan `oma video generate --output json` interpretan u
 
 ## Toolchain gestionado de HyperFrames y autoría de composiciones {#always-latest-hyperframes--you-author-the-composition}
 
-oh-my-agent **no incluye código de composición de HyperFrames**. Cada ejecución obtiene su propio proyecto en `<runDir>/hyperframes/`, preparado por `oma video compose` con la versión más reciente de HyperFrames en npm (caché del toolchain `~/.cache/oma-video/hyperframes/<version>/`, compartida mediante un enlace simbólico a `node_modules`) y con las skills `hyperframes` y `hyperframes-cli` de [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) instaladas mediante la [skills CLI](https://github.com/vercel-labs/skills). El agente escribe el código fuente de la composición generada siguiendo el `AUTHORING.md` del scaffold, las skills y la especificación del modo en `.agents/skills/oma-video/resources/hyperframes-authoring/`.
+oh-my-agent **no incluye código de composición de HyperFrames**. Cada ejecución obtiene su propio proyecto en `<runDir>/hyperframes/`, preparado por `oma video compose` con la versión más reciente de HyperFrames en npm (caché del toolchain `~/.cache/oma-video/hyperframes/<version>/`, compartida mediante un enlace simbólico a `node_modules`) y con las habilidades `hyperframes` y `hyperframes-cli` de [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) instaladas mediante la [skills CLI](https://github.com/vercel-labs/skills). El agente escribe el código fuente de la composición generada siguiendo el `AUTHORING.md` del scaffold, las habilidades y la especificación del modo en `.agents/skills/oma-video/resources/hyperframes-authoring/`.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -100,9 +100,9 @@ oma video render <runDir> --output json    # lint → render with the cached Hyp
 ```
 
 - Las comprobaciones de la última versión del toolchain (npm) están limitadas por `video.hyperframes.check_interval_min` (60 por defecto; `0` = comprobar en cada compose). `oma update` respeta el intervalo; `oma video doctor --upgrade` fuerza una comprobación; las ejecuciones sin conexión usan el toolchain en caché e informan `stale`.
-- Skills: `oma video doctor --install` instala las que falten (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` también actualiza las instaladas; `oma update` solo actualiza las skills ya instaladas. Sin ellas, `AUTHORING.md` enlaza en su lugar con la documentación upstream. La copia antigua de `~/.cache/oma-video/hyperframes-skills/` ya no se lee y puede eliminarse.
+- Habilidades: `oma video doctor --install` instala las que falten (`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`); `--upgrade` también actualiza las instaladas; `oma update` solo actualiza las habilidades ya instaladas. Sin ellas, `AUTHORING.md` enlaza en su lugar con la documentación upstream. La copia antigua de `~/.cache/oma-video/hyperframes-skills/` ya no se lee y puede eliminarse.
 - La reproducibilidad vive en el directorio de ejecución: `render-spec.json`, el código de composición escrito y la versión del toolchain registrada en los metadatos del paquete HyperFrames generado. Volver a renderizar la misma ejecución reutiliza ese contrato de renderizado; una ejecución nueva comprueba la versión más reciente de HyperFrames.
-- Un fallo de lint o renderizado **no** se oculta detrás de un placeholder (eso solo existe para `OMA_VIDEO_MOCK=1`): `oma video render` termina con código 1 y los diagnósticos, y el agente corrige la composición usando las skills más recientes. Un fallo en una versión nueva de HyperFrames es un error de composición, nunca un motivo para fijar la versión.
+- Un fallo de lint o renderizado **no** se oculta detrás de un placeholder (eso solo existe para `OMA_VIDEO_MOCK=1`): `oma video render` termina con código 1 y los diagnósticos, y el agente corrige la composición usando las habilidades más recientes. Un fallo en una versión nueva de HyperFrames es un error de composición, nunca un motivo para fijar la versión.
 
 ```yaml
 video:

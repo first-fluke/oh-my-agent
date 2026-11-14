@@ -498,7 +498,7 @@ echo '{"cwd":"/path/to/project"}' \
 
 메모리 파일 경로와 도구 이름은 `.agents/mcp.json`의 `memoryConfig`를 통해 설정할 수 있습니다.
 
-Serena 자체의 온보딩 메모리(`code_style.md`, `project_purpose.md` 및 유사 지식 파일)는 `.serena/memories/`에 남으며 이 조율 아티팩트와 별개입니다.
+Serena 자체의 온보딩 메모리(`code_style.md`, `project_purpose.md` 및 유사 지식 파일)는 `.serena/memories/`에 남으며 이 조율 산출물과 별개입니다.
 
 ---
 

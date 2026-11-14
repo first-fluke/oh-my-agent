@@ -515,13 +515,13 @@ opencode models opencode-go                            # list everything your pl
 - **Autenticación:** `opencode auth login` almacena las credenciales en `~/.local/share/opencode/auth.json`, una entrada por proveedor. `oma auth status` / `oma doctor` informan de opencode como autenticado cuando *cualquier* proveedor tiene una credencial. `oma doctor --profile` distingue los proveedores: cada fila se comprueba contra el prefijo del proveedor de su `cli_model` registrado, de modo que un modelo con `cli_model: zai-coding-plan/glm-5.3` se comprueba contra la credencial `zai-coding-plan`. Una fila cuyo modelo no tenga un `cli_model` registrado con la forma `provider/model` muestra `? unknown` en lugar de un fallo de autenticación definitivo.
 - **Archivos generados:** `oma link` (o `oma link opencode`) escribe una persona `.opencode/agents/<id>.md` por agente y el puente `.opencode/plugins/oma/`. Estos archivos se generan a partir del SSOT de `.agents/`: no los edites directamente; vuelve a ejecutar `oma link` para regenerarlos.
 
-> **Nota sobre workflows persistentes:** el evento `session.idle` de opencode (su análogo más cercano al hook `Stop` de Claude) solo notifica y no puede impedir que termine la sesión. Por eso, los workflows persistentes (orchestrate / work / ultrawork) se ejecutan con **semántica de Stop degradada** en opencode: el refuerzo del workflow ocurre en el siguiente mensaje en lugar de mantener la sesión abierta.
+> **Nota sobre flujos de trabajo persistentes:** el evento `session.idle` de opencode (su análogo más cercano al hook `Stop` de Claude) solo notifica y no puede impedir que termine la sesión. Por eso, los flujos de trabajo persistentes (orchestrate / work / ultrawork) se ejecutan con **semántica de Stop degradada** en opencode: el refuerzo del flujo de trabajo ocurre en el siguiente mensaje en lugar de mantener la sesión abierta.
 
 ---
 
 ## Despachar mediante Kimi Code CLI
 
-[Kimi Code CLI](https://www.kimi.com/code) solo lee **hooks** desde una configuración global (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), por lo que `oma install`/`oma link` escriben la cadena de hooks y sus symlinks de skills en HOME con consentimiento explícito (igual que Antigravity). Kimi también busca directamente en el SSOT `.agents/skills/` de oma, por lo que las skills se resuelven en todo el proyecto. **MCP** no necesita escribir en HOME y tiene alcance de proyecto: se escribe según el modo en `<cwd>/.kimi-code/mcp.json` (proyecto) o `~/.kimi-code/mcp.json` (global).
+[Kimi Code CLI](https://www.kimi.com/code) solo lee **hooks** desde una configuración global (`~/.kimi-code/config.toml`, `KIMI_CODE_HOME`), por lo que `oma install`/`oma link` escriben la cadena de hooks y sus symlinks de habilidades en HOME con consentimiento explícito (igual que Antigravity). Kimi también busca directamente en el SSOT `.agents/skills/` de oma, por lo que las habilidades se resuelven en todo el proyecto. **MCP** no necesita escribir en HOME y tiene alcance de proyecto: se escribe según el modo en `<cwd>/.kimi-code/mcp.json` (proyecto) o `~/.kimi-code/mcp.json` (global).
 
 ### Despacho explícito
 
@@ -562,4 +562,4 @@ agents:
 
 Cada agente enrutado ejecuta `kimi --model kimi-code/kimi-for-coding -p "<prompt>"`.
 
-> **Nota sobre workflows persistentes:** la ruta documentada de Kimi para bloquear Stop es el código de salida 2 / stderr, pero el enrutador `oma hook run` siempre sale con código 0 y emite un dialecto por stdout. oma emite un `permissionDecision: "deny"` de mejor esfuerzo (más `decision: "block"` al estilo de Claude) para que los workflows persistentes se degraden correctamente en Kimi.
+> **Nota sobre flujos de trabajo persistentes:** la ruta documentada de Kimi para bloquear Stop es el código de salida 2 / stderr, pero el enrutador `oma hook run` siempre sale con código 0 y emite un dialecto por stdout. oma emite un `permissionDecision: "deny"` de mejor esfuerzo (más `decision: "block"` al estilo de Claude) para que los flujos de trabajo persistentes se degraden correctamente en Kimi.

@@ -580,7 +580,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 | `130` | 중단되었습니다(Ctrl+C 또는 SIGTERM). |
 | 그 외 | 벤더 프로세스 자체가 실패했으며, 그 종료 코드를 그대로 전달합니다. |
 
-`completed` 여부를 결정하는 실행 기록과 claim은 [에이전트 결과 및 재개](../guide/agent-results-and-resume.md)를 참고합니다.
+`completed` 여부를 결정하는 실행 기록과 클레임은 [에이전트 결과 및 재개](../guide/agent-results-and-resume.md)를 참고합니다.
 
 **예시:**
 ```bash
@@ -1780,7 +1780,7 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 
 ## 상태, 모델 및 메모리 검사 {#state-model-and-memory-inspection}
 
-다음 계열은 영속 워크플로우 상태와 모델/프로바이더 진단을 제공합니다. 정리 성격의 작업에는 `--dry-run`을 우선 사용하고, 다른 프로그램이 결과를 소비하면 `--json`을 사용합니다.
+다음 계열은 지속 워크플로우 상태와 모델/프로바이더 진단을 제공합니다. 정리 성격의 작업에는 `--dry-run`을 우선 사용하고, 다른 프로그램이 결과를 소비하면 `--json`을 사용합니다.
 
 ### state
 
@@ -1828,7 +1828,7 @@ oma agent finish "<run-id>" "<claim-path>"
 oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context`는 그래프가 선택한 컨텍스트를 읽습니다. `begin`은 실행을 시작하고 생성된 run ID와 클레임 경로를 출력합니다. `verify`는 해당 run ID를 받아 고정된 검사(`--required`)를 실행하거나, `--affected`로 범위를 줄이거나, `--` 뒤의 명령을 실행하고 그 종료 코드를 기록합니다. `finish`는 run ID와 클레임 파일 경로를 받습니다. `agent resume <session-id> --dry-run`은 준비되어 재사용할 수 있는 태스크를 보고하며, `agent resume <session-id> --max-attempts <n>`(기본값 `3`)은 계획이 허용하는 태스크만 재시도합니다. `agent verify`와 `agent resume`은 다른 프로젝트를 대상으로 하는 `--project-root <path>`를 받습니다. 계획과 claim 형태는 [에이전트 결과 및 재개](../guide/agent-results-and-resume.md)를 참고합니다. 이 명령은 OMA 실행 계약용이며, 일반 사용자 작업은 `agent spawn`, `agent parallel`, `agent review`를 사용하면 됩니다.
+`agent context`는 그래프가 선택한 컨텍스트를 읽습니다. `begin`은 실행을 시작하고 생성된 run ID와 클레임 경로를 출력합니다. `verify`는 해당 run ID를 받아 고정된 검사(`--required`)를 실행하거나, `--affected`로 범위를 줄이거나, `--` 뒤의 명령을 실행하고 그 종료 코드를 기록합니다. `finish`는 run ID와 클레임 파일 경로를 받습니다. `agent resume <session-id> --dry-run`은 준비되어 재사용할 수 있는 태스크를 보고하며, `agent resume <session-id> --max-attempts <n>`(기본값 `3`)은 계획이 허용하는 태스크만 재시도합니다. `agent verify`와 `agent resume`은 다른 프로젝트를 대상으로 하는 `--project-root <path>`를 받습니다. 계획과 클레임 형태는 [에이전트 결과 및 재개](../guide/agent-results-and-resume.md)를 참고합니다. 이 명령은 OMA 실행 계약용이며, 일반 사용자 작업은 `agent spawn`, `agent parallel`, `agent review`를 사용하면 됩니다.
 
 ### memory
 

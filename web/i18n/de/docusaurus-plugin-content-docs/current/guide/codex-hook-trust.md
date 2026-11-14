@@ -6,7 +6,7 @@ description: Wie Codex Hooks an Vertrauen bindet, was oh-my-agent aufzeichnet, d
 
 # Anleitung: Codex-Hook-Vertrauen
 
-Wenn oh-my-agent in einem Projekt installiert wird, schreibt es anbieterspezifische Hook-Konfigurationen, darunter `.codex/hooks.json` für die Codex-CLI. Codex führt einen Hook nicht allein deshalb aus, weil er konfiguriert ist. Zwei Freigaben sind dafür nötig, und beide liegen in Ihrer Benutzerkonfiguration (`$CODEX_HOME/config.toml`, Standard `~/.codex/config.toml`). Ein Projekt kann seine eigenen Hooks nicht selbst freigeben:
+Wenn oh-my-agent in einem Projekt installiert wird, schreibt es Vendor-spezifische Hook-Konfigurationen, darunter `.codex/hooks.json` für die Codex-CLI. Codex führt einen Hook nicht allein deshalb aus, weil er konfiguriert ist. Zwei Freigaben sind dafür nötig, und beide liegen in Ihrer Benutzerkonfiguration (`$CODEX_HOME/config.toml`, Standard `~/.codex/config.toml`). Ein Projekt kann seine eigenen Hooks nicht selbst freigeben:
 
 1. **Projektvertrauen.** Der Ordner `.codex/` eines Projekts (seine `config.toml` und seine `hooks.json`) wird nur für ein vertrauenswürdiges Projekt geladen: `[projects."<path>"] trust_level = "trusted"`.
 2. **Vertrauen pro Hook.** Jeder nicht verwaltete Hook, im Projekt- oder Benutzerbereich, braucht einen Eintrag `[hooks.state."<hooks.json path>:<event>:<group>:<handler>"]`, dessen `trusted_hash` zur aktuellen Hook-Deklaration passt (Befehl, Timeout, Matcher, Async-Flag, Statusmeldung).

@@ -266,11 +266,11 @@ De judge-node is de via de prompt aangestuurde judge uit fase 2: de workflow dra
 
 **Trigger-keywords:** Geen. Start de workflow met `/plan`. De keyword-hook opent deze workflow niet vanuit een zin.
 
-**Stappen:** Requirements verzamelen -> technische haalbaarheid analyseren (MCP-codeanalyse) -> complexiteit inschatten (Simple/Medium/Complex) -> API-contracten definiëren (bij werk over grenzen) -> taken opsplitsen -> review met gebruiker -> planartefacts opslaan (machineleesbare JSON + mensleesbare tracker voor Medium/Complex).
+**Stappen:** Requirements verzamelen -> technische haalbaarheid analyseren (MCP-codeanalyse) -> complexiteit inschatten (Simple/Medium/Complex) -> API-contracten definiëren (bij werk over grenzen) -> taken opsplitsen -> review met gebruiker -> planartefacten opslaan (machineleesbare JSON + mensleesbare tracker voor Medium/Complex).
 
 **Uitvoer:** `.agents/results/plan-{sessionId}.json`, een geheugenbericht en (Medium/Complex) `docs/plans/work/{NNN}-{name}.md` met taakentabel, beslislog en voortgangsnotities. De levenscyclus wordt gevolgd via het veld `Status` in de Markdown-header (`Active` -> `Completed`); plannen worden niet tussen mappen verplaatst. Benaderingen die via `/brainstorm` zijn gekozen, worden opgeslagen in `docs/decisions/{NNN}-{name}.md`.
 
-**Uitvoering:** Inline (zonder subagents te spawnen). `/orchestrate` of `/work` gebruikt het resultaat en werkt taak/statusvelden bij.
+**Uitvoering:** Inline (zonder subagenten te spawnen). `/orchestrate` of `/work` gebruikt het resultaat en werkt taak/statusvelden bij.
 
 ---
 
@@ -377,7 +377,7 @@ De auditmethodiek van Cloudflare geeft richting aan onafhankelijke verificatie e
 
 ### /design
 
-**Beschrijving:** Bakent een designtaak af, kiest de toepasselijke designrichtlijnen en levert via `oma-design` bevindingen, `DESIGN.md`, een herontwerprichting of designtokens op. De workflow schrijft geen implementatiecode; de implementatie wordt overgedragen aan `oma-frontend` of `oma-mobile`. Voert inline uit (zonder subagents te spawnen).
+**Beschrijving:** Bakent een designtaak af, kiest de toepasselijke designrichtlijnen en levert via `oma-design` bevindingen, `DESIGN.md`, een herontwerprichting of designtokens op. De workflow schrijft geen implementatiecode; de implementatie wordt overgedragen aan `oma-frontend` of `oma-mobile`. Voert inline uit (zonder subagenten te spawnen).
 
 **Trigger-keywords:** Geen. Start de workflow met `/design`. De keyword-hook opent deze workflow niet vanuit een zin.
 
@@ -422,7 +422,7 @@ De auditmethodiek van Cloudflare geeft richting aan onafhankelijke verificatie e
 
 ### /docs
 
-**Beschrijving:** Documentatiedrift en sync via `oma-docs`. Verify vindt kapotte refs in alle repo-Markdown (standaardglob `**/*.md`); sync stelt per document patches voor die door een git-diff zijn geraakt. Voert inline uit (zonder subagents); alle vendors roepen `oma docs` direct aan.
+**Beschrijving:** Documentatiedrift en sync via `oma-docs`. Verify vindt kapotte refs in alle repo-Markdown (standaardglob `**/*.md`); sync stelt per document patches voor die door een git-diff zijn geraakt. Voert inline uit (zonder subagenten); alle vendors roepen `oma docs` direct aan.
 
 **Trigger-keywords:** Geen. Start de workflow met `/docs`. De keyword-hook opent deze workflow niet vanuit een zin.
 
@@ -439,7 +439,7 @@ De auditmethodiek van Cloudflare geeft richting aan onafhankelijke verificatie e
 
 ### /recap
 
-**Beschrijving:** Dagelijkse of periodieke werkrecap via `oma-recap`. Lost datum of venster op uit natural language, roept `oma recap --json` aan over geschiedenissen van meerdere AI-tools (Grok, Claude, Codex, Qwen, Cursor, Antigravity), delegeert thema-analyse en Markdown-opmaak aan de skill en meldt een TL;DR plus opslagpad. Voert inline uit (zonder subagents); alle vendors roepen `oma recap` direct aan.
+**Beschrijving:** Dagelijkse of periodieke werkrecap via `oma-recap`. Lost datum of venster op uit natural language, roept `oma recap --json` aan over geschiedenissen van meerdere AI-tools (Grok, Claude, Codex, Qwen, Cursor, Antigravity), delegeert thema-analyse en Markdown-opmaak aan de skill en meldt een TL;DR plus opslagpad. Voert inline uit (zonder subagenten); alle vendors roepen `oma recap` direct aan.
 
 **Trigger-keywords:** Geen. Start de workflow met `/recap`. De keyword-hook opent deze workflow niet vanuit een zin.
 
@@ -470,7 +470,7 @@ De auditmethodiek van Cloudflare geeft richting aan onafhankelijke verificatie e
 
 ### /video
 
-**Beschrijving:** De `oma-video`-skill end-to-end aansturen: briefing -> script -> narratie -> visuals -> captions -> render-spec -> beheerde HyperFrames (of MoneyPrinterTurbo)-compositor. De workflow maakt een reproduceerbare runmap en levert pas na compositor- en ffprobe-checks een echte `.mp4`. Providerconfiguratie is optioneel voor ondersteunde asset-fallbacks; een fout in compositor of toolchain blijft een mislukte run. Voert inline uit (zonder subagents te spawnen).
+**Beschrijving:** De `oma-video`-skill end-to-end aansturen: briefing -> script -> narratie -> visuals -> captions -> render-spec -> beheerde HyperFrames (of MoneyPrinterTurbo)-compositor. De workflow maakt een reproduceerbare runmap en levert pas na compositor- en ffprobe-checks een echte `.mp4`. Providerconfiguratie is optioneel voor ondersteunde asset-fallbacks; een fout in compositor of toolchain blijft een mislukte run. Voert inline uit (zonder subagenten te spawnen).
 
 **Trigger-keywords:** Geen. Start de workflow met `/video`. De keyword-hook opent deze workflow niet vanuit een zin.
 
@@ -499,7 +499,7 @@ De auditmethodiek van Cloudflare geeft richting aan onafhankelijke verificatie e
 
 ### /explain
 
-**Beschrijving:** De `oma-explanation`-skill end-to-end aansturen: een diff, PR, branch of commitbereik, of een onderwerp, omzetten in een zelfstandige interactieve HTML-uitleg (Background / Intuition / Code / Quiz voor een wijziging). Voert inline uit (zonder subagents te spawnen).
+**Beschrijving:** De `oma-explanation`-skill end-to-end aansturen: een diff, PR, branch of commitbereik, of een onderwerp, omzetten in een zelfstandige interactieve HTML-uitleg (Background / Intuition / Code / Quiz voor een wijziging). Voert inline uit (zonder subagenten te spawnen).
 
 **Trigger-keywords:** Geen ("explain" is alledaags; keyworddetectie zou gewone vragen als "explain this function" ten onrechte activeren, dus deze workflow werkt alleen via slashcommando).
 

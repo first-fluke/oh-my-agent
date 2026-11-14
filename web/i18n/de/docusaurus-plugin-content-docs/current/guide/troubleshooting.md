@@ -200,7 +200,7 @@ Den vollständigen Lebenszyklus beschreibt [Agentenergebnisse und Fortsetzen](./
 
 ## Hilfe anfordern {#ask-for-help}
 
-Wenn Sie Hilfe anfordern, fügen Sie die relevante Ausgabe von `oma doctor --json`, den Befehl, die Session-/Run-ID und die offene Meldung ein. Fügen Sie keine Zugangsdaten oder Inhalte geheimnisführender Dateien ein. Eröffnen Sie ein Issue unter [github.com/first-fluke/oh-my-agent/issues](https://github.com/first-fluke/oh-my-agent/issues).
+Wenn Sie Hilfe anfordern, fügen Sie die relevante Ausgabe von `oma doctor --json`, den Befehl, die Sitzungs-/Lauf-ID und die offene Meldung ein. Fügen Sie keine Zugangsdaten oder Inhalte geheimnisführender Dateien ein. Eröffnen Sie ein Issue unter [github.com/first-fluke/oh-my-agent/issues](https://github.com/first-fluke/oh-my-agent/issues).
 
 ## Siehe auch {#see-also}
 

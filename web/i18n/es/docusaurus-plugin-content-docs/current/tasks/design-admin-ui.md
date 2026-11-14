@@ -7,7 +7,7 @@ description: Define la jerarquía, la densidad de la tabla, los estados y la ent
 
 Usa `oma-design` para decidir cómo debe apoyar una pantalla de administración a sus usuarios antes de cambiar el código de la aplicación.
 
-## Cargar la skill
+## Cargar la habilidad
 
 Pide a tu agente de código que ejecute este comando y lea las instrucciones devueltas y el directorio de apoyo:
 
@@ -45,4 +45,4 @@ Para una dirección nueva de interfaz de administración o de producto, el [cont
 
 Esas instrucciones externas pueden necesitar sus propias descargas o herramientas de runtime. El stack existente, la marca, la cobertura CJK, el objetivo WCAG y los requisitos de movimiento reducido siguen siendo restricciones. Cargar instrucciones no renderiza ni verifica la UI.
 
-Usa el especialista de frontend del proyecto para la implementación. Para hooks y workflows de proyecto, [elige una configuración de runtime](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) que incluya `oma-design`.
+Usa el especialista de frontend del proyecto para la implementación. Para hooks y flujos de trabajo de proyecto, [elige una configuración de runtime](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) que incluya `oma-design`.

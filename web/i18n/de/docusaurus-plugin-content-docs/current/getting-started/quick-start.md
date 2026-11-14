@@ -33,7 +33,7 @@ Führen Sie unter Windows PowerShell Folgendes aus:
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-Die Einrichtung behält eine vorhandene Antwortsprache bei oder erkennt die Systemsprache automatisch. Die interaktive Einrichtung fragt nach CLI-Vendoren, [Fähigkeits-Providern](./glossary.md#capability-provider), dem [Modell-Preset](./glossary.md#model-preset), dem Projekt-[Skill-Preset](./glossary.md#skill-preset) und einer Stack-Variante. Verwenden Sie beim ersten Lauf die Standardwerte, wählen Sie den Vendor, den Sie bereits nutzen, und wählen Sie das Projekt-Preset, das dem Repository am nächsten kommt. Unter [Presets](./installation.md#presets) finden Sie die Skills jedes Presets sowie [Workflows, die Skills außerhalb eines Presets benötigen](./installation.md#workflows-that-need-skills-outside-a-preset).
+Die Einrichtung behält eine vorhandene Antwortsprache bei oder erkennt die Systemsprache automatisch. Die interaktive Einrichtung fragt nach CLI-Vendors, [Capability-Providern](./glossary.md#capability-provider), dem [Modell-Preset](./glossary.md#model-preset), dem Projekt-[Skill-Preset](./glossary.md#skill-preset) und einer Stack-Variante. Verwenden Sie beim ersten Lauf die Standardwerte, wählen Sie den Vendor, den Sie bereits nutzen, und wählen Sie das Projekt-Preset, das dem Repository am nächsten kommt. Unter [Presets](./installation.md#presets) finden Sie die Skills jedes Presets sowie [Workflows, die Skills außerhalb eines Presets benötigen](./installation.md#workflows-that-need-skills-outside-a-preset).
 
 Wenn `bun` bereits installiert ist, verwenden Sie den Installer direkt:
 

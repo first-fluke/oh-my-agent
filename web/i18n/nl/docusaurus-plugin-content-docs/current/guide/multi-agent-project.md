@@ -37,7 +37,7 @@ flowchart LR
 
 ### Stap 1: /plan voor requirements en taakdecompositie
 
-De workflow `/plan` draait inline (zonder subagents te starten) en maakt een gestructureerd plan.
+De workflow `/plan` draait inline (zonder subagenten te starten) en maakt een gestructureerd plan.
 
 ```text
 /plan

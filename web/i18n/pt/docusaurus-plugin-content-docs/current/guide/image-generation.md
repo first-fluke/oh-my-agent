@@ -237,7 +237,7 @@ Por padrão, cada execução grava em uma pasta com timestamp e sufixo de hash e
 1. **Controle de custo:** execuções estimadas em pelo menos `$0.20` pedem confirmação; sem um terminal interativo, a execução sai com código 1 e uma mensagem que menciona `--yes`. Ignore com `-y` ou `OMA_IMAGE_YES=1`. Somente `--vendor pollinations` com `flux` / `zimage` é garantidamente gratuito; `auto` também pode incluir um Codex conectado.
 2. **Segurança de caminho:** caminhos de saída fora de `$PWD` exigem `--allow-external-output` para evitar gravações inesperadas.
 3. **Cancelável:** `Ctrl+C` (SIGINT/SIGTERM) aborta toda chamada de provider em andamento e o orquestrador.
-4. **Registro estável da execução:** `manifest.json` é sempre escrito ao lado das imagens.
+4. **Registro de execução estável:** `manifest.json` é sempre escrito ao lado das imagens.
 5. **Máximo de `n` = 5:** é um limite de tempo de parede, não uma cota.
 6. **Códigos de saída:** alinhados a `oma search fetch`: `0` ok, `1` geral, `2` segurança, `3` não encontrado, `4` entrada inválida, `5` autenticação necessária, `6` timeout.
 

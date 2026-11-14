@@ -60,13 +60,13 @@ La revisión del plan reutiliza la autorización ya concedida para la tarea. Los
 
 ## Flujos de trabajo persistentes {#persistent-workflows}
 
-Los flujos persistentes continúan ejecutándose hasta que todas las tareas terminan. Mantienen el estado en `.agents/state/` y vuelven a inyectar el contexto `[OMA PERSISTENT MODE: ...]` en cada mensaje del usuario hasta que se desactivan explícitamente.
+Los flujos de trabajo persistentes continúan ejecutándose hasta que todas las tareas terminan. Mantienen el estado en `.agents/state/` y vuelven a inyectar el contexto `[OMA PERSISTENT MODE: ...]` en cada mensaje del usuario hasta que se desactivan explícitamente.
 
 El modo persistente solo se inicia con una **invocación explícita**: el comando slash del flujo (`/ultrawork`, o una forma con namespace como `/oma:ultrawork`), o el propio nombre del flujo en texto plano (la lista `explicit` de `triggers.json`: `"orchestrate"` y las traducciones listadas, `"ultrawork"`/`"ulw"`, `"work mode"`/`"work workflow"`, `"ralph"`/`"랄프"`). El hook de palabras clave no abre ningún flujo desde ninguna otra frase.
 
 ### /orchestrate
 
-**Descripción:** Ejecución paralela automatizada de agentes basada en CLI. Genera subagentes mediante CLI, coordina con estado de ejecución y recibos persistentes, monitorea el progreso y ejecuta bucles de verificación.
+**Descripción:** Ejecución paralela automatizada de agentes basada en CLI. Genera subagentes mediante CLI, coordina con estado de ejecución y registros de verificación persistentes, monitorea el progreso y ejecuta bucles de verificación.
 
 **Persistente:** Sí. Archivo de estado: `.agents/state/orchestrate-state-{sessionId}.json`.
 
@@ -82,9 +82,9 @@ Frases como `"do everything"`, `"전부 해줘"` o `"build me an app"` no inicia
 2. **Paso 1, Cargar o crear el plan:** Comprueba `.agents/results/plan-{sessionId}.json` y después el `plan-*.json` más reciente. Si no existe ninguno, o el plan no está listo para ejecutarse (a una tarea le falta agente, nivel de prioridad, dependencias o criterios de aceptación), delega en `/plan` dentro del mismo flujo para crear uno conservando el mismo ID de sesión. Presenta el plan y reutiliza la autorización existente; pregunta solo por una decisión relevante o una autorización nueva antes de delegar.
 3. **Paso 2, Inicializar la sesión:** Carga `oma-config.yaml`, muestra la tabla de asignación de CLI y reutiliza el ID de sesión creado con el plan o genera uno (`session-YYYYMMDD-HHMMSS`). Para cada tarea, selecciona las referencias de habilidades que necesita comparando la tarea con las firmas de intención de las habilidades instaladas; basta una habilidad coincidente con confianza. Crea `orchestrator-session-{sessionId}.md` y `task-board-{sessionId}.md` en el almacén de memoria configurado y registra allí las referencias seleccionadas para cada tarea y el motivo de la selección. Estas son notas para el coordinador; el lanzador no las impone.
 4. **Paso 3, Generar agentes:** Para cada nivel de prioridad (de menor a mayor: primero el nivel 1, después el nivel 2, y así sucesivamente), genera agentes mediante el método apropiado del proveedor (subagentes nativos cuando el runtime actual y el proveedor de destino coinciden; `oma agent spawn` para trabajo externo o entre proveedores). Cada agente recibe su tarea, los contratos de API y sus referencias seleccionadas con sus condiciones de carga. No superes MAX_PARALLEL (3 por defecto).
-5. **Paso 4, Monitorear:** Comprueba la salud de los procesos con `oma agent status`. Prefiere las notificaciones de finalización del host; en caso contrario, sondea con backoff acotado los archivos con ámbito de ejecución `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` que hayan cambiado, lee los recibos estructurados y actualiza el task board. Vigila completaciones, fallos y crashes.
+5. **Paso 4, Monitorear:** Comprueba la salud de los procesos con `oma agent status`. Prefiere las notificaciones de finalización del host; en caso contrario, sondea con backoff acotado los archivos con ámbito de ejecución `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` que hayan cambiado, lee los registros de verificación estructurados y actualiza el task board. Vigila completaciones, fallos y crashes.
 6. **Paso 5, Verificar:** Para cada agente completado, ejecuta una autocomprobación mecánica (lint, typecheck, pruebas y alcance del diff; hasta 3 ciclos), después `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug y pm; los demás tipos de agente registran `SKIP`) y, por último, una revisión cruzada de QA. Si falla la verificación, vuelve a generarlo con el contexto del error. Los fallos repetidos pueden justificar hipótesis alternativas, pero el intento original, cada reintento y cada hipótesis consumen el mismo presupuesto de recuperación agregado (`max_attempts`, 3 por defecto incluido el intento original). Conserva la evidencia sin resolver si el presupuesto no alcanza para una ronda de comparación.
-7. **Paso 6, Recopilar:** Lee los archivos de resultados de ámbito de ejecución y los claims estructurados, y compila el resumen.
+7. **Paso 6, Recopilar:** Lee los archivos de resultados de ámbito de ejecución y las declaraciones de resultados estructuradas, y compila el resumen.
 8. **Paso 7, Informe final:** Presenta el resumen de la sesión. Si se ejecutaron experimentos, resume la evidencia y las decisiones; captura lecciones solo cuando se haya establecido una causa reutilizable.
 
 ```mermaid
@@ -108,8 +108,8 @@ flowchart TD
   QA -.->|"review limit reached"| STOP
 ```
 
-**Archivos leídos:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, archivos de progreso y resultados de ámbito de ejecución y recibos estructurados de ejecución.
-**Archivos escritos:** estado de sesión y task board de ámbito de ejecución en el almacén de memoria configurado, recibos y claims estructurados y el informe final.
+**Archivos leídos:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, archivos de progreso y resultados de ámbito de ejecución y registros de verificación estructurados de ejecución.
+**Archivos escritos:** estado de sesión y task board de ámbito de ejecución en el almacén de memoria configurado, registros de verificación y declaraciones de resultados estructuradas y el informe final.
 
 **Cuándo usar:** Proyectos grandes que requieren el máximo paralelismo con coordinación automatizada.
 
@@ -531,7 +531,7 @@ oh-my-agent usa un hook `UserPromptSubmit` que se ejecuta antes de procesar cada
 
 2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): lógica TypeScript que compara la entrada del usuario con esos nombres explícitos e inyecta el contexto de activación del flujo.
 
-3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): impone la ejecución de flujos persistentes comprobando archivos de estado activos y volviendo a inyectar su contexto.
+3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): impone la ejecución de flujos de trabajo persistentes comprobando archivos de estado activos y volviendo a inyectar su contexto.
 
 ### Flujo de detección
 

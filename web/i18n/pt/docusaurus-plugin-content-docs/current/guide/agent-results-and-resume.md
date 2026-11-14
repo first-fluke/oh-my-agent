@@ -81,7 +81,7 @@ Substitua `SESSION_ID` pelo ID da sessão usado no plano. O comando imprime um J
 }
 ```
 
-Os valores entre sinais de maior e menor são placeholders; use os valores reais impressos pela sua execução. Um início bem-sucedido cria o registro da execução em `.agents/state/agent-runs/` e captura um snapshot do contrato da tarefa. O caminho do claim é sempre o caminho do registro da execução com `.claim.json` no lugar de `.json`.
+Os valores entre sinais de maior e menor são placeholders; use os valores reais impressos pela sua execução. Um início bem-sucedido cria o registro de execução em `.agents/state/agent-runs/` e captura um snapshot do contrato da tarefa. O caminho do claim é sempre o caminho do registro de execução com `.claim.json` no lugar de `.json`.
 
 ## Carregar o contexto e executar a tarefa
 

@@ -8,7 +8,7 @@ description: Configura la GitHub Action de OMA, entiende sus entradas y salidas 
 
 ## Descripción general
 
-La GitHub Action de oh-my-agent (`first-fluke/oma-update-action@v1`) actualiza automáticamente las skills de agentes de tu proyecto ejecutando `oma update` en CI. Admite dos modos: crear un pull request para revisarlo o hacer commit directamente en una rama.
+La GitHub Action de oh-my-agent (`first-fluke/oma-update-action@v1`) actualiza automáticamente las habilidades de agentes de tu proyecto ejecutando `oma update` en CI. Admite dos modos: crear un pull request para revisarlo o hacer commit directamente en una rama.
 
 ---
 
@@ -53,7 +53,7 @@ Esta es la configuración mínima. Cuando cambia un componente instalado, la act
 | `pr-title` | string | No | `"chore(deps): update oh-my-agent skills"` | Título personalizado del pull request. Solo se usa en modo `pr`. |
 | `pr-labels` | string | No | `"dependencies,automated"` | Etiquetas separadas por comas que se añadirán al PR. Solo se usan en modo `pr`. |
 | `commit-message` | string | No | `"chore(deps): update oh-my-agent skills"` | Mensaje de commit personalizado. Se usa en ambos modos, como mensaje del commit del PR o del commit directo. |
-| `token` | string | No | `${{ github.token }}` | Token de GitHub para crear PRs. Usa un Personal Access Token (PAT) si necesitas que el PR active otros workflows (el `GITHUB_TOKEN` predeterminado no activa ejecuciones de workflows en los PRs que crea). |
+| `token` | string | No | `${{ github.token }}` | Token de GitHub para crear PRs. Usa un Personal Access Token (PAT) si necesitas que el PR active otros flujos de trabajo (el `GITHUB_TOKEN` predeterminado no activa ejecuciones de flujos de trabajo en los PRs que crea). |
 
 ---
 
@@ -112,7 +112,7 @@ jobs:
 
 ### Ejemplo 2: modo de commit directo con PAT
 
-Para equipos que quieren aplicar las actualizaciones de inmediato, sin una revisión mediante PR. Usa un PAT para que el commit pueda activar los workflows posteriores.
+Para equipos que quieren aplicar las actualizaciones de inmediato, sin una revisión mediante PR. Usa un PAT para que el commit pueda activar los flujos de trabajo posteriores.
 
 ```yaml
 name: Update oh-my-agent (Direct)
@@ -146,9 +146,9 @@ jobs:
 - Se hace checkout de `develop` usando un PAT. `ref: develop` es obligatorio: `base-branch` solo establece el destino del push, y la action hace push del `HEAD` que haya producido el checkout.
 - Se ejecuta `oma update --ci`.
 - Si hay cambios, se configura git como `github-actions[bot]` y se hace commit directamente en `develop`.
-- El PAT garantiza que el commit active los workflows que escuchan los pushes en `develop`.
+- El PAT garantiza que el commit active los flujos de trabajo que escuchan los pushes en `develop`.
 
-**Importante:** Usa `secrets.OH_MY_AGENT_PAT` (un PAT de granularidad fina con permiso Contents: Write) en lugar de `github.token`. El `GITHUB_TOKEN` predeterminado crea commits que no activan otros workflows, lo que puede romper las pipelines de CI que esperan eventos de push.
+**Importante:** Usa `secrets.OH_MY_AGENT_PAT` (un PAT de granularidad fina con permiso Contents: Write) en lugar de `github.token`. El `GITHUB_TOKEN` predeterminado crea commits que no activan otros flujos de trabajo, lo que puede romper las pipelines de CI que esperan eventos de push.
 
 ### Ejemplo 3: notificación condicional
 
@@ -287,7 +287,7 @@ Esto es lo que hace internamente `oma update --ci`:
 8. Actualiza las adaptaciones de los proveedores (hooks, configuraciones y definiciones de agentes) para los proveedores de la lista `vendors:` de la configuración (una lista vacía significa ninguno). Sin una lista `vendors:`, solo actualiza los proveedores cuyos directorios de proyecto ya existen.
 9. Actualiza los symlinks de la CLI.
 
-La action invoca `oma update --ci` sin `--with-new-skills`. Así actualiza el conjunto de skills instalado y muestra las skills nuevas disponibles; ejecuta deliberadamente `oma update --with-new-skills` cuando el proyecto deba añadir skills nuevas como parte de la actualización.
+La action invoca `oma update --ci` sin `--with-new-skills`. Así actualiza el conjunto de habilidades instalado y muestra las habilidades nuevas disponibles; ejecuta deliberadamente `oma update --with-new-skills` cuando el proyecto deba añadir habilidades nuevas como parte de la actualización.
 
 ### Paso 4: comprobar los cambios
 

@@ -337,7 +337,7 @@ oma dashboard terminal
 
 ## Zie ook
 
-- [Agentresultaten en hervatten](../guide/agent-results-and-resume.md): run-receipts, claims en `oma agent resume`
+- [Agentresultaten en hervatten](../guide/agent-results-and-resume.md): runreceipts, claims en `oma agent resume`
 - [Dashboardmonitoring](../guide/dashboard-monitoring.md)
 - [Gids voor multi-agentprojecten](../guide/multi-agent-project.md)
 - [Modellen per agent](../guide/per-agent-models.md)

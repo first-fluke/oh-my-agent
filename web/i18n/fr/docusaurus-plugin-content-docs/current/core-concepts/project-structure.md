@@ -269,7 +269,7 @@ C'est le répertoire central. Tout ce dont les agents ont besoin s'y trouve. C'e
 - `language` : code de langue des réponses (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format` : chaîne de format des horodatages (`ISO`, `US` ou `EU` ; valeur par défaut `ISO`)
 - `timezone` : identifiant de fuseau horaire IANA ; une valeur omise utilise le fuseau horaire du système
-- `model_preset` : clé du preset de modèle actif (`auto` par défaut, ou un preset fixe/personnalisé)
+- `model_preset` : clé du preset de modèles actif (`auto` par défaut, ou un preset fixe/personnalisé)
 - `providers` : fournisseurs de capacités pour la documentation, le web, l'intelligence du code et la mémoire sémantique
 - `auto_update_cli` : vérification des mises à jour en arrière-plan (valeur par défaut `true`, désactivez avec `false`)
 - `telemetry` : activation de la télémétrie du fournisseur (valeur par défaut `false`)

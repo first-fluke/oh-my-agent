@@ -6,7 +6,7 @@ description: Leg agentwerk vast met verifieerbare claims, inspecteer native cont
 
 # Agentresultaten en hervatten {#agent-results-and-resume}
 
-OMA behandelt een agentresultaat als een klein bewijsrecord, niet alleen als de exitcode van het proces. Een run legt de taak- en sessie-ID’s, de workspacefingerprint, verificatiereceipts, gewijzigde bestanden, onopgelost werk en artifact-hashes vast. Zo kan een coördinator een voltooide taak alleen opnieuw gebruiken zolang het acceptatiecontract en de inputs nog overeenkomen.
+OMA behandelt een agentresultaat als een klein bewijsrecord, niet alleen als de exitcode van het proces. Een run legt de taak- en sessie-ID’s, de workspacefingerprint, verificatiereceipts, gewijzigde bestanden, onopgelost werk en artefacthashes vast. Zo kan een coördinator een voltooide taak alleen opnieuw gebruiken zolang het acceptatiecontract en de inputs nog overeenkomen.
 
 Gebruik de lifecycle rechtstreeks wanneer je een native agent uitvoert. Workflows en `oma agent spawn` maken dezelfde records voor je aan en laten de finalisering van de beheerde run over aan de parent-coördinator. Zie voor de hier gebruikte termen [Runrecord en claim](../getting-started/glossary.md#run-record-and-claim) en [Plan](../getting-started/glossary.md#plan) in de woordenlijst.
 
@@ -81,7 +81,7 @@ Vervang `SESSION_ID` door de sessie-ID uit het plan. Het commando print JSON met
 }
 ```
 
-De waarden tussen punthaken zijn placeholders; gebruik de echte waarden die je run print. Een geslaagde begin maakt de runrecord aan onder `.agents/state/agent-runs/` en legt het taakcontract vast. Het claimpad is altijd het pad van de runrecord, met `.claim.json` in plaats van `.json`.
+De waarden tussen punthaken zijn placeholders; gebruik de echte waarden die je run print. Een geslaagde begin maakt het runrecord aan onder `.agents/state/agent-runs/` en legt het taakcontract vast. Het claimpad is altijd het pad van het runrecord, met `.claim.json` in plaats van `.json`.
 
 ## Laad context en voer de taak uit {#load-context-and-run-the-task}
 
@@ -145,7 +145,7 @@ Schrijf het claimbestand op exact het pad dat `begin` heeft geprint:
 }
 ```
 
-`status` is een van `completed`, `partial`, `blocked` of `failed`. Paden zijn relatief aan de projectroot en elk artifact moet een gewoon bestand binnen de workspace zijn. Gebruik `verificationSkipped` alleen voor een specifieke review waarvoor geen uitvoerbare controle bestaat; daarmee wordt een mislukte controle niet alsnog geslaagd.
+`status` is een van `completed`, `partial`, `blocked` of `failed`. Paden zijn relatief aan de projectroot en elk artefact moet een gewoon bestand binnen de workspace zijn. Gebruik `verificationSkipped` alleen voor een specifieke review waarvoor geen uitvoerbare controle bestaat; daarmee wordt een mislukte controle niet alsnog geslaagd.
 
 Neem inhoudelijke beslissingen op in de optionele array `decisions` van de claim:
 
@@ -178,11 +178,11 @@ oma agent finish RUN_ID CLAIM_PATH
 
 Vervang beide waarden door de UUID en het claimpad die `begin` heeft teruggegeven. `CLAIM_PATH` is het gegenereerde `.claim.json`-pad; verzin geen nieuwe bestandsnaam.
 
-Het finishcommando valideert de claim, het huidige contract, de huidige receipts en de artifact-hashes. Een voltooide claim met verouderd bewijs wordt failed of partial. Het commando weigert een beheerde run af te ronden wanneer het parentproces eigenaar is van de lifecycle.
+Het finishcommando valideert de claim, het huidige contract, de huidige receipts en de artefacthashes. Een voltooide claim met verouderd bewijs wordt failed of partial. Het commando weigert een beheerde run af te ronden wanneer het parentproces eigenaar is van de lifecycle.
 
 ## Gedrag van gespawnde en native runs {#spawned-and-native-behavior}
 
-`oma agent spawn` en `oma agent parallel` maken een run aan, voegen de runidentiteit en resultinstructies toe aan de childprompt en laten de parent de exitcode van de child vastleggen. Een child hoort zijn claim te schrijven en zijn artifacts te melden; de parent finaliseert de beheerde receipt. Een read-only child retourneert één regel in de vorm `OMA_RESULT_JSON: {...}`; de parent bewaart die als inspectie en de status `verificationSkipped` ervan blijft onderscheiden van uitvoerbare verificatie.
+`oma agent spawn` en `oma agent parallel` maken een run aan, voegen de runidentiteit en resultinstructies toe aan de childprompt en laten de parent de exitcode van de child vastleggen. Een child hoort zijn claim te schrijven en zijn artefacten te melden; de parent finaliseert de beheerde receipt. Een read-only child retourneert één regel in de vorm `OMA_RESULT_JSON: {...}`; de parent bewaart die als inspectie en de status `verificationSkipped` ervan blijft onderscheiden van uitvoerbare verificatie.
 
 De mensleesbare resultbestanden in `.agents/results/` en memorynotities in `.agents/state/memories/` helpen mensen het verloop te volgen. De machineleesbare receipt in `.agents/state/agent-runs/` is het bewijs dat voor hergebruik en hervatten wordt gebruikt.
 
@@ -207,7 +207,7 @@ flowchart TD
   safe -->|no| blocked(["blocked"])
 ```
 
-Een afhankelijkheid die niet `reused` is, zet een afhankelijke `reused`-taak terug naar `ready` (of `blocked` wanneer die niet opnieuw kan worden afgespeeld), en een `ready`-taak waarvan de afhankelijkheid `blocked` of `running` is, wordt `blocked`. Een geldige voltooide receipt wordt alleen hergebruikt als het contract, de inputs, de artifact-hashes en het bewijs van afhankelijkheden nog actueel zijn. Een live beheerd proces of een native run zonder bewijs dat die nog leeft, wordt niet gedupliceerd.
+Een afhankelijkheid die niet `reused` is, zet een afhankelijke `reused`-taak terug naar `ready` (of `blocked` wanneer die niet opnieuw kan worden afgespeeld), en een `ready`-taak waarvan de afhankelijkheid `blocked` of `running` is, wordt `blocked`. Een geldige voltooide receipt wordt alleen hergebruikt als het contract, de inputs, de artefacthashes en het bewijs van afhankelijkheden nog actueel zijn. Een live beheerd proces of een native run zonder bewijs dat die nog leeft, wordt niet gedupliceerd.
 
 Wanneer het rapport veilig uitvoeren aangeeft, hervat je de ready-taken in volgorde van afhankelijkheid:
 

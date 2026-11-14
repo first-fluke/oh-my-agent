@@ -128,8 +128,8 @@ flowchart TD
 
 ## 次のステップ
 
-- [コンテンツと調査のワークフロー](./content-and-research.md) — ほかの調査やドキュメント作業に合った機能を選ぶ
-- [ダイアグラムエンジン](./diagram-engine.md) — archify で使われている同じ skills-CLI インストールパターン
-- [oma-config.yaml のセマンティクス](./oma-config-semantics.md) — `market:` セクションのマージ方法
-- [CLI コマンド：market](../cli-interfaces/commands.md#market) — オプションの一覧
+- [コンテンツと調査のワークフロー](./content-and-research.md)。ほかの調査やドキュメント作業に合った機能を選べます
+- [ダイアグラムエンジン](./diagram-engine.md)。archify で使われている同じ skills-CLI インストールパターンです
+- [oma-config.yaml のセマンティクス](./oma-config-semantics.md)。`market:` セクションのマージ方法です
+- [CLI コマンド：market](../cli-interfaces/commands.md#market)。オプションの一覧です
 - 上流： [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

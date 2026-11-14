@@ -95,7 +95,7 @@ git config --global init.defaultBranch main
 
 ### 8. MCP-Konfiguration
 
-Es gibt keine separate MCP-Abfrage. Wenn Serena der Code-Intelligence-Provider ist (Standard), schreiben `install` und `update` den Serena-MCP-Eintrag für die ausgewählten Vendoren. Bei einer Projektinstallation sieht der Eintrag so aus:
+Es gibt keine separate MCP-Abfrage. Wenn Serena der Code-Intelligence-Provider ist (Standard), schreiben `install` und `update` den Serena-MCP-Eintrag für die ausgewählten Vendors. Bei einer Projektinstallation sieht der Eintrag so aus:
 
 ```json
 {
@@ -160,11 +160,11 @@ cd /path/to/your/project
 oma link
 ```
 
-`oma link` erzeugt `.claude/`, `.codex/`, `.qwen/` und weitere Vendor-native Dateien aus `.agents/agents/` neu. Zur Laufzeit verwendet OMA den nativen Dispatch nur, wenn der Vendor der aktuellen Laufzeit mit dem Ziel-Vendor des Agenten übereinstimmt. Setups mit mehreren Vendoren funktionieren weiterhin, aber nicht passende Agenten fallen auf den externen Aufruf `oma agent spawn` zurück.
+`oma link` erzeugt `.claude/`, `.codex/`, `.qwen/` und weitere Vendor-native Dateien aus `.agents/agents/` neu. Zur Laufzeit verwendet OMA den nativen Dispatch nur, wenn der Vendor der aktuellen Laufzeit mit dem Ziel-Vendor des Agenten übereinstimmt. Setups mit mehreren Vendors funktionieren weiterhin, aber nicht passende Agenten fallen auf den externen Aufruf `oma agent spawn` zurück.
 
 Für Qwen Code liegen die erzeugten Markdown-Definitionen in `.qwen/agents/`. Wählen Sie eine OMA-Rolle über den `subagent_type` des Agent-Tools aus, zum Beispiel `backend-engineer`. Prüfen Sie die verfügbaren Definitionen mit `/agents manage` in Qwen Code. Native Agenten verwenden denselben [Ergebnis-Lebenszyklus](./agent-results-and-resume.md) wie CLI-Spawns: `oma agent begin`, `oma agent verify` und `oma agent finish`. Verwenden Sie bei `model_preset: free` `oma agent spawn`, damit der untergeordnete Prozess die Gateway-Konfiguration erhält.
 
-Qwen Code verwendet denselben `code-intelligence-primer` wie die anderen Vendoren. Wie Claude Code registriert es den gemeinsamen Primer bei `SessionStart` und `UserPromptSubmit`: Die Hinweise werden einmal pro Sitzung und nach einer Kompaktierung erneut eingefügt. Der Primer folgt dem konfigurierten Provider (Serena oder Gortex), enthält Hinweise zu zurückgestellten Tools (Deferred Tools) und erlaubt den nativen Fallback, wenn der Provider nicht verfügbar ist oder eine Zeitüberschreitung auftritt. Qwen fügt keine eigene Blockierung der Codesuche und keine Nachverfolgung von Provider-Ergebnissen hinzu.
+Qwen Code verwendet denselben `code-intelligence-primer` wie die anderen Vendors. Wie Claude Code registriert es den gemeinsamen Primer bei `SessionStart` und `UserPromptSubmit`: Die Hinweise werden einmal pro Sitzung und nach einer Kompaktierung erneut eingefügt. Der Primer folgt dem konfigurierten Provider (Serena oder Gortex), enthält Hinweise zu zurückgestellten Tools (Deferred Tools) und erlaubt den nativen Fallback, wenn der Provider nicht verfügbar ist oder eine Zeitüberschreitung auftritt. Qwen fügt keine eigene Blockierung der Codesuche und keine Nachverfolgung von Provider-Ergebnissen hinzu.
 
 Führen Sie nach einem Update der CLI `oma link qwen` aus, um die Hook-Einstellungen und den Wrapper neu zu erzeugen, und starten Sie danach eine neue Qwen-Sitzung. Qwen Code führt Projekt-Hooks erst aus, nachdem Sie genau diese Konfiguration genehmigt haben (`~/.qwen/hookApprovals.json`); `oma link` zeichnet diese Genehmigung für die Hooks auf, die es geschrieben hat, sodass weder die erste interaktive Sitzung noch `qwen -p` sie zurückhält. Es genehmigt nie Hooks, die oma nicht geschrieben hat, und überschreibt nie eine Ablehnung, die Sie in Qwen vorgenommen haben. Tests der Hook-Ausgabe prüfen den Integrationsvertrag; sie garantieren nicht, welches Tool ein Modell auswählt.
 
@@ -239,7 +239,7 @@ cat .agents/skills/_version.json 2>/dev/null
 
 ## Multi-IDE-Symlink-Struktur (SSOT-Konzept)
 
-oh-my-agent verwendet eine Single-Source-of-Truth-Architektur (SSOT). Das `.agents/`-Verzeichnis ist der einzige Ort, an dem Skills, Workflows, Konfigurationen und Agenten-Definitionen liegen. Alle IDE-spezifischen Verzeichnisse enthalten nur Symlinks, die zurück auf `.agents/` zeigen.
+oh-my-agent verwendet eine Single-Source-of-Truth-Architektur (SSOT). Das `.agents/`-Verzeichnis ist der einzige Ort, an dem Skills, Workflows, Konfigurationen und Agentendefinitionen liegen. Alle IDE-spezifischen Verzeichnisse enthalten nur Symlinks, die zurück auf `.agents/` zeigen.
 
 ### Verzeichnislayout
 
@@ -380,7 +380,7 @@ Die interaktive Installation erkennt andere Agenten-Tools und fragt, ob sie dein
 
 ### 3. Tarball-Download
 
-Der Installer lädt das neueste Release-Tarball aus den oh-my-agent-GitHub-Releases herunter. Dieser Tarball enthält das vollständige `.agents/`-Verzeichnis mit allen Skills, gemeinsamen Ressourcen, Workflows, Konfigurationen und Agenten-Definitionen.
+Der Installer lädt das neueste Release-Tarball aus den oh-my-agent-GitHub-Releases herunter. Dieser Tarball enthält das vollständige `.agents/`-Verzeichnis mit allen Skills, gemeinsamen Ressourcen, Workflows, Konfigurationen und Agentendefinitionen.
 
 ### 4. Installation gemeinsamer Ressourcen
 
@@ -392,7 +392,7 @@ Der Installer lädt das neueste Release-Tarball aus den oh-my-agent-GitHub-Relea
 
 ### 5. Workflow-Installation
 
-`installWorkflows()` kopiert alle Workflow-Dateien nach `.agents/workflows/`, etwa die Definitionen für `/orchestrate`, `/work`, `/ultrawork` und `/plan`. Die vollständige Liste finden Sie unter [Workflows](../core-concepts/workflows.md). Daneben kopieren `installHooks()`, `installAgents()` und `installRules()` die Quellen für Hooks, Agenten-Definitionen und Regeln nach `.agents/`.
+`installWorkflows()` kopiert alle Workflow-Dateien nach `.agents/workflows/`, etwa die Definitionen für `/orchestrate`, `/work`, `/ultrawork` und `/plan`. Die vollständige Liste finden Sie unter [Workflows](../core-concepts/workflows.md). Daneben kopieren `installHooks()`, `installAgents()` und `installRules()` die Quellen für Hooks, Agentendefinitionen und Regeln nach `.agents/`.
 
 ### 6. Konfigurationsinstallation
 
@@ -404,9 +404,9 @@ Für jeden ausgewählten Skill kopiert `installSkill()` das Skill-Verzeichnis na
 
 ### 8. Vendor-Anpassungen
 
-`installVendorAdaptations()` installiert IDE-spezifische Dateien für die ausgewählten unterstützten Vendoren:
+`installVendorAdaptations()` installiert IDE-spezifische Dateien für die ausgewählten unterstützten Vendors:
 
-- Agenten-Definitionen (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.qwen/agents/*.md`)
+- Agentendefinitionen (`.claude/agents/*.md`, `.codex/agents/*.toml`, `.qwen/agents/*.md`)
 - Hook-Konfigurationen (`.claude/hooks/`, `.codex/hooks.json`)
 - Einstellungsdateien und die gemeinsame Vendor-Integrationsdokumentation (nur `AGENTS.md`, Claude Code ≥ 2.1.277 eingeschlossen). `CLAUDE.md` und `GEMINI.md` erhalten nie einen OMA-Block; eine bestehende benutzereigene `CLAUDE.md` erhält lediglich eine `@AGENTS.md`-Importzeile, damit Claude Code `AGENTS.md` nicht überspringt
 

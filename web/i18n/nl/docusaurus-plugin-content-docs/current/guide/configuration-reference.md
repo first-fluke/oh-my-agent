@@ -77,7 +77,7 @@ Het meegeleverde template bevat ook blokken waarvan de consumer eigenaar is. Hun
 
 | Blok | Door de consumer gelezen sleutels | Standaard | Effect |
 | --- | --- | --- | --- |
-| `memory.gc` | `keep_sessions`, `max_age_days` | 100 sessies bewaren; Serena-artifacts ouder dan 50 dagen opruimen; `0` schakelt opruimen op leeftijd uit | Standaardwaarden voor `oma memory gc`; commandovlaggen overschrijven ze. |
+| `memory.gc` | `keep_sessions`, `max_age_days` | 100 sessies bewaren; Serena-artefacten ouder dan 50 dagen opruimen; `0` schakelt opruimen op leeftijd uit | Standaardwaarden voor `oma memory gc`; commandovlaggen overschrijven ze. |
 | `serena_reaper` | `enabled`, `policy: lru\|idle`, `keep_warm`, `idle_minutes`, `grace_seconds` | `false`, `lru`, `2`, `10`, `90` | Regelt het geplande opruimpad voor Serena LSP. Interactief `oma serena reap` blijft expliciet; stille geplande runs zijn opt-in. |
 | `refactor_guard` | `enabled`, `max_lines` | `false`, `500` | Schakelt de stop-hook voor het regellimiet in en stelt het codebudget per bestand in. |
 | `scm` | `conventional_commits`, `branching_strategy`, `require_pr_for_default_branch`, `co_author.*`, `forbidden_patterns`, `allowed_exceptions` | het meegeleverde template schakelt conventional commits en PR-bescherming in, met de co-author- en bestandslijsten uit het template | Regelt de SCM-skill, commit-hook en guard voor geheime patronen. Vervang de identiteitswaarden uit het template door je eigen waarden voordat je co-author-trailers inschakelt. |

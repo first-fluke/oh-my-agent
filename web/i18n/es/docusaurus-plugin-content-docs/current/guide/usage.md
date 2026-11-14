@@ -375,16 +375,16 @@ Además de la divulgación progresiva, oh-my-agent optimiza los tokens mediante:
 ### Generación mediante CLI
 
 Cuando ejecutas `oma agent spawn`, la CLI:
-1. Resuelve el proveedor del rol a partir de opciones explícitas, sobrescrituras del agente, el preset de modelo y el fallback configurado.
+1. Resuelve el proveedor del rol a partir de opciones explícitas, sobrescrituras del agente, el preset de modelos y el fallback configurado.
 2. Inyecta el protocolo de ejecución específico del proveedor desde `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md`.
 3. Compone el prompt del agente con las reglas principales de SKILL.md, el protocolo de ejecución y los recursos relevantes para la tarea.
 4. Genera el agente como un proceso CLI independiente.
-5. La ejecución registra un receipt estructurado en `.agents/state/agent-runs/` e inyecta una ruta de claim.
-6. El agente escribe un claim estructurado; los archivos Markdown legibles de progreso y resultados son complementarios.
+5. La ejecución registra un registro de verificación estructurado en `.agents/state/agent-runs/` e inyecta una ruta de declaración de resultados.
+6. El agente escribe una declaración de resultados estructurada; los archivos Markdown legibles de progreso y resultados son complementarios.
 
 ### Almacén de memoria del proyecto
 
-Los agentes se coordinan mediante archivos persistentes en `.agents/state/memories/` (los proyectos antiguos recurren a `.serena/memories/`). Este directorio contiene resúmenes de sesión, task boards, progreso, lecciones y registros de experimentos. Los informes legibles `result-{agentId}-{taskId}-{runId}-{sessionId}.md` van en `.agents/results/`. Los recibos y claims estructurados de `.agents/state/agent-runs/` siguen siendo la autoridad para las generaciones CLI, y los planes de ejecución congelados permanecen en `.agents/state/agent-plans/`. Los agentes leen y escriben estos archivos con sus herramientas nativas; la asignación de herramientas sigue siendo configurable en `.agents/mcp.json → memoryConfig.tools`.
+Los agentes se coordinan mediante archivos persistentes en `.agents/state/memories/` (los proyectos antiguos recurren a `.serena/memories/`). Este directorio contiene resúmenes de sesión, task boards, progreso, lecciones y registros de experimentos. Los informes legibles `result-{agentId}-{taskId}-{runId}-{sessionId}.md` van en `.agents/results/`. Los registros de verificación y las declaraciones de resultados estructuradas de `.agents/state/agent-runs/` siguen siendo la autoridad para las generaciones CLI, y los planes de ejecución congelados permanecen en `.agents/state/agent-plans/`. Los agentes leen y escriben estos archivos con sus herramientas nativas; la asignación de herramientas sigue siendo configurable en `.agents/mcp.json → memoryConfig.tools`.
 
 ### Documentos e informes
 
@@ -437,7 +437,7 @@ A continuación se muestran los problemas comunes. Para mensajes de error, fallo
 | `oma dashboard web` termina con "port 9847 is already in use" | Otro proceso ocupa el puerto | `DASHBOARD_PORT=8080 oma dashboard web` |
 | El informe QA tiene más de 50 problemas | Es normal en la primera revisión de un código grande | Atiende primero CRITICAL y HIGH; documenta MEDIUM/LOW para sprints futuros |
 | Un modo persistente se inicia cuando solo mencionaste su nombre | El prompt nombra `orchestrate`, `ultrawork`, `work mode` o `ralph` fuera de una pregunta o de un bloque de código | Di "workflow done" para liberarlo e informa de los falsos disparos para mejorar el sistema |
-| El flujo persistente no se detiene | El archivo de estado todavía existe | Di "workflow done" en el chat o elimina manualmente el archivo de estado de `.agents/state/` |
+| El flujo de trabajo persistente no se detiene | El archivo de estado todavía existe | Di "workflow done" en el chat o elimina manualmente el archivo de estado de `.agents/state/` |
 | El agente está bloqueado en una aclaración HIGH | Requisitos demasiado ambiguos | Responde las preguntas concretas del agente y vuelve a ejecutarlo |
 | Las herramientas MCP no funcionan | Serena no está configurado o en ejecución | Ejecuta `oma doctor` para verificar la configuración MCP |
 | El agente supera su presupuesto de ejecución | La tarea es demasiado compleja para una sola ejecución | Divide la tarea, usa un flujo con límites explícitos o reintenta con un contrato de aceptación más acotado |

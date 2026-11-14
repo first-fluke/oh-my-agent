@@ -183,7 +183,7 @@ Todos los agentes comparten fundamentos comunes de `.agents/skills/_shared/`. Se
 
 | Recurso | Propósito |
 |---------|-----------|
-| **`result-contract.md`** | Identidad de la ejecución, ruta del claim y contrato de finalización para los resultados de agentes. Se inyecta en cada prompt de `oma agent spawn`; los agentes nativos lo siguen con `oma agent begin`, `oma agent verify` y `oma agent finish`. |
+| **`result-contract.md`** | Identidad de la ejecución, ruta de la declaración de resultados y contrato de finalización para los resultados de agentes. Se inyecta en cada prompt de `oma agent spawn`; los agentes nativos lo siguen con `oma agent begin`, `oma agent verify` y `oma agent finish`. |
 | **`memory-protocol.md`** | Formato y operaciones de archivos de memoria para subagentes CLI. Define los protocolos On Start, During Execution y On Completion con herramientas de memoria configurables (read/write/edit), además de la extensión para seguimiento de experimentos. |
 | **`event-spec.md`** | Contrato de eventos de flujo duraderos, que se añaden a `events.jsonl` en el perfil home de OMA y se inspeccionan con `oma state get` u `oma state list`. |
 | **`execution-protocols/claude.md`** | Patrones de ejecución específicos de Claude Code. `oma agent spawn` los inyecta cuando el proveedor es claude. |
@@ -258,7 +258,7 @@ Todos estos comportamientos provienen de `.agents/hooks/core/skill-injector.ts`.
 
 | Síntoma | Causa | Qué hacer |
 |---------|-------|-----------|
-| No aparece ninguna nota `[OMA SKILLS DETECTED]` | El prompt empieza por `/`, hay un [flujo persistente](../getting-started/glossary.md#persistent-workflow) activo en la sesión o el mensaje es un mensaje reenviado de un agente | Es lo esperado: el flujo controla el contexto. Nombra la habilidad si la necesitas |
+| No aparece ninguna nota `[OMA SKILLS DETECTED]` | El prompt empieza por `/`, hay un [flujo de trabajo persistente](../getting-started/glossary.md#persistent-workflow) activo en la sesión o el mensaje es un mensaje reenviado de un agente | Es lo esperado: el flujo controla el contexto. Nombra la habilidad si la necesitas |
 | Falta en la nota una habilidad esperada | Solo se listan las 3 mejores coincidencias (10 puntos por palabra clave coincidente) | Usa un término más específico o nombra la habilidad |
 | Una habilidad sugerida antes no vuelve a sugerirse | Cada ruta de SKILL.md se sugiere una vez por sesión; el registro en `.agents/state/skill-sessions.json` caduca tras una hora sin nuevas sugerencias | La sugerencia anterior sigue siendo válida |
 | Se ignora una palabra clave | El texto dentro de bloques de código, backticks o comillas dobles se elimina antes de la comparación | Menciona el término en texto normal |

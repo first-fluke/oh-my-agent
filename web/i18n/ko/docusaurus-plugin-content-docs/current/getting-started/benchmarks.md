@@ -99,4 +99,4 @@ done
   $(pwd)
 ```
 
-harness별 전체 서술, raw 점수, 스크린샷은 [`benchmarks/README.md`](https://github.com/first-fluke/oh-my-agent/blob/main/benchmarks/README.md)에서 관리됩니다. 이 파일은 각 실행의 `multiaxis/*.json`을 바탕으로 `build-report.sh`가 생성하므로, 항상 최신 scoring artifact와 동기화된 상태를 유지합니다.
+harness별 전체 서술, raw 점수, 스크린샷은 [`benchmarks/README.md`](https://github.com/first-fluke/oh-my-agent/blob/main/benchmarks/README.md)에서 관리됩니다. 이 파일은 각 실행의 `multiaxis/*.json`을 바탕으로 `build-report.sh`가 생성하므로, 항상 최신 scoring 산출물과 동기화된 상태를 유지합니다.

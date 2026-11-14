@@ -344,7 +344,7 @@ Aufgaben der Stufe 2 ausführen, bevor die Aufgaben der Stufe 1 abgeschlossen si
 
 ### 7. Verifikation überspringen
 
-`agent spawn` direkt verwenden, ohne danach den Ergebnisvertrag zu erfassen. Führen Sie die für die Aufgabe festgeschriebenen Prüfungen aus und schließen Sie einen strukturierten Claim ab; siehe [Agentenergebnisse und Fortsetzen](./agent-results-and-resume.md). Der Verifikationsschritt erkennt anschließend fehlgeschlagene Prüfungen und Scope-Abweichungen, bevor Ergebnisse wiederverwendet werden.
+`agent spawn` direkt verwenden, ohne danach den Ergebnisvertrag zu erfassen. Führen Sie die für die Aufgabe festgeschriebenen Prüfungen aus und schließen Sie eine strukturierte Ergebnisdeklaration ab; siehe [Agentenergebnisse und Fortsetzen](./agent-results-and-resume.md). Der Verifikationsschritt erkennt anschließend fehlgeschlagene Prüfungen und Scope-Abweichungen, bevor Ergebnisse wiederverwendet werden.
 
 ---
 

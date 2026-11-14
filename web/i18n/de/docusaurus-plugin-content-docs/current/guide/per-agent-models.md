@@ -8,7 +8,7 @@ description: Konfigurieren Sie über model_preset in oma-config.yaml, welches KI
 
 ## Überblick
 
-`model_preset: auto` ist der Standard für neue Installationen. Nicht konfigurierte Agenten verwenden die nativen Agenten-Definitionen und Modelleinstellungen des aktuellen Vendors. Wählen Sie ein festes Preset, um Modelle zu pinnen, oder überschreiben Sie einzelne Agenten, wenn Sie ein anderes Modell oder einen anderen Vendor benötigen. Bereits vorhandene explizite Presets bleiben bei Neuinstallation und Update erhalten.
+`model_preset: auto` ist der Standard für neue Installationen. Nicht konfigurierte Agenten verwenden die nativen Agentendefinitionen und Modelleinstellungen des aktuellen Vendors. Wählen Sie ein festes Preset, um Modelle zu pinnen, oder überschreiben Sie einzelne Agenten, wenn Sie ein anderes Modell oder einen anderen Vendor benötigen. Bereits vorhandene explizite Presets bleiben bei Neuinstallation und Update erhalten.
 
 Die gemeinsame Konfiguration liegt in `.agents/oma-config.yaml` und, falls vorhanden, in `.agents/oma-config.cue`, deren Schlüssel dieselben YAML-Schlüssel überschreiben. Eine optionale, von Git ignorierte lokale Datei überschreibt die Einstellungen für Ihren Rechner.
 
@@ -48,7 +48,7 @@ model_preset: auto
 | `qwen` | Alle Agenten verwenden Qwen Code; passende Qwen-Sitzungen können erzeugte native Agenten nutzen, andere Laufzeiten verwenden CLI-Dispatch | Lokale oder selbst gehostete Inferenz |
 | `kiro` | Alle Agenten verwenden die Kiro CLI; Sonnet übernimmt Implementierung und Architektur, Haiku Orchestrierung und Explore | Kiro-Nutzer |
 | `cursor` | Alle Agenten verwenden Cursors `composer-2.5` (`composer-2.5-fast` für Orchestrator, QA, PM, Docs und Explore) | Cursor-Pro- oder Pro-Student-Nutzer |
-| `mixed` | Claude für Orchestrator, Architektur (Opus), QA, PM und Docs; Codex GPT-6.1 Terra für Implementierungsrollen und GPT-6 Luna für Explore | Anbieterübergreifende Stärken ohne Verwaltung einer Konfiguration pro Agent |
+| `mixed` | Claude für Orchestrator, Architektur (Opus), QA, PM und Docs; Codex GPT-6.1 Terra für Implementierungsrollen und GPT-6 Luna für Explore | Vendorübergreifende Stärken ohne Verwaltung einer Konfiguration pro Agent |
 
 Eingebaute Presets werden mit dem CLI-Paket ausgeliefert und beim Upgrade von `oh-my-agent` automatisch aktualisiert. `gemini` ist ein Kompatibilitätsalias, der auf `antigravity` verweist; es ist kein eigenes aktuelles Preset. Eine lokale Preset-Datei ist nicht erforderlich.
 
@@ -312,7 +312,7 @@ Migration 008 läuft bei `oma install` und `oma update` automatisch. Sie konvert
 | Alte Konfiguration | Ergebnis nach Migration 008 |
 |:-------------|:--------------------------|
 | Alle Einträge desselben Vendors (z. B. alle `claude`) | `model_preset` wird auf das Preset dieses Vendors gesetzt (veraltetes `gemini` wird zu `antigravity`), kein `agents:` |
-| Gemischte Vendoren | Häufigster Vendor → `model_preset`; übrige → `agents:`-Überschreibungen |
+| Gemischte Vendors | Häufigster Vendor → `model_preset`; übrige → `agents:`-Überschreibungen |
 | `AgentSpec`-Objektwerte | Unverändert nach `agents:` verschoben |
 | Inhalt von `models.yaml` | In `oma-config.yaml.models` inline eingefügt |
 | Angepasste `defaults.yaml` | Als `custom_presets.user-customized` mit einer Warnung erhalten |

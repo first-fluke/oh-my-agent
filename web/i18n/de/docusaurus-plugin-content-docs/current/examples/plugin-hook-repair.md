@@ -1,6 +1,6 @@
 ---
 title: Plugin-Hooks und Projekt-Bootstrap reparieren
-description: Wie Pfade von Marketplace-Hooks, die Bash-Bereitstellung und Belege des Projekt-Bootstraps mit Regressionsfixtures repariert wurden.
+description: Wie Pfade von Marketplace-Hooks, die Bash-Bereitstellung und Ausführungsbelege des Projekt-Bootstraps mit Regressionsfixtures repariert wurden.
 ---
 
 # Plugin-Hooks und Projekt-Bootstrap reparieren
@@ -21,9 +21,9 @@ Der [neue Bootstrap](https://github.com/first-fluke/oh-my-agent/blob/2a29d3a8eb4
 
 - Führt den Bash-Installer über Bash aus und prüft Fehler bei der Bereitstellung.
 - Erzwingt die Projektinstallation auch dann, wenn eine Einstellung für die globale Installation geerbt wird.
-- Speichert den Beleg (Receipt) in `.agents/state/plugin-bootstrap.version` dieses Projekts.
-- Prüft Konfiguration, Versionsmetadaten, den ausführbaren Wrapper und registrierte Ereignisse, bevor ein Beleg wiederverwendet wird.
-- Behält Diagnosen fehlgeschlagener Installationen in `.agents/state/plugin-bootstrap.last-error.log`, ohne einen erfolgreichen Beleg aufzuzeichnen.
+- Speichert den Ausführungsbeleg (Receipt) in `.agents/state/plugin-bootstrap.version` dieses Projekts.
+- Prüft Konfiguration, Versionsmetadaten, den ausführbaren Wrapper und registrierte Ereignisse, bevor ein Ausführungsbeleg wiederverwendet wird.
+- Behält Diagnosen fehlgeschlagener Installationen in `.agents/state/plugin-bootstrap.last-error.log`, ohne einen erfolgreichen Ausführungsbeleg aufzuzeichnen.
 
 ## Die Regressionsprüfungen reproduzieren
 
@@ -38,7 +38,7 @@ Die Fixtures decken getrennte Grenzen ab:
 
 | Fixture | Was ihre Assertions prüfen |
 |---|---|
-| [Bootstrap](https://github.com/first-fluke/oh-my-agent/blob/2a29d3a8eb4d760e4e4000b484c9f04761c59f5c/scripts/plugin-bootstrap.test.ts) | Bereitstellung nur über Bash, getrennte Projektbelege, reine CUE-Konfiguration, unvollständige Verdrahtung, Versionsfehler und behaltene Diagnosen. |
+| [Bootstrap](https://github.com/first-fluke/oh-my-agent/blob/2a29d3a8eb4d760e4e4000b484c9f04761c59f5c/scripts/plugin-bootstrap.test.ts) | Bereitstellung nur über Bash, getrennte Projekt-Ausführungsbelege, reine CUE-Konfiguration, unvollständige Verdrahtung, Versionsfehler und behaltene Diagnosen. |
 | [Hook-Dispatch](https://github.com/first-fluke/oh-my-agent/blob/2a29d3a8eb4d760e4e4000b484c9f04761c59f5c/scripts/plugin-hook.test.ts) | Dispatch bei frischem Cache, Zeitbudgets der Handler, Erhalt der Payload, Besitz durch einen passenden Projekt-Hook und Fallback, wenn dieser Besitz fehlt oder ungültig ist. |
 | [Installationsintegration](https://github.com/first-fluke/oh-my-agent/blob/2a29d3a8eb4d760e4e4000b484c9f04761c59f5c/scripts/plugin-install.integration.test.ts) | Zwei Projektinstallationen, erhaltene Benutzereinstellungen, eine Prompt-/Stop-Zustellung über beide Registrierungen und ein erneuter Versuch nach fehlgeschlagener Verdrahtung. |
 
@@ -46,6 +46,6 @@ Diese Fixtures legen temporäre Verzeichnisse und vorgetäuschte CLI-Befehle an;
 
 ## Was in einer echten Sitzung noch zu prüfen bleibt
 
-Ein bestandener Fixture-Lauf belegt keine funktionierende Claude-Code-Sitzung. Prüfen Sie im tatsächlichen Zielprojekt den Beleg und die Konfiguration, führen Sie `oma doctor` aus, starten Sie die Sitzung neu und üben Sie das relevante Prompt- und Stop-Verhalten, während Sie die beobachteten Wirkungen prüfen. Verfügbarkeit der CLI, Zugangsdaten, Provider-Verhalten und die Hook-Richtlinie des Hosts brauchen eigene Belege.
+Ein bestandener Fixture-Lauf belegt keine funktionierende Claude-Code-Sitzung. Prüfen Sie im tatsächlichen Zielprojekt den Ausführungsbeleg und die Konfiguration, führen Sie `oma doctor` aus, starten Sie die Sitzung neu und üben Sie das relevante Prompt- und Stop-Verhalten, während Sie die beobachteten Wirkungen prüfen. Verfügbarkeit der CLI, Zugangsdaten, Provider-Verhalten und die Hook-Richtlinie des Hosts brauchen eigene Belege.
 
 Für denselben Weg aus Reproduktion, Korrektur und Prüfung bei einem anderen Fehler beginnen Sie mit [Einen fehlschlagenden Test debuggen](https://firstfluke.com/oh-my-agent/docs/tasks/debug-failing-tests/). [Setup wählen](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/) erklärt, wann die Projektlaufzeit nötig ist.

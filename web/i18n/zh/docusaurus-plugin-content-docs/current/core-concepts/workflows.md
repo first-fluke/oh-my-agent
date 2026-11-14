@@ -266,7 +266,7 @@ judge 节点就是 Phase 2 所述、通过提示驱动的 judge：工作流要�
 
 **触发关键词：** 无。请用 `/plan` 启动。关键词钩子不会从一句话打开此工作流。
 
-**步骤**：收集需求 -> 使用 MCP 代码分析评估技术可行性 -> 评估复杂度（Simple、Medium、Complex）-> 在跨边界时定义 API 契约 -> 分解任务 -> 与用户审查 -> 保存计划工件（Medium/Complex 时同时保存机器可读 JSON 和人类可读的 Markdown 跟踪文件）。
+**步骤**：收集需求 -> 使用 MCP 代码分析评估技术可行性 -> 评估复杂度（Simple、Medium、Complex）-> 在跨边界时定义 API 契约 -> 分解任务 -> 与用户审查 -> 保存计划产物（Medium/Complex 时同时保存机器可读 JSON 和人类可读的 Markdown 跟踪文件）。
 
 **输出：**`.agents/results/plan-{sessionId}.json`、记忆写入，以及 Medium/Complex 任务的 `docs/plans/work/{NNN}-{name}.md`，其中包含任务表、决策日志和进度备注。Markdown 标题中的 `Status` 字段记录生命周期（`Active` -> `Completed`），计划不会在目录间移动。通过 `/brainstorm` 选定的方案保存到 `docs/decisions/{NNN}-{name}.md`。
 
@@ -384,11 +384,11 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 **步骤：**
 
 1. **加载技能**：读取 `.agents/skills/oma-design/SKILL.md` 和 `resources/execution-protocol.md`。供给方选择、项目设计契约和交付证据由技能负责；工作流只安排其各项操作的顺序，不添加自己的视觉规则。
-2. **确定范围和上下文**：对所请求的结果分类：发现（审计）、设计系统文档、重新设计方向或 token。读取请求、现有的 `DESIGN.md`、存在时的 `.design-context.md`、品牌资料、支持的语言和受影响的 UI。对于现有网站或应用，加载 `redesign-protocol.md`，并在提出变更前确定 Preserve 还是 Overhaul。只有当某个选择会实质性改变结果，且请求、工件和代码库都无法回答时，工作流才会询问。只有实质性的探索过程为决策提供了依据时，才创建或更新 `.design-context.md`。
+2. **确定范围和上下文**：对所请求的结果分类：发现（审计）、设计系统文档、重新设计方向或 token。读取请求、现有的 `DESIGN.md`、存在时的 `.design-context.md`、品牌资料、支持的语言和受影响的 UI。对于现有网站或应用，加载 `redesign-protocol.md`，并在提出变更前确定 Preserve 还是 Overhaul。只有当某个选择会实质性改变结果，且请求、产物和代码库都无法回答时，工作流才会询问。只有实质性的探索过程为决策提供了依据时，才创建或更新 `.design-context.md`。
 3. **选择指引并收集参考资料**：通过 `external-design-skills.md` 为该操作选择一个供给方（Interface Design、Taste 或 Impeccable）。纯文档任务或 token 契约任务留在本地处理。可选输入只在任务需要时加载：请求的供应商种子（`getdesign-fetcher.md`）、请求的 Stitch 操作（`stitch-integration.md`）、图像素材和占位内容（`asset-strategy.md`），或围绕数据表格或网格构建的界面（`data-grid.md`）。集成不可用时，将其报告为证据方面的限制，而不是悄悄替换。
 4. **决定方向**：将选定的指引应用到项目证据上。只有尚未解决的选择会实质性影响结果时，才提出备选方向；现有的方向和授权已能回答时，它们就足够了。
-5. **产出工件**：设计系统任务按 `design-md-spec.md` 创建或更新 `DESIGN.md`，保留全部九个章节，包括第 9 节（Agent Prompt Guide）。token 遵循 `design-tokens.md`，并将语义角色映射到项目现有的 token 体系和主题格式。审计会返回发现，包含检查的位置、证据、影响和建议，且不做任何编辑。
-6. **验证并交接**：运行 `checklist.md` 中适用的检查，并说明检查了什么。报告交付的工件、选定的路由及其出处、验证结果和剩余的限制，然后将实现交给 `oma-frontend`（Web）或 `oma-mobile`（原生）。
+5. **产出产物**：设计系统任务按 `design-md-spec.md` 创建或更新 `DESIGN.md`，保留全部九个章节，包括第 9 节（Agent Prompt Guide）。token 遵循 `design-tokens.md`，并将语义角色映射到项目现有的 token 体系和主题格式。审计会返回发现，包含检查的位置、证据、影响和建议，且不做任何编辑。
+6. **验证并交接**：运行 `checklist.md` 中适用的检查，并说明检查了什么。报告交付的产物、选定的路由及其出处、验证结果和剩余的限制，然后将实现交给 `oma-frontend`（Web）或 `oma-mobile`（原生）。
 
 **约束：** 每个方向都不超出项目的品牌、所支持的 CJK 语言的字体覆盖、现有的实现技术栈、从最小支持视口起的响应式行为，以及 WCAG AA（项目设定了更严格目标时以项目为准）。需要已渲染实现才能进行的检查会被列明，但对于仅产出文档的工作保持不运行。
 

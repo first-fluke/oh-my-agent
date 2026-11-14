@@ -344,7 +344,7 @@ Ejecutar tareas del nivel 2 antes de completar las del nivel 1. Los niveles de p
 
 ### 7. Omitir la verificación
 
-Usar `agent spawn` directamente sin registrar después el contrato de resultados. Ejecuta las comprobaciones fijadas para la tarea y completa un claim estructurado; consulta [Resultados y reanudación de agentes](./agent-results-and-resume.md). El paso de verificación del flujo detectará después las comprobaciones fallidas y el desvío de alcance antes de reutilizar los resultados.
+Usar `agent spawn` directamente sin registrar después el contrato de resultados. Ejecuta las comprobaciones fijadas para la tarea y completa una declaración de resultados estructurada; consulta [Resultados y reanudación de agentes](./agent-results-and-resume.md). El paso de verificación del flujo detectará después las comprobaciones fallidas y el desvío de alcance antes de reutilizar los resultados.
 
 ---
 

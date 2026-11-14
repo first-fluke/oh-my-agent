@@ -45,7 +45,7 @@ Stop gate là kiểm tra hoàn thành tùy chọn mà bạn gắn vào workflow 
 
 ### Session OMA {#oma-session}
 
-Session OMA là công việc OMA theo dõi dưới session ID riêng, độc lập với mọi hội thoại của vendor. Orchestration dùng ID này để đặt tên cho plan, task board, file progress và result, cùng bản ghi agent run; orchestrator tạo ID theo dạng `session-YYYYMMDD-HHMMSS`. Trạng thái workflow dùng session ID của OMA (`sid`) làm khóa cho [event log](#event-log), mà `oma state list` và `oma state get <sid>` kiểm tra. Xem [Chiến lược session ID](../guide/multi-agent-project.md#session-id-strategy).
+Session OMA là công việc OMA theo dõi dưới session ID riêng, độc lập với mọi hội thoại của vendor. Orchestration dùng ID này để đặt tên cho plan, task board, file progress và result, cùng run record của agent; orchestrator tạo ID theo dạng `session-YYYYMMDD-HHMMSS`. Trạng thái workflow dùng session ID của OMA (`sid`) làm khóa cho [event log](#event-log), mà `oma state list` và `oma state get <sid>` kiểm tra. Xem [Chiến lược session ID](../guide/multi-agent-project.md#session-id-strategy).
 
 ### Vendor session ID {#vendor-session-id}
 
@@ -82,7 +82,7 @@ Charter là một khối preflight cố định (`CHARTER_CHECK`) được ghi t
 
 ### Run record và claim {#run-record-and-claim}
 
-Run record là biên nhận máy đọc được cho một lần thử của agent, lưu trong thư mục trạng thái theo project của profile, `~/.oma/u/<profile>/projects/<project-hash>/agent-runs/` (phiên bản cũ dùng `.agents/state/agent-runs/`); `oma agent begin` tạo run record và chụp lại task contract. Claim là báo cáo của chính agent tại path `.claim.json` tương ứng, với trạng thái `completed`, `partial`, `blocked` hoặc `failed`, cùng các file đã thay đổi, phần việc chưa giải quyết và artifact. `oma agent finish` đối chiếu claim với contract hiện tại, biên nhận xác minh và hash của artifact, nên claim có bằng chứng lỗi thời không giữ được trạng thái completed. Xem [Kết quả agent và resume](../guide/agent-results-and-resume.md).
+Run record là receipt máy đọc được cho một lần thử của agent, lưu trong thư mục trạng thái theo project của profile, `~/.oma/u/<profile>/projects/<project-hash>/agent-runs/` (phiên bản cũ dùng `.agents/state/agent-runs/`); `oma agent begin` tạo run record và chụp lại task contract. Claim là báo cáo của chính agent tại path `.claim.json` tương ứng, với trạng thái `completed`, `partial`, `blocked` hoặc `failed`, cùng các file đã thay đổi, phần việc chưa giải quyết và artifact. `oma agent finish` đối chiếu claim với contract hiện tại, receipt xác minh và hash của artifact, nên claim có bằng chứng lỗi thời không giữ được trạng thái completed. Xem [Kết quả agent và resume](../guide/agent-results-and-resume.md).
 
 ## Memory và provider
 

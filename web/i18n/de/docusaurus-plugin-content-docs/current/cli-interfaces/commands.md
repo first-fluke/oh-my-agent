@@ -122,7 +122,7 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 5. Fragt nach GitHub-Copilot-Symlinks.
 6. Lädt das neueste Tarball aus der Registry herunter.
 7. Installiert gemeinsame Ressourcen, Workflows, Konfigurationen und ausgewählte Skills.
-8. Installiert Vendor-Anpassungen für die ausgewählten Vendoren. Siehe [Was der Installer standardmäßig außerdem tut](../getting-started/installation.md#what-the-installer-also-does-by-default) für Änderungen auf Projekt- und HOME-Ebene.
+8. Installiert Vendor-Anpassungen für die ausgewählten Vendors. Siehe [Was der Installer standardmäßig außerdem tut](../getting-started/installation.md#what-the-installer-also-does-by-default) für Änderungen auf Projekt- und HOME-Ebene.
 9. Erstellt CLI-Symlinks.
 10. Bietet die empfohlene **globale** Git-Konfiguration zur optionalen Bestätigung an:
     - `rerere.enabled=true` — Wiederverwendung von Merge-Konfliktlösungen in Multi-Agenten-Projekten
@@ -204,8 +204,8 @@ oma update [-f, --force] [--with-new-skills] [--ci] [-y, --yes] [--all] [--vendo
 | `--with-new-skills` | In dieser Version neue Skills installieren; ohne das Flag werden nur bereits installierte Skills aktualisiert. |
 | `--ci` | Nicht-interaktiven CI-Modus ausführen (Nachfragen überspringen, Klartextausgabe) |
 | `-y, --yes` | Nachfragen überspringen. Der Vendor-Geltungsbereich bleibt unverändert: Nur vorhandene Vendor-Verzeichnisse werden aktualisiert, sofern nicht `--all` oder `--vendor` angegeben ist. |
-| `--all` | Alle unterstützten projektbezogenen Vendoren erstellen oder aktualisieren. |
-| `--vendor <vendors>` | Bestimmte Vendoren erstellen oder aktualisieren. Akzeptiert eine durch Kommas getrennte Liste wie `claude,qwen`. |
+| `--all` | Alle unterstützten projektbezogenen Vendors erstellen oder aktualisieren. |
+| `--vendor <vendors>` | Bestimmte Vendors erstellen oder aktualisieren. Akzeptiert eine durch Kommas getrennte Liste wie `claude,qwen`. |
 
 **Funktionsweise:**
 1. Ruft `prompt-manifest.json` aus der Registry ab, um die neueste Version zu prüfen.
@@ -245,7 +245,7 @@ oma update --vendor claude,qwen
 oma update mcp --ci
 ```
 
-`oma update mcp` besitzt eigene Optionen `--yes`, `--ci`, `--all` und `--vendor <vendors>`. Damit werden unterstützte Browser-MCP-Server (Aside, Chrome DevTools oder Firefox DevTools) für die ausgewählten projektbezogenen Vendoren ausgewählt.
+`oma update mcp` besitzt eigene Optionen `--yes`, `--ci`, `--all` und `--vendor <vendors>`. Damit werden unterstützte Browser-MCP-Server (Aside, Chrome DevTools oder Firefox DevTools) für die ausgewählten projektbezogenen Vendors ausgewählt.
 
 ### uninstall
 
@@ -288,7 +288,7 @@ Ohne `--global` zielt link auf `<cwd>/.agents/`; mit `--global` auf `~/.oma/.age
 
 **Funktionsweise:**
 1. Erzeugt Vendor-native Agentendateien aus `.agents/agents/` neu
-2. Aktualisiert Hooks und lokale Einstellungen für die ausgewählten Vendoren
+2. Aktualisiert Hooks und lokale Einstellungen für die ausgewählten Vendors
 3. Erzeugt den Integrationsblock in `AGENTS.md` für jeden konfigurierten Vendor neu, Claude Code eingeschlossen. `CLAUDE.md` und `GEMINI.md` werden nie angelegt und erhalten nie einen OMA-Block. Claude Code ≥ 2.1.277 liest `AGENTS.md` nativ, ignoriert sie aber immer dann, wenn eine `CLAUDE.md` existiert; ist eine benutzereigene `CLAUDE.md` vorhanden, hängt link deshalb eine einzelne `@AGENTS.md`-Importzeile an. `oma update` entfernt außerdem den veralteten OMA-Block in `CLAUDE.md`, sobald diese Version erkannt wird
 4. Aktualisiert die Cursor-MCP-Verknüpfung und CLI-Skill-Symlinks, wenn relevant
 
@@ -388,7 +388,7 @@ oma stats reset [--json] [--output <format>]
 - Geschätzte USD anhand einer Ratentabelle pro Vendor; diese Schätzung ist von den tatsächlichen Token-Zahlen getrennt
 - Aufschlüsselung pro Vendor (Tokens · Starts · USD)
 
-Die USD-Schätzung ist kein abrechnungsgenauer Betrag. Konfiguriere `session.quota_cap` in `.agents/oma-config.yaml`, um den nächsten Start zu blockieren, sobald die erfasste Token-Nutzung oder die Anzahl der Starts ein Limit erreicht. Fehlende native Nutzung behält eine explizite Schätzung bei, und laufende Kindprozesse werden nicht unterbrochen. Siehe [Session-Quota-Limits](../guide/configuration-reference.md#session-quota-caps).
+Die USD-Schätzung ist kein abrechnungsgenauer Betrag. Konfiguriere `session.quota_cap` in `.agents/oma-config.yaml`, um den nächsten Start zu blockieren, sobald die erfasste Token-Nutzung oder die Anzahl der Starts ein Limit erreicht. Fehlende native Nutzung behält eine explizite Schätzung bei, und laufende Kindprozesse werden nicht unterbrochen. Siehe [Sitzungs-Quota-Limits](../guide/configuration-reference.md#session-quota-caps).
 
 Metriken werden in `.agents/state/metrics.json` gespeichert; eine veraltete `.serena/metrics.json` wird gelesen, wenn sie vorhanden ist. Die Daten werden aus Git-Statistiken und Memory-Dateien erfasst.
 
@@ -588,7 +588,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 | `--task-id <id>` | Task-ID aus dem Sitzungsplan. Standardmäßig die Agent-ID. |
 | `--isolation <mode>` | Isolationsmodus pro Start. Derzeit wird `worktree` unterstützt: Erstellt ein neues Git-Worktree unter `${tmpdir}/oma-worktrees/{sessionId}/{agentId}` auf dem Branch `oma/{sessionId}/{agentId}` und führt den Agenten dort aus. Das Worktree bleibt nach dem Beenden erhalten; Befehle zum Zusammenführen oder Verwerfen werden zur manuellen Prüfung ausgegeben (kein automatisches Zusammenführen). |
 | `--read-only` | Beschränkt den gestarteten Agenten auf nicht-destruktive Tools (unterdrückt Auto-Approve-Flags). Wird intern von `oma skill eval --live` für beide Eval-Arme verwendet. |
-| `--fallback-vendors <vendors>` | Aktiviert eine geordnete, durch Kommas getrennte Kette von bis zu drei konfigurierten CLI-Vendoren. Die Fortsetzung erfordert einen erkannten Quoten-/Rate-Limit-/vorübergehenden Fehler und einen neuen sicheren Handoff-Checkpoint. |
+| `--fallback-vendors <vendors>` | Aktiviert eine geordnete, durch Kommas getrennte Kette von bis zu drei konfigurierten CLI-Vendors. Die Fortsetzung erfordert einen erkannten Quoten-/Rate-Limit-/vorübergehenden Fehler und einen neuen sicheren Handoff-Checkpoint. |
 
 **Reihenfolge der Vendor-Auflösung:** `--vendor`-Flag > `agents:`-Überschreibung in `oma-config.yaml` > Agentenstandards des aktiven `model_preset`.
 
@@ -1163,13 +1163,13 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `-w, --workspace <path>` | Zu verifizierender Workspace-Pfad | Aktuelles Verzeichnis |
 | `--session-id <id>` | Sitzungsplan und Berichte auswählen | |
 | `--task-id <id>` | Scope und Bericht einer einzelnen Aufgabe auswählen; erfordert eine Sitzungs- oder Lauf-ID | |
-| `--run-id <id>` | Den Bericht genau eines Laufs auswählen; Sitzung/Aufgabe werden aus dessen lokalem Beleg abgeleitet | |
+| `--run-id <id>` | Den Bericht genau eines Laufs auswählen; Sitzung/Aufgabe werden aus dessen lokalem Ausführungsbeleg abgeleitet | |
 | `--json` | Ausgabe als JSON | |
 | `--output <format>` | Ausgabeformat (`text` oder `json`) | |
 
 **Funktionsweise:** Führt die konfigurierten Prüfungen für den angegebenen Agententyp aus, darunter Tests, statische Inspektionen und Scope-Konformität. Code-Prüfungen im Workspace untersuchen den Workspace auch dann, wenn eine Aufgabe oder ein Lauf ausgewählt ist.
 
-Wenn mehrere Sitzungspläne oder Laufbelege passen, schlägt die Verifikation fehl und verlangt eine explizite Identität, statt eine Datei anhand ihres Namens auszuwählen. Ein neuer Lauf ohne Bericht kann den Bericht eines früheren Laufs nicht wiederverwenden. `--run-id` prüft Agent und Workspace des Belegs, bevor dessen Sitzung/Aufgabe verwendet wird. Ohne lokalen Beleg müssen alle drei IDs angegeben werden. Veraltete TDD-Berichte ohne Scope werden nur zusammen mit dem veralteten Plan `.agents/plan.json` akzeptiert.
+Wenn mehrere Sitzungspläne oder Ausführungsbelege passen, schlägt die Verifikation fehl und verlangt eine explizite Identität, statt eine Datei anhand ihres Namens auszuwählen. Ein neuer Lauf ohne Bericht kann den Bericht eines früheren Laufs nicht wiederverwenden. `--run-id` prüft Agent und Workspace des Ausführungsbelegs, bevor dessen Sitzung/Aufgabe verwendet wird. Ohne lokalen Ausführungsbeleg müssen alle drei IDs angegeben werden. Veraltete TDD-Berichte ohne Scope werden nur zusammen mit dem veralteten Plan `.agents/plan.json` akzeptiert.
 
 `verify triggers` misst die Genauigkeit des Keyword-Detektors anhand eines beschrifteten Prompt-Korpus. Die prozentualen Schwellenwerte sind Gates. Der registrierte Pfad ist `verify agent`; die alte Schreibweise auf oberster Ebene `oma verify <agent-type>` wird mit `Unexpected argument` abgelehnt.
 
@@ -1210,7 +1210,7 @@ oma verify agent backend --run-id run-123 --json
 
 ### hook run {#hook}
 
-Ein Vendor-Hook-Event über den zentralen Hook-Einstiegspunkt von oma auslösen. Dies ist die kanonische ABI, die von jedem generierten `oma-hook.sh`-Wrapper aller Vendoren aufgerufen wird. Der Befehl kann auch direkt verwendet werden, um Handlerketten isoliert zu debuggen oder zu testen.
+Ein Vendor-Hook-Event über den zentralen Hook-Einstiegspunkt von oma auslösen. Dies ist die kanonische ABI, die von jedem generierten `oma-hook.sh`-Wrapper aller Vendors aufgerufen wird. Der Befehl kann auch direkt verwendet werden, um Handlerketten isoliert zu debuggen oder zu testen.
 
 ```text
 oma hook run --vendor <v> --event <nativeEvent> [--matcher <tool>]
@@ -1300,7 +1300,7 @@ oma hook probe [--vendor <list>] [--output <fmt>] [--hooks-dir <dir>]
 
 | Flag | Beschreibung | Standard |
 |:-----|:-----------|:--------|
-| `--vendor <list>` | Durch Kommas getrennte Vendoren, die geprüft werden sollen | `claude,codex,cursor,grok,kimi,kiro,qwen,antigravity` |
+| `--vendor <list>` | Durch Kommas getrennte Vendors, die geprüft werden sollen | `claude,codex,cursor,grok,kimi,kiro,qwen,antigravity` |
 | `--output <fmt>` | Ausgabeformat: `text`, `md` oder `json` | `text` |
 | `--hooks-dir <dir>` | Überschreibt das Verzeichnis `.agents/hooks/core` | Automatisch erkannt |
 
@@ -1368,7 +1368,7 @@ oma vault delete anthropic
 
 ### cleanup
 
-Verwaiste Subagent-Prozesse und temporäre Dateien bereinigen.
+Verwaiste Subagentenprozesse und temporäre Dateien bereinigen.
 
 ```text
 oma cleanup [--dry-run] [-y, --yes] [--json] [--output <format>]
@@ -1601,7 +1601,7 @@ oma search rss google "browser automation"
 
 ### image
 
-Mehrere Vendoren für KI-Bildgenerierung mit authentifizierungsbewusstem parallelem Dispatch.
+Mehrere Vendors für KI-Bildgenerierung mit authentifizierungsbewusstem parallelem Dispatch.
 
 ```text
 oma image <subcommand> ...
@@ -1613,7 +1613,7 @@ oma image <subcommand> ...
 |:-----------|:--------|
 | `generate <prompt...>` | Bilder über `pollinations` (flux/zimage, kostenlos), `codex` (gpt-image-2 über ChatGPT OAuth) oder `antigravity` (nano-banana über Gemini-Code-Assist-Abonnement, ohne Schlüssel) erzeugen |
 | `doctor` | Authentifizierungs- und Installationsstatus pro Vendor prüfen |
-| `vendor list` | Registrierte Vendoren und unterstützte Modelle auflisten |
+| `vendor list` | Registrierte Vendors und unterstützte Modelle auflisten |
 
 **Optionen von `image generate`:**
 
@@ -1623,7 +1623,7 @@ oma image <subcommand> ...
 | `--size <size>` | Beliebiges `WxH` mit durch 16 teilbaren Kanten, 16–3840 und Seitenverhältnis 1:3–3:1; `auto` ist ebenfalls zulässig. | `1024x1024` |
 | `--quality <level>` | `low` \| `medium` \| `high` \| `auto` | `auto` |
 | `-n, --count <n>` | Anzahl der Bilder (1..5) | `1` |
-| `--output-dir <path>` | Ausgabeverzeichnis | `.agents/results/images/{timestamp}-{shortid}/` (Suffix `-compare`, wenn mehrere Vendoren laufen) |
+| `--output-dir <path>` | Ausgabeverzeichnis | `.agents/results/images/{timestamp}-{shortid}/` (Suffix `-compare`, wenn mehrere Vendors laufen) |
 | `--allow-external-output` | Ausgabepfade außerhalb von `$PWD` erlauben | `false` |
 | `--model <name>` | Vendor-spezifische Modellüberschreibung; wird von `antigravity`, dessen Modell undurchsichtig ist, ignoriert. | Vendor-Standard |
 | `--timeout <duration>` | Zeitüberschreitung pro Bild | `180s` |
@@ -1867,7 +1867,7 @@ oma model probe openai/gpt-5 --timeout 30s --json
 oma model propose --owner anthropic --json
 ```
 
-`model check` vergleicht die Registry mit den Live-Listen der Vendoren und kann neue Kandidaten prüfen. `model probe` testet einen Slug anhand der Vendor-CLI. `model propose` gibt einen `oma-config`-Patch für `models:` aus; verwende `--write` nur, wenn du die Konfiguration ändern willst. Verfügbarkeit und Quote eines Vendors können Prüfungen scheitern lassen, auch wenn ein Registry-Eintrag gültig ist.
+`model check` vergleicht die Registry mit den Live-Listen der Vendors und kann neue Kandidaten prüfen. `model probe` testet einen Slug anhand der Vendor-CLI. `model propose` gibt einen `oma-config`-Patch für `models:` aus; verwende `--write` nur, wenn du die Konfiguration ändern willst. Verfügbarkeit und Quote eines Vendors können Prüfungen scheitern lassen, auch wenn ein Registry-Eintrag gültig ist.
 
 ### Befehle für Agenten-Evidenz {#agent-evidence-commands}
 
@@ -1886,7 +1886,7 @@ oma agent finish "<run-id>" "<claim-path>"
 oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context` lädt graphausgewählten Kontext; `begin` startet einen Lauf und gibt eine generierte Lauf-ID sowie einen Claim-Pfad aus; `verify` erhält diese Lauf-ID und führt die festgelegten Prüfungen aus (`--required`), grenzt sie mit `--affected` ein oder führt den Befehl nach `--` aus und zeichnet dessen Exit-Code auf; `finish` erhält Lauf-ID und Pfad zur Claim-Datei. `agent resume <session-id> --dry-run` meldet bereite und wiederverwendbare Aufgaben, und `agent resume <session-id> --max-attempts <n>` (Standard `3`) wiederholt nur Aufgaben, die der Plan zulässt. `agent verify` und `agent resume` akzeptieren `--project-root <path>`, um ein anderes Projekt anzusprechen. Siehe [Agentenergebnisse und Fortsetzen](../guide/agent-results-and-resume.md) für Plan- und Claim-Form. Diese Befehle gehören zum OMA-Ausführungsvertrag; für gewöhnliche Nutzerarbeit können stattdessen `agent spawn`, `agent parallel` oder `agent review` verwendet werden.
+`agent context` lädt graphausgewählten Kontext; `begin` startet einen Lauf und gibt eine generierte Lauf-ID sowie einen Pfad zur Ergebnisdeklaration aus; `verify` erhält diese Lauf-ID und führt die festgelegten Prüfungen aus (`--required`), grenzt sie mit `--affected` ein oder führt den Befehl nach `--` aus und zeichnet dessen Exit-Code auf; `finish` erhält Lauf-ID und Pfad zur Ergebnisdeklarationsdatei. `agent resume <session-id> --dry-run` meldet bereite und wiederverwendbare Aufgaben, und `agent resume <session-id> --max-attempts <n>` (Standard `3`) wiederholt nur Aufgaben, die der Plan zulässt. `agent verify` und `agent resume` akzeptieren `--project-root <path>`, um ein anderes Projekt anzusprechen. Siehe [Agentenergebnisse und Fortsetzen](../guide/agent-results-and-resume.md) für Plan- und Ergebnisdeklarationsform. Diese Befehle gehören zum OMA-Ausführungsvertrag; für gewöhnliche Nutzerarbeit können stattdessen `agent spawn`, `agent parallel` oder `agent review` verwendet werden.
 
 ### memory
 
@@ -2264,7 +2264,7 @@ Gibt die aktuelle CLI-Version aus und beendet sich.
 | `Interval was rounded. Review with --dry-run, then re-run with --accept-rounded to register it.` | Der `--every`-Wert ist kein sauberer Cron-Schritt | Mit `--dry-run` prüfen, dann `--accept-rounded` ergänzen oder `--cron` verwenden |
 | `Nothing to set: pass at least one of --gate, --budget-minutes, --description` | `oma goal set` wurde ohne Vertrag ausgeführt | `--gate`, `--budget-minutes` oder `--description` ergänzen |
 
-Für Probleme mit Installation, Vendoren, Hooks, Dashboard und Zeitplänen siehe den Leitfaden [Fehlerbehebung](../guide/troubleshooting.md).
+Für Probleme mit Installation, Vendors, Hooks, Dashboard und Zeitplänen siehe den Leitfaden [Fehlerbehebung](../guide/troubleshooting.md).
 
 ---
 

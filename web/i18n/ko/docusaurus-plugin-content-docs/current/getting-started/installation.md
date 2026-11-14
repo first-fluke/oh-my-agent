@@ -142,7 +142,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-도메인 엔트리는 각각 frontend 8개, security 6개, research 8개 스킬과 이에 맞는 네이티브 에이전트 구성을 포함합니다. 세션 부트스트랩은 해당 프리셋을 런타임 설치 프로그램에 전달합니다. 공유 런타임 설정과 기존에 설치된 스킬은 위에서 설명한 설치 프로그램 동작을 따릅니다. `oma` 엔트리는 전체 플러그인을 유지합니다. 생성된 Codex 마켓플레이스 카탈로그와 Grok Build 및 ZCode 카탈로그에도 동일한 도메인 루트가 선언됩니다. Antigravity CLI(생성된 트리 또는 `oma-antigravity-plugin.tar.gz` 릴리스 아티팩트에 대한 `agy plugin install ./antigravity-plugin`), Grok Build CLI, ZCode, Kimi Code(`/plugins install`)는 각각 자체 생성된 매니페스트를 읽습니다. 호스트별 정확한 절차는 [Claude 호환 플러그인 호스트](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)를 참고하세요.
+도메인 엔트리는 각각 frontend 8개, security 6개, research 8개 스킬과 이에 맞는 네이티브 에이전트 구성을 포함합니다. 세션 부트스트랩은 해당 프리셋을 런타임 설치 프로그램에 전달합니다. 공유 런타임 설정과 기존에 설치된 스킬은 위에서 설명한 설치 프로그램 동작을 따릅니다. `oma` 엔트리는 전체 플러그인을 유지합니다. 생성된 Codex 마켓플레이스 카탈로그와 Grok Build 및 ZCode 카탈로그에도 동일한 도메인 루트가 선언됩니다. Antigravity CLI(생성된 트리 또는 `oma-antigravity-plugin.tar.gz` 릴리스 산출물에 대한 `agy plugin install ./antigravity-plugin`), Grok Build CLI, ZCode, Kimi Code(`/plugins install`)는 각각 자체 생성된 매니페스트를 읽습니다. 호스트별 정확한 절차는 [Claude 호환 플러그인 호스트](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)를 참고하세요.
 
 고정된 호스트 CI 작업은 새 러너에서 로컬 마켓플레이스를 등록하고, 도메인 엔트리를 설치한 뒤, 생성된 인벤토리를 검사합니다. 이러한 검사는 모델 호출 없이 실행됩니다. 런타임 자격 증명, 외부 프로바이더, 첫 태스크의 성공 여부는 여전히 별도 검증이 필요합니다. 릴리스 검사에서는 모든 도메인 루트의 두 매니페스트가 CLI 버전과 일치하고 Release Please 버전 업데이터를 갖추었는지도 요구합니다.
 

@@ -49,7 +49,7 @@ Cada mensagem abaixo é exibida pela CLI. Compare com o início da mensagem.
 | `Invalid DASHBOARD_PORT: ...` | `DASHBOARD_PORT` não é um inteiro de 1 a 65535 | Defina uma porta válida ou remova a variável para usar 9847 |
 | `Removed option <old>. Use <new>.` | O comando usou uma grafia de flag que foi removida | Use a flag indicada na mensagem |
 | `Unknown command: ... Use oma --help.` | O caminho do comando foi removido ou renomeado | Execute `oma --help` ou `oma describe` para ver os caminhos atuais |
-| `oma agent spawn` termina com código 3 | O vendor terminou com 0, mas a execução não terminou como `completed` | Leia `unresolved` no registro da execução; consulte [Resultados de agentes e retomada](./agent-results-and-resume.md) |
+| `oma agent spawn` termina com código 3 | O vendor terminou com 0, mas a execução não terminou como `completed` | Leia `unresolved` no registro de execução; consulte [Resultados de agentes e retomada](./agent-results-and-resume.md) |
 
 ## A CLI ou a instalação está usando os arquivos errados {#the-cli-or-install-is-using-the-wrong-files}
 

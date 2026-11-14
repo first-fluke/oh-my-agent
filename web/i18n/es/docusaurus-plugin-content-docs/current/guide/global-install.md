@@ -1,12 +1,12 @@
 ---
 title: "Guía: Instalación global"
 sidebar_label: Instalación global
-description: Instala oh-my-agent en el home global de OMA (~/.oma/) en lugar de hacerlo por proyecto para aplicar las mismas skills, workflows y reglas en todos tus proyectos. Cubre oma install --global, oma update --global, oma uninstall --global, la sobrescritura con OMA_HOME, la detección de instalaciones dobles mediante oma doctor y las particularidades de cada plataforma (rechazo de sudo, CI, WSL y la protección cwd=HOME).
+description: Instala oh-my-agent en el home global de OMA (~/.oma/) en lugar de hacerlo por proyecto para aplicar las mismas habilidades, flujos de trabajo y reglas en todos tus proyectos. Cubre oma install --global, oma update --global, oma uninstall --global, la sobrescritura con OMA_HOME, la detección de instalaciones dobles mediante oma doctor y las particularidades de cada plataforma (rechazo de sudo, CI, WSL y la protección cwd=HOME).
 ---
 
 ## ¿Qué es una instalación global?
 
-De forma predeterminada, `oma install` limita todo al directorio del proyecto actual: el SSOT vive en `<cwd>/.agents/` y las configuraciones de los proveedores se escriben en `<cwd>/.claude/`, `<cwd>/.codex/`, etc. Una **instalación global** (`oma install --global`) instala oh-my-agent en el home global de OMA, de modo que las mismas skills, workflows y reglas estén disponibles en cada proyecto que abras sin repetir el paso de instalación. El SSOT vive en `~/.oma/.agents/`; las configuraciones de los proveedores siguen en `~/.claude/`, `~/.codex/`, etc.
+De forma predeterminada, `oma install` limita todo al directorio del proyecto actual: el SSOT vive en `<cwd>/.agents/` y las configuraciones de los proveedores se escriben en `<cwd>/.claude/`, `<cwd>/.codex/`, etc. Una **instalación global** (`oma install --global`) instala oh-my-agent en el home global de OMA, de modo que las mismas habilidades, flujos de trabajo y reglas estén disponibles en cada proyecto que abras sin repetir el paso de instalación. El SSOT vive en `~/.oma/.agents/`; las configuraciones de los proveedores siguen en `~/.claude/`, `~/.codex/`, etc.
 
 ## Comparación entre instalación de proyecto y global
 
@@ -45,7 +45,7 @@ Existing per-project installs are not affected.
 ? Proceed with the global install? (y/N)
 ```
 
-Confirma para continuar. A continuación, la instalación sigue el mismo flujo interactivo que una instalación de proyecto (idioma, preset de modelo, tipo de proyecto y selección de proveedores).
+Confirma para continuar. A continuación, la instalación sigue el mismo flujo interactivo que una instalación de proyecto (idioma, preset de modelos, tipo de proyecto y selección de proveedores).
 
 Después de una instalación correcta, se muestran los pasos siguientes:
 
@@ -126,7 +126,7 @@ oma uninstall --global --dry-run
 oma uninstall --global
 ```
 
-El comando de desinstalación separa los archivos propiedad de oma de los archivos del usuario. Solo elimina las skills registradas como gestionadas por OMA en `managed-skills.json`, dentro de `.agents/state/`; el marcador `<!-- oma:generated -->` identifica los archivos de prompts de Copilot generados. El contenido del usuario (`oma-config.yaml`, `mcp.json` y las skills no registradas como gestionadas) nunca se elimina. Ejecuta primero `--dry-run` para ver la lista exacta.
+El comando de desinstalación separa los archivos propiedad de oma de los archivos del usuario. Solo elimina las habilidades registradas como gestionadas por OMA en `managed-skills.json`, dentro de `.agents/state/`; el marcador `<!-- oma:generated -->` identifica los archivos de prompts de Copilot generados. El contenido del usuario (`oma-config.yaml`, `mcp.json` y las habilidades no registradas como gestionadas) nunca se elimina. Ejecuta primero `--dry-run` para ver la lista exacta.
 
 Para desinstalar una instalación de proyecto, omite `--global`:
 
@@ -168,12 +168,12 @@ configuración global seleccione AgentMemory.
 ## Instalaciones existentes
 
 La migración del home copia los datos propiedad de OMA desde `~/.agents/` y `~/.config/oma/`
-a la nueva estructura. Los originales se conservan, salvo los directorios de skills verificados como propiedad de OMA
+a la nueva estructura. Los originales se conservan, salvo los directorios de habilidades verificados como propiedad de OMA
 que se convierten en enlaces de descubrimiento: su contenido original se archiva en
-`~/.oma/backup/legacy-global-skills/` antes de que la ruta antigua pase a ser un enlace a la skill
+`~/.oma/backup/legacy-global-skills/` antes de que la ruta antigua pase a ser un enlace a la habilidad
 migrada. Los archivos de destino existentes no se sobrescriben; los conflictos y los datos en uso
 se informan para reintentarlos. Los índices del vault
-combinan los nombres de las claves, sin sacar los valores secretos del llavero del sistema operativo. Las skills
+combinan los nombres de las claves, sin sacar los valores secretos del llavero del sistema operativo. Las habilidades
 del usuario y los enlaces ajenos permanecen en su sitio; los archivos de autenticación de los proveedores no se
 mueven. Los lectores del runtime usan solo
 las rutas nuevas.

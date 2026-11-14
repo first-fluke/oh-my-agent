@@ -164,7 +164,7 @@ A palavra isolada "work" não é um gatilho: é vocabulário comum ("Does this w
 | **REFINE** | 9-13 | Agente Refactor (Steps 9, 11, 13) + revisores CCR (Steps 10, 12) | Divisão de arquivos, Reusabilidade, Impacto em Cascata, Consistência, Código Morto |
 | **SHIP** | 14-17 | Revisores CCR | Qualidade de Código (lint/coverage), Fluxo UX, Problemas Relacionados, Prontidão para Deploy |
 
-Cada etapa de revisão é executada por seu próprio subagente revisor com contexto novo ([Cross-Context Review](../getting-started/glossary.md#cross-context-review-ccr)). O Agente PM não revisa o próprio plano inline.
+Cada etapa de revisão é executada por seu próprio subagente revisor com contexto novo ([Revisão entre contextos (CCR)](../getting-started/glossary.md#cross-context-review-ccr)). O Agente PM não revisa o próprio plano inline.
 
 **Definições de portão:**
 - **PLAN_GATE:** Plano documentado, suposições listadas, alternativas consideradas, revisão de over-engineering feita, escopo autorizado.

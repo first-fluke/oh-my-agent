@@ -248,7 +248,7 @@ oma stats get
 | `/orchestrate` | 持久化 | 加载或创建计划，然后分派并行执行，同时监控和验证 | 适合自动并行协调的独立任务 |
 | `/work` | 持久化 | 在授权范围内逐步完成多领域规划、实现和 QA | 跨越多个领域、需要协调交付的功能 |
 | `/ultrawork` | 持久化 | 包含 5 个阶段、17 个步骤和 12 个隔离审查检查点的质量工作流 | 最高质量交付，生产关键代码 |
-| `/plan` | 非持久化 | PM 驱动的任务分解、API 契约，以及在 `docs/plans/work/` 中跟踪计划工件（顺序命名 `NNN-name.md`，使用 Status 字段管理生命周期） | 复杂多智能体工作之前，或需要跟踪进度和决策日志的复杂功能 |
+| `/plan` | 非持久化 | PM 驱动的任务分解、API 契约，以及在 `docs/plans/work/` 中跟踪计划产物（顺序命名 `NNN-name.md`，使用 Status 字段管理生命周期） | 复杂多智能体工作之前，或需要跟踪进度和决策日志的复杂功能 |
 | `/brainstorm` | 非持久化 | 结合 2 到 3 个方案进行方法探索，并在 `docs/decisions/` 中生成草案 | 确定实现方案之前 |
 | `/deepinit` | 非持久化 | 完整项目初始化（AGENTS.md、ARCHITECTURE.md、docs/） | 在现有代码库中设置 oh-my-agent |
 | `/review` | 非持久化 | QA 流水线：OWASP 安全、性能、无障碍、代码质量。审查范围由请求指定，默认针对当前变更 | 合并代码前或部署前审查 |
@@ -334,7 +334,7 @@ oma stats get
 | **oma-tf-infra** | Terraform 基础设施、IAM 和策略即代码 | Terraform 模块、计划和控制措施 |
 | **oma-translation** | UI、文档和营销本地化 | 保留上下文的翻译内容 |
 | **oma-video** | 短视频、讲解视频和演示 | 带素材和清单的可复现视频运行 |
-| **oma-voice** | 本地 TTS、STT 和配音 | 带清单的音频或转录工件 |
+| **oma-voice** | 本地 TTS、STT 和配音 | 带清单的音频或转录产物 |
 
 ---
 

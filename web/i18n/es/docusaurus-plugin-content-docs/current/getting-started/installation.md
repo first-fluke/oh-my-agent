@@ -1,11 +1,11 @@
 ---
 title: Instalación
-description: Instala oh-my-agent, elige skills y proveedores, entiende los archivos de proyecto generados, configura los valores predeterminados de modelo y runtime, y verifica la configuración con oma doctor.
+description: Instala oh-my-agent, elige habilidades y proveedores, entiende los archivos de proyecto generados, configura los valores predeterminados de modelo y runtime, y verifica la configuración con oma doctor.
 ---
 
 # Instalación
 
-Para una sola tarea, empieza con [una sola skill](./choose-setup.md#load-one-skill). Para hooks de proyecto y flujos de trabajo en equipo, usa la instalación del runtime que aparece abajo. La [guía de configuración](./choose-setup.md) separa la carga de instrucciones, los presets de skills y la instalación del marketplace de Claude Code.
+Para una sola tarea, empieza con [una sola habilidad](./choose-setup.md#load-one-skill). Para hooks de proyecto y flujos de trabajo en equipo, usa la instalación del runtime que aparece abajo. La [guía de configuración](./choose-setup.md) separa la carga de instrucciones, los presets de habilidades y la instalación del marketplace de Claude Code.
 
 Para Grok Bot, usa la [página de instalación de Grok Bot](/grok-bot/). El enlace nativo **Add to Grok Bot** requiere una ficha aprobada en Cursor Marketplace; no está disponible mientras el registro está pendiente. La [guía de instalación manual](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md) explica por separado `oma install --target grok-bot` para el equipo del Bot. La integración del runtime de Grok Build que aparece abajo es otro destino de instalación.
 
@@ -27,7 +27,7 @@ La [guía de instalación para agentes](https://github.com/first-fluke/oh-my-age
 - **uv**: gestor de paquetes de Python (el script de bootstrap ofrece instalarlo si falta).
 - **Proveedor de inteligencia de código**: Serena es el proveedor predeterminado. Gortex también es compatible cuando se selecciona en la configuración de proveedores. El instalador puede preparar Serena con `uv tool install`; continúa con una advertencia cuando falta una dependencia opcional. Con Gortex seleccionado, `oma install` y `oma update` en modo proyecto registran el proyecto en el daemon de Gortex (`gortex track`) cuando aún no está rastreado y añaden los directorios generados por OMA a la lista de exclusión de ese proyecto a través de la CLI de Gortex; no se escribe nada en el árbol del proyecto. Gortex en sí debe instalarse por separado.
 
-El instalador agrupa las integraciones por capacidad. Los proveedores de hooks incluyen Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro y Qwen; OpenCode y pi usan puentes de extensión; Hermes recibe enlaces a skills; y ZCode recibe comandos de workflow. Puedes seleccionar más de un proveedor, pero para la primera tarea solo necesitas el host que vayas a utilizar.
+El instalador agrupa las integraciones por capacidad. Los proveedores de hooks incluyen Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro y Qwen; OpenCode y pi usan puentes de extensión; Hermes recibe enlaces a habilidades; y ZCode recibe comandos de flujo de trabajo. Puedes seleccionar más de un proveedor, pero para la primera tarea solo necesitas el host que vayas a utilizar.
 
 ---
 
@@ -49,7 +49,7 @@ Ambos scripts de bootstrap se comportan igual:
 2. Comprueban bun y uv (y serena si se elige) y los instalan si faltan.
 3. Instalan el comando `oma` de forma global con `bun install --global oh-my-agent`, salvo que `oma` ya esté en tu PATH (los hooks y los workflows lo llaman).
 4. Ejecutan el instalador interactivo con selección de preset y proveedor.
-5. Crean `.agents/` con las skills y la configuración seleccionadas.
+5. Crean `.agents/` con las habilidades y la configuración seleccionadas.
 6. Preparan las capas de integración del runtime (hooks, symlinks y ajustes de los proveedores detectados).
 7. Configuran los servidores MCP de inteligencia de código y memoria.
 
@@ -60,14 +60,14 @@ El bootstrap continúa después de fallos de dependencias opcionales e informa d
 - **MCP de navegador Aside**: viene preseleccionado en la configuración interactiva y, si falta, se instala con `curl -fsSL https://releases.aside.com/install.sh | bash`, solo si lo mantienes seleccionado. Desmárcalo en el paso del MCP de navegador o más tarde con `oma update mcp`.
 - **Servicio AgentMemory**: `bun install -g @agentmemory/agentmemory`, registrado como servicio de inicio de sesión (launchd, unidad de usuario de systemd o tarea programada de Windows).
 - **CUE**: lo instala el script de bootstrap con `brew install cue` (macOS/Linux) o `winget` (Windows), y de nuevo `oma install` cuando Serena es el proveedor de inteligencia de código.
-- **Escrituras fuera del proyecto**: `~/.claude.json` (marca el proyecto como espacio de trabajo de confianza de Claude Code), `~/.serena/` (contexto de OMA, tamaño mínimo de respuesta, registro del proyecto), `~/.cursor/cli-config.json` (desactiva la atribución de commits de Cursor), `~/.grok/config.toml` (telemetría) y `~/.gemini/antigravity-cli/` (HUD), cada uno solo para un proveedor seleccionado. Antes de enlazar skills en las carpetas de proveedores del directorio personal (Antigravity, Hermes, Kimi), pregunta.
+- **Escrituras fuera del proyecto**: `~/.claude.json` (marca el proyecto como espacio de trabajo de confianza de Claude Code), `~/.serena/` (contexto de OMA, tamaño mínimo de respuesta, registro del proyecto), `~/.cursor/cli-config.json` (desactiva la atribución de commits de Cursor), `~/.grok/config.toml` (telemetría) y `~/.gemini/antigravity-cli/` (HUD), cada uno solo para un proveedor seleccionado. Antes de enlazar habilidades en las carpetas de proveedores del directorio personal (Antigravity, Hermes, Kimi), pregunta.
 - **Exclusiones de telemetría**: Claude `DISABLE_TELEMETRY=1` (esto también desactiva Claude Code Remote Control) y las estadísticas de uso de Gemini, Qwen, Codex y Grok. Define `telemetry: true` para conservar los valores predeterminados de cada proveedor.
 - **Ajustes de Claude Code**: se completan las claves sin definir en `.claude/settings.json`, entre ellas `skipDangerousModePermissionPrompt: true`, `effortLevel: high`, `cleanupPeriodDays: 180` y flags de env que desactivan la auto memory, el adaptive thinking, el reporte de errores y las instrucciones de git integradas. Los valores que ya hayas definido se conservan.
 - **Trailer de coautoría**: la atribución de commits de Claude Code pasa a ser `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`, y las PR reciben una línea "Generated with oh-my-agent". Define `scm.co_author.enabled: false` para desactivarlo.
 - **Protección commit-msg**: `.githooks/commit-msg` rechaza las direcciones `Co-authored-by` que no estén en `.githooks/co-authors.allow` ni en `scm.co_author.email`. `git config --local core.hooksPath .githooks` solo se configura cuando no hay otros hooks activos; si los hay, oma muestra cómo encadenar la protección. Define `scm.co_author.enforce_hook: false` para desactivarla.
 - **Actualizaciones en segundo plano**: `oma update` actualiza la CLI de `oma` en segundo plano (`auto_update_cli: false` u `OMA_SKIP_VERSION_CHECK=1` para detenerlo) y ejecuta `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` para detenerlo).
 - **Temporizador de limpieza de Serena**: con Serena en el modo `bridge` predeterminado, la primera sesión de agente que inicia un servidor Serena compartido registra un temporizador que detiene cada 5 minutos los servidores Serena compartidos inactivos (launchd `dev.oma.serena-daemon-gc`, temporizador de usuario de systemd `oma-serena-daemon-gc.timer` o tarea programada de Windows `OMA Serena Daemon GC`). Define `serena.mode: stdio` para omitir el servidor compartido y su temporizador. `oma uninstall` no elimina el temporizador.
-- **Las ejecuciones no interactivas** (`-y`, `OMA_YES=1`, `CI=true`) usan el preset de skills `All`, salvo que `--preset` seleccione otro, más `model_preset: auto` y Python como lenguaje de backend. No seleccionan ningún MCP de navegador (y omiten el script de instalación de Aside) salvo que `mcp.devtools_browsers` ya incluya uno.
+- **Las ejecuciones no interactivas** (`-y`, `OMA_YES=1`, `CI=true`) usan el preset de habilidades `All`, salvo que `--preset` seleccione otro, más `model_preset: auto` y Python como lenguaje de backend. No seleccionan ningún MCP de navegador (y omiten el script de instalación de Aside) salvo que `mcp.devtools_browsers` ya incluya uno.
 
 ---
 
@@ -79,15 +79,15 @@ bunx oh-my-agent@latest
 
 Esto inicia el instalador interactivo sin el bootstrap de dependencias. Debes tener bun instalado de antemano.
 
-El instalador te pide seleccionar un [preset de skills](./glossary.md#skill-preset). Los presets actuales se definen en `PRESETS` en `cli/constants/skill-data.ts`:
+El instalador te pide seleccionar un [preset de habilidades](./glossary.md#skill-preset). Los presets actuales se definen en `PRESETS` en `cli/constants/skill-data.ts`:
 
 ### Presets {#presets}
 
-Elige el preset que se ajuste al trabajo que necesita el repositorio. Los nombres de skills de abajo omiten el prefijo `oma-`.
+Elige el preset que se ajuste al trabajo que necesita el repositorio. Los nombres de habilidades de abajo omiten el prefijo `oma-`.
 
-| Preset | Elígelo cuando el proyecto sea | Skills incluidas | Número |
+| Preset | Elígelo cuando el proyecto sea | Habilidades incluidas | Número |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Cualquier proyecto, o quieres que todos los workflows funcionen desde el principio | Todas las skills del registro | 33 |
+| **all** | Cualquier proyecto, o quieres que todos los flujos de trabajo funcionen desde el principio | Todas las habilidades del registro | 33 |
 | **fullstack** | Clientes web y móviles con un backend e infraestructura de Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Un frontend web con un backend y una base de datos | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Una app móvil con un backend y una base de datos | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -99,7 +99,7 @@ Elige el preset que se ajuste al trabajo que necesita el repositorio. Los nombre
 | **research** | Artículos académicos, estudios de mercado y conversión de PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Recursos de diseño, imágenes, voz y contenido escrito | design, image, voice, academic-writing, translation, scm | 6 |
 
-Los presets son paquetes de skills; no crean una definición de subagente por cada skill. El preset `all` se expande desde el registro activo de skills, así que la lista puede crecer con el repositorio. Los presets de dominio incluyen solo las skills necesarias para ese enfoque.
+Los presets son paquetes de habilidades; no crean una definición de subagente por cada habilidad. El preset `all` se expande desde el registro activo de habilidades, así que la lista puede crecer con el repositorio. Los presets de dominio incluyen solo las habilidades necesarias para ese enfoque.
 
 Elige un preset desde la línea de comandos:
 
@@ -107,15 +107,15 @@ Elige un preset desde la línea de comandos:
 oma install --preset frontend --yes
 ```
 
-`--preset` usa los nombres de la tabla y tiene prioridad sobre la selección interactiva de skills y sobre el valor predeterminado no interactivo `all`. Un nombre desconocido se rechaza antes de comenzar la instalación. Si se omite la opción, se mantiene el flujo de selección existente. La opción selecciona skills; los archivos compartidos, los agentes, los workflows, los hooks y la configuración de proveedores siguen rigiéndose por el instalador del runtime. Reinstalar con un preset más pequeño conserva las skills instaladas previamente. La selección personalizada solo está disponible mediante el menú interactivo; `--preset` no acepta `custom` ni valores vacíos.
+`--preset` usa los nombres de la tabla y tiene prioridad sobre la selección interactiva de habilidades y sobre el valor predeterminado no interactivo `all`. Un nombre desconocido se rechaza antes de comenzar la instalación. Si se omite la opción, se mantiene el flujo de selección existente. La opción selecciona habilidades; los archivos compartidos, los agentes, los flujos de trabajo, los hooks y la configuración de proveedores siguen rigiéndose por el instalador del runtime. Reinstalar con un preset más pequeño conserva las habilidades instaladas previamente. La selección personalizada solo está disponible mediante el menú interactivo; `--preset` no acepta `custom` ni valores vacíos.
 
-Después de la instalación, lee la lista de skills seleccionadas y el informe de disponibilidad de workflows. Un workflow se expone únicamente cuando los manifiestos de sus skills requeridas tienen nombres y descripciones válidos. Las skills conservadas existentes pueden satisfacer esos requisitos. Las referencias condicionales se informan por separado y no amplían el preset seleccionado. Esta comprobación cubre los manifiestos; las herramientas, los proveedores, las credenciales y la ejecución siguen necesitando sus propias comprobaciones.
+Después de la instalación, lee la lista de habilidades seleccionadas y el informe de disponibilidad de flujos de trabajo. Un flujo de trabajo se expone únicamente cuando los manifiestos de sus habilidades requeridas tienen nombres y descripciones válidos. Las habilidades conservadas existentes pueden satisfacer esos requisitos. Las referencias condicionales se informan por separado y no amplían el preset seleccionado. Esta comprobación cubre los manifiestos; las herramientas, los proveedores, las credenciales y la ejecución siguen necesitando sus propias comprobaciones.
 
-### Workflows que necesitan skills fuera de un preset {#workflows-that-need-skills-outside-a-preset}
+### Flujos de trabajo que necesitan habilidades fuera de un preset {#workflows-that-need-skills-outside-a-preset}
 
-Todos los presets copian las definiciones de workflows y agentes. Los comandos y prompts se exponen únicamente para los workflows cuyas skills requeridas están disponibles. Por ejemplo, una instalación nueva de frontend deja `/work` no disponible porque le falta `oma-coordination`; sus skills existentes de PM y QA ya satisfacen los demás requisitos de entrada. El instalador informa de esa skill ausente sin cambiar a `all`.
+Todos los presets copian las definiciones de flujos de trabajo y agentes. Los comandos y prompts se exponen únicamente para los flujos de trabajo cuyas habilidades requeridas están disponibles. Por ejemplo, una instalación nueva de frontend deja `/work` no disponible porque le falta `oma-coordination`; sus habilidades existentes de PM y QA ya satisfacen los demás requisitos de entrada. El instalador informa de esa habilidad ausente sin cambiar a `all`.
 
-| Workflow | Skills de entrada requeridas | Presets que las incluyen |
+| Flujo de trabajo | Habilidades de entrada requeridas | Presets que las incluyen |
 |----------|-------------|-------------------------|
 | `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
 | `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
@@ -132,7 +132,7 @@ Todos los presets copian las definiciones de workflows y agentes. Los comandos y
 
 Las referencias específicas de cada rama siguen siendo orientativas. Por ejemplo, `/convert` elige herramientas de PDF, HWP o video tras inspeccionar su entrada; `/ralph` y `/ultrawork` pueden necesitar `oma-refactor` para una rama de refactorización. Estas referencias no son requisitos de entrada incondicionales.
 
-Ejecuta `oma doctor` para diagnosticar manifiestos ausentes o no válidos. Para añadir una skill que falte, ejecuta `oma install` y elige **Select individually**. Después de reparar un manifiesto, ejecuta `oma link` para refrescar la exposición de workflows; reinstalar también la refresca. Usa el ámbito `--global` correspondiente para una instalación global de OMA. Los comandos de usuario existentes se conservan cuando se eliminan comandos de OMA no disponibles.
+Ejecuta `oma doctor` para diagnosticar manifiestos ausentes o no válidos. Para añadir una habilidad que falte, ejecuta `oma install` y elige **Select individually**. Después de reparar un manifiesto, ejecuta `oma link` para refrescar la exposición de flujos de trabajo; reinstalar también la refresca. Usa el ámbito `--global` correspondiente para una instalación global de OMA. Los comandos de usuario existentes se conservan cuando se eliminan comandos de OMA no disponibles.
 
 ### Plugins de dominio
 
@@ -143,7 +143,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-Las entradas de dominio contienen 8 skills de frontend, 6 de seguridad o 8 de investigación y una selección de agentes nativos correspondiente. Su arranque de sesión pasa ese preset al instalador del runtime. La configuración compartida del runtime y las skills ya instaladas siguen el comportamiento del instalador descrito arriba. La entrada `oma` conserva el plugin completo. Las mismas raíces de dominio se declaran en el catálogo generado del marketplace de Codex y en los catálogos de Grok Build y ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` en el árbol emitido o el asset de release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode y Kimi Code (`/plugins install`) leen cada uno su propio manifiesto generado; consulta [Hosts de plugins compatibles con Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) para los pasos exactos por host.
+Las entradas de dominio contienen 8 habilidades de frontend, 6 de seguridad o 8 de investigación y una selección de agentes nativos correspondiente. Su arranque de sesión pasa ese preset al instalador del runtime. La configuración compartida del runtime y las habilidades ya instaladas siguen el comportamiento del instalador descrito arriba. La entrada `oma` conserva el plugin completo. Las mismas raíces de dominio se declaran en el catálogo generado del marketplace de Codex y en los catálogos de Grok Build y ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` en el árbol emitido o el asset de release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode y Kimi Code (`/plugins install`) leen cada uno su propio manifiesto generado; consulta [Hosts de plugins compatibles con Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) para los pasos exactos por host.
 
 Los jobs fijados en CI del host registran el marketplace local en runners frescos, instalan entradas de dominio e inspeccionan el inventario resultante. Estas comprobaciones se ejecutan sin llamadas a modelos. Las credenciales del runtime, los proveedores externos y una primera tarea satisfactoria siguen necesitando su propia verificación. Las comprobaciones de release también exigen que ambos manifiestos en cada raíz de dominio coincidan con la versión de la CLI y tengan un actualizador de versión de Release Please.
 
@@ -193,7 +193,7 @@ El instalador solo crea directorios de proveedores para los hosts que seleccione
 Para usar la CLI (dashboards, spawns de agentes y diagnósticos), instala oh-my-agent globalmente:
 
 :::note
-Esta sección instala el comando `oma`. No es lo mismo que `oma install --global`, que instala skills, workflows y reglas en el home global de OMA (`~/.oma/.agents/`) para todos los proyectos. Consulta [Instalación global](../guide/global-install.md).
+Esta sección instala el comando `oma`. No es lo mismo que `oma install --global`, que instala habilidades, flujos de trabajo y reglas en el home global de OMA (`~/.oma/.agents/`) para todos los proyectos. Consulta [Instalación global](../guide/global-install.md).
 :::
 
 ### Homebrew (macOS/Linux)
@@ -254,7 +254,7 @@ curl -fsSL https://claude.ai/install.sh | bash
 npm install --global @anthropic-ai/claude-code
 ```
 
-La autenticación es automática en la primera ejecución. Claude Code usa `.claude/` para hooks y ajustes, con las skills enlazadas desde `.agents/skills/`.
+La autenticación es automática en la primera ejecución. Claude Code usa `.claude/` para hooks y ajustes, con las habilidades enlazadas desde `.agents/skills/`.
 
 ### Codex CLI
 
@@ -371,7 +371,7 @@ oma doctor
 Este comando comprueba:
 - Que la CLI del host seleccionado está instalada y disponible; las herramientas opcionales se informan por separado.
 - Que las entradas de los servidores MCP configurados son válidas (por ejemplo, Serena, Gortex, Context7 o DevTools).
-- Que los archivos de skills existen con un frontmatter válido en SKILL.md.
+- Que los archivos de habilidades existen con un frontmatter válido en SKILL.md.
 - Que los symlinks y scripts de hooks apuntan a destinos válidos.
 - Que los hooks están configurados correctamente en los archivos de ajustes del proveedor.
 - Que los proveedores seleccionados de inteligencia de código y memoria son accesibles (con Gortex, también si el proyecto actual está en el conjunto de proyectos rastreados del daemon).
@@ -399,9 +399,9 @@ oma update
 
 Esto actualiza la CLI global de oh-my-agent a la versión más reciente.
 
-### Actualización de skills del proyecto
+### Actualización de habilidades del proyecto
 
-Las skills y workflows de un proyecto pueden actualizarse mediante la GitHub Action (`action/`) para actualizaciones automáticas o volviendo a ejecutar manualmente el instalador:
+Las habilidades y flujos de trabajo de un proyecto pueden actualizarse mediante la GitHub Action (`action/`) para actualizaciones automáticas o volviendo a ejecutar manualmente el instalador:
 
 ```bash
 bunx oh-my-agent@latest
@@ -413,13 +413,13 @@ El instalador detecta las instalaciones existentes y ofrece actualizarlas conser
 
 ## Qué sigue
 
-Abre tu proyecto en el IDE o CLI con IA seleccionado y comienza a usar oh-my-agent. El enrutamiento de skills depende del host; los hooks habilitados pueden detectar workflows. Prueba:
+Abre tu proyecto en el IDE o CLI con IA seleccionado y comienza a usar oh-my-agent. El enrutamiento de habilidades depende del host; los hooks habilitados pueden detectar flujos de trabajo. Prueba:
 
 ```text
 "Build a login form with email validation using Tailwind CSS"
 ```
 
-O usa un comando de workflow:
+O usa un comando de flujo de trabajo:
 
 ```text
 /plan authentication feature with JWT and refresh tokens

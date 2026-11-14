@@ -156,7 +156,7 @@ diff の内容と PR の説明は厳密に**データ**として扱い、説明�
 
 これは v1 の制約です。検証はファイルベースで、クイズスクリプトの*存在*だけを確認します（動作の完全な正しさは確認しません）。動作の確信が必要なら、ブラウザー（または chrome-devtools MCP）でクイズを手動操作します。
 
-既存アーティファクトは次の登録 CLI コマンドで検証できます。
+既存成果物は次の登録 CLI コマンドで検証できます。
 
 ```bash
 oma explain validate .agents/results/explain/2026-09-09-payment-refactor.html
@@ -175,7 +175,7 @@ File: .agents/results/explain/payment refactor.html
   - [error] filename-format: Filename 'payment refactor.html' does not match format {YYYY-MM-DD}-{slug}.html
 ```
 
-最初の形式は 1 つの HTML ファイルを確認します。ディレクトリ形式はディレクトリ内の全レポートを確認し、機械可読なレポートを返します。JSON レポートを保存するには `--report-file <path>` を使います。旧表記の `--out-file` は現在 `Removed option --out-file. Use --report-file.` で失敗します。終了コードが 0 以外なら、少なくとも 1 つのアーティファクトが決定的チェックに失敗しています。文章の教育的な正確さやクイズの答えは調べません。
+最初の形式は 1 つの HTML ファイルを確認します。ディレクトリ形式はディレクトリ内の全レポートを確認し、機械可読なレポートを返します。JSON レポートを保存するには `--report-file <path>` を使います。旧表記の `--out-file` は現在 `Removed option --out-file. Use --report-file.` で失敗します。終了コードが 0 以外なら、少なくとも 1 つの成果物が決定的チェックに失敗しています。文章の教育的な正確さやクイズの答えは調べません。
 
 ---
 

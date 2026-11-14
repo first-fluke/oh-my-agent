@@ -77,7 +77,7 @@ oma doctor --profile
 
 | ブロック | 利用側が読むキー | デフォルト | 効果 |
 | --- | --- | --- | --- |
-| `memory.gc` | `keep_sessions`、`max_age_days` | 100 セッションを保持。50 日より古い Serena アーティファクトを削除。`0` で経過時間による削除を無効化 | `oma memory gc` のデフォルト。コマンドのフラグが上書きします。 |
+| `memory.gc` | `keep_sessions`、`max_age_days` | 100 セッションを保持。50 日より古い Serena 成果物を削除。`0` で経過時間による削除を無効化 | `oma memory gc` のデフォルト。コマンドのフラグが上書きします。 |
 | `serena_reaper` | `enabled`、`policy: lru\|idle`、`keep_warm`、`idle_minutes`、`grace_seconds` | `false`、`lru`、`2`、`10`、`90` | スケジュールされた Serena LSP クリーンアップ経路を制御します。対話式の `oma serena reap` は明示的なままです。スケジュールされた quiet 実行はオプトインです。 |
 | `refactor_guard` | `enabled`、`max_lines` | `false`、`500` | stop-hook の行数ガードを選び、ファイルごとのコード予算を設定します。 |
 | `scm` | `conventional_commits`、`branching_strategy`、`require_pr_for_default_branch`、`co_author.*`、`forbidden_patterns`、`allowed_exceptions` | 同梱テンプレートでは Conventional Commits と PR 保護を有効にし、テンプレートの co-author とファイル名リストを使う | SCM スキル、コミットフック、秘密パターンガードを制御します。有効にする前に、テンプレートの本人情報を自分のものへ置き換えてください。 |

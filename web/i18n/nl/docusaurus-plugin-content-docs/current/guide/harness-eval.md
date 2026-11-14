@@ -1,7 +1,7 @@
 ---
 title: "Evaluatie van de harness"
 sidebar_label: Harness-evaluatie
-description: Evalueer een volledige OMA-harnessoverlay met gepaarde, geïsoleerde repositorytaken en deterministische artifactcontroles.
+description: Evalueer een volledige OMA-harnessoverlay met gepaarde, geïsoleerde repositorytaken en deterministische artefactcontroles.
 ---
 
 # Evaluatie van de harness {#harness-evaluation}
@@ -37,9 +37,9 @@ Een live run evalueert elke taak als een gepaard experiment:
 2. OMA kopieert de huidige definities van `agents`, `config`, `rules`, `skills` en `workflows` naar die workspace en projecteert ze naar het formaat van de geselecteerde vendor.
 3. OMA herhaalt de setup in een tweede nieuwe workspace en past daar de kandidaat-overlay toe.
 4. Voor beide armen worden dezelfde primaire agent, vendorroute, prompt, schrijfrechten en time-out gebruikt.
-5. Deterministische controles inspecteren de resulterende workspace en optionele agentuitvoer. Vertrouwde commandocontroles draaien daarna in een verse kopie van de taakartifacts.
+5. Deterministische controles inspecteren de resulterende workspace en optionele agentuitvoer. Vertrouwde commandocontroles draaien daarna in een verse kopie van de taakartefacten.
 
-Het echte project wordt nooit als werkmap van een arm gebruikt. OMA legt de ruwe uitvoer en de uiteindelijke taakartifacts vast vóór de controles en het opruimen van de tijdelijke workspace. De eigen processandbox van de geselecteerde vendor blijft de autoriteit voor toegang buiten de werkmap.
+Het echte project wordt nooit als werkmap van een arm gebruikt. OMA legt de ruwe uitvoer en de uiteindelijke taakartefacten vast vóór de controles en het opruimen van de tijdelijke workspace. De eigen processandbox van de geselecteerde vendor blijft de autoriteit voor toegang buiten de werkmap.
 
 Het diagram toont hoe gepaarde armen tot een beslissing komen. Offline acties stappen vanuit een opgeslagen record weer in bij de koppelstap.
 
@@ -160,7 +160,7 @@ Commandocontroles worden geschreven door de vertrouwde eigenaar van de suite:
 
 `checker` wordt relatief aan het suitebestand opgelost. Het moet een zelfstandig, regulier bronbestand zijn dat buiten elke fixture, de kandidaat-overlay en de `.agents`-definities van de baseline is opgeslagen. `argv[0]` moet een absoluut pad naar een uitvoerbaar bestand buiten het project zijn; `{checker}` moet een volledig argument zijn. OMA geeft argumenten rechtstreeks door, zonder shell-interpolatie. Time-outs moeten positieve gehele getallen zijn van hoogstens 300.000 milliseconden. Exitcodes zijn gehele getallen van 0 tot en met 255.
 
-Vóór de dispatch maakt OMA een momentopname van de bronbytes van de checker en berekent hashes van de evaluatordefinities en het uitvoerbare bestand. Na de dispatch kopieert OMA de taakartifacts naar een aparte tijdelijke workspace, schrijft de checker uit de momentopname buiten die artifacts weg en roept die daar aan. Elk commando krijgt een verse kopie; één checker kan de invoer van de volgende controle niet wijzigen. Gegenereerde harnessprojecties worden uitgesloten en symlinks in artifacts worden geweigerd. Als de checkerbron tijdens een arm verandert, faalt die arm; gewijzigde bron wordt nooit in de plaats van de momentopname gebruikt. De checker moet vaste asserties gebruiken tegen artifacts of applicatiegedrag en zijn oordeel niet delegeren aan tests of pakketscripts die de kandidaat kan bewerken.
+Vóór de dispatch maakt OMA een momentopname van de bronbytes van de checker en berekent hashes van de evaluatordefinities en het uitvoerbare bestand. Na de dispatch kopieert OMA de taakartefacten naar een aparte tijdelijke workspace, schrijft de checker uit de momentopname buiten die artefacten weg en roept die daar aan. Elk commando krijgt een verse kopie; één checker kan de invoer van de volgende controle niet wijzigen. Gegenereerde harnessprojecties worden uitgesloten en symlinks in artefacten worden geweigerd. Als de checkerbron tijdens een arm verandert, faalt die arm; gewijzigde bron wordt nooit in de plaats van de momentopname gebruikt. De checker moet vaste asserties gebruiken tegen artefacten of applicatiegedrag en zijn oordeel niet delegeren aan tests of pakketscripts die de kandidaat kan bewerken.
 
 Controles en checkerpaden worden niet aan de agentprompt of de fixture toegevoegd. De invoer van de geselecteerde taak is tijdens de run noodzakelijkerwijs zichtbaar. Dit beschermt de integriteit van de evaluator en scheidt de partities; het verhindert niet dat een proces van dezelfde gebruiker andere bestanden op de host leest.
 
@@ -192,12 +192,12 @@ Met `--record` wordt een onveranderlijk JSON-record van versie 2 geschreven. De 
 
 - de identiteit van de suite, de partitie, de provenance van prompts en fixtures, de baseline-/kandidaathashes en de hashes van evaluator, checker en uitvoerbaar bestand;
 - de oorspronkelijke uitvoer en de hash ervan, inclusief beschikbare diagnostische stdout van mislukte dispatches;
-- manifesten van de begin- en eindartifacts met bestandsbytes, hashes per bestand, bestands- en mapmodi en een manifestdigest;
+- manifesten van de begin- en eindartefacten met bestandsbytes, hashes per bestand, bestands- en mapmodi en een manifestdigest;
 - verwijzingen naar checkers, uitkomsten per arm, de incidentidentiteit wanneer die is meegegeven en de hash van het bronrecord bij een rerun.
 
-Taakmomentopnames zijn begrensd tot 5 MiB per bestand, 32 MiB in totaal en 2.000 items. Symlinks, speciale bestanden, paden die geheimen bevatten, onleesbare bestanden en te grote data worden als weglatingen vastgelegd. Gekopieerde besturingsoppervlakken van de harness worden uitgesloten van de uiteindelijke taakartifacts. Onvolledige momentopnames blijven expliciete beperkingen van de evidence; ze kunnen niet dienen als basis voor een vastgezette rerun en volstaan niet voor rescoring van bestanden. Ruwe uitvoer kan nog steeds controles ondersteunen die alleen op uitvoer zijn gebaseerd, wanneer de oorspronkelijke dispatch is geslaagd.
+Taakmomentopnames zijn begrensd tot 5 MiB per bestand, 32 MiB in totaal en 2.000 items. Symlinks, speciale bestanden, paden die geheimen bevatten, onleesbare bestanden en te grote data worden als weglatingen vastgelegd. Gekopieerde besturingsoppervlakken van de harness worden uitgesloten van de uiteindelijke taakartefacten. Onvolledige momentopnames blijven expliciete beperkingen van de evidence; ze kunnen niet dienen als basis voor een vastgezette rerun en volstaan niet voor rescoring van bestanden. Ruwe uitvoer kan nog steeds controles ondersteunen die alleen op uitvoer zijn gebaseerd, wanneer de oorspronkelijke dispatch is geslaagd.
 
-Records hebben een eigen integriteitshash. Een gewijzigd record of een gewijzigde artifacthash wordt geweigerd. Deze hashes identificeren evidence; ze bevestigen niet dat het proces was afgeschermd en maken een resultaat niet promotieklaar.
+Records hebben een eigen integriteitshash. Een gewijzigd record of een gewijzigde artefacthash wordt geweigerd. Deze hashes identificeren evidence; ze bevestigen niet dat het proces was afgeschermd en maken een resultaat niet promotieklaar.
 
 ### Uitvoeringsomstandigheden {#execution-conditions}
 
@@ -229,7 +229,7 @@ De opdracht onderscheidt vier acties:
 | Actie | Uitgevoerd werk | Agent-/modelaanroepen |
 |:-------|:---------------|:------------------|
 | `inspect` | Aggregeert opgeslagen oordelen per arm na validatie van de provenance. Er draaien geen controles. | Geen |
-| `rescore` | Past de huidige uitvoer- en bestandscontroles toe op de oorspronkelijke ruwe uitvoer en artifactbytes. | Geen |
+| `rescore` | Past de huidige uitvoer- en bestandscontroles toe op de oorspronkelijke ruwe uitvoer en artefactbytes. | Geen |
 | `fixture-replay` | Matcht een aangeleverd transcript van toolverzoeken, speelt de fixturereacties en bestandswijzigingen ervan af en past daarna ondersteunde controles toe. | Geen |
 | `rerun` | Voert de geconfigureerde agent uit in verse workspaces die zijn gevuld vanuit de vastgelegde beginmomentopnames. | Twee per geselecteerde taak |
 
@@ -257,9 +257,9 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Rescoring gebruikt de huidige controles en negeert de oorspronkelijke `passed`-waarden en controleoordelen. De identiteit van de suite, de taak-ID, de prompt en het incident, de baseline, de kandidaat en de geselecteerde partitie moeten nog steeds overeenkomen. Checkerdefinities mogen veranderen; het nieuwe resultaat beschrijft hoe de oorspronkelijke bytes presteren tegen die controles. Wijzigingen in de fixturebestanden van vandaag vervangen de vastgelegde eindartifacts niet.
+Rescoring gebruikt de huidige controles en negeert de oorspronkelijke `passed`-waarden en controleoordelen. De identiteit van de suite, de taak-ID, de prompt en het incident, de baseline, de kandidaat en de geselecteerde partitie moeten nog steeds overeenkomen. Checkerdefinities mogen veranderen; het nieuwe resultaat beschrijft hoe de oorspronkelijke bytes presteren tegen die controles. Wijzigingen in de fixturebestanden van vandaag vervangen de vastgelegde eindartefacten niet.
 
-Commandocontroles volstaan niet voor offline rescoring, omdat het record de externe runtime en omgeving niet vastzet. Controles die gericht zijn op uitgesloten of onvolledige artifacts volstaan evenmin. Een mislukte oorspronkelijke dispatch laat diagnostische uitvoer achter, die door rescoring geen geldige meting kan worden. Gebruik een live rerun wanneer de huidige acceptatiecriteria uitvoering van commando’s vereisen.
+Commandocontroles volstaan niet voor offline rescoring, omdat het record de externe runtime en omgeving niet vastzet. Controles die gericht zijn op uitgesloten of onvolledige artefacten volstaan evenmin. Een mislukte oorspronkelijke dispatch laat diagnostische uitvoer achter, die door rescoring geen geldige meting kan worden. Gebruik een live rerun wanneer de huidige acceptatiecriteria uitvoering van commando’s vereisen.
 
 ### Toolfixtures opnieuw afspelen {#replay-tool-fixtures}
 
@@ -315,7 +315,7 @@ oma harness eval \
   --record-file harness-eval/_runs/trial-1.json
 ```
 
-Een rerun vereist een overeenkomende suite-/taakidentiteit en identieke, volledige beginmomentopnames voor beide oorspronkelijke armen. Het start echte agentaanroepen met de huidige baseline, kandidaat, geconfigureerde vendor-/modelroute en huidige controles. De oorspronkelijke eindartifacts worden niet als begintoestand gebruikt. Een latere wijziging aan de bronfixture kan de vastgelegde begintoestand daarom niet ongemerkt veranderen.
+Een rerun vereist een overeenkomende suite-/taakidentiteit en identieke, volledige beginmomentopnames voor beide oorspronkelijke armen. Het start echte agentaanroepen met de huidige baseline, kandidaat, geconfigureerde vendor-/modelroute en huidige controles. De oorspronkelijke eindartefacten worden niet als begintoestand gebruikt. Een latere wijziging aan de bronfixture kan de vastgelegde begintoestand daarom niet ongemerkt veranderen.
 
 Reruns hebben dezelfde dispatchpreview, bevestiging en time-outgedrag als live runs. Ze kunnen een gewijzigde kandidaat gebruiken; selecteer de oorspronkelijke bron expliciet met `--record-file`. Voeg `--record` toe om naast het bronrecord een nieuw bestand op te slaan waarvan de naam eindigt op `-rerun-<timestamp>.json`; het is gekoppeld aan de hash van het bronrecord. Het oorspronkelijke record blijft behouden.
 
@@ -401,4 +401,4 @@ Een geslaagde score bewijst nog niet dat de kandidaat voor promotie in aanmerkin
 
 ## Huidige begrenzing {#current-boundary}
 
-Kandidaat-overlays worden extern geproduceerd; deze opdracht implementeert geen builder en ook geen geautomatiseerde lus `harness opt`. Artifactvastlegging, offline rescoring, replay van toolfixtures, reruns vanuit vastgezette bestanden, partitieselectie, momentopnames van evaluators, uitvoeringsmanifesten, een omgevingsallowlist en gekoppelde tracegebeurtenissen zijn beschikbaar, maar geheimhouding van held-out data op OS-niveau, afscherming van netwerk of credentials, herhaalde stochastische proeven en verplichte modelpinnen voor geneste subagentaanroepen zijn niet vastgesteld. Token- en kostenverbruik wordt per arm vastgelegd en opgeteld wanneer de vendor het rapporteert (zie [Verbruik](#usage)). De omgevingsallowlist beperkt welke variabelen een vendorproces erft; ze weerhoudt een vendor-CLI er niet van zijn eigen credentialopslag te lezen of het netwerk te bereiken. Tot er pinning voor geneste aanroepen bestaat, vermijd je in suites die één vast model willen meten kandidaatworkflows die andere geconfigureerde agentrollen spawnen.
+Kandidaat-overlays worden extern geproduceerd; deze opdracht implementeert geen builder en ook geen geautomatiseerde lus `harness opt`. Artefactvastlegging, offline rescoring, replay van toolfixtures, reruns vanuit vastgezette bestanden, partitieselectie, momentopnames van evaluators, uitvoeringsmanifesten, een omgevingsallowlist en gekoppelde tracegebeurtenissen zijn beschikbaar, maar geheimhouding van held-out data op OS-niveau, afscherming van netwerk of credentials, herhaalde stochastische proeven en verplichte modelpinnen voor geneste subagentaanroepen zijn niet vastgesteld. Token- en kostenverbruik wordt per arm vastgelegd en opgeteld wanneer de vendor het rapporteert (zie [Verbruik](#usage)). De omgevingsallowlist beperkt welke variabelen een vendorproces erft; ze weerhoudt een vendor-CLI er niet van zijn eigen credentialopslag te lezen of het netwerk te bereiken. Tot er pinning voor geneste aanroepen bestaat, vermijd je in suites die één vast model willen meten kandidaatworkflows die andere geconfigureerde agentrollen spawnen.

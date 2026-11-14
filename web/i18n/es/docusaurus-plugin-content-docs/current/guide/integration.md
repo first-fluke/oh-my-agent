@@ -49,11 +49,11 @@ El comando predeterminado (sin subcomando) inicia el instalador interactivo.
 
 ### 4. Seleccionar el tipo de proyecto
 
-El instalador pregunta **What type of project?** y ofrece un [preset de skills](../getting-started/glossary.md#skill-preset): All, Fullstack, Fullstack Web, Fullstack Mobile, Frontend, Backend, Mobile, DevOps, Research, Content o Custom (elegir skills individuales). Las ejecuciones no interactivas usan All. Las skills de cada preset se enumeran en [Instalación → Presets](../getting-started/installation.md#presets).
+El instalador pregunta **What type of project?** y ofrece un [preset de habilidades](../getting-started/glossary.md#skill-preset): All, Fullstack, Fullstack Web, Fullstack Mobile, Frontend, Backend, Mobile, DevOps, Research, Content o Custom (elegir habilidades individuales). Las ejecuciones no interactivas usan All. Las habilidades de cada preset se enumeran en [Instalación → Presets](../getting-started/installation.md#presets).
 
 ### 5. Elegir el lenguaje de backend (si corresponde)
 
-Si seleccionaste un preset que incluye la skill de backend, se te pedirá elegir una variante de lenguaje:
+Si seleccionaste un preset que incluye la habilidad de backend, se te pedirá elegir una variante de lenguaje:
 
 - **Python**: Litestar/SQLAlchemy (predeterminado)
 - **Node.js**: NestJS + Prisma
@@ -64,11 +64,11 @@ Si seleccionaste un preset que incluye la skill de backend, se te pedirá elegir
 
 El instalador pregunta **CLI tools to configure (deselect all to skip):** y ofrece Claude Code, Codex, Command Code, GitHub Copilot, Cursor, Grok, Kiro CLI, OpenCode, pi (Earendil), Antigravity CLI (agy), Hermes Agent, Kimi Code CLI, Qwen Code y ZCode. Antigravity CLI, Hermes Agent y Kimi Code CLI no se ofrecen en Windows ni cuando `CI` está definido.
 
-Para cada herramienta seleccionada, crea symlinks de skills (por ejemplo `.claude/skills/` para Claude Code) y genera los archivos de agente nativos, hooks, configuraciones y archivos de integración del proveedor. pi y OpenCode son rutas de extensión. Al seleccionar **ZCode**, expone los workflows como slash-commands mediante symlinks `.zcode/commands/*.md` (solo workflows, sin archivos de agentes ni hooks).
+Para cada herramienta seleccionada, crea symlinks de habilidades (por ejemplo `.claude/skills/` para Claude Code) y genera los archivos de agente nativos, hooks, configuraciones y archivos de integración del proveedor. pi y OpenCode son rutas de extensión. Al seleccionar **ZCode**, expone los flujos de trabajo como slash-commands mediante symlinks `.zcode/commands/*.md` (solo flujos de trabajo, sin archivos de agentes ni hooks).
 
 ### 7. Configuración global de git recomendada
 
-Hacia el final de `oma install` y `oma update`, la CLI inspecciona dos configuraciones **globales** de git que ayudan a los workflows multiagente:
+Hacia el final de `oma install` y `oma update`, la CLI inspecciona dos configuraciones **globales** de git que ayudan a los flujos de trabajo multiagente:
 
 | Clave | Valor deseado | Motivo |
 |:----|:--------------|:----|
@@ -114,8 +114,8 @@ No hay un prompt de MCP independiente. Cuando Serena es el proveedor de intelige
 ### 9. Finalización
 
 El instalador muestra un resumen de todo lo instalado:
-- Lista de skills instaladas
-- Ubicación del directorio de skills
+- Lista de habilidades instaladas
+- Ubicación del directorio de habilidades
 - Symlinks creados
 - Elementos omitidos, si los hay
 
@@ -211,7 +211,7 @@ El comando doctor comprueba, entre otras cosas:
 | **Instalaciones de CLI** | agy, claude, codex, qwen (versión y disponibilidad) |
 | **Autenticación** | Estado de la API key o de OAuth para cada CLI |
 | **Configuración de MCP** | Configuración del servidor Serena MCP para cada entorno de CLI |
-| **Estado de las skills** | Qué skills están instaladas y si están actualizadas |
+| **Estado de las habilidades** | Qué habilidades están instaladas y si están actualizadas |
 
 Comandos de verificación manual:
 
@@ -239,7 +239,7 @@ cat .agents/skills/_version.json 2>/dev/null
 
 ## Estructura de symlinks multi-IDE (concepto SSOT)
 
-oh-my-agent usa una arquitectura de fuente única de verdad (SSOT). El directorio `.agents/` es el único lugar donde viven las skills, los workflows, las configuraciones y las definiciones de agentes. Los directorios específicos de cada IDE contienen únicamente symlinks que apuntan de vuelta a `.agents/`.
+oh-my-agent usa una arquitectura de fuente única de verdad (SSOT). El directorio `.agents/` es el único lugar donde viven las habilidades, los flujos de trabajo, las configuraciones y las definiciones de agentes. Los directorios específicos de cada IDE contienen únicamente symlinks que apuntan de vuelta a `.agents/`.
 
 ### Estructura de directorios
 
@@ -297,7 +297,7 @@ your-project/
 
 ### ¿Por qué symlinks?
 
-Cuando `oma update` actualiza `.agents/`, todos los IDE que apuntan a ese directorio reciben el cambio. Las skills se almacenan una sola vez en lugar de copiarse para cada IDE. Eliminar `.claude/` no elimina las skills: el SSOT de `.agents/` permanece intacto. Los symlinks también ocupan poco y generan diffs limpios en git.
+Cuando `oma update` actualiza `.agents/`, todos los IDE que apuntan a ese directorio reciben el cambio. Las habilidades se almacenan una sola vez en lugar de copiarse para cada IDE. Eliminar `.claude/` no elimina las habilidades: el SSOT de `.agents/` permanece intacto. Los symlinks también ocupan poco y generan diffs limpios en git.
 
 ---
 
@@ -327,7 +327,7 @@ oma uninstall --dry-run
 oma uninstall
 ```
 
-Conserva `oma-config.yaml`, `mcp.json` y las skills que no instaló. Para eliminar el resto a mano:
+Conserva `oma-config.yaml`, `mcp.json` y las habilidades que no instaló. Para eliminar el resto a mano:
 
 ```bash
 # Remove the SSOT directory
@@ -380,27 +380,27 @@ La instalación interactiva detecta otras herramientas de agentes y pregunta si 
 
 ### 3. Descarga del tarball
 
-El instalador descarga el tarball de la última versión desde los releases de GitHub de oh-my-agent. El tarball contiene el directorio `.agents/` completo con todas las skills, recursos compartidos, workflows, configuraciones y definiciones de agentes.
+El instalador descarga el tarball de la última versión desde los releases de GitHub de oh-my-agent. El tarball contiene el directorio `.agents/` completo con todas las habilidades, recursos compartidos, flujos de trabajo, configuraciones y definiciones de agentes.
 
 ### 4. Instalación de recursos compartidos
 
 `installShared()` copia el directorio `_shared/` a `.agents/skills/_shared/`. Incluye:
 
-- `core/`: enrutamiento de skills, carga de contexto, estructura de prompts, principios de calidad, detección de proveedores y contratos de API.
+- `core/`: enrutamiento de habilidades, carga de contexto, estructura de prompts, principios de calidad, detección de proveedores y contratos de API.
 - `runtime/`: protocolo de memoria y protocolos de ejecución por proveedor.
 - `conditional/`: recursos que solo se cargan cuando se cumplen condiciones concretas (quality score, bucle de exploración).
 
-### 5. Instalación de workflows
+### 5. Instalación de flujos de trabajo
 
-`installWorkflows()` copia todos los archivos de workflow a `.agents/workflows/`, como las definiciones de `/orchestrate`, `/work`, `/ultrawork` y `/plan`. Consulta [Workflows](../core-concepts/workflows.md) para ver la lista completa. Junto a él, `installHooks()`, `installAgents()` e `installRules()` copian en `.agents/` las fuentes de hooks, definiciones de agentes y reglas.
+`installWorkflows()` copia todos los archivos de flujo de trabajo a `.agents/workflows/`, como las definiciones de `/orchestrate`, `/work`, `/ultrawork` y `/plan`. Consulta [Flujos de trabajo](../core-concepts/workflows.md) para ver la lista completa. Junto a él, `installHooks()`, `installAgents()` e `installRules()` copian en `.agents/` las fuentes de hooks, definiciones de agentes y reglas.
 
 ### 6. Instalación de configuración
 
 `installConfigs()` crea `.agents/mcp.json` e inicializa el `.agents/oma-config.yaml` o `.agents/oma-config.cue` propiedad del usuario. Los archivos del usuario existentes se conservan salvo que se use `--force`; `oma update` también mantiene la configuración del usuario y añade nuevas claves de nivel superior de la plantilla cuando es necesario.
 
-### 7. Instalación de skills
+### 7. Instalación de habilidades
 
-Para cada skill seleccionada, `installSkill()` copia el directorio de la skill a `.agents/skills/{skill-name}/`. Si se seleccionó una variante (por ejemplo, Python para backend), también copia esa variante en el directorio `stack/` de la skill y elimina el directorio redundante `variants/`. Una skill instalada sin variante, como oma-mobile, conserva su directorio `variants/`, que su SKILL.md lee directamente.
+Para cada habilidad seleccionada, `installSkill()` copia el directorio de la habilidad a `.agents/skills/{skill-name}/`. Si se seleccionó una variante (por ejemplo, Python para backend), también copia esa variante en el directorio `stack/` de la habilidad y elimina el directorio redundante `variants/`. Una habilidad instalada sin variante, como oma-mobile, conserva su directorio `variants/`, que su SKILL.md lee directamente.
 
 ### 8. Adaptaciones de proveedores
 
@@ -420,13 +420,13 @@ Codex protege sus hooks tras un paso único de confianza, por lo que `.codex/hoo
 - `.claude/skills/{workflow}/SKILL.md` -> `../../../.agents/workflows/{workflow}.md`
 - `.github/skills/{skill}` -> `../../.agents/skills/{skill}` (si se selecciona Copilot)
 
-Qwen lee `.agents/skills/` directamente, así que OMA no crea enlaces `.qwen/skills/oma-*`. La reconciliación elimina los enlaces de skills de OMA heredados y conserva las entradas propiedad del usuario. Los enlaces de workflows en `.qwen/skills/{workflow}/SKILL.md` siguen apuntando a `.agents/workflows/{workflow}.md`.
+Qwen lee `.agents/skills/` directamente, así que OMA no crea enlaces `.qwen/skills/oma-*`. La reconciliación elimina los enlaces de habilidades de OMA heredados y conserva las entradas propiedad del usuario. Los enlaces de flujos de trabajo en `.qwen/skills/{workflow}/SKILL.md` siguen apuntando a `.agents/workflows/{workflow}.md`.
 
 Los archivos de agentes nativos del proveedor se generan desde `.agents/agents/` mediante `oma link`, `oma install` u `oma update`, en lugar de enlazarse directamente.
 
-### 10. Workflows globales
+### 10. Flujos de trabajo globales
 
-`installGlobalWorkflows()` instala archivos de workflow que pueden ser necesarios globalmente (fuera del directorio del proyecto).
+`installGlobalWorkflows()` instala archivos de flujo de trabajo que pueden ser necesarios globalmente (fuera del directorio del proyecto).
 
 ### 11. Configuración de git recomendada + MCP
 

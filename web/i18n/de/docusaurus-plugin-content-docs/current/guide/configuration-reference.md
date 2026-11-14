@@ -59,13 +59,13 @@ Die folgenden Schlüssel werden vom aktuellen Laufzeitschema oder von ausgeliefe
 | `custom_presets` | Preset → Beschreibung, optional `extends`, `agent_defaults` | nicht gesetzt | Benutzerdefinierte Presets; `extends` kann von einem integrierten Preset erben. |
 | `vendors` | `string[]` ausgewählter Vendor-IDs (YAML und CUE) | fehlt: `oma link` verwendet jeden verknüpfbaren Vendor, `oma update` verwendet Vendors, deren Projektverzeichnisse existieren | Wählt, welche Vendor-Integrationen `oma install` und `oma update` projizieren. Die Dispatch-Fähigkeitsmap liegt in der verwalteten Orchestrierungskonfiguration; siehe [Vendor-Auswahl und Dispatch-Metadaten](#vendor-selection-and-dispatch-metadata). |
 | `default_cli` | Vendor-ID | nicht gesetzt | Veraltete Schreibweise von `agents.default.cli`; wird weiterhin gelesen, und `oma update` verschiebt sie. |
-| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | Jede ausgelassene Dimension ist unbegrenzt | Erfasste Token-Nutzung und Spawn-Limits, die vor dem nächsten Agenten-Spawn geprüft werden; siehe [Session-Quota-Limits](#session-quota-caps). |
+| `session.quota_cap` | `tokens`, `spawn_count`, `per_vendor: map<string, integer>` | Jede ausgelassene Dimension ist unbegrenzt | Erfasste Token-Nutzung und Spawn-Limits, die vor dem nächsten Agenten-Spawn geprüft werden; siehe [Sitzungs-Quota-Limits](#session-quota-caps). |
 | `diagnostic_feedback` | `enabled`, `host_diagnostics`, `timeout_ms` | automatisch für unterstützte Terminal-Hosts, `false`, `1400` | Serena-Diagnosen vor und nach nativen Dateibearbeitungen vergleichen; siehe [Diagnose-Feedback](#diagnostic-feedback). |
 | `docs` | `auto_verify`, `check_urls`, `exclude` | `false`, `true`, `[]` | Verhalten und Scan-Ausschlüsse von `oma docs verify`. |
 | `serena` | `mode: bridge\|stdio`, `auto_update` | `bridge`, `true` | Serena-MCP-Transport und Update-Verhalten. |
 | `mcp.devtools_browsers` | `aside`, `chrome`, `firefox` oder `[]` | nicht gesetzt = bestehende Einrichtung unverändert lassen | Auswahl des Browser-DevTools-MCP beim Abgleich. Eine ausdrücklich leere Liste entfernt ausgewählte Browser-Einträge. |
 | `video` | sparsame, vom Skill verwaltete Map | Skill-Standard; siehe [Videoerzeugung](/docs/guide/video-generation) | Video-Routing, Provider-Reihenfolge, Ausgabe, Kosten, Limits und HyperFrames-Aktualisierung. |
-| `image` | sparsame, vom Skill verwaltete Map | Skill-Standard; siehe [Bilderzeugung](/docs/guide/image-generation) | Einstellungen für Bildanbieter, Größe, Qualität, Ausgabe, Vergleich und Kosten. |
+| `image` | sparsame, vom Skill verwaltete Map | Skill-Standard; siehe [Bilderzeugung](/docs/guide/image-generation) | Einstellungen für Bild-Vendor, Größe, Qualität, Ausgabe, Vergleich und Kosten. |
 | `voice` | `backend`, `notification_profile`, `asset_profile`, `output_dir`, `auto_notify_after_sec`, `max_tts_chars`, `max_stt_minutes` | `backend: auto`; übrige Schlüssel: Skill-Standard; siehe [Content- und Research-Workflows](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | Sprach-Backend (`auto`, `voicebox`, `voicestudio`; gilt auch für die Sprecherstimme von `oma video`), Profil sowie Ausgabe- und Längeneinstellungen. |
 | `hwp` | `format`, `version.*`, `output.*` | Skill-Standard; siehe [Content- und Research-Workflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc-Format, Versionskanal und Ausgabeort. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | Skill-Standard; siehe [Content- und Research-Workflows](/docs/guide/content-and-research#extract-pdf-content) | PDF-Extraktion sowie OCR-, Bild- und Überschreibungseinstellungen. |
@@ -162,7 +162,7 @@ honcho:
 
 Der Installer verwendet `http://127.0.0.1:8000` als anfängliche URL, wenn Honcho interaktiv oder nicht interaktiv ohne gespeicherte URL eingerichtet wird. Dieser Installer-Seed ist vom Laufzeit-Fallback des Providers oben getrennt. Führen Sie nach der Auswahl des Providers `oma memory status` aus; ein fehlender Workspace oder ein fehlendes Credential wird als nicht verfügbar gemeldet, statt still auf einen anderen Speicher-Provider zu wechseln.
 
-### Session-Quota-Limits {#session-quota-caps}
+### Sitzungs-Quota-Limits {#session-quota-caps}
 
 `session.quota_cap` ist eine teilweise Map. Jedes Feld ist optional; ein fehlendes Feld lässt diese Dimension unbegrenzt. Werte müssen nichtnegative Ganzzahlen ohne `_`-Trennzeichen sein (YAML liest `2_000_000` als String, wodurch diese Dimension unbegrenzt bleibt). `per_vendor` ordnet Dispatch-Vendor-IDs wie `claude`, `codex` oder `antigravity` Tokenbudgets zu:
 
@@ -180,7 +180,7 @@ Der Cap-Loader prüft zuerst die Benutzer-CUE-Ebene, dann die Benutzer-YAML-Eben
 
 OMA reserviert beim Start eines Laufs eine Schätzung der Eingabe-Tokens. Steht nach dem Lauf ein unterstütztes natives Transkript zur Verfügung, ersetzt der erfasste Eingabe-, Cache- und Ausgabe-Verbrauch diese Schätzung, ohne einen weiteren Spawn zu zählen. Andernfalls bleibt der Eintrag ausdrücklich anhand der Prompt-Länge geschätzt. Beobachtete Nutzung der Root-Sitzung wird als unvollständig markiert, wenn native Subagenten außerhalb des Erfassungsbereichs liegen. Token-Limits hängen daher von den verfügbaren Beobachtungen ab; sie unterbrechen keinen bereits laufenden Kindprozess und garantieren kein Abrechnungslimit. `spawn_count` ist das am besten vorhersagbare Limit.
 
-### Session-Ausführungsbudget {#session-execution-budget}
+### Sitzungs-Ausführungsbudget {#session-execution-budget}
 
 Setzen Sie `session.execution`, um die verstrichene Zeit für OMA-verwalteten CLI-Dispatch und die Verifizierung zu begrenzen. Verwenden Sie entweder ein positives `timeout_seconds` oder eine ISO-8601-`deadline` mit Zeitzone:
 

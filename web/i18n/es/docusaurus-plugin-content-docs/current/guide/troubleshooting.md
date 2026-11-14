@@ -24,7 +24,7 @@ El comando debe terminar con un JSON que identifique la instalación, el proveed
 | Los hooks están instalados, pero no ocurre nada | [Los hooks están instalados, pero no se ejecutan](#hooks-are-installed-but-do-not-run) |
 | El dashboard está vacío, desconectado o no se inicia | [El dashboard está vacío o desconectado](#the-dashboard-is-empty-or-disconnected) |
 | Falta un trabajo programado o falló | [Falta una programación o no se ejecutó](#a-schedule-is-missing-or-did-not-run) |
-| La evaluación u optimización de skills no informa de cobertura | [La evaluación u optimización no informa de cobertura](#evaluation-or-optimization-reports-no-coverage) |
+| La evaluación u optimización de habilidades no informa de cobertura | [La evaluación u optimización no informa de cobertura](#evaluation-or-optimization-reports-no-coverage) |
 | Una ejecución de agente no se verifica, no termina o no se reanuda | [Un resultado no puede finalizarse ni reanudarse](#a-result-cannot-finish-or-resume) |
 | La CLI imprimió un mensaje de error | [Encuentra tu error](#find-your-error) |
 
@@ -112,7 +112,7 @@ oma agent spawn AGENT "print the resolved runtime and stop" SESSION --read-only
 
 Si omites el mapa `free`, los valores predeterminados son `http://127.0.0.1:31415/v1`, `FREELLM_API_KEY` y el modelo `auto`; nunca pongas la clave de API en YAML.
 
-Un hijo generado recibe la identidad de la ejecución y las instrucciones para informar del resultado, escribe la declaración de resultados (claim) en la ruta inyectada y comunica sus artefactos; el padre finaliza el registro de ejecución gestionado (receipt) después de capturar el código de salida. Los hijos de solo lectura devuelven `OMA_RESULT_JSON: ...`; esa línea se registra como una inspección y no satisface la verificación ejecutable.
+Un hijo generado recibe la identidad de la ejecución y las instrucciones para informar del resultado, escribe la declaración de resultados (claim) en la ruta inyectada y comunica sus artefactos; el padre finaliza el registro de verificación gestionado (receipt) después de capturar el código de salida. Los hijos de solo lectura devuelven `OMA_RESULT_JSON: ...`; esa línea se registra como una inspección y no satisface la verificación ejecutable.
 
 ## Los hooks están instalados, pero no se ejecutan {#hooks-are-installed-but-do-not-run}
 
@@ -175,11 +175,11 @@ oma schedule run SCHEDULE_ID      # executes the job now (normally invoked by th
 
 | Síntoma | Causa | Solución |
 |---------|-------|-----|
-| La evaluación u optimización de skills no informa de cobertura | Hay menos de cinco fixtures en `.agents/eval/<skill>/` | Añade fixtures hasta tener al menos cinco |
-| El modo simulado rechaza los rollouts registrados | La procedencia de los rollouts registrados no coincide con la skill actual ni con los hashes de los fixtures | Vuelve a registrar con el modo live; no copies un archivo `_rollouts` antiguo a un directorio de una skill nueva ni lo trates como evidencia actual |
+| La evaluación u optimización de habilidades no informa de cobertura | Hay menos de cinco fixtures en `.agents/eval/<skill>/` | Añade fixtures hasta tener al menos cinco |
+| El modo simulado rechaza los rollouts registrados | La procedencia de los rollouts registrados no coincide con la habilidad actual ni con los hashes de los fixtures | Vuelve a registrar con el modo live; no copies un archivo `_rollouts` antiguo a un directorio de una habilidad nueva ni lo trates como evidencia actual |
 | `--apply` se niega a escribir | `--apply` requiere un resultado de validación positivo y estricto, además de una división de prueba propiedad del runner que haya pasado | Conserva el `--dry-run` predeterminado mientras revisas el diff propuesto, y corrige primero la validación fallida |
 
-Una skill propiedad de OMA modificada por `--apply` puede sobrescribirse con un `oma update` posterior.
+Una habilidad propiedad de OMA modificada por `--apply` puede sobrescribirse con un `oma update` posterior.
 
 ## Un resultado no puede finalizarse ni reanudarse {#a-result-cannot-finish-or-resume}
 
@@ -204,7 +204,7 @@ Al pedir ayuda, incluye la salida relevante de `oma doctor --json`, el comando, 
 
 ## Ver también {#see-also}
 
-- [Uso de OMA](./usage.md#troubleshooting): problemas de configuración inicial, como skills o CLI ausentes y conflictos del espacio de trabajo
+- [Uso de OMA](./usage.md#troubleshooting): problemas de configuración inicial, como habilidades o CLI ausentes y conflictos del espacio de trabajo
 - [Monitorización del dashboard](./dashboard-monitoring.md#troubleshooting-runbook): señales de dashboard atascado, caído o desconectado
 - [Resultados y reanudación de agentes](./agent-results-and-resume.md): registros de ejecución, declaraciones de resultados y recuperación
 - [Glosario](../getting-started/glossary.md): términos como [registro de ejecución y declaración de resultados](../getting-started/glossary.md#run-record-and-claim)

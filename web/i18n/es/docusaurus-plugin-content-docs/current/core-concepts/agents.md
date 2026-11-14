@@ -422,7 +422,7 @@ La referencia de stack contiene `stack.yaml` (la declaración estructurada y el 
 - Cobertura de señales MELT+P: metrics, logs, traces, profiles, cost, audit, privacy
 - Migraciones de pipelines de logs evaluadas según el soporte upstream actual y los requisitos del proyecto
 
-**Cuándo NO usar:** Observabilidad de LLM ops / gen_ai (usar Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage de pipelines de datos (OpenLineage + Marquez, dbt test, Airflow lineage), telemetría de capa física de IoT / datacenter (Nlyte, Sunbird, Device42), orquestación de ingeniería del caos (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), infraestructura GPU / TPU (NVIDIA DCGM Exporter), cadena de suministro de software (sigstore, in-toto, SLSA), flujo de respuesta a incidentes / paging (PagerDuty, Jira Service Management, Grafana Cloud IRM), inspección completa de paquetes TLS, escaneo de seguridad o pruebas de penetración (usar oma-security; esta habilidad solo cubre la telemetría de seguridad), configuración de un único proveedor ya cubierta por el skill propio de ese proveedor.
+**Cuándo NO usar:** Observabilidad de LLM ops / gen_ai (usar Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage de pipelines de datos (OpenLineage + Marquez, dbt test, Airflow lineage), telemetría de capa física de IoT / datacenter (Nlyte, Sunbird, Device42), orquestación de ingeniería del caos (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), infraestructura GPU / TPU (NVIDIA DCGM Exporter), cadena de suministro de software (sigstore, in-toto, SLSA), flujo de respuesta a incidentes / paging (PagerDuty, Jira Service Management, Grafana Cloud IRM), inspección completa de paquetes TLS, escaneo de seguridad o pruebas de penetración (usar oma-security; esta habilidad solo cubre la telemetría de seguridad), configuración de un único proveedor ya cubierta por la habilidad propia de ese proveedor.
 
 **Reglas principales:**
 - Clasificar la intención antes de enrutar: setup | migrate | investigate | alert | trace | tune | route
@@ -522,7 +522,7 @@ La matriz de cobertura tiene cuatro capas (L3, L4, mesh, L7), cuatro fronteras (
 
 Estos son valores predeterminados del flujo; la configuración de modelo, proveedor, paralelismo y presupuesto se resuelve a partir de la configuración del proyecto.
 
-**Fases del flujo:** Plan → Referencias (seleccionar referencias por tarea) → Configuración (artefactos de sesión y task board) → Ejecución (despachar las tareas listas dentro de MAX_PARALLEL) → Monitoreo → Verificación (bucle de revisión) → Recopilación (claims e informes con ámbito de ejecución).
+**Fases del flujo:** Plan → Referencias (seleccionar referencias por tarea) → Configuración (artefactos de sesión y task board) → Ejecución (despachar las tareas listas dentro de MAX_PARALLEL) → Monitoreo → Verificación (bucle de revisión) → Recopilación (declaraciones de resultados e informes con ámbito de ejecución).
 
 **Referencias de tarea:** Cada tarea se compara con las firmas de intención de las habilidades instaladas, y el coordinador selecciona las referencias que necesita. Basta una habilidad que coincida con confianza; el conjunto se amplía solo cuando la clasificación es incierta o una dependencia requiere otro dominio. La selección y su motivo se registran en el task board como notas del coordinador; el lanzador no las impone.
 
@@ -989,7 +989,7 @@ Al ejecutar un flujo multiagente (`/orchestrate` o `/work`):
 4. **Progreso monitoreado:** el orquestador prefiere las notificaciones de finalización del host; para las ejecuciones de `oma agent spawn` que no las tienen, un coordinador sondea con backoff acotado los archivos con ámbito de ejecución `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` que han cambiado. Los subagentes nativos de Claude Code devuelven el resultado de forma síncrona
 5. **Niveles posteriores** se inician cuando se completan sus dependencias
 6. **Bucle de revisión** ejecutado para cada agente completado (ver abajo)
-7. **Resultados recopilados** de los archivos de resultados con ámbito de ejecución y de los claims estructurados
+7. **Resultados recopilados** de los archivos de resultados con ámbito de ejecución y de las declaraciones de resultados estructuradas
 8. **Informe final** con resumen de sesión, archivos modificados, problemas pendientes
 
 ### Bucle de revisión agente a agente {#agent-to-agent-review-loop}

@@ -60,19 +60,19 @@ As comparações completas por tela (construtor de mundos, painel de IA, galeria
 | Eixo | Peso | Sinais principais | Ferramentas |
 |---|---|---|---|
 | **Funcional** | 35 | saída do build, servidor de desenvolvimento inicia (HTTP 200 ≤45s), 5 verificações de jornada do usuário, lint, ts-clean | `pm install/build/lint`, curl, chrome-devtools MCP, `tsc --noEmit` |
-| **Spec** | 15 | 13 entregáveis explícitos do prompt, bônus por API real | Avaliador LLM com extrator JSON balanceado por chaves |
-| **Visual** | 20 | anti-patterns, UX adequada para crianças, consistência do sistema de design, acessibilidade | Avaliador LLM sobre capturas de tela |
+| **Spec** | 15 | 13 entregáveis explícitos do prompt, bônus por API real | Juiz LLM com extrator JSON balanceado por chaves |
+| **Visual** | 20 | anti-patterns, UX adequada para crianças, consistência do sistema de design, acessibilidade | Juiz LLM sobre capturas de tela |
 | **Engenharia** | 20 | amplitude do código, TS strict, tamanho máximo de arquivo + profundidade de pasta, marcadores de stub adiado, ausência de chaves codificadas | análise estática (jq + grep + find) |
 | **Eficiência** | 10 | turnos até concluir, duração em tempo real, custo por arquivo | JSON de resultado de `claude -p` |
 
-Os avaliadores de especificação e visual executam 3 vezes por harness via `judge-multi.sh`; as pontuações por item são calculadas pela média das rodadas. A implementação está em [`benchmarks/scoring/multiaxis/`](https://github.com/first-fluke/oh-my-agent/tree/main/benchmarks/scoring/multiaxis).
+Os juízes de especificação e visual executam 3 vezes por harness via `judge-multi.sh`; as pontuações por item são calculadas pela média das rodadas. A implementação está em [`benchmarks/scoring/multiaxis/`](https://github.com/first-fluke/oh-my-agent/tree/main/benchmarks/scoring/multiaxis).
 
 ---
 
 ## Ressalvas
 
 1. **Sobrescrita de prompt do superpowers**: foi necessária para o harness funcionar em modo não interativo (a skill de brainstorming `<HARD-GATE>` bloqueia execuções de uma única rodada). O resultado representa “o que o superpowers consegue fazer depois que o gate é contornado”, e não uma comparação perfeitamente equivalente.
-2. **Média de vários avaliadores em spec + visual, jornada em uma única execução**: a avaliação da jornada exige um servidor de desenvolvimento ativo, por isso é executada uma única vez. Trate lacunas de jornada menores que aproximadamente 2 pontos como ruído. O tamanho da amostra é 1 build por harness.
+2. **Média de vários juízes em spec + visual, jornada em uma única execução**: a avaliação da jornada exige um servidor de desenvolvimento ativo, por isso é executada uma única vez. Trate lacunas de jornada menores que aproximadamente 2 pontos como ruído. O tamanho da amostra é 1 build por harness.
 3. **Normalização de custo**: o eixo de eficiência usa o custo por arquivo; o custo absoluto ($1.28–$8.19 entre os 5) não aparece na pontuação.
 4. **A penalidade `lint-clean` do oma é intencional**: o oma deixa deliberadamente a aplicação de lint/typecheck a cargo dos hooks do git (hk) e da CI, em vez de incorporar regras específicas de ESLint às skills dos agentes. O benchmark de uma única execução penaliza isso em -5 em `lint-clean`, mas em um workflow real os mesmos problemas seriam bloqueados pelo pre-push antes de chegar ao remoto.
 

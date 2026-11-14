@@ -201,7 +201,7 @@ oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 | `--with-new-skills` | | Installiert Skills, die seit der aktuellen Installation zur Registry hinzugekommen sind. | `false` |
 | `--ci` | | Führt den nicht-interaktiven CI-Modus aus. Überspringt alle Bestätigungsdialoge und verwendet einfache Konsolenausgabe statt Spinner und Animationen. Für CI/CD-Pipelines ohne verfügbares stdin erforderlich. | `false` |
 | `--yes` | `-y` | Überspringt Nachfragen. Erstellt keine fehlenden Vendor-Verzeichnisse, sofern nicht zusätzlich `--all` oder `--vendor` angegeben ist. | `false` |
-| `--all` | | Erstellt oder aktualisiert alle unterstützten projektbezogenen Vendoren. | `false` |
+| `--all` | | Erstellt oder aktualisiert alle unterstützten projektbezogenen Vendors. | `false` |
 | `--vendor <vendors>` | | Erstellt oder aktualisiert eine durch Kommas getrennte Vendor-Liste, zum Beispiel `claude,qwen`. | Nur vorhandene Vendor-Verzeichnisse |
 
 `oma update mcp` verwendet beim Auswählen von Browser-MCP-Servern dieselben Steuerungen `--yes`, `--ci`, `--all` und `--vendor`. Es verwendet weder `--force` noch `--with-new-skills`.
@@ -221,8 +221,8 @@ oma update mcp [-y | --yes] [--ci] [--all] [--vendor <vendors>]
 **Vendor-Geltungsbereich:**
 - `oma update` aktualisiert nur bereits vorhandene Vendor-Verzeichnisse.
 - `oma update --yes` verwendet denselben Vendor-Geltungsbereich ohne Nachfragen.
-- `oma update --all` erstellt oder aktualisiert alle unterstützten projektbezogenen Vendoren.
-- `oma update --vendor claude,qwen` erstellt oder aktualisiert nur die angegebenen Vendoren.
+- `oma update --all` erstellt oder aktualisiert alle unterstützten projektbezogenen Vendors.
+- `oma update --vendor claude,qwen` erstellt oder aktualisiert nur die angegebenen Vendors.
 
 ### stats
 
@@ -295,7 +295,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 
 **Validierung:**
 - `agent-id` und `session-id` dürfen `..`, `?`, `#`, `%` oder Steuerzeichen nicht enthalten. `agent spawn` hat keine feste Liste von Agent-IDs; das Modell- und Vendor-Routing erkennt `orchestrator`, `architecture`, `qa`, `pm`, `backend`, `frontend`, `mobile`, `db`, `debug`, `refactor`, `docs`, `tf-infra` und `explore` sowie Aliase wie `backend-engineer`, `qa-reviewer` und `research-explorer`.
-- `--vendor` muss eine oma-Vendor-ID sein: `antigravity`, `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `grok`, `hermes`, `kimi`, `kiro`, `opencode`, `pi`, `qwen` oder `zcode`. Die folgende Tabelle deckt die acht Vendoren ab, die `--help` nennt.
+- `--vendor` muss eine oma-Vendor-ID sein: `antigravity`, `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `grok`, `hermes`, `kimi`, `kiro`, `opencode`, `pi`, `qwen` oder `zcode`. Die folgende Tabelle deckt die acht Vendors ab, die `--help` nennt.
 
 **Vendor-spezifisches Verhalten:**
 
@@ -446,7 +446,7 @@ Das Ausgabeformat wird pro Unterbefehl über `--output <text|json>` gesteuert.
 | `--dry-run` | | Gibt Plan und Kostenschätzung aus, führt aber nichts aus. | `false` |
 | `--output <format>` | | `text` \| `json`. | `text` |
 
-`image doctor` und `image vendor list` akzeptieren `--output <text|json>`. Verwende `image vendor list`, um Vendoren zu ermitteln; die alte Schreibweise `image list-vendors` schlägt fehl.
+`image doctor` und `image vendor list` akzeptieren `--output <text|json>`. Verwende `image vendor list`, um Vendors zu ermitteln; die alte Schreibweise `image list-vendors` schlägt fehl.
 
 ### video
 
@@ -482,9 +482,9 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | Flag | Kurz | Beschreibung | Standard |
 |:-----|:------|:-----------|:--------|
 | `--workspace` | `-w` | Pfad zum zu verifizierenden Workspace-Verzeichnis. | Aktuelles Arbeitsverzeichnis |
-| `--session-id <id>` | | Wählt den Sitzungsplan und die Berichte aus. Erforderlich, wenn mehrere Pläne existieren, es sei denn, ein Laufbeleg identifiziert die Sitzung. | |
+| `--session-id <id>` | | Wählt den Sitzungsplan und die Berichte aus. Erforderlich, wenn mehrere Pläne existieren, es sei denn, ein Ausführungsbeleg identifiziert die Sitzung. | |
 | `--task-id <id>` | | Wählt Umfang und Bericht einer einzelnen Aufgabe aus. Erfordert `--session-id` oder `--run-id`. | |
-| `--run-id <id>` | | Wählt den genauen Laufbericht aus. Sitzung und Aufgabe werden aus dem lokalen Beleg abgeleitet; fehlt dieser, gib beide IDs explizit an. | |
+| `--run-id <id>` | | Wählt den genauen Laufbericht aus. Sitzung und Aufgabe werden aus dem lokalen Ausführungsbeleg abgeleitet; fehlt dieser, gib beide IDs explizit an. | |
 
 **Agententypen:** `backend`, `frontend`, `mobile`, `qa`, `debug`, `pm`.
 

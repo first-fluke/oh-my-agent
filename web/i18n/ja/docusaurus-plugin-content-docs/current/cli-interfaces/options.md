@@ -171,7 +171,7 @@ oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .pat
 oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-`--preset` は 10 個の[名前付きスキルプリセット](../getting-started/installation.md#presets)のいずれかを選び、対話式のスキルプロンプトと、無人実行時のデフォルトである `all` を上書きします。未知の名前、空の値、`custom` はインストール前に失敗します。個別に選ぶ場合は対話式の Custom メニューを使います。プリセットはスキルを選択するもので、ランタイムの共有ファイル、ワークフローとエージェントの定義、フック、プロバイダー、保持されているスキルはそのまま残ります。一時的に 1 つのスキルの指示だけをロードする方法は、[セットアップを選ぶ](../getting-started/choose-setup.md) を参照してください。
+`--preset` は 10 個の[名前付きスキルプリセット](../getting-started/installation.md#presets)のいずれかを選び、対話式のスキルプロンプトと、無人実行時のデフォルトである `all` を上書きします。未知の名前、空の値、`custom` はインストール前に失敗します。個別に選ぶ場合は対話式の Custom メニューを使います。プリセットはスキルを選択するもので、ランタイムの共有ファイル、ワークフローとエージェント定義、フック、プロバイダー、保持されているスキルはそのまま残ります。一時的に 1 つのスキルの指示だけをロードする方法は、[セットアップを選ぶ](../getting-started/choose-setup.md) を参照してください。
 
 対話式インストーラーは選択したプロバイダー設定を `.agents/oma-config.yaml` に書き込みます。`.agents/oma-config.cue` がある場合はそちらが優先されるため、CUE 設定にまだ含まれていない選択は gitignore 対象のローカルオーバーレイ `.agents/oma-config.local.yaml` に書き込まれます。ブラウザー DevTools の選択と `oma memory keys` の vault 参照も同じ規則に従い、CLI ベンダーの選択と `oma model propose --write` は `oma-config.yaml` がない場合に同じ規則に従います。プロバイダーフラグで web-search、code-intelligence、semantic-memory の連携先を選び、そのプロバイダーを選択した場合は `--honcho-url` と `--honcho-workspace` で Honcho メモリサービスを設定します。インストール中に確認を求められた場合はルートの `-y, --yes` フラグが適用されます。
 
@@ -289,7 +289,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 |:-----|:------|:-----------|:--------|
 | `--resumed-from` | — | 直前の実行 ID に再試行をリンクします。 | |
 | `--fallback-vendors` | — | 順序付きでカンマ区切りの、明示的なフォールバックベンダーチェーンです。 | |
-| `--task-id` | — | セッション計画にあるタスク ID です。 | エージェント ID |
+| `--task-id` | — | セッションプランにあるタスク ID です。 | エージェント ID |
 | `--vendor` | — | CLI ベンダーの上書きです。`--help` には `antigravity`、`claude`、`codex`、`cursor`、`opencode`、`qwen`、`grok`、`pi` が表示されます。 | 設定から解決 |
 | `--workspace` | `-w` | エージェントの作業ディレクトリです。省略または `.` の場合、CLI はモノレポ設定ファイル（pnpm-workspace.yaml、package.json、lerna.json、nx.json、turbo.json、mise.toml）からワークスペースを自動検出します。 | 自動検出または `.` |
 | `--isolation` | — | 分離モードです。`worktree` は起動ごとに Git worktree を作成し、デフォルト値は `none` です。 | `none` |
@@ -484,9 +484,9 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | フラグ | 短縮形 | 説明 | デフォルト |
 |:-----|:------|:-----------|:--------|
 | `--workspace` | `-w` | 検証対象のワークスペースディレクトリです。 | カレントディレクトリ |
-| `--session-id <id>` | | セッション計画とレポートを選択します。複数の計画がある場合は、実行レシートでセッションが特定できない限り必須です。 | |
+| `--session-id <id>` | | セッションプランとレポートを選択します。複数のプランがある場合は、実行の受領記録でセッションが特定できない限り必須です。 | |
 | `--task-id <id>` | | 1 つのタスクのスコープとレポートを選択します。`--session-id` または `--run-id` が必要です。 | |
-| `--run-id <id>` | | 特定の実行レポートを選択します。セッションとタスクはローカルのレシートから推定します。レシートがない場合は両方の ID を明示してください。 | |
+| `--run-id <id>` | | 特定の実行レポートを選択します。セッションとタスクはローカルの受領記録から推定します。受領記録がない場合は両方の ID を明示してください。 | |
 
 **エージェント種別:** `backend`、`frontend`、`mobile`、`qa`、`debug`、`pm`。
 

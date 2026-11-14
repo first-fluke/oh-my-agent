@@ -185,7 +185,7 @@ flowchart TD
 |----------|---------|
 | **`result-contract.md`** | 에이전트 결과의 실행 식별자, 클레임 경로, 완료 컨트랙트. 모든 `oma agent spawn` 프롬프트에 주입되며, 네이티브 에이전트는 `oma agent begin`, `oma agent verify`, `oma agent finish`로 이를 따릅니다. |
 | **`memory-protocol.md`** | CLI 서브에이전트용 메모리 파일 형식과 연산. On Start, During Execution, On Completion 프로토콜을 설정 가능한 메모리 도구(read/write/edit)로 정의합니다. 실험 추적 확장 포함. |
-| **`event-spec.md`** | 영속 워크플로우 이벤트 컨트랙트. OMA 홈 프로필 아래 `events.jsonl`에 추가되며, `oma state get` 또는 `oma state list`로 확인합니다. |
+| **`event-spec.md`** | 지속 워크플로우 이벤트 컨트랙트. OMA 홈 프로필 아래 `events.jsonl`에 추가되며, `oma state get` 또는 `oma state list`로 확인합니다. |
 | **`execution-protocols/claude.md`** | Claude Code 전용 실행 패턴. 벤더가 claude일 때 `oma agent spawn`이 주입합니다. |
 | **`execution-protocols/antigravity.md`** | Antigravity CLI(`agy`) 실행 패턴. |
 | **`execution-protocols/codex.md`** | Codex CLI 전용 실행 패턴. |

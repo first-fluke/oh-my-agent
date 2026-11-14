@@ -989,7 +989,7 @@ Ao executar um workflow multiagente (`/orchestrate` ou `/work`):
 4. **Progresso monitorado**: o orquestrador prefere as notificações de conclusão do host; em execuções de `oma agent spawn` sem elas, um coordenador consulta os arquivos com escopo de execução `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` que mudaram, com backoff limitado. Subagentes nativos do Claude Code retornam de forma síncrona
 5. **Tiers seguintes** são iniciados quando suas dependências são concluídas
 6. **O loop de revisão** roda para cada agente concluído (veja abaixo)
-7. **Resultados coletados** dos arquivos de resultado com escopo de execução e das claims estruturadas
+7. **Resultados coletados** dos arquivos de resultado com escopo de execução e dos claims estruturados
 8. **Relatório final** com resumo da sessão, arquivos alterados e problemas restantes
 
 ### Loop de revisão agente-para-agente {#agent-to-agent-review-loop}

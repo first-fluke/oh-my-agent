@@ -542,7 +542,7 @@ oma profile run 1 -- oma state list --all-projects --json
 
 ### agent spawn
 
-Lance un processus d’agent secondaire.
+Lance un processus de sous-agent.
 
 ```text
 oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <workspace>] [--isolation <mode>]
@@ -581,7 +581,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 | `130` | Interrompu (Ctrl+C ou SIGTERM). |
 | autre | Le processus du fournisseur lui-même a échoué ; son code de sortie est propagé. |
 
-Voir [Résultats et reprise des agents](../guide/agent-results-and-resume.md) pour l’enregistrement d’exécution et la revendication qui déterminent `completed`.
+Voir [Résultats et reprise des agents](../guide/agent-results-and-resume.md) pour l’enregistrement d’exécution et la claim qui déterminent `completed`.
 
 **Exemples :**
 ```bash
@@ -613,7 +613,7 @@ Les événements de session enregistrent la raison de la transition ainsi que le
 
 ### agent status
 
-Vérifie l’état d’un ou plusieurs agents secondaires.
+Vérifie l’état d’un ou plusieurs sous-agents.
 
 ```text
 oma agent status <session-id> [agent-ids...] [--project-root <path>]
@@ -656,7 +656,7 @@ oma agent status session-20260324-143000 qa --project-root /path/to/project
 
 ### agent parallel
 
-Exécute plusieurs agents secondaires en parallèle.
+Exécute plusieurs sous-agents en parallèle.
 
 ```text
 oma agent parallel [tasks...] [--session-id <id>] [--vendor <vendor>] [-i, --inline] [--no-wait]
@@ -1094,7 +1094,7 @@ oma bridge http://localhost:12341/mcp
 
 ### verify
 
-Vérifie la sortie d’un agent secondaire selon les critères attendus.
+Vérifie la sortie d’un sous-agent selon les critères attendus.
 
 ```text
 oma verify agent <agent-type> [-w <workspace>] [--session-id <id>] [--task-id <id>] [--run-id <id>] [--json] [--output <format>]
@@ -1322,7 +1322,7 @@ oma vault delete anthropic
 
 ### cleanup
 
-Nettoie les processus d’agents secondaires orphelins et les fichiers temporaires.
+Nettoie les processus de sous-agents orphelins et les fichiers temporaires.
 
 ```text
 oma cleanup [--dry-run] [-y, --yes] [--json] [--output <format>]
@@ -1832,7 +1832,7 @@ oma agent finish "<run-id>" "<claim-path>"
 oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context` charge le contexte sélectionné par graphe ; `begin` démarre une exécution et affiche un ID d’exécution généré ainsi qu’un chemin de revendication ; `verify` reçoit cet ID et lance les contrôles épinglés (`--required`), les restreint avec `--affected`, ou exécute la commande placée après `--` et enregistre son code de sortie ; `finish` reçoit l’ID d’exécution et le chemin du fichier de revendication. `agent resume <session-id> --dry-run` signale les tâches prêtes et réutilisables, tandis que `agent resume <session-id> --max-attempts <n>` (par défaut `3`) ne réessaie que les tâches autorisées par le plan. `agent verify` et `agent resume` acceptent `--project-root <path>` pour cibler un autre projet. Voir [Résultats et reprise des agents](../guide/agent-results-and-resume.md) pour la forme du plan et de la revendication. Ces commandes appartiennent au contrat d’exécution OMA ; le travail utilisateur ordinaire peut utiliser `agent spawn`, `agent parallel` ou `agent review`.
+`agent context` charge le contexte sélectionné par graphe ; `begin` démarre une exécution et affiche un ID d’exécution généré ainsi qu’un chemin de claim ; `verify` reçoit cet ID et lance les contrôles épinglés (`--required`), les restreint avec `--affected`, ou exécute la commande placée après `--` et enregistre son code de sortie ; `finish` reçoit l’ID d’exécution et le chemin du fichier de claim. `agent resume <session-id> --dry-run` signale les tâches prêtes et réutilisables, tandis que `agent resume <session-id> --max-attempts <n>` (par défaut `3`) ne réessaie que les tâches autorisées par le plan. `agent verify` et `agent resume` acceptent `--project-root <path>` pour cibler un autre projet. Voir [Résultats et reprise des agents](../guide/agent-results-and-resume.md) pour la forme du plan et de la claim. Ces commandes appartiennent au contrat d’exécution OMA ; le travail utilisateur ordinaire peut utiliser `agent spawn`, `agent parallel` ou `agent review`.
 
 ### memory
 

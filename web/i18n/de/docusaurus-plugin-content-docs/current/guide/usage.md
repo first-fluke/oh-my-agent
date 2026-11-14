@@ -375,7 +375,7 @@ Zusätzlich zur progressiven Offenlegung spart oh-my-agent Tokens durch:
 ### CLI-Spawning
 
 Bei `oma agent spawn` führt die CLI aus:
-1. Vendor der Rolle aus expliziten Optionen, Agenten-Overrides, Model-Preset und konfiguriertem Fallback auflösen
+1. Vendor der Rolle aus expliziten Optionen, Agenten-Overrides, Modell-Preset und konfiguriertem Fallback auflösen
 2. Vendor-spezifisches Ausführungsprotokoll aus `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md` injizieren
 3. Agenten-Prompt aus SKILL.md-Kernregeln, Ausführungsprotokoll und aufgabenrelevanten Ressourcen zusammensetzen
 4. Agenten als unabhängigen CLI-Prozess starten

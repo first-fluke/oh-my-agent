@@ -587,7 +587,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 
 | Código | Significado |
 |:-----|:--------|
-| `0` | O registro da execução terminou como `completed`. |
+| `0` | O registro de execução terminou como `completed`. |
 | `3` | O processo do vendor foi concluído com o código 0, mas a execução não terminou como uma execução `completed` verificada (por exemplo, `partial`, `blocked` ou `failed`), e um evento `blocker.raised` com o código `spawn.incomplete-result` é registrado. Também é retornado quando um sucessor de `--fallback-vendors` não consegue iniciar. A execução não deve ser considerada concluída. |
 | `130` | Interrompido (Ctrl+C ou SIGTERM). |
 | outro | O próprio processo do vendor falhou; seu código de saída é repassado. |
@@ -1763,7 +1763,7 @@ oma scholar lint paper.knows.yaml
 
 ### explain
 
-`/explain` é o fluxo de trabalho de autoria. A CLI renderiza o rascunho escrito pelo fluxo e valida o resultado:
+`/explain` é o workflow de autoria. A CLI renderiza o rascunho escrito pelo workflow e valida o resultado:
 
 ```bash
 oma explain render draft.md --archify
@@ -2149,7 +2149,7 @@ Transforma um incidente capturado em uma fixture de regressão para a skill que 
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
 ```
 
-Sem `--skill`, uma chamada de roteamento ao vivo escolhe a skill, e a skill da definição do agente serve de fallback. `--draft` pede ao opt-agent que redija uma rubrica de juiz quando as verificações não são asserções sobre a saída. `--force` admite uma fixture que não pode ser validada em relação à saída observada.
+Sem `--skill`, uma chamada de roteamento ao vivo escolhe a skill, e a skill da definição de agente serve de fallback. `--draft` pede ao opt-agent que redija uma rubrica de juiz quando as verificações não são asserções sobre a saída. `--force` admite uma fixture que não pode ser validada em relação à saída observada.
 
 Os demais comandos de incidentes:
 

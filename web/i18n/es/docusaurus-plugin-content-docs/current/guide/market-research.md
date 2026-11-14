@@ -1,20 +1,20 @@
 ---
 title: "Guía: Investigación de mercado (motor last30days)"
 sidebar_label: Investigación de mercado
-description: "Cómo la skill oma-market de oh-my-agent realiza investigación de señales de comunidad con el motor upstream mvanhorn/last30days, instalado como skill mediante la CLI de skills: la sección de configuración de market, oma market resolve / update / run, el gate detect-trap, el mapeo de intención a marcos y los modos de fallo."
+description: "Cómo la habilidad oma-market de oh-my-agent realiza investigación de señales de comunidad con el motor upstream mvanhorn/last30days, instalado como habilidad mediante la CLI de skills: la sección de configuración de market, oma market resolve / update / run, el gate detect-trap, el mapeo de intención a marcos y los modos de fallo."
 ---
 
 # Investigación de mercado
 
 `oma-market` responde a «qué dice realmente la gente sobre X en los últimos N días»: puntos de dolor, tendencias, sentimiento de competidores y descubrimiento, a partir de fuentes comunitarias con cifras reales de interacción: Reddit (votos y comentarios destacados), X, transcripciones de YouTube, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, la web y más.
 
-La investigación se ejecuta en el motor upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent no lo bifurca: el motor se instala como skill de agente mediante la [skills CLI](https://github.com/vercel-labs/skills), y oh-my-agent controla cada ejecución y añade una capa de marcos estratégicos. La cadencia de releases, el número de estrellas y la cobertura de proveedores pertenecen al proyecto upstream y pueden cambiar.
+La investigación se ejecuta en el motor upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) (MIT, Python 3.12+). oh-my-agent no lo bifurca: el motor se instala como habilidad de agente mediante la [skills CLI](https://github.com/vercel-labs/skills), y oh-my-agent controla cada ejecución y añade una capa de marcos estratégicos. La cadencia de releases, el número de estrellas y la cobertura de proveedores pertenecen al proyecto upstream y pueden cambiar.
 
 ---
 
 ## Inicio rápido
 
-Pídeselo a tu agente en lenguaje natural. Frases como «investigación de mercado», «puntos de dolor», «análisis de competidores», «voz del cliente» o «detección de tendencias» activan la skill `oma-market`:
+Pídeselo a tu agente en lenguaje natural. Frases como «investigación de mercado», «puntos de dolor», «análisis de competidores», «voz del cliente» o «detección de tendencias» activan la habilidad `oma-market`:
 
 ```text
 Encuentra los principales puntos de dolor que reportan los desarrolladores sobre los contenedores remotos de VS Code en los últimos 30 días.
@@ -56,12 +56,12 @@ oma market resolve
 # save_dir: <workspace>/.agents/results/market/raw
 ```
 
-- `resolve` solo lee los directorios de skills instalados y nunca toca la red. Cuando no hay nada instalado, no queda en estado ok e indica el comando de instalación; la skill pregunta antes de ejecutar `oma market update`.
+- `resolve` solo lee los directorios de habilidades instalados y nunca toca la red. Cuando no hay nada instalado, no queda en estado ok e indica el comando de instalación; la habilidad pregunta antes de ejecutar `oma market update`.
 - `oma update` no instala el motor. Actualízalo con `oma market update` (o `bunx skills update last30days -g -y`).
-- Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` en PATH (debe ser ≥ 3.12) → `uv python find '>=3.12'`. Si no encuentra ninguno, `resolve` no queda en estado ok y muestra la sugerencia de instalación; la skill se detiene en vez de degradarse a una investigación solo con búsqueda web.
+- Python: `LAST30DAYS_PYTHON` → `market.python` → `python3.14`, `python3.13`, `python3.12`, `python3`, `python` en PATH (debe ser ≥ 3.12) → `uv python find '>=3.12'`. Si no encuentra ninguno, `resolve` no queda en estado ok y muestra la sugerencia de instalación; la habilidad se detiene en vez de degradarse a una investigación solo con búsqueda web.
 - La configuración del motor y las claves API viven en `~/.config/last30days/` (las escribe el asistente de configuración upstream con tu consentimiento), así que sobreviven a las actualizaciones del motor.
 
-Orden de resolución (gana el primer resultado): `market.path` → `LAST30DAYS_HOME` → directorios de skills instalados (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` en el proyecto, luego bajo `~`, después `~/.config/agents/skills/last30days` y la caché del plugin de Claude Code). Una instalación de plugin de Claude Code se actualiza mediante `/plugin`, no con `oma market update`.
+Orden de resolución (gana el primer resultado): `market.path` → `LAST30DAYS_HOME` → directorios de habilidades instalados (`.agents|.claude|.codex|.cursor|.qwen|.kiro|.gemini|.copilot/skills/last30days` en el proyecto, luego bajo `~`, después `~/.config/agents/skills/last30days` y la caché del plugin de Claude Code). Una instalación de plugin de Claude Code se actualiza mediante `/plugin`, no con `oma market update`.
 
 ```bash
 oma market run -- --help     # the engine's own flags (without `--`, oma prints its own help)

@@ -757,7 +757,7 @@ Dit zijn workflowstandaarden; model-, vendor-, parallellisme- en budgetinstellin
 - Auth-bewuste dispatch: voer alleen geauthenticeerde vendors uit; met `--vendor all` moet elke gevraagde vendor beschikbaar zijn
 - Kostengate: bevestig runs waarvan de geschatte kosten ≥ $0.20 zijn (`--yes`/`OMA_IMAGE_YES=1` omzeilt dit); `pollinations` en `antigravity` zijn standaard gratis
 - Padveiligheid: output buiten `$PWD` vereist `--allow-external-output`; maximaal `n` = 5
-- Geregistreerde output: elke run schrijft naast de afbeeldingen een `manifest.json` met prompt, vendor/model, inputs en artifactmetadata. Dit legt reproduceerbaarheidsgegevens vast, maar belooft geen pixelidentieke output.
+- Geregistreerde output: elke run schrijft naast de afbeeldingen een `manifest.json` met prompt, vendor/model, inputs en artefactmetadata. Dit legt reproduceerbaarheidsgegevens vast, maar belooft geen pixelidentieke output.
 - Stuur bijgevoegde referentieafbeeldingen automatisch door via `--reference <path>` (codex/antigravity)
 - Projectinstellingen staan onder `image:` in `.agents/oma-config.yaml`; meegeleverde standaarden staan in de CLI
 

@@ -119,7 +119,7 @@ git config --global init.defaultBranch main
 - 생성된 심볼릭 링크
 - 건너뛴 항목 (있는 경우)
 
-설치와 업데이트는 레거시 문서 위치도 [아티팩트 레이아웃](./artifact-layout.md)으로 마이그레이션합니다. 이름이 겹치면 기존 파일은 보존되며, 실행 근거와 연결된 보고서는 원래 경로에 그대로 남습니다. 업그레이드 전에 변경 사항을 미리 확인하세요:
+설치와 업데이트는 레거시 문서 위치도 [산출물 레이아웃](./artifact-layout.md)으로 마이그레이션합니다. 이름이 겹치면 기존 파일은 보존되며, 실행 근거와 연결된 보고서는 원래 경로에 그대로 남습니다. 업그레이드 전에 변경 사항을 미리 확인하세요:
 
 ```bash
 oma docs migrate --dry-run
@@ -310,7 +310,7 @@ your-project/
 
 ### 설치 후
 
-1. **변경된 내용을 검토하세요.** `git status`를 실행해 SSOT, 벤더 통합 파일, 문서 마이그레이션 결과를 확인합니다. 무시되는 런타임 아티팩트의 경우 마이그레이션 요약도 함께 확인하세요.
+1. **변경된 내용을 검토하세요.** `git status`를 실행해 SSOT, 벤더 통합 파일, 문서 마이그레이션 결과를 확인합니다. 무시되는 런타임 산출물의 경우 마이그레이션 요약도 함께 확인하세요.
 2. **`.gitignore`를 확인하세요.** Git 저장소에서 install/update/link는 런타임 항목(`.antigravitycli/`, `.agents/results/`, `.agents/state/`, `.agents/backup/`, `docs/plans/`)을 루트 `.gitignore`에 자동으로 추가합니다. 추가된 내용을 확인하세요. 대부분의 팀은 설정 공유를 위해 `.agents/`와 `.claude/`를 커밋합니다. 판단에 맡겨진 항목은 `.serena/` 하나입니다. Serena는 내부 `.serena/.gitignore`로 자체 캐시를 관리하므로 `.serena/project.yml`(공유 프로젝트 설정)만 커밋하거나 디렉토리 전체를 무시할 수 있습니다:
 
 ```gitignore
@@ -372,7 +372,7 @@ oma dashboard web
 
 ### 1. 레거시 마이그레이션
 
-설치 프로그램은 이전의 `.agent/` 디렉토리(단수형)를 확인하고 발견되면 `.agents/`(복수형)로 마이그레이션합니다. 또한 결정 문서와 사람이 읽는 결과 보고서를 통합하는 [아티팩트 레이아웃 마이그레이션](./artifact-layout.md#migrate-an-existing-project)을 적용합니다. 업데이트도 같은 마이그레이션을 사용합니다. 이미 마이그레이션된 프로젝트에서 다시 실행하면 프로젝트가 변경되지 않은 채로 유지됩니다.
+설치 프로그램은 이전의 `.agent/` 디렉토리(단수형)를 확인하고 발견되면 `.agents/`(복수형)로 마이그레이션합니다. 또한 결정 문서와 사람이 읽는 결과 보고서를 통합하는 [산출물 레이아웃 마이그레이션](./artifact-layout.md#migrate-an-existing-project)을 적용합니다. 업데이트도 같은 마이그레이션을 사용합니다. 이미 마이그레이션된 프로젝트에서 다시 실행하면 프로젝트가 변경되지 않은 채로 유지됩니다.
 
 ### 2. 경쟁 도구 감지
 
@@ -441,4 +441,4 @@ Qwen은 `.agents/skills/`를 직접 읽으므로 OMA는 `.qwen/skills/oma-*` 링
 - [에이전트별 모델 설정](./per-agent-models.md): 에이전트마다 모델과 CLI 선택
 - [Codex 훅 신뢰](./codex-hook-trust.md): Codex에서 한 번 거치는 `/hooks` 단계
 - [자동 업데이트](./automated-updates.md): CI에서 설치를 최신 상태로 유지
-- [아티팩트 레이아웃](./artifact-layout.md): 문서 위치, 승격, 마이그레이션
+- [산출물 레이아웃](./artifact-layout.md): 문서 위치, 승격, 마이그레이션

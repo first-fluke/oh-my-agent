@@ -14,7 +14,7 @@ OMA passt gut, wenn Sie mindestens eines dieser Ziele haben:
 - **Mehrere Agenten-Hosts oder Vendors.** `model_preset: auto` verwendet die native Konfiguration der aktuellen Laufzeit. Feste und benutzerdefinierte Presets können Rollen an andere Vendors weiterleiten; `oma agent spawn` übernimmt nicht nativen Dispatch.
 - **Einen wiederholbaren Team-Workflow.** `/work` bearbeitet eine abgegrenzte Aufgabe, `/orchestrate` koordiniert delegierte Arbeit, `/ultrawork` führt parallele Arbeit mit Review-Schritten aus und `/ralph` wiederholt eine Aufgabe mit einer ausdrücklichen Judge-Phase.
 - **Vom Repository verwaltete Anweisungen.** Skills, Workflows, Regeln und Agentendefinitionen liegen neben dem Code. `oma link` überträgt die ausgewählten Dateien in unterstützte Vendor-Formate.
-- **Mechanische Prüfungen und dauerhafte Ergebnisse.** Agentenläufe können strukturierte Status- und Ergebnisaufzeichnungen schreiben, während `oma verify agent <agent-type>` und `oma docs verify` ausdrückliche Prüfungen bereitstellen.
+- **Mechanische Prüfungen und dauerhafte Ergebnisse.** Agentenläufe können strukturierte Status- und Ausführungsbelege schreiben, während `oma verify agent <agent-type>` und `oma docs verify` ausdrückliche Prüfungen bereitstellen.
 
 Wenn ein Projekt nur einen Host verwendet und keine gemeinsamen Skills, Workflows oder Vendor-Routen benötigt, rechtfertigen die zusätzlichen `.agents/`-Dateien und CLI-Befehle den Einrichtungsaufwand möglicherweise nicht. OMA ist eine Koordinationsebene. Es ersetzt weder das Modell des Hosts noch den Editor oder die projektspezifischen Akzeptanzkriterien.
 
@@ -30,7 +30,7 @@ Führen Sie `oma verify agent <agent-type> --workspace <path>` aus, wenn Sie die
 
 Hooks können einen Workflow nur aktivieren, wenn die entsprechende Host-Integration eingeschaltet ist. Native Skill-Routen werden vom Host ausgeführt; Workflow-Routen folgen dem ausgewählten Workflow oder Hook. Eine einfache Eingabe garantiert daher nicht, dass ein bestimmter Skill oder ein bestimmtes Gate läuft.
 
-Optionale Koordinationsgrenzen sind in der [Session-Quota-Grenze](../guide/configuration-reference.md#session-quota-caps), der [Retry- und Exploration-Schleife von `/orchestrate`](../core-concepts/workflows.md#orchestrate) und der [Workspace-Zuweisung](../core-concepts/parallel-execution.md#workspace-aware-pattern) beschrieben.
+Optionale Koordinationsgrenzen sind in der [Sitzungs-Quota-Grenze](../guide/configuration-reference.md#session-quota-caps), der [Retry- und Exploration-Schleife von `/orchestrate`](../core-concepts/workflows.md#orchestrate) und der [Workspace-Zuweisung](../core-concepts/parallel-execution.md#workspace-aware-pattern) beschrieben.
 
 ## Der praktische Kompromiss
 

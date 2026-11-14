@@ -28,7 +28,7 @@ Elige el comando más pequeño que responda a tu pregunta. Cada comando de abajo
 | Crear una presentación | `oma slide create --output-dir <dir>` | Un directorio de trabajo que se puede escribir, validar, empaquetar y exportar. |
 | Revisar el drift de la documentación | `oma docs verify --json` | Un informe estructurado de referencias rotas y un índice de referencias regenerado. |
 | Programar un agente recurrente | `oma schedule create backend "<task>" --every 2h --dry-run` | La expresión cron resuelta; no se registra nada hasta que lo vuelvas a ejecutar sin `--dry-run`. |
-| Comprobar la calidad de las skills o del harness | `oma skill lint` o `oma skill audit` | Informes offline; consulta [Elegir un comando de skill o de harness](#choosing-a-skill-or-harness-command) antes de usar cualquier comando que llame a modelos. |
+| Comprobar la calidad de las habilidades o del harness | `oma skill lint` o `oma skill audit` | Informes offline; consulta [Elegir un comando de habilidad o de harness](#choosing-a-skill-or-harness-command) antes de usar cualquier comando que llame a modelos. |
 
 Los nombres canónicos de abajo proceden de `oma describe`. Solo se aceptan estas rutas separadas por espacios: las formas antiguas como `slide new`, `slide viewer`, `image list-vendors` y `video list-providers`, las formas con dos puntos como `agent:parallel` y los nombres cortos `viz`, `s` e `img` fallan con `Unknown command` o `Unexpected argument`. Consulta [Alias y formas eliminadas](#aliases).
 
@@ -92,7 +92,7 @@ Cuando un comando delega los argumentos restantes a otra herramienta, el registr
 
 ### install
 
-`oma` sin argumentos inicia el instalador de runtime interactivo. `oma install` es la forma explícita y acepta un preset de skills además de opciones para seleccionar proveedores. Para cargar instrucciones temporales en una sola tarea, consulta [Elegir una configuración](../getting-started/choose-setup.md).
+`oma` sin argumentos inicia el instalador de runtime interactivo. `oma install` es la forma explícita y acepta un preset de habilidades además de opciones para seleccionar proveedores. Para cargar instrucciones temporales en una sola tarea, consulta [Elegir una configuración](../getting-started/choose-setup.md).
 
 ```bash
 oma
@@ -103,7 +103,7 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 | Opción | Valores aceptados |
 |:-------|:----------------|
-| `--preset <name>` | Uno de los diez [presets de skills con nombre](../getting-started/installation.md#presets), como `frontend`, `research` o `all`. La selección Custom individual usa el menú interactivo. |
+| `--preset <name>` | Uno de los diez [presets de habilidades con nombre](../getting-started/installation.md#presets), como `frontend`, `research` o `all`. La selección Custom individual usa el menú interactivo. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -112,16 +112,16 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 Si omites `--web-search`, `--code-intelligence` y `--semantic-memory`, se conserva la selección de proveedor guardada. `--honcho-url` y `--honcho-workspace` configuran una conexión nueva de Honcho cuando se selecciona ese proveedor. El flag raíz `-y, --yes` omite los prompts y usa los valores predeterminados; `--global` apunta a `$OMA_HOME/.agents/` (predeterminado: `~/.oma/.agents/`). La instalación de proyecto permanece en `<cwd>/.agents/` aunque `OMA_HOME` esté establecido.
 
-`--preset` tiene prioridad sobre el prompt interactivo de skills y sobre el valor predeterminado `all` en modo desatendido. Los nombres desconocidos, los valores vacíos y `custom` se rechazan antes de la instalación. Selecciona el contenido de las skills; no filtra archivos compartidos, definiciones de workflow/agente, hooks ni la configuración de proveedores, y conserva otras skills instaladas. Por ello, las [dependencias de workflows](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset) pueden diferir del paquete seleccionado.
+`--preset` tiene prioridad sobre el prompt interactivo de habilidades y sobre el valor predeterminado `all` en modo desatendido. Los nombres desconocidos, los valores vacíos y `custom` se rechazan antes de la instalación. Selecciona el contenido de las habilidades; no filtra archivos compartidos, definiciones de flujo de trabajo/agente, hooks ni la configuración de proveedores, y conserva otras habilidades instaladas. Por ello, las [dependencias de flujos de trabajo](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset) pueden diferir del paquete seleccionado.
 
 **Qué hace:**
 1. Comprueba si existe el directorio legacy `.agent/` y lo migra a `.agents/` si lo encuentra.
 2. En modo interactivo, detecta otras herramientas de agentes y pregunta si deseas desinstalarlas (por defecto: conservar). `--yes`, `OMA_YES` y las instalaciones en CI las conservan; `oma update` no ofrece eliminarlas.
-3. Usa `--preset` cuando se indica; en caso contrario, solicita un preset de skills o una selección Custom individual en modo interactivo. La configuración desatendida usa `all` por defecto.
+3. Usa `--preset` cuando se indica; en caso contrario, solicita un preset de habilidades o una selección Custom individual en modo interactivo. La configuración desatendida usa `all` por defecto.
 4. Si se selecciona backend, solicita la variante del lenguaje (Python, Node.js, Rust, Other).
 5. Pregunta por los symlinks de GitHub Copilot.
 6. Descarga el tarball más reciente del registro.
-7. Instala recursos compartidos, workflows, configuraciones y las skills seleccionadas.
+7. Instala recursos compartidos, flujos de trabajo, configuraciones y las habilidades seleccionadas.
 8. Instala adaptaciones para los proveedores seleccionados. Consulta [efectos de la instalación](../getting-started/installation.md#what-the-installer-also-does-by-default) para ver los cambios a nivel de proyecto y HOME.
 9. Crea symlinks del CLI.
 10. Ofrece la configuración **global** recomendada de git (requiere confirmación explícita):
@@ -131,7 +131,7 @@ Si omites `--web-search`, `--code-intelligence` y `--semantic-memory`, se conser
 11. Ofrece configurar MCP cuando corresponde.
 12. Solicita la estrella de GitHub si `gh` está autenticado.
 
-El resumen final lista las skills seleccionadas y comprueba los manifests de skills referenciados usando los archivos realmente presentes, incluidas las skills conservadas y las ramas condicionales. Informa de referencias a skills de workflows o agentes faltantes o ilegibles y remite al comando doctor de esa raíz de instalación. Se trata de cobertura estática de manifests; no se verifican contenidos de recursos, herramientas, proveedores ni ejecución.
+El resumen final lista las habilidades seleccionadas y comprueba los manifests de habilidades referenciados usando los archivos realmente presentes, incluidas las habilidades conservadas y las ramas condicionales. Informa de referencias a habilidades de flujos de trabajo o agentes faltantes o ilegibles y remite al comando doctor de esa raíz de instalación. Se trata de cobertura estática de manifests; no se verifican contenidos de recursos, herramientas, proveedores ni ejecución.
 
 **Ejemplo:**
 ```bash
@@ -142,7 +142,7 @@ oma install --preset frontend
 
 ### doctor
 
-Comprobación de salud de las instalaciones del CLI, las configuraciones MCP y el estado de las skills.
+Comprobación de salud de las instalaciones del CLI, las configuraciones MCP y el estado de las habilidades.
 
 ```text
 oma doctor [--json] [--output <format>] [--profile] [--heal-check <agent-type>]
@@ -171,7 +171,7 @@ oma doctor [--json] [--output <format>] [--profile] [--heal-check <agent-type>]
 - Archivo de contexto del proveedor del proyecto (bloque OMA de `AGENTS.md` cuando está instalado Codex, Qwen o Claude Code ≥ 2.1.277).
 - Salud de AgentMemory y de state/hooks, diagnósticos del reaper de Serena y contadores de incidencias relacionados.
 
-**Reparación automática:** Si detecta skills ausentes, `doctor` ofrece instalarlas de forma interactiva. Si falta la configuración de git recomendada o es incorrecta, ofrece las mismas correcciones globales opt-in que install/update.
+**Reparación automática:** Si detecta habilidades ausentes, `doctor` ofrece instalarlas de forma interactiva. Si falta la configuración de git recomendada o es incorrecta, ofrece las mismas correcciones globales opt-in que install/update.
 
 **Ejemplos:**
 ```bash
@@ -190,7 +190,7 @@ oma doctor --profile
 
 ### update
 
-Actualiza las skills a la versión más reciente del registro.
+Actualiza las habilidades a la versión más reciente del registro.
 
 ```text
 oma update [-f, --force] [--with-new-skills] [--ci] [-y, --yes] [--all] [--vendor <vendors>]
@@ -201,7 +201,7 @@ oma update [-f, --force] [--with-new-skills] [--ci] [-y, --yes] [--all] [--vendo
 | Flag | Descripción |
 |:-----|:-----------|
 | `-f, --force` | Sobrescribe los archivos de configuración personalizados (`oma-config.yaml`, `mcp.json`, directorios `stack/`) |
-| `--with-new-skills` | Instala las skills nuevas de esta versión; sin este flag, solo actualiza las skills ya instaladas. |
+| `--with-new-skills` | Instala las habilidades nuevas de esta versión; sin este flag, solo actualiza las habilidades ya instaladas. |
 | `--ci` | Ejecuta en modo CI no interactivo (omite prompts y usa salida de texto plano) |
 | `-y, --yes` | Omite los prompts. El alcance de proveedores no cambia: solo se actualizan los directorios de proveedores existentes, salvo que se indique `--all` o `--vendor`. |
 | `--all` | Crea o actualiza todos los proveedores compatibles con alcance de proyecto. |
@@ -256,7 +256,7 @@ oma uninstall --dry-run
 oma uninstall --yes
 ```
 
-`--dry-run` enumera las eliminaciones sin cambiar archivos. `--yes` omite el prompt de confirmación. Según la descripción registrada del comando, este conserva `oma-config.yaml`, `mcp.json` y las skills escritas por el usuario. Si la previsualización incluye un archivo que todavía necesitas, detente y conserva la salida de dry-run para revisarla.
+`--dry-run` enumera las eliminaciones sin cambiar archivos. `--yes` omite el prompt de confirmación. Según la descripción registrada del comando, este conserva `oma-config.yaml`, `mcp.json` y las habilidades escritas por el usuario. Si la previsualización incluye un archivo que todavía necesitas, detente y conserva la salida de dry-run para revisarla.
 
 ### link
 
@@ -290,7 +290,7 @@ Sin `--global`, link apunta a `<cwd>/.agents/`; con él, apunta a `~/.oma/.agent
 1. Reconstruye los archivos de agentes nativos de los proveedores a partir de `.agents/agents/`.
 2. Refresca los hooks y la configuración local de los proveedores seleccionados.
 3. Regenera el bloque de integración de `AGENTS.md` para cada proveedor configurado, incluido Claude Code. `CLAUDE.md` y `GEMINI.md` nunca se crean ni reciben un bloque OMA. Claude Code ≥ 2.1.277 lee `AGENTS.md` de forma nativa, pero lo ignora siempre que existe un `CLAUDE.md`, así que, cuando hay un `CLAUDE.md` propiedad del usuario, link añade una única línea de importación `@AGENTS.md`; `oma update` también elimina el bloque OMA legacy de `CLAUDE.md` en cuanto se detecta esa versión.
-4. Refresca el enlace MCP de Cursor y los symlinks de skills del CLI cuando corresponde.
+4. Refresca el enlace MCP de Cursor y los symlinks de habilidades del CLI cuando corresponde.
 
 Úsalo después de editar `.agents/agents/`, `.agents/workflows/`, `.agents/rules/` o las definiciones de hooks.
 
@@ -304,7 +304,7 @@ Sin `--global`, link apunta a `<cwd>/.agents/`; con él, apunta a `~/.oma/.agent
 
 ### Reconfigurar una instalación existente {#setup-workflow}
 
-No existe un workflow `/setup`. Para cambiar un proyecto instalado, vuelve a ejecutar `oma install` o usa `oma update mcp` para elegir los servidores MCP de navegador. Comprueba la resolución de modelos por agente con `oma doctor --profile`; los modelos fijados por agente se configuran en `agents:` de `.agents/oma-config.yaml` ([Modelos por agente](../guide/per-agent-models.md)).
+No existe un flujo de trabajo `/setup`. Para cambiar un proyecto instalado, vuelve a ejecutar `oma install` o usa `oma update mcp` para elegir los servidores MCP de navegador. Comprueba la resolución de modelos por agente con `oma doctor --profile`; los modelos fijados por agente se configuran en `agents:` de `.agents/oma-config.yaml` ([Modelos por agente](../guide/per-agent-models.md)).
 
 ---
 
@@ -509,17 +509,17 @@ usan `state/`. El almacenamiento de perfiles usa `u/`, salvo que `OMA_STATE_HOME
 otra raíz de perfiles.
 
 La migración conserva el contenido original, omite las copias idénticas, combina los nombres de
-claves del vault e informa de los conflictos de destino o de los datos en uso. Los directorios de skills
+claves del vault e informa de los conflictos de destino o de los datos en uso. Los directorios de habilidades
 verificados como propiedad de OMA se pueden archivar en `$OMA_HOME/backup/legacy-global-skills/`
 antes de que sus antiguas rutas de descubrimiento se conviertan en enlaces gestionados hacia las copias migradas.
-Las skills del usuario y los enlaces ajenos permanecen en su sitio. No mueve la autenticación
+Las habilidades del usuario y los enlaces ajenos permanecen en su sitio. No mueve la autenticación
 de los proveedores, los secretos del llavero del sistema operativo ni los datos de memoria externos. La instalación
 y la actualización globales ejecutan esta migración automáticamente. El registro de trabajos del sistema operativo es independiente:
 ejecuta `oma schedule sync` después de la migración cuando existan programaciones.
 
 ### state list {#state-list}
 
-Enumera las sesiones de workflow de OMA del proyecto actual. El descubrimiento global explícito
+Enumera las sesiones de flujo de trabajo de OMA del proyecto actual. El descubrimiento global explícito
 enumera las sesiones de todos los proyectos del perfil local seleccionado:
 
 ```bash
@@ -603,7 +603,7 @@ oma agent spawn <agent-id> <prompt> <session-id> [--vendor <vendor>] [-w <worksp
 | `130` | Interrumpido (Ctrl+C o SIGTERM). |
 | otro | El proceso del proveedor falló; se propaga su código de salida. |
 
-Consulta [Resultados y reanudación de agentes](../guide/agent-results-and-resume.md) para conocer el registro de ejecución y el claim que deciden `completed`.
+Consulta [Resultados y reanudación de agentes](../guide/agent-results-and-resume.md) para conocer el registro de ejecución y la declaración de resultados que deciden `completed`.
 
 **Ejemplos:**
 ```bash
@@ -792,26 +792,26 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set {#goal-set}
 
-Asocia un contrato de objetivo a un workflow persistente activo (orchestrate, ultrawork, work, ralph). El hook Stop del modo persistente aplica el contrato de forma mecánica: la finalización deja de depender del criterio del modelo.
+Asocia un contrato de objetivo a un flujo de trabajo persistente activo (orchestrate, ultrawork, work, ralph). El hook Stop del modo persistente aplica el contrato de forma mecánica: la finalización deja de depender del criterio del modelo.
 
 ```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]
 ```
 
-Pasa al menos uno de `--gate`, `--budget-minutes` o `--description`; de lo contrario, el comando falla con `Nothing to set`. Consulta [Workflow persistente](../getting-started/glossary.md#persistent-workflow) y [Puerta de parada](../getting-started/glossary.md#stop-gate) en el glosario.
+Pasa al menos uno de `--gate`, `--budget-minutes` o `--description`; de lo contrario, el comando falla con `Nothing to set`. Consulta [Flujo de trabajo persistente](../getting-started/glossary.md#persistent-workflow) y [Puerta de parada](../getting-started/glossary.md#stop-gate) en el glosario.
 
 **Opciones:**
 
 | Flag | Descripción |
 |:-----|:-----------|
-| `--gate <keyword>` | Puerta de parada determinista: `typecheck`, `test` o `lint`. Se asigna al script de package.json con el mismo nombre y se ejecuta como un array argv sin shell. Mientras esté definida, el hook Stop solo permite terminar el workflow **cuando el script pasa**; si falla, bloquea la salida con el final del resultado para que el agente sepa qué corregir. Se rechazan los comandos libres: el valor de la puerta vive en un archivo de estado escribible por el agente, por lo que ejecutar cadenas arbitrarias desde él eludiría la capa de permisos. |
-| `--budget-minutes <n>` | Presupuesto de tiempo de reloj medido desde la activación del workflow. Al superarlo, el hook Stop desactiva el workflow y permite una parada parcial honesta (veredicto de la máquina, registrado como `gate.failed` con `gate: "budget"` en el historial de eventos de sesión). |
+| `--gate <keyword>` | Puerta de parada determinista: `typecheck`, `test` o `lint`. Se asigna al script de package.json con el mismo nombre y se ejecuta como un array argv sin shell. Mientras esté definida, el hook Stop solo permite terminar el flujo de trabajo **cuando el script pasa**; si falla, bloquea la salida con el final del resultado para que el agente sepa qué corregir. Se rechazan los comandos libres: el valor de la puerta vive en un archivo de estado escribible por el agente, por lo que ejecutar cadenas arbitrarias desde él eludiría la capa de permisos. |
+| `--budget-minutes <n>` | Presupuesto de tiempo de reloj medido desde la activación del flujo de trabajo. Al superarlo, el hook Stop desactiva el flujo de trabajo y permite una parada parcial honesta (veredicto de la máquina, registrado como `gate.failed` con `gate: "budget"` en el historial de eventos de sesión). |
 | `--description <text>` | Descripción humana del objetivo. Solo informativa. |
-| `--workflow <name>` | Workflow de destino cuando hay varios workflows persistentes activos. |
-| `--session-id <id>` | Sufijo del ID de sesión del proveedor en el archivo de estado; solo es necesario cuando hay varios workflows persistentes activos. |
+| `--workflow <name>` | Flujo de trabajo de destino cuando hay varios flujos de trabajo persistentes activos. |
+| `--session-id <id>` | Sufijo del ID de sesión del proveedor en el archivo de estado; solo es necesario cuando hay varios flujos de trabajo persistentes activos. |
 
 **Notas de comportamiento:**
-- Si la puerta pasa, el workflow se desactiva, se emite `gate.passed` y se permite la parada.
+- Si la puerta pasa, el flujo de trabajo se desactiva, se emite `gate.passed` y se permite la parada.
 - Cada ejecución de la puerta tiene un presupuesto de 25 segundos (`OMA_GATE_TIMEOUT_MS` solo puede reducirlo). El fallo de la puerta y el timeout cuentan para el límite de refuerzo (5), de modo que una puerta permanentemente roja no puede bloquear las paradas para siempre; la caducidad por antigüedad de 2 horas sigue siendo el último respaldo. Usa `--gate test` solo cuando el script `test` termine holgadamente dentro de ese presupuesto.
 - Sin un contrato de objetivo, el modo persistente se comporta exactamente igual que antes (solo prompts de refuerzo): el contrato es completamente opt-in.
 
@@ -1163,13 +1163,13 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `-w, --workspace <path>` | Ruta del workspace que se verificará | Directorio actual |
 | `--session-id <id>` | Selecciona el plan de sesión y los informes | |
 | `--task-id <id>` | Selecciona el alcance y el informe de una tarea; requiere un ID de sesión o de ejecución | |
-| `--run-id <id>` | Selecciona el informe exacto de la ejecución; infiere la sesión y la tarea a partir de su recibo local | |
+| `--run-id <id>` | Selecciona el informe exacto de la ejecución; infiere la sesión y la tarea a partir de su registro de verificación local | |
 | `--json` | Salida como JSON | |
 | `--output <format>` | Formato de salida (`text` o `json`) | |
 
 **Qué hace:** Ejecuta las comprobaciones configuradas para el tipo de agente indicado, incluidas pruebas, inspecciones estáticas y cumplimiento del alcance. Las comprobaciones de código del workspace siguen inspeccionando el workspace cuando se selecciona una tarea o una ejecución.
 
-Cuando coinciden varios planes de sesión o recibos de ejecución, la verificación falla y pide una identidad explícita en lugar de seleccionar un archivo por nombre. Una ejecución nueva sin informe no puede reutilizar el informe de una ejecución anterior. `--run-id` comprueba el agente y el workspace del recibo antes de usar su sesión/tarea. Sin un recibo local, proporciona los tres IDs. Los informes TDD legacy sin alcance solo se aceptan con el plan legacy `.agents/plan.json`.
+Cuando coinciden varios planes de sesión o registros de verificación de ejecución, la verificación falla y pide una identidad explícita en lugar de seleccionar un archivo por nombre. Una ejecución nueva sin informe no puede reutilizar el informe de una ejecución anterior. `--run-id` comprueba el agente y el workspace del registro de verificación antes de usar su sesión/tarea. Sin un registro de verificación local, proporciona los tres IDs. Los informes TDD legacy sin alcance solo se aceptan con el plan legacy `.agents/plan.json`.
 
 `verify triggers` mide la precisión del detector de palabras clave frente a un corpus de prompts etiquetado. Los umbrales porcentuales son puertas de control. La ruta registrada es `verify agent`; la forma antigua de nivel superior `oma verify <agent-type>` se rechaza con `Unexpected argument`.
 
@@ -1186,7 +1186,7 @@ Cuando coinciden varios planes de sesión o recibos de ejecución, la verificaci
 | Tipo de agente | Comprobaciones adicionales |
 |:-----------|:-----------------|
 | `backend` | Validación de sintaxis, detección de inyección SQL (patrones de SQL sin procesar) y pruebas, todo a partir de los comandos `verify` de `.agents/skills/oma-backend/stack/stack.yaml` (generado por `/stack-set`). Se omiten si ese archivo no existe |
-| `frontend` | Validación de sintaxis y pruebas a partir de los comandos `verify` de `.agents/skills/oma-frontend/stack/stack.yaml` (o de `.agents/skills/angular-developer/stack/stack.yaml` si esa skill está instalada); sin ese archivo, compilación de TypeScript (`tsc --noEmit`) y pruebas de frontend (`vitest`). Siempre: detección de estilos inline (`style={{`, solo advierte), uso del tipo `any` (falla si supera 3) |
+| `frontend` | Validación de sintaxis y pruebas a partir de los comandos `verify` de `.agents/skills/oma-frontend/stack/stack.yaml` (o de `.agents/skills/angular-developer/stack/stack.yaml` si esa habilidad está instalada); sin ese archivo, compilación de TypeScript (`tsc --noEmit`) y pruebas de frontend (`vitest`). Siempre: detección de estilos inline (`style={{`, solo advierte), uso del tipo `any` (falla si supera 3) |
 | `mobile` | Validación de sintaxis y pruebas a partir de los comandos `verify` de `.agents/skills/oma-mobile/stack/stack.yaml`; sin ese archivo, análisis de Flutter/Dart (`flutter analyze` o `dart analyze`) y pruebas de Flutter (`flutter test`) |
 | `qa` | Sin chequeos mecánicos; registra un único chequeo `QA Report` como `PASS` |
 | `debug` | Ejecuta pruebas Python o de frontend según el tipo de proyecto detectado |
@@ -1484,11 +1484,11 @@ oma visualize [--focus <node-or-path>] [--affected <paths...>] [--json] [--outpu
 | Flag | Descripción |
 |:-----|:-----------|
 | `--focus <node-or-path>` | Selecciona solo las referencias que requiere el nodo o la ruta (de forma transitiva) |
-| `--affected <paths...>` | Encuentra las definiciones, los workflows y las comprobaciones afectados por cambios en estas rutas |
+| `--affected <paths...>` | Encuentra las definiciones, los flujos de trabajo y las comprobaciones afectados por cambios en estas rutas |
 | `--json` | Salida como JSON |
 | `--output <format>` | Formato de salida (`text` o `json`) |
 
-**Qué hace:** Analiza la estructura del proyecto y genera un grafo de dependencias que muestra las relaciones entre skills, agentes, workflows y recursos compartidos.
+**Qué hace:** Analiza la estructura del proyecto y genera un grafo de dependencias que muestra las relaciones entre habilidades, agentes, flujos de trabajo y recursos compartidos.
 
 **Ejemplos:**
 ```bash
@@ -1731,7 +1731,7 @@ oma describe "agent parallel"
 
 ## Comandos de investigación y artefactos {#research-and-artifact-commands}
 
-Estas familias son útiles cuando la salida es un artefacto de investigación, una presentación o un informe. Aquí se mantienen deliberadamente breves; las guías enlazadas explican el workflow y las decisiones de recuperación.
+Estas familias son útiles cuando la salida es un artefacto de investigación, una presentación o un informe. Aquí se mantienen deliberadamente breves; las guías enlazadas explican el flujo de trabajo y las decisiones de recuperación.
 
 ### intel suggest {#intel-suggest}
 
@@ -1827,7 +1827,7 @@ Pasa un archivo o `--input-dir`, pero no ambos. La validación cubre el contrato
 
 ### diagram {#diagram}
 
-Resuelve el motor antes de que un workflow emita un diagrama estructural:
+Resuelve el motor antes de que un flujo de trabajo emita un diagrama estructural:
 
 ```text
 oma diagram resolve --output json
@@ -1841,7 +1841,7 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 
 ## Inspección del estado, los modelos y la memoria {#state-model-and-memory-inspection}
 
-Las siguientes familias exponen el estado persistente de los workflows y diagnósticos de modelos y proveedores. Prefiere `--dry-run` en acciones de estilo cleanup y `--json` cuando otro programa vaya a consumir el resultado.
+Las siguientes familias exponen el estado persistente de los flujos de trabajo y diagnósticos de modelos y proveedores. Prefiere `--dry-run` en acciones de estilo cleanup y `--json` cuando otro programa vaya a consumir el resultado.
 
 ### state {#state}
 
@@ -1857,7 +1857,7 @@ oma state archive --older-than 90d --dry-run --json
 oma state purge --older-than 90d --dry-run --json
 ```
 
-`state verify` requiere `--workflow`, `--checkpoint` e `--instance`; enumera los checkpoints de un workflow con `state decisions list <workflow>`. `state summary [session-id]` exporta un resumen de la sesión al almacén de coordinación, y `state heal-check --agent <type>` informa de si la autorreparación está permitida para un agente.
+`state verify` requiere `--workflow`, `--checkpoint` e `--instance`; enumera los checkpoints de un flujo de trabajo con `state decisions list <workflow>`. `state summary [session-id]` exporta un resumen de la sesión al almacén de coordinación, y `state heal-check --agent <type>` informa de si la autorreparación está permitida para un agente.
 
 `state emit` registra un evento [L1](../getting-started/glossary.md#l1-and-l2-memory) con categoría y metadatos de sesión explícitos. `state migrate` mueve las sesiones legacy al perfil seleccionado. `state repair` repara los archivos de estado malformados. `state decisions list` y `state inject-log list|get` inspeccionan las decisiones requeridas y las entradas de auditoría de inyección. `state trajectory` combina los eventos L1 de una sesión con las transcripciones de las sesiones de proveedor en las que se ejecutó. El resultado es un único registro, turno a turno, de prompts, respuestas del modelo, llamadas a herramientas, duraciones y uso de tokens; `--open` lo muestra en el dashboard web, en `/trajectory`. Las transcripciones se leen del almacén de sesiones de cada proveedor: Claude Code, Codex, Antigravity, Grok, Qwen Code, Kiro, pi, Command Code, Kimi, DeepSeek Harness y Cursor. Se respetan `CLAUDE_CONFIG_DIR`, `CODEX_HOME`, `KIMI_SHARE_DIR` y `DSH_HOME`. Kiro solo registra la hora de los prompts, y Cursor no registra ni horas ni resultados de herramientas, por lo que una transcripción de Cursor se muestra completa en lugar de recortarse a la sesión. Un proveedor sin transcripción legible aparece solo con sus eventos L1. `state activate`, `state archive` y `state purge` son acciones explícitas; los antiguos flags booleanos de acción se rechazan. Archiva o purga solo después de revisar un dry-run, porque estos comandos cambian el estado local.
 
@@ -1889,7 +1889,7 @@ oma agent finish "<run-id>" "<claim-path>"
 oma agent resume "$SESSION_ID" --dry-run
 ```
 
-`agent context` carga el contexto seleccionado por el grafo; `begin` inicia una ejecución e imprime un ID de ejecución generado y una ruta de claim; `verify` recibe ese ID y ejecuta las comprobaciones fijadas (`--required`), las limita con `--affected` o ejecuta el comando que sigue a `--` y registra su código de salida; `finish` recibe el ID y la ruta del archivo de claim. `agent resume <session-id> --dry-run` informa de las tareas listas y reutilizables, y `agent resume <session-id> --max-attempts <n>` (predeterminado: `3`) reintenta solo las tareas permitidas por el plan. `agent verify` y `agent resume` aceptan `--project-root <path>` para apuntar a otro proyecto. Consulta [Resultados y reanudación de agentes](../guide/agent-results-and-resume.md) para conocer la forma del plan y del claim. Estos comandos pertenecen al contrato de ejecución de OMA; para el trabajo normal del usuario se pueden usar `agent spawn`, `agent parallel` o `agent review`.
+`agent context` carga el contexto seleccionado por el grafo; `begin` inicia una ejecución e imprime un ID de ejecución generado y una ruta de declaración de resultados; `verify` recibe ese ID y ejecuta las comprobaciones fijadas (`--required`), las limita con `--affected` o ejecuta el comando que sigue a `--` y registra su código de salida; `finish` recibe el ID y la ruta del archivo de declaración de resultados. `agent resume <session-id> --dry-run` informa de las tareas listas y reutilizables, y `agent resume <session-id> --max-attempts <n>` (predeterminado: `3`) reintenta solo las tareas permitidas por el plan. `agent verify` y `agent resume` aceptan `--project-root <path>` para apuntar a otro proyecto. Consulta [Resultados y reanudación de agentes](../guide/agent-results-and-resume.md) para conocer la forma del plan y de la declaración de resultados. Estos comandos pertenecen al contrato de ejecución de OMA; para el trabajo normal del usuario se pueden usar `agent spawn`, `agent parallel` o `agent review`.
 
 ### memory {#memory}
 
@@ -1906,35 +1906,35 @@ oma memory gc --scope sessions --keep 20 --dry-run --json
 
 `memory keys` configura la conexión de Honcho o las credenciales de embeddings; `--dry-run` previsualiza los destinos sin leer ni escribir claves. `memory setup` prepara un endpoint de AgentMemory y opcionalmente puede `--install` o `--start`. `memory daemon` y `memory service` gestionan la integración con procesos locales o servicios del sistema operativo. `memory maintain backup|prune|vacuum`, `memory retry drain`, `memory upgrade` y `memory gc` son acciones de mantenimiento; inspecciona su JSON o la salida de dry-run antes de aplicarlas.
 
-## Gestión de skills {#skill-management}
+## Gestión de habilidades {#skill-management}
 
-### Elegir un comando de skill o de harness {#choosing-a-skill-or-harness-command}
+### Elegir un comando de habilidad o de harness {#choosing-a-skill-or-harness-command}
 
 Empieza por los comandos offline. Los comandos marcados como **en vivo** llaman a modelos mediante los CLI de proveedor que tengas configurados, lo que consume cuota o dinero; la mayoría imprime una estimación de coste y pide confirmación salvo que pases `--yes`.
 
 | Objetivo | Comando | Llamadas a modelos | Escribe | Requisito previo |
 |:-----|:--------|:------------|:-------|:-------------|
-| Comprobar el solapamiento de descripciones entre skills | `oma skill audit` | Ninguna | Nada | Skills instaladas |
-| Analizar la autoría de SKILL.md | `oma skill lint [--skill <id>]` | Ninguna | Nada | Skills instaladas |
+| Comprobar el solapamiento de descripciones entre habilidades | `oma skill audit` | Ninguna | Nada | Habilidades instaladas |
+| Analizar la autoría de SKILL.md | `oma skill lint [--skill <id>]` | Ninguna | Nada | Habilidades instaladas |
 | Reproducir veredictos de utilidad registrados | `oma skill eval --skill <id>` (mock, el predeterminado) | Ninguna | Nada | Fixtures de tareas en `.agents/eval/<id>/` con `_rollouts/` registrados; al menos 5 tareas puntuables para una decisión |
-| Medir la utilidad de una skill | `oma skill eval --skill <id> --live [--record]` | **En vivo**: un brazo baseline y otro treatment por tarea (repetidos con `--trials`), más llamadas al juez | `_rollouts/` solo con `--record` | Fixtures de tareas |
+| Medir la utilidad de una habilidad | `oma skill eval --skill <id> --live [--record]` | **En vivo**: un brazo baseline y otro treatment por tarea (repetidos con `--trials`), más llamadas al juez | `_rollouts/` solo con `--record` | Fixtures de tareas |
 | Proponer cambios en SKILL.md | `oma skill optimize --skill <id> --live` | **En vivo**, en cada época | Evidencia de evolución; SKILL.md no cambia | Al menos 5 fixtures de tareas |
-| Aplicar un cambio que mejora | `oma skill optimize --skill <id> --live --apply` | **En vivo**, en cada época | SKILL.md (primero se respalda el original); las skills `oma-*` también necesitan `--yes` | Tanto validation lift como final-test lift mejoran estrictamente |
+| Aplicar un cambio que mejora | `oma skill optimize --skill <id> --live --apply` | **En vivo**, en cada época | SKILL.md (primero se respalda el original); las habilidades `oma-*` también necesitan `--yes` | Tanto validation lift como final-test lift mejoran estrictamente |
 | Deshacer el último cambio aplicado | `oma skill rollback --skill <id>` | Ninguna | SKILL.md | Una promoción registrada |
 | Revisar el historial de evolución | `oma skill promotions --skill <id>`, `oma skill evolution-stats --skill <id>` | Ninguna | Nada | Ejecuciones de optimización registradas |
-| Ajustar el propio optimizador | `oma skill meta-optimize --skill <ids...> --live` | **En vivo**, muchas ejecuciones internas (`--live` es obligatorio) | Archivo de procedimiento solo con `--apply` | Skills reservadas con fixtures |
-| Comprobar el descubrimiento nativo de skills | `oma skill matrix [--live]` | **En vivo** solo con `--live` (ejecuta los CLI `claude` y `codex`); de lo contrario, imprime el plan | Un informe JSON solo con `--report <path>` | Los CLI de proveedor instalados |
+| Ajustar el propio optimizador | `oma skill meta-optimize --skill <ids...> --live` | **En vivo**, muchas ejecuciones internas (`--live` es obligatorio) | Archivo de procedimiento solo con `--apply` | Habilidades reservadas con fixtures |
+| Comprobar el descubrimiento nativo de habilidades | `oma skill matrix [--live]` | **En vivo** solo con `--live` (ejecuta los CLI `claude` y `codex`); de lo contrario, imprime el plan | Un informe JSON solo con `--report <path>` | Los CLI de proveedor instalados |
 | Reproducir una comparación del harness | `oma harness eval --suite <yaml> --candidate <dir>` (mock, el predeterminado) | Ninguna | Nada | Una ejecución registrada que coincida con la suite, el baseline y el candidato |
 | Comparar un overlay del harness | `oma harness eval --suite <yaml> --candidate <dir> --live [--record]` | **En vivo**: un brazo baseline y otro candidate por tarea | Una grabación solo con `--record` | Suite y fixtures dentro del proyecto |
 | Convertir una ejecución fallida en un fixture | `oma harness incident scan`, después `capture --spec <file>` y después `promote <id>` | Solo `promote`: una llamada de enrutamiento cuando se omite `--skill`; con `--draft`, un borrador de rúbrica del opt-agent y una comprobación del juez | Registro del incidente; fixture de regresión | Una ejecución de agente fallida, bloqueada o parcial |
-| Optimizar las skills que hay detrás de los incidentes | `oma harness feedback [--live \| --apply]` | **En vivo** solo con `--live` o `--apply` | Fixtures; cambios aceptados en SKILL.md solo con `--apply` | Incidentes capturados, o `--scan-runs` |
+| Optimizar las habilidades que hay detrás de los incidentes | `oma harness feedback [--live \| --apply]` | **En vivo** solo con `--live` o `--apply` | Fixtures; cambios aceptados en SKILL.md solo con `--apply` | Incidentes capturados, o `--scan-runs` |
 | Ejecutar feedback de forma programada | `oma harness evolution enable --max-dispatches <n>` | **En vivo**, hasta el presupuesto de cada ejecución programada | Un trabajo programado (consulta [Agentes programados](#scheduled-agents)); `--mode apply` de forma predeterminada, o `--mode propose` | Un planificador del sistema operativo |
 
 `skill optimize` sin `--live` termina con `1`: el CLI no tiene una fuente de propuestas registrada para la optimización mock. Para reproducir evaluaciones offline, usa `oma skill eval`. Para resultados "no coverage" o "insufficient", consulta [Solución de problemas](../guide/troubleshooting.md).
 
 ### skill audit {#skills-audit}
 
-Comprueba si las skills instaladas tienen descripciones solapadas, generalismo de tipo agujero negro o degradación del enrutamiento por el tamaño de la biblioteca.
+Comprueba si las habilidades instaladas tienen descripciones solapadas, generalismo de tipo agujero negro o degradación del enrutamiento por el tamaño de la biblioteca.
 
 ```text
 oma skill audit [--json] [--output <format>]
@@ -1948,10 +1948,10 @@ oma skill audit [--json] [--output <format>]
 | `--output <format>` | Formato de salida (`text` o `json`) |
 
 **Qué comprueba:**
-- **Similitud por pares de descripciones**: similitud coseno TF-IDF entre cada par de skills instaladas. Advierte a partir de ≥ 60 % y falla a partir de ≥ 75 %.
-- **Detección de agujero negro**: marca cualquier skill cuya similitud media con las demás sea un valor atípico positivo (≥ media + 1,5 × desviación estándar), lo que indica una descripción demasiado genérica que podría secuestrar el enrutamiento.
-- **Degradación por tamaño de biblioteca**: advierte cuando hay más de 60 skills instaladas (la precisión del enrutamiento cae logarítmicamente a medida que crece la biblioteca).
-- **Comprobación de enfoque**: advierte cuando una skill se convierte en un paquete: más de 20 documentos de referencia (archivos `.md` aparte de `SKILL.md`, excluyendo árboles vendorizados) o un cuerpo de `SKILL.md` de más de 25.000 caracteres. Las skills enfocadas rinden mejor que los paquetes (SkillsBench, arXiv:2602.12670); la solución es dividir, no eliminar.
+- **Similitud por pares de descripciones**: similitud coseno TF-IDF entre cada par de habilidades instaladas. Advierte a partir de ≥ 60 % y falla a partir de ≥ 75 %.
+- **Detección de agujero negro**: marca cualquier habilidad cuya similitud media con las demás sea un valor atípico positivo (≥ media + 1,5 × desviación estándar), lo que indica una descripción demasiado genérica que podría secuestrar el enrutamiento.
+- **Degradación por tamaño de biblioteca**: advierte cuando hay más de 60 habilidades instaladas (la precisión del enrutamiento cae logarítmicamente a medida que crece la biblioteca).
+- **Comprobación de enfoque**: advierte cuando una habilidad se convierte en un paquete: más de 20 documentos de referencia (archivos `.md` aparte de `SKILL.md`, excluyendo árboles vendorizados) o un cuerpo de `SKILL.md` de más de 25.000 caracteres. Las habilidades enfocadas rinden mejor que los paquetes (SkillsBench, arXiv:2602.12670); la solución es dividir, no eliminar.
 
 **Códigos de salida:** `0` si todos los hallazgos están en la banda de advertencia o no hay hallazgos; `1` si al menos un par está en la banda de fallo.
 
@@ -1963,7 +1963,7 @@ oma skill audit --json | jq '.findings'
 
 ### skill lint {#skills-lint}
 
-Detecta problemas de autoría por skill: defectos de calidad dentro de un solo `SKILL.md`, a diferencia de `skill audit`, que comprueba las relaciones *entre* skills. Se basa en la taxonomía de problemas de skills de arXiv:2607.01456 (más del 99 % de los archivos SKILL.md reales presentan al menos uno).
+Detecta problemas de autoría por habilidad: defectos de calidad dentro de un solo `SKILL.md`, a diferencia de `skill audit`, que comprueba las relaciones *entre* habilidades. Se basa en la taxonomía de problemas de habilidades de arXiv:2607.01456 (más del 99 % de los archivos SKILL.md reales presentan al menos uno).
 
 ```text
 oma skill lint [--skill <id>] [--json] [--output <format>]
@@ -1973,11 +1973,11 @@ oma skill lint [--skill <id>] [--json] [--output <format>]
 
 | Flag | Descripción |
 |:-----|:-----------|
-| `--skill <id>` | Analiza una sola skill |
+| `--skill <id>` | Analiza una sola habilidad |
 | `--json` | Salida como JSON para CI/CD |
 | `--output <format>` | Formato de salida (`text` o `json`) |
 
-**Problemas genéricos (todas las skills):**
+**Problemas genéricos (todas las habilidades):**
 
 | Problema | Gravedad | Significado |
 |:------|:---------|:--------|
@@ -1989,15 +1989,15 @@ oma skill lint [--skill <id>] [--json] [--output <format>]
 | `broken-reference` | fail | referencia un archivo de `resources/`, `config/`, `scripts/` o `assets/` que no existe |
 | `verbose-description` | warn | descripción de más de 350 caracteres; conserva en ella los desencadenantes de enrutamiento y las exclusiones, y mueve los detalles operativos a las referencias |
 | `malformed-frontmatter` | fail | SKILL.md no empieza con un mapeo de frontmatter YAML válido |
-| `invalid-directory`, `missing-skill-file`, `unreadable-skill-file` | fail | la skill seleccionada con `--skill` no es un directorio, no tiene SKILL.md o no se puede leer |
+| `invalid-directory`, `missing-skill-file`, `unreadable-skill-file` | fail | la habilidad seleccionada con `--skill` no es un directorio, no tiene SKILL.md o no se puede leer |
 
-**Problemas SSL-lite** (la validación SSL-lite es obligatoria cuando el nombre declarado de una skill o el nombre de su directorio o alias expuesto empieza por `oma-`, incluso sin `## Scheduling`; un alias sin prefijo no puede eludir un nombre declarado con `oma-`. Las skills normales sin prefijo adoptan el formato al incluir `## Scheduling`):
+**Problemas SSL-lite** (la validación SSL-lite es obligatoria cuando el nombre declarado de una habilidad o el nombre de su directorio o alias expuesto empieza por `oma-`, incluso sin `## Scheduling`; un alias sin prefijo no puede eludir un nombre declarado con `oma-`. Las habilidades normales sin prefijo adoptan el formato al incluir `## Scheduling`):
 
 | Problema | Gravedad | Significado |
 |:------|:---------|:--------|
 | `ssl-structure` | fail | las secciones de nivel superior se apartan de `Scheduling / Structural Flow / Logical Operations / References` |
 | `canonical-path` | fail | no hay exactamente un `### Canonical command path` o `### Canonical workflow path` |
-| `missing-boundaries` | warn | no existe `### When NOT to use`; las skills sin límites secuestran el enrutamiento |
+| `missing-boundaries` | warn | no existe `### When NOT to use`; las habilidades sin límites secuestran el enrutamiento |
 | `empty-failure-recovery` | warn | falta `### Failure and recovery` o está vacío (acepta bullets o filas de tabla); codifica los mecanismos de fallo según SkillLens |
 
 **Códigos de salida:** `0` si no hay problemas de gravedad fail; `1` si hay al menos uno.
@@ -2011,7 +2011,7 @@ oma skill lint --json | jq '.smells'
 
 ### skill eval {#skills-eval}
 
-Mide la utilidad de cada skill: ¿cargar una skill mejora realmente los resultados de tareas reservadas? Es la contraparte de *utility* de `skill audit` (que mide el solapamiento de límites de descripciones). Mientras `audit` pregunta «¿son redundantes dos skills?», `eval` pregunta «¿esta skill ayuda?».
+Mide la utilidad de cada habilidad: ¿cargar una habilidad mejora realmente los resultados de tareas reservadas? Es la contraparte de *utility* de `skill audit` (que mide el solapamiento de límites de descripciones). Mientras `audit` pregunta «¿son redundantes dos habilidades?», `eval` pregunta «¿esta habilidad ayuda?».
 
 ```text
 oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
@@ -2024,7 +2024,7 @@ oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
 
 | Flag | Descripción |
 |:-----|:-----------|
-| `--skill <id>` | ID de la skill que se evaluará (nombre simple, sin separadores de ruta). Predeterminado: `_all`. |
+| `--skill <id>` | ID de la habilidad que se evaluará (nombre simple, sin separadores de ruta). Predeterminado: `_all`. |
 | `--mock` | Reproduce rollouts registrados desde `_rollouts/` (predeterminado; determinista y sin dispatch de LLM). Seguro para CI. |
 | `--live` | Dispatch de agentes en vivo: ejecuta dos brazos (baseline y treatment) por tarea mediante dispatch interno. Muestra una estimación de coste y solicita confirmación salvo que se indique `--yes`. |
 | `--record` | Escribe los rollouts en vivo capturados (incluidos los veredictos del juez) en `_rollouts/` para reproducirlos después con `--mock`. Solo tiene efecto con `--live`. |
@@ -2033,7 +2033,7 @@ oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
 | `--max-tasks <n>` | Limita la cantidad de tareas evaluadas (aplicado en orden de clasificación determinista). |
 | `--trials <n>` | Repite cada brazo n veces en orden alterno (de 1 a 10; solo con `--live`). |
 | `--neg-transfer` | También muestrea tareas vecinas del mismo dominio para detectar transferencia negativa (desactivado de forma predeterminada). |
-| `--routing` | Mide la activación: qué skill instalada cargaría el modelo para cada tarea (`--live` mide; mock reproduce la grabación). |
+| `--routing` | Mide la activación: qué habilidad instalada cargaría el modelo para cada tarea (`--live` mide; mock reproduce la grabación). |
 | `--require-coverage` | Termina con un valor distinto de cero cuando encuentra menos de 5 tareas (evita un resultado verde silencioso en CI). |
 | `--json` | Salida como JSON para CI/CD |
 | `--output <format>` | Formato de salida (`text` o `json`) |
@@ -2041,7 +2041,7 @@ oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]
 **Cómo funciona:**
 
 Para cada fixture de tarea en `.agents/eval/<skill>/`:
-1. **Brazo baseline**: el prompt de la tarea se envía sin cargar la skill.
+1. **Brazo baseline**: el prompt de la tarea se envía sin cargar la habilidad.
 2. **Brazo treatment**: se antepone `SKILL.md` al prompt y después se envía.
 3. Cada brazo recibe una puntuación de su checker (judge de forma predeterminada; assert o regex para opt-ins deterministas).
 4. `utilityLift = weighted_mean(treatment scores) − weighted_mean(baseline scores)`.
@@ -2055,7 +2055,7 @@ Para cada fixture de tarea en `.agents/eval/<skill>/`:
 | `fail` | `utilityLift ≤ 0%` (código de salida 1) |
 | `insufficient` | Menos de 5 tareas puntuables (código de salida 1 solo con `--require-coverage`) |
 
-**Modo recomendado:** Usa `--live` con checkers judge para medir la utilidad real de la skill. Usa `--mock` para reproducir offline veredictos judge registrados o ejecutar comprobaciones deterministas del contrato con `assert`/`regex`.
+**Modo recomendado:** Usa `--live` con checkers de juez para medir la utilidad real de la habilidad. Usa `--mock` para reproducir offline veredictos de juez registrados o ejecutar comprobaciones deterministas del contrato con `assert`/`regex`.
 
 **Selección de modo:** solo los flags eligen el modo. Una ejecución es en vivo únicamente cuando se pasa `--live`; la reproducción mock es la opción predeterminada. Ninguna variable de entorno lo sobrescribe, así que no incluyas `--live` en los comandos de CI.
 
@@ -2082,13 +2082,13 @@ oma skill eval --skill oma-scholar --require-coverage
 oma skill eval --skill oma-scholar --max-tasks 10
 ```
 
-Consulta la [guía de evaluación de utilidad de skills](../guide/skill-eval.md) para conocer el formato de fixtures de `.agents/eval/` y los tipos de checker.
+Consulta la [guía de evaluación de utilidad de habilidades](../guide/skill-eval.md) para conocer el formato de fixtures de `.agents/eval/` y los tipos de checker.
 
 ---
 
 ### skill optimize {#skills-opt}
 
-Optimiza el `SKILL.md` de una skill mediante una evolución persistente al estilo WikiSkill. Un Maintainer consolida la evidencia observable de los rollouts en conocimiento acotado, un Proposer emite cambios limitados de adición/eliminación/reemplazo y los resultados rechazados persisten entre ejecuciones. Los candidatos deben mejorar estrictamente la división de validación reservada; `--apply` también requiere una mejora estricta en una división final de pruebas propiedad del runner. Base de investigación: WikiSkill (arXiv:2608.27454).
+Optimiza el `SKILL.md` de una habilidad mediante una evolución persistente al estilo WikiSkill. Un Maintainer consolida la evidencia observable de los rollouts en conocimiento acotado, un Proposer emite cambios limitados de adición/eliminación/reemplazo y los resultados rechazados persisten entre ejecuciones. Los candidatos deben mejorar estrictamente la división de validación reservada; `--apply` también requiere una mejora estricta en una división final de pruebas propiedad del runner. Base de investigación: WikiSkill (arXiv:2608.27454).
 
 ```text
 oma skill optimize [--skill <id>] --live [--dry-run | --apply]
@@ -2100,7 +2100,7 @@ oma skill optimize [--skill <id>] --live [--dry-run | --apply]
 
 | Flag | Predeterminado | Descripción |
 |:-----|:--------|:-----------|
-| `--skill <id>` | `_all` | ID de la skill que se optimizará (nombre simple, sin separadores de ruta). |
+| `--skill <id>` | `_all` | ID de la habilidad que se optimizará (nombre simple, sin separadores de ruta). |
 | `--dry-run` | **sí (predeterminado)** | Propone cambios e imprime el diff sin cambiar `SKILL.md`; la evidencia de evolución generada se sigue registrando. |
 | `--apply` | — | Aplica los cambios aceptados; respalda el original antes de una escritura atómica y solo escribe una mejora validada. |
 | `--mock` | — | No se puede ejecutar desde el CLI: la optimización no tiene una fuente de propuestas registrada y termina con `1`. Para reproducir evaluaciones, usa `oma skill eval --mock`. |
@@ -2113,11 +2113,11 @@ oma skill optimize [--skill <id>] --live [--dry-run | --apply]
 | `--json` | — | Salida como JSON para CI/CD. |
 | `--output <format>` | `text` | Formato de salida (`text` o `json`). |
 
-**Dependencia estricta:** Requiere al menos 5 fixtures de tareas en `.agents/eval/<skill>/`. Emite un mensaje claro de error cuando encuentra menos. Consulta la [guía de evaluación de utilidad de skills](../guide/skill-eval.md) para crearlas.
+**Dependencia estricta:** Requiere al menos 5 fixtures de tareas en `.agents/eval/<skill>/`. Emite un mensaje claro de error cuando encuentra menos. Consulta la [guía de evaluación de utilidad de habilidades](../guide/skill-eval.md) para crearlas.
 
 **División train/validation/test:** Los fixtures se dividen de forma determinista en 60/20/20. Maintainer y Proposer solo ven la evidencia TRAIN, la selección de candidatos usa tareas VALIDATION reservadas y la división TEST propiedad del runner permanece oculta hasta que termina la evolución. `--apply` solo escribe cuando mejoran estrictamente tanto validation lift como final-test lift.
 
-**Advertencia sobre SSOT:** Las skills cuyo ID empieza por `oma-` se sobrescriben con `oma update`. Para esas skills, se desaconseja `--apply`: usa el `--dry-run` predeterminado y sube el diff propuesto. En las skills `oma-*`, `--apply` solo escribe cuando también se pasa `--yes`; de lo contrario, imprime una advertencia y no escribe nada. Las skills escritas por el usuario se pueden aplicar libremente.
+**Advertencia sobre SSOT:** Las habilidades cuyo ID empieza por `oma-` se sobrescriben con `oma update`. Para esas habilidades, se desaconseja `--apply`: usa el `--dry-run` predeterminado y sube el diff propuesto. En las habilidades `oma-*`, `--apply` solo escribe cuando también se pasa `--yes`; de lo contrario, imprime una advertencia y no escribe nada. Las habilidades escritas por el usuario se pueden aplicar libremente.
 
 **Códigos de salida:** `0` si la optimización terminó; `1` si faltan fixtures, si se ejecuta sin `--live` o si un argumento no es válido.
 
@@ -2140,7 +2140,7 @@ oma skill optimize --skill oma-scholar --live --max-epochs 4 --edits-per-epoch 2
 oma skill eval --skill oma-scholar --json
 ```
 
-Consulta la [guía de optimización de skills](../guide/skill-opt.md) para ver el recorrido completo y los detalles de las protecciones de SSOT y sobreajuste.
+Consulta la [guía de optimización de habilidades](../guide/skill-opt.md) para ver el recorrido completo y los detalles de las protecciones de SSOT y sobreajuste.
 
 ---
 
@@ -2189,13 +2189,13 @@ Consulta la [guía de evaluación del harness](../guide/harness-eval.md) para co
 
 ### harness incident promote {#harness-incident-promote}
 
-Convierte un incidente capturado en un fixture de regresión para la skill que usó el agente que falló.
+Convierte un incidente capturado en un fixture de regresión para la habilidad que usó el agente que falló.
 
 ```text
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] [--json]
 ```
 
-Sin `--skill`, una llamada de enrutamiento en vivo elige la skill, y la skill de la definición del agente actúa como fallback. `--draft` pide al opt-agent que redacte una rúbrica de juez cuando las comprobaciones no son aserciones sobre la salida. `--force` admite un fixture que no se puede validar frente a la salida observada.
+Sin `--skill`, una llamada de enrutamiento en vivo elige la habilidad, y la habilidad de la definición del agente actúa como fallback. `--draft` pide al opt-agent que redacte una rúbrica de juez cuando las comprobaciones no son aserciones sobre la salida. `--force` admite un fixture que no se puede validar frente a la salida observada.
 
 Los demás comandos de incidentes:
 
@@ -2209,7 +2209,7 @@ Los demás comandos de incidentes:
 
 ### harness feedback {#harness-feedback}
 
-Promueve todos los incidentes sin promover y, con `--live` o `--apply`, optimiza cada skill afectada frente a su suite ampliada.
+Promueve todos los incidentes sin promover y, con `--live` o `--apply`, optimiza cada habilidad afectada frente a su suite ampliada.
 
 ```text
 oma harness feedback [--scan-runs] [--live] [--apply] [--max-epochs <n>] [--incident <ids...>] [--json]

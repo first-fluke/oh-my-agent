@@ -8,7 +8,7 @@ description: Guía completa de la generación de imágenes en oh-my-agent, con d
 
 `oma-image` es el enrutador de imágenes multi-proveedor de oh-my-agent. Genera imágenes a partir de prompts en lenguaje natural, las envía a la CLI del proveedor con el que te hayas autenticado y escribe junto a la salida un manifiesto con las entradas y decisiones del proveedor necesarias para auditar o repetir una ejecución. La salida de un proveedor activo puede variar.
 
-La skill se activa con frases como «genera una imagen», «crea una imagen», «haz una foto», «dibújame …» o «imagen de …», con el nombre de un proveedor (`gpt-image`, `nano-banana`, `pollinations`), o cuando otra skill necesita una imagen como efecto secundario (hero shot, miniatura o foto de producto).
+La habilidad se activa con frases como «genera una imagen», «crea una imagen», «haz una foto», «dibújame …» o «imagen de …», con el nombre de un proveedor (`gpt-image`, `nano-banana`, `pollinations`), o cuando otra habilidad necesita una imagen como efecto secundario (hero shot, miniatura o foto de producto).
 
 > **TL;DR** Necesitas una de estas opciones: `POLLINATIONS_API_KEY` (`flux` / `zimage` gratis), `codex login` (gpt-image-2 con tu plan de ChatGPT) o `agy` con la sesión iniciada. Ejecuta `oma image doctor` y después `oma image generate "<prompt>" --vendor pollinations`. Las imágenes y `manifest.json` se guardan en `.agents/results/images/{timestamp}-{shortid}/`.
 
@@ -18,21 +18,21 @@ La skill se activa con frases como «genera una imagen», «crea una imagen», �
 
 - Generar imágenes, ilustraciones, fotos de producto, concept art y visuales para hero o landing.
 - Comparar el mismo prompt entre varios modelos en paralelo (`--vendor all`).
-- Producir activos desde cualquier runtime que cargue las skills de oma (Claude Code, Codex CLI, Antigravity, Cursor y otros).
-- Permitir que otra skill (diseño, marketing o docs) llame al pipeline de imágenes como infraestructura compartida.
+- Producir activos desde cualquier runtime que cargue las habilidades de oma (Claude Code, Codex CLI, Antigravity, Cursor y otros).
+- Permitir que otra habilidad (diseño, marketing o docs) llame al pipeline de imágenes como infraestructura compartida.
 
 ## Cuándo NO usarla
 
 - Editar o retocar una imagen existente (fuera de alcance; usa una herramienta dedicada).
 - Generar vídeos o audio (fuera de alcance).
-- Componer SVG o vectores inline a partir de datos estructurados (usa una skill de plantillas).
+- Componer SVG o vectores inline a partir de datos estructurados (usa una habilidad de plantillas).
 - Cambiar de tamaño o convertir formatos de forma sencilla (usa una librería de imágenes, no un pipeline de generación).
 
 ---
 
 ## Proveedores de un vistazo
 
-La skill sigue un enfoque CLI-first: cuando la CLI nativa de un proveedor puede devolver bytes de imagen sin procesar, se prefiere la ruta mediante subproceso frente a una clave de API directa.
+La habilidad sigue un enfoque CLI-first: cuando la CLI nativa de un proveedor puede devolver bytes de imagen sin procesar, se prefiere la ruta mediante subproceso frente a una clave de API directa.
 
 | Proveedor | Estrategia | Modelos | Activador | Costo |
 |---|---|---|---|---|
@@ -98,17 +98,17 @@ Una ejecución correcta en modo texto muestra un progreso como este (las rutas s
 
 ---
 
-## Usarla como skill
+## Usarla como habilidad
 
-`oma-image` es una skill que se activa automáticamente a partir del lenguaje natural y también puede invocarse de forma explícita. Tiene tres puntos de entrada.
+`oma-image` es una habilidad que se activa automáticamente a partir del lenguaje natural y también puede invocarse de forma explícita. Tiene tres puntos de entrada.
 
 ### 1. Lenguaje natural (autoactivación)
 
-En cualquier runtime que cargue las skills de oma (Claude Code, Codex CLI, Antigravity, Cursor y otros), basta con describir la imagen. Frases como «genera una imagen», «haz una foto», «dibújame …» o «imagen de …» activan la skill; los runtimes que eligen skills por su descripción también pueden activarla con solicitudes como «concept art» o «hero shot».
+En cualquier runtime que cargue las habilidades de oma (Claude Code, Codex CLI, Antigravity, Cursor y otros), basta con describir la imagen. Frases como «genera una imagen», «haz una foto», «dibújame …» o «imagen de …» activan la habilidad; los runtimes que eligen habilidades por su descripción también pueden activarla con solicitudes como «concept art» o «hero shot».
 
-No necesitas memorizar las opciones de la CLI. Descríbelo en lenguaje llano y la skill lo traduce a las opciones correctas:
+No necesitas memorizar las opciones de la CLI. Descríbelo en lenguaje llano y la habilidad lo traduce a las opciones correctas:
 
-| Tú dices | La skill infiere |
+| Tú dices | La habilidad infiere |
 |---|---|
 | «usa codex» / «con gpt-image-2» / «flux gratis» | `--vendor codex` / `--vendor pollinations` |
 | «compara entre proveedores» / «uno al lado del otro» | `--vendor all` |
@@ -137,9 +137,9 @@ El agente [resuelve el brief](#clarification-protocol), completa los huecos con 
 
 Todas las opciones de la CLI (`--vendor`, `-n`, `--size`, `-r`, `--dry-run`, …) funcionan en el comando slash y se reenvían al mismo pipeline de `oma image generate`.
 
-### 3. Desde otra skill (infraestructura compartida)
+### 3. Desde otra habilidad (infraestructura compartida)
 
-Otras skills (diseño, marketing y docs) llaman al pipeline como infraestructura compartida con salida JSON:
+Otras habilidades (diseño, marketing y docs) llaman al pipeline como infraestructura compartida con salida JSON:
 
 ```bash
 oma image generate "<prompt>" --output json
@@ -288,6 +288,6 @@ Para ver exactamente qué se envió al proveedor, revisa el campo `prompt` de `m
 
 - [Generación de vídeo](./video-generation.md): `oma-video` reutiliza `oma-image` como su proveedor visual.
 - [Flujos de contenido e investigación](./content-and-research.md): otras capacidades de contenido y sus requisitos previos.
-- [Skills](../core-concepts/skills.md): arquitectura de skills en dos capas que impulsa `oma-image`.
+- [Habilidades](../core-concepts/skills.md): arquitectura de habilidades en dos capas que impulsa `oma-image`.
 - [Comandos de la CLI: image](../cli-interfaces/commands.md#image): referencia completa del comando `oma image`.
 - [Opciones de la CLI](../cli-interfaces/options.md): matriz global de opciones.

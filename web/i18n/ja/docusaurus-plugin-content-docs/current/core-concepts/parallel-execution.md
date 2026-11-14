@@ -5,7 +5,7 @@ description: 現行の CLI 構文、タスクファイル、インラインモ�
 
 # 並列実行
 
-oh-my-agent は複数の専門エージェントを並列で実行します。たとえば、バックエンド、フロントエンド、モバイルの各エージェントがアプリケーションの別々の部分を担当し、オーケストレーターが永続化された実行状態と実行記録を使って調整します。
+oh-my-agent は複数の専門エージェントを並列で実行します。たとえば、バックエンド、フロントエンド、モバイルの各エージェントがアプリケーションの別々の部分を担当し、オーケストレーターが永続化された実行状態と受領記録を使って調整します。
 
 ---
 
@@ -168,7 +168,7 @@ agents:
 |--------|----------------------|-----------------|
 | **Claude Code** | 同じベンダーのタスクでは `.claude/agents/{name}.md` を使う Agent ツール、異なるベンダーでは `oma agent spawn` にフォールバックします。 | 同期リターン |
 | **Codex CLI** | 同じベンダーのタスクでは `.codex/agents/{name}.toml` のネイティブカスタムエージェント、異なるベンダーでは `oma agent spawn` にフォールバックします。 | JSON 出力 |
-| **Antigravity CLI/IDE** | `agy` ランタイム経由で `oma agent spawn` を使います。ネイティブサブエージェントは不要です。 | 永続化された実行記録と結果ファイルのポーリング |
+| **Antigravity CLI/IDE** | `agy` ランタイム経由で `oma agent spawn` を使います。ネイティブサブエージェントは不要です。 | 永続化された受領記録と結果ファイルのポーリング |
 | **Cursor** | 利用可能な場合は生成済みの Cursor 統合を使い、それ以外は `oma agent spawn` を使います。 | 結果ファイルのポーリング |
 | **OpenCode / pi** | 選択されている場合はインプロセス拡張ブリッジを使い、異なるベンダーの作業では `oma agent spawn` を使います。 | 結果ファイルのポーリング |
 | **CLI フォールバック** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | 証拠に基づく結果のポーリング |
@@ -337,7 +337,7 @@ oma dashboard terminal
 
 ## 関連項目
 
-- [エージェントの結果と再開](../guide/agent-results-and-resume.md)：実行記録、申告、`oma agent resume`
+- [エージェントの結果と再開](../guide/agent-results-and-resume.md)：受領記録、申告、`oma agent resume`
 - [ダッシュボード監視](../guide/dashboard-monitoring.md)
 - [マルチエージェントプロジェクトガイド](../guide/multi-agent-project.md)
 - [エージェント別モデル](../guide/per-agent-models.md)

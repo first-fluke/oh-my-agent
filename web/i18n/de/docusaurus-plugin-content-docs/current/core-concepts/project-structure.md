@@ -1,6 +1,6 @@
 ---
 title: Projektstruktur
-description: Leserorientierte Übersicht einer oh-my-agent-Installation mit der SSOT unter .agents/, repräsentativen Skill-Ressourcen, Workflows, versionierten Agentendefinitionen, Laufzeitstatus, Anbieterintegrationen und dem Layout des Quell-Repositorys.
+description: Leserorientierte Übersicht einer oh-my-agent-Installation mit der SSOT unter .agents/, repräsentativen Skill-Ressourcen, Workflows, versionierten Agentendefinitionen, Laufzeitstatus, Vendor-Integrationen und dem Layout des Quell-Repositorys.
 ---
 
 # Projektstruktur
@@ -272,7 +272,7 @@ Dies ist das Kernverzeichnis. Alles, was Agenten brauchen, liegt hier. Für das 
 - `model_preset`: Aktiver Schlüssel für ein Modell-Preset (standardmäßig `auto` oder ein festes bzw. benutzerdefiniertes Preset)
 - `providers`: Anbieter für Docs, Web, Code-Intelligence und semantisches Memory
 - `auto_update_cli`: Hintergrundprüfung auf Updates (Standard `true`, mit `false` deaktivierbar)
-- `telemetry`: Opt-in für Anbieter-Telemetrie (Standard `false`)
+- `telemetry`: Opt-in für Vendor-Telemetrie (Standard `false`)
 - `mcp.devtools_browsers`: Optionale Browserliste; ohne Wert bleiben vorhandene Einträge erhalten
 - `agents`: Optionale Überschreibungen pro Agent (nur `AgentSpec`-Objekte)
 - `models`: Optionale, vom Benutzer definierte Modell-Slugs
@@ -285,8 +285,8 @@ Diese Liste deckt die gebräuchlichsten Schlüssel ab. Die unterstützten Schlü
 Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Verzeichnisse zusätzlich zu den gemeinsamen `_shared`-Ressourcen; das Preset `all` wird aus diesem aktuellen Baum abgeleitet.
 
 **`_shared/`** enthält Ressourcen für alle Agenten:
-- `core/`: Ausführungsrichtlinie, Regeln für Code-Intelligence, Routing, Kontextladen, Prompt-Struktur, Klärungsprotokoll, Kontextbudget, Schwierigkeitsbewertung, Qualitätsprinzipien, Testansatz, Anbietererkennung, Sitzungsmetriken, gemeinsame Checkliste, Lessons Learned und Vorlagen für API-Verträge
-- `runtime/`: Memory-Protokoll, Event-Spezifikation, Ergebnisvertrag und anbieterspezifische Ausführungsprotokolle
+- `core/`: Ausführungsrichtlinie, Regeln für Code-Intelligence, Routing, Kontextladen, Prompt-Struktur, Klärungsprotokoll, Kontextbudget, Schwierigkeitsbewertung, Qualitätsprinzipien, Testansatz, Vendor-Erkennung, Sitzungsmetriken, gemeinsame Checkliste, Lessons Learned und Vorlagen für API-Verträge
+- `runtime/`: Memory-Protokoll, Event-Spezifikation, Ergebnisvertrag und Vendor-spezifische Ausführungsprotokolle
 - `conditional/`: Messung des Qualitätsscores, Nachverfolgung des Experiment-Ledgers, Protokoll der Explorationsschleife, Diagramm-Engine (nur geladen, wenn ausgelöst)
 
 **`oma-{skill}/`** enthält die Verzeichnisse der einzelnen Skills. Jedes enthält:
@@ -299,7 +299,7 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Ver
 20 Markdown-Dateien definieren das Verhalten der Slash-Befehle. Jede Datei enthält:
 - YAML-Frontmatter mit `description`
 - Abschnitt mit Pflichtregeln (Antwortsprache, Reihenfolge der Schritte, Anforderungen an MCP-Tools)
-- Anweisungen für die Anbietererkennung
+- Anweisungen für die Vendor-Erkennung
 - Schrittweises Ausführungsprotokoll
 - Gate-Definitionen für persistente Workflows
 
@@ -307,7 +307,7 @@ Persistente Workflows sind `orchestrate.md`, `work.md`, `ultrawork.md` und `ralp
 
 ### agents/
 
-12 Definitionsdateien für Subagenten werden verwendet, wenn Agenten über das Agent-Tool von Claude Code oder über die CLI gestartet werden; hinzu kommen anbieterspezifische Einstellungen in `variants/`. Jede Datei definiert:
+12 Definitionsdateien für Subagenten werden verwendet, wenn Agenten über das Agent-Tool von Claude Code oder über die CLI gestartet werden; hinzu kommen Vendor-spezifische Einstellungen in `variants/`. Jede Datei definiert:
 - Frontmatter: `name`, `description` und `skills` (der zu ladende Skill)
 - Verweis auf das Ausführungsprotokoll (Ergebnisvertrag und laufbezogene Ergebnisdatei)
 - Architekturzusammenfassung
@@ -366,13 +366,13 @@ Der Eintrag `statusLine` bleibt ein direkter `bun`-Pfad (Anzeige im Hot Path, ni
 
 ### hooks/
 
-Das `hooks/`-Verzeichnis eines Anbieters enthält **nur die Dateien, die aus diesem Verzeichnis zur Laufzeit ausgeführt oder gelesen werden**. Die Handlerkette selbst (Schlüsselworterkennung, persistenter Modus, Skill-Injektion usw.) läuft innerhalb des `oma`-Binaries über `oma hook run`; die `.ts`-Handler werden beim Build in die CLI gebündelt und **nicht** in Anbieter-Verzeichnissen materialisiert.
+Das `hooks/`-Verzeichnis eines Vendors enthält **nur die Dateien, die aus diesem Verzeichnis zur Laufzeit ausgeführt oder gelesen werden**. Die Handlerkette selbst (Schlüsselworterkennung, persistenter Modus, Skill-Injektion usw.) läuft innerhalb des `oma`-Binaries über `oma hook run`; die `.ts`-Handler werden beim Build in die CLI gebündelt und **nicht** in Vendor-Verzeichnissen materialisiert.
 
-**`oma-hook.sh`** ist ein generiertes Wrapper-Skript, das `oma link`, `oma install` oder `oma update` schreibt. Jedes Anbieter-Hook-Ereignis läuft über diese Datei. Die Auflösungsreihenfolge zur Laufzeit lautet: `$OMA_BIN` (explizite Überschreibung) → `command -v oma` (PATH) → bekannte Installationsverzeichnisse wie `$HOME/.bun/bin` und `$HOME/.local/share/mise/shims` (über die GUI gestartete Agenten erben einen verkürzten PATH) → `exit 0` (fail-open; der Agent wird niemals blockiert). Das Skript enthält nichts Rechnerspezifisches, ist daher für alle Entwickler byte-identisch und kann sicher versioniert werden. Es reicht `"$@"` unverändert weiter, damit `--vendor`, `--event` und `--matcher` unverändert bei `oma hook run` ankommen. Die Präambel zur Selbstentdoppelung unterdrückt doppelte Auslösungen, wenn sowohl eine Projekt- als auch eine globale Installation dasselbe Ereignis registriert.
+**`oma-hook.sh`** ist ein generiertes Wrapper-Skript, das `oma link`, `oma install` oder `oma update` schreibt. Jedes Vendor-Hook-Ereignis läuft über diese Datei. Die Auflösungsreihenfolge zur Laufzeit lautet: `$OMA_BIN` (explizite Überschreibung) → `command -v oma` (PATH) → bekannte Installationsverzeichnisse wie `$HOME/.bun/bin` und `$HOME/.local/share/mise/shims` (über die GUI gestartete Agenten erben einen verkürzten PATH) → `exit 0` (fail-open; der Agent wird niemals blockiert). Das Skript enthält nichts Rechnerspezifisches, ist daher für alle Entwickler byte-identisch und kann sicher versioniert werden. Es reicht `"$@"` unverändert weiter, damit `--vendor`, `--event` und `--matcher` unverändert bei `oma hook run` ankommen. Die Präambel zur Selbstentdoppelung unterdrückt doppelte Auslösungen, wenn sowohl eine Projekt- als auch eine globale Installation dasselbe Ereignis registriert.
 
-**`hud.ts`** rendert den `[OMA]`-Indikator in der Statusleiste mit Modellnamen, Kontextverbrauch (farbcodiert: grün/gelb/rot) und dem Status des aktiven Workflows. Er wird direkt unter `statusLine` registriert, nicht über `oma hook run`, damit die Renderlatenz im Hot Path niedrig bleibt. Er wird nur für Anbieter materialisiert, deren Variante ein `statusLine`- oder nur für den HUD bestimmtes Ereignis registriert, etwa Claude, Antigravity und Qwen. Das Skript erkennt das Dialektformat des Anbieters aus seinem eigenen Installationspfad; die Kopie pro Anbieter ist deshalb für die Ausführung erforderlich.
+**`hud.ts`** rendert den `[OMA]`-Indikator in der Statusleiste mit Modellnamen, Kontextverbrauch (farbcodiert: grün/gelb/rot) und dem Status des aktiven Workflows. Er wird direkt unter `statusLine` registriert, nicht über `oma hook run`, damit die Renderlatenz im Hot Path niedrig bleibt. Er wird nur für Vendors materialisiert, deren Variante ein `statusLine`- oder nur für den HUD bestimmtes Ereignis registriert, etwa Claude, Antigravity und Qwen. Das Skript erkennt das Dialektformat des Vendors aus seinem eigenen Installationspfad; die Kopie pro Vendor ist deshalb für die Ausführung erforderlich.
 
-**`filter-test-output.sh`** ist ein Shell-Filter, der störende Ausgaben von Test-Runnern kürzt. Der prozessinterne Testfilter schreibt erkannte Bash-Testbefehle so um, dass sie über `<hookDir>/oma/filter-test-output.sh` geleitet werden. Deshalb wird diese Datei für jeden Anbieter materialisiert, dessen Variante `test-filter.ts` registriert (alle außer Cursor).
+**`filter-test-output.sh`** ist ein Shell-Filter, der störende Ausgaben von Test-Runnern kürzt. Der prozessinterne Testfilter schreibt erkannte Bash-Testbefehle so um, dass sie über `<hookDir>/oma/filter-test-output.sh` geleitet werden. Deshalb wird diese Datei für jeden Vendor materialisiert, dessen Variante `test-filter.ts` registriert (alle außer Cursor).
 
 #### Wo die Handlerlogik tatsächlich liegt
 
@@ -403,9 +403,9 @@ Für die Sprachabschnitte in `keywords`, `patterns` und `informationalPatterns` 
 
 Jeder Abschnitt wird immer geladen; die Einstellung `language` in `.agents/oma-config.yaml` steuert nur die Antwortsprache. Wortgrenzen hängen vom Schlüsselwort selbst ab: ASCII-Schlüsselwörter passen nur auf ganze Wörter, Schlüsselwörter mit Nicht-ASCII-Text passen als Teilzeichenketten.
 
-#### Materialisierung pro Anbieter: vorher → nachher
+#### Materialisierung pro Vendor: vorher → nachher
 
-Ältere Installationen kopierten den **gesamten** Satz unter `.agents/hooks/core/` (etwa 20 Dateien) in jedes Anbieter-Hook-Verzeichnis, obwohl die prozessinterne Weiterleitung die meisten davon zu ungenutzten Dateien machte:
+Ältere Installationen kopierten den **gesamten** Satz unter `.agents/hooks/core/` (etwa 20 Dateien) in jedes Vendor-Hook-Verzeichnis, obwohl die prozessinterne Weiterleitung die meisten davon zu ungenutzten Dateien machte:
 
 ```text
 # BEFORE — every vendor hookDir (.claude/hooks, .codex/hooks, .cursor/hooks, …)
@@ -428,13 +428,13 @@ hooks/
 ```
 
 
-Der Installer leitet jetzt aus der Varianten-JSON eines Anbieters (`requiredVariantScripts` in `cli/platform/hooks-composer.ts`) eine Whitelist ab und materialisiert nur, was dieser Anbieter ausführt oder liest. `oma-hook.sh` bleibt im Stamm des Hook-Verzeichnisses; die übrigen Skripte landen in dessen Unterverzeichnis `oma/`:
+Der Installer leitet jetzt aus der Varianten-JSON eines Vendors (`requiredVariantScripts` in `cli/platform/hooks-composer.ts`) eine Whitelist ab und materialisiert nur, was dieser Vendor ausführt oder liest. `oma-hook.sh` bleibt im Stamm des Hook-Verzeichnisses; die übrigen Skripte landen in dessen Unterverzeichnis `oma/`:
 
 <!-- oma-docs:ignore-start -->
 
 
 
-| Anbieter | Materialisierte Dateien | Grund |
+| Vendor | Materialisierte Dateien | Grund |
 |---|---|---|
 | claude, qwen | `oma-hook.sh`, `oma/hud.ts`, `oma/filter-test-output.sh` | statusLine + test-filter |
 | codex, grok, kiro | `oma-hook.sh`, `oma/filter-test-output.sh` | test-filter, kein statusLine |
@@ -466,11 +466,11 @@ echo '{"cwd":"/path/to/project"}' \
 ```
 
 
-`oma hook run` beendet sich immer mit 0 (fail-open). Leere Standardausgabe bedeutet, dass die Kette für dieses Ereignis keine Aktion ausgeführt hat. Wenn ein Handler auslöst, wird das JSON im Dialekt des Anbieters (oder für Kiro einfacher Text) nach stdout geschrieben.
+`oma hook run` beendet sich immer mit 0 (fail-open). Leere Standardausgabe bedeutet, dass die Kette für dieses Ereignis keine Aktion ausgeführt hat. Wenn ein Handler auslöst, wird das JSON im Dialekt des Vendors (oder für Kiro einfacher Text) nach stdout geschrieben.
 
 #### Installationen älter als oma 8.43.0 aktualisieren {#migration-from-pre-019-installs}
 
-Installationen älter als oma 8.43.0 mit den alten Einträgen `bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"` werden automatisch migriert, sobald Sie `oma install`, `oma update` oder `oma link` erneut ausführen. Der Installer ersetzt nur OMA-verwaltete Hook-Gruppen anhand von Markern (erkennbar an ihren `name`-/`command`-Mustern); von Ihnen hinzugefügte Hook-Gruppen bleiben in ihrer ursprünglichen Reihenfolge erhalten. Der Pfad für `statusLine` bzw. HUD bleibt unverändert. Die prozessinterne Pi-Bridge ist davon nicht betroffen. Siehe `cli/commands/hook/command.ts` für die Router-Implementierung und `cli/platform/hooks-composer/` für die Materialisierungslogik pro Anbieter.
+Installationen älter als oma 8.43.0 mit den alten Einträgen `bun "$CLAUDE_PROJECT_DIR/.claude/hooks/keyword-detector.ts"` werden automatisch migriert, sobald Sie `oma install`, `oma update` oder `oma link` erneut ausführen. Der Installer ersetzt nur OMA-verwaltete Hook-Gruppen anhand von Markern (erkennbar an ihren `name`-/`command`-Mustern); von Ihnen hinzugefügte Hook-Gruppen bleiben in ihrer ursprünglichen Reihenfolge erhalten. Der Pfad für `statusLine` bzw. HUD bleibt unverändert. Die prozessinterne Pi-Bridge ist davon nicht betroffen. Siehe `cli/commands/hook/command.ts` für die Router-Implementierung und `cli/platform/hooks-composer/` für die Materialisierungslogik pro Vendor.
 
 ### skills/
 

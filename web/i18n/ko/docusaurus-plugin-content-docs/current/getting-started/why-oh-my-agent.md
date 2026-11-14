@@ -22,7 +22,7 @@ oh-my-agent은 팀이 이미 사용하는 에이전트 CLI 주변에 저장소�
 
 backend, frontend, mobile, QA, debug 또는 planning 역할에 해당하는 검사를 실행하려면 `oma verify agent <agent-type> --workspace <path>`를 사용합니다. 검증기는 정적 검사와 테스트, 타입 검사, SQL 검사, `flutter analyze` 같은 설정된 명령을 함께 실행합니다. 자세한 내용은 [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts)를 참고하세요. 보고서에는 각 검사 결과가 표시됩니다. 이 검사를 통과해도 기능이 제품 또는 도메인 요구사항을 충족한다는 뜻은 아니므로 태스크의 인수 기준을 계속 검토해야 합니다.
 
-`/ralph`를 선택하면 별도의 [judge](./glossary.md#judge) 단계가 추가됩니다. 반복마다 선언한 기준을 다시 확인하고 워크플로우 아티팩트를 기록하지만, 일반 프롬프트마다 실행되는 게이트는 아닙니다. 스킬 로딩만으로 모든 워크플로우나 검증 명령이 시작되지도 않습니다.
+`/ralph`를 선택하면 별도의 [judge](./glossary.md#judge) 단계가 추가됩니다. 반복마다 선언한 기준을 다시 확인하고 워크플로우 산출물을 기록하지만, 일반 프롬프트마다 실행되는 게이트는 아닙니다. 스킬 로딩만으로 모든 워크플로우나 검증 명령이 시작되지도 않습니다.
 
 ## 디스패치 결과를 확인할 수 있습니다
 

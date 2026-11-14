@@ -422,7 +422,7 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 ### /docs
 
-**Beschreibung:** Dokumentations-Drift mit `oma-docs` erkennen und synchronisieren. Der Verify-Modus findet defekte Referenzen in allen Markdown-Dateien des Repos (Standard-Glob `**/*.md`); der Sync-Modus schlägt pro Dokument Patches für Docs vor, die von einem Git-Diff betroffen sind. Der Workflow läuft inline (kein Subagent-Spawning); alle Vendors rufen direkt `oma docs` auf.
+**Beschreibung:** Dokumentations-Drift mit `oma-docs` erkennen und synchronisieren. Der Verify-Modus findet defekte Referenzen in allen Markdown-Dateien des Repos (Standard-Glob `**/*.md`); der Sync-Modus schlägt pro Dokument Patches für Docs vor, die von einem Git-Diff betroffen sind. Der Workflow läuft inline (kein Subagenten-Spawning); alle Vendors rufen direkt `oma docs` auf.
 
 **Trigger-Keywords:** Keine. Starten Sie ihn mit `/docs`. Der Keyword-Hook öffnet diesen Workflow nicht aus einem Satz heraus.
 
@@ -439,7 +439,7 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 ### /recap
 
-**Beschreibung:** Tages- oder Zeitraum-Zusammenfassung über `oma-recap`. Löst Datum oder Zeitfenster aus natürlicher Sprache auf, ruft mit `oma recap --json` mehrere KI-Tool-Historien ab (Grok, Claude, Codex, Qwen, Cursor, Antigravity), übergibt Themenanalyse und Markdown-Formatierung an den Skill und meldet TL;DR sowie Speicherpfad. Der Workflow läuft inline (kein Subagent-Spawning); alle Vendors rufen direkt `oma recap` auf.
+**Beschreibung:** Tages- oder Zeitraum-Zusammenfassung über `oma-recap`. Löst Datum oder Zeitfenster aus natürlicher Sprache auf, ruft mit `oma recap --json` mehrere KI-Tool-Historien ab (Grok, Claude, Codex, Qwen, Cursor, Antigravity), übergibt Themenanalyse und Markdown-Formatierung an den Skill und meldet TL;DR sowie Speicherpfad. Der Workflow läuft inline (kein Subagenten-Spawning); alle Vendors rufen direkt `oma recap` auf.
 
 **Trigger-Keywords:** Keine. Starten Sie ihn mit `/recap`. Der Keyword-Hook öffnet diesen Workflow nicht aus einem Satz heraus.
 
@@ -470,7 +470,7 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 ### /video
 
-**Beschreibung:** Den `oma-video`-Skill durchgehend ausführen: Brief -> Skript -> Narration -> Visuals -> Untertitel -> Render-Spezifikation -> verwalteter HyperFrames- (oder MoneyPrinterTurbo-)Compositor. Der Workflow erstellt ein reproduzierbares Laufverzeichnis und gibt erst dann eine echte `.mp4` aus, wenn Compositor- und `ffprobe`-Prüfungen bestehen. Für unterstützte Asset-Fallbacks ist die Provider-Konfiguration optional; ein Compositor- oder Toolchain-Fehler bleibt ein fehlgeschlagener Lauf. Der Workflow läuft inline (kein Subagent-Spawning).
+**Beschreibung:** Den `oma-video`-Skill durchgehend ausführen: Brief -> Skript -> Narration -> Visuals -> Untertitel -> Render-Spezifikation -> verwalteter HyperFrames- (oder MoneyPrinterTurbo-)Compositor. Der Workflow erstellt ein reproduzierbares Laufverzeichnis und gibt erst dann eine echte `.mp4` aus, wenn Compositor- und `ffprobe`-Prüfungen bestehen. Für unterstützte Asset-Fallbacks ist die Provider-Konfiguration optional; ein Compositor- oder Toolchain-Fehler bleibt ein fehlgeschlagener Lauf. Der Workflow läuft inline (kein Subagenten-Spawning).
 
 **Trigger-Keywords:** Keine. Starten Sie ihn mit `/video`. Der Keyword-Hook öffnet diesen Workflow nicht aus einem Satz heraus.
 
@@ -499,7 +499,7 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 ### /explain
 
-**Beschreibung:** Den `oma-explanation`-Skill durchgehend ausführen: einen Diff, PR, Branch, Commit-Bereich oder ein Thema in einen eigenständigen interaktiven HTML-Erklärer umwandeln (mit den Abschnitten Background, Intuition, Code und Quiz für eine Änderung). Der Workflow läuft inline (kein Subagent-Spawning).
+**Beschreibung:** Den `oma-explanation`-Skill durchgehend ausführen: einen Diff, PR, Branch, Commit-Bereich oder ein Thema in einen eigenständigen interaktiven HTML-Erklärer umwandeln (mit den Abschnitten Background, Intuition, Code und Quiz für eine Änderung). Der Workflow läuft inline (kein Subagenten-Spawning).
 
 **Trigger-Keywords:** Keine ("explain" ist ein alltägliches Wort; Keyword-Erkennung würde bei gewöhnlichen Fragen wie "explain this function" ständig Fehlalarme erzeugen, daher ist der Workflow Slash-only).
 

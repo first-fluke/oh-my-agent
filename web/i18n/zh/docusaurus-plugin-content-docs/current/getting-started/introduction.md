@@ -224,7 +224,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-来源：`.agents/hooks/core/keyword-detector.ts`（跳过斜杠命令、显式匹配模式名称）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`，以及 `.agents/workflows/` 下的工作流文件。并非每个工作流都具备所有关卡：`/orchestrate` 运行验证脚本，`/review` 运行 QA 审查，`/ralph` 加入[评审器（judge）](./glossary.md#judge)。
+来源：`.agents/hooks/core/keyword-detector.ts`（跳过斜杠命令、显式匹配模式名称）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`，以及 `.agents/workflows/` 下的工作流文件。并非每个工作流都具备所有关卡：`/orchestrate` 运行验证脚本，`/review` 运行 QA 审查，`/ralph` 加入[judge](./glossary.md#judge)。
 
 ---
 

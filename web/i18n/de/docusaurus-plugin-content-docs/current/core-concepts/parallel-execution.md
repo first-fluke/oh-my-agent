@@ -5,7 +5,7 @@ description: Anleitung zum parallelen Ausführen mehrerer OMA-Dispatch-Rollen mi
 
 # Parallele Ausführung
 
-oh-my-agent führt mehrere spezialisierte Agenten parallel aus. Zum Beispiel können Backend-, Frontend- und Mobile-Agenten an getrennten Teilen einer Anwendung arbeiten, während der Orchestrator sie über dauerhaften Laufzustand und Receipts koordiniert.
+oh-my-agent führt mehrere spezialisierte Agenten parallel aus. Zum Beispiel können Backend-, Frontend- und Mobile-Agenten an getrennten Teilen einer Anwendung arbeiten, während der Orchestrator sie über dauerhaften Laufzustand und Ausführungsbelege (Receipts) koordiniert.
 
 ---
 

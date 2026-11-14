@@ -144,7 +144,7 @@ API 계약, 인증 정책, 데이터 모델, 마이그레이션 전략, 상태 �
 }
 ```
 
-`status`는 `completed`, `partial`, `blocked`, `failed` 중 하나입니다. 경로는 프로젝트 루트를 기준으로 하며 모든 artifact는 워크스페이스 안의 일반 파일이어야 합니다. 실행 가능한 검사가 없는 특정 검토에는 `verificationSkipped`를 사용할 수 있지만, 실패한 검사를 성공으로 바꾸지는 않습니다.
+`status`는 `completed`, `partial`, `blocked`, `failed` 중 하나입니다. 경로는 프로젝트 루트를 기준으로 하며 모든 산출물은 워크스페이스 안의 일반 파일이어야 합니다. 실행 가능한 검사가 없는 특정 검토에는 `verificationSkipped`를 사용할 수 있지만, 실패한 검사를 성공으로 바꾸지는 않습니다.
 
 실질적인 결정은 클레임의 선택 필드인 `decisions` 배열에 넣으세요.
 
@@ -180,7 +180,7 @@ oma agent finish RUN_ID CLAIM_PATH
 
 ## 스폰 및 네이티브 동작
 
-`oma agent spawn`과 `oma agent parallel`은 실행을 만들고, 실행 식별자와 결과 지시를 자식 프롬프트에 주입한 뒤, 상위 프로세스가 자식 종료 코드를 수집하게 합니다. 자식은 `claim`과 artifact를 작성하고 상위 프로세스가 관리되는 실행 기록(`receipt`)을 마무리합니다. 읽기 전용 자식은 `OMA_RESULT_JSON: {...}` 한 줄을 반환하며, 상위 프로세스가 이를 저장합니다. `verificationSkipped` 설명은 실행 가능한 검증과 별도로 유지됩니다.
+`oma agent spawn`과 `oma agent parallel`은 실행을 만들고, 실행 식별자와 결과 지시를 자식 프롬프트에 주입한 뒤, 상위 프로세스가 자식 종료 코드를 수집하게 합니다. 자식은 `claim`과 산출물을 작성하고 상위 프로세스가 관리되는 실행 기록(`receipt`)을 마무리합니다. 읽기 전용 자식은 `OMA_RESULT_JSON: {...}` 한 줄을 반환하며, 상위 프로세스가 이를 저장합니다. `verificationSkipped` 설명은 실행 가능한 검증과 별도로 유지됩니다.
 
 사람이 읽는 `.agents/results/` 결과 파일과 `.agents/state/memories/` 메모는 진행 상황을 파악하는 데 도움이 됩니다. 재사용과 재개에 사용되는 증거는 `.agents/state/agent-runs/`의 기계 판독용 실행 기록(`receipt`)입니다.
 

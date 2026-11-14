@@ -25,7 +25,7 @@ Als de tekst zowel een branchnaam als een onderwerp kan zijn, controleert de wor
 
 - Een PR, branch, commitbereik of de huidige staged/unstaged wijziging als document uitleggen
 - Een teamgenoot inwerken op een wijziging die diegene niet zelf heeft geschreven
-- Na een grote of subtiele wijziging een controleerbaar onderwijsartifact produceren
+- Na een grote of subtiele wijziging een controleerbaar onderwijsartefact produceren
 - Een architectuur, een protocol, een vergelijking of een lang antwoord omzetten in één visuele pagina (topic-modus)
 
 ## Wanneer NIET gebruiken {#when-not-to-use}
@@ -156,7 +156,7 @@ Na generatie voert de workflow `oma explain validate <file>` en de secret-scan v
 
 Dit is een v1-beperking: de validatie is bestandsgebaseerd en controleert alleen of het quizscript *aanwezig* is (niet of het gedrag volledig klopt). Gebruik een browser (of de chrome-devtools-MCP) om de quiz handmatig te doorlopen wanneer gedragsvertrouwen belangrijk is.
 
-Je kunt een bestaand artifact valideren met het geregistreerde CLI-commando:
+Je kunt een bestaand artefact valideren met het geregistreerde CLI-commando:
 
 ```bash
 oma explain validate .agents/results/explain/2026-09-09-payment-refactor.html
@@ -175,7 +175,7 @@ File: .agents/results/explain/payment refactor.html
   - [error] filename-format: Filename 'payment refactor.html' does not match format {YYYY-MM-DD}-{slug}.html
 ```
 
-De eerste vorm controleert één HTML-bestand. De mapvorm controleert elk rapport in een map en levert een machineleesbaar rapport op. Gebruik `--report-file <path>` om het JSON-rapport te bewaren; de oude spelling `--out-file` faalt nu met `Removed option --out-file. Use --report-file.` Een exitcode ongelijk aan nul betekent dat minstens één artifact de deterministische controles niet doorstond; de didactische juistheid van de proza of de quizantwoorden wordt niet beoordeeld.
+De eerste vorm controleert één HTML-bestand. De mapvorm controleert elk rapport in een map en levert een machineleesbaar rapport op. Gebruik `--report-file <path>` om het JSON-rapport te bewaren; de oude spelling `--out-file` faalt nu met `Removed option --out-file. Use --report-file.` Een exitcode ongelijk aan nul betekent dat minstens één artefact de deterministische controles niet doorstond; de didactische juistheid van de proza of de quizantwoorden wordt niet beoordeeld.
 
 ---
 

@@ -6,7 +6,7 @@ description: Kies het juiste oh-my-agent-pad, met de bijbehorende vereisten, voo
 
 # Inhouds- en onderzoeksworkflows {#content-and-research-workflows}
 
-Kies op basis van het artifact dat je nodig hebt en gebruik daarna het kleinste commando of skill-entrypoint dat een controleerbaar resultaat oplevert. Gebruik de gekoppelde gids wanneer een capability een eigen pagina heeft.
+Kies op basis van het artefact dat je nodig hebt en gebruik daarna het kleinste commando of skill-entrypoint dat een controleerbaar resultaat oplevert. Gebruik de gekoppelde gids wanneer een capability een eigen pagina heeft.
 
 | Behoefte | Entry point | Vereisten | Eerste resultaat | Gids |
 |---|---|---|---|---|
@@ -64,7 +64,7 @@ uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full \
   "<input.pdf>" --format markdown --output-dir "$OUT"
 ```
 
-Het geslaagde artifact is het Markdown- of tekstbestand in de gekozen map, samen met het aantal pagina's en eventuele kwaliteitsnotities. Voor versleutelde PDF's heb je een ontgrendelde kopie of een wachtwoord nodig. Grote bestanden kunnen afzonderlijke paginabereiken en uitvoermappen vereisen, zodat herhaalde runs niet dezelfde basename overschrijven. Behandel OCR-gissingen niet als bronfeiten; rapporteer onzekere of ontbrekende tabellen.
+Het geslaagde artefact is het Markdown- of tekstbestand in de gekozen map, samen met het aantal pagina's en eventuele kwaliteitsnotities. Voor versleutelde PDF's heb je een ontgrendelde kopie of een wachtwoord nodig. Grote bestanden kunnen afzonderlijke paginabereiken en uitvoermappen vereisen, zodat herhaalde runs niet dezelfde basename overschrijven. Behandel OCR-gissingen niet als bronfeiten; rapporteer onzekere of ontbrekende tabellen.
 
 ## Documenten uit de HWP-familie extraheren {#extract-hwp-family-documents}
 
@@ -210,7 +210,7 @@ Gebruik `oma scholar` voor bronontdekking en sidecar-bewijs voordat je schrijft.
 | Een lokale skill kan geen verbinding maken | Controleer de lokale service of CLI van de eigenaar (`Voicebox`, `Chrome`, `uvx`, `bunx`) voordat je het contentverzoek wijzigt. |
 | Een onderzoeksresultaat is mager | Maak de query breder, inspecteer de fallback-/bronstatus en bewaar de onzekerheid in het rapport. |
 | Een slide-export faalt | Voer `oma slide validate --workspace <dir> --output json` uit, herstel geometrie- of fontbevindingen en exporteer daarna opnieuw. |
-| Een recap overdrijft de voltooiing | Controleer receipts en artifacts opnieuw; een prompt of toolaanroep alleen is geen bewijs van voltooiing. |
+| Een recap overdrijft de voltooiing | Controleer receipts en artefacten opnieuw; een prompt of toolaanroep alleen is geen bewijs van voltooiing. |
 | Een vertaling verandert codesyntax | Herstel beschermde namen en voer de structuurcontroles opnieuw uit voordat je de prozakwaliteit reviewt. |
 | Academische tekst bevat onbewezen claims | Verwijder of nuanceer de claim, voeg bewijs toe via het scholar-pad en voer de Claim-Evidence Map opnieuw uit. |
 

@@ -582,9 +582,9 @@ opencode models opencode-go                            # list everything your pl
   작성합니다. 이 파일은 `.agents/` SSOT에서 생성되므로 직접 편집하지 마시고,
   재생성하려면 `oma link`를 다시 실행하세요.
 
-> **지속적 워크플로우 참고:** opencode의 `session.idle` 이벤트(Claude의 `Stop`
+> **지속 워크플로우 참고:** opencode의 `session.idle` 이벤트(Claude의 `Stop`
 > 훅에 가장 가까운 대응물)는 알림 전용이며 세션 종료를 막을 수 없습니다. 따라서
-> 지속적 워크플로우(orchestrate / work / ultrawork)는 opencode에서 **저하된 Stop
+> 지속 워크플로우(orchestrate / work / ultrawork)는 opencode에서 **저하된 Stop
 > 시맨틱**으로 동작합니다. 워크플로우 보강이 세션을 열어 둔 채 이루어지는 대신
 > 다음 메시지 시점에 일어납니다.
 
@@ -649,8 +649,8 @@ agents:
 라우팅된 각 에이전트는 `kimi --model kimi-code/kimi-for-coding -p "<prompt>"`를
 디스패치합니다.
 
-> **지속적 워크플로우 참고:** Kimi가 문서로 안내하는 Stop 차단 경로는 종료 코드 2와
+> **지속 워크플로우 참고:** Kimi가 문서로 안내하는 Stop 차단 경로는 종료 코드 2와
 > stderr이지만, `oma hook run` 라우터는 항상 0으로 종료하고 stdout으로 방언을
 > 내보냅니다. oma는 최선의 노력으로 `permissionDecision: "deny"`(그리고 Claude
-> 스타일의 `decision: "block"`)를 내보내므로, Kimi에서 지속적 워크플로우는 완만하게
+> 스타일의 `decision: "block"`)를 내보내므로, Kimi에서 지속 워크플로우는 완만하게
 > 저하된 형태로 동작합니다.

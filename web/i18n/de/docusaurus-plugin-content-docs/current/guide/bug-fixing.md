@@ -10,7 +10,7 @@ description: Strukturierter Debugging-Workflow in sieben Schritten mit Schweregr
 
 Verwenden Sie `/debug`, um einen bestimmten Bug zu diagnostizieren. Eine einfache Anfrage wie "find the root cause" lädt den Skill `oma-debug` über den Skill-Hinweis, aber nur der Slash-Befehl startet diesen Workflow. Der Workflow in sieben Schritten umfasst die Triage nach Schweregrad, eine quellengestützte Diagnose und die Validierung nach der Korrektur.
 
-Der Debug-Workflow unterstützt alle konfigurierten Anbieter. Die Schritte 1-5 werden inline ausgeführt. Schritt 6 (Scan nach ähnlichen Mustern) kann an einen `debug-investigator`-Subagenten delegiert werden, wenn der Scan-Umfang groß ist (10+ Dateien oder domänenübergreifende Fehler); anschließend legt Schritt 7 den Memory-Eintrag an.
+Der Debug-Workflow unterstützt alle konfigurierten Vendors. Die Schritte 1-5 werden inline ausgeführt. Schritt 6 (Scan nach ähnlichen Mustern) kann an einen `debug-investigator`-Subagenten delegiert werden, wenn der Scan-Umfang groß ist (10+ Dateien oder domänenübergreifende Fehler); anschließend legt Schritt 7 den Memory-Eintrag an.
 
 ---
 
@@ -189,7 +189,7 @@ Beispiel: Wurde der Bug dadurch verursacht, dass `user.organization.id` ohne Pr�
 
 Vendor-spezifische Startmethoden:
 
-| Anbieter | Startmethode |
+| Vendor | Startmethode |
 |:-------|:------------|
 | Claude Code | Agent-Tool mit `.claude/agents/debug-investigator.md` |
 | Codex CLI | Modellvermittelte Subagenten-Anfrage, Ergebnisse als JSON |

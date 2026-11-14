@@ -17,7 +17,7 @@ sidebar_label: 重要默认值
 | 响应语言 | 已保存的语言，否则为系统语言；回退到 `en` | 安装时不询问即可检测语言。区域语言环境会映射到受支持的基础语言，例如 `ko_KR.UTF-8` → `ko`；不支持的语言环境使用 `en`。用户提示的语言优先于这项设置。 | `.agents/oma-config.yaml` 或 `.cue` 中的 `language` |
 | 模型路由（[模型预设](./glossary.md#model-preset)） | `auto` | 使用当前运行时的原生智能体配置。未知运行时在已设置时回退到 `agents.default.cli`。 | `model_preset`、`agents.default.cli` 或 `agents.<id>` |
 | 技能内容（[技能预设](./glossary.md#skill-preset)） | 交互式选择；无人值守安装时为 `all`，除非指定了 `--preset` | 预设选择技能。共享文件、全部工作流和智能体定义、钩子以及提供方设置仍属于运行时安装；其他已有技能会保留。 | `oma install --preset <name>`；参见[预设限制](./installation.md#presets) |
-| 代码智能（[能力提供方](./glossary.md#capability-provider)） | `serena` | 新安装会尝试安装 Serena，并接入其 MCP 配置。 | `providers.code_intelligence: gortex` 或 `serena` |
+| 代码智能（[能力提供商](./glossary.md#capability-provider)） | `serena` | 新安装会尝试安装 Serena，并接入其 MCP 配置。 | `providers.code_intelligence: gortex` 或 `serena` |
 | 代码搜索保护 | `block` | 只要配置了代码智能提供方，PreToolUse 钩子就会拒绝原生 `Grep`/`Glob` 和递归 shell 搜索（`rg`、`grep -r`、`find -name`），并引导智能体改用提供方的工具。仅限已确认排除项或项目之外路径的搜索会被放行。该钩子不会提示针对项目源代码的绕过方式。 | `providers.code_intelligence_guard: off` |
 | 语义内存 | `agentmemory` | 安装和更新会复用健康的 AgentMemory 端点，或安装并启动托管的本地服务，然后在成功前检查就绪状态。显式的自定义端点只会被检查，不会被替换。 | `providers.semantic_memory: honcho` 或 `none`；`OMA_NO_AGENTMEMORY=1` 会跳过 AgentMemory 设置。 |
 | 网页搜索 | `native` | 除非选择了提供方，否则搜索使用运行时的原生网页通道。 | `providers.web` |

@@ -210,7 +210,7 @@ Verwenden Sie `oma scholar` zur Quellenentdeckung und Sidecar-Evidenz vor dem En
 | Ein lokaler Skill kann keine Verbindung herstellen | Den zuständigen lokalen Dienst oder die CLI (`Voicebox`, `Chrome`, `uvx`, `bunx`) prüfen, bevor die Inhaltsanforderung geändert wird. |
 | Ein Rechercheergebnis ist dünn | Abfrage erweitern, Fallback-/Quellenstatus prüfen und die Unsicherheit im Bericht bewahren. |
 | Ein Folienexport schlägt fehl | `oma slide validate --workspace <dir> --output json` ausführen, Geometrie- oder Schriftbefunde korrigieren und danach exportieren. |
-| Ein Recap überzeichnet die Fertigstellung | Receipts und Artifacts erneut prüfen; ein Prompt oder Tool-Aufruf allein ist kein Fertigstellungsbeleg. |
+| Ein Recap überzeichnet die Fertigstellung | Ausführungsbelege und Artefakte erneut prüfen; ein Prompt oder Tool-Aufruf allein ist kein Fertigstellungsbeleg. |
 | Eine Übersetzung ändert Codesyntax | Geschützte Namen wiederherstellen und Strukturprüfungen erneut ausführen, bevor die Prosa geprüft wird. |
 | Akademische Prosa enthält unbelegte Behauptungen | Behauptung entfernen oder abschwächen, Evidenz über den Scholar-Pfad ergänzen und die Claim-Evidence-Map erneut ausführen. |
 

@@ -20,8 +20,8 @@ Kies het kleinste commando dat je vraag beantwoordt. Elk commando hieronder prin
 | Een project installeren of herstellen | `oma install` en daarna `oma doctor` | Geïnstalleerde resources en een gezondheidsrapport; gebruik `oma doctor --profile` wanneer modelresolutie de vraag is. |
 | Een commando of optie van een agent vinden | `oma describe` of `oma describe "image generate"` | JSON met argumenten, opties en geneste commando's. |
 | Een afbeelding genereren | `oma image generate "<prompt>" --output json` | Afbeeldingspaden en een manifest onder `.agents/results/images/`. |
-| Video plannen of renderen | `oma video generate "<brief>" --dry-run` | Een runmap met planningsartefacts; compose en render pas nadat de compositie is geschreven. |
-| Een interactieve code-uitleg maken | `/explain` | Een gevalideerd zelfstandig HTML-artifact onder `.agents/results/explain/`. |
+| Video plannen of renderen | `oma video generate "<brief>" --dry-run` | Een runmap met planningsartefacten; compose en render pas nadat de compositie is geschreven. |
+| Een interactieve code-uitleg maken | `/explain` | Een gevalideerd zelfstandig HTML-artefact onder `.agents/results/explain/`. |
 | Een diagramengine bepalen | `oma diagram resolve --output json` | De geselecteerde Mermaid- of archify-engine en de reden daarvoor. |
 | Communitysignalen onderzoeken | `oma market detect-trap "<topic>"` | Een preflightresultaat; ga alleen verder met `oma market resolve --output json` en de upstream-run wanneer de controle slaagt. |
 | Een paper converteren of inspecteren | `oma scholar search "<query>"` | Zoekresultaten van Knows, OpenAlex of Semantic Scholar; haal een sidecar op met `oma scholar get`. |
@@ -647,7 +647,7 @@ Als je `--fallback-vendors` weglaat, blijft de gebruikelijke uitvoering met éé
 
 ### agent status
 
-Controleer de status van een of meer subagents.
+Controleer de status van een of meer subagenten.
 
 ```text
 oma agent status <session-id> [agent-ids...] [--project-root <path>]
@@ -690,7 +690,7 @@ oma agent status session-20260324-143000 qa --project-root /path/to/project
 
 ### agent parallel
 
-Voer meerdere subagents parallel uit.
+Voer meerdere subagenten parallel uit.
 
 ```text
 oma agent parallel [tasks...] [--session-id <id>] [--vendor <vendor>] [-i, --inline] [--no-wait]
@@ -804,7 +804,7 @@ Geef minstens één van `--gate`, `--budget-minutes` of `--description` op; ande
 | Vlag | Beschrijving |
 |:-----|:-----------|
 | `--gate <keyword>` | Deterministische stop gate: `typecheck`, `test` of `lint`. Koppelt aan het gelijknamige script in package.json, uitgevoerd als argv-array zonder shell. Zolang deze is ingesteld, mag de Stop-hook de workflow **alleen beëindigen wanneer dit script slaagt**; bij een fout blokkeert de hook met het einde van de uitvoer zodat de agent weet wat moet worden hersteld. Vrije commando's worden geweigerd — de gatewaarde staat in een door de agent beschrijfbaar statusbestand, dus willekeurige tekenreeksen daaruit uitvoeren zou de toestemmingslaag omzeilen. |
-| `--budget-minutes <n>` | Klokbudget gemeten vanaf workflowactivatie. Wanneer dit wordt overschreden, deactiveert de Stop-hook de workflow en staat een eerlijke gedeeltelijke stop toe (machineverdict, vastgelegd als `gate.failed` met `gate: "budget"` in het sessiegebeurtenisspoor). |
+| `--budget-minutes <n>` | Klokbudget gemeten vanaf workflowactivatie. Wanneer dit wordt overschreden, deactiveert de Stop-hook de workflow en staat een eerlijke gedeeltelijke stop toe (machineverdict, vastgelegd als `gate.failed` met `gate: "budget"` in het eventlog van de sessie). |
 | `--description <text>` | Menselijke beschrijving van het doel. Alleen informatief. |
 | `--workflow <name>` | Doelworkflow wanneer meerdere persistente workflows actief zijn. |
 | `--session-id <id>` | Achtervoegsel met de vendorsessie-ID in het statusbestand; alleen nodig wanneer meerdere persistente workflows actief zijn. |
@@ -1166,7 +1166,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 **Wat het doet:** voert de geconfigureerde controles voor het opgegeven agenttype uit, waaronder tests, statische inspecties en scopeconformiteit. Codecontroles van de workspace inspecteren de workspace ook wanneer een taak of run is geselecteerd.
 
-Wanneer meerdere sessieplannen of run-receipts overeenkomen, faalt de verificatie en vraagt die om een expliciete identiteit, in plaats van een bestand op naam te kiezen. Een nieuwe run zonder rapport kan het rapport van een eerdere run niet hergebruiken. `--run-id` controleert de agent en workspace van de receipt voordat de sessie/taak ervan wordt gebruikt. Geef zonder lokale receipt alle drie de ID's op. Legacy TDD-rapporten zonder scope worden alleen geaccepteerd met het legacy-plan `.agents/plan.json`.
+Wanneer meerdere sessieplannen of runreceipts overeenkomen, faalt de verificatie en vraagt die om een expliciete identiteit, in plaats van een bestand op naam te kiezen. Een nieuwe run zonder rapport kan het rapport van een eerdere run niet hergebruiken. `--run-id` controleert de agent en workspace van de receipt voordat de sessie/taak ervan wordt gebruikt. Geef zonder lokale receipt alle drie de ID's op. Legacy TDD-rapporten zonder scope worden alleen geaccepteerd met het legacy-plan `.agents/plan.json`.
 
 `verify triggers` meet de nauwkeurigheid van de keyworddetector op een gelabeld promptcorpus. De procentuele drempels zijn gates. Het geregistreerde pad is `verify agent`; de oude spelling op hoofdniveau `oma verify <agent-type>` wordt geweigerd met `Unexpected argument`.
 
@@ -1725,9 +1725,9 @@ oma describe "agent parallel"
 
 ---
 
-## Onderzoeks- en artifactcommando's
+## Onderzoeks- en artefactcommando's
 
-Deze families zijn nuttig wanneer de uitvoer een onderzoeksartifact, presentatie of rapport is. Ze zijn hier bewust kort gehouden; de gekoppelde gidsen leggen workflow en herstelkeuzes uit.
+Deze families zijn nuttig wanneer de uitvoer een onderzoeksartefact, presentatie of rapport is. Ze zijn hier bewust kort gehouden; de gekoppelde gidsen leggen workflow en herstelkeuzes uit.
 
 ### intel suggest
 
@@ -1833,7 +1833,7 @@ oma diagram archify validate architecture <stem>.archify.json --quality showcase
 oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html --quality showcase --json
 ```
 
-`diagram resolve` accepteert `--engine auto|archify|mermaid`, `--refresh` en `--offline`. `diagram update` vernieuwt de beheerde archify-kopie. `diagram archify` geeft de resterende argumenten door aan het opgeloste upstream-executable en geeft diens exitcode door. Mermaid blijft de Markdown-bron van waarheid; de HTML is een afgeleid artifact. Zie [Diagramengine](../guide/diagram-engine.md).
+`diagram resolve` accepteert `--engine auto|archify|mermaid`, `--refresh` en `--offline`. `diagram update` vernieuwt de beheerde archify-kopie. `diagram archify` geeft de resterende argumenten door aan het opgeloste upstream-executable en geeft diens exitcode door. Mermaid blijft de Markdown-bron van waarheid; de HTML is een afgeleid artefact. Zie [Diagramengine](../guide/diagram-engine.md).
 
 ## Inspectie van state, modellen en memory
 
@@ -2171,7 +2171,7 @@ oma harness eval --suite <path> --candidate <path> [--partition <name>]
 
 **Beslissingsgate:** pass vereist minstens 5 gescoorde gekoppelde taken, een lift van minstens 5 procentpunten en nul regressies. Met minstens 5 paren faalt elke regressie of negatieve lift, en is een lift onder 5 punten zonder regressies `warn`. Een dispatchfout faalt altijd. Dekking onder het minimum is `insufficient` en geeft alleen met `--require-coverage` een niet-nulcode.
 
-**Isolatie:** kandidaatbestanden mogen alleen inhoud in `.agents/agents`, `.agents/rules`, `.agents/skills` en `.agents/workflows` vervangen in de tijdelijke kandidaatarm. Hooks, configuratie, status, evalfixtures, symlinks, vendorvarianten, beschermde wijzigingen aan frontmatter voor agentuitvoering en vendor-harnessbestanden die bij fixtures horen, worden geweigerd. Een arm faalt als die tijdens uitvoering beschermde definities wijzigt. Vendordiscovery via HOME wordt voor live-evaluatie geweigerd. De primaire agentroute ligt vast; modelpinnen van geneste subagents worden nog niet afgedwongen.
+**Isolatie:** kandidaatbestanden mogen alleen inhoud in `.agents/agents`, `.agents/rules`, `.agents/skills` en `.agents/workflows` vervangen in de tijdelijke kandidaatarm. Hooks, configuratie, status, evalfixtures, symlinks, vendorvarianten, beschermde wijzigingen aan frontmatter voor agentuitvoering en vendor-harnessbestanden die bij fixtures horen, worden geweigerd. Een arm faalt als die tijdens uitvoering beschermde definities wijzigt. Vendordiscovery via HOME wordt voor live-evaluatie geweigerd. De primaire agentroute ligt vast; modelpinnen van geneste subagenten worden nog niet afgedwongen.
 
 ```bash
 # Generate a live measurement and recording

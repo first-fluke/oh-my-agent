@@ -8,7 +8,7 @@ description: Captura un fallo observado de un agente, preserva su evidencia y ev
 
 `oma harness incident` conecta un fallo observado con un caso de regresión y con la evaluación del candidato que lo sigue. Registra las observaciones por separado de las hipótesis causales. Un proceso fallido por sí solo no establece que el modelo causara el incidente.
 
-La promoción alimenta la optimización de skills y la exportación alimenta la evaluación del harness.
+La promoción alimenta la optimización de habilidades y la exportación alimenta la evaluación del harness.
 
 ```mermaid
 flowchart TD
@@ -47,7 +47,7 @@ oma harness feedback --scan-runs --live     # and optimize the affected skills
 
 Una ejecución fallida, bloqueada o parcial cuya tarea tenía un contrato no necesita ninguna especificación escrita a mano. El comportamiento esperado son los criterios de aceptación del contrato, decididos antes de la ejecución; el conjunto no cumplido son los criterios cubiertos por un registro de verificación fallido, o todos los criterios cuando la ejecución nunca llegó a verificarse. El opt-agent reescribe los criterios no cumplidos como una rúbrica de juez (`PASS only if …`), el juez califica con esa rúbrica la salida conservada de la propia ejecución, y el incidente solo se captura cuando esa salida falla: una rúbrica que el fallo supera no ha capturado el fallo. La especificación se escribe en `.agents/results/incidents/_specs/<id>.json`, se captura con la identidad de la ejecución y lleva la rúbrica como una comprobación de aceptación `output_judge`. Las ejecuciones sin una salida conservada, sin prompt o sin contrato se listan como no capturables junto con el motivo.
 
-`output_judge` es un contrato graduado. El evaluador mecánico del harness lo informa como no evaluado; su propósito es la fixture de regresión de skill que `incident promote` deriva de ese contrato con la misma rúbrica.
+`output_judge` es un contrato graduado. El evaluador mecánico del harness lo informa como no evaluado; su propósito es la fixture de regresión de habilidad que `incident promote` deriva de ese contrato con la misma rúbrica.
 
 ## Capturar un incidente {#capture-an-incident}
 
@@ -95,15 +95,15 @@ El manifiesto capturado se encuentra en `.agents/results/incidents/<id>/incident
 
 El objeto opcional `cause` tiene `category`, `hypothesis`, `confidence` y `evidence`. Las categorías son `model`, `tool`, `config`, `context`, `application`, `evaluator` y `unknown`. Si se omite, la causa queda como `unknown`.
 
-## Promover a una fixture de skill
+## Promover a una fixture de habilidad
 
 ```bash
 oma harness incident promote <id> [--skill <id>] [--draft] [--force] --json
 ```
 
-Un incidente capturado se convierte en una fixture de regresión para la skill que ejerció el agente fallido, de modo que `oma skill optimize` pueda reparar la skill contra ella. La skill se elige enrutando el prompt del incidente contra el catálogo de skills instaladas con la misma sonda a nivel de descripción que usa `oma skill eval --routing` (una llamada al modelo); cuando el enrutamiento no elige nada, se usa la primera entrada `skills:` de la definición del agente en `.agents/agents/<agent>.md` y, en su defecto, la skill instalada llamada `oma-<agent>`. `--skill` tiene prioridad, y la promoción registra cuál de las tres opciones decidió (`attribution`). La fixture se escribe en `.agents/eval/<skill>/incident-<id>.yaml` con `group: incident-<id>` para que nunca cruce la división entre train, validación y test, y la promoción se registra junto al incidente como `promotion.json`. Un incidente se promociona una sola vez.
+Un incidente capturado se convierte en una fixture de regresión para la habilidad que ejerció el agente fallido, de modo que `oma skill optimize` pueda reparar la habilidad contra ella. La habilidad se elige enrutando el prompt del incidente contra el catálogo de habilidades instaladas con la misma sonda a nivel de descripción que usa `oma skill eval --routing` (una llamada al modelo); cuando el enrutamiento no elige nada, se usa la primera entrada `skills:` de la definición del agente en `.agents/agents/<agent>.md` y, en su defecto, la habilidad instalada llamada `oma-<agent>`. `--skill` tiene prioridad, y la promoción registra cuál de las tres opciones decidió (`attribution`). La fixture se escribe en `.agents/eval/<skill>/incident-<id>.yaml` con `group: incident-<id>` para que nunca cruce la división entre train, validación y test, y la promoción se registra junto al incidente como `promotion.json`. Un incidente se promociona una sola vez.
 
-El comprobador procede de las comprobaciones de aceptación. Cuando todas son `output_contains`, la fixture es un `assert` determinista. En caso contrario las comprobaciones no pueden ejecutarse en una evaluación de skills (no hay archivos ni comandos), así que `--draft` pide al opt-agent una rúbrica de juez que empiece con `PASS only if` y nombre el fallo observado. En ambos casos la fixture solo se admite cuando la salida fallida registrada no la supera: se rechaza un assert que la salida observada ya satisface, o una rúbrica redactada que el juez supera con esa salida, porque no son un caso de regresión. Un incidente sin salida observada no se puede validar y necesita `--force`, lo cual se registra como una limitación.
+El comprobador procede de las comprobaciones de aceptación. Cuando todas son `output_contains`, la fixture es un `assert` determinista. En caso contrario las comprobaciones no pueden ejecutarse en una evaluación de habilidades (no hay archivos ni comandos), así que `--draft` pide al opt-agent una rúbrica de juez que empiece con `PASS only if` y nombre el fallo observado. En ambos casos la fixture solo se admite cuando la salida fallida registrada no la supera: se rechaza un assert que la salida observada ya satisface, o una rúbrica redactada que el juez supera con esa salida, porque no son un caso de regresión. Un incidente sin salida observada no se puede validar y necesita `--force`, lo cual se registra como una limitación.
 
 ## Cerrar el bucle
 

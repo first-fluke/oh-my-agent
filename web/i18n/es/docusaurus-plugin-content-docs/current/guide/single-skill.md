@@ -1,25 +1,25 @@
 ---
-title: "Guía: Ejecución de una skill individual"
-sidebar_label: Skill individual
+title: "Guía: Ejecución de una habilidad individual"
+sidebar_label: Habilidad individual
 description: Guía detallada para tareas de un solo dominio en oh-my-agent, con criterios de uso, lista de verificación previa, plantilla de prompt explicada, ejemplos reales de frontend, backend, mobile y base de datos, flujo de ejecución, puerta de calidad y señales de escalamiento.
 ---
 
-# Ejecución de una skill individual
+# Ejecución de una habilidad individual
 
-La ejecución de una skill individual asigna una tarea enfocada, de un solo dominio, a un agente. Evita la coordinación entre varios agentes. El host o un flujo seleccionado puede enrutar un prompt en lenguaje natural a la skill; el sistema de hooks añade sugerencias de skills a partir de palabras clave, y el enrutamiento depende del runtime seleccionado.
+La ejecución de una habilidad individual asigna una tarea enfocada, de un solo dominio, a un agente. Evita la coordinación entre varios agentes. El host o un flujo seleccionado puede enrutar un prompt en lenguaje natural a la habilidad; el sistema de hooks añade sugerencias de habilidades a partir de palabras clave, y el enrutamiento depende del runtime seleccionado.
 
 ## Ruta rápida
 
 1. Ejecuta `oma doctor` una vez para confirmar la integración con el host seleccionado. Las advertencias opcionales sobre proveedores no bloquean una tarea que no los use.
 2. Describe un cambio autocontenido con una condición clara de **Objetivo**, **Contexto**, **Restricciones** y **Completado cuando**.
-3. La skill seleccionada inspeccionará el repositorio, declarará cualquier suposición que afecte al resultado e informará qué comprobaciones ejecutó realmente.
+3. La habilidad seleccionada inspeccionará el repositorio, declarará cualquier suposición que afecte al resultado e informará qué comprobaciones ejecutó realmente.
 4. Si la tarea crece y cruza los límites de API, UI, base de datos o mobile, detén la ejecución individual y cambia a `/work` u `/orchestrate`.
 
-Para ejecuciones administradas atascadas, usa `oma agent status <session-id> [agent-id]`; después inspecciona los receipts de `.agents/state/agent-runs/` y la ruta de claim inyectada antes de reintentar. Consulta [Valores predeterminados importantes](../getting-started/important-defaults.md) para conocer el comportamiento de los proveedores y la recuperación.
+Para ejecuciones administradas atascadas, usa `oma agent status <session-id> [agent-id]`; después inspecciona los registros de verificación de `.agents/state/agent-runs/` y la ruta de declaración de resultados inyectada antes de reintentar. Consulta [Valores predeterminados importantes](../getting-started/important-defaults.md) para conocer el comportamiento de los proveedores y la recuperación.
 
 ---
 
-## Cuándo usar una skill individual
+## Cuándo usar una habilidad individual
 
 Usa esta modalidad cuando tu tarea cumpla TODOS estos criterios:
 
@@ -28,7 +28,7 @@ Usa esta modalidad cuando tu tarea cumpla TODOS estos criterios:
 - **Tiene un alcance claro**: sabes cuál debe ser el resultado (un componente, un endpoint, un esquema o una corrección).
 - **No requiere coordinación**: otros agentes no necesitan ejecutarse antes ni después.
 
-**Ejemplos de tareas para una skill individual:**
+**Ejemplos de tareas para una habilidad individual:**
 - Construir un componente de UI.
 - Agregar un endpoint de API.
 - Corregir un bug en una capa.
@@ -43,7 +43,7 @@ Usa esta modalidad cuando tu tarea cumpla TODOS estos criterios:
 - La funcionalidad abarque frontend, backend y base de datos.
 - El alcance crezca más allá de un dominio después de la primera iteración.
 
-Las pruebas y los criterios de aceptación también forman parte del trabajo con una skill individual; por sí solos no requieren `/ralph`. Para coordinar varios dominios o aplicar un proceso de calidad solicitado explícitamente, consulta la [guía para elegir skills y flujos de trabajo](/docs/core-concepts/workflows#choosing-a-skill-or-workflow).
+Las pruebas y los criterios de aceptación también forman parte del trabajo con una habilidad individual; por sí solos no requieren `/ralph`. Para coordinar varios dominios o aplicar un proceso de calidad solicitado explícitamente, consulta la [guía para elegir habilidades y flujos de trabajo](/docs/core-concepts/workflows#choosing-a-skill-or-workflow).
 
 ---
 
@@ -107,11 +107,11 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 
 **Flujo de ejecución esperado:**
 
-1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-frontend` (palabras como «form», «component», «Tailwind CSS» y «React» son señales de enrutamiento).
+1. **Enrutamiento de la habilidad:** el host o el flujo selecciona `oma-frontend` (palabras como «form», «component», «Tailwind CSS» y «React» son señales de enrutamiento).
 2. **Evaluación de dificultad:** Medium (2-3 archivos y algunas decisiones de diseño sobre la experiencia de validación).
 3. **Recursos cargados:**
    - `execution-protocol.md` (siempre).
-   - `snippets.md` (patrones de formularios y Zod, además de los patrones de componentes existentes cuando la skill los proporcione).
+   - `snippets.md` (patrones de formularios y Zod, además de los patrones de componentes existentes cuando la habilidad los proporcione).
 <!-- oma-docs:ignore-start -->
 4. **Implementación:**
    - Crea `src/features/auth/components/login-form.tsx` (Client Component con `"use client"`).
@@ -145,7 +145,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 **Flujo de ejecución esperado:**
 
-1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-backend` (palabras como «API», «endpoint» y «REST» son señales de enrutamiento).
+1. **Enrutamiento de la habilidad:** el host o el flujo selecciona `oma-backend` (palabras como «API», «endpoint» y «REST» son señales de enrutamiento).
 2. **Detección del stack:** lee `pyproject.toml` o `package.json` para determinar el lenguaje y el framework. Si existen referencias generadas a `stack/` o `variants/` incluidas en el paquete, carga sus convenciones.
 3. **Evaluación de dificultad:** Medium (2-3 archivos: ruta, servicio, repositorio y prueba).
 4. **Recursos cargados:**
@@ -178,7 +178,7 @@ Add tests for: profile save, logout flow, offline state.
 
 **Flujo de ejecución esperado:**
 
-1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-mobile` (palabras como «Flutter», «screen» y «mobile» son señales de enrutamiento).
+1. **Enrutamiento de la habilidad:** el host o el flujo selecciona `oma-mobile` (palabras como «Flutter», «screen» y «mobile» son señales de enrutamiento).
 2. **Evaluación de dificultad:** Medium (pantalla de ajustes, gestión de estado y manejo sin conexión).
 3. **Recursos cargados:**
    - `execution-protocol.md`.
@@ -211,7 +211,7 @@ Add deliverables: data standards table, glossary, migration script.
 
 **Flujo de ejecución esperado:**
 
-1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-db` (palabras como «database», «schema», «ERD» y «migration» son señales de enrutamiento).
+1. **Enrutamiento de la habilidad:** el host o el flujo selecciona `oma-db` (palabras como «database», «schema», «ERD» y «migration» son señales de enrutamiento).
 2. **Evaluación de dificultad:** Complex (decisiones de arquitectura, varias entidades y planificación de capacidad).
 3. **Recursos cargados:**
    - `execution-protocol.md`.
@@ -279,12 +279,12 @@ Después de que el agente entregue el resultado, verifica estos elementos antes 
 
 ## Señales de escalamiento
 
-Observa estas señales que indican que deberías cambiar de una skill individual a una ejecución multiagente:
+Observa estas señales que indican que deberías cambiar de una habilidad individual a una ejecución multiagente:
 
 | Señal | Qué significa | Acción |
 |--------|--------------|--------|
 | El agente dice «esto requiere un cambio de backend» | La tarea tiene dependencias entre dominios | Cambia a `/work` y agrega un agente de backend. |
-| El agente informa de trabajo que dejó sin hacer porque queda fuera del dominio de la skill | El alcance supera un dominio | Planifica primero toda la funcionalidad con `/plan`. |
+| El agente informa de trabajo que dejó sin hacer porque queda fuera del dominio de la habilidad | El alcance supera un dominio | Planifica primero toda la funcionalidad con `/plan`. |
 | Una corrección se propaga a 3+ archivos de distintas capas | Una corrección afecta a varios dominios | Usa `/debug` con un alcance mayor o `/work`. |
 | El agente descubre un desajuste en un contrato API | Hay un desacuerdo entre frontend y backend | Ejecuta `/plan` para definir los contratos y vuelve a generar ambos agentes. |
 | La puerta de calidad falla en puntos de integración | Los componentes no se conectan correctamente | Ejecuta `/review` o agrega una pasada de QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only`. |
@@ -303,4 +303,4 @@ Si vuelves a generar el mismo agente más de dos veces con refinamientos, probab
 - La tarea es un bug: [Corrección de bugs](./bug-fixing.md)
 - Auditar o reanudar una ejecución: [Resultados y reanudación](./agent-results-and-resume.md)
 - Algo falló: [Solución de problemas](./troubleshooting.md)
-- Elegir entre una skill y un workflow: [Workflows](../core-concepts/workflows.md#choosing-a-skill-or-workflow)
+- Elegir entre una habilidad y un flujo de trabajo: [Flujos de trabajo](../core-concepts/workflows.md#choosing-a-skill-or-workflow)

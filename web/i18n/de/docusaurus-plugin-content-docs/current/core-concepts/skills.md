@@ -183,7 +183,7 @@ Alle Agenten teilen gemeinsame Grundlagen aus `.agents/skills/_shared/`. Diese s
 
 | Ressource | Zweck |
 |----------|---------|
-| **`result-contract.md`** | Run-Identität, Claim-Pfad und Abschlussvertrag für Agentenergebnisse. Wird in jeden `oma agent spawn`-Prompt injiziert; native Agenten befolgen ihn mit `oma agent begin`, `oma agent verify` und `oma agent finish`. |
+| **`result-contract.md`** | Run-Identität, Pfad der Ergebnisdeklaration und Abschlussvertrag für Agentenergebnisse. Wird in jeden `oma agent spawn`-Prompt injiziert; native Agenten befolgen ihn mit `oma agent begin`, `oma agent verify` und `oma agent finish`. |
 | **`memory-protocol.md`** | Speicherdateiformat und Operationen für CLI-Subagenten. Definiert die Protokolle On Start, During Execution und On Completion mit konfigurierbaren Speicherwerkzeugen (read/write/edit). Enthält eine Erweiterung zur Experimentverfolgung. |
 | **`event-spec.md`** | Vertrag für dauerhafte Workflow-Ereignisse, die an `events.jsonl` im OMA-Home-Profil angehängt und mit `oma state get` oder `oma state list` geprüft werden. |
 | **`execution-protocols/claude.md`** | Claude-Code-spezifische Ausführungsmuster. Wird von `oma agent spawn` bei Vendor `claude` injiziert. |

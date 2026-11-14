@@ -378,5 +378,5 @@ Windows では `schtasks` を使ってジョブを登録します。Task Schedul
 
 ## 関連項目
 
-- [プロジェクトハーネス進化](./harness-evolution.md) — 予算内でスキル改善を実行する組み込みの `__builtin__` ジョブ。
-- [ハーネス評価](./harness-eval.md) — 評価コマンドの組み合わせ方。
+- [プロジェクトハーネス進化](./harness-evolution.md)：予算内でスキル改善を実行する組み込みの `__builtin__` ジョブ。
+- [ハーネス評価](./harness-eval.md)：評価コマンドの組み合わせ方。

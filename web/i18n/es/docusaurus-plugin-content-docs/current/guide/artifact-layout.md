@@ -25,7 +25,7 @@ Usa un índice de documentos del proyecto, como `docs/README.md`, para enlazar l
 
 | Ubicación | Contenido |
 |----------|---------|
-| `.agents/results/result-*.md` | Informes de resultados de agentes y workflows legibles por personas |
+| `.agents/results/result-*.md` | Informes de resultados de agentes y flujos de trabajo legibles por personas |
 | `.agents/results/architecture/` | Análisis y recomendaciones de arquitectura |
 | `.agents/results/bugs/` | Informes de bugs |
 | `.agents/results/refactor/` | Planes e informes de refactorización |
@@ -36,12 +36,12 @@ Usa un índice de documentos del proyecto, como `docs/README.md`, para enlazar l
 | `.agents/results/api-contracts/` | Borradores de contratos de API |
 | `.agents/results/plan-{sessionId}.json` | Plan de tareas actual |
 | `.agents/state/memories/` | Resúmenes de sesión, tableros de tareas, progreso, lecciones y registros de experimentos |
-| `agent-runs/` de runtime | Recibos estructurados, claims y evidencia de verificación |
+| `agent-runs/` de runtime | Registros de verificación estructurados, declaraciones de resultados y evidencia de verificación |
 | `agent-plans/` de runtime | Planes de ejecución congelados |
 
 Los subdirectorios de informes siguen separados por dominio. Los informes legibles complementan la evidencia estructurada; por sí solos no establecen una finalización verificada. Consulta [Resultados y reanudación](../agent-results-and-resume/).
 
-Los recibos actuales y los planes congelados viven en el directorio de estado del proyecto del perfil activo. Los proyectos más antiguos pueden conservarlos bajo `.agents/state/`. Esta migración no cambia su almacenamiento ni sus vínculos de verificación.
+Los registros de verificación actuales y los planes congelados viven en el directorio de estado del proyecto del perfil activo. Los proyectos más antiguos pueden conservarlos bajo `.agents/state/`. Esta migración no cambia su almacenamiento ni sus vínculos de verificación.
 
 ## Promover un documento mantenido
 
@@ -84,4 +84,4 @@ La migración conserva los archivos de destino existentes. Si otro archivo tiene
 
 Actualiza los enlaces Markdown y las referencias de ruta compatibles en los documentos movidos, las notas de coordinación en Markdown, `docs/**/*.md` y los archivos `README*.md` y `AGENTS.md` de la raíz. Revisa esos cambios con el informe de migración y el diff de Git. La evidencia de runtime estructurada y los archivos `DESIGN.md` de UI quedan excluidos de la reescritura de referencias. Los bloques `oma-docs:ignore-start` / `oma-docs:ignore-end` existentes conservan ejemplos de rutas heredadas.
 
-Revisa el informe en busca de archivos aplazados. Un informe de resultados referenciado por evidencia de ejecución estructurada permanece en su ruta original para que el recibo y el hash registrados sigan siendo válidos. Los recibos, los claims, los planes de ejecución congelados y el resto de la evidencia de runtime se dejan en su sitio. La migración no promueve borradores de contratos, no acepta decisiones ni cambia el sistema de diseño de UI.
+Revisa el informe en busca de archivos aplazados. Un informe de resultados referenciado por evidencia de ejecución estructurada permanece en su ruta original para que el registro de verificación y el hash registrados sigan siendo válidos. Los registros de verificación, las declaraciones de resultados, los planes de ejecución congelados y el resto de la evidencia de runtime se dejan en su sitio. La migración no promueve borradores de contratos, no acepta decisiones ni cambia el sistema de diseño de UI.

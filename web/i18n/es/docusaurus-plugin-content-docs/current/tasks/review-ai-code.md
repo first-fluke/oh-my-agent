@@ -7,7 +7,7 @@ description: Revisa el código escrito por IA en busca de bugs, comprobaciones a
 
 Usa `oma-qa` para revisar un cambio frente a su comportamiento previsto. Empieza por el diff y las comprobaciones existentes del proyecto.
 
-## Cargar la skill
+## Cargar la habilidad
 
 Pide a tu agente de código que ejecute este comando y después lea las instrucciones devueltas y el directorio de apoyo:
 
@@ -40,6 +40,6 @@ Abre cada ubicación citada y verifica que el disparador llega hasta ella. Vuelv
 
 ## Dependencias y paso siguiente
 
-El agente necesita acceso al diff, al código local y a las herramientas de comprobación existentes del proyecto. Las comprobaciones de navegador, seguridad y rendimiento necesitan su objetivo y su tooling correspondientes. Cargar la skill no aprovisiona esas dependencias.
+El agente necesita acceso al diff, al código local y a las herramientas de comprobación existentes del proyecto. Las comprobaciones de navegador, seguridad y rendimiento necesitan su objetivo y su tooling correspondientes. Cargar la habilidad no aprovisiona esas dependencias.
 
-Ante un fallo confirmado, continúa con [depurar un test que falla](https://firstfluke.com/oh-my-agent/docs/tasks/debug-failing-tests/). Si quieres hooks de proyecto o workflows de equipo, [elige una configuración de runtime](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) que incluya `oma-qa`.
+Ante un fallo confirmado, continúa con [depurar un test que falla](https://firstfluke.com/oh-my-agent/docs/tasks/debug-failing-tests/). Si quieres hooks de proyecto o flujos de trabajo de equipo, [elige una configuración de runtime](https://firstfluke.com/oh-my-agent/docs/getting-started/choose-setup/#install-a-skill-preset) que incluya `oma-qa`.

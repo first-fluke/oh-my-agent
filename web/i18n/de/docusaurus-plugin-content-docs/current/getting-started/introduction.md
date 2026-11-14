@@ -1,6 +1,6 @@
 ---
 title: Einführung
-description: "Ein umfassender Überblick über oh-my-agent: das Multi-Agenten-Orchestrierungsframework, das KI-Coding-Assistenten mit 33 Skill-Paketen, 12 Subagent-Definitionen, progressivem Skill-Laden und IDE-übergreifender Portabilität in spezialisierte Engineering-Teams verwandelt."
+description: "Ein umfassender Überblick über oh-my-agent: das Multi-Agenten-Orchestrierungsframework, das KI-Coding-Assistenten mit 33 Skill-Paketen, 12 Subagentendefinitionen, progressivem Skill-Laden und IDE-übergreifender Portabilität in spezialisierte Engineering-Teams verwandelt."
 ---
 
 # Einführung

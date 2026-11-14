@@ -7,7 +7,7 @@ description: Evalúa una superposición completa de harness de OMA con tareas em
 # Evaluación del harness
 
 :::tip Cómo encajan entre sí
-La [evaluación de skills](./skill-eval.md) mide si un `SKILL.md` ayuda, y la [optimización de skills](./skill-opt.md) edita ese cuerpo bajo gates con datos reservados. La evaluación del harness compara una superposición `.agents/` completa en tareas de repositorio. Los [casos de regresión de incidentes](./harness-incidents.md) convierten los fallos observados en casos de evaluación y fixtures de skills. La [evolución del harness del proyecto](./harness-evolution.md) ejecuta la captura de incidentes y la optimización de skills como un ciclo con presupuesto, y los [agentes programados](./scheduled-agents.md) son el programador del sistema operativo que lo dispara.
+La [evaluación de habilidades](./skill-eval.md) mide si un `SKILL.md` ayuda, y la [optimización de habilidades](./skill-opt.md) edita ese cuerpo bajo gates con datos reservados. La evaluación del harness compara una superposición `.agents/` completa en tareas de repositorio. Los [casos de regresión de incidentes](./harness-incidents.md) convierten los fallos observados en casos de evaluación y fixtures de habilidades. La [evolución del harness del proyecto](./harness-evolution.md) ejecuta la captura de incidentes y la optimización de habilidades como un ciclo con presupuesto, y los [agentes programados](./scheduled-agents.md) son el programador del sistema operativo que lo dispara.
 :::
 
 `oma harness eval` mide si un harness candidato de OMA mejora un agente objetivo fijo sin cambiar su modelo. Adapta el patrón de evaluación en tiempo de prueba de [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): mantiene fijo el modelo objetivo, cambia el harness y compara los resultados en las mismas tareas.
@@ -19,7 +19,7 @@ Este comando evalúa una unidad mayor que `oma skill eval`:
 | `oma skill eval` | Un cuerpo `SKILL.md` | Salida del agente |
 | `oma harness eval` | Una superposición `.agents/` con alcance | Archivos y salida producidos en un workspace de repositorio |
 
-Usa skill eval para responder «¿esta skill ayuda?». Usa harness eval para responder «¿esta combinación de skills, flujos de trabajo, reglas e instrucciones de agente hace que el agente fijo complete tareas del repositorio de forma más fiable?».
+Usa la evaluación de habilidades para responder «¿esta habilidad ayuda?». Usa harness eval para responder «¿esta combinación de habilidades, flujos de trabajo, reglas e instrucciones de agente hace que el agente fijo complete tareas del repositorio de forma más fiable?».
 
 **Antes de la primera ejecución:**
 
@@ -27,7 +27,7 @@ Usa skill eval para responder «¿esta skill ayuda?». Usa harness eval para res
 - Un veredicto necesita al menos cinco tareas puntuadas en la partición seleccionada. `pass` necesita al menos 5 puntos de lift y ninguna regresión.
 - `inspect`, `rescore` y `fixture-replay` no hacen llamadas al modelo. `--live` y `--action rerun` hacen dos por cada tarea seleccionada.
 - `promotionReady` siempre es `false`. Un pass es evidencia para una decisión humana, no una promoción automática.
-- Las ejecuciones live necesitan un proveedor con descubrimiento de skills local al proyecto (consulta [Ejecutar y registrar](#run-and-record)).
+- Las ejecuciones live necesitan un proveedor con descubrimiento de habilidades local al proyecto (consulta [Ejecutar y registrar](#run-and-record)).
 
 ## Modelo de evaluación
 
@@ -182,9 +182,9 @@ El proveedor se obtiene del `agent` de la suite, resuelto mediante la configurac
 
 | Proveedor | `harness eval` live, `--action rerun`, `incident reproduce` |
 |---|---|
-| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Permitido: directorio de skills local al proyecto |
-| `antigravity`, `hermes`, `kimi` | Rechazado: descubrimiento de skills basado en HOME |
-| Cualquier proveedor sin un directorio de skills de proyecto conocido | Rechazado |
+| `claude`, `codex`, `commandcode`, `copilot`, `cursor`, `kiro`, `opencode`, `qwen` | Permitido: directorio de habilidades local al proyecto |
+| `antigravity`, `hermes`, `kimi` | Rechazado: descubrimiento de habilidades basado en HOME |
+| Cualquier proveedor sin un directorio de habilidades de proyecto conocido | Rechazado |
 
 Las acciones sin conexión (`inspect`, `rescore`, `fixture-replay`) no hacen dispatch, así que esta comprobación no se les aplica.
 

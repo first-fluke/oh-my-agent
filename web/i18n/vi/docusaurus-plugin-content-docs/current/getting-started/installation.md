@@ -65,7 +65,7 @@ Bootstrap vẫn tiếp tục sau lỗi dependency tùy chọn và báo các lệ
 - **Co-author trailer**: commit attribution của Claude Code trở thành `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`, và PR có thêm dòng "Generated with oh-my-agent". Đặt `scm.co_author.enabled: false` để tắt.
 - **Commit-msg guard**: `.githooks/commit-msg` từ chối các địa chỉ `Co-authored-by` không có trong `.githooks/co-authors.allow` hoặc `scm.co_author.email`. `git config --local core.hooksPath .githooks` chỉ được đặt khi không có hook nào khác đang hoạt động; nếu có, oma sẽ in ra cách nối guard vào chuỗi hook. Đặt `scm.co_author.enforce_hook: false` nếu không muốn dùng.
 - **Cập nhật ở chế độ nền**: `oma update` cập nhật `oma` CLI ở chế độ nền (`auto_update_cli: false` hoặc `OMA_SKIP_VERSION_CHECK=1` để dừng) và chạy `uv tool upgrade serena-agent --prerelease=allow` (`serena.auto_update: false` để dừng).
-- **Cleanup timer của Serena**: khi Serena ở chế độ `bridge` mặc định, phiên agent đầu tiên khởi động một Serena server dùng chung sẽ đăng ký một timer dừng các Serena server dùng chung đang rảnh mỗi 5 phút (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer` hoặc Windows scheduled task `OMA Serena Daemon GC`). Đặt `serena.mode: stdio` để bỏ qua server dùng chung và timer của nó. `oma uninstall` không gỡ timer này.
+- **Cleanup timer của Serena**: khi Serena ở chế độ `bridge` mặc định, session agent đầu tiên khởi động một Serena server dùng chung sẽ đăng ký một timer dừng các Serena server dùng chung đang rảnh mỗi 5 phút (launchd `dev.oma.serena-daemon-gc`, systemd user timer `oma-serena-daemon-gc.timer` hoặc Windows scheduled task `OMA Serena Daemon GC`). Đặt `serena.mode: stdio` để bỏ qua server dùng chung và timer của nó. `oma uninstall` không gỡ timer này.
 - **Các lần chạy không tương tác** (`-y`, `OMA_YES=1`, `CI=true`) dùng skill preset `All` trừ khi `--preset` chọn preset khác, cộng `model_preset: auto` và Python làm ngôn ngữ backend. Chúng không chọn browser MCP nào (và bỏ qua script cài Aside) trừ khi `mcp.devtools_browsers` đã liệt kê một mục.
 
 ---
@@ -78,7 +78,7 @@ bunx oh-my-agent@latest
 
 Lệnh này khởi chạy installer tương tác mà không bootstrap dependency. Bạn cần cài bun trước.
 
-Installer yêu cầu bạn chọn một [preset skill](./glossary.md#skill-preset). Các preset hiện tại được định nghĩa trong `PRESETS` tại `cli/constants/skill-data.ts`:
+Installer yêu cầu bạn chọn một [skill preset](./glossary.md#skill-preset). Các preset hiện tại được định nghĩa trong `PRESETS` tại `cli/constants/skill-data.ts`:
 
 ### Preset {#presets}
 
@@ -339,7 +339,7 @@ agents:
 | `language` | string | Có | Mã ngôn ngữ phản hồi. Hỗ trợ en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
 | `model_preset` | string | Có | Key [model preset](./glossary.md#model-preset) đang hoạt động. `auto` theo runtime hiện tại; key cố định gồm `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` và `mixed`. Key preset tùy chỉnh cũng hợp lệ. Xem [Cấu hình model theo từng agent](../guide/per-agent-models.md). |
 | `agents` | map | Không | Override model theo role; `agents.default` giữ `cli` (CLI fallback cho `oma agent spawn` khi setting agent tường minh và preset đã chọn không resolve được vendor) cùng `effort`, `thinking` và `memory` mặc định. |
-| `providers` | map | Không | Provider capability: `code_intelligence` (`serena` hoặc `gortex`), `code_intelligence_guard` (`block` hoặc `off`), `docs` (`context7`), `web` (`native` hoặc `brave`) và `semantic_memory` (`agentmemory`, `honcho` hoặc `none`); các section credential của chúng (`brave`, `exa`, `honcho`); và các LLM provider có tên như `free` (gateway FreeLLMAPI mà `model_preset: free` dùng). Giữ API key trong biến môi trường. |
+| `providers` | map | Không | Capability provider: `code_intelligence` (`serena` hoặc `gortex`), `code_intelligence_guard` (`block` hoặc `off`), `docs` (`context7`), `web` (`native` hoặc `brave`) và `semantic_memory` (`agentmemory`, `honcho` hoặc `none`); các section credential của chúng (`brave`, `exa`, `honcho`); và các LLM provider có tên như `free` (gateway FreeLLMAPI mà `model_preset: free` dùng). Giữ API key trong biến môi trường. |
 | `date_format` | string | Không | Định dạng timestamp (`ISO`, `US`, `EU`). Mặc định: `ISO`. |
 | `timezone` | string | Không | Định danh timezone (ví dụ `Asia/Seoul`). Giá trị bỏ trống dùng timezone của hệ thống host. |
 | `auto_update_cli` | boolean | Không | Cho phép kiểm tra CLI định kỳ cập nhật trong background hay không. Mặc định: `true` (tắt bằng `false`). |

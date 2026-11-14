@@ -248,7 +248,7 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 | `/orchestrate` | Persistent | Laadt of maakt een plan en delegeert daarna parallelle uitvoering met monitoring en verificatie | Onafhankelijke taken geschikt voor automatische parallelle coördinatie |
 | `/work` | Persistent | Stapsgewijze planning, implementatie en QA over meerdere domeinen binnen de geautoriseerde scope | Features over meerdere domeinen die gecoördineerde levering nodig hebben |
 | `/ultrawork` | Persistent | Kwaliteitsworkflow met 5 fasen, 17 stappen en 12 geïsoleerde reviewcheckpoints | Maximale kwaliteit, productie-kritieke code |
-| `/plan` | Niet-persistent | PM-gestuurde taakdecompositie, API-contracten en bijgehouden planartefacts in `docs/plans/work/` (sequentiële `NNN-name.md`, veld Status voor levenscyclus) | Vóór complex multi-agentwerk; complexe features met bijgehouden voortgang en beslislogs |
+| `/plan` | Niet-persistent | PM-gestuurde taakdecompositie, API-contracten en bijgehouden planartefacten in `docs/plans/work/` (sequentiële `NNN-name.md`, veld Status voor levenscyclus) | Vóór complex multi-agentwerk; complexe features met bijgehouden voortgang en beslislogs |
 | `/brainstorm` | Niet-persistent | Verkenning van aanpakken met 2-3 voorstellen en een concept in `docs/decisions/` | Vóór je een implementatieaanpak vastlegt |
 | `/deepinit` | Niet-persistent | Volledige projectinitialisatie (AGENTS.md, ARCHITECTURE.md, docs/) | oh-my-agent in een bestaande codebase instellen |
 | `/review` | Niet-persistent | QA-pipeline: OWASP-security, prestaties, toegankelijkheid en codekwaliteit. De scope komt uit het verzoek en valt standaard terug op de huidige wijzigingen | Vóór code mergen, review vóór deployment |
@@ -334,7 +334,7 @@ De `all`-preset van de installer volgt de live registry. De tabel groepeert elke
 | **oma-tf-infra** | Terraform-infrastructuur, IAM en policy-as-code | Terraformmodules, plannen en controls |
 | **oma-translation** | UI-, documentatie- en marketinglokalisatie | Contextbehoudende vertaalde content |
 | **oma-video** | Shorts, explainers en demo's | Reproduceerbare videorun met assets en manifest |
-| **oma-voice** | Lokale TTS, STT en voice-overs | Audio- of transcriptartefacts met manifest |
+| **oma-voice** | Lokale TTS, STT en voice-overs | Audio- of transcriptartefacten met manifest |
 
 ---
 

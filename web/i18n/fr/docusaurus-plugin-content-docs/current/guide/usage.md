@@ -375,7 +375,7 @@ Au-delà de la divulgation progressive, oh-my-agent optimise les tokens avec :
 ### Lancement CLI
 
 Lorsque vous exécutez `oma agent spawn`, le CLI :
-1. résout le fournisseur du rôle à partir des options explicites, des surcharges d’agents, du preset de modèle et du fallback configuré ;
+1. résout le fournisseur du rôle à partir des options explicites, des surcharges d’agents, du preset de modèles et du fallback configuré ;
 2. injecte le protocole d’exécution du fournisseur depuis `.agents/skills/_shared/runtime/execution-protocols/{vendor}.md` ;
 3. compose le prompt avec les règles fondamentales du SKILL.md, le protocole d’exécution et les ressources pertinentes ;
 4. lance l’agent comme processus CLI indépendant ;

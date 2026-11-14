@@ -168,7 +168,7 @@ El mecanismo de generación varía según la IDE o CLI:
 |-----------|-----------------------------|-----------------------|
 | **Claude Code** | Las tareas del mismo proveedor usan la herramienta Agent con `.claude/agents/{name}.md`; las tareas entre proveedores recurren a `oma agent spawn`. | Retorno síncrono |
 | **Codex CLI** | Las tareas del mismo proveedor usan agentes personalizados nativos de `.codex/agents/{name}.toml`; las tareas entre proveedores recurren a `oma agent spawn`. | Salida JSON |
-| **Antigravity CLI/IDE** | `oma agent spawn` mediante el runtime `agy`; no se requieren subagentes nativos personalizados | Recibo duradero y sondeo del archivo de resultados |
+| **Antigravity CLI/IDE** | `oma agent spawn` mediante el runtime `agy`; no se requieren subagentes nativos personalizados | Registro de verificación duradero y sondeo del archivo de resultados |
 | **Cursor** | Usa la integración generada de Cursor cuando está disponible; de lo contrario, `oma agent spawn`. | Sondeo del archivo de resultados |
 | **OpenCode / pi** | Usa el puente de extensiones en proceso cuando se selecciona; el trabajo entre proveedores usa `oma agent spawn`. | Sondeo del archivo de resultados |
 | **CLI alternativa** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Sondeo de resultados respaldados por evidencia |
@@ -294,7 +294,7 @@ Los IDs de sesión determinan:
 
 3. **No omitas la planificación.** Generar agentes sin un plan provoca desalineación: por ejemplo, frontend puede implementar una forma de API distinta de la de backend.
 
-4. **No ignores agentes fallidos.** El trabajo de un agente fallido está incompleto. Revisa su claim estructurado o el archivo de resultados del ámbito de la ejecución para ver el motivo del fallo, corrige el prompt y vuelve a generarlo.
+4. **No ignores agentes fallidos.** El trabajo de un agente fallido está incompleto. Revisa su declaración de resultados estructurada o el archivo de resultados del ámbito de la ejecución para ver el motivo del fallo, corrige el prompt y vuelve a generarlo.
 
 5. **No mezcles IDs de sesión para trabajo relacionado.** Si backend y frontend trabajan en la misma funcionalidad, deben compartir un ID de sesión para que el orquestador pueda coordinarlos.
 
@@ -338,7 +338,7 @@ oma dashboard terminal
 
 ## Ver también
 
-- [Resultados de agentes y reanudación](../guide/agent-results-and-resume.md): registros de verificación (receipts) de la ejecución, claims y `oma agent resume`
+- [Resultados de agentes y reanudación](../guide/agent-results-and-resume.md): registros de verificación (receipts) de la ejecución, declaraciones de resultados y `oma agent resume`
 - [Monitoreo con el dashboard](../guide/dashboard-monitoring.md)
 - [Guía de proyectos multiagente](../guide/multi-agent-project.md)
 - [Modelos por agente](../guide/per-agent-models.md)

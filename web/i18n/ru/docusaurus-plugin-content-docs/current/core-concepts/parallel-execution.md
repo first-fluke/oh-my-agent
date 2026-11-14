@@ -168,12 +168,12 @@ agents:
 |--------|----------------|----------------------|
 | **Claude Code** | Задачи того же вендора используют Agent tool с `.claude/agents/{name}.md`; межвендорные задачи переходят к `oma agent spawn` | Синхронный возврат |
 | **Codex CLI** | Задачи того же вендора используют нативных custom agents из `.codex/agents/{name}.toml`; межвендорные задачи переходят к `oma agent spawn` | Вывод JSON |
-| **Antigravity CLI/IDE** | `oma agent spawn` через runtime `agy`; нативные custom subagents не требуются | Сохраняемая квитанция и опрос файла результата |
+| **Antigravity CLI/IDE** | `oma agent spawn` через runtime `agy`; нативные пользовательские субагенты не требуются | Сохраняемая квитанция и опрос файла результата |
 | **Cursor** | Использует сгенерированную интеграцию Cursor, если доступна; иначе `oma agent spawn` | Опрос файла результата |
 | **OpenCode / pi** | Использует встроенный extension bridge, когда выбран; межвендорная работа выполняется через `oma agent spawn` | Опрос файла результата |
 | **CLI Fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Опрос результатов, подтверждённых evidence |
 
-В Claude Code workflow напрямую использует инструмент `Agent`:
+В Claude Code рабочий процесс напрямую использует инструмент `Agent`:
 
 ```text
 Agent(subagent_type="backend-engineer", prompt="...", run_in_background=true)
@@ -301,7 +301,7 @@ ID сессии определяет:
 
 ## Комплексный пример {#end-to-end-example}
 
-Полный workflow параллельного выполнения для создания фичи аутентификации пользователей:
+Полный рабочий процесс параллельного выполнения для создания фичи аутентификации пользователей:
 
 ```bash
 # Step 1: Plan the feature
