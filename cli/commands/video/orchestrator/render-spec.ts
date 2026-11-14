@@ -34,6 +34,18 @@ export function visualProviderOrder(
   return defaultOrder;
 }
 
+/**
+ * The provider chain for one scene. The slide provider can only serve a scene
+ * that names a deck (`visual.ref`); a scene without one goes straight to the
+ * next provider instead of ending the chain on a slide placeholder.
+ */
+export function sceneVisualProviderOrder(
+  order: string[],
+  scene: { visual: { ref?: string } },
+): string[] {
+  return scene.visual.ref ? order : order.filter((id) => id !== "oma-slide");
+}
+
 export function buildRenderSpec(args: {
   script: Script;
   timing: Timing;

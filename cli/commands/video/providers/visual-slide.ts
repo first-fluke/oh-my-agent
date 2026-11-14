@@ -1,19 +1,23 @@
 // VisualProvider:slide — oma-slide png frames for explainer mode (design §5).
 //
 // Key-optional, two-branch contract (backend rule 11):
-//   real     : `oma slide export png --dir <deck> --out-dir <runDir>/visuals` → ingest
-//              the exported 1920×1080 frame for the scene.
+//   real     : `oma slide export png --workspace <deck> --output-dir
+//              <runDir>/visuals/slides` → ingest the exported 1920×1080 frame
+//              for the scene.
 //   fallback : deterministic placeholder asset.
 //
-// A deck is only available when the scene carries a slide ref; without one (or
-// without a healthy Chromium for the headless export) we take the placeholder
-// branch. Boundary-safe: invokes the slide slice via its CLI surface.
+// A deck is only available when the scene carries a slide ref. Mock and dry-run
+// take the placeholder branch. A real run that cannot export a frame (missing
+// deck, no Chromium, failed export) throws, so the visual chain moves on to the
+// next provider instead of settling for a slide placeholder.
+// Boundary-safe: invokes the slide slice via its CLI surface.
 import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { findChromeExecutable } from "@cli/io/chrome";
 import { resolveOmaInvocation, runCapture } from "../internal/exec.js";
 import { isMockMode } from "../internal/mock.js";
+import { omaSlideExportPngArgs } from "../internal/sibling-cli.js";
 import type {
   Availability,
   CostEstimate,
@@ -37,19 +41,21 @@ export class OmaSlideVisualProvider implements VisualProvider {
   }
 
   async produce(scene: Scene, opts: VisualOpts): Promise<VisualAsset> {
-    const deckDir = scene.visual.ref;
-    if (
-      isMockMode() ||
-      opts.dryRun ||
-      !deckDir ||
-      !existsSync(deckDir) ||
-      !findChromeExecutable()
-    ) {
+    if (isMockMode() || opts.dryRun) {
       return writePlaceholder(scene, opts, this.id);
+    }
+    const deckDir = scene.visual.ref;
+    if (!deckDir || !existsSync(deckDir)) {
+      throw new Error(
+        `no slide deck for ${scene.id}: ${deckDir ?? "visual.ref is not set"}`,
+      );
+    }
+    if (!findChromeExecutable()) {
+      throw new Error("no Chrome/Chromium for the slide png export");
     }
     const frame = await this.exportFrame(deckDir, opts);
     if (!frame) {
-      return writePlaceholder(scene, opts, this.id);
+      throw new Error(`slide png export produced no frame for ${scene.id}`);
     }
     return ingestVisual(scene, opts.runDir, frame, "slide", this.id);
   }
@@ -63,7 +69,7 @@ export class OmaSlideVisualProvider implements VisualProvider {
     const { bin, prefixArgs } = resolveOmaInvocation();
     const res = await runCapture(
       bin,
-      [...prefixArgs, "slide", "png", "--dir", deckDir, "--out-dir", outDir],
+      [...prefixArgs, ...omaSlideExportPngArgs(deckDir, outDir)],
       { timeoutMs: opts.timeoutMs },
     );
     if (res.code !== 0 || !existsSync(outDir)) return null;

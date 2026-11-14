@@ -2,7 +2,7 @@
 //
 // Key-optional, two-branch contract (backend rule 11):
 //   real     : spawn `oma image generate "<prompt>" --vendor auto
-//              --size <16-multiple> --format json --out <runDir>/visuals`,
+//              --size <16-multiple> --output json --output-dir <runDir>/visuals`,
 //              parse the JSON manifest, localize the produced file.
 //   fallback : deterministic placeholder asset.
 //
@@ -14,6 +14,7 @@ import path from "node:path";
 import { resolveOmaInvocation, runCapture } from "../internal/exec.js";
 import { isMockMode } from "../internal/mock.js";
 import { checkOmaImage } from "../internal/readiness.js";
+import { omaImageGenerateArgs } from "../internal/sibling-cli.js";
 import type {
   Availability,
   CostEstimate,
@@ -73,17 +74,7 @@ export class OmaImageVisualProvider implements VisualProvider {
       bin,
       [
         ...prefixArgs,
-        "image",
-        "generate",
-        prompt,
-        "--vendor",
-        "auto",
-        "--size",
-        `${width}x${height}`,
-        "--format",
-        "json",
-        "--out",
-        outDir,
+        ...omaImageGenerateArgs(prompt, { width, height }, outDir),
       ],
       { timeoutMs: opts.timeoutMs },
     );
@@ -93,7 +84,7 @@ export class OmaImageVisualProvider implements VisualProvider {
 }
 
 /**
- * Parse `oma image generate --format json` output and return the first produced
+ * Parse `oma image generate --output json` output and return the first produced
  * file. The CLI prints `{ exitCode, manifestPath, runs: [{ files: [...] }] }`;
  * we read either an inline `files` array or fall back to the manifest's runs.
  */

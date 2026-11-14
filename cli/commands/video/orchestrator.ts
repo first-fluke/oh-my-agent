@@ -20,6 +20,7 @@ import {
 import { normalizeGenerateOptions } from "./orchestrator/options.js";
 import {
   buildRenderSpec,
+  sceneVisualProviderOrder,
   visualProviderOrder,
 } from "./orchestrator/render-spec.js";
 import type { RunContext } from "./orchestrator/run-context.js";
@@ -165,7 +166,7 @@ export class VideoOrchestrator {
       for (const scene of script.scenes) {
         const visual = await this.runFallbackChain<VisualProvider, VisualAsset>(
           "visual",
-          visualOrder,
+          sceneVisualProviderOrder(visualOrder, scene),
           scene,
           ctx,
           (provider) =>

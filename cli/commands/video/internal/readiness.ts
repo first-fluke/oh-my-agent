@@ -11,6 +11,7 @@ import {
   HYPERFRAMES_INSTALL_COMMAND,
 } from "./hyperframes-workspace.js";
 import { getMptProjectStatus } from "./mpt-project.js";
+import { omaImageDoctorArgs } from "./sibling-cli.js";
 import { getStrudelProjectStatus } from "./strudel-project.js";
 
 export interface ReadinessCheck {
@@ -145,11 +146,9 @@ export async function checkVoiceStudio(): Promise<ReadinessCheck> {
  */
 export async function checkOmaImage(): Promise<ReadinessCheck> {
   const { bin, prefixArgs } = resolveOmaInvocation();
-  const res = await runCapture(
-    bin,
-    [...prefixArgs, "image", "doctor", "--format", "json"],
-    { timeoutMs: 15000 },
-  );
+  const res = await runCapture(bin, [...prefixArgs, ...omaImageDoctorArgs()], {
+    timeoutMs: 15000,
+  });
   if (res.code !== 0 && !res.stdout.trim()) {
     return {
       name: "oma-image",

@@ -18,6 +18,7 @@ import {
   extractFirstFile,
   OmaImageVisualProvider,
 } from "./providers/visual-image.js";
+import { OmaSlideVisualProvider } from "./providers/visual-slide.js";
 import { PexelsVisualProvider } from "./providers/visual-stock.js";
 import { VoiceboxVoiceProvider } from "./providers/voice.js";
 import {
@@ -307,6 +308,24 @@ describe("visual providers (mock fallback)", () => {
     });
     expect(asset.pathTaken).toBe("fallback");
     expect(asset.type).toBe("placeholder");
+  });
+
+  it("oma-slide emits a placeholder in mock mode", async () => {
+    const asset = await new OmaSlideVisualProvider().produce(scene, {
+      ...opts,
+      runDir: tmp,
+    });
+    expect(asset.pathTaken).toBe("fallback");
+  });
+
+  it("oma-slide throws on a real run without a deck so the chain continues", async () => {
+    delete process.env.OMA_VIDEO_MOCK;
+    await expect(
+      new OmaSlideVisualProvider().produce(
+        { ...scene, visual: { kind: "slide" as const, ref: "/no/such/deck" } },
+        { ...opts, runDir: tmp },
+      ),
+    ).rejects.toThrow("no slide deck for scene-01");
   });
 
   it("pexels reports unavailable without PEXELS_API_KEY", async () => {
