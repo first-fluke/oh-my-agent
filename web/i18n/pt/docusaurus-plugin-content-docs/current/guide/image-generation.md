@@ -259,7 +259,7 @@ Para ver exatamente o que foi enviado ao provider, confira o campo `prompt` em `
 
 ## Configuração
 
-- **Configuração do projeto:** a seção `image:` de `.agents/oma-config.yaml`. O legado `config/image-config.yaml` não é mais lido.
+- **Configuração do projeto:** a seção `image:` de `.agents/oma-config.yaml`. Os padrões distribuídos ficam na CLI, então escreva somente as chaves que você alterar.
 - **Variáveis de ambiente:**
   - `OMA_IMAGE_DEFAULT_VENDOR`: substitui o vendor padrão configurado (`auto`). A própria flag `--vendor` tem `auto` como padrão, então passe `--vendor` em cada comando quando precisar de um vendor específico.
   - `OMA_IMAGE_DEFAULT_OUT`: substitui o diretório de saída padrão

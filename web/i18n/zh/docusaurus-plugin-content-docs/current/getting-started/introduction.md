@@ -33,13 +33,13 @@ oh-my-agent 通过专业化解决这些问题：
 
 ---
 
-## 当前目录：33 个技能、12 个定义、21 个工作流 {#the-current-catalog-33-skills-12-definitions-21-workflows}
+## 当前目录：33 个技能、12 个定义、20 个工作流 {#the-current-catalog-33-skills-12-definitions-20-workflows}
 
 该目录将三个容易混淆的概念分开：
 
 - **[技能](./glossary.md#skill)**是 `.agents/skills/*/SKILL.md` 下的 33 个领域知识包。它们根据自然语言意图路由，并逐步加载资源。
 - **[智能体定义](./glossary.md#agent-definition)**是 `.agents/agents/` 下的 12 个文件。它们提供供应商原生的子智能体角色，并引用一个或多个技能。
-- **[工作流](./glossary.md#workflow)**是 `.agents/workflows/` 下的 21 个流程定义。其中四个是[持久化工作流](./glossary.md#persistent-workflow)（`orchestrate`、`work`、`ultrawork` 和 `ralph`），其余工作流只生成报告，不会保持持久化模式。
+- **[工作流](./glossary.md#workflow)**是 `.agents/workflows/` 下的 20 个流程定义。其中四个是[持久化工作流](./glossary.md#persistent-workflow)（`orchestrate`、`work`、`ultrawork` 和 `ralph`），其余工作流只生成报告，不会保持持久化模式。
 
 以下各节保留详细的技能目录。名称或描述发生变化时，以实时 `SKILL.md` 前置元数据为准。
 
@@ -49,56 +49,56 @@ oh-my-agent 通过专业化解决这些问题：
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-brainstorm** | 设计优先的构思 | 探索用户意图，提出 2 至 3 种并分析取舍，在编写代码前生成设计文档。六阶段工作流：上下文、问题、方案、设计、文档、过渡到 `/plan`。 |
+| **oma-brainstorm** | 设计优先的构思 | 探索用户意图，提出 2 至 3 种并分析取舍，在编写代码前生成设计文档。`/brainstorm` 工作流包含 7 个步骤：上下文、问题、方案、设计、盲审、文档（`docs/decisions/`）、过渡到 `/plan`。 |
 | **oma-architecture** | 系统架构专家 | 模块、服务和职责边界，取舍分析，利益相关者综合。方法包括诊断路由、双方案设计比较、ATAM 风格分析、CBAM 风格优先级排序和 ADR 风格决策记录。默认关注成本。 |
-| **oma-pm** | 产品经理 | 按优先级和依赖关系分解需求。定义 API 契约。输出 `.agents/results/plan-{sessionId}.json` 和按会话划分的任务板。支持 ISO 21500 概念、ISO 31000 风险框架和 ISO 38500 治理。 |
+| **oma-pm** | 产品经理 | 按优先级和依赖关系分解需求。定义 API 契约。输出 `.agents/results/plan-{sessionId}.json`，作为交给编排器的交接物；任务板由编排器创建并负责。支持 ISO 21500 概念、ISO 31000 风险框架和 ISO 38500 治理。 |
 
 ### 实现 {#implementation}
 
 | 智能体 | 角色 | 技术栈与资源 |
 |-------|------|----------------------|
 | **oma-frontend** | UI/UX 专家 | React、Next.js、TypeScript、TailwindCSS v4、shadcn/ui、FSD-lite 架构。库：luxon（日期）、ahooks 或 @mantine/hooks（钩子）、es-toolkit（工具）、Jotai/Zustand（客户端状态）、通过 orval 生成的钩子使用 TanStack Query（服务端状态）、@tanstack/react-form + Zod（表单）、better-auth（身份验证）、nuqs（URL 状态）。资源：`execution-protocol.md`、`tech-stack.md`、`tailwind-rules.md`、`snippets.md`、`angular-rules.md`、`error-playbook.md`、`checklist.md`。 |
-| **oma-backend** | API 与服务器专家 | Clean Architecture（Router-Service-Repository-Models）。与框架无关；根据项目清单识别 Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET。身份验证使用 JWT + Argon2id。资源：`execution-protocol.md`、`orm-reference.md`、`checklist.md`、`error-playbook.md`。支持 `/stack-set` 生成特定语言的 `stack/` 参考资料。 |
-| **oma-mobile** | 跨平台移动端 | Flutter、Dart、Riverpod/Bloc 状态管理、带拦截器的 Dio API 调用、GoRouter 导航。整洁架构：domain-data-presentation。Android 使用 Material Design 3，iOS 使用 HIG。目标 60fps。也支持原生 Swift iOS：SwiftUI + `@Observable`（iOS 17+）、Apple `swift-openapi-generator` API 客户端、`App/Core/Features/Shared` 项目布局。资源：`execution-protocol.md`、`tech-stack.md`、`screen-template.dart`、`screen-template.swift`、`screen-template.tsx`、`checklist.md`、`error-playbook.md`；`/stack-set` 会生成平台专用变体。 |
-| **oma-db** | 数据库架构 | SQL、NoSQL 和向量数据库建模。模式设计（默认 3NF）、规范化、索引、事务、容量规划和备份策略。支持考虑 ISO 27001/27002/22301 的设计。资源：`execution-protocol.md`、`document-templates.md`、`anti-patterns.md`、`vector-db.md`、`iso-controls.md`、`checklist.md`、`error-playbook.md`。 |
+| **oma-backend** | API 与服务器专家 | Clean Architecture（Router-Service-Repository-Models）。与框架无关；根据项目清单识别 Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET。身份验证使用 JWT + Argon2id。随附预设：Python（Litestar，通过 Advanced Alchemy 使用 SQLAlchemy 2（异步）、msgspec 模型、内置 JWT 身份验证）、Node.js（NestJS + Prisma，用 Vitest 测试）和 Rust（Axum + SQLx）；用早期 FastAPI 预设安装的项目继续使用 FastAPI。资源：`execution-protocol.md`、`orm-reference.md`、`checklist.md`、`error-playbook.md`，以及技术栈参考资料（存在 `stack/` 时使用它，否则使用匹配的 `variants/<language>/`）。支持 `/stack-set` 生成特定语言的 `stack/` 参考资料。 |
+| **oma-mobile** | 跨平台移动端 | Flutter、Dart、Riverpod/Bloc 状态管理、带拦截器的 Dio API 调用、GoRouter 导航。整洁架构：domain-data-presentation。Android 使用 Material Design 3，iOS 使用 HIG。目标 60fps。也支持 React Native、原生 Swift iOS（iOS 17+ 上的 SwiftUI + `@Observable`、Apple `swift-openapi-generator` API 客户端、`App/Core/Features/Shared` 项目布局）和原生 Kotlin Android（Jetpack Compose、Hilt、基于 Ktor 的生成式 `*Api` 客户端）。资源：`execution-protocol.md`、`tech-stack.md`、`checklist.md`、`error-playbook.md`；各平台的 `stack.yaml`、`tech-stack.md` 和 `snippets.md`（屏幕、状态、数据层和 API 模式）位于 `variants/<platform>/`。`/stack-set` 已生成 `stack/` 时技能读取它，否则读取匹配的变体。 |
+| **oma-db** | 数据库架构 | SQL、NoSQL 和向量数据库建模。模式设计（默认 3NF）、规范化、索引、事务、容量规划和备份策略。支持考虑 ISO 27001/27002/22301 的设计。资源：`execution-protocol.md`、`document-templates.md`、`anti-patterns.md`、`vector-db.md`、`migration-playbook.md`、`query-tuning.md`、`iso-controls.md`、`checklist.md`、`error-playbook.md`、`examples.md`。 |
 
 ### 设计 {#design}
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-design** | 设计系统专家 | 创建 DESIGN.md，包含设计令牌、排版、颜色系统、动效设计（motion/react、GSAP、Three.js）、响应式优先布局和 WCAG 2.2 合规性。七阶段工作流：设置、提取、增强、提议、生成、审计、交接。执行反模式约束（不产出“AI slop”）。可选 Stitch MCP 集成。资源：`design-md-spec.md`、`design-tokens.md`、`anti-patterns.md`、`prompt-enhancement.md`、`stitch-integration.md`，以及包含排版、颜色、空间、动效、响应式、组件、无障碍和着色器指南的 `reference/` 目录。 |
+| **oma-design** | 视觉系统与设计方向 | 定义或审查视觉系统、`DESIGN.md` 或重新设计方向：排版、布局、颜色、动效和交互决策。确定项目的设计意图，并为每项操作加载一个外部设计技能（产品界面使用 Interface Design，评审、审计和打磨使用 Impeccable，其他 Web 艺术指导使用 Taste）；纯文档任务和令牌契约任务留在本地处理。保留现有品牌、技术栈和 CJK 字体覆盖，默认无障碍目标为 WCAG AA。只询问尚未解决的关键选择，只有存在未决选择时才提出备选方向。不编写实现代码；交接给 `oma-frontend` 或 `oma-mobile`。可选 Stitch 和 getdesign 输入。资源：`execution-protocol.md`、`external-design-skills.md`、`product-interface-review.md`、`redesign-protocol.md`、`design-md-spec.md`、`design-tokens.md`、`data-grid.md`、`asset-strategy.md`、`getdesign-fetcher.md`、`stitch-integration.md`、`checklist.md`、`error-playbook.md`。 |
 
 ### 基础设施、DevOps 与可观测性 {#infrastructure-devops-and-observability}
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
 | **oma-tf-infra** | 基础设施即代码 | 跨云 Terraform（AWS、GCP、Azure、Oracle Cloud）。优先 OIDC 身份验证、最小权限 IAM、策略即代码（OPA/Sentinel）和成本优化。支持 ISO/IEC 42001 AI 控制、ISO 22301 连续性以及 ISO/IEC/IEEE 42010 架构文档。资源：`multi-cloud-examples.md`、`cost-optimization.md`、`policy-testing-examples.md`、`iso-42001-infra.md`、`checklist.md`。 |
-| **oma-dev-workflow** | 单体仓库任务自动化 | mise 任务运行器、CI/CD 流水线、数据库迁移、发布协调、git 钩子和提交前验证。资源：`validation-pipeline.md`、`database-patterns.md`、`api-workflows.md`、`i18n-patterns.md`、`release-coordination.md`、`troubleshooting.md`。 |
-| **oma-observability** | 基于意图的可观测性路由器 | MELT+P 信号覆盖（指标、日志、追踪、性能分析、成本、审计、隐私），传输调优（UDP/MTU、OTLP gRPC 与 HTTP、Collector 拓扑、采样），W3C Trace Context 传播，SLO 管理与燃尽率告警，事件取证（六维定位），元可观测性（自健康、时钟同步、基数、保留期）。优先 CNCF；Fluentd 已弃用，请使用 Fluent Bit 或 OTel Collector。 |
+| **oma-dev-workflow** | 单体仓库任务自动化 | mise 任务运行器、CI/CD 流水线、数据库迁移、发布协调、git 钩子和提交前验证。还负责配置各语言的 lint、format 和 typecheck 工具以及 commitlint。资源：`mise-basics.md`、`tooling-profiles.md`、`validation-pipeline.md`、`example-task-wiring.md`（迁移、API 客户端生成、i18n 构建）、`release-coordination.md`、`troubleshooting.md`。 |
+| **oma-observability** | 基于意图的可观测性路由器 | MELT+P 信号覆盖（指标、日志、追踪、性能分析、成本、审计、隐私），传输调优（UDP/MTU、OTLP gRPC 与 HTTP、Collector 拓扑、采样），W3C Trace Context 传播，SLO 管理与燃尽率告警，事件取证（六维定位），元可观测性（自健康、时钟同步、基数、保留期）。资源按触发条件加载；根据工作负载、插件和运维要求在 Fluentd、Fluent Bit 或 OTel Collector 之间选择。 |
 
 ### 质量与调试 {#quality-and-debugging}
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-qa** | 质量保证 | 安全审计（OWASP Top 10）、性能分析、无障碍性（WCAG 2.2 AA）和代码质量审查。严重性分为 CRITICAL/HIGH/MEDIUM/LOW，包含文件、行号和修复代码。支持 ISO/IEC 25010 质量特性和 ISO/IEC 29119 测试对齐。资源：`execution-protocol.md`、`iso-quality.md`、`checklist.md`、`verify-ship-protocol.md`、`error-playbook.md`。 |
-| **oma-debug** | Bug 诊断与修复 | 先复现。进行根因分析、最小修复和强制回归测试，并扫描相似模式。使用代码智能 MCP 工具（Gortex 或 Serena）追踪符号。资源：`execution-protocol.md`、`common-patterns.md`、`debugging-checklist.md`、`bug-report-template.md`、`error-playbook.md`。 |
+| **oma-qa** | 质量保证 | 安全审计（OWASP Top 10）、性能分析、无障碍性（WCAG 2.2 AA）和代码质量审查。严重性分为 CRITICAL/HIGH/MEDIUM/LOW，包含文件、行号和修复代码。支持 ISO/IEC 25010 质量特性和 ISO/IEC 29119 测试对齐。由扫描器驱动的扫描和渗透测试归 `oma-security` 负责。资源：`execution-protocol.md`、`iso-quality.md`、`checklist.md`、`error-playbook.md`。 |
+| **oma-debug** | Bug 诊断与修复 | 先复现。进行根因分析、最小修复和强制回归测试，并扫描相似模式。使用代码智能 MCP 工具（Gortex 或 Serena）追踪符号。资源：`execution-protocol.md`、`checklist.md`、`debugging-checklist.md`（精简 bug 报告、工具参考、交接路由）、`bug-report-template.md`（Complex 或 CRITICAL/HIGH 级别的 bug）、`error-playbook.md`。 |
 | **oma-refactor** | 保持行为的重构 | 由特征测试安全网保护的渐进式重构。以复杂度 × 变更率定位热点，选择代码异味和 SATD，失败时使用 Mikado 方法回退，对有状态变更使用扩展收缩，提交中不混入行为变化。优先使用 IDE 重命名、jscodeshift 或 ast-grep 等引擎变换，并通过 `uvx lizard` / `uvx radon` 记录指标。可读性是成功标准，指标只是代理。 |
 
 ### 本地化、协调与 Git {#localization-coordination-and-git}
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-translation** | 上下文感知翻译 | 六阶段流程：准备、获取、推理、执行、验证、收尾。翻译方法分四步：阅读含义与受保护语法、选择语体、用目标语言重构、在适当位置保留作者风格。每种目标语言的配置（`resources/lang/{code}.md`）记录语体和排版规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`lang/{ko,ja,zh,en}.md`。 |
-| **oma-orchestration** | 自动化多智能体协调器 | 并行启动 CLI 子智能体，通过持久的会话、任务板、进度和结果文件进行协调，并监控验证循环。可配置：MAX_PARALLEL（默认 3）、MAX_RETRIES（默认 2）、POLL_INTERVAL（默认 30s）。包含智能体间审查循环和可选的会话证据。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
+| **oma-translation** | 上下文感知翻译 | 翻译方法分四步：阅读含义与受保护语法、选择语体、用目标语言重构、在适当位置保留作者风格。每种目标语言的配置（`resources/lang/{code}.md`）记录语体和排版规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`style-skills.md`、`lang/{ko,ja,zh,en}.md`。 |
+| **oma-orchestration** | 自动化多智能体协调器 | 并行启动 CLI 子智能体，通过持久的会话、任务板、进度和结果文件进行协调，并监控验证循环。默认值：MAX_PARALLEL 为 3，MAX_RECOVERY_ATTEMPTS 为 3（每个任务的重试和探索假设总数，包括首次尝试）；进度轮询使用有界退避，且仅在没有完成通知时进行。为每个任务选择技能参考资料，并将其记录为协调者备注。包含智能体间审查循环和可选的会话证据。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
 | **oma-scm** | 软件配置管理（SCM）与 Git | 处理分支策略、合并/变基/冲突工作流、工作区、基线和发布状态跟踪。还指导使用安全暂存的 Conventional Commit 消息；启用时，共同作者尾注来自有效的 `scm.co_author` 配置。 |
-| **oma-coordination** | 手动多智能体工作流指南 | 通过 CLI `oma agent spawn` 分步协调产品、前端、后端、移动端和 QA 智能体。先由产品经理分解任务，在独立工作区并行启动同优先级任务，监控按运行划分的进度和结果文件，在前端或移动端工作前对齐 API 与数据契约，最后进行 QA 审查。它是 `oma-orchestration` 的手动对应方案。 |
+| **oma-coordination** | 共享协调规则 | 多智能体工作的协调规则：计划复用、契约对齐、工作区归属和 QA 交接。由 `/work`、`/orchestrate` 和 `/ultrawork` 工作流加载，也可用于通过 `oma agent spawn` 进行手动分步协调：复用或创建计划，在独立工作区并行启动同优先级任务，监控按运行划分的进度和结果文件，在前端或移动端工作前对齐 API 与数据契约，最后进行 QA 审查。自动化执行由 `oma-orchestration` 负责。 |
 
 ### 搜索、回顾与文档处理 {#search-retrospective-and-document-processing}
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-search** | 基于意图的搜索路由器 | 将请求路由到 Context7（文档）、原生 Web 搜索、`gh`/`glab`（代码）和本地代码智能（Gortex 或 Serena）。为所有非本地结果计算领域可信度。故障前进路由（文档→Web→获取）。标志：`--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab`。 |
-| **oma-recap** | 跨工具工作回顾 | 分析 Grok、Claude、Codex、Gemini、Qwen、Cursor 和 Antigravity 的对话历史。解析自然语言日期或时间窗口，按工具与会话分组，提取主题，并记录 CLI 将请求窗口限制为 30 天的情况。 |
+| **oma-search** | 面向外部来源的搜索路由器 | 为每个请求选择一条主路由：`docs`（Context7，需要时查找官方站点）、`web`（配置的 `native`、`brave` 或 `exa` 提供商）、`code`（基于 `gh`/`glab` 的 `oma search code`）或 `fetch`（已知 URL）。返回的来源带有路由、实际使用的提供商、内容读取状态、支持证据和局限；它不分配数值化的可信度评分。只有证据缺口需要时才增加另一条路由，明确选定的提供商失败时会如实报告，不会被悄悄替换。标志：`--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab`。本地代码导航使用配置的代码工具。 |
+| **oma-recap** | 跨工具工作回顾 | 分析 Grok、Claude、Codex、Gemini、Qwen、Cursor 和 Antigravity 的对话历史。解析自然语言日期或时间窗口，按工作内容分组（3 天或更长的窗口按项目分组），提取主题，并记录 CLI 将请求窗口限制为 30 天的情况。 |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | 通过 `bunx kordoc@latest` 转换韩文文字处理文档。保留标题、表格（包括嵌套表格）、脚注、超链接和图片。通过 `flatten-tables.ts` 后处理器删除 Hancom 私有使用区字符。 |
 | **oma-pdf** | PDF → Markdown | 通过 `uvx opendataloader-pdf` 转换 PDF。保留标题、表格、列表和图片；扫描文档使用 OCR 混合模式；通过 `uvx mdformat` 规范化输出。 |
 
@@ -106,14 +106,14 @@ oh-my-agent 通过专业化解决这些问题：
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-academic-writing** | 出版级英文写作 | 起草、修改和审查论文、报告、执行摘要、结论与文献综述。同时执行四项协议：句式（四种类型，变化长度和开头）、动词（从分层学术语料库替换禁用的泛化动词）、限定语（强度匹配证据）和反 AI 合规。包含先引文后判断的评审关卡、主张与证据图以及逆向提纲。模式：`draft` / `revise` / `review`。 |
-| **oma-scholar** | 论文附属信息助手 | 通过 Knows `.knows.yaml` 附属规范（v0.9.0 / `paper@1`）搜索、生成、验证、审查和比较学术论文。以较少令牌访问主张、证据和关系（仅主张约 700 个令牌，完整 PDF 约 10K）。通过 knows.academy 使用 `oma scholar search/resolve/get/lint`，对 2026 年以前的论文自动回退到 OpenAlex。反编造：未知字段留空，不猜测。 |
+| **oma-academic-writing** | 出版级英文写作 | 起草、修改和审查论文、报告、摘要、执行摘要、结论与文献综述。应用句式指引（节奏、开头、段落衔接）、动词指引（`academic-verb-guide.md`：确切含义和证据强度）、与证据相匹配的限定语，以及反 AI 文风审查。判断之前先引用所提供的评审标准约束，并使用主张与证据图和逆向提纲。模式：`draft` / `revise` / `review`。 |
+| **oma-scholar** | 论文附属信息助手 | 通过 Knows `.knows.yaml` 附属规范（v0.9.0 / `paper@1`）搜索、生成、验证、审查和比较学术论文。以较少令牌访问主张、证据和关系（仅主张约 700 个令牌，完整 PDF 约 10K）。通过 knows.academy 使用 `oma scholar search/resolve/get/lint`，knows.academy 没有收录的论文回退到 OpenAlex 和 Semantic Scholar。反编造：未知字段留空，不猜测。 |
 
 ### 安全 {#security}
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-security** | 安全扫描与验证 | 扫描应用源码、智能体技能和 MCP 组件；对限定范围的 Web 测试部署运行渗透测试，验证发现并配置扫描关卡。各目标的默认引擎：应用源码或 diff 使用 Deepsec，智能体技能包使用 Cisco Skill Scanner，MCP 组件使用 Cisco MCP Scanner，Web 测试部署使用 ARTEX。广泛的质量审查请使用 `oma-qa`，修复请使用相应领域技能。 |
+| **oma-security** | 安全扫描与验证 | 扫描应用源码、智能体技能和 MCP 组件，验证发现并配置扫描关卡。各目标的默认引擎：应用源码或 diff 使用 Deepsec，智能体技能包使用 Cisco Skill Scanner，MCP 组件使用 Cisco MCP Scanner。运行时渗透测试没有默认引擎：对限定范围的 Web 测试部署的渗透测试，只有在明确请求 ARTEX 时才会运行，且须在用户提供并已审查的 ARTEX 平台上。广泛的质量审查请使用 `oma-qa`，修复请使用相应领域技能。 |
 
 ### 文档与元工具 {#documentation-and-meta-tooling}
 
@@ -121,7 +121,7 @@ oh-my-agent 通过专业化解决这些问题：
 |-------|------|---------|
 | **oma-docs** | 文档漂移检测器 | `verify` 模式确定性检查 `docs/**/*.md` 中的损坏引用（文件路径、CLI 命令、配置键、环境变量、脚本），并以 0/1 退出；`sync` 模式把 Git 差异与候选文档关联，并起草由宿主 LLM 生成的补丁建议，逐文档确认，绝不自动应用。URL 检查委托给 `lychee`；CLI 输出结构化 JSON，宿主 LLM 完成全部综合，不调用供应商 SDK。绝不修改 `.agents/`。 |
 | **oma-skill-creation** | SSL-lite 技能编写专家 | 按 SSL-lite 格式创建、更新和审计 OMA 技能，要求四个章节（Scheduling / Structural Flow / Logical Operations / References）。分类技能类型，恰好插入一个内联规范路径，强制执行 `When NOT to use` 跨路由，并运行 `oma skill audit` 检查描述冲突（TF-IDF 余弦相似度达到 60% 警告、75% 失败）。把较长的变体细节放入 `resources/`。 |
-| **oma-explanation** | 代码变更讲解器 | 将差异、PR、分支或提交范围转为独立的离线 HTML 讲解，包含 Background、Intuition、Code 和 Quiz。`/explain` 工作流会验证最终产物，并把它写入 `.agents/results/explain/`。 |
+| **oma-explanation** | 变更与主题讲解器 | 将差异、PR、分支或提交范围转为独立的离线 HTML 讲解，包含 Background、Intuition、Code 和 Quiz，或把某个主题讲解成一页可视化页面。模型先写草稿，`oma explain render` 把页面写入 `.agents/results/explain/`，`oma explain validate` 对其进行检查，`oma explain render --open` 将其打开。 |
 
 ### 市场研究 {#market-research}
 
@@ -133,9 +133,9 @@ oh-my-agent 通过专业化解决这些问题：
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-image** | 多供应商图像路由器 | 通过 Codex（经 ChatGPT OAuth 的 `gpt-image-2`，优先 CLI）、Antigravity Gemini 系列“nano-banana”模型（通过 `agy` CLI 和 Gemini Code Assist，具体模型在内部选择）以及 Pollinations（免费 `flux`/`zimage`）进行考虑认证的并行调度。生成前执行澄清与增强协议，最多 10 张参考图，成本达到 ≥ $0.20 时触发确认，并用 `manifest.json` 保证可复现。CLI：`oma image generate`、`oma image doctor` 和 `oma image vendor list`。 |
-| **oma-slide** | 动画丰富的 HTML 演示文稿生成器 | 在固定 1920×1080 舞台上创作具有特色、避免“AI slop”的演示文稿，然后确定性地验证几何布局，打包成单文件 HTML，并通过 `oma slide` CLI 导出 PDF/PNG/PPTX。提供样式预设和大胆模板，执行 CJK→Pretendard 规则，要求 `prefers-reduced-motion` 和可见焦点，并进行最多 3 次自动修复验证循环。图像交给 `oma-image`，也可选用 Canva MCP 导出/导入。 |
-| **oma-video** | 短视频、讲解和演示路由器 | 通过 `oma video` CLI 创建 shorts/reels（9:16）、讲解视频（16:9）和人工录制的演示（16:9）。确定性资源总线（`script.json` → `timing.json` → `render-spec.json`）把内容送入受管的 HyperFrames 合成器；资源提供商可以使用本地回退，缺少合成或工具链，以及渲染错误都会使运行失败。人工录制不会自动处理凭据。 |
+| **oma-image** | 多供应商图像路由器 | 通过 Codex（经 ChatGPT OAuth 的 `gpt-image-2`，优先 CLI）、Antigravity Gemini 系列“nano-banana”模型（通过 `agy` CLI 和 Gemini Code Assist，具体模型在内部选择）以及 Pollinations（免费 `flux`/`zimage`）进行考虑认证的并行调度。根据已提供的细节和合理的默认值确定简报，只询问缺失的关键选择，最多 10 张参考图，成本达到 ≥ $0.20 时触发确认，并用 `manifest.json` 保证可复现。设置位于 `.agents/oma-config.yaml` 的 `image:` 下。CLI：`oma image generate`、`oma image doctor` 和 `oma image vendor list`。 |
+| **oma-slide** | 动画丰富的 HTML 演示文稿生成器 | 在固定 1920×1080 舞台上创作具有特色、避免“AI slop”的演示文稿，然后确定性地验证几何布局，打包成单文件 HTML，并通过 `oma slide` CLI 导出 PDF/PNG/PPTX。提供样式预设和大胆模板，执行 CJK→Pretendard 规则，要求 `prefers-reduced-motion` 和可见焦点，并进行最多 3 次自动修复验证循环。图像交给 `oma-image`，也可选用 Canva MCP 导出/导入。CLI：`oma slide create`、`oma slide style get`、`oma slide asset fetch-video`、`oma slide validate`、`oma slide bundle`、`oma slide export pdf|png|pptx`。 |
+| **oma-video** | 短视频、讲解和演示路由器 | 通过 `oma video` CLI 创建 shorts/reels（9:16）、讲解视频（16:9）和人工录制的演示（16:9）。确定性资源总线（`script.json` → `timing.json` → `render-spec.json`）把内容送入受管的 HyperFrames 合成器；资源提供商可以使用本地回退，缺少合成或工具链，以及渲染错误都会使运行失败。素材库和 AIGC 视觉内容通过 `--visual stock|aigc` 启用；幻灯片视觉内容需要 `visual.ref` 指向已有的演示文稿。演示需要 `--polish` 才能生成经过遮蔽、可交付的视频；不加该选项时，输出的是原始录制内容。人工录制不会自动处理凭据。设置位于 `.agents/oma-config.yaml` 的 `video:` 下。 |
 | **oma-voice** | 本地优先的 TTS 与 STT | 驱动 Voicebox MCP 服务器，在设备上生成通知、TTS 资源和转录，不进行云端调用，也不产生单次调用费用。TTS 默认输出 WAV，也可以在本地转码为 MP3；转录接受音频路径或 base64。TTS 调用上限为 5000 个字符，STT 输入上限为 30 分钟；持久化的资源或转录运行会写入清单。 |
 
 ---
@@ -168,11 +168,10 @@ oh-my-agent 所需的一切都位于 `.agents/` 目录中：
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -262,14 +261,15 @@ HUD 由 `.claude/hooks/hud.ts` 提供，使用 Claude Code 的 `statusLine` 钩�
 
 ---
 
-## 自动工作流检测 {#automatic-workflow-detection}
+## 自动检测 {#automatic-detection}
 
-你不必输入 `/command` 才能触发工作流。oh-my-agent 的钩子系统会扫描 `.agents/hooks/core/triggers.json` 中定义的关键词触发器（这些触发器被内联到 `oma` 二进制文件，并由所有供应商共享），支持 11 种语言（英语、韩语、日语、中文、西班牙语、法语、德语、葡萄牙语、俄语、荷兰语和波兰语）。
+斜杠命令会启动工作流。对于普通请求，oh-my-agent 的钩子系统会对照 `.agents/hooks/core/triggers.json` 中的关键词表扫描输入（这些表被内联到 `oma` 二进制文件，并由所有供应商共享），覆盖 11 种语言（英语、韩语、日语、中文、西班牙语、法语、德语、葡萄牙语、俄语、荷兰语和波兰语）。
 
-- **可执行输入**（例如“规划身份验证功能”）会自动加载工作流
+- **技能提示**（例如“运行安全审计”）：技能注入器最多列出三个匹配的技能；这条提示只是建议，不会启动工作流
+- **持久化工作流**（`orchestrate`、`work`、`ultrawork`、`ralph`）只有在提示使用该工作流的显式名称时，才会从纯文本启动（例如 `ultrawork: add rate limiting`）
+- **其他所有工作流**只能通过各自的 `/command` 启动
 - **信息性输入**（例如“orchestrate 是什么？”）会被过滤，不触发工作流
 - **显式 `/command`** 会跳过检测，避免重复
-- **持久化工作流**（`orchestrate`、`work`、`ultrawork`、`ralph`）仅凭自然语言匹配时只会被建议，不会启动；只有提示中使用该工作流的显式关键词（例如 `ultrawork` 或 `ralph`）时，持久化模式才会开启
 - **活动中的持久化工作流**会在每条消息中重新注入上下文，直到你说“workflow done”
 
 每个钩子事件都通过规范的 `oma hook run` ABI 传递：供应商触发 `oma-hook.sh --vendor <v> --event <nativeEvent>`，该命令路由到进程内处理器链，并在标准输出中产生供应商特定的方言（始终以 0 退出，故障开放）。
@@ -301,7 +301,7 @@ oh-my-agent 不局限于 Claude Code。支持钩子的供应商共享 `oma hook 
 ## 接下来 {#what-is-next}
 
 - **[安装](./installation.md)**：三种安装方式、预设、CLI 设置和验证
-- **[智能体](/docs/core-concepts/agents)**：深入了解 33 个技能、13 个调度角色和章程预检
+- **[智能体](/docs/core-concepts/agents)**：深入了解 33 个技能、13 个调度角色以及授权与澄清策略
 - **[技能](/docs/core-concepts/skills)**：了解两层架构
-- **[工作流](/docs/core-concepts/workflows)**：了解全部 21 个工作流及其触发器和阶段
+- **[工作流](/docs/core-concepts/workflows)**：了解全部 20 个工作流及其触发器和阶段
 - **[使用指南](/docs/guide/usage)**：从单项任务到完整编排的真实示例

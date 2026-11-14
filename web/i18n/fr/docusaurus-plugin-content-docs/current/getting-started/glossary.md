@@ -80,7 +80,7 @@ La revue en contexte croisé (Cross-Context Review) est la règle selon laquelle
 
 ### Charter {#charter}
 
-Le charter est le bloc de preflight `CHARTER_CHECK` que les agents d’implémentation rédigeaient autrefois avant d’écrire du code. Les définitions d’agents actuelles n’exigent plus de sortie de preflight fixe. Les agents suivent à la place la politique d’exécution partagée : ils énoncent les hypothèses importantes, ne posent de question que lorsqu’une information manquante modifie l’exactitude ou le périmètre, et ne suspendent que le travail qui dépend de la réponse. Un sous-agent lancé ne peut pas vous interroger directement ; il signale donc l’information manquante dans un résultat `blocked` ou `partial`. Voir [Autorisation et clarification](../core-concepts/agents.md#charter-preflight-charter_check).
+Un charter est un bloc de preflight fixe (`CHARTER_CHECK`) rédigé avant tout code. oh-my-agent n’en exige aucun : les définitions d’agents ne demandent aucune sortie de preflight fixe. Les agents suivent la politique d’exécution partagée : ils énoncent les hypothèses importantes, ne posent de question que lorsqu’une information manquante modifie l’exactitude ou le périmètre, et ne suspendent que le travail qui dépend de la réponse. Un sous-agent lancé ne peut pas vous interroger directement ; il signale donc l’information manquante dans un résultat `blocked` ou `partial`. Voir [Autorisation et clarification](../core-concepts/agents.md#charter-preflight-charter_check).
 
 ### Enregistrement d’exécution et claim {#run-record-and-claim}
 

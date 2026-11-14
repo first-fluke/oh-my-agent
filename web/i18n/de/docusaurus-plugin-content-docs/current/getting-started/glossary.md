@@ -5,8 +5,6 @@ description: Kurze Definitionen der oh-my-agent-Begriffe, darunter Skills, Workf
 
 # Glossar
 
-Jeder Eintrag enthält eine kurze Definition und verweist auf die Seite, die den Begriff ausführlich behandelt. Wo ein Wort in verschiedenen Teilen von OMA Unterschiedliches bedeutet, sagt der Eintrag das.
-
 ## Bausteine
 
 ### Skill {#skill}
@@ -80,7 +78,7 @@ Cross-Context Review ist die Regel, dass jeder Review-Schritt in `/ultrawork` in
 
 ### Charter {#charter}
 
-Die Charter ist der Preflight-Block `CHARTER_CHECK`, den Implementierungsagenten früher vor jeglichem Code schreiben mussten. Aktuelle Agentendefinitionen verlangen keine feste Preflight-Ausgabe. Stattdessen folgen Agenten der gemeinsamen Ausführungsrichtlinie: Sie nennen wesentliche Annahmen, fragen nur nach, wenn fehlende Informationen Korrektheit oder Umfang verändern, und pausieren nur die Arbeit, die von der Antwort abhängt. Ein gestarteter Subagent kann Sie nicht direkt fragen; er meldet die fehlende Information daher in einem Ergebnis mit `blocked` oder `partial`. Siehe [Autorisierung und Klärung](../core-concepts/agents.md#charter-preflight-charter_check).
+Eine Charter ist ein fester Preflight-Block (`CHARTER_CHECK`), der vor jeglichem Code geschrieben wird. oh-my-agent verlangt keinen: Agentendefinitionen fordern keine feste Preflight-Ausgabe. Agenten folgen der gemeinsamen Ausführungsrichtlinie: Sie nennen wesentliche Annahmen, fragen nur nach, wenn fehlende Informationen Korrektheit oder Umfang verändern, und pausieren nur die Arbeit, die von der Antwort abhängt. Ein gestarteter Subagent kann Sie nicht direkt fragen; er meldet die fehlende Information daher in einem Ergebnis mit `blocked` oder `partial`. Siehe [Autorisierung und Klärung](../core-concepts/agents.md#charter-preflight-charter_check).
 
 ### Laufdatensatz und Ergebnisdeklaration (Run Record und Claim) {#run-record-and-claim}
 

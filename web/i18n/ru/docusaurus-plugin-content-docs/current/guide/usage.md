@@ -278,7 +278,6 @@ oma stats get
 | `/debug` | Non-persistent | Structured debugging: reproduce, diagnose, fix, regression test, scan | Исследование bugs и errors |
 | `/design` | Non-persistent | 7-фазный design workflow с DESIGN.md и tokens | Создание design systems, landing pages и UI redesign |
 | `/scm` | Non-persistent | SCM workflow для Git (branch/merge/conflict/worktree/baseline) и Conventional Commit с автоопределением type/scope и splitting features | После code changes или при задачах repository configuration management |
-| `/tools` | Non-persistent | Управление видимостью MCP tools (включение и отключение групп) | Контроль доступных MCP tools |
 | `/stack-set` | Non-persistent | Автоопределение tech stack и генерация backend или mobile (Swift/Flutter/RN) references | Настройка language-specific coding conventions |
 | `/architecture` | Non-persistent | Диагностика архитектуры, сравнение вариантов и decision records | Ревью границ или выбор архитектуры |
 | `/convert` | Non-persistent | Направляет conversion документа в нужный skill | Конвертация HWP/HWPX или PDF |

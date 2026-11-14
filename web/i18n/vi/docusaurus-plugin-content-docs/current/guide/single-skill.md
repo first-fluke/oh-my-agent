@@ -206,7 +206,6 @@ Add tests for: profile save, logout flow, offline state.
 3. **Tải tài nguyên:**
    - `execution-protocol.md`
    - `snippets.md` (template màn hình, pattern Riverpod provider)
-   - `screen-template.dart`
 4. **Execution contract**, khi bật, có thể phát `CHARTER_CHECK`:
    ```text
    CHARTER_CHECK:

@@ -22,7 +22,7 @@ Bảng này là danh sách chính thức các skill đã cài đặt. Bảng đ�
 | [`oma-architecture`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-architecture/SKILL.md) | Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs. |
 | [`oma-backend`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-backend/SKILL.md) | Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db. |
 | [`oma-brainstorm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-brainstorm/SKILL.md) | Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration. |
-| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step. |
+| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination. |
 | [`oma-db`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-db/SKILL.md) | Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend. |
 | [`oma-debug`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-debug/SKILL.md) | Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests. |
 | [`oma-design`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-design/SKILL.md) | Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions. |
@@ -44,7 +44,7 @@ Bảng này là danh sách chính thức các skill đã cài đặt. Bảng đ�
 | [`oma-scholar`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scholar/SKILL.md) | Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis. |
 | [`oma-scm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scm/SKILL.md) | Manage Git branches, merges, conflicts, commits, and release baselines. Use for repository history and change-management operations. |
 | [`oma-search`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-search/SKILL.md) | Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools. |
-| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation. |
+| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components, validate findings, and configure scan gates. Penetration tests of a scoped web test deployment run only on a user-supplied, reviewed runtime platform. Use oma-qa for broad quality reviews and domain skills for remediation. |
 | [`oma-skill-creation`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-skill-creation/SKILL.md) | Create or revise OMA skills and their references. Use for skill routing, execution contracts, conditional loading, and authoring validation. |
 | [`oma-slide`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-slide/SKILL.md) | Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery. |
 | [`oma-tf-infra`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-tf-infra/SKILL.md) | Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes. |
@@ -127,19 +127,19 @@ flowchart TD
 | **Chất lượng** | oma-qa | Kiểm tra bảo mật (OWASP), hiệu suất, accessibility (WCAG), đánh giá chất lượng mã |
 | **Gỡ lỗi** | oma-debug | Tái hiện lỗi, phân tích nguyên nhân gốc, sửa tối thiểu, test hồi quy |
 | **Bản địa hóa** | oma-translation | Dịch thuật nhận biết ngữ cảnh, bảo toàn giọng điệu, phong cách và thuật ngữ lĩnh vực |
-| **Điều phối** | oma-orchestration, oma-coordination | Điều phối đa agent tự động và thủ công |
+| **Điều phối** | oma-orchestration, oma-coordination | Điều phối đa agent tự động; quy tắc điều phối dùng chung và điều phối thủ công từng bước |
 | **Git** | oma-scm | Tạo Conventional Commits, tách commit theo tính năng |
-| **Tìm kiếm & Truy xuất** | oma-search | Bộ định tuyến tìm kiếm dựa trên ý định với chấm điểm độ tin cậy (tài liệu Context7, web, mã `gh`/`glab`, code intelligence cục bộ) |
+| **Tìm kiếm & Truy xuất** | oma-search | Bộ định tuyến tìm kiếm cho các nguồn bên ngoài, kèm trích dẫn (tài liệu Context7, các provider web, mã từ xa qua `gh`/`glab`, fetch URL đã biết) |
 | **Hồi tưởng** | oma-recap | Phân tích lịch sử hội thoại đa công cụ và tóm tắt công việc theo chủ đề |
 | **Xử lý tài liệu** | oma-hwp, oma-pdf | Chuyển đổi HWP/HWPX/HWPML và PDF sang Markdown để nạp vào LLM/RAG |
 | **Tài liệu** | oma-docs | Bảo trì tài liệu: tham chiếu hỏng, tài liệu bị ảnh hưởng bởi diff, drift bản dịch và lint tài liệu đã dịch |
 | **Giải thích** | oma-explanation | Bản giải thích HTML ngoại tuyến cho một thay đổi mã (diff, PR, branch, commit range) hoặc cho một chủ đề, hệ thống hay câu hỏi |
 | **Viết học thuật** | oma-academic-writing, oma-scholar | Soạn thảo và audit văn phong học thuật chuẩn xuất bản; nghiên cứu, tìm kiếm và peer review bằng sidecar Knows |
-| **Bảo mật** | oma-security | Quét mã nguồn ứng dụng, gói skill của agent, thành phần MCP và các bản triển khai web thử nghiệm được ủy quyền (Deepsec, trình quét Cisco, ARTEX), với xác thực phát hiện độc lập và cổng CI |
+| **Bảo mật** | oma-security | Quét mã nguồn ứng dụng, gói skill của agent và thành phần MCP (Deepsec, trình quét Cisco), với xác thực phát hiện độc lập và cổng CI; penetration test trên một bản triển khai web thử nghiệm có phạm vi xác định chỉ chạy trên nền tảng ARTEX do người dùng cung cấp và đã được rà soát |
 | **Tái cấu trúc** | oma-refactor | Tái cấu trúc tăng dần bảo toàn hành vi, nhắm hotspot, có safety net bằng characterization test và commit chỉ refactor |
 | **Nghiên cứu thị trường** | oma-market | Nghiên cứu pain point, xu hướng, đối thủ và discovery từ tín hiệu cộng đồng với khung SWOT/Porter's 5F/PESTEL tự bật theo ý định |
 | **Soạn skill** | oma-skill-creation | Tạo và xác thực skill OMA theo định dạng SSL-lite |
-| **Tạo media** | oma-image, oma-slide, oma-video, oma-voice | Tạo ảnh AI, deck trình chiếu HTML, video short/explainer/demo và TTS/STT cục bộ |
+| **Tạo media** | oma-image, oma-slide, oma-video, oma-voice | Tạo ảnh AI, deck trình chiếu HTML và PPTX chỉnh sửa được, video short/explainer/demo và TTS/STT cục bộ |
 
 ---
 
@@ -162,7 +162,7 @@ Các bản tóm tắt này giải thích lĩnh vực và quy tắc chính của 
 - Trình bày thiết kế từng phần, chỉ giải quyết các lựa chọn quan trọng còn mở
 - YAGNI: chỉ thiết kế những gì cần thiết
 
-**Quy trình:** 7 giai đoạn: Ngữ cảnh, Câu hỏi, Hướng tiếp cận (có thể khởi đầu bằng TRIZ-lite), Thiết kế, Review mù, Tài liệu (lưu vào `docs/plans/designs/`), Chuyển sang `/plan`.
+**Quy trình:** Workflow `/brainstorm` chạy 7 bước: Ngữ cảnh, Câu hỏi, Hướng tiếp cận (có thể khởi đầu bằng TRIZ-lite), Thiết kế, Review mù, Tài liệu (lưu vào `docs/decisions/`), Chuyển sang `/plan`.
 
 ---
 
@@ -199,7 +199,7 @@ Các bản tóm tắt này giải thích lĩnh vực và quy tắc chính của 
 - Tối thiểu hóa phụ thuộc để tối đa thực thi song song
 - Bảo mật và kiểm thử là phần của mọi task (không phải giai đoạn riêng)
 - Task phải hoàn thành được bởi một agent duy nhất
-- Xuất JSON plan cùng task board theo phạm vi session để tương thích với orchestrator
+- Xuất JSON plan làm bản bàn giao cho orchestrator; orchestrator tạo và sở hữu task board
 
 **Đầu ra:** `.agents/results/plan-{sessionId}.json` với các tier ưu tiên dạng số (`1` = độc lập, tier thấp hơn chạy trước), cùng báo cáo theo phạm vi run `result-{agentId}-{taskId}-{runId}-{sessionId}.md` trong memory store đã cấu hình.
 
@@ -255,11 +255,15 @@ Các bản tóm tắt này giải thích lĩnh vực và quy tắc chính của 
 
 **Lĩnh vực:** API, logic server-side, xác thực, thao tác database.
 
-**Khi nào sử dụng:** REST/GraphQL API, database migration, xác thực, logic nghiệp vụ server, background job.
+**Khi nào sử dụng:** REST/GraphQL API, mã truy cập dữ liệu và migration mà một thay đổi API cần đến, xác thực, logic nghiệp vụ server, background job.
+
+**Khi nào KHÔNG sử dụng:** Mô hình hóa schema, thiết kế index và tối ưu truy vấn (dùng oma-db), UI frontend (dùng oma-frontend), mã mobile (dùng oma-mobile).
 
 **Kiến trúc:** Router (HTTP) -> Service (Logic nghiệp vụ) -> Repository (Truy cập dữ liệu) -> Models.
 
-**Phát hiện stack:** Đọc manifest dự án (pyproject.toml, package.json, Cargo.toml, go.mod, v.v.) để xác định ngôn ngữ và framework. Nếu thiếu quy ước riêng của dự án, yêu cầu người dùng chạy `/stack-set`; lệnh này materialize các tham chiếu `stack/` đã phân giải từ schema và template được cung cấp.
+**Phát hiện stack:** Trước tiên đọc manifest dự án (pyproject.toml, package.json, Cargo.toml, go.mod, v.v.) và mã hiện có để xác định ngôn ngữ và framework. Tham chiếu stack chỉ mang tính bổ trợ: `stack/` khi có, nếu không thì `variants/<language>/` tương ứng. Một dự án đã cài với preset đã chọn có `stack/` và không có `variants/`; bố cục plugin và bố cục source có `variants/` và không có `stack/`. Nếu không trường hợp nào áp dụng, agent hỏi người dùng hoặc gợi ý `/stack-set`.
+
+**Preset đi kèm:** Python (Litestar với SQLAlchemy 2 (async) thông qua Advanced Alchemy, model msgspec, xác thực JWT tích hợp sẵn), Node.js (NestJS + Prisma, test bằng Vitest) và Rust (Axum + SQLx). Dự án được cài bằng preset FastAPI trước đây vẫn giữ FastAPI. Các mặc định này chỉ áp dụng khi dự án đích chưa có lựa chọn đã xác lập; một chỉnh sửa có phạm vi không cho phép chuyển đổi stack.
 
 **Quy tắc cốt lõi:**
 - Kiến trúc sạch: không có logic nghiệp vụ trong route handler
@@ -269,33 +273,40 @@ Các bản tóm tắt này giải thích lĩnh vực và quy tắc chính của 
 - Async khi được hỗ trợ; chú thích kiểu trên tất cả signature
 - Exception tùy chỉnh qua module lỗi tập trung
 - Chiến lược tải ORM tường minh, ranh giới transaction, vòng đời an toàn
+- Lệnh xác minh được chọn từ dự án (ưu tiên block `verify:` của `stack/stack.yaml`) và chỉ chạy khi người dùng hoặc workflow đang hoạt động yêu cầu; các kiểm tra chưa chạy sẽ được báo cáo
 
 <!-- oma-docs:ignore-start -->
-Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template dành riêng cho dự án được `/stack-set` tạo khi cần; chúng chưa tồn tại cho đến khi stack được materialize.
+Tham chiếu stack chứa `stack.yaml` (khai báo có cấu trúc và contract `verify:` mà `oma verify agent backend` chạy), `tech-stack.md`, `snippets.md` và `api-template.*`. `/stack-set` tạo một `stack/` riêng cho dự án từ codebase đã phát hiện.
 <!-- oma-docs:ignore-end -->
 
 ---
 
 ### oma-mobile
 
-**Lĩnh vực:** Ứng dụng mobile đa nền tảng và native (Flutter, React Native và iOS native bằng Swift).
+**Lĩnh vực:** Ứng dụng mobile đa nền tảng và native (Flutter, React Native, iOS native bằng Swift và Android native bằng Kotlin).
 
 **Khi nào sử dụng:** Ứng dụng mobile native (iOS + Android), mẫu UI đặc thù mobile, tính năng nền tảng (camera, GPS, push notification), kiến trúc offline-first; ứng dụng iOS native bằng Swift dùng SwiftUI và `swift-openapi-generator`.
 
-**Kiến trúc:** Clean Architecture: domain -> data -> presentation. Với Swift iOS: bố cục dự án `App/Core/Features/Shared`.
+**Kiến trúc:** Clean Architecture: domain -> data -> presentation. Với Swift iOS: bố cục dự án `App/Core/Features/Shared`. Với Kotlin Android: `app/{ui,data,di}` + `api-client`. Logic nghiệp vụ không bao giờ nằm trong widget, view hay composable.
 
 **Tech stack:**
 - Flutter/Dart: Riverpod/Bloc (quản lý state), Dio với interceptor (API), GoRouter (điều hướng), Material Design 3 (Android) + iOS HIG.
+- React Native: Zustand + TanStack Query (state), axios đứng sau các hook TanStack Query (API).
 - iOS native bằng Swift (iOS 17+): SwiftUI + `@Observable` (Observation framework), `swift-openapi-generator` của Apple cho API client, bố cục `App/Core/Features/Shared`.
+- Android native bằng Kotlin (API 26+): Jetpack Compose + Material 3, `@HiltViewModel` + `StateFlow`, client OpenAPI Generator (`kotlin` / `jvm-ktor`) chạy trên Ktor với engine OkHttp được inject, bố cục `app/{ui,data,di}` + `api-client`.
 
 **Quy tắc cốt lõi:**
-- Riverpod/Bloc cho quản lý state (không dùng setState thô cho logic phức tạp)
-- Tất cả controller được dispose trong phương thức `dispose()`
-- Dio với interceptor cho API; xử lý offline một cách graceful
-- Mục tiêu 60fps; test trên cả hai nền tảng
+- Quản lý state theo giải pháp của variant (Flutter: Riverpod/Bloc; React Native: Zustand + TanStack Query; Swift: `@MainActor @Observable`; Kotlin: `@HiltViewModel` + `StateFlow`); không dùng setState thô hay state tùy tiện cho logic phức tạp
+- Giải phóng tài nguyên theo vòng đời của nền tảng: controller Flutter trong `dispose()`, cleanup của effect trong React Native, `.task {}` có cấu trúc của Swift, `viewModelScope` của Kotlin
+- Dùng transport của nền tảng kèm interception cho auth/retry/logging; xử lý offline một cách graceful
+- Mục tiêu 60fps; bao phủ mọi nền tảng mà ứng dụng phát hành
+- Secret chỉ nằm trong secure storage (flutter_secure_storage, Keychain, react-native-keychain, storage dựa trên Android Keystore)
+- E2E cho các luồng người dùng quan trọng: Maestro (Flutter, React Native, Kotlin) hoặc XCUITest (Swift native)
+- Test và kiểm tra E2E chỉ chạy khi người dùng hoặc workflow đang hoạt động yêu cầu; build chỉ chạy khi có yêu cầu tường minh
 - Swift: dùng `@Observable` thay cho `ObservableObject` trên iOS 17+; tạo API client từ spec OpenAPI bằng `swift-openapi-generator`
+- Kotlin: gọi `*Api` đã sinh cho các endpoint có trong spec; Ktor là lớp không phụ thuộc engine, nên engine OkHttp được inject tại nơi tạo client và `MockEngine` thay thế nó trong test
 
-**Seed nền tảng:** `variants/` cung cấp `flutter/`, `react-native/` và `swift-ios/`, mỗi thư mục có `stack.yaml`, `tech-stack.md`, `snippets.md` và một API template, cùng `stack.schema.json` dùng chung. Đây là tài liệu khởi đầu cho `/stack-set`, không phải tài liệu bắt buộc đọc khi sửa mã hiện có.
+**Variant nền tảng:** `variants/` cung cấp `flutter/`, `react-native/`, `swift-ios/` và `kotlin-android/`, mỗi thư mục có `stack.yaml`, `tech-stack.md` và `snippets.md` (các mẫu cho data layer, state, screen và test, bao gồm snippet API service hoặc repository), cùng `stack.schema.json` dùng chung. Agent dùng `stack/` khi nó tồn tại, nếu không thì đọc trực tiếp `variants/<platform>/` tương ứng; `/stack-set` ghi `stack/` từ dự án đã phát hiện, lấy variant làm seed. Skill được cài mà không chọn variant vẫn giữ thư mục `variants/` của nó.
 
 ---
 
@@ -322,26 +333,37 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 ### oma-design
 
-**Lĩnh vực:** Design system, UI/UX, quản lý DESIGN.md.
+**Lĩnh vực:** Hệ thống trực quan, `DESIGN.md` và định hướng redesign: các quyết định về typography, bố cục, màu sắc, chuyển động và thiết kế tương tác.
 
-**Khi nào sử dụng:** Tạo hoặc chỉnh sửa design system và DESIGN.md, thiết kế lại site hoặc ứng dụng hiện có (giữ nguyên hoặc làm mới toàn diện), landing page, design token, bảng màu, typography, bố cục responsive, đánh giá accessibility.
+**Khi nào sử dụng:** Định nghĩa hoặc chỉnh sửa một hệ thống trực quan hay một định hướng thiết kế đáng kể, review UI hiện có hoặc tinh chỉnh một định hướng đã chọn, trích xuất quyết định thiết kế từ UI hiện có, ảnh chụp màn hình hoặc tài liệu tham chiếu được cung cấp.
 
-**Quy trình:** 7 giai đoạn: Setup (thu thập ngữ cảnh) -> Extract (tùy chọn, từ URL tham chiếu) -> Enhance (tăng cường prompt mơ hồ) -> Propose (2-3 hướng thiết kế) -> Generate (DESIGN.md + token) -> Audit (responsive, WCAG, Nielsen, kiểm tra AI slop) -> Handoff.
+**Khi nào KHÔNG sử dụng:** Triển khai UI ứng dụng hoặc xuất token theo framework cụ thể (dùng oma-frontend hoặc oma-mobile), lập kế hoạch phạm vi sản phẩm (dùng oma-pm), tạo ảnh (dùng oma-image), review tổng quát về tính đúng đắn hoặc bảo mật (dùng oma-qa hoặc oma-security).
 
-**Thực thi chống anti-pattern ("no AI slop"):**
-- Typography: mặc định font hệ thống; không dùng Google Fonts mặc định khi không có lý do
-- Màu sắc: không gradient tím sang xanh, không gradient orb/blob, không trắng tinh trên đen tuyền
-- Bố cục: không card lồng nhau, không bố cục chỉ cho desktop, không bố cục thống kê 3 chỉ số rập khuôn
-- Chuyển động: không easing bounce ở mọi nơi, không animation > 800ms, phải tôn trọng prefers-reduced-motion
-- Component: không glassmorphism ở mọi nơi, mọi phần tử tương tác cần phương án thay thế bằng bàn phím/chạm
+**Chọn supplier:** Skill xác định ý định thiết kế của dự án và tải một skill thiết kế bên ngoài cho mỗi thao tác thông qua `resources/external-design-skills.md`:
+
+| Thao tác | Supplier |
+|-----------|----------|
+| Định hướng trực quan cho dashboard, admin panel, UI sản phẩm SaaS hoặc công cụ nội bộ | Interface Design |
+| Review sau triển khai về phân cấp, mật độ, tính nhất quán hoặc độ hoàn thiện của giao diện sản phẩm | Interface Design `design-review` |
+| Các trường hợp khác: phê bình UI hiện có, audit accessibility hoặc kỹ thuật, đánh bóng, hoặc trích xuất hệ thống | Impeccable |
+| Các trường hợp khác: art direction web mới hoặc một đợt làm mới trực quan được ủy quyền | Taste |
+| Task chỉ về tài liệu hoặc token contract, không cần phán đoán trực quan mới | Xử lý tại chỗ |
+
+**Quy trình:** Kiểm tra UI, các artifact thiết kế và brief, đồng thời xác lập phạm vi, nền tảng, stack hiện hành, ngôn ngữ, việc giữ gìn thương hiệu và cách xác minh -> chọn và tải supplier -> áp dụng kết quả vào quyết định hoặc artifact được yêu cầu -> kiểm tra kết quả bị ảnh hưởng bằng `resources/checklist.md` và bàn giao phần triển khai cho chuyên gia frontend hoặc mobile.
 
 **Quy tắc cốt lõi:**
-- Dùng lại `.design-context.md` và `DESIGN.md` khi có; chỉ tạo `.design-context.md` khi một lượt khám phá thực chất góp phần vào quyết định
+- Dùng lại `.design-context.md` và `DESIGN.md` khi có; chỉ cập nhật `DESIGN.md` khi hệ thống trực quan thay đổi, và chỉ tạo `.design-context.md` khi một lượt khám phá thực chất góp phần vào quyết định
+- Một chỉnh sửa có phạm vi dùng lại UI và token bị ảnh hưởng; nó không cần tài liệu khám phá
 - Với site hoặc ứng dụng hiện có, tuân theo `resources/redesign-protocol.md` và phân loại Preserve hay Overhaul trước khi đề xuất
-- Mặc định font hệ thống (font CJK-ready cho ko/ja/zh)
-- WCAG AA tối thiểu cho mọi thiết kế
-- Responsive-first (mobile là mặc định)
-- Trình bày 2-3 hướng, nhận xác nhận
+- Giữ nguyên thương hiệu, nội dung, URL, điều hướng, form contract, analytics và văn bản pháp lý hiện có trong phạm vi được ủy quyền
+- Giữ font hiện hành khi phù hợp; với ko/ja/zh, xác minh độ phủ glyph, fallback, ngắt dòng và metric dễ đọc
+- WCAG AA là mục tiêu accessibility mặc định, hoặc mục tiêu chặt hơn của dự án; các yêu cầu về responsive, reduced-motion và nền tảng được chuyển tiếp sang supplier đã chọn
+- Dùng asset và tuyên bố thực tế của dự án; gắn nhãn cho concept và placeholder
+- Giữ nguyên stack triển khai hiện có; chuyên gia triển khai sở hữu CSS, Tailwind, cú pháp thư viện component và dependency
+- Thao tác chỉ review thì luôn ở chế độ chỉ đọc
+- Chỉ hỏi về lựa chọn quan trọng còn chưa giải quyết; supplier được yêu cầu tường minh mà không khả dụng thì được báo cáo, không bị thay thế
+
+**Đầu ra:** Quyết định thiết kế, các phát hiện hoặc bản bàn giao triển khai được yêu cầu, kèm bằng chứng quan sát được, supplier và thao tác đã chọn, cùng các giới hạn về khả năng hoặc xác minh. `DESIGN.md` và `.design-context.md` chỉ được ghi khi các điều kiện trên áp dụng. Stitch và getdesign là đầu vào tùy chọn.
 
 ---
 
@@ -370,14 +392,18 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 **Lĩnh vực:** Tự động hóa task monorepo và CI/CD.
 
-**Khi nào sử dụng:** Chạy dev server, thực thi lint/format/typecheck xuyên app, database migration, tạo API, build i18n, build production, tối ưu CI/CD, xác thực pre-commit.
+**Khi nào sử dụng:** Chạy dev server, thực thi lint/format/typecheck xuyên app, database migration, tạo API, build i18n, build production, tối ưu CI/CD, xác thực pre-commit, và cấu hình các công cụ lint, format và typecheck theo từng ngôn ngữ, lint Dockerfile và commitlint.
 
 **Quy tắc cốt lõi:**
-- Luôn dùng task `mise run` thay vì lệnh package manager trực tiếp
-- Chỉ chạy lint/test trên app thay đổi
-- Xác thực commit message bằng commitlint
-- CI nên bỏ qua app không thay đổi
-- Không bao giờ dùng lệnh package manager trực tiếp khi có task mise
+- Dùng task `mise run` thay vì lệnh package manager trực tiếp; tìm chúng bằng `mise tasks --all` và đọc định nghĩa của task chưa quen trước khi chạy
+- Chạy lint và test trên phạm vi thay đổi; CI nên bỏ qua app không thay đổi
+- Xác thực commit message bằng commitlint thông qua hook `commit-msg` được cấp phát cục bộ; không bao giờ tải package từ một Git hook
+- Giữ các task kiểm tra không làm thay đổi file: cung cấp `lint`, `format:check` và `typecheck`, và tách riêng `format` có sửa file
+- Một lần xác thực bị bỏ qua không phải là pass; checker không chạy được thì được báo cáo là chưa hoàn tất, không bị thay bằng placeholder hay một lần build
+- Ưu tiên test hermetic; test cần Docker hoặc dịch vụ bên ngoài thuộc về một task integration opt-in riêng, nằm ngoài các hook mặc định và các cổng CI bắt buộc
+- Không bao giờ hardcode secret trong `mise.toml`; không bao giờ chạy task phá hủy khi chưa có xác nhận
+
+**Tài nguyên:** `mise-basics.md`, `tooling-profiles.md`, `validation-pipeline.md`, `example-task-wiring.md` (migration, hạ tầng Docker cục bộ tùy chọn, tạo API client, build i18n), `release-coordination.md` và `troubleshooting.md`, mỗi file được tải theo trigger đã nêu của nó.
 
 ---
 
@@ -396,17 +422,20 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 - Bao phủ tín hiệu MELT+P: metrics, logs, traces, profiles, cost, audit, privacy
 - Di chuyển pipeline log được đánh giá dựa trên mức hỗ trợ upstream hiện tại và yêu cầu của dự án
 
-**Khi nào KHÔNG sử dụng:** Observability LLM ops / gen_ai (dùng Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage pipeline dữ liệu (OpenLineage + Marquez, dbt test, Airflow lineage), telemetry tầng vật lý IoT / datacenter (Nlyte, Sunbird, Device42), điều phối chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), hạ tầng GPU / TPU (NVIDIA DCGM Exporter), chuỗi cung ứng phần mềm (sigstore, in-toto, SLSA), quy trình phản ứng sự cố / paging (PagerDuty, OpsGenie, Grafana OnCall), thiết lập một nhà cung cấp duy nhất đã được skill riêng của họ bao phủ.
+**Khi nào KHÔNG sử dụng:** Observability LLM ops / gen_ai (dùng Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage pipeline dữ liệu (OpenLineage + Marquez, dbt test, Airflow lineage), telemetry tầng vật lý IoT / datacenter (Nlyte, Sunbird, Device42), điều phối chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), hạ tầng GPU / TPU (NVIDIA DCGM Exporter), chuỗi cung ứng phần mềm (sigstore, in-toto, SLSA), quy trình phản ứng sự cố / paging (PagerDuty, Jira Service Management, Grafana Cloud IRM), kiểm tra toàn bộ gói tin TLS, quét bảo mật hoặc penetration testing (dùng oma-security; skill này chỉ bao phủ telemetry bảo mật), thiết lập một nhà cung cấp duy nhất đã được skill riêng của họ bao phủ.
 
 **Quy tắc cốt lõi:**
 - Phân loại ý định trước khi định tuyến: setup | migrate | investigate | alert | trace | tune | route
-- Ưu tiên danh mục, không phải registry nhà cung cấp: ủy quyền cho skill thuộc sở hữu nhà cung cấp qua `resources/vendor-categories.md`; không trùng lặp tài liệu nhà cung cấp
-- Tinh chỉnh transport là hào bảo vệ: ngưỡng UDP/MTU, chọn giao thức OTLP, topology Collector và công thức sampling là chiều sâu mà các skill khác không bao phủ
-- Meta-observability không thể thương lượng: xác minh sức khỏe tự thân pipeline, đồng bộ đồng hồ (< 100 ms lệch), cardinality và lưu giữ trước khi tuyên bố thiết lập hoàn tất
-- Ưu tiên CNCF-first: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
-- Fluentd vẫn ở mức CNCF Graduated; hướng dẫn Fluentd sang Fluent Bit của CNCF 2025-10 là hướng dẫn di chuyển, không phải thông báo ngừng hỗ trợ. Chọn Fluentd, Fluent Bit hoặc OTel Collector dựa trên yêu cầu về workload, plugin và vận hành
-- W3C Trace Context làm propagator mặc định; chuyển đổi theo cloud (AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
-- Quyền riêng tư trước tính năng: che PII, quy tắc baggage nhận biết sampling, audit bất biến SOC2/ISO + xóa theo GDPR/PIPA áp dụng tại điểm thu thập, không chỉ tại lưu trữ
+- Tải tài nguyên theo trigger của chúng: execution protocol, một hướng dẫn duy nhất mà tuyến ý định chọn, rồi hướng dẫn về tầng, ranh giới, tín hiệu hoặc transport chỉ khi có trigger tương ứng. Không tham chiếu nào bắt buộc phải tải trước
+- Chỉ dùng `resources/vendor-categories.md` khi cần chọn danh mục hoặc ủy quyền cho nhà cung cấp; ủy quyền cho skill thuộc sở hữu nhà cung cấp thay vì trùng lặp tài liệu nhà cung cấp
+- Tải đúng một hướng dẫn transport khớp với vấn đề quan sát được: UDP/MTU, giao thức OTLP, topology Collector hoặc sampling
+- Trước khi tuyên bố một thiết lập hoàn tất, xác minh sức khỏe pipeline, đồng bộ đồng hồ, giới hạn cardinality và lưu giữ theo yêu cầu của dự án, và ghi lại các kiểm tra không chạy được
+- Xác minh mức hỗ trợ upstream hiện tại, độ ổn định của attribute và hướng dẫn di chuyển từ tài liệu chính thức và trạng thái CNCF khi chúng ảnh hưởng đến khuyến nghị. Các file tài nguyên không ghim phiên bản spec theo từng file; `resources/standards.md` chứa phát biểu duy nhất về tính cập nhật của spec và semconv
+- W3C Trace Context làm propagator mặc định, kèm chuyển đổi theo cloud từ `resources/boundaries/cross-application.md` khi cần
+- Áp dụng che PII và kiểm soát baggage nhận biết sampling tại điểm thu thập; kiểm tra các yêu cầu về lưu giữ, xóa và audit cho hệ thống đích
+- Bàn giao cấu hình hoạt động được hoặc các đề xuất được gắn nhãn rõ ràng; scaffold và các kiểm tra chưa xác minh không được tính là thiết lập hoàn tất
+
+Ma trận bao phủ có bốn tầng (L3, L4, mesh, L7), bốn ranh giới (multi-tenant, cross-application, SLO, release) và bảy tín hiệu (metrics, logs, traces, profiles, cost, audit, privacy).
 
 ---
 
@@ -415,6 +444,8 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 **Lĩnh vực:** Đảm bảo chất lượng, bao gồm bảo mật, hiệu suất, accessibility và chất lượng mã.
 
 **Khi nào sử dụng:** Đánh giá cuối trước triển khai, kiểm tra bảo mật, phân tích hiệu suất, tuân thủ accessibility, phân tích độ bao phủ test.
+
+**Khi nào KHÔNG sử dụng:** Quét bằng trình quét, penetration test, xác thực phát hiện hoặc cổng CI bảo mật (dùng oma-security), triển khai ban đầu và tính năng mới (dùng các agent lĩnh vực).
 
 **Thứ tự ưu tiên đánh giá:** Bảo mật > Hiệu suất > Accessibility > Chất lượng mã.
 
@@ -426,8 +457,10 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 **Quy tắc cốt lõi:**
 - Mỗi phát hiện phải có file:line, mô tả và cách sửa
-- Chạy công cụ tự động trước (npm audit, bandit, lighthouse)
-- Không false positive; mỗi phát hiện phải tái hiện được
+- Chọn các kiểm tra tự động phù hợp với stack đã phát hiện và phạm vi review (ví dụ audit dependency, phân tích bảo mật tĩnh hoặc audit hiệu suất runtime); review tĩnh khi công cụ hoặc mục tiêu không khả dụng
+- Chạy các lệnh lint, test và coverage của dự án khi yêu cầu review hoặc workflow đang hoạt động cần bằng chứng đó; nếu không, báo cáo là chưa chạy
+- Mỗi phát hiện về lỗi phải tái hiện được; giả thuyết và các kiểm tra không khả dụng được ghi nhận là lỗ hổng xác minh, và không cấp PASS khi các kiểm tra bắt buộc vẫn chưa được xác minh
+- Phát hiện bảo mật ở đây là phát hiện từ code review; candidate từ trình quét, bằng chứng khai thác và các trạng thái xử lý `confirmed` / `needs_validation` thuộc về oma-security
 - Cung cấp mã khắc phục, không chỉ mô tả
 
 ---
@@ -443,9 +476,10 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 **Quy tắc cốt lõi:**
 - Xác định nguyên nhân gốc, không chỉ triệu chứng
 - Sửa tối thiểu: chỉ thay đổi những gì cần thiết
-- Mỗi bản sửa đều có test hồi quy
+- Mỗi bản sửa đều có test hồi quy; chạy lại nó cùng kiểm tra thất bại ban đầu (đỏ trước khi sửa, xanh sau khi sửa)
+- Chỉ chạy các bộ test rộng hơn khi người dùng hoặc workflow đang hoạt động yêu cầu; nếu không, báo cáo là chưa chạy
 - Tìm mẫu tương tự ở nơi khác
-- Tài liệu trong `.agents/results/`
+- Ghi lại lỗi trong `.agents/results/bugs/`: báo cáo rút gọn trong `resources/debugging-checklist.md`, hoặc `resources/bug-report-template.md` đầy đủ cho lỗi Complex hoặc CRITICAL/HIGH
 
 **Công cụ code intelligence (Gortex hoặc Serena) sử dụng:**
 - `find_symbol("functionName")` hoặc điều hướng symbol bằng Gortex: định vị hàm
@@ -460,7 +494,7 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 **Khi nào sử dụng:** Dịch chuỗi UI, tài liệu, copy marketing, đánh giá bản dịch hiện có, tạo thuật ngữ.
 
-**Luồng sáu cảnh:** Prepare, Acquire, Reason, Act, Verify và Finalize. Phương pháp dịch gồm bốn bước: đọc ý nghĩa và cú pháp cần bảo toàn, chọn phong cách, tái tạo bằng ngôn ngữ đích, và giữ phong cách tác giả ở những chỗ cần giữ.
+**Phương pháp dịch:** Bốn bước: đọc ý nghĩa và cú pháp cần bảo toàn, chọn phong cách, tái tạo bằng ngôn ngữ đích, và giữ phong cách tác giả ở những chỗ cần giữ. Mức xác minh tương xứng với rủi ro của nội dung: cú pháp cần bảo toàn và cấu trúc luôn được kiểm tra; nội dung thực chất và chế độ review còn dùng thêm rubric (độ tự nhiên, độ chính xác, phong cách, thuật ngữ, tính toàn vẹn kỹ thuật).
 
 **Quy tắc cốt lõi:**
 - Quét file locale hiện có trước để khớp quy ước
@@ -484,9 +518,13 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 |---------|---------|-------------|
 | MAX_PARALLEL | 3 | Subagent đồng thời tối đa |
 | MAX_RECOVERY_ATTEMPTS | 3 | Tổng số lần thử lại và giả thuyết khám phá cho mỗi task, kể cả lần thử ban đầu |
-| POLL_INTERVAL | 30s | Khoảng kiểm tra trạng thái cho các run `oma agent spawn` (subagent native của Claude Code trả về đồng bộ) |
+| POLL_INTERVAL | backoff có giới hạn | Chỉ là phương án dự phòng khi không có thông báo hoàn thành (subagent native của Claude Code trả về đồng bộ) |
+
+Đây là các mặc định của workflow; các thiết lập về model, vendor, mức song song và ngân sách được phân giải từ cấu hình dự án.
 
 **Giai đoạn quy trình:** Plan → References (chọn tham chiếu theo từng task) → Setup (artifact session và task board) → Execute (điều phối các task sẵn sàng trong giới hạn MAX_PARALLEL) → Monitor → Verify (vòng lặp review) → Collect (claim và báo cáo theo phạm vi run).
+
+**Tham chiếu của task:** Mỗi task được so khớp với intent signature của các skill đã cài, và coordinator chọn các tham chiếu mà task cần. Một skill khớp với độ tin cậy cao là đủ; tập này chỉ mở rộng khi việc phân loại chưa chắc chắn hoặc một phụ thuộc đòi hỏi lĩnh vực khác. Lựa chọn và lý do của nó được ghi trong task board dưới dạng ghi chú của coordinator; launcher không cưỡng chế chúng.
 
 **Vòng lặp review giữa agent:** xem [Luồng điều phối](#orchestration-flow) để biết sơ đồ và giới hạn vòng lặp.
 
@@ -516,11 +554,11 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 ### oma-coordination
 
-**Lĩnh vực:** Hướng dẫn điều phối đa agent thủ công từng bước.
+**Lĩnh vực:** Quy tắc điều phối dùng chung cho công việc đa agent: dùng lại plan, căn chỉnh contract, quyền sở hữu workspace và bàn giao cho QA.
 
-**Khi nào sử dụng:** Công việc đa lĩnh vực mà bạn muốn tự giám sát việc spawn, theo dõi, căn chỉnh contract và QA từng bước thay vì điều phối hoàn toàn tự động.
+**Khi nào sử dụng:** Bất kỳ workflow nào điều phối nhiều hơn một agent chuyên gia. `/work`, `/orchestrate` và `/ultrawork` tải skill này và áp dụng các guardrail của nó. Cũng dùng skill này cho điều phối thủ công từng bước, khi bạn tự điều khiển từng lần dispatch, và khi các agent dùng chung một API contract hoặc data contract.
 
-**Khi nào KHÔNG sử dụng:** Thực thi song song tự động hoàn toàn (dùng oma-orchestration), task đơn lĩnh vực (dùng agent lĩnh vực trực tiếp).
+**Khi nào KHÔNG sử dụng:** Task đơn lĩnh vực (dùng agent lĩnh vực trực tiếp). Việc dispatch, giám sát và xác minh tự động thuộc về oma-orchestration; skill này chỉ cung cấp các quy tắc mà oma-orchestration áp dụng.
 
 **Quy tắc cốt lõi:**
 - Dùng lại plan hợp lệ; chỉ gọi oma-pm khi cần thay đổi phân tách hoặc contract
@@ -531,27 +569,38 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 **Quy trình:** Plan (dùng lại hoặc PM) → Spawn theo tier ưu tiên → Giám sát → QA review → Sửa vấn đề → Phát hành.
 
-**Khác biệt với oma-orchestration:** Coordination là thủ công và có hướng dẫn (người dùng kiểm soát nhịp độ), orchestrator là tự động (agent spawn và chạy với can thiệp tối thiểu từ người dùng).
+**Khác biệt với oma-orchestration:** Coordination cung cấp các quy tắc và hướng dẫn một lần chạy thủ công trong đó người dùng kiểm soát nhịp độ; orchestrator sở hữu việc thực thi tự động (phân giải dispatch, giới hạn song song, ngân sách phục hồi và vòng lặp review).
 
 ---
 
 ### oma-search
 
-**Lĩnh vực:** Bộ định tuyến tìm kiếm dựa trên ý định với chấm điểm độ tin cậy miền. Chuyển truy vấn đến Context7 (tài liệu), tìm kiếm web native, `gh`/`glab` (mã), code intelligence cục bộ (Gortex hoặc Serena).
+**Lĩnh vực:** Bộ định tuyến tìm kiếm cho các nguồn bên ngoài. Nó chọn kênh mà yêu cầu cần và trả về các nguồn kèm bằng chứng hỗ trợ và các giới hạn truy xuất.
 
-**Khi nào sử dụng:** Tìm tài liệu chính thức của thư viện/framework, nghiên cứu web cho tutorial/ví dụ/so sánh/giải pháp, tìm kiếm mã GitHub/GitLab cho các mẫu triển khai, mọi truy vấn mà kênh tìm kiếm không rõ ràng (tự định tuyến), các skill khác cần hạ tầng tìm kiếm (gọi dùng chung).
+**Tuyến:**
 
-**Khi nào KHÔNG sử dụng:** Khám phá mã chỉ cục bộ (dùng code intelligence MCP trực tiếp), phân tích lịch sử Git hoặc blame (dùng oma-scm), nghiên cứu kiến trúc đầy đủ (dùng oma-architecture, có thể gọi skill này nội bộ).
+| Tuyến | Thực thi | Phạm vi |
+|-------|-----------|-------|
+| `docs` | Phân giải thư viện và truy vấn qua Context7; tìm site chính thức khi cần | Tài liệu chính thức trong các ràng buộc phiên bản được yêu cầu |
+| `web` | `providers.web` đã cấu hình: công cụ của runtime cho `native`, một CLI adapter cho `brave` hoặc `exa` | Tìm các URL liên quan đến truy vấn |
+| `code` | `oma search code` qua code host đã chọn (`gh` hoặc `glab`) | Các kết quả triển khai từ xa khớp trong ràng buộc về host và repository |
+| `fetch` | Một trình đọc URL khả dụng hoặc `oma search fetch <url>` | Đọc một URL đã được cung cấp hoặc đã tìm thấy |
+
+**Khi nào sử dụng:** Tài liệu thư viện, nghiên cứu web, tìm kiếm mã từ xa, đọc URL đã biết, và các yêu cầu cần chọn kênh nguồn bên ngoài. Các skill khác dùng nó để lấy nguồn bên ngoài.
+
+**Khi nào KHÔNG sử dụng:** Khám phá mã chỉ cục bộ (dùng trực tiếp code intelligence đã cấu hình), phân tích lịch sử Git hoặc blame (dùng oma-scm), phân tích kiến trúc (dùng oma-architecture).
 
 **Quy tắc cốt lõi:**
-- `--docs`, `--code` hoặc `--web` tường minh sẽ chọn tuyến; nếu không, phân loại ý định bằng `resources/intent-rules.md`
-- Một truy vấn, một tuyến tốt nhất; tránh đa tuyến dư thừa trừ khi ý định mơ hồ
-- Chấm điểm độ tin cậy cho mỗi kết quả; mọi kết quả không cục bộ đều nhận nhãn độ tin cậy miền từ registry
-- Các flag khác: `--strict` lọc kết quả theo độ tin cậy sau khi chấm điểm, `--wide` giữ lại các kết quả độ tin cậy thấp hơn đã gắn nhãn, và `--gitlab` chọn GitLab làm code host
-- Fail forward: nếu tuyến chính thất bại, rút lui nhẹ nhàng (docs→web, web→chiến lược `oma search fetch`)
-- Không cần MCP bổ sung: Context7 cho tài liệu, runtime-native cho web, CLI cho mã, provider đã cấu hình (Gortex hoặc Serena) cho cục bộ
-- Tìm kiếm web trung lập với nhà cung cấp: dùng bất kỳ công cụ nào runtime hiện tại cung cấp (WebSearch, Google, Bing)
-- Chỉ độ tin cậy ở cấp miền; không chấm điểm ở cấp sub-path hoặc trang
+- `--docs`, `--code` hoặc `--web` tường minh sẽ chọn tuyến; nếu không, skill chọn một tuyến chính và chỉ dùng `resources/intent-rules.md` khi lựa chọn chưa rõ ràng
+- Chỉ thêm tuyến khác khi khoảng trống bằng chứng còn lại cần đến; skill không tỏa ra nhiều tuyến theo mặc định
+- `--strict` yêu cầu nguồn sơ cấp hoặc chính thức phù hợp, có nội dung hỗ trợ đã được kiểm tra; `--wide` bao gồm kết quả rộng hơn kèm các hạn chế của chúng; `--gitlab` chọn GitLab làm code host
+- Kết quả mang theo URL nguồn hoặc tham chiếu file, tuyến, provider thực tế, loại nguồn, trạng thái đã đọc nội dung, bằng chứng hỗ trợ và các hạn chế đáng kể
+- Snippet và đoạn trích từ tìm kiếm là bằng chứng hạn chế; các nguồn chưa đọc được chỉ rõ
+- Không tạo điểm tin cậy giả: tên provider hay nhãn miền không xác minh được một tuyên bố cụ thể. `oma search trust <domain>` là công cụ chẩn đoán miền tùy chọn, và `resources/source-provenance.md` áp dụng khi cần diễn giải xuất xứ
+- Provider web không khả dụng, chưa xác thực hoặc bị giới hạn tốc độ sẽ được báo cáo; lựa chọn provider tường minh không bị âm thầm thay bằng tìm kiếm native
+- Tìm kiếm không có URL ứng viên nào thì được tinh chỉnh trong các ràng buộc ban đầu hoặc được báo cáo là không có kết quả; việc truy xuất URL không thay thế cho kết quả tìm kiếm còn thiếu
+- Khi không nguồn nào đáp ứng `--strict`, khoảng trống đó được báo cáo; một tập kết quả rộng hơn không thỏa mãn yêu cầu strict
+- Không có gì được cài tự động: không provider, không browser, không dependency
 
 ---
 
@@ -617,27 +666,27 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 **Khi nào sử dụng:** Soạn hoặc chỉnh sửa báo cáo/bài luận/phần phân tích học thuật, viết tóm tắt điều hành, kết luận hoặc tổng quan tài liệu, viết lại văn phong nghe như AI thành tiếng Anh học thuật tự nhiên, đánh bóng bản nháp theo tiêu chí hạng cao (HD, A, top-band), rà soát độ đa dạng câu, chất lượng động từ, hedging và tuân thủ anti-AI.
 
-**Khi nào KHÔNG sử dụng:** Dịch thuật (dùng oma-translation), tìm nguồn / thu thập trích dẫn / tìm kiếm tài liệu (dùng oma-scholar), phân tích rubric và chia task (dùng oma-pm), tài liệu mã / README / văn bản tham chiếu API (dùng skill lĩnh vực tương ứng), copy không trang trọng hoặc marketing, viết học thuật không phải tiếng Anh (soạn bằng tiếng Anh rồi chuyển cho oma-translation).
+**Khi nào KHÔNG sử dụng:** Dịch thuật (dùng oma-translation), tìm nguồn / thu thập trích dẫn / tìm kiếm tài liệu (dùng oma-scholar), tài liệu mã / README / văn bản tham chiếu API (dùng skill lĩnh vực tương ứng), copy không trang trọng hoặc marketing, viết học thuật không phải tiếng Anh (soạn bằng tiếng Anh rồi chuyển cho oma-translation).
 
 **Chế độ:** `draft` (heading + prose + Writing Notes + Claim-Evidence Map), `revise` (bản gốc + bản sửa + danh sách thay đổi), `review` (báo cáo tuân thủ PASS/FAIL về cấu trúc câu, chất lượng động từ, anti-AI, tính cụ thể, hedging, độ rõ đoạn, nhịp điệu và liên kết claim-evidence).
 
 **Quy tắc cốt lõi:**
-- Quote-before-judgment: trích dẫn nguyên văn ràng buộc/rubric trước khi áp dụng quy tắc
+- Trích dẫn các ràng buộc rubric được cung cấp trước khi đánh giá mức tuân thủ; khi không có rubric, giải thích các phát hiện theo phạm vi được yêu cầu thay vì tự đặt ra tiêu chí
 - Mọi câu phải kiểm chứng được; không bịa dữ liệu, thống kê hoặc trích dẫn
-- Động từ chung bị cấm (`show`, `have`, `make`, `do`, `get`, `use`, …) không được làm động từ chính
-- Đa dạng kiểu câu, độ dài và cách mở câu; không để 3 câu cùng kiểu liên tiếp
-- Mức độ hedge phải khớp độ mạnh của bằng chứng; không dùng ngôi thứ nhất `I think`/`I believe`
+- Chọn động từ theo nghĩa chính xác và mức bằng chứng hỗ trợ (`resources/academic-verb-guide.md`); giữ động từ thông dụng khi nó chính xác và tự nhiên
+- Rà soát cấu trúc lặp lại và độ dài câu trong ngữ cảnh (`resources/sentence-structure-reference.md`); thay đổi nhịp điệu ở chỗ giúp rõ ràng hơn, không đặt hạn mức theo kiểu câu
+- Mức độ hedge phải khớp độ mạnh của bằng chứng theo `resources/hedging-guide.md`, bao gồm các giới hạn của nó đối với từ nhấn mạnh và dấu hiệu ý kiến ngôi thứ nhất
 - Mỗi claim ánh xạ tới bằng chứng trong Claim-Evidence Map; làm yếu hoặc bỏ claim không có bằng chứng
 
-**Quy trình:** 6 bước: READ rubric/bản nháp và trích dẫn ràng buộc, PLAN đoạn theo Topic-Support-Conclude, DRAFT theo cả bốn protocol, AUDIT theo checklist anti-AI, REVERSE-OUTLINE và lập Claim-Evidence Map, POLISH (đọc thành tiếng, liên kết, tính cụ thể, số từ, nhịp điệu).
+**Quy trình:** 6 bước: READ rubric/bản nháp và trích dẫn ràng buộc, PLAN đoạn theo Topic-Support-Conclude, DRAFT theo hướng dẫn về câu, động từ và hedging, AUDIT theo checklist anti-AI, REVERSE-OUTLINE và lập Claim-Evidence Map, POLISH (liên kết, tính cụ thể, số từ, nhịp điệu, biến thiên độ dài đoạn).
 
 ---
 
 ### oma-security
 
-**Lĩnh vực:** Quét và xác thực bảo mật cho mã nguồn ứng dụng, gói skill của agent, thành phần MCP và các bản triển khai web thử nghiệm được ủy quyền.
+**Lĩnh vực:** Quét và xác thực bảo mật cho mã nguồn ứng dụng, gói skill của agent và thành phần MCP. Penetration test trên một bản triển khai web thử nghiệm có phạm vi xác định chỉ chạy trên nền tảng runtime do người dùng cung cấp và đã được rà soát.
 
-**Khi nào sử dụng:** Quét repository hoặc diff mã nguồn; kiểm tra một gói skill hoặc một MCP server hay cấu hình; chạy penetration test có giới hạn trên một bản triển khai thử nghiệm cụ thể, được ủy quyền; xác thực các candidate từ trình quét; cấu hình cổng CI theo engine; khắc phục sự cố credential, độ bao phủ, matcher, quota hoặc trạng thái có thể resume của trình quét.
+**Khi nào sử dụng:** Quét repository hoặc diff mã nguồn; kiểm tra một gói skill hoặc một MCP server hay cấu hình; chạy penetration test runtime có giới hạn trên một bản triển khai thử nghiệm cụ thể, được ủy quyền, trên một nền tảng runtime mà bạn cung cấp và đã rà soát; xác thực các candidate từ trình quét; cấu hình cổng CI theo engine; khắc phục sự cố credential, độ bao phủ, matcher, quota hoặc trạng thái có thể resume của trình quét.
 
 **Khi nào KHÔNG sử dụng:** Review tổng quát về tính đúng đắn, hiệu suất, accessibility hoặc chất lượng (dùng oma-qa), so sánh hoặc nghiên cứu công cụ mà không thực thi (dùng oma-search), quyết định kiến trúc bảo mật (dùng oma-architecture), khắc phục trong mã sản phẩm (dùng oma-debug hoặc skill backend/frontend/mobile/hạ tầng sở hữu).
 
@@ -648,11 +697,12 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 | Mã nguồn ứng dụng hoặc diff mã nguồn | Deepsec (Cisco AI Deep SAST khi được chọn tường minh) |
 | Thư mục hoặc gói skill của agent | Cisco Skill Scanner |
 | Mã nguồn, cấu hình hoặc server MCP | Cisco MCP Scanner |
-| Bản triển khai web thử nghiệm | ARTEX |
+| Bản triển khai web thử nghiệm (`web_runtime`, `pentest`) | Mặc định không có. ARTEX chỉ khi được yêu cầu tường minh, trên nền tảng do người dùng cung cấp và đã được rà soát |
 | Tái hiện cục bộ có giới hạn | Phương pháp xác thực của Cloudflare (không mạng bên ngoài) |
 
 **Quy tắc cốt lõi:**
 - Một lần quét repository chung chỉ chọn mã nguồn; quét skill, MCP và runtime không được thêm vào theo ngụ ý
+- Kiểm thử runtime không có engine đi kèm hay mặc định. Một yêu cầu runtime hoặc mã nguồn kèm runtime không chọn ARTEX theo ngụ ý, và skill không cài đặt, build hay triển khai nền tảng ARTEX. Nếu thiếu yêu cầu ARTEX tường minh, một bản triển khai web thử nghiệm cụ thể và một nền tảng đã được rà soát, giai đoạn runtime được ghi là `skipped` và các thao tác đã chọn khác vẫn tiếp tục
 - Kết quả thất bại hoặc rỗng không bao giờ tự động chọn engine, model hoặc trình phân tích có phí khác
 - Giữ nguyên và resume trạng thái `.deepsec/` hiện có; không bao giờ khởi tạo lại để xóa một lần chạy thất bại hoặc nhiễu
 - Khóa hoặc công cụ đã cài không đồng nghĩa với ủy quyền cho các lần gọi có phí hay phạm vi rộng hơn; dùng lại ủy quyền hiện có theo execution policy dùng chung
@@ -688,7 +738,7 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 **Khi nào sử dụng:** Giải thích diff, pull request, branch hoặc commit range, hoặc một chủ đề, hệ thống hay câu hỏi, dưới dạng một trang HTML chạy được ngoại tuyến.
 
-**Quy trình:** Model viết bản nháp Markdown; `oma explain render` chuyển nó thành một file HTML tại `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, và `oma explain validate` kiểm tra file đó. Skill chỉ được kích hoạt bằng `/explain`, bằng cách nêu tên skill hoặc qua ủy quyền; skill này bị loại khỏi gợi ý theo từ khóa.
+**Quy trình:** Model viết bản nháp Markdown; `oma explain render` chuyển nó thành một file HTML tại `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, và `oma explain validate` kiểm tra file đó (sửa và validate lại tối đa 3 lần). Trang được mở bằng `oma explain render --open`; mở không thành công không bị coi là thất bại. Skill chỉ được kích hoạt bằng `/explain`, bằng cách nêu tên skill hoặc qua ủy quyền; skill này bị loại khỏi gợi ý theo từ khóa.
 
 **Khi nào KHÔNG sử dụng:** Trang tài liệu thông thường, triển khai feature trực tiếp hoặc slide deck (dùng `oma-slide` cho presentation).
 
@@ -703,20 +753,21 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 **Khi nào KHÔNG sử dụng:** Chỉnh sửa ảnh có sẵn hoặc xử lý ảnh, tạo video/audio (dùng oma-video / oma-voice), dựng vector/SVG inline từ dữ liệu có cấu trúc, resize hoặc chuyển định dạng asset đơn giản.
 
 **Quy tắc cốt lõi:**
-- Làm rõ trước khi gọi: nếu subject/style/composition/usage mơ hồ, hãy hỏi hoặc khuếch đại prompt và cho người dùng xem phiên bản mở rộng
+- Xác định brief: dùng các chi tiết được cung cấp và các mặc định sáng tạo hợp lý, và chỉ hỏi khi một lựa chọn còn thiếu làm thay đổi đáng kể kết quả. Prompt mở rộng không cần phê duyệt riêng khi việc tạo ảnh đã được ủy quyền
 - Điều phối theo authentication: chỉ chạy vendor đã xác thực; với `--vendor all`, mọi vendor được yêu cầu phải khả dụng
 - Chốt chi phí: xác nhận trước run có chi phí ước tính ≥ $0.20 (`--yes`/`OMA_IMAGE_YES=1` bỏ qua); `pollinations` và `antigravity` mặc định miễn phí
 - An toàn path: output ngoài `$PWD` cần `--allow-external-output`; `n` tối đa = 5
 - Output có ghi nhận: mọi run ghi `manifest.json` cạnh ảnh với prompt, vendor/model, input và metadata artifact. Đây là dữ liệu tái lập, không hứa hẹn ảnh giống hệt từng pixel.
 - Tự chuyển tiếp ảnh tham chiếu đính kèm qua `--reference <path>` (codex/antigravity)
+- Thiết lập của dự án nằm dưới `image:` trong `.agents/oma-config.yaml`; các mặc định đi kèm nằm trong CLI
 
-**Quy trình:** PREPARE (làm rõ/khuếch đại prompt, chọn vendor) → ACQUIRE (xác thực auth, reference, output path) → ACT (`oma image generate`) → VERIFY (manifest, file, exit code) → FINALIZE (path output và cảnh báo).
+**Quy trình:** PREPARE (xác định brief, chọn vendor) → ACQUIRE (xác thực auth, reference, output path) → ACT (`oma image generate`) → VERIFY (manifest, file, exit code) → FINALIZE (path output và cảnh báo).
 
 ---
 
 ### oma-market
 
-**Lĩnh vực:** Nghiên cứu thị trường từ tín hiệu cộng đồng: trích xuất pain point, phát hiện xu hướng, định vị đối thủ và discovery. Research chạy trên engine upstream [`last30days`](https://github.com/mvanhorn/last30days-skill) (Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web và nhiều nguồn khác), được oma tự động giữ ở bản phát hành mới nhất.
+**Lĩnh vực:** Nghiên cứu thị trường từ tín hiệu cộng đồng: trích xuất pain point, phát hiện xu hướng, định vị đối thủ và discovery. Research chạy trên engine upstream [`last30days`](https://github.com/mvanhorn/last30days-skill) (Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web và nhiều nguồn khác), được cài như một skill thông qua skills CLI.
 
 **Khi nào sử dụng:** Trích xuất pain point thực từ bài đăng cộng đồng, phát hiện xu hướng theo cửa sổ 7/30/90/180 ngày, phân tích cảm nhận đối thủ và định vị SWOT / Porter's 5F, discovery mở (`--discover`), nghiên cứu người / công ty / ticker, tín hiệu tuyển dụng, drill follow-up.
 
@@ -724,14 +775,14 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 **Quy tắc cốt lõi:**
 - detect-trap trước: không chạy engine nếu chưa preflight (`--force` chỉ sau khi người dùng xác nhận lại rõ ràng)
-- Một engine, luôn bản mới nhất: `oma market resolve` refresh bản quản lý (`~/.cache/oma-market/last30days/<tag>/`) trước khi dùng; bản cài cũ của người dùng chỉ là fallback khi offline không có gì trong cache
+- Một engine, được cài như một skill: `oma market resolve` đọc bản cài qua skills CLI (hoặc một bản pin); `oma market update` cài engine khi còn thiếu và cập nhật nó trong trường hợp còn lại, sau khi người dùng đồng ý
 - Tuân thủ nguyên văn `SKILL.md` của engine đã resolve; thay thế duy nhất là dùng `oma market run <args>` thay cho lệnh raw `python3 scripts/last30days.py`
 - Không chỉ WebSearch: không có engine, không có Python 3.12+ hoặc exit khác 0 → dừng và báo cáo
 - Chỉ bật keyed sources qua setup wizard upstream với sự đồng ý của người dùng; source bị bỏ qua vẫn hiện ở footer
-- Framework chỉ trích dẫn cluster của engine; badge dòng đầu và upstream LAWs được thực thi trước khi ghi file
+- Framework chỉ trích dẫn cluster của engine. Badge của engine là dòng đầu tiên; brief ứng viên được ghi trước, sau đó upstream LAWs 1–8 và phần tự kiểm tra `resources/output-laws.md` phải pass trên file đã ghi trước khi bàn giao
 - Mỗi run chỉ một brief tại `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`; framework tự bật theo ý định (pain/trend → SWOT, competitor → SWOT + Porter's 5F, discovery → SWOT + PESTEL)
 
-**Quy trình:** detect-trap → `oma market resolve` → đọc SKILL.md upstream → bước pre-research upstream (setup wizard, phân giải handle/subreddit, kế hoạch query) → `oma market run … --emit=compact` → tổng hợp theo OUTPUT CONTRACT upstream → thêm framework → tự kiểm tra → ghi file.
+**Quy trình:** detect-trap → `oma market resolve` → đọc SKILL.md upstream → bước pre-research upstream (setup wizard, phân giải handle/subreddit, kế hoạch query) → `oma market run … --emit=compact` → tổng hợp theo OUTPUT CONTRACT upstream → thêm các phần framework vào giữa phần thân của engine và footer của engine → ghi file → tự kiểm tra file đã ghi, sửa và kiểm tra lại.
 
 ---
 
@@ -751,7 +802,7 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 - Kinh tế: khả năng đọc là mục tiêu chính; không refactor code sắp xóa hoặc code lạnh ít churn
 - Lệch convention cần route ADR của oma-architecture, không sửa cục bộ; mọi metric chỉ là proxy (Goodhart)
 
-**Quy trình:** PREPARE (phân loại green/brownfield, gate kích thước, xếp hạng hotspot) → ACQUIRE (đọc code bằng symbol tool, thu metric + tín hiệu git) → REASON (lập chuỗi transformation nguyên tử / expand-contract) → ACT (một transformation engine-first) → VERIFY (chạy lại test không đổi rồi commit, hoặc Mikado revert) → FINALIZE (delta metric + kết luận khả năng đọc).
+**Quy trình:** PREPARE (phân loại green/brownfield, gate kích thước sẵn có của dự án nếu có, xếp hạng hotspot) → ACQUIRE (đọc code bằng symbol tool, thu metric + tín hiệu git) → REASON (lập chuỗi transformation nguyên tử / expand-contract) → ACT (một transformation engine-first) → VERIFY (chạy lại test không đổi rồi commit, hoặc Mikado revert; khi việc chạy test bị loại trừ, dừng trước transformation tiếp theo và báo cáo transformation đã áp dụng là chưa được xác minh) → FINALIZE (delta metric + kết luận khả năng đọc).
 
 ---
 
@@ -768,7 +819,8 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 **Quy tắc cốt lõi:**
 - Spec đích là profile v0.9.0 / `paper@1`; host LLM tạo sidecar (không bao giờ shell out tới external LLM SDK)
 - Chống bịa: nếu DOI/venue/year không hiển thị trong nguồn, bỏ hẳn key; không viết `doi: TODO` hoặc đoán
-- Tên field chính xác, một object `provenance.actor`, enum đóng, số không đặt trong quote
+- Hình dạng field tuân theo chính xác `resources/sidecar-spec.md`: tên field, một object `provenance.actor` duy nhất, enum đóng, số không đặt trong quote và ID kebab-case có prefix
+- Quy tắc tạo cục bộ và lint bám theo tính tương thích với production, không phải toàn bộ schema v0.9 chuẩn; `resources/canonical-delta.md` trình bày phần khác biệt khi import hoặc lint một bản ghi của bên thứ ba
 - Claim có bằng chứng dùng `supported_by`; định nghĩa và câu hỏi mở có thể giữ neo vào nguồn. `oma scholar lint` cảnh báo khi dưới 1.5 relation trên mỗi statement, nhưng tỷ lệ này là chỉ số chẩn đoán, không phải hạn mức
 - Xác thực trước khi chia sẻ (`oma scholar lint`); dùng `--lenient` cho sidecar bên thứ ba
 - knows.academy → fallback OpenAlex cho paper cũ/không phải 2026; proxy API công khai không cần auth
@@ -798,9 +850,9 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 
 ### oma-slide
 
-**Lĩnh vực:** Tạo deck trình chiếu HTML giàu animation trên stage cố định 1920×1080, với validate/bundle/export xác định sang PDF/PNG/PPTX qua CLI `oma slide`.
+**Lĩnh vực:** Tạo deck trình chiếu HTML giàu animation trên stage cố định 1920×1080, với validate/bundle/export xác định sang PDF/PNG/PPTX qua CLI `oma slide`, cùng một route `native-pptx` tạo file PowerPoint chỉnh sửa được thông qua skill upstream [ppt-master](https://github.com/hugohe3/ppt-master).
 
-**Khi nào sử dụng:** Tạo presentation mới từ topic hoặc outline, nâng cấp hoặc định dạng lại deck có sẵn, tạo HTML theo slide với animation và thẩm mỹ design-doctrine, export deck sang PDF/PNG/PPTX, áp dụng style preset có tên, export sang hoặc import từ Canva.
+**Khi nào sử dụng:** Tạo presentation mới từ topic hoặc outline, nâng cấp hoặc định dạng lại deck có sẵn, tạo HTML theo slide với animation và thẩm mỹ design-doctrine, export deck sang PDF/PNG/PPTX, áp dụng style preset có tên, export sang hoặc import từ Canva. Dùng route `native-pptx` cho PPTX chỉnh sửa được, điền hoặc chỉnh sửa một PPTX có sẵn mà vẫn giữ thiết kế của nó, chuyển một tài liệu thành deck PPTX, template tái sử dụng, hoặc PPTX/MP4 có lời dẫn.
 
 **Khi nào KHÔNG sử dụng:** Tạo tài liệu thường không có slide, chỉ tạo ảnh (dùng trực tiếp oma-image), định nghĩa brand/design system (dùng oma-design), thao tác CLI xác định (validate/bundle/export) không có generation (gọi trực tiếp CLI `oma slide`).
 
@@ -808,51 +860,62 @@ Các file `stack/stack.yaml`, `stack/tech-stack.md`, snippet và API template d�
 - Skill soạn HTML; CLI xử lý mọi phần còn lại (scaffold, validate, bundle, export)
 - Chỉ dùng asset cục bộ: không dùng URL từ xa trong `<img src>`/`<video src>`, chỉ `./assets/<file>`
 - CJK → bắt buộc font Pretendard trên mọi slide tiếng Hàn/Nhật/Trung
-- Wrapper `prefers-reduced-motion`, focus state hiển thị và `data-om-validate` bắt buộc trên mỗi slide
+- Wrapper `prefers-reduced-motion`, focus state hiển thị và cấu trúc slide chuẩn trên mỗi slide: `oma slide validate` đo từng `.slide` bên trong `.deck-stage` như khung 1920×1080, không có opt-out theo từng slide hay từng phần tử
 - Tối đa 3 vòng auto-fix khi validate, sau đó đưa diff cho người dùng
 - Giao việc tạo ảnh cho oma-image; Canva MCP là tùy chọn và chỉ tự cấp khi người dùng đồng ý rõ ràng
+- `native-pptx`: tải ppt-master từ danh mục skill của runtime hoặc `bunx skills use hugohe3/ppt-master@ppt-master`, không bao giờ sửa nó, chỉ cài các package Python của nó khi có sự đồng ý, và tuân theo các gate riêng của nó
 
-**Quy trình:** 7 giai đoạn: DETECT (mode), DISCOVER (làm rõ + đánh giá asset), STYLE (3 preview trực tiếp → người dùng chọn), GENERATE (`slide-NN.html` ở 1920×1080), VALIDATE (`oma slide validate`, ≤3 vòng auto-fix), REVIEW (viewer + bbox editor tùy chọn), DELIVER (`bundle` + export PDF/PNG/PPTX tùy chọn).
+**CLI:** `oma slide create` (scaffold workspace), `oma slide style get` (lấy một file style), `oma slide asset fetch-video` (tải video), `oma slide import pptx`, `oma slide validate`, `oma slide bundle`, `oma slide export pdf|png|pptx`, `oma slide edit` và `oma slide doctor`.
+
+**Quy trình:** 7 giai đoạn: DETECT (route + mode), DISCOVER (dùng lại mục đích, đối tượng khán giả, số slide và asset được cung cấp; chỉ một câu hỏi gộp cho những lựa chọn còn thiếu có ảnh hưởng đáng kể đến deck), STYLE (style được cung cấp, quy ước của deck hiện có hoặc một preset phù hợp; 3 preview trực tiếp chỉ khi có yêu cầu khám phá style hoặc khi định hướng là một lựa chọn quan trọng còn mở), GENERATE (`slide-NN.html` ở 1920×1080), VALIDATE (`oma slide validate`, ≤3 vòng auto-fix), REVIEW (viewer + bbox editor tùy chọn), DELIVER (`bundle` + export PDF/PNG/PPTX tùy chọn).
 
 ---
 
 ### oma-video
 
-**Lĩnh vực:** Tạo video short, explainer và demo do người quay qua CLI `oma video`, ghép script → narration → visuals → captions → render HyperFrames.
+**Lĩnh vực:** Tạo video qua CLI `oma video`, cùng phân tích và chỉnh sửa clip có sẵn bằng các công cụ media cục bộ.
 
-**Khi nào sử dụng:** Tạo video short (shorts/reels, 9:16) từ topic, explainer (16:9/9:16) từ README/code/data, demo/walkthrough từ screen capture (`--source file`) hoặc capture web app có browser headed và người giám sát với bất kỳ URL nào (`--source web`), render lại run có sẵn một cách xác định.
+**Khi nào sử dụng:** Tạo video short và explainer, làm demo từ file `--capture` do người quay, render lại một run có sẵn, trích xuất frame, phân tích các đối tượng nhìn thấy, loại bỏ khoảng lặng và ghép clip lồng tiếng.
 
-**Khi nào KHÔNG sử dụng:** Tạo ảnh tĩnh đơn (dùng oma-image), tạo slide deck (dùng oma-slide; video gọi nội bộ để tạo frame explainer), chỉ tạo speech audio (dùng oma-voice), biên tập phi tuyến mp4 đã hoàn thiện, livestream (capture web có giám sát vẫn thuộc phạm vi).
+**Khi nào KHÔNG sử dụng:** Một ảnh tĩnh đơn (oma-image), slide deck (oma-slide), xử lý chỉ audio hoặc tạo/transcribe speech (oma-voice), dịch lời nói (oma-translation), hoặc livestream.
 
 **Quy tắc cốt lõi:**
-- Làm rõ hoặc suy ra mode trước khi gọi; cho người dùng xem plan suy ra, không âm thầm render từ brief mơ hồ
-- Cấu hình provider có thể không cần key cho fallback asset được hỗ trợ; provider có phí (Pexels, Pixelle) chỉ tự bật khi env key tồn tại, còn compositor failure không bao giờ được thay bằng fallback video
-- Chốt chi phí ở mức ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` bỏ qua); giới hạn duration 180s / 40 scene
+- Chuyển công việc trên clip có sẵn sang tham chiếu media-processing trước khi chọn creation mode/provider; các thao tác này dùng công cụ đã cài, không phải một generation mode mới của CLI
+- Cấu hình provider có thể không cần key cho fallback asset được hỗ trợ. Provider stock và AIGC (Pexels, Pixelle) chỉ được dùng với `--visual stock` hoặc `--visual aigc` cùng env key của chúng; nếu không, visual là ảnh tĩnh `oma-image` không cần key. Compositor failure không bao giờ được thay bằng fallback video
+- Frame `oma-slide` chỉ được dùng cho scene có `visual.ref` là một thư mục deck có sẵn; provider không tạo deck, và scene slide thiếu thư mục đó sẽ render placeholder
+- Việc tạo video dùng chốt chi phí ở mức ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` cho công việc có phí đã được ủy quyền) và giới hạn duration 180s / 40 scene; các thiết lập này nằm dưới `video:` trong `.agents/oma-config.yaml`
 - Input render được ghi trong `render-spec.json`, asset, seed và Pretendard nhúng; `OMA_VIDEO_MOCK=1` là test harness cho golden fixture, không phải output bàn giao cho người dùng
-- Demo có người trong vòng lặp: capture web chỉ mở browser headed và ghi khi người điều khiển thao tác — KHÔNG tự động credential; `--url` và token được che trong log/manifest
+- Capture demo do con người thực hiện; `--source web --url` cung cấp ngữ cảnh, không bắt đầu ghi hình và không tự động hóa đăng nhập. Che token trong URL ở log/manifest
+- Demo cần `--polish` để đưa capture qua composition `Demo`, nơi thông tin cá nhân được che. Không có `--polish`, MP4 output là capture thô, chưa che, chỉ được bàn giao sau khi bước kiểm tra thông tin cá nhân không tìm thấy gì cần che
 - An toàn path (`--allow-external-output` cho output ngoài `$PWD`)
 
-**Quy trình:** PREPARE (mode/aspect/locale, làm rõ/khuếch đại brief) → ACQUIRE (thăm dò availability provider, xác thực capture path, kiểm tra chi phí) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, hash manifest, exit code, mp4) → FINALIZE (run-dir + path mp4 + cảnh báo coverage).
+**Quy trình:** PREPARE (mode/aspect/locale; nêu các mặc định đã suy ra và chỉ hỏi khi câu trả lời làm thay đổi kết quả) → ACQUIRE (thăm dò availability provider, xác thực capture path, kiểm tra chi phí) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, hash manifest, exit code, mp4) → FINALIZE (run-dir + path mp4 + cảnh báo coverage).
+
+Clip có sẵn dùng việc kiểm tra stream/PTS của nguồn, tiêu chí chọn frame hoặc cắt tường minh, và một timeline chỉnh sửa audio/video chung. Bộ phát hiện speech và bộ phát hiện biên độ có thể cho kết quả khác nhau; hãy giải quyết các khoảng đang tranh chấp dựa trên nội dung được yêu cầu thay vì tăng số lần cắt. Lồng tiếng có thể sao chép hình ảnh đã mã hóa gốc trong khi thay audio của nó.
 
 ---
 
 ### oma-voice
 
-**Lĩnh vực:** Text-to-speech và speech-to-text local-first qua Voicebox MCP server — hoàn toàn trên thiết bị, không cloud, không API key, không phí mỗi lần gọi.
+**Lĩnh vực:** Tạo/transcribe speech cục bộ qua Voicebox, cùng chuyển đổi audio có sẵn, khớp thời lượng và xử lý loudness bằng FFmpeg.
 
 **Khi nào sử dụng:** Tạo audio notification ngắn khi agent hoàn tất task hoặc bị chặn, tạo voiceover/narration/audio asset (mp3 hoặc wav), transcribe file audio cục bộ (mp3, wav, m4a, webm, flac) thành Markdown, so sánh voice profile bằng cách chạy lại cùng text với các profile id khác nhau.
+
+Cũng dùng để khớp speech có sẵn vào một khoảng thời gian được yêu cầu, resample, chuyển đổi kênh và các loudness profile được yêu cầu. Việc đặt vào video vẫn thuộc về oma-video.
 
 **Khi nào KHÔNG sử dụng:** Cloud TTS hoặc voice đa ngôn ngữ fidelity cao trên cloud, dictation microphone terminal thời gian thực (dùng hotkey dictation của Voicebox), upload sample voice cloning / tạo profile (làm trong UI desktop Voicebox), video/music/sound design.
 
 **Quy tắc cốt lõi:**
-- Cần Voicebox: nếu handshake / `GET /health` thất bại, thoát với gợi ý cài/khởi chạy một lần; không retry hoặc tự khởi chạy lại
-- Cần profile: nếu `voicebox_list_profiles` rỗng, hướng người dùng đến UI app rồi thoát
-- Giới hạn độ dài: TTS tối đa 5000 ký tự mỗi lần gọi (cảnh báo ở 2000), STT 30 phút; v1 không tự chunk
+- Cần Voicebox cho việc tạo/transcribe; xử lý audio có sẵn bỏ qua các kiểm tra health, profile và model của nó
+- Chỉ TTS mới cần profile; transcribe và xử lý file cục bộ không cần
+- Giới hạn độ dài: TTS tối đa 5000 ký tự mỗi lần gọi, STT 30 phút; v1 không tự chunk
 - Minh bạch khi tự gọi: notification chỉ chạy khi task vượt `auto_notify_after_sec` (mặc định 60s); luôn thông báo ý định trong một dòng
-- An toàn path (cảnh báo + xác nhận nếu output ngoài `$PWD`); SIGINT không ghi output dở dang
-- Mỗi lần tạo phải có manifest; không có chốt chi phí (Voicebox miễn phí)
+- Output path được yêu cầu tường minh đồng nghĩa với ủy quyền cho đích đó; hãy làm rõ khi việc thay thế các file không liên quan còn mơ hồ. Lần gọi bị ngắt không ghi output dở dang
+- Audio/transcript được lưu đều kèm manifest; việc xử lý ghi lại dữ liệu nguồn/thao tác thực, không bịa generation id
 
 **Quy trình:** PREPARE (xác thực text/audio/language/path/profile) → ACQUIRE (hỏi một lần nếu thiếu tín hiệu) → ACT (MCP `voicebox_speak` hoặc `voicebox_transcribe`) → VERIFY (audio/transcript tồn tại + field manifest) → FINALIZE (ghi `manifest.json`, báo cáo path).
+
+Yêu cầu trên file có sẵn được chuyển sang xử lý cục bộ trước chuỗi Voicebox này. Giữ nguyên audio gốc, suy ra mục tiêu tempo và loudness từ yêu cầu bàn giao, và tách các phép đo kỹ thuật khỏi độ tự nhiên của speech chưa được đánh giá.
 
 ---
 
@@ -921,9 +984,9 @@ oma agent spawn qa prompts/review.md session-01 --task-id task-5 --read-only
 Khi chạy workflow đa agent (`/orchestrate` hoặc `/work`):
 
 1. **Agent PM** phân tách yêu cầu thành task với các tier ưu tiên dạng số (`1` = không phụ thuộc; tier thấp hơn chạy trước), phụ thuộc và tiêu chí chấp nhận. Plan hợp lệ hiện có sẽ được dùng lại
-2. **Session được khởi tạo**: session ID được tạo, `orchestrator-session-{sessionId}.md` và `task-board-{sessionId}.md` được tạo trong memory store đã cấu hình
+2. **Session được khởi tạo**: session ID được tạo, tham chiếu theo từng task được chọn, và `orchestrator-session-{sessionId}.md` cùng `task-board-{sessionId}.md` được tạo trong memory store đã cấu hình
 3. **Task tier 1** bắt đầu song song (tối đa MAX_PARALLEL agent đồng thời)
-4. **Tiến trình được giám sát**: với các run `oma agent spawn`, orchestrator poll các file theo phạm vi run `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` mỗi POLL_INTERVAL; subagent native của Claude Code trả về đồng bộ
+4. **Tiến trình được giám sát**: orchestrator ưu tiên thông báo hoàn thành từ host; với các run `oma agent spawn` không có thông báo đó, một coordinator poll các file theo phạm vi run `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` đã thay đổi, với backoff có giới hạn. Subagent native của Claude Code trả về đồng bộ
 5. **Các tier sau** bắt đầu khi phụ thuộc của chúng hoàn thành
 6. **Vòng lặp review** chạy cho mỗi agent hoàn thành (xem bên dưới)
 7. **Kết quả được thu thập** từ các file kết quả theo phạm vi run và claim có cấu trúc

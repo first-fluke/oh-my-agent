@@ -22,7 +22,7 @@ Ta tabela jest autorytatywną listą zainstalowanych umiejętności. Generuje j�
 | [`oma-architecture`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-architecture/SKILL.md) | Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs. |
 | [`oma-backend`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-backend/SKILL.md) | Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db. |
 | [`oma-brainstorm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-brainstorm/SKILL.md) | Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration. |
-| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step. |
+| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination. |
 | [`oma-db`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-db/SKILL.md) | Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend. |
 | [`oma-debug`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-debug/SKILL.md) | Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests. |
 | [`oma-design`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-design/SKILL.md) | Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions. |
@@ -44,7 +44,7 @@ Ta tabela jest autorytatywną listą zainstalowanych umiejętności. Generuje j�
 | [`oma-scholar`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scholar/SKILL.md) | Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis. |
 | [`oma-scm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scm/SKILL.md) | Manage Git branches, merges, conflicts, commits, and release baselines. Use for repository history and change-management operations. |
 | [`oma-search`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-search/SKILL.md) | Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools. |
-| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation. |
+| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components, validate findings, and configure scan gates. Penetration tests of a scoped web test deployment run only on a user-supplied, reviewed runtime platform. Use oma-qa for broad quality reviews and domain skills for remediation. |
 | [`oma-skill-creation`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-skill-creation/SKILL.md) | Create or revise OMA skills and their references. Use for skill routing, execution contracts, conditional loading, and authoring validation. |
 | [`oma-slide`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-slide/SKILL.md) | Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery. |
 | [`oma-tf-infra`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-tf-infra/SKILL.md) | Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes. |
@@ -127,15 +127,15 @@ flowchart TD
 | **Jakość** | oma-qa | Audyt bezpieczeństwa (OWASP), wydajność, dostępność (WCAG), przegląd jakości kodu |
 | **Debugowanie** | oma-debug | Reprodukcja błędów, analiza przyczyn źródłowych, minimalne poprawki, testy regresji |
 | **Lokalizacja** | oma-translation | Tłumaczenie uwzględniające kontekst, z zachowaniem tonu, rejestru i terminów domenowych |
-| **Koordynacja** | oma-orchestration, oma-coordination | Automatyczna i ręczna orkiestracja wieloagentowa |
+| **Koordynacja** | oma-orchestration, oma-coordination | Automatyczna orkiestracja wieloagentowa; wspólne reguły koordynacji i ręczna koordynacja krok po kroku |
 | **Git** | oma-scm | Generowanie Conventional Commits, dzielenie commitów według funkcjonalności |
-| **Wyszukiwanie i pobieranie** | oma-search | Router wyszukiwania oparty na intencji z oceną zaufania (dokumenty Context7, web, kod `gh`/`glab`, lokalne code intelligence) |
+| **Wyszukiwanie i pobieranie** | oma-search | Router wyszukiwania dla źródeł zewnętrznych z cytowaniami (dokumenty Context7, dostawcy wyszukiwania webowego, zdalny kod `gh`/`glab`, pobieranie znanych URL-i) |
 | **Retrospektywa** | oma-recap | Analiza historii konwersacji z wielu narzędzi i tematyczne podsumowania pracy |
 | **Przetwarzanie dokumentów** | oma-hwp, oma-pdf | Konwersja HWP/HWPX/HWPML i PDF do Markdown na potrzeby ingestii LLM/RAG |
 | **Dokumentacja** | oma-docs | Utrzymanie dokumentacji: uszkodzone odwołania, dokumenty dotknięte diffem, dryf tłumaczeń i lintowanie przetłumaczonych dokumentów |
 | **Objaśnienia** | oma-explanation | Offline'owe objaśnienia HTML dla zmiany w kodzie (diff, PR, branch, zakres commitów) albo dla tematu, systemu lub pytania |
 | **Pisanie akademickie** | oma-academic-writing, oma-scholar | Tworzenie i audyt publikacyjnej prozy akademickiej oraz badania naukowe, wyszukiwanie i recenzowanie z sidecarami Knows |
-| **Bezpieczeństwo** | oma-security | Skanowanie kodu źródłowego aplikacji, pakietów umiejętności agentów, komponentów MCP i autoryzowanych testowych wdrożeń webowych (Deepsec, skanery Cisco, ARTEX), z niezależną walidacją ustaleń i bramkami CI |
+| **Bezpieczeństwo** | oma-security | Skanowanie kodu źródłowego aplikacji, pakietów umiejętności agentów i komponentów MCP (Deepsec, skanery Cisco), z niezależną walidacją ustaleń i bramkami CI; testy penetracyjne testowego wdrożenia webowego o określonym zakresie wyłącznie na dostarczonej przez użytkownika i sprawdzonej platformie ARTEX |
 | **Refaktoryzacja** | oma-refactor | Stopniowa restrukturyzacja zachowująca działanie, kierowanie hotspotami, testy charakterystyki jako siatka bezpieczeństwa, commity tylko refaktoryzacyjne |
 | **Badania rynku** | oma-market | Badanie bólu, trendów, konkurencji i odkrywania sygnałów społecznościowych z frameworkami SWOT/5F Portera/PESTEL dobieranymi do intencji |
 | **Tworzenie umiejętności** | oma-skill-creation | Tworzenie i walidowanie umiejętności OMA w formacie SSL-lite |
@@ -162,7 +162,7 @@ Te podsumowania wyjaśniają domenę i kluczowe reguły każdej umiejętności. 
 - Przedstawiaj projekt sekcja po sekcji, rozstrzygając tylko otwarte istotne wybory
 - YAGNI: projektuj tylko to, co jest potrzebne
 
-**Workflow:** 7 faz: kontekst, pytania, podejścia (opcjonalnie zainicjowane przez TRIZ-lite), projekt, ślepy przegląd, dokumentacja (zapis do `docs/plans/designs/`), przejście do `/plan`.
+**Workflow:** Workflow `/brainstorm` wykonuje 7 kroków: kontekst, pytania, podejścia (opcjonalnie zainicjowane przez TRIZ-lite), projekt, ślepy przegląd, dokumentacja (zapis do `docs/decisions/`), przejście do `/plan`.
 
 ---
 
@@ -199,7 +199,7 @@ Te podsumowania wyjaśniają domenę i kluczowe reguły każdej umiejętności. 
 - Minimalizuj zależności, aby maksymalizować wykonanie równoległe
 - Bezpieczeństwo i testowanie należą do każdego zadania, a nie do oddzielnych faz
 - Zadania muszą być wykonalne przez jednego agenta
-- Zwróć plan JSON oraz task board przypisany do sesji, aby orkiestrator mógł z niego korzystać
+- Zwróć plan JSON jako przekazanie dla orkiestratora; task board tworzy orkiestrator i to on jest jego właścicielem
 
 **Wyjście:** `.agents/results/plan-{sessionId}.json` z numerycznymi poziomami priorytetu (`1` = zadania niezależne, niższe poziomy uruchamiają się najpierw) oraz raport przypisany do uruchomienia `result-{agentId}-{taskId}-{runId}-{sessionId}.md` w skonfigurowanym magazynie pamięci.
 
@@ -255,11 +255,15 @@ Te podsumowania wyjaśniają domenę i kluczowe reguły każdej umiejętności. 
 
 **Domena:** API, logika po stronie serwera, uwierzytelnianie i operacje bazodanowe.
 
-**Kiedy używać:** API REST/GraphQL, migracje baz danych, uwierzytelnianie, logika biznesowa serwera i zadania w tle.
+**Kiedy używać:** API REST/GraphQL, kod dostępu do danych i migracje potrzebne przy zmianie API, uwierzytelnianie, logika biznesowa serwera i zadania w tle.
+
+**Kiedy NIE używać:** Modelowanie schematu, projektowanie indeksów i strojenie zapytań (użyj oma-db), UI frontendu (użyj oma-frontend), kod mobilny (użyj oma-mobile).
 
 **Architektura:** Router (HTTP) -> Service (logika biznesowa) -> Repository (dostęp do danych) -> Models.
 
-**Wykrywanie stosu:** Odczytuje manifesty projektu (pyproject.toml, package.json, Cargo.toml, go.mod itd.), aby ustalić język i framework. Jeśli brakuje konwencji właściwych dla projektu, prosi użytkownika o uruchomienie `/stack-set`; ta komenda materializuje rozstrzygnięte odwołania `stack/` z dostarczonego schematu i szablonów.
+**Wykrywanie stosu:** Najpierw odczytuje manifesty projektu (pyproject.toml, package.json, Cargo.toml, go.mod itd.) i istniejący kod, aby ustalić język i framework. Referencja stosu ma charakter uzupełniający: `stack/`, jeśli istnieje, a w przeciwnym razie pasujący `variants/<language>/`. Zainstalowany projekt z wybranym presetem ma `stack/` i nie ma `variants/`; układ pluginu i układ źródłowy mają `variants/` i nie mają `stack/`. Jeśli żaden z tych przypadków nie zachodzi, agent pyta użytkownika albo proponuje `/stack-set`.
+
+**Dostarczane presety:** Python (Litestar z SQLAlchemy 2 (async) przez Advanced Alchemy, modele msgspec, wbudowane uwierzytelnianie JWT), Node.js (NestJS + Prisma, testowane przez Vitest) i Rust (Axum + SQLx). Projekt zainstalowany z wcześniejszym presetem FastAPI zachowuje FastAPI. Te ustawienia domyślne obowiązują tylko wtedy, gdy docelowy projekt nie ma ustalonego wyboru; edycja o określonym zakresie nie upoważnia do migracji stosu.
 
 **Podstawowe reguły:**
 - Czysta architektura: żadnej logiki biznesowej w handlerach tras
@@ -269,33 +273,40 @@ Te podsumowania wyjaśniają domenę i kluczowe reguły każdej umiejętności. 
 - Stosuj async, gdy jest obsługiwane; dodaj adnotacje typów do wszystkich sygnatur
 - Własne wyjątki obsługuj przez scentralizowany moduł błędów
 - Jawnie określ strategię ładowania ORM, granice transakcji i bezpieczny cykl życia
+- Polecenia weryfikacyjne są wybierane z projektu (z preferencją dla bloku `verify:` w `stack/stack.yaml`) i uruchamiane tylko wtedy, gdy wymaga tego użytkownik lub aktywny workflow; nieuruchomione kontrole są zgłaszane
 
 <!-- oma-docs:ignore-start -->
-Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i szablony API są generowane przez `/stack-set`, gdy są potrzebne; nie istnieją, dopóki stos nie zostanie zmaterializowany.
+Referencja stosu zawiera `stack.yaml` (ustrukturyzowaną deklarację i kontrakt `verify:`, który uruchamia `oma verify agent backend`), `tech-stack.md`, `snippets.md` i `api-template.*`. `/stack-set` generuje właściwy dla projektu katalog `stack/` na podstawie wykrytej bazy kodu.
 <!-- oma-docs:ignore-end -->
 
 ---
 
 ### oma-mobile
 
-**Domena:** Aplikacje mobilne międzyplatformowe i natywne (Flutter, React Native oraz natywny Swift na iOS).
+**Domena:** Aplikacje mobilne międzyplatformowe i natywne (Flutter, React Native, natywny Swift na iOS oraz natywny Kotlin na Androidzie).
 
 **Kiedy używać:** Natywne aplikacje mobilne (iOS + Android), wzorce UI właściwe dla urządzeń mobilnych, funkcje platformy (kamera, GPS, powiadomienia push), architektura offline-first; natywne aplikacje iOS w Swift korzystające z SwiftUI i `swift-openapi-generator`.
 
-**Architektura:** Clean Architecture: domain -> data -> presentation. Dla natywnego Swift iOS: układ projektu `App/Core/Features/Shared`.
+**Architektura:** Clean Architecture: domain -> data -> presentation. Dla natywnego Swift iOS: układ projektu `App/Core/Features/Shared`. Dla Kotlin Android: `app/{ui,data,di}` + `api-client`. Logika biznesowa nigdy nie trafia do widgetów, widoków ani composables.
 
 **Stosy technologiczne:**
 - Flutter/Dart: Riverpod/Bloc (zarządzanie stanem), Dio z interceptorami (API), GoRouter (nawigacja), Material Design 3 (Android) + iOS HIG.
+- React Native: Zustand + TanStack Query (stan), axios za hookami TanStack Query (API).
 - Natywny Swift iOS (iOS 17+): SwiftUI + `@Observable` (framework Observation), Apple `swift-openapi-generator` dla klientów API, układ `App/Core/Features/Shared`.
+- Natywny Kotlin Android (API 26+): Jetpack Compose + Material 3, `@HiltViewModel` + `StateFlow`, klienci OpenAPI Generator (`kotlin` / `jvm-ktor`) na Ktor z wstrzykiwanym silnikiem OkHttp, układ `app/{ui,data,di}` + `api-client`.
 
 **Podstawowe reguły:**
-- Riverpod/Bloc do zarządzania stanem (bez surowego setState dla złożonej logiki)
-- Wszystkie kontrolery usuwaj w metodzie `dispose()`
-- Używaj Dio z interceptorami do wywołań API i płynnie obsługuj tryb offline
-- Celuj w 60 kl./s; testuj na obu platformach
+- Zarządzanie stanem to rozwiązanie właściwe dla wariantu (Flutter: Riverpod/Bloc; React Native: Zustand + TanStack Query; Swift: `@MainActor @Observable`; Kotlin: `@HiltViewModel` + `StateFlow`); bez surowego setState ani doraźnego stanu dla złożonej logiki
+- Zwalniaj zasoby zgodnie z cyklem życia platformy: kontrolery Fluttera w `dispose()`, czyszczenie efektów w React Native, strukturalne `.task {}` w Swift, `viewModelScope` w Kotlinie
+- Używaj transportu platformy z przechwytywaniem na potrzeby uwierzytelniania, ponowień i logowania; płynnie obsługuj tryb offline
+- Celuj w 60 kl./s; obejmij każdą platformę, na którą aplikacja jest wydawana
+- Sekrety przechowuj wyłącznie w bezpiecznym magazynie (flutter_secure_storage, Keychain, react-native-keychain, magazyn oparty na Android Keystore)
+- E2E dla krytycznych ścieżek użytkownika: Maestro (Flutter, React Native, Kotlin) lub XCUITest (natywny Swift)
+- Testy i kontrole E2E uruchamiaj tylko wtedy, gdy wymaga tego użytkownik lub aktywny workflow; buildy tylko na wyraźne żądanie
 - Swift: na iOS 17+ używaj `@Observable` zamiast `ObservableObject`; generuj klientów API ze specyfikacji OpenAPI przez `swift-openapi-generator`
+- Kotlin: dla endpointów objętych specyfikacją wywołuj wygenerowane `*Api`; Ktor jest warstwą niezależną od silnika, więc silnik OkHttp wstrzykuje się tam, gdzie budowany jest klient, a w testach zastępuje go `MockEngine`
 
-**Ziarna platform:** `variants/` dostarcza `flutter/`, `react-native/` i `swift-ios/`, każde z `stack.yaml`, `tech-stack.md`, `snippets.md` i szablonem API, a także współdzielony `stack.schema.json`. To materiał startowy dla `/stack-set`, a nie obowiązkowa lektura przy edycji istniejącego kodu.
+**Warianty platform:** `variants/` dostarcza `flutter/`, `react-native/`, `swift-ios/` i `kotlin-android/`, każdy z `stack.yaml`, `tech-stack.md` i `snippets.md` (wzorce warstwy danych, stanu, ekranu i testów, w tym fragment usługi API lub repozytorium), a także współdzielony `stack.schema.json`. Agent używa `stack/`, gdy istnieje, a w przeciwnym razie czyta bezpośrednio pasujący `variants/<platform>/`; `/stack-set` zapisuje `stack/` na podstawie wykrytego projektu, z wariantem jako punktem wyjścia. Umiejętność zainstalowana bez wariantu zachowuje swój katalog `variants/`.
 
 ---
 
@@ -322,26 +333,37 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 ### oma-design
 
-**Domena:** Systemy projektowe, UI/UX i zarządzanie DESIGN.md.
+**Domena:** Systemy wizualne, `DESIGN.md` i kierunek redesignu: decyzje dotyczące typografii, układu, koloru, ruchu i projektowania interakcji.
 
-**Kiedy używać:** Tworzenie lub zmiana systemów projektowych i DESIGN.md, redesign istniejącej strony lub aplikacji (z zachowaniem lub gruntowną przebudową), strony docelowe, tokeny projektowe, palety kolorów, typografia, układy responsywne i przeglądy dostępności.
+**Kiedy używać:** Definiowanie lub zmiana systemu wizualnego albo istotnego kierunku projektowego, przegląd istniejącego UI lub dopracowanie wybranego kierunku, wydobywanie decyzji projektowych z istniejącego UI, zrzutów ekranu lub dostarczonych referencji.
 
-**Workflow:** 7 faz: konfiguracja (zbieranie kontekstu) -> ekstrakcja (opcjonalnie z URL-i referencyjnych) -> ulepszenie (rozszerzenie niejasnego promptu) -> propozycja (2–3 kierunki projektowe) -> generowanie (DESIGN.md + tokeny) -> audyt (responsywność, WCAG, Nielsen, kontrola AI slop) -> przekazanie.
+**Kiedy NIE używać:** Implementacja UI aplikacji lub eksport tokenów właściwych dla frameworka (użyj oma-frontend lub oma-mobile), planowanie zakresu produktu (użyj oma-pm), generowanie obrazu (użyj oma-image), ogólny przegląd poprawności lub bezpieczeństwa (użyj oma-qa lub oma-security).
 
-**Wymuszanie antywzorców („bez AI slop”):**
-- Typografia: domyślnie systemowy stos fontów; żadnych domyślnych Google Fonts bez uzasadnienia
-- Kolor: żadnych fioletowo-niebieskich gradientów, gradientowych kul/blobów ani czystej bieli na czystej czerni
-- Układ: żadnych zagnieżdżonych kart, układów wyłącznie desktopowych ani sztampowych układów z 3 metrykami
-- Ruch: żadnego bounce easing wszędzie ani animacji > 800 ms; trzeba respektować prefers-reduced-motion
-- Komponenty: żadnego glassmorphismu wszędzie; każdy element interaktywny potrzebuje alternatywy klawiaturowej/dotykowej
+**Wybór dostawcy:** Umiejętność ustala intencję projektową projektu i dla każdej operacji ładuje jedną zewnętrzną umiejętność projektową przez `resources/external-design-skills.md`:
+
+| Operacja | Dostawca |
+|-----------|----------|
+| Kierunek wizualny dla dashboardów, paneli administracyjnych, UI produktów SaaS lub narzędzi wewnętrznych | Interface Design |
+| Przegląd hierarchii, gęstości, spójności lub jakości wykonania interfejsu produktu po implementacji | Interface Design `design-review` |
+| Inna krytyka istniejącego UI, audyt dostępności lub audyt techniczny, dopracowanie albo ekstrakcja systemu | Impeccable |
+| Inny nowy kierunek artystyczny dla webu lub autoryzowana gruntowna przebudowa wizualna | Taste |
+| Zadanie wyłącznie dokumentacyjne lub dotyczące kontraktu tokenów, bez nowej oceny wizualnej | Pozostaje lokalnie |
+
+**Workflow:** Przejrzyj UI, artefakty projektowe i brief oraz ustal zakres, platformę, zastany stos, języki, zachowanie marki i weryfikację -> wybierz i załaduj dostawcę -> zastosuj wynik do żądanej decyzji lub artefaktu -> sprawdź objęty zmianą wynik według `resources/checklist.md` i przekaż implementację specjaliście frontendu lub mobile.
 
 **Podstawowe reguły:**
-- Używaj ponownie `.design-context.md` i `DESIGN.md`, jeśli istnieją; twórz `.design-context.md` tylko wtedy, gdy decyzję wspiera rzeczywisty etap rozpoznania
+- Używaj ponownie `.design-context.md` i `DESIGN.md`, jeśli istnieją; aktualizuj `DESIGN.md` tylko wtedy, gdy zmienia się system wizualny, a `.design-context.md` twórz tylko wtedy, gdy decyzję wspiera rzeczywisty etap rozpoznania
+- Korekta o określonym zakresie korzysta z istniejącego UI i tokenów, których dotyczy; nie wymaga dokumentu rozpoznania
 - Dla istniejącej strony lub aplikacji postępuj według `resources/redesign-protocol.md` i przed złożeniem propozycji sklasyfikuj zadanie jako Preserve albo Overhaul
-- Domyślnie stosuj systemowy stos fontów (fonty gotowe na CJK dla ko/ja/zh)
-- Minimum WCAG AA dla każdego projektu
-- Responsive-first (mobile jako domyślne)
-- Przedstaw 2–3 kierunki i uzyskaj potwierdzenie
+- Zachowaj istniejącą markę, treść, URL-e, nawigację, kontrakty formularzy, analitykę i teksty prawne w ramach autoryzowanego zakresu
+- Zachowaj zastane fonty, jeśli są odpowiednie; dla ko/ja/zh sprawdź pokrycie glifów, fallback, łamanie wierszy i czytelne metryki
+- WCAG AA to domyślny cel dostępności, chyba że projekt ma ostrzejszy; wymagania dotyczące responsywności, ograniczonego ruchu i platformy przechodzą na wybranego dostawcę
+- Używaj rzeczywistych zasobów i twierdzeń projektu; oznaczaj koncepcje i placeholdery
+- Zachowaj istniejący stos implementacyjny; za CSS, Tailwind, składnię biblioteki komponentów i zależności odpowiada specjalista od implementacji
+- Operacje wyłącznie przeglądowe pozostają tylko do odczytu
+- Pytaj tylko o istotny nierozstrzygnięty wybór; jawnie żądany dostawca, który jest niedostępny, zostaje zgłoszony, a nie zastąpiony
+
+**Wyjście:** Żądana decyzja projektowa, ustalenia lub przekazanie do implementacji wraz z zaobserwowanymi dowodami, wybranym dostawcą i operacją oraz ograniczeniami możliwości lub weryfikacji. `DESIGN.md` i `.design-context.md` są zapisywane tylko wtedy, gdy zachodzą powyższe warunki. Stitch i getdesign są opcjonalnymi danymi wejściowymi.
 
 ---
 
@@ -370,14 +392,18 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Domena:** Automatyzacja zadań monorepo i CI/CD.
 
-**Kiedy używać:** Uruchamianie serwerów deweloperskich, wykonywanie lint/format/typecheck w aplikacjach, migracje baz danych, generowanie API, buildy i18n, buildy produkcyjne, optymalizacja CI/CD oraz walidacja pre-commit.
+**Kiedy używać:** Uruchamianie serwerów deweloperskich, wykonywanie lint/format/typecheck w aplikacjach, migracje baz danych, generowanie API, buildy i18n, buildy produkcyjne, optymalizacja CI/CD, walidacja pre-commit oraz konfiguracja narzędzi lint, format i typecheck właściwych dla języka, lintowania Dockerfile i commitlint.
 
 **Podstawowe reguły:**
-- Zawsze używaj zadań `mise run` zamiast bezpośrednich poleceń menedżera pakietów
-- Uruchamiaj lint/test tylko dla zmienionych aplikacji
-- Weryfikuj komunikaty commitów przez commitlint
-- CI powinno pomijać niezmienione aplikacje
-- Gdy istnieją zadania mise, nigdy nie używaj bezpośrednich poleceń menedżera pakietów
+- Używaj zadań `mise run` zamiast bezpośrednich poleceń menedżera pakietów; znajdź je przez `mise tasks --all` i przed uruchomieniem nieznanego zadania przeczytaj jego definicję
+- Uruchamiaj lint i testy dla zmienionego zakresu; CI powinno pomijać niezmienione aplikacje
+- Weryfikuj komunikaty commitów przez commitlint za pomocą lokalnie przygotowanego hooka `commit-msg`; nigdy nie pobieraj pakietów z hooka Git
+- Zadania kontrolne nie mogą niczego modyfikować: udostępnij `lint`, `format:check` i `typecheck`, a modyfikujący `format` trzymaj osobno
+- Pominięta walidacja nie oznacza zaliczenia; narzędzie kontrolne, którego nie da się uruchomić, zgłasza się jako niekompletne, a nie zastępuje placeholderem ani buildem
+- Preferuj testy hermetyczne; testy wymagające Dockera lub usług zewnętrznych należą do osobnego, opcjonalnego zadania integracyjnego poza domyślnymi hookami i wymaganymi bramkami CI
+- Nigdy nie wpisuj sekretów na stałe w `mise.toml`; nigdy nie uruchamiaj destrukcyjnych zadań bez potwierdzenia
+
+**Zasoby:** `mise-basics.md`, `tooling-profiles.md`, `validation-pipeline.md`, `example-task-wiring.md` (migracje, opcjonalna lokalna infrastruktura Docker, generowanie klienta API, buildy i18n), `release-coordination.md` i `troubleshooting.md`, każdy ładowany przy wskazanym dla niego wyzwalaczu.
 
 ---
 
@@ -396,17 +422,20 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 - Pokrycie sygnałów MELT+P: metrics, logs, traces, profiles, cost, audit, privacy
 - Migracje potoków logów oceniane względem bieżącego wsparcia upstream i wymagań projektu
 
-**Kiedy NIE używać:** Operacje LLM / obserwowalność gen_ai (użyj Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage potoków danych (OpenLineage + Marquez, test dbt, lineage Airflow), telemetria fizycznej warstwy IoT / data center (Nlyte, Sunbird, Device42), orkiestracja chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), infrastruktura GPU / TPU (NVIDIA DCGM Exporter), łańcuch dostaw oprogramowania (sigstore, in-toto, SLSA), workflow reagowania na incydenty / paging (PagerDuty, OpsGenie, Grafana OnCall), konfiguracja pojedynczego dostawcy już objęta jego własną umiejętnością.
+**Kiedy NIE używać:** Operacje LLM / obserwowalność gen_ai (użyj Langfuse, Arize Phoenix, LangSmith, Braintrust), lineage potoków danych (OpenLineage + Marquez, test dbt, lineage Airflow), telemetria fizycznej warstwy IoT / data center (Nlyte, Sunbird, Device42), orkiestracja chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), infrastruktura GPU / TPU (NVIDIA DCGM Exporter), łańcuch dostaw oprogramowania (sigstore, in-toto, SLSA), workflow reagowania na incydenty / paging (PagerDuty, Jira Service Management, Grafana Cloud IRM), pełna inspekcja pakietów TLS, skanowanie bezpieczeństwa lub testy penetracyjne (użyj oma-security; ta umiejętność obejmuje wyłącznie telemetrię bezpieczeństwa), konfiguracja pojedynczego dostawcy już objęta jego własną umiejętnością.
 
 **Podstawowe reguły:**
 - Najpierw sklasyfikuj intencję: setup | migrate | investigate | alert | trace | tune | route
-- Najpierw kategoria, nie rejestr dostawców: deleguj do umiejętności należących do dostawcy przez `resources/vendor-categories.md`; nie duplikuj dokumentacji dostawcy
-- Strojenie transportu to przewaga: progi UDP/MTU, wybór protokołu OTLP, topologia Collectora i receptury samplingu to głębia, której nie pokrywają inne umiejętności
-- Metaobserwowalność jest obowiązkowa: sprawdź samo‑zdrowie potoku, synchronizację zegara (< 100 ms dryfu), cardinality i retencję przed uznaniem konfiguracji za ukończoną
-- Preferuj CNCF: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
-- Fluentd pozostaje projektem CNCF Graduated; przewodnik CNCF 2025-10 dotyczący przejścia z Fluentd na Fluent Bit jest przewodnikiem migracji, a nie wycofaniem. Fluentd, Fluent Bit lub OTel Collector wybieraj na podstawie obciążenia, wtyczek i wymagań operacyjnych
-- Domyślnie propaguj W3C Trace Context; tłumacz per chmura (AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
-- Prywatność przed funkcjami: redakcja PII, reguły baggage uwzględniające sampling, niezmienny audyt SOC2/ISO i usuwanie GDPR/PIPA stosuj podczas zbierania, nie tylko w magazynie
+- Ładuj zasoby według ich wyzwalaczy: protokół wykonania, jeden przewodnik wybrany przez trasę intencji, a przewodnik warstwy, granicy, sygnału lub transportu tylko wtedy, gdy wystąpi jego wyzwalacz. Żadna referencja nie jest obowiązkowo ładowana z góry
+- Używaj `resources/vendor-categories.md` tylko wtedy, gdy potrzebny jest wybór kategorii lub delegowanie do dostawcy; deleguj do umiejętności należących do dostawcy, zamiast duplikować jego dokumentację
+- Załaduj jeden przewodnik transportu pasujący do zaobserwowanego problemu: UDP/MTU, protokół OTLP, topologia Collectora lub sampling
+- Przed uznaniem konfiguracji za ukończoną zweryfikuj zdrowie potoku, synchronizację zegara, limity cardinality i retencję względem wymagań projektu oraz zapisz kontrole, których nie dało się uruchomić
+- Gdy wpływa to na rekomendację, zweryfikuj bieżące wsparcie upstream, stabilność atrybutów i wytyczne migracji w oficjalnej dokumentacji i statusie CNCF. Pliki zasobów nie zawierają przypięć wersji specyfikacji per plik; jedyne stwierdzenie o aktualności specyfikacji i semconv znajduje się w `resources/standards.md`
+- Domyślnie propaguj W3C Trace Context, a tam, gdzie to wymagane, stosuj tłumaczenia dla chmur z `resources/boundaries/cross-application.md`
+- Redakcję PII i kontrolę baggage uwzględniającą sampling stosuj podczas zbierania; sprawdź wymagania retencji, usuwania danych i audytu dla systemu docelowego
+- Dostarczaj działającą konfigurację albo jawnie oznaczone propozycje; szkielety i niezweryfikowane kontrole nie liczą się jako ukończona konfiguracja
+
+Macierz pokrycia ma cztery warstwy (L3, L4, mesh, L7), cztery granice (multi-tenant, cross-application, SLO, release) i siedem sygnałów (metrics, logs, traces, profiles, cost, audit, privacy).
 
 ---
 
@@ -415,6 +444,8 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 **Domena:** Zapewnianie jakości obejmujące bezpieczeństwo, wydajność, dostępność i jakość kodu.
 
 **Kiedy używać:** Końcowy przegląd przed wdrożeniem, audyty bezpieczeństwa, analiza wydajności, zgodność z dostępnością i analiza pokrycia testami.
+
+**Kiedy NIE używać:** Skany prowadzone przez skanery, testy penetracyjne, walidacja ustaleń lub bramki bezpieczeństwa CI (użyj oma-security), początkowa implementacja i nowe funkcje (użyj agentów domenowych).
 
 **Kolejność przeglądu:** Bezpieczeństwo > wydajność > dostępność > jakość kodu.
 
@@ -426,8 +457,10 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Podstawowe reguły:**
 - Każde ustalenie musi zawierać plik:wiersz, opis i poprawkę
-- Najpierw uruchamiaj narzędzia automatyczne (npm audit, bandit, lighthouse)
-- Żadnych fałszywych alarmów; każde ustalenie musi dać się odtworzyć
+- Wybierz automatyczne kontrole pasujące do wykrytego stosu i zakresu przeglądu (na przykład audyt zależności, statyczną analizę bezpieczeństwa lub audyt wydajności w runtime); tam, gdzie narzędzie lub cel są niedostępne, przeglądaj statycznie
+- Uruchamiaj polecenia lint, test i coverage projektu, gdy żądanie przeglądu lub aktywny workflow wymaga takich dowodów; w przeciwnym razie zgłoś je jako nieuruchomione
+- Każde ustalenie dotyczące defektu musi dać się odtworzyć; hipotezy i niedostępne kontrole zapisuje się jako luki w weryfikacji, a dopóki wymagane kontrole pozostają niezweryfikowane, nie wydaje się PASS
+- Ustalenia bezpieczeństwa są tu ustaleniami z przeglądu kodu; kandydaci ze skanerów, dowód exploita i statusy `confirmed` / `needs_validation` należą do oma-security
 - Dostarczaj kod remediacji, a nie tylko opisy
 
 ---
@@ -443,9 +476,10 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 **Podstawowe reguły:**
 - Ustal przyczynę źródłową, nie tylko objawy
 - Minimalna poprawka: zmieniaj tylko to, co konieczne
-- Każda poprawka otrzymuje test regresji
+- Każda poprawka otrzymuje test regresji; uruchom go ponownie razem z pierwotnie niezaliczoną kontrolą (czerwony przed poprawką, zielony po niej)
+- Szersze zestawy testów uruchamiaj tylko wtedy, gdy wymaga tego użytkownik lub aktywny workflow; w przeciwnym razie zgłoś je jako nieuruchomione
 - Wyszukaj podobne wzorce w innych miejscach
-- Udokumentuj wynik w `.agents/results/`
+- Udokumentuj błąd w `.agents/results/bugs/`: skrócony raport z `resources/debugging-checklist.md` albo pełny `resources/bug-report-template.md` dla błędów Complex lub CRITICAL/HIGH
 
 **Narzędzia code intelligence (Gortex lub Serena):**
 - `find_symbol("functionName")` lub nawigacja po symbolach Gortex: znajdź funkcję
@@ -460,7 +494,7 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Kiedy używać:** Tłumaczenie tekstów UI, dokumentacji i marketingu, przegląd istniejących tłumaczeń, tworzenie glosariuszy.
 
-**Sześć scen:** Przygotuj, pozyskaj, rozumuj, działaj, zweryfikuj i sfinalizuj. Metoda tłumaczenia ma cztery kroki: przeczytaj znaczenie i chronioną składnię, wybierz rejestr, odtwórz tekst w języku docelowym i zachowaj styl autora tam, gdzie jest to właściwe.
+**Metoda tłumaczenia:** Cztery kroki: przeczytaj znaczenie i chronioną składnię, wybierz rejestr, odtwórz tekst w języku docelowym i zachowaj styl autora tam, gdzie jest to właściwe. Weryfikacja jest proporcjonalna do ryzyka treści: chroniona składnia i struktura są sprawdzane zawsze; treść merytoryczna i tryb przeglądu korzystają też z rubryki (naturalność, dokładność, rejestr, terminologia, integralność techniczna).
 
 **Podstawowe reguły:**
 - Najpierw przejrzyj pliki istniejącej lokalizacji, aby dopasować konwencje
@@ -484,9 +518,13 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 |---------|---------|-------------|
 | MAX_PARALLEL | 3 | Maksymalna liczba równoczesnych subagentów |
 | MAX_RECOVERY_ATTEMPTS | 3 | Łączna liczba ponowień i hipotez eksploracyjnych na zadanie, wliczając pierwotną próbę |
-| POLL_INTERVAL | 30s | Interwał sprawdzania stanu uruchomień `oma agent spawn` (natywni subagenci Claude Code zwracają wynik synchronicznie) |
+| POLL_INTERVAL | ograniczony backoff | Rozwiązanie zapasowe tylko wtedy, gdy powiadomienia o ukończeniu są niedostępne (natywni subagenci Claude Code zwracają wynik synchronicznie) |
+
+To domyślne ustawienia workflowu; ustawienia modelu, dostawcy, równoległości i budżetu są rozstrzygane z konfiguracji projektu.
 
 **Fazy workflowu:** Plan → referencje (wybór referencji dla każdego zadania) → konfiguracja (artefakty sesji i task boardu) → wykonanie (dispatch gotowych zadań w ramach MAX_PARALLEL) → monitorowanie → weryfikacja (pętla przeglądu) → zebranie wyników (zgłoszenia i raporty przypisane do uruchomień).
+
+**Referencje zadań:** Każde zadanie jest dopasowywane do sygnatur intencji zainstalowanych umiejętności, a koordynator wybiera potrzebne mu referencje. Wystarczy jedna pewnie dopasowana umiejętność; zestaw rozszerza się tylko wtedy, gdy klasyfikacja jest niepewna albo zależność wymaga innej domeny. Wybór i jego uzasadnienie są zapisywane w task boardzie jako notatki koordynatora; launcher ich nie wymusza.
 
 **Pętla przeglądu agent-agent:** diagram i limity pętli znajdziesz w sekcji [Przepływ orkiestracji](#orchestration-flow).
 
@@ -516,11 +554,11 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 ### oma-coordination
 
-**Domena:** Ręczny przewodnik krok po kroku po koordynacji wieloagentowej.
+**Domena:** Wspólne reguły koordynacji pracy wieloagentowej: ponowne użycie planu, uzgadnianie kontraktów, własność przestrzeni roboczych i przekazanie do QA.
 
-**Kiedy używać:** Praca wielodomenowa, gdy chcesz krok po kroku nadzorować uruchamianie, monitorowanie, uzgadnianie kontraktów i QA zamiast w pełni automatycznej orkiestracji.
+**Kiedy używać:** Każdy workflow, który uruchamia więcej niż jednego agenta specjalistę. `/work`, `/orchestrate` i `/ultrawork` ładują tę umiejętność i stosują jej zabezpieczenia. Używaj jej także do ręcznej koordynacji krok po kroku, w której sam prowadzisz każdy dispatch, oraz gdy agenci współdzielą kontrakt API lub danych.
 
-**Kiedy NIE używać:** W pełni automatyczne wykonanie równoległe (użyj oma-orchestration), zadania w jednej domenie (użyj bezpośrednio właściwego agenta domenowego).
+**Kiedy NIE używać:** Zadania w jednej domenie (użyj bezpośrednio właściwego agenta domenowego). Automatyczny dispatch, monitorowanie i weryfikacja należą do oma-orchestration; ta umiejętność dostarcza jedynie reguły, które ono stosuje.
 
 **Podstawowe reguły:**
 - Używaj ponownie poprawnego planu; wywołuj oma-pm tylko wtedy, gdy trzeba zmienić dekompozycję lub kontrakty
@@ -531,27 +569,38 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Workflow:** Plan (ponowne użycie lub PM) → uruchamianie według poziomów priorytetu → monitorowanie → przegląd QA → poprawa problemów → dostarczenie.
 
-**Różnica względem oma-orchestration:** Koordynacja jest ręczna i prowadzona (użytkownik kontroluje tempo), a orkiestrator działa automatycznie (agenci uruchamiają się i pracują przy minimalnej interwencji użytkownika).
+**Różnica względem oma-orchestration:** Koordynacja dostarcza reguły i prowadzi ręczny przebieg, w którym tempo kontroluje użytkownik; orkiestrator odpowiada za automatyczne wykonanie (rozstrzyganie dispatchu, limit równoległości, budżet odzyskiwania i pętlę przeglądu).
 
 ---
 
 ### oma-search
 
-**Domena:** Router wyszukiwania oparty na intencji i ocenie zaufania domeny. Kieruje zapytania do Context7 (dokumentacja), natywnego wyszukiwania webowego, `gh`/`glab` (kod) i lokalnego code intelligence (Gortex lub Serena).
+**Domena:** Router wyszukiwania dla źródeł zewnętrznych. Wybiera kanał, którego wymaga żądanie, i zwraca źródła wraz z dowodami na ich poparcie i ograniczeniami pobierania.
 
-**Kiedy używać:** Wyszukiwanie oficjalnej dokumentacji bibliotek/frameworków, badania webowe poradników/przykładów/porównań/rozwiązań, wyszukiwanie wzorców implementacyjnych w GitHub/GitLab, dowolne zapytanie, gdy kanał wyszukiwania jest niejasny (automatyczny routing), oraz jako infrastruktura wyszukiwania dla innych umiejętności (wspólne wywołanie).
+**Trasy:**
 
-**Kiedy NIE używać:** Eksploracja wyłącznie lokalnej bazy kodu (użyj bezpośrednio MCP code intelligence), analiza historii Git lub blame (użyj oma-scm), pełne badania architektury (użyj oma-architecture, która może wewnętrznie wywołać tę umiejętność).
+| Trasa | Wykonanie | Zakres |
+|-------|-----------|-------|
+| `docs` | Rozstrzyganie bibliotek i zapytania Context7; w razie potrzeby odnajdywanie oficjalnej strony | Oficjalna dokumentacja w ramach żądanych ograniczeń wersji |
+| `web` | Skonfigurowany `providers.web`: narzędzia runtime'u dla `native`, adapter CLI dla `brave` lub `exa` | Odnajdywanie URL-i istotnych dla zapytania |
+| `code` | `oma search code` przez wybrany hosting kodu (`gh` lub `glab`) | Zdalne dopasowania implementacji w ramach ograniczeń hosta i repozytorium |
+| `fetch` | Dostępny czytnik URL-i lub `oma search fetch <url>` | Odczyt URL-a już podanego lub odnalezionego |
+
+**Kiedy używać:** Dokumentacja bibliotek, badania webowe, zdalne wyszukiwanie kodu, odczyt znanego URL-a oraz żądania, w których trzeba wybrać kanał źródeł zewnętrznych. Inne umiejętności korzystają z niej, aby pozyskać źródła zewnętrzne.
+
+**Kiedy NIE używać:** Eksploracja wyłącznie lokalnej bazy kodu (użyj bezpośrednio skonfigurowanego code intelligence), analiza historii Git lub blame (użyj oma-scm), analiza architektury (użyj oma-architecture).
 
 **Podstawowe reguły:**
-- Jawne `--docs`, `--code` lub `--web` wybiera trasę; w przeciwnym razie sklasyfikuj intencję według `resources/intent-rules.md`
-- Jedno zapytanie, jedna najlepsza trasa; unikaj redundantnych tras, chyba że intencja jest niejednoznaczna
-- Oceniaj zaufanie każdego wyniku; wyniki nielokalne otrzymują etykiety zaufania domeny z rejestru
-- Inne flagi: `--strict` po ocenie filtruje wyniki według zaufania, `--wide` zachowuje oznaczone wyniki o niższym zaufaniu, a `--gitlab` wybiera GitLab jako hosting kodu
-- Posuwaj pracę naprzód mimo błędu: jeśli główna trasa nie działa, płynnie przejdź do zapasowej (docs→web, web→strategie `oma search fetch`)
-- Nie jest potrzebny dodatkowy MCP: Context7 dla dokumentacji, natywne mechanizmy runtime'u dla webu, CLI dla kodu, skonfigurowany provider (Gortex lub Serena) lokalnie
-- Wyszukiwanie webowe niezależne od dostawcy: użyj tego, co udostępnia bieżący runtime (WebSearch, Google, Bing)
-- Zaufanie oceniaj na poziomie domeny, bez punktacji ścieżek podrzędnych ani pojedynczych stron
+- Jawne `--docs`, `--code` lub `--web` wybiera trasę; w przeciwnym razie umiejętność wybiera jedną główną trasę i sięga po `resources/intent-rules.md` tylko wtedy, gdy wybór jest niejasny
+- Kolejna trasa jest dodawana tylko wtedy, gdy wymaga tego pozostała luka w dowodach; umiejętność domyślnie nie rozgałęzia wyszukiwania na wiele tras
+- `--strict` wymaga odpowiednich źródeł pierwotnych lub oficjalnych, których treść potwierdzająca została sprawdzona; `--wide` dołącza szersze wyniki wraz z ich ograniczeniami; `--gitlab` wybiera GitLab jako hosting kodu
+- Wyniki zawierają URL źródła lub odwołanie do pliku, trasę, faktycznego dostawcę, typ źródła, status odczytu treści, dowody na poparcie i istotne ograniczenia
+- Snippety i fragmenty z wyszukiwania są ograniczonym dowodem; nieprzeczytane źródła są wskazywane
+- Żadnych sztucznych ocen zaufania: nazwa dostawcy ani etykieta domeny nie weryfikuje pojedynczego twierdzenia. `oma search trust <domain>` to opcjonalna diagnostyka domeny, a `resources/source-provenance.md` ma zastosowanie, gdy pochodzenie wymaga interpretacji
+- Niedostępny, nieuwierzytelniony lub objęty limitem zapytań dostawca wyszukiwania webowego jest zgłaszany; jawny wybór dostawcy nie jest po cichu zastępowany wyszukiwaniem natywnym
+- Wyszukiwanie bez kandydujących URL-i jest doprecyzowywane w ramach pierwotnych ograniczeń albo zgłaszane jako brak wyniku; pobranie URL-a nie zastępuje brakujących wyników wyszukiwania
+- Gdy żadne źródło nie spełnia `--strict`, luka jest zgłaszana; szerszy zestaw wyników nie spełnia żądania strict
+- Nic nie jest instalowane automatycznie: żaden dostawca, przeglądarka ani zależność
 
 ---
 
@@ -617,27 +666,27 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Kiedy używać:** Tworzenie lub redagowanie raportów/esejów/sekcji analitycznych, pisanie podsumowań, zakończeń albo przeglądów literatury, przepisywanie prozy brzmiącej jak AI na naturalny akademicki angielski, dopracowywanie tekstu do najwyższego poziomu rubryki (HD, A, top-band), przegląd zróżnicowania zdań, jakości czasowników, hedgingu i zgodności z regułami anty-AI.
 
-**Kiedy NIE używać:** Tłumaczenie (użyj oma-translation), wyszukiwanie źródeł/cytowań/literatury (użyj oma-scholar), interpretacja rubryki i dekompozycja zadań (użyj oma-pm), dokumentacja kodu / README / tekst referencji API (użyj odpowiedniej umiejętności domenowej), tekst nieformalny lub marketingowy, tekst akademicki w innym języku (najpierw napisz po angielsku, potem przekaż do oma-translation).
+**Kiedy NIE używać:** Tłumaczenie (użyj oma-translation), wyszukiwanie źródeł/cytowań/literatury (użyj oma-scholar), dokumentacja kodu / README / tekst referencji API (użyj odpowiedniej umiejętności domenowej), tekst nieformalny lub marketingowy, tekst akademicki w innym języku (najpierw napisz po angielsku, potem przekaż do oma-translation).
 
 **Tryby:** `draft` (nagłówek + proza + Writing Notes + Claim-Evidence Map), `revise` (oryginał + wersja poprawiona + lista zmian), `review` (raport PASS/FAIL dla struktury zdań, jakości czasowników, anty-AI, konkretności, hedgingu, jasności akapitów, rytmu i zgodności twierdzeń z dowodami).
 
 **Podstawowe reguły:**
-- Najpierw zacytuj, potem oceniaj: przytocz dosłowny tekst rubryki/ograniczenia przed zastosowaniem reguły
+- Przed oceną zgodności zacytuj dostarczone ograniczenia rubryki; gdy rubryki nie ma, wyjaśnij ustalenia względem żądanego zakresu, zamiast wymyślać kryteria
 - Każde zdanie musi dać się zweryfikować; nigdy nie wymyślaj danych, statystyk ani cytowań
-- Zakazane czasowniki ogólne (`show`, `have`, `make`, `do`, `get`, `use`, …) nie mogą być czasownikami głównymi
-- Zmieniaj typ, długość i początek zdań; nigdy nie twórz 3+ zdań tego samego typu z rzędu
-- Siłę hedgingu dopasuj do siły dowodów; nie używaj pierwszoosobowego `I think`/`I believe`
+- Dobieraj czasowniki ze względu na ich dokładne znaczenie i poparcie (`resources/academic-verb-guide.md`); zachowaj pospolity czasownik, gdy jest trafny i naturalny
+- Oceniaj powtarzającą się strukturę i długość zdań w kontekście (`resources/sentence-structure-reference.md`); zmieniaj rytm tam, gdzie poprawia to jasność, bez limitów typów zdań
+- Siłę hedgingu dopasuj do siły dowodów zgodnie z `resources/hedging-guide.md`, w tym z jego ograniczeniami dotyczącymi intensyfikatorów i pierwszoosobowych znaczników opinii
 - Każde twierdzenie mapuj do dowodu w Claim-Evidence Map; osłab lub usuń twierdzenia bez poparcia
 
-**Workflow:** 6 kroków — przeczytaj rubrykę/projekt i zacytuj ograniczenia, zaplanuj akapity jako Topic-Support-Conclude, napisz według wszystkich czterech protokołów, przeprowadź audyt względem checklisty anty-AI, zrób REVERSE-OUTLINE + Claim-Evidence Map, dopracuj (czytanie na głos, spójność, konkretność, liczba słów, rytm).
+**Workflow:** 6 kroków — przeczytaj rubrykę/projekt i zacytuj ograniczenia, zaplanuj akapity jako Topic-Support-Conclude, napisz zgodnie z wytycznymi dotyczącymi zdań, czasowników i hedgingu, przeprowadź audyt względem checklisty anty-AI, zrób REVERSE-OUTLINE + Claim-Evidence Map, dopracuj (spójność, konkretność, liczba słów, rytm, zróżnicowanie długości akapitów).
 
 ---
 
 ### oma-security
 
-**Domena:** Skanowanie bezpieczeństwa i walidacja kodu źródłowego aplikacji, pakietów umiejętności agentów, komponentów MCP i autoryzowanych testowych wdrożeń webowych.
+**Domena:** Skanowanie bezpieczeństwa i walidacja kodu źródłowego aplikacji, pakietów umiejętności agentów i komponentów MCP. Testy penetracyjne testowego wdrożenia webowego o określonym zakresie odbywają się wyłącznie na dostarczonej przez użytkownika i sprawdzonej platformie uruchomieniowej.
 
-**Kiedy używać:** Skanowanie repozytorium lub diffu kodu źródłowego; inspekcja pakietu umiejętności albo serwera lub konfiguracji MCP; ograniczony test penetracyjny konkretnego, autoryzowanego wdrożenia testowego; walidacja kandydatów zgłoszonych przez skaner; konfiguracja bramki CI właściwej dla silnika; diagnozowanie poświadczeń, pokrycia, matcherów, limitów lub wznawialnego stanu skanera.
+**Kiedy używać:** Skanowanie repozytorium lub diffu kodu źródłowego; inspekcja pakietu umiejętności albo serwera lub konfiguracji MCP; ograniczony test penetracyjny runtime konkretnego, autoryzowanego wdrożenia testowego na platformie uruchomieniowej, którą dostarczasz i którą sprawdziłeś; walidacja kandydatów zgłoszonych przez skaner; konfiguracja bramki CI właściwej dla silnika; diagnozowanie poświadczeń, pokrycia, matcherów, limitów lub wznawialnego stanu skanera.
 
 **Kiedy NIE używać:** Ogólny przegląd poprawności, wydajności, dostępności lub jakości (użyj oma-qa), porównania narzędzi lub badania bez wykonywania (użyj oma-search), decyzje dotyczące architektury bezpieczeństwa (użyj oma-architecture), remediacja w kodzie produktu (użyj oma-debug albo właścicielskiej umiejętności backendu/frontendu/mobile/infrastruktury).
 
@@ -648,11 +697,12 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 | Kod źródłowy aplikacji lub diff kodu źródłowego | Deepsec (Cisco AI Deep SAST, gdy zostanie jawnie wybrany) |
 | Katalog lub pakiet umiejętności agenta | Cisco Skill Scanner |
 | Kod źródłowy, konfiguracja lub serwer MCP | Cisco MCP Scanner |
-| Testowe wdrożenie webowe | ARTEX |
+| Testowe wdrożenie webowe (`web_runtime`, `pentest`) | Domyślnie brak. ARTEX tylko na wyraźne żądanie, na dostarczonej przez użytkownika i sprawdzonej platformie |
 | Ograniczona lokalna reprodukcja | Metoda walidacji Cloudflare (bez sieci zewnętrznej) |
 
 **Podstawowe reguły:**
 - Ogólny skan repozytorium obejmuje tylko kod źródłowy; skany umiejętności, MCP i runtime nie są dodawane domyślnie
+- Testowanie runtime nie ma dołączonego ani domyślnego silnika. Żądanie dotyczące runtime albo kodu źródłowego i runtime nie wybiera ARTEX w sposób dorozumiany, a umiejętność nie instaluje, nie buduje ani nie wdraża platformy ARTEX. Bez wyraźnego żądania ARTEX, konkretnego testowego wdrożenia webowego i sprawdzonej platformy etap runtime jest zapisywany jako `skipped`, a pozostałe wybrane operacje są kontynuowane
 - Nieudany lub pusty wynik nigdy nie wybiera automatycznie innego silnika, modelu ani płatnego analizatora
 - Zachowuj i wznawiaj istniejący stan `.deepsec/`; nigdy nie inicjalizuj go ponownie, aby wymazać nieudany lub zaszumiony przebieg
 - Zainstalowany klucz lub narzędzie nie upoważnia do płatnych wywołań ani szerszego zakresu; korzystaj z istniejącej autoryzacji zgodnie ze współdzieloną polityką wykonywania
@@ -688,7 +738,7 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Kiedy używać:** Objaśnianie diffu, pull requestu, brancha lub zakresu commitów albo tematu, systemu lub pytania w postaci jednej strony HTML działającej offline.
 
-**Workflow:** Model pisze szkic w Markdown; `oma explain render` zamienia go w jeden plik HTML w `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, a `oma explain validate` go sprawdza. Umiejętność aktywuje się wyłącznie przez `/explain`, podanie jej nazwy lub delegowanie; jest wykluczona z podpowiedzi słów kluczowych.
+**Workflow:** Model pisze szkic w Markdown; `oma explain render` zamienia go w jeden plik HTML w `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, a `oma explain validate` go sprawdza (poprawka i ponowna walidacja najwyżej 3 razy). Stronę otwiera `oma explain render --open`; nieudane otwarcie nie jest błędem. Umiejętność aktywuje się wyłącznie przez `/explain`, podanie jej nazwy lub delegowanie; jest wykluczona z podpowiedzi słów kluczowych.
 
 **Kiedy NIE używać:** Zwykła strona dokumentacji, implementacja działającej funkcji albo talia slajdów (prezentacji używa `oma-slide`).
 
@@ -703,20 +753,21 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 **Kiedy NIE używać:** Edycja istniejącego obrazu lub manipulacja zdjęciem, generowanie wideo albo audio (użyj oma-video / oma-voice), składanie wektorów/SVG z danych strukturalnych w treści, proste zmiany rozmiaru lub konwersja formatów.
 
 **Podstawowe reguły:**
-- Przed wywołaniem doprecyzuj: jeśli temat/styl/kompozycja/zastosowanie są niejasne, zapytaj albo rozbuduj prompt i pokaż użytkownikowi rozszerzoną wersję
+- Rozstrzygnij brief: użyj podanych szczegółów i rozsądnych kreatywnych ustawień domyślnych, a pytaj tylko wtedy, gdy brakujący wybór istotnie zmienia wynik. Rozszerzony prompt nie wymaga osobnego zatwierdzenia, gdy generowanie jest już autoryzowane
 - Dispatch uwzględniający uwierzytelnianie: uruchamiaj tylko uwierzytelnionych dostawców; przy `--vendor all` każdy żądany dostawca musi być dostępny
 - Bramka kosztów: potwierdź przed przebiegami o szacowanym koszcie ≥ $0.20 (`--yes`/`OMA_IMAGE_YES=1` omija); domyślne `pollinations` i `antigravity` są darmowe
 - Bezpieczeństwo ścieżki: wynik poza `$PWD` wymaga `--allow-external-output`; maksymalne `n` = 5
 - Rejestrowane wyniki: każdy przebieg zapisuje obok obrazów `manifest.json` z promptem, dostawcą/modelem, wejściami i metadanymi artefaktów. Zapisuje dane odtwarzalności, ale nie obiecuje identyczności pikseli.
 - Dołączone obrazy referencyjne automatycznie przekaż przez `--reference <path>` (codex/antigravity)
+- Ustawienia projektu znajdują się w sekcji `image:` pliku `.agents/oma-config.yaml`; dostarczane wartości domyślne znajdują się w CLI
 
-**Workflow:** PREPARE (doprecyzuj/rozszerz prompt, wybierz dostawcę) → ACQUIRE (zweryfikuj uwierzytelnienie, referencje i ścieżkę wyniku) → ACT (`oma image generate`) → VERIFY (manifest, pliki, kod wyjścia) → FINALIZE (ścieżki wyników + ostrzeżenia).
+**Workflow:** PREPARE (rozstrzygnij brief, wybierz dostawcę) → ACQUIRE (zweryfikuj uwierzytelnienie, referencje i ścieżkę wyniku) → ACT (`oma image generate`) → VERIFY (manifest, pliki, kod wyjścia) → FINALIZE (ścieżki wyników + ostrzeżenia).
 
 ---
 
 ### oma-market
 
-**Domena:** Badania rynku oparte na sygnałach społeczności: wydobywanie problemów, wykrywanie trendów, pozycjonowanie konkurencji i odkrywanie. Badania korzystają z upstreamowego silnika [`last30days`](https://github.com/mvanhorn/last30days-skill) (Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web i inne), który oma automatycznie utrzymuje przy najnowszym wydaniu.
+**Domena:** Badania rynku oparte na sygnałach społeczności: wydobywanie problemów, wykrywanie trendów, pozycjonowanie konkurencji i odkrywanie. Badania korzystają z upstreamowego silnika [`last30days`](https://github.com/mvanhorn/last30days-skill) (Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web i inne), który jest instalowany jako umiejętność przez skills CLI.
 
 **Kiedy używać:** Wydobywanie prawdziwych problemów użytkowników z postów społeczności, wykrywanie trendów w kategorii w oknie 7/30/90/180 dni, analiza sentymentu konkurencji i pozycjonowanie SWOT / 5F Portera, otwarte odkrywanie (`--discover`), badania osoby / firmy / tickera, sygnały rekrutacyjne i dalsze analizy.
 
@@ -724,14 +775,14 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 **Podstawowe reguły:**
 - Najpierw detect-trap: nigdy nie uruchamiaj silnika bez preflight (`--force` tylko po jawnym ponownym potwierdzeniu użytkownika)
-- Jeden silnik, zawsze najnowszy: `oma market resolve` odświeża zarządzaną kopię (`~/.cache/oma-market/last30days/<tag>/`) przed użyciem; stara kopia zainstalowana przez użytkownika jest zapasowa tylko wtedy, gdy nic nie jest zapisane w cache offline
+- Jeden silnik, instalowany jako umiejętność: `oma market resolve` odczytuje instalację ze skills CLI (albo przypięcie); `oma market update` instaluje go, gdy go brakuje, a w przeciwnym razie aktualizuje, po zgodzie użytkownika
 - Postępuj dokładnie według rozstrzygniętego `SKILL.md` silnika; jedyna zamiana to `oma market run <args>` zamiast surowego wywołania `python3 scripts/last30days.py`
 - Nigdy tylko WebSearch: brak silnika, brak Pythona 3.12+ lub kod wyjścia różny od zera → zatrzymaj i zgłoś
 - Źródła wymagające klucza są włączane tylko przez kreator konfiguracji upstream za zgodą użytkownika; pominięte źródła pozostają widoczne w stopce
-- Frameworki cytują wyłącznie klastry silnika; pierwsza linia odznaki i upstreamowe LAWs muszą być spełnione przed zapisem pliku
+- Frameworki cytują wyłącznie klastry silnika. Odznaka silnika jest pierwszą linią; najpierw zapisywany jest kandydat na brief, a potem zapisany plik musi przejść upstreamowe LAWs 1–8 i samokontrolę z `resources/output-laws.md`, zanim zostanie dostarczony
 - Jeden brief na przebieg w `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`; framework dobiera się automatycznie do intencji (ból/trend → SWOT, konkurencja → SWOT + 5F Portera, odkrywanie → SWOT + PESTEL)
 
-**Workflow:** detect-trap → `oma market resolve` → odczytaj upstream SKILL.md → upstreamowe kroki przed badaniem (kreator konfiguracji, rozstrzyganie handle/subreddit, plan zapytań) → `oma market run … --emit=compact` → synteza zgodnie z upstreamowym kontraktem OUTPUT → dołącz frameworki → samokontrola → zapis.
+**Workflow:** detect-trap → `oma market resolve` → odczytaj upstream SKILL.md → upstreamowe kroki przed badaniem (kreator konfiguracji, rozstrzyganie handle/subreddit, plan zapytań) → `oma market run … --emit=compact` → synteza zgodnie z upstreamowym kontraktem OUTPUT → dodaj sekcje frameworków między treścią silnika a stopką silnika → zapis → samokontrola zapisanego pliku, poprawka i ponowna kontrola.
 
 ---
 
@@ -751,7 +802,7 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 - Ekonomika: czytelność jest głównym celem; nie refaktoryzuj kodu przeznaczonego do usunięcia ani zimnego kodu o małej liczbie zmian
 - Odstępstwo od konwencji wymaga ścieżki ADR oma-architecture, a nie lokalnej zmiany; wszystkie metryki są przybliżeniami (Goodhart)
 
-**Workflow:** PREPARE (sklasyfikuj green/brownfield, bramki rozmiaru, ranking hotspotów) → ACQUIRE (odczytaj kod przez narzędzia symboli, zbierz metryki + sygnały git) → REASON (zaplanuj sekwencję atomowych transformacji / expand-contract) → ACT (jedna transformacja engine-first) → VERIFY (ponownie uruchom niezmienione testy → commit albo cofnięcie Mikado) → FINALIZE (delta metryk + werdykt czytelności).
+**Workflow:** PREPARE (sklasyfikuj green/brownfield, istniejąca bramka rozmiaru projektu, jeśli jest, ranking hotspotów) → ACQUIRE (odczytaj kod przez narzędzia symboli, zbierz metryki + sygnały git) → REASON (zaplanuj sekwencję atomowych transformacji / expand-contract) → ACT (jedna transformacja engine-first) → VERIFY (ponownie uruchom niezmienione testy → commit albo cofnięcie Mikado; gdy uruchamianie testów jest wykluczone, zatrzymaj się przed kolejną transformacją i zgłoś zastosowaną jako niezweryfikowaną) → FINALIZE (delta metryk + werdykt czytelności).
 
 ---
 
@@ -768,7 +819,8 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 **Podstawowe reguły:**
 - Docelowa specyfikacja to profil v0.9.0 / `paper@1`; host LLM generuje sidecary (nigdy nie uruchamiaj zewnętrznego SDK LLM z shella)
 - Nie fabrykuj: jeśli DOI/wydawca/rok nie są widoczne w źródle, pomiń klucz całkowicie; nigdy nie wpisuj `doi: TODO` ani nie zgaduj
-- Dokładne nazwy pól, pojedynczy obiekt `provenance.actor`, zamknięte enumy, liczby bez cudzysłowów
+- Kształty pól dokładnie odpowiadają `resources/sidecar-spec.md`: nazwy pól, pojedynczy obiekt `provenance.actor`, zamknięte enumy, liczby bez cudzysłowów i identyfikatory kebab-case z prefiksem
+- Lokalne reguły generowania i lint śledzą zgodność produkcyjną, a nie pełny kanoniczny schemat v0.9; różnicę przy imporcie lub lintowaniu rekordu zewnętrznego opisuje `resources/canonical-delta.md`
 - Twierdzenia z dowodami używają `supported_by`; definicje i otwarte pytania mogą pozostać zakotwiczone w źródle. `oma scholar lint` ostrzega poniżej 1.5 relacji na stwierdzenie, ale ten stosunek jest diagnostyką, a nie limitem do wypełnienia
 - Waliduj przed udostępnieniem (`oma scholar lint`); dla sidecarów zewnętrznych użyj `--lenient`
 - knows.academy → OpenAlex jako fallback dla starszych/nie-2026 artykułów; publiczne API proxy nie wymaga uwierzytelniania
@@ -798,9 +850,9 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 
 ### oma-slide
 
-**Domena:** Generowanie bogatych animacyjnie prezentacji HTML na stałej planszy 1920×1080, z deterministyczną walidacją, bundlowaniem i eksportem do PDF/PNG/PPTX przez CLI `oma slide`.
+**Domena:** Generowanie bogatych animacyjnie prezentacji HTML na stałej planszy 1920×1080, z deterministyczną walidacją, bundlowaniem i eksportem do PDF/PNG/PPTX przez CLI `oma slide`, oraz trasa `native-pptx`, która tworzy edytowalne pliki PowerPoint przez upstreamową umiejętność [ppt-master](https://github.com/hugohe3/ppt-master).
 
-**Kiedy używać:** Tworzenie prezentacji na podstawie tematu lub konspektu, ulepszanie albo przeformatowanie istniejącej talii, generowanie per-slajdowego HTML z animacjami i estetyką zgodną z doktryną projektu, eksport talii do PDF/PNG/PPTX, zastosowanie nazwanego presetu stylu, eksport do Canvy lub import z Canvy.
+**Kiedy używać:** Tworzenie prezentacji na podstawie tematu lub konspektu, ulepszanie albo przeformatowanie istniejącej talii, generowanie per-slajdowego HTML z animacjami i estetyką zgodną z doktryną projektu, eksport talii do PDF/PNG/PPTX, zastosowanie nazwanego presetu stylu, eksport do Canvy lub import z Canvy. Trasy `native-pptx` użyj dla edytowalnego PPTX, wypełniania lub edycji istniejącego PPTX z zachowaniem jego projektu, zamiany dokumentu w talię PPTX, szablonów wielokrotnego użytku albo PPTX/MP4 z narracją.
 
 **Kiedy NIE używać:** Zwykłe tworzenie dokumentu bez slajdów, samo generowanie obrazów (użyj bezpośrednio oma-image), definiowanie marki/systemu projektowego (użyj oma-design), deterministyczne operacje CLI (validate/bundle/export) bez generowania (wywołaj bezpośrednio CLI `oma slide`).
 
@@ -808,51 +860,62 @@ Właściwe dla projektu `stack/stack.yaml`, `stack/tech-stack.md`, fragmenty i s
 - Umiejętność tworzy HTML, a CLI wykonuje resztę (scaffold, validate, bundle, export)
 - Tylko lokalne zasoby: żadnych zdalnych URL-i w `<img src>`/`<video src>`, wyłącznie `./assets/<file>`
 - CJK → na każdym slajdzie koreańskim/japońskim/chińskim wymagany jest font Pretendard
-- Opakowanie `prefers-reduced-motion`, widoczne stany focus i `data-om-validate` są wymagane na każdym slajdzie
+- Opakowanie `prefers-reduced-motion`, widoczne stany focus i kanoniczna struktura slajdu na każdym slajdzie: `oma slide validate` mierzy każdy `.slide` wewnątrz `.deck-stage` jako ramkę 1920×1080, bez możliwości wyłączenia dla pojedynczego slajdu lub elementu
 - Maksymalnie 3 iteracje automatycznej poprawki podczas walidacji, potem pokaż użytkownikowi diff
 - Generowanie obrazów przekazuj do oma-image; Canva MCP jest opcjonalny i dostarczany automatycznie wyłącznie po jawnym potwierdzeniu użytkownika
+- `native-pptx`: ładuje ppt-master z katalogu umiejętności runtime'u albo przez `bunx skills use hugohe3/ppt-master@ppt-master`, nigdy go nie modyfikuje, instaluje jego pakiety Pythona tylko za zgodą i stosuje jego własne bramki
 
-**Workflow:** 7 faz — DETECT (tryb), DISCOVER (doprecyzuj + oceń zasoby), STYLE (3 podglądy na żywo → użytkownik wybiera), GENERATE (`slide-NN.html` w 1920×1080), VALIDATE (`oma slide validate`, maks. 3 pętle automatycznej poprawki), REVIEW (viewer + opcjonalny edytor bbox), DELIVER (`bundle` + opcjonalny eksport PDF/PNG/PPTX).
+**CLI:** `oma slide create` (szkielet przestrzeni roboczej), `oma slide style get` (pobranie pliku stylu), `oma slide asset fetch-video` (pobieranie wideo), `oma slide import pptx`, `oma slide validate`, `oma slide bundle`, `oma slide export pdf|png|pptx`, `oma slide edit` i `oma slide doctor`.
+
+**Workflow:** 7 faz — DETECT (trasa + tryb), DISCOVER (wykorzystaj podany cel, odbiorców, liczbę slajdów i zasoby; jedno zbiorcze pytanie tylko o brakujące wybory, które istotnie wpływają na talię), STYLE (podany styl, konwencje istniejącej talii albo odpowiedni preset; 3 podglądy na żywo tylko wtedy, gdy zażądano eksploracji stylu albo kierunek jest istotnym otwartym wyborem), GENERATE (`slide-NN.html` w 1920×1080), VALIDATE (`oma slide validate`, maks. 3 pętle automatycznej poprawki), REVIEW (viewer + opcjonalny edytor bbox), DELIVER (`bundle` + opcjonalny eksport PDF/PNG/PPTX).
 
 ---
 
 ### oma-video
 
-**Domena:** Generowanie krótkich, objaśniających i nagrywanych przez człowieka filmów przez CLI `oma video`, które składa skrypt → narrację → wizualia → napisy → render HyperFrames.
+**Domena:** Tworzenie wideo przez CLI `oma video` oraz analiza i edycja istniejących klipów lokalnymi narzędziami multimedialnymi.
 
-**Kiedy używać:** Generowanie krótkich filmów (shorts/reels, 9:16) na podstawie tematu, objaśnień (16:9/9:16) z README/kodu/danych, demonstracji/walkthroughów z przechwycenia ekranu (`--source file`) albo nadzorowanego przechwycenia aplikacji webowej w przeglądarce z widocznym interfejsem dla dowolnego URL-a (`--source web`), deterministyczne ponowne renderowanie istniejącego uruchomienia.
+**Kiedy używać:** Generowanie krótkich filmów i objaśnień, tworzenie dem z pliku `--capture` nagranego przez człowieka, ponowne renderowanie istniejącego uruchomienia, wyodrębnianie klatek, analiza widocznych obiektów, usuwanie pauz i składanie klipów z dubbingiem.
 
-**Kiedy NIE używać:** Generowanie pojedynczego obrazu (użyj oma-image), generowanie talii slajdów (użyj oma-slide; video wywołuje je wewnętrznie dla klatek objaśnień), generowanie samego audio mowy (użyj oma-voice), nieliniowa edycja istniejącego gotowego mp4, transmisja na żywo (nadzorowane przechwycenie webowe jest objęte zakresem).
+**Kiedy NIE używać:** Pojedynczy nieruchomy obraz (oma-image), talia slajdów (oma-slide), przetwarzanie samego audio albo generowanie/transkrypcja mowy (oma-voice), tłumaczenie mowy (oma-translation) ani transmisja na żywo.
 
 **Podstawowe reguły:**
-- Przed wywołaniem doprecyzuj lub wywnioskuj tryb; pokaż użytkownikowi wywnioskowany plan zamiast po cichu renderować niejasny brief
-- Konfiguracja dostawcy jest opcjonalna pod względem klucza dla obsługiwanych fallbacków zasobów; płatni dostawcy (Pexels, Pixelle) włączają się automatycznie tylko, gdy istnieje ich klucz środowiskowy, a błąd kompozytora nigdy nie jest zastępowany zapasowym wideo
-- Bramka kosztów od ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` omija); limit 180 s / 40 scen
+- Pracę nad istniejącymi klipami kieruj do referencji przetwarzania multimediów przed wyborem trybu tworzenia lub dostawcy; te operacje korzystają z zainstalowanych narzędzi, a nie z nowego trybu generowania w CLI
+- Konfiguracja dostawcy jest opcjonalna pod względem klucza dla obsługiwanych fallbacków zasobów. Dostawcy stock i AIGC (Pexels, Pixelle) są używani tylko z `--visual stock` lub `--visual aigc` i ich kluczem środowiskowym; w przeciwnym razie wizualia to niewymagające klucza nieruchome obrazy `oma-image`. Błąd kompozytora nigdy nie jest zastępowany zapasowym wideo
+- Klatka `oma-slide` jest używana tylko dla sceny, której `visual.ref` jest istniejącym katalogiem talii; dostawca nie generuje talii, a scena slajdu bez takiego katalogu renderuje placeholder
+- Tworzenie korzysta z bramki kosztów od ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` dla już autoryzowanej płatnej pracy) oraz limitów 180 s czasu trwania / 40 scen; te ustawienia znajdują się w sekcji `video:` pliku `.agents/oma-config.yaml`
 - Wejścia renderowania zapisują się w `render-spec.json`, zasobach, seedzie i osadzonym Pretendard; `OMA_VIDEO_MOCK=1` to harness testowy dla złotych fixture'ów, nie artefakt dla użytkownika
-- Demo jest human-in-the-loop: przechwycenie webu otwiera tylko przeglądarkę z widocznym interfejsem i nagrywa, gdy człowiek prowadzi przebieg — ŻADNEJ automatyzacji poświadczeń; `--url` i tokeny są maskowane w logach/manifeście
+- Przechwycenie demo wykonuje człowiek; `--source web --url` dostarcza kontekst i nie rozpoczyna nagrywania ani nie automatyzuje logowania. Maskuj tokeny URL w logach/manifeście
+- Demo wymaga `--polish`, aby skierować nagranie przez kompozycję `Demo`, w której dane osobowe są maskowane. Bez `--polish` wynikowy plik MP4 to surowe, niezamaskowane nagranie, które można dostarczyć dopiero wtedy, gdy kontrola danych osobowych nie znalazła niczego do zamaskowania
 - Bezpieczeństwo ścieżki (`--allow-external-output` dla wyniku poza `$PWD`)
 
-**Workflow:** PREPARE (tryb/proporcje/locale, doprecyzuj/rozszerz brief) → ACQUIRE (sprawdź dostępność dostawców, zweryfikuj ścieżkę przechwytywania i koszt) → ACT (skrypt → voice ∥ wizualia ∥ napisy → render-spec → render) → VERIFY (schemat, hashe manifestu, kod wyjścia, mp4) → FINALIZE (katalog uruchomienia + ścieżka mp4 + ostrzeżenia o pokryciu).
+**Workflow:** PREPARE (tryb/proporcje/locale; podaj wywnioskowane ustawienia domyślne i pytaj tylko wtedy, gdy odpowiedź zmienia wynik) → ACQUIRE (sprawdź dostępność dostawców, zweryfikuj ścieżkę przechwytywania i koszt) → ACT (skrypt → voice ∥ wizualia ∥ napisy → render-spec → render) → VERIFY (schemat, hashe manifestu, kod wyjścia, mp4) → FINALIZE (katalog uruchomienia + ścieżka mp4 + ostrzeżenia o pokryciu).
+
+Istniejące klipy korzystają z inspekcji strumienia źródłowego/PTS, jawnych kryteriów wyboru klatek lub cięć oraz wspólnej osi czasu edycji audio/wideo. Detektory mowy i amplitudy mogą dawać rozbieżne wyniki; sporne przedziały rozstrzygaj na podstawie żądanej treści, zamiast zwiększać liczbę cięć. Dubbing może skopiować oryginalny zakodowany obraz, zastępując jego audio.
 
 ---
 
 ### oma-voice
 
-**Domena:** Lokalne, działające na urządzeniu zamiany tekstu na mowę i mowy na tekst przez serwer MCP Voicebox — bez chmury, kluczy API i kosztu za wywołanie.
+**Domena:** Lokalne generowanie i transkrypcja mowy przez Voicebox oraz konwersja istniejącego audio, dopasowywanie czasu trwania i przetwarzanie głośności za pomocą FFmpeg.
 
 **Kiedy używać:** Generowanie krótkiego audio powiadomień o ukończeniu zadań agenta lub blokadach, tworzenie voiceoveru/narracji/zasobów audio (mp3 lub wav), transkrypcja lokalnych plików audio (mp3, wav, m4a, webm, flac) do Markdown, porównywanie profili głosu przez ponowne uruchomienie tego samego tekstu z różnymi identyfikatorami profili.
+
+Używaj jej także do dopasowywania istniejącej mowy do żądanego okna, resamplingu, konwersji kanałów i żądanych profili głośności. Umieszczanie w wideo pozostaje po stronie oma-video.
 
 **Kiedy NIE używać:** Chmurowe TTS lub wysokiej jakości wielojęzyczne głosy chmurowe, dyktowanie z mikrofonu terminala w czasie rzeczywistym (użyj dyktowania skrótem Voicebox), przesyłanie próbki do klonowania głosu / tworzenie profilu (odbywa się w UI aplikacji Voicebox), projektowanie wideo/muzyki/dźwięku.
 
 **Podstawowe reguły:**
-- Voicebox jest wymagany: po nieudanym handshake / `GET /health` zakończ z jednorazową wskazówką instalacji/uruchomienia; nie ponawiaj i nie uruchamiaj automatycznie ponownie
-- Profil jest wymagany: jeśli `voicebox_list_profiles` zwróci pustą listę, wskaż użytkownikowi UI aplikacji i zakończ
-- Limity długości: TTS maksymalnie 5000 znaków na wywołanie (ostrzeż przy 2000), STT 30 minut; v1 nie dzieli automatycznie tekstu na części
+- Voicebox jest wymagany do generowania i transkrypcji; przetwarzanie istniejącego audio pomija jego kontrole zdrowia, profilu i modelu
+- Profil jest wymagany tylko dla TTS; transkrypcja i lokalne przetwarzanie plików go nie wymagają
+- Limity długości: TTS maksymalnie 5000 znaków na wywołanie, STT 30 minut; v1 nie dzieli automatycznie tekstu na części
 - Przejrzystość automatycznego wywołania: powiadomienia pojawiają się dopiero, gdy zadanie przekracza `auto_notify_after_sec` (domyślnie 60 s); zawsze ogłoś zamiar w jednej linii
-- Bezpieczeństwo ścieżki (ostrzeż + potwierdź dla wyniku poza `$PWD`); SIGINT nie zapisuje częściowego wyniku
-- Manifest wymagany przy każdej generacji; brak bramki kosztów (Voicebox jest darmowy)
+- Jawnie żądana ścieżka wyjściowa autoryzuje to miejsce docelowe; doprecyzuj niejednoznaczne zastąpienie niepowiązanych plików. Przerwane wywołanie nie zapisuje częściowego wyniku
+- Utrwalone audio i transkrypty zawierają manifest; przetwarzanie zapisuje rzeczywiste dane źródła i operacji bez wymyślonych identyfikatorów generacji
 
 **Workflow:** PREPARE (zweryfikuj tekst/audio/język/ścieżkę/profil) → ACQUIRE (raz doprecyzuj, jeśli brakuje sygnału) → ACT (MCP `voicebox_speak` lub `voicebox_transcribe`) → VERIFY (obecność audio/transkryptu + pola manifestu) → FINALIZE (zapisz `manifest.json`, zaraportuj ścieżkę).
+
+Żądania dotyczące istniejących plików trafiają do lokalnego przetwarzania przed tą sekwencją Voicebox. Zachowaj surowe audio, wyprowadź docelowe tempo i głośność z żądanej formy dostarczenia, a pomiary techniczne trzymaj oddzielnie od nieocenionej naturalności mowy.
 
 ---
 
@@ -921,9 +984,9 @@ oma agent spawn qa prompts/review.md session-01 --task-id task-5 --read-only
 Podczas workflowu wieloagentowego (`/orchestrate` lub `/work`):
 
 1. **Agent PM** rozkłada żądanie na zadania z numerycznymi poziomami priorytetu (`1` = brak zależności; niższe poziomy uruchamiają się najpierw), zależnościami i kryteriami akceptacji. Poprawny istniejący plan jest używany ponownie
-2. **Inicjalizacja sesji:** generowane jest ID sesji, a `orchestrator-session-{sessionId}.md` i `task-board-{sessionId}.md` są tworzone w skonfigurowanym magazynie pamięci
+2. **Inicjalizacja sesji:** generowane jest ID sesji, wybierane są referencje dla każdego zadania, a `orchestrator-session-{sessionId}.md` i `task-board-{sessionId}.md` są tworzone w skonfigurowanym magazynie pamięci
 3. **Zadania z poziomu 1** uruchamiają się równolegle (maksymalnie MAX_PARALLEL równoczesnych agentów)
-4. **Monitorowanie postępu:** przy uruchomieniach `oma agent spawn` orkiestrator co POLL_INTERVAL odczytuje przypisane do uruchomień pliki `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`; natywni subagenci Claude Code zwracają wynik synchronicznie
+4. **Monitorowanie postępu:** orkiestrator preferuje powiadomienia hosta o ukończeniu; przy uruchomieniach `oma agent spawn` bez takich powiadomień jeden koordynator odczytuje zmienione, przypisane do uruchomień pliki `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` z ograniczonym backoffem. Natywni subagenci Claude Code zwracają wynik synchronicznie
 5. **Kolejne poziomy** uruchamiają się po ukończeniu ich zależności
 6. **Pętla przeglądu** działa dla każdego ukończonego agenta (zobacz niżej)
 7. **Zebranie wyników** z plików wyników przypisanych do uruchomień i ustrukturyzowanych twierdzeń

@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 | | 得られるもの | 試してみる |
 |---|---|---|
 | **12 の専門ロール** | PM、アーキテクト、バックエンド・フロントエンド・モバイル・データベース・インフラの各エンジニア、QA レビューアー、デバッガー、リファクタラー、ドキュメントキュレーター、リサーチャー（[チームを紹介](#meet-the-team)） | `/orchestrate build a TODO app with login` |
-| **21 のワークフロー** | `/brainstorm` や `/plan` から `/review`、`/debug`、`/scm` までのスラッシュコマンド。ほとんどは普通の依頼からも始まります（最大 11 言語のキーワードバンク） | "review this PR" |
+| **20 のワークフロー** | `/brainstorm` や `/plan` から `/review`、`/debug`、`/scm` までのスラッシュコマンド。4 つのマルチエージェントモードは、普通の依頼で名前を挙げても始まります | "ultrawork: add rate limiting" |
 | **33 のスキル** | タスクが必要とするときだけ読み込まれるドメインのノウハウ: UI、API、スキーマ、Terraform、CI、セキュリティ、git、オブザーバビリティ | 自動で読み込まれる。例: "add a Terraform S3 bucket" |
 | **開いて確認できるファイル** | 計画、設計ドキュメント、API コントラクト、ADR、バグノート、エージェント別の結果、セキュリティのエビデンス、HTML 解説、振り返りサマリー | `ls .agents/results` |
 | **ワークフローのチェック** | 長時間のワークフローでは、プロジェクト自身の `test`、`lint`、`typecheck` スクリプトが通らないとエージェントは終了できません。`oma ralph verify` は、`/ralph` の実行が plan、QA、refactor のファイルを残したかを確認します | `/ultrawork …` のあと `oma goal set --gate test` |
@@ -112,8 +112,6 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
    ```text
    /plan add user accounts with a settings page
    ```
-
-   「plan user accounts with a settings page」と書くだけでもかまいません。プロンプト hook のあるランタイムでは、キーワードから同じワークフローが始まります。
 4. **得られたものを確認します。** `/plan` は現在のセッションで実行されます。この例のように複数の領域にまたがる作業では、`.agents/results/plan-<session-id>.json` と、`docs/plans/work/<NNN>-<name>.md` のトラッカーを書き出します。1 つの領域で完結する小さな依頼には、計画ファイルの代わりに直接の推奨案を返します。
 
 複数の領域にまたがる作業では、この計画に対して `/work` または `/orchestrate` を実行してください。
@@ -125,11 +123,11 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 
 | 専門家 | 持っているスキル | 呼び出し方 | 残すもの |
 |---|---|---|---|
-| **プロダクトマネージャー** (`pm-planner`) | oma-pm | `/plan`、または "plan the payment feature" | Medium と Complex の作業では plan JSON と `docs/plans/work/` のトラッカー（Simple な依頼には直接の推奨案） |
+| **プロダクトマネージャー** (`pm-planner`) | oma-pm | `/plan` | Medium と Complex の作業では plan JSON と `docs/plans/work/` のトラッカー（Simple な依頼には直接の推奨案） |
 | **アーキテクト** (`architecture-reviewer`) | oma-architecture | `/architecture` | `.agents/results/architecture/` の ADR または推奨案 |
 | **バックエンド、フロントエンド、モバイル、データベース、インフラの各エンジニア** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`、`/orchestrate` | コード、テスト、タスクごとの `result-<agent>` ファイル |
-| **QA レビューアー** (`qa-reviewer`) | oma-qa | `/review`、または "review this PR" | CRITICAL から LOW まで順位付けされた指摘。それぞれ file:line と修正コードつき |
-| **デバッガー** (`debug-investigator`) | oma-debug | `/debug`、または "fix this bug" | 最小限の修正、リグレッションテスト、必要に応じて `.agents/results/bugs/` のバグノート |
+| **QA レビューアー** (`qa-reviewer`) | oma-qa | `/review` | CRITICAL から LOW まで順位付けされた指摘。それぞれ file:line と修正コードつき |
+| **デバッガー** (`debug-investigator`) | oma-debug | `/debug` | 最小限の修正、リグレッションテスト、必要に応じて `.agents/results/bugs/` のバグノート |
 
 <details>
 <summary>残り 3 つのロールと、ロールを持たないスキル</summary>
@@ -138,7 +136,7 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 |---|---|---|---|
 | **リファクタラー** (`refactor-engineer`) | oma-refactor | `/ultrawork` の REFINE フェーズ | 挙動を保つ `refactor:` コミットと `result-refactor-<session>.md` レポート |
 | **ドキュメントキュレーター** (`docs-curator`) | oma-docs | `/docs`、または "verify docs" | `docs/generated/doc-refs.json` と、承認したドキュメントパッチ |
-| **リサーチャー** (`research-explorer`) | oma-search, oma-market, oma-scholar | リサーチの依頼 | 信頼度ラベルつきの出典。市場ブリーフは `.agents/results/market/` |
+| **リサーチャー** (`research-explorer`) | oma-search, oma-market, oma-scholar | リサーチの依頼 | 出所つきの出典。市場ブリーフは `.agents/results/market/` |
 
 インフラエンジニア（`tf-infra-engineer`）は、破壊的な、または本番環境に対する `apply` や `destroy` の前に必ず確認するよう指示されています。残りのスキル（brainstorm、security、scm、dev-workflow、observability、explanation、recap、translation、coordination、orchestration、skill-creation、コンテンツとメディア）には専任のロールがありません。エージェントが自分で読み込み、その多くはスキルインジェクターがプロンプトから適切なものを提案します。
 
@@ -148,7 +146,7 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 ## チームの連携のしかた
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -169,14 +167,14 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 | 「本当に終わるまで止まらないで」 | `/ralph` | 別途 spawn した、まっさらなコンテキストの judge がすべての基準を PASS と判定するまで `/ultrawork` を繰り返す。基準がブロックされたとき、または 5 回の iteration 後は部分的なレポートを出して停止 |
 | タイマーで動くチーム | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 実行ごとに `~/.oma/schedule/runs/<id>/` に Markdown ログを 1 つ |
 
-スラッシュコマンドは必須ではありません。プロンプト hook のあるランタイムでは、普通の依頼（最大 11 言語のキーワードバンク）でほとんどのワークフローを始められます。「review this PR」なら `/review` が始まります。アプリ全体を説明すると（「Build a TODO app with user authentication」）`/orchestrate` が提案され、実行するかどうかはエージェントが判断します。コードブロック内のキーワードは無視されます。
+ワークフローはスラッシュコマンドで始まります。普通の依頼では始まりませんが、プロンプト hook のあるランタイムではスキルのヒントが付きます。最大 11 言語のキーワードバンクがプロンプトと照合され、一致するスキルをエージェントに示します（「run a security audit」なら `oma-qa` が示されます）。ヒントは助言にとどまり、コードブロック内のキーワードは無視されます。
 
-`/orchestrate`、`/work`、`/ultrawork`、`/ralph` は、スラッシュコマンドでも平文（「ultrawork: add rate limiting」）でも、名前で呼び出すと **persistent** になります。その場合、エージェントが早めに終了しようとすると、「**workflow done**」と言うまで作業に戻されます（最大 5 回または 2 時間）。ゆるく一致しただけの依頼では、これらのワークフローは提案されるだけです。
+`/orchestrate`、`/work`、`/ultrawork`、`/ralph` は、スラッシュコマンドでも平文（「ultrawork: add rate limiting」）でも、名前で呼び出すと **persistent** になります。その場合、エージェントが早めに終了しようとすると、「**workflow done**」と言うまで作業に戻されます（最大 5 回または 2 時間）。平文で始められるワークフローはこの 4 つだけで、それも名前で呼び出した場合に限ります。
 
 **計測結果と注意点。** [ベンチマーク](../benchmarks/README.md)（プロンプト 1 つ、素の構成を含むアドオン構成の異なる 5 種類の Claude Code、`claude-opus-4-6`、それぞれ 1 回のビルド）では、oma は素の Claude Code の 70.7 に対して 80.6 を記録しました。コストは 1.7 倍（$4.04 対 $2.37）、時間は 1.8 倍でした。
 
 <details>
-<summary>全 21 ワークフロー</summary>
+<summary>全 20 ワークフロー</summary>
 
 | コマンド | 内容 |
 |---------|--------------|
@@ -185,7 +183,7 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 | `/convert` | PDF/HWP を Markdown に変換、または ffmpeg で画像・動画・音声をトランスコード |
 | `/debug` | バグを再現して根本原因を修正し、リグレッションテストを書き、類似パターンをスキャン |
 | `/deepinit` | 既存のコードベースを AGENTS.md、ARCHITECTURE.md、docs/ ナレッジベースに整理 |
-| `/design` | アクセシビリティチェック付きでデザインシステム、DESIGN.md、トークンを構築 |
+| `/design` | デザインタスクのスコープを定め、oma-design を通じて指摘、DESIGN.md、またはトークンを提供 |
 | `/docs` | ドキュメントの壊れた参照を見つけ、diff が触れたドキュメントにパッチを提案 |
 | `/explain` | diff、PR、ブランチ、トピックを自己完結型のインタラクティブ HTML 解説に変換 |
 | `/orchestrate` | エージェントを並列実行し、ファイル状態で連携させ、結果を検証（persistent） |
@@ -197,12 +195,11 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 | `/scm` | ブランチ、マージ、コンフリクト、ワークツリー、Conventional Commits を扱う |
 | `/security` | ソース、エージェントスキル、MCP コンポーネントをスキャンし、指摘を検証して CI ゲートを設定 |
 | `/stack-set` | 技術スタックを検出し、ドメインスキル向けのスタック別リファレンスを生成 |
-| `/tools` | MCP ツールを平易な言葉で一覧・有効化・無効化 |
 | `/ultrawork` | 5 フェーズ（PLAN、IMPL、VERIFY、REFINE、SHIP）。各レビューは新しいレビューアーセッションで実行（persistent） |
 | `/video` | ブリーフからキー不要でも動くパイプラインで完成した MP4 を作成 |
 | `/work` | PM の計画と QA レビューで、マルチドメインのプロジェクトに複数エージェントを連携させる（persistent） |
 
-`oma verify triggers` は、ラベル付きの英語・韓国語 212 プロンプトのコーパスで検出器を評価します。誤検出が 10% を超えるか見逃しが 20% を超えると CI が失敗します。最新の計測結果は **見逃し 0%、誤検出 5.3%** です。詳細なリファレンス: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)。
+`oma verify triggers` は、ラベル付きの英語・韓国語 212 プロンプトのコーパスで検出器を評価します。誤検出が 10% を超えるか見逃しが 20% を超えると CI が失敗します。最新の計測結果は **見逃し 0%、誤検出 0%** です。詳細なリファレンス: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)。
 
 </details>
 
@@ -244,10 +241,10 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | コマンド | 内容 | 書き出すもの |
 |---|---|---|
-| `/brainstorm` | 確認の質問を 1 つずつ投げかけ、異なる仕組みのアプローチを 2〜3 案提示してから `/plan` に引き継ぎます。コードは書きません | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | 確認の質問を 1 つずつ投げかけ、異なる仕組みのアプローチを 2〜3 案提示してから `/plan` に引き継ぎます。コードは書きません | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | 作業の規模を Simple、Medium、Complex で見積もります。Medium と Complex の作業はタスクに分割し、各タスクにエージェント、依存関係、受け入れ基準、確認コマンドを持たせます。作業が境界をまたぐ場合は API コントラクトを定義します | `.agents/results/plan-<sid>.json`、`docs/plans/work/<NNN>-<name>.md`、必要に応じて `.agents/results/api-contracts/` のコントラクト |
 | `/architecture` | まず過去の決定を読み、少なくとも 2 つの選択肢を比較し、置き換えられた ADR を superseded とマークします | `.agents/results/architecture/` の ADR または推奨案 |
-| `/design` | 2〜3 の方向性を提案してから、トークン付きの `DESIGN.md` を書き、レスポンシブレイアウトとアクセシビリティを監査します | `DESIGN.md`、CSS/Tailwind/shadcn トークン |
+| `/design` | スコープとコンテキストを確定し、タスクに合ったデザインガイダンスを選んでから、監査の指摘、`DESIGN.md`、またはプロジェクト既存のトークンシステムに対応付けたトークンを提供します | 指摘、`DESIGN.md`、デザイントークン |
 
 </details>
 
@@ -274,7 +271,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 | コマンドまたはスキル | 内容 | 書き出すもの |
 |---|---|---|
 | `/review` | 依存関係の監査のあと、OWASP Top 10、パフォーマンス、WCAG 2.2 AA、コード品質をレビューします。すべての指摘に file:line と修正コードが付きます | チャット上のレポートとメモリ記録。レポートファイルはなし |
-| `/security` | ソース、エージェントスキル、MCP サーバーをスキャンし（Deepsec、Cisco Skill and MCP Scanner）、スコープを決めたテスト用デプロイがあれば ARTEX のペネトレーションテストを実行します。ワークフローは、実行に失敗したエンジンを問題なしではなく失敗として報告するよう求めます | `.agents/results/security/<run-id>/` |
+| `/security` | ソース、エージェントスキル、MCP サーバーをスキャンし（Deepsec、Cisco Skill and MCP Scanner）、指摘を検証します。ペネトレーションテストは、明示的に依頼された場合に限り、ユーザーが用意してレビュー済みの実行プラットフォームに対してのみ実行します。ワークフローは、実行に失敗したエンジンを問題なしではなく失敗として報告するよう求めます | `.agents/results/security/<run-id>/` |
 | `/debug` | 失敗を再現し、最小限の変更で根本原因を修正し、リグレッションテストを追加し、同じパターンがほかにないかスキャンします | 修正とテスト。必要に応じて `.agents/results/bugs/` のバグノート |
 | oma-refactor | 挙動を変えずに構造を変えます。先に特性化テストを書き、それからリファクタリング専用のコミットを作ります | `.agents/results/refactor/` |
 | `/scm` | 論理的な変更ごとに分けた Conventional Commits。ブランチ、マージ、リベース、ワークツリー | コミットとブランチ |
@@ -299,7 +296,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | スキル | 内容 | 書き出すもの |
 |---|---|---|
-| oma-search | ドキュメント、Web、コードの検索。出典ごとに信頼度ラベルを付けます | 出典つきの結果 |
+| oma-search | ドキュメント、Web、コードの検索。実際に読んだものと抜粋だけを見たものを区別して示します | 出典つきの結果 |
 | oma-market | コミュニティシグナルからペインポイント、トレンド、競合を調べ、SWOT、Porter's 5 Forces、PESTEL で整理します | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | PDF 全文（約 10K トークン）の代わりに、コンパクトな claims ファイル（Knows 形式、約 700 トークン）を読む論文検索 | `<paper>.knows.yaml` |
 | oma-academic-writing | ルーブリックに照らしてアカデミックな文章を起草・監査します | 手元のファイル |
@@ -326,7 +323,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | Hook | 内容 | オフにする方法 / 上限 |
 |---|---|---|
-| キーワード起動 | 普通の依頼から対応するワークフローを始めます | 質問、貼り付けたテキスト、コードブロックはスキップ |
+| キーワード起動 | 普通の依頼が `/orchestrate`、`/work`、`/ultrawork`、`/ralph` のいずれかを名前で挙げたとき、そのワークフローを始めます | 質問、貼り付けたテキスト、コードブロックはスキップ |
 | スキルインジェクター | プロンプトに合ったスキルをエージェントに示します | persistent workflow が動いている間は一時停止 |
 | Stop ゲート | persistent workflow を作業に戻します。`oma goal set --gate test` を設定すると、そのスクリプトが 25 秒以内に 0 で終了したときに終了を許可します | 「workflow done」と言う。5 回のブロックまたは 2 時間でも解除 |
 | リファクタガード | 終了時に、500 行を超える編集済みファイルを `refactor-engineer` 向けにフラグ付けします | オプトイン: `refactor_guard.enabled` |
@@ -363,7 +360,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 Serena は LSP ベースのコードナビゲーションと診断を提供し、対応する場合はネイティブ編集のフィードバックも提供します。プロバイダーの選択はエージェントのランタイムとは独立しており、利用できる機能はプロバイダーとホストによって異なります。
 
-エージェントは外部サービスを使わず、`.agents/state/` のプレーンなファイルで連携します。`/tools` は平易な言葉で MCP ツールをオン・オフします。詳細: [機能プロバイダー](./capability-providers.md)。
+エージェントは外部サービスを使わず、`.agents/state/` のプレーンなファイルで連携します。詳細: [機能プロバイダー](./capability-providers.md)。
 
 </details>
 
@@ -415,8 +412,8 @@ Serena は LSP ベースのコードナビゲーションと診断を提供し�
 | **oma-refactor** | ホットスポットの絞り込み、特性化テスト、リファクタリング専用コミットで、挙動を変えずにリファクタリングする |
 | **oma-scholar** | 学術文献を検索し、主張・根拠・ピアレビューをまとめたKnows論文サイドカーを作成する |
 | **oma-scm** | ブランチ、マージ、ワークツリー、Conventional Commitsを管理する |
-| **oma-search** | クエリごとに最適なソースへルーティングし、結果をどこまで信頼できるかをスコア化する |
-| **oma-security** | ソース、エージェントスキル、MCPコンポーネントをスキャンし、デプロイ済みWebアプリをテストして指摘を検証する |
+| **oma-search** | クエリごとに最適なソースへルーティングし、各結果の出所と、実際に読んだかどうかを報告する |
+| **oma-security** | ソース、エージェントスキル、MCPコンポーネントをスキャンして指摘を検証する。ペネトレーションテストはユーザーが用意したレビュー済みのプラットフォームでのみ実行する |
 | **oma-skill-creation** | 新しいOMAスキルを作成・監査する |
 | **oma-slide** | HTMLプレゼンテーションデッキを生成し、PDF/PNG/PPTXへエクスポートする |
 | **oma-tf-infra** | Terraformでマルチクラウドインフラをプロビジョニングする |
@@ -567,7 +564,7 @@ OMA は、追跡対象の Claude Code と Codex のハーネス実行につい�
 | **成果物ゲート** | `oma ralph verify --json` は、phase 記録、plan JSON、**別個の QA エージェント** と **別個の refactor エージェント** の result ファイルがあるかを確認します。それぞれ記録済みのエージェント実行に紐づいています。 | [`ralph.md`](../.agents/workflows/ralph.md) |
 | **プロンプトで指示される judge** | 機械的ではありません。`/ralph` のプロンプトはオーケストレーターに、まっさらなコンテキストの judge を spawn し、毎 iteration **すべての** 基準を確認し直すよう指示します。spawn が実際に行われたかを確かめる仕組みはありません。 | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **イベントログ** | OMA セッション内では、ゲートの通過、ゲートの失敗、判定がそれぞれ JSON 1 行としてセッションの `events.jsonl` に追記されます。 | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **エージェント別チェック** | `oma verify agent <type>` は、Scope Check、Charter Preflight、Hardcoded Secrets、TODO/FIXME Comments、Declared outputs、TDD Evidence に加え、TypeScript、Any Types、SQL Injection、テストなどのタイプ別チェックを実行します。 | `oma verify agent --help` |
+| **エージェント別チェック** | `oma verify agent <type>` は、Scope Check、Hardcoded Secrets、TODO/FIXME Comments、Declared outputs、TDD Evidence に加え、TypeScript、Any Types、SQL Injection、テストなどのタイプ別チェックを実行します。 | `oma verify agent --help` |
 
 > **セッションイベントの記録:** Stop hook は、persistent workflow の開始時に開かれた OMA セッションにゲートイベントを記録します。イベントの書き込みはベストエフォートです。そのセッションを作成できなかった場合（stderr に `[oma] L1 session activation failed` と表示されます）、失敗したゲートは終了をブロックしますが、`gate.failed` の行は書き込まれません。記録を当てにしたりデモで見せたりする前に、`oma state list` にアクティブなセッションが表示されることを確認してください。その後、`oma state get <sid>` でそのイベントを確認できます。
 

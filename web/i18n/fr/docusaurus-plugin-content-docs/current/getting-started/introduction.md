@@ -34,13 +34,13 @@ oh-my-agent résout ce problème par la spécialisation :
 
 ---
 
-## Le catalogue actuel : 33 compétences, 12 définitions, 21 workflows {#the-current-catalog-33-skills-12-definitions-21-workflows}
+## Le catalogue actuel : 33 compétences, 12 définitions, 20 workflows {#the-current-catalog-33-skills-12-definitions-20-workflows}
 
 Le catalogue sépare trois éléments qu'il est facile de confondre :
 
 - **Les [compétences](./glossary.md#skill)** sont les 33 paquets de connaissances de domaine sous `.agents/skills/*/SKILL.md`. Elles partent d'une intention en langage naturel et chargent progressivement leurs ressources.
 - **Les [définitions d'agents](./glossary.md#agent-definition)** sont les 12 fichiers sous `.agents/agents/`. Elles fournissent des personas de sous-agents propres aux fournisseurs et référencent une ou plusieurs compétences.
-- **Les [workflows](./glossary.md#workflow)** sont les 21 définitions de processus sous `.agents/workflows/`. Quatre sont [persistants](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` et `ralph`) ; les autres produisent un rapport sans maintenir un mode persistant actif.
+- **Les [workflows](./glossary.md#workflow)** sont les 20 définitions de processus sous `.agents/workflows/`. Quatre sont [persistants](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` et `ralph`) ; les autres produisent un rapport sans maintenir un mode persistant actif.
 
 Les sections suivantes conservent le catalogue détaillé des compétences. Lorsqu'un nom ou une description change, le frontmatter du fichier `SKILL.md` actif fait foi.
 
@@ -167,11 +167,10 @@ Tout ce dont oh-my-agent a besoin réside dans le répertoire `.agents/` :
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -302,5 +301,5 @@ Le répertoire `.agents/` reste la source de vérité. L'installation lie ou pro
 - **[Installation](./installation.md)** : trois méthodes d'installation, presets, configuration CLI et vérification
 - **[Agents](/docs/core-concepts/agents)** : plongée dans les 33 compétences, les 13 rôles de dispatch et le charter preflight
 - **[Compétences](/docs/core-concepts/skills)** : explication de l'architecture en deux couches
-- **[Workflows](/docs/core-concepts/workflows)** : les 21 workflows, leurs déclencheurs et leurs phases
+- **[Workflows](/docs/core-concepts/workflows)** : les 20 workflows, leurs déclencheurs et leurs phases
 - **[Guide d'utilisation](/docs/guide/usage)** : exemples réels, de la tâche unique à l'orchestration complète

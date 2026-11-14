@@ -33,13 +33,13 @@ oh-my-agent решает эту проблему специализацией:
 
 ---
 
-## Текущий каталог: 33 навыка, 12 определений, 21 рабочий процесс
+## Текущий каталог: 33 навыка, 12 определений, 20 рабочий процесс
 
 Каталог разделяет три вещи, которые легко перепутать:
 
 - **[Навыки](./glossary.md#skill)** — 33 пакета знаний предметных областей в `.agents/skills/*/SKILL.md`. Они маршрутизируются по намерению, выраженному естественным языком, и постепенно загружают ресурсы.
 - **[Определения агентов](./glossary.md#agent-definition)** — 12 файлов в `.agents/agents/`. Они предоставляют нативные для поставщиков роли субагентов и ссылаются на один или несколько навыков.
-- **[Рабочие процессы](./glossary.md#workflow)** — 21 определение процессов в `.agents/workflows/`. Четыре процесса [постоянные](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` и `ralph`); остальные завершаются отчётом и не сохраняют постоянный режим.
+- **[Рабочие процессы](./glossary.md#workflow)** — 20 определение процессов в `.agents/workflows/`. Четыре процесса [постоянные](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` и `ralph`); остальные завершаются отчётом и не сохраняют постоянный режим.
 
 Ниже сохранён подробный каталог навыков. Если имя или описание меняется, авторитетным источником служит frontmatter актуального `SKILL.md`.
 
@@ -166,11 +166,10 @@ oh-my-agent использует двухслойную архитектуру �
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -301,5 +300,5 @@ oh-my-agent не ограничен Claude Code. Поставщики с под�
 - **[Установка](./installation.md)**: три способа установки, пресеты, настройка CLI и проверка
 - **[Агенты](/docs/core-concepts/agents)**: подробный разбор 33 навыков, 13 ролей диспетчеризации и charter preflight
 - **[Навыки](/docs/core-concepts/skills)**: объяснение двухслойной архитектуры
-- **[Рабочие процессы](/docs/core-concepts/workflows)**: все 21 рабочий процесс с триггерами и фазами
+- **[Рабочие процессы](/docs/core-concepts/workflows)**: все 20 рабочий процесс с триггерами и фазами
 - **[Руководство по использованию](/docs/guide/usage)**: реальные примеры — от одной задачи до полной оркестрации

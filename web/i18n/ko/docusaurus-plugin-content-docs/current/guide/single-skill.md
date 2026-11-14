@@ -6,13 +6,13 @@ description: oh-my-agent의 단일 도메인 태스크에 대한 상세 가이�
 
 # 단일 스킬 실행
 
-단일 스킬 실행에서는 한 에이전트가 한 도메인의 한 태스크를 맡습니다. 여러 에이전트 간 조율이 필요하지 않습니다. 호스트 또는 선택한 워크플로우가 자연어 프롬프트를 스킬로 라우팅할 수 있으며, 훅 시스템 자체는 워크플로우를 감지하고 실제 라우팅은 선택한 런타임에 따라 달라집니다.
+단일 스킬 실행에서는 한 에이전트가 한 도메인의 한 태스크를 맡습니다. 여러 에이전트 간 조율이 필요하지 않습니다. 호스트 또는 선택한 워크플로우가 자연어 프롬프트를 스킬로 라우팅할 수 있으며, 훅 시스템은 키워드로 스킬 힌트를 추가하고 실제 라우팅은 선택한 런타임에 따라 달라집니다.
 
 ## 빠른 경로
 
 1. `oma doctor`를 한 번 실행해 선택한 호스트 통합을 확인합니다. 사용하지 않는 프로바이더의 선택적 경고는 태스크를 막지 않습니다.
 2. **목표**, **컨텍스트**, **제약 조건**, **완료 기준**이 분명한 독립적인 변경을 설명합니다.
-3. 선택한 스킬이 저장소를 검사하고, 활성 실행 계약이 요구할 때 범위를 `CHARTER_CHECK`로 밝히며, 실제로 실행한 검사를 보고할 것으로 예상합니다.
+3. 선택한 스킬이 저장소를 검사하고, 결과에 영향을 주는 가정을 밝히며, 실제로 실행한 검사를 보고할 것으로 예상합니다.
 4. 태스크가 API, UI, 데이터베이스 또는 모바일 경계를 넘으면 단일 스킬 실행을 멈추고 `/work` 또는 `/orchestrate`로 전환합니다.
 
 관리되는 실행이 멈추면 `oma agent status <session-id> [agent-id]`를 실행한 뒤 `.agents/state/agent-runs/`의 실행 기록과 주입된 클레임 경로를 확인하고 재시도합니다. 프로바이더와 복구 동작은 [중요한 기본값](../getting-started/important-defaults.md)을 참고하세요.
@@ -112,17 +112,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **로드된 리소스:**
    - `execution-protocol.md` (항상)
    - `snippets.md` (폼과 Zod 패턴, 스킬이 제공하는 경우 기존 컴포넌트 패턴 포함)
-4. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **구현:**
+4. **구현:**
    - `src/features/auth/components/login-form.tsx` 생성 (`"use client"`를 포함한 Client Component)
    - `src/features/auth/utils/login-schema.ts` 생성 (Zod 스키마)
    - `src/features/auth/components/skeleton/login-form-skeleton.tsx` 생성
@@ -130,7 +121,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - `@tanstack/react-form`으로 Zod 유효성 검사와 함께 폼 처리
    - `@/`를 사용한 절대 임포트
    - 파일당 하나의 컴포넌트
-6. **검증:**
+5. **검증:**
    - 체크리스트: ARIA 라벨 존재, 시맨틱 헤딩, 키보드 내비게이션 작동
    - 모바일: 320px 뷰포트에서 올바르게 렌더링
    - 성능: CLS 없음
@@ -163,16 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - 가용할 때 `stack/snippets.md` 또는 `variants/{node,python,rust}/snippets.md`
    - 가용할 때 `stack/tech-stack.md` 또는 변형별 tech-stack 레퍼런스
 <!-- oma-docs:ignore-end -->
-5. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **구현:**
+5. **구현:**
    - 리포지토리: `TaskRepository.find_by_user(user_id, cursor, status, limit)` 매개변수화된 쿼리 사용
    - 서비스: `TaskService.get_user_tasks(user_id, cursor, status, limit)` (비즈니스 로직 래퍼)
    - 라우터: `GET /api/tasks` JWT 인증 미들웨어, 입력 유효성 검사, 응답 포맷팅
@@ -200,19 +182,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **난이도 평가:** 중간 (설정 화면 + 상태 관리 + 오프라인 처리)
 3. **로드된 리소스:**
    - `execution-protocol.md`
-   - `snippets.md` (화면 템플릿, Riverpod 프로바이더 패턴)
-   - `screen-template.dart`
-4. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (화면, Riverpod 프로바이더, 데이터 레이어 패턴), 또는 `/stack-set`이 생성한 경우 `stack/snippets.md`
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **구현:**
+4. **구현:**
    - 화면: `lib/features/settings/presentation/settings_screen.dart` (Riverpod을 사용한 Stateless Widget)
    - 프로바이더: `lib/features/settings/providers/settings_provider.dart`
    - 리포지토리: `lib/features/settings/data/settings_repository.dart`
@@ -245,17 +218,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (산출물 구조)
    - `examples.md`
    - `anti-patterns.md` (최적화 시 검토)
-4. **실행 계약(활성화된 경우)이 `CHARTER_CHECK`를 출력:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **워크플로우:** 탐색 (엔터티, 관계, 접근 패턴, 볼륨 추정) -> 설계 (외부/개념/내부 스키마, 제약 조건, 라이프사이클 필드) -> 최적화 (쿼리 패턴용 인덱스, 파티셔닝 전략, 백업 계획, 안티패턴 검토)
-6. **산출물:**
+4. **워크플로우:** 탐색 (엔터티, 관계, 접근 패턴, 볼륨 추정) -> 설계 (외부/개념/내부 스키마, 제약 조건, 라이프사이클 필드) -> 최적화 (쿼리 패턴용 인덱스, 파티셔닝 전략, 백업 계획, 안티패턴 검토)
+5. **산출물:**
    - 외부 스키마 요약 (역할별 뷰: 관리자, 프로젝트 매니저, 팀 멤버)
    - ERD가 포함된 개념 스키마 (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership 등)
    - 물리적 DDL, 인덱스, 파티셔닝이 포함된 내부 스키마
@@ -320,7 +284,7 @@ Add deliverables: data standards table, glossary, migration script.
 | 신호 | 의미 | 조치 |
 |------|------|------|
 | 에이전트가 "백엔드 변경이 필요하다"고 말함 | 태스크에 크로스 도메인 의존성이 있음 | `/work`로 전환하여 백엔드 에이전트 추가 |
-| 에이전트의 CHARTER_CHECK가 실제로는 필요한 항목을 "Must NOT do"로 분류함 | 범위가 하나의 도메인을 초과 | 먼저 `/plan`으로 전체 기능을 계획 |
+| 에이전트가 스킬의 도메인을 벗어나서 제외한 작업을 보고함 | 범위가 하나의 도메인을 초과 | 먼저 `/plan`으로 전체 기능을 계획 |
 | 수정이 다른 레이어의 3개 이상 파일로 연쇄됨 | 하나의 수정이 여러 도메인에 영향 | 더 넓은 범위의 `/debug` 사용 또는 `/work` |
 | 에이전트가 API 컨트랙트 불일치를 발견 | 프론트엔드/백엔드 불일치 | `/plan`으로 컨트랙트를 정의한 후 두 에이전트를 재생성 |
 | 통합 지점에서 품질 게이트 실패 | 컴포넌트가 제대로 연결되지 않음 | `/review`를 실행하거나 QA 단계 추가: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

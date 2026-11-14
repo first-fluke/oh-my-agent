@@ -88,10 +88,10 @@ Es gibt zwei Ausführungspfade:
 
 1. Lädt `.agents/results/plan-{sessionId}.json` und erstellt inline über `/plan` einen Plan, wenn kein verwendbarer Plan vorhanden ist.
 2. Initialisiert eine Sitzung mit ID-Format `session-YYYYMMDD-HHMMSS`.
-3. Erstellt `orchestrator-session-{sessionId}.md` und `task-board-{sessionId}.md` im Memory-Verzeichnis.
-4. Startet Agenten pro Prioritätsstufe, jeweils mit: Aufgabenbeschreibung, API-Verträgen und Kontext.
-5. Überwacht den Fortschritt durch Abfrage der `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-Dateien.
-6. Verifiziert jeden abgeschlossenen Agenten über `verify.sh` — PASS (Exit-Code 0) akzeptiert, FAIL (Exit-Code 1) startet mit Fehlerkontext erneut (max. 2 Wiederholungen), dauerhaftes Scheitern löst die Explorationsschleife aus.
+3. Wählt die Skill-Referenzen aus, die jede Aufgabe braucht, und erstellt `orchestrator-session-{sessionId}.md` und `task-board-{sessionId}.md` im Memory-Verzeichnis. Die ausgewählten Referenzen werden dort als Koordinator-Notizen festgehalten; der Launcher erzwingt sie nicht.
+4. Startet Agenten pro Prioritätsstufe, jeweils mit: Aufgabenbeschreibung, API-Verträgen, Kontext und den ausgewählten Referenzen.
+5. Überwacht den Fortschritt über Abschlussbenachrichtigungen des Hosts oder durch Abfrage geänderter `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-Dateien mit begrenztem Backoff.
+6. Verifiziert jeden abgeschlossenen Agenten: eine mechanische Selbstprüfung, dann `verify.sh` für backend-, frontend-, mobile-, qa-, debug- und pm-Agenten (andere Typen vermerken `SKIP`), dann ein QA-Cross-Review. PASS (Exit-Code 0) fährt fort; FAIL (Exit-Code 1) startet mit Fehlerkontext erneut, innerhalb des gemeinsamen Wiederherstellungsbudgets (standardmäßig 3 Versuche pro Aufgabe, einschließlich des ursprünglichen). Wiederholungen und Explorationshypothesen zehren vom selben Budget; ist es aufgebraucht, wird die Aufgabe als `partial` oder `failed` gemeldet.
 7. Sammelt alle `result-{agentId}-{taskId}-{runId}-{sessionId}.md`-Dateien und erstellt einen Abschlussbericht.
 
 ### Schritt 3: agent spawn — CLI-Agenten-Verwaltung
@@ -134,7 +134,7 @@ Details zur Konfiguration finden Sie unter [Modelle pro Agent](./per-agent-model
 
 Der Review-Workflow führt eine vollständige QA-Pipeline durch:
 
-1. **Umfang identifizieren** — Fragt, was geprüft werden soll (bestimmte Dateien, Feature-Branch oder gesamtes Projekt).
+1. **Umfang identifizieren** — Übernimmt den Umfang aus der Anfrage (bestimmte Dateien, ein Feature-Branch, ein PR oder das gesamte Projekt). Ist kein Umfang angegeben, prüft der Workflow die aktuellen uncommitteten Änderungen und Branch-Änderungen und nennt diese Annahme; er fragt nur nach, wenn es nichts gibt, woraus sich ein Umfang ableiten ließe.
 2. **Automatisierte Sicherheitsprüfungen** — Führt `npm audit`, `bandit` oder Äquivalent aus.
 3. **OWASP Top 10 manuelles Review** — Injection, defekte Auth, sensible Daten, Zugriffskontrolle, Fehlkonfiguration, unsichere Deserialisierung, verwundbare Komponenten, unzureichendes Logging.
 4. **Performance-Analyse** — N+1-Abfragen, fehlende Indizes, unbegrenzte Paginierung, Speicherlecks, unnötige Re-Renders, Bundle-Größen.

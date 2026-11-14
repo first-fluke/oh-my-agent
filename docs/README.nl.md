@@ -23,7 +23,7 @@ Voer daarna `oma doctor` uit en typ `/plan add user accounts with a settings pag
 | | Wat het je geeft | Probeer het |
 |---|---|---|
 | **12 specialistische rollen** | PM, architect, backend-, frontend-, mobile-, database- en infra-engineers, QA-reviewer, debugger, refactorer, docs-curator, researcher ([maak kennis](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **21 workflows** | Slash commands van `/brainstorm` en `/plan` tot `/review`, `/debug` en `/scm`. De meeste starten ook vanuit een gewoon verzoek (keywordbanken in maximaal 11 talen) | "review this PR" |
+| **20 workflows** | Slash commands van `/brainstorm` en `/plan` tot `/review`, `/debug` en `/scm`. De vier multi-agentmodi starten ook wanneer een gewoon verzoek ze bij naam noemt | "ultrawork: add rate limiting" |
 | **33 skills** | Domeinkennis die alleen laadt wanneer een taak die nodig heeft: UI, API's, schema's, Terraform, CI, beveiliging, git, observability | laadt vanzelf, bijv. "add a Terraform S3 bucket" |
 | **Bestanden die je kunt openen** | Plannen, ontwerpdocumenten, API-contracten, ADR's, bugnotities, resultaten per agent, beveiligingsbewijs, HTML-uitleg, recaps | `ls .agents/results` |
 | **Checks voor tests en artefacten** | In een langlopende workflow moet je eigen `test`-, `lint`- of `typecheck`-script slagen voordat de agent mag stoppen; `oma ralph verify` controleert of een `/ralph`-run zijn plan-, QA- en refactorbestanden heeft achtergelaten | `/ultrawork …`, daarna `oma goal set --gate test` |
@@ -112,8 +112,6 @@ Van de benoemde presets bevat alleen `All` coordination, orchestration, docs, se
    ```text
    /plan add user accounts with a settings page
    ```
-
-   Of schrijf gewoon "plan user accounts with a settings page": op runtimes met een prompt-hook start het keyword dezelfde workflow.
 4. **Bekijk wat je hebt gekregen.** `/plan` draait in de huidige sessie. Voor werk dat meerdere gebieden beslaat, zoals dit, schrijft het `.agents/results/plan-<session-id>.json` en een tracker in `docs/plans/work/<NNN>-<name>.md`. Een klein verzoek binnen één gebied krijgt in plaats van een planbestand een direct advies.
 
 Zo kun je beoordelen of oma bij je past. Voor meer functies voer je `/work` of `/orchestrate` uit op het plan.
@@ -125,11 +123,11 @@ Je eigen agent leidt het team. In `/work`, `/orchestrate` en `/ultrawork` geeft 
 
 | Je specialist | Heeft bij zich | Roep aan met | Laat achter |
 |---|---|---|---|
-| **Productmanager** (`pm-planner`) | oma-pm | `/plan`, of "plan the payment feature" | Een plan-JSON en een tracker in `docs/plans/work/` voor Medium- en Complex-werk (Simple-verzoeken krijgen een direct advies) |
+| **Productmanager** (`pm-planner`) | oma-pm | `/plan` | Een plan-JSON en een tracker in `docs/plans/work/` voor Medium- en Complex-werk (Simple-verzoeken krijgen een direct advies) |
 | **Architect** (`architecture-reviewer`) | oma-architecture | `/architecture` | Een ADR of advies in `.agents/results/architecture/` |
 | **Backend-, frontend-, mobile-, database- en infra-engineers** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`, `/orchestrate` | Code, tests en een `result-<agent>`-bestand per taak |
-| **QA-reviewer** (`qa-reviewer`) | oma-qa | `/review`, of "review this PR" | Bevindingen gerangschikt van CRITICAL tot LOW, elk met file:line en fixcode |
-| **Debugger** (`debug-investigator`) | oma-debug | `/debug`, of "fix this bug" | Een minimale fix, een regressietest en, als dat nodig is, een bugnotitie in `.agents/results/bugs/` |
+| **QA-reviewer** (`qa-reviewer`) | oma-qa | `/review` | Bevindingen gerangschikt van CRITICAL tot LOW, elk met file:line en fixcode |
+| **Debugger** (`debug-investigator`) | oma-debug | `/debug` | Een minimale fix, een regressietest en, als dat nodig is, een bugnotitie in `.agents/results/bugs/` |
 
 <details>
 <summary>De andere drie rollen, en de skills zonder rol</summary>
@@ -138,7 +136,7 @@ Je eigen agent leidt het team. In `/work`, `/orchestrate` en `/ultrawork` geeft 
 |---|---|---|---|
 | **Refactorer** (`refactor-engineer`) | oma-refactor | de REFINE-fase van `/ultrawork` | Gedragsbehoudende `refactor:`-commits en een `result-refactor-<session>.md`-rapport |
 | **Docs-curator** (`docs-curator`) | oma-docs | `/docs`, of "verify docs" | `docs/generated/doc-refs.json` en de doc-patches die je goedkeurt |
-| **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | een onderzoeksverzoek | Geciteerde bronnen met betrouwbaarheidslabels; marktbriefings in `.agents/results/market/` |
+| **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | een onderzoeksverzoek | Geciteerde bronnen met hun herkomst; marktbriefings in `.agents/results/market/` |
 
 De infra-engineer (`tf-infra-engineer`) heeft de instructie om het eerst te vragen vóór elke destructieve of productie-`apply` of -`destroy`. De overige skills (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, content en media) hebben geen eigen rol. Je agent laadt ze zelf, en voor de meeste stelt de skill-injector op basis van je prompt de juiste voor.
 
@@ -148,7 +146,7 @@ De infra-engineer (`tf-infra-engineer`) heeft de instructie om het eerst te vrag
 ## Hoe het team samenwerkt
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -169,14 +167,14 @@ Elke stap geeft een bestand door aan de volgende. `/brainstorm` slaat een ontwer
 | "Stop pas als het echt klaar is" | `/ralph` | Herhaalt `/ultrawork` met een apart gespawnde judge met verse context tot elk criterium slaagt; stopt met een gedeeltelijk rapport wanneer criteria geblokkeerd zijn of na 5 iteraties |
 | Het team op een timer | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Eén Markdown-log per run in `~/.oma/schedule/runs/<id>/` |
 
-Slash commands zijn niet nodig. Op runtimes met een prompt-hook kunnen gewone verzoeken (keywordbanken in maximaal 11 talen) de meeste workflows starten: "review this PR" start `/review`. Een complete app beschrijven ("Build a TODO app with user authentication") stelt `/orchestrate` voor, en je agent beslist of hij die draait. Keywords binnen codeblokken worden genegeerd.
+Een slash command start een workflow. Een gewoon verzoek doet dat niet, maar krijgt op runtimes met een prompt-hook wel een skill-hint: keywordbanken in maximaal 11 talen matchen de prompt en wijzen je agent op de bijbehorende skills ("run a security audit" haalt `oma-qa` erbij). De hint is adviserend, en keywords binnen codeblokken worden genegeerd.
 
-`/orchestrate`, `/work`, `/ultrawork` en `/ralph` zijn **persistent** wanneer je ze bij naam aanroept, als slash command of in gewone tekst ("ultrawork: add rate limiting"). De agent wordt dan weer aan het werk gezet als hij te vroeg probeert te stoppen (maximaal 5 keer of 2 uur), totdat je **"workflow done"** zegt. Een verzoek dat er maar losjes op lijkt, stelt ze alleen voor.
+`/orchestrate`, `/work`, `/ultrawork` en `/ralph` zijn **persistent** wanneer je ze bij naam aanroept, als slash command of in gewone tekst ("ultrawork: add rate limiting"). De agent wordt dan weer aan het werk gezet als hij te vroeg probeert te stoppen (maximaal 5 keer of 2 uur), totdat je **"workflow done"** zegt. Deze vier zijn de enige workflows die een gewone zin kan starten, en alleen bij naam.
 
 In de [benchmark](../benchmarks/README.md) (één prompt, Claude Code met vijf verschillende add-on-opstellingen waaronder kaal, `claude-opus-4-6`, één build per opstelling) scoorde oma 80.6 tegenover 70.7 voor kale Claude Code. De kosten waren 1.7x zo hoog ($4.04 vs $2.37) en de uitvoering duurde 1.8x zo lang.
 
 <details>
-<summary>Alle 21 workflows</summary>
+<summary>Alle 20 workflows</summary>
 
 | Commando | Wat het doet |
 |---------|--------------|
@@ -185,7 +183,7 @@ In de [benchmark](../benchmarks/README.md) (één prompt, Claude Code met vijf v
 | `/convert` | Converteert PDF/HWP naar Markdown, of transcodeert afbeeldingen, video en audio met ffmpeg |
 | `/debug` | Reproduceert een bug, fixt de root cause, schrijft een regressietest en zoekt naar vergelijkbare patronen |
 | `/deepinit` | Brengt een bestaande codebase in kaart in AGENTS.md, ARCHITECTURE.md en een kennisbank in docs/ |
-| `/design` | Bouwt een design system, DESIGN.md en tokens met toegankelijkheidscontroles |
+| `/design` | Bakent een designtaak af en levert via oma-design bevindingen, DESIGN.md of tokens op |
 | `/docs` | Vindt kapotte verwijzingen in docs en stelt patches voor voor docs die een diff heeft geraakt |
 | `/explain` | Zet een diff, PR, branch of onderwerp om in een zelfstandige, interactieve HTML-uitleg |
 | `/orchestrate` | Draait agents parallel, coördineert ze via state in bestanden en verifieert het resultaat (persistent) |
@@ -197,12 +195,11 @@ In de [benchmark](../benchmarks/README.md) (één prompt, Claude Code met vijf v
 | `/scm` | Regelt branches, merges, conflicten, worktrees en Conventional Commits |
 | `/security` | Scant broncode, agentskills en MCP-componenten, valideert bevindingen en zet CI-gates op |
 | `/stack-set` | Detecteert je techstack en genereert stack-specifieke referenties voor domeinskills |
-| `/tools` | Toont, activeert en deactiveert MCP-tools in gewone taal |
 | `/ultrawork` | Vijf fasen (PLAN, IMPL, VERIFY, REFINE, SHIP), elke review in een verse reviewer-sessie (persistent) |
 | `/video` | Zet een briefing om in een afgewerkte MP4 via een pijplijn die ook zonder sleutels werkt |
 | `/work` | Coördineert meerdere agents in een multidomeinproject met PM-planning en QA-review (persistent) |
 
-Triggernauwkeurigheid wordt gemeten, niet aangenomen: `oma verify triggers` scoort de detector tegen een gelabeld Engels en Koreaans corpus van 212 prompts, en CI faalt boven 10% false fires of 20% missed fires. Laatste meting: **0% missed-fire, 5.3% false-fire**. Volledige referentie: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
+Triggernauwkeurigheid wordt gemeten, niet aangenomen: `oma verify triggers` scoort de detector tegen een gelabeld Engels en Koreaans corpus van 212 prompts, en CI faalt boven 10% false fires of 20% missed fires. Laatste meting: **0% missed-fire, 0% false-fire**. Volledige referentie: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
 
@@ -244,10 +241,10 @@ Daarna vindt `oma state list` de sessie en toont `oma state get <oma-sid>` (de I
 
 | Commando | Wat het doet | Schrijft |
 |---|---|---|
-| `/brainstorm` | Stelt telkens één verduidelijkende vraag, doet 2-3 voorstellen die elk anders werken en geeft daarna over aan `/plan`. Schrijft geen code | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | Stelt telkens één verduidelijkende vraag, doet 2-3 voorstellen die elk anders werken en geeft daarna over aan `/plan`. Schrijft geen code | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | Schat het werk in als Simple, Medium of Complex; splitst Medium- en Complex-werk op in taken, elk met een agent, afhankelijkheden, acceptatiecriteria en een controlecommando, en definieert API-contracten wanneer het werk een grens overschrijdt | `.agents/results/plan-<sid>.json`, `docs/plans/work/<NNN>-<name>.md`, contracten in `.agents/results/api-contracts/` wanneer nodig |
 | `/architecture` | Leest eerst eerdere beslissingen, vergelijkt minstens 2 opties en markeert vervangen ADR's als superseded | Een ADR of advies in `.agents/results/architecture/` |
-| `/design` | Stelt 2-3 richtingen voor, schrijft daarna `DESIGN.md` met tokens en auditeert responsive layout en toegankelijkheid | `DESIGN.md`, CSS/Tailwind/shadcn-tokens |
+| `/design` | Stelt scope en context vast, kiest de designrichtlijnen voor de taak en levert daarna auditbevindingen, `DESIGN.md` of tokens op die aansluiten op het bestaande tokensysteem van het project | Bevindingen, `DESIGN.md`, designtokens |
 
 </details>
 
@@ -274,7 +271,7 @@ Daarna vindt `oma state list` de sessie en toont `oma state get <oma-sid>` (de I
 | Commando of skill | Wat het doet | Schrijft |
 |---|---|---|
 | `/review` | Een dependency-audit, daarna OWASP Top 10, performance, WCAG 2.2 AA en codekwaliteit. Elke bevinding krijgt file:line en fixcode | Het rapport in de chat plus een geheugenrecord; geen rapportbestand |
-| `/security` | Scant je broncode, agentskills en MCP-servers (Deepsec, Cisco Skill and MCP Scanner) en draait, als je een afgebakende testdeployment opgeeft, ARTEX-pentests. De workflow vereist dat een engine die niet kon draaien als gefaald wordt gemeld, niet als schoon | `.agents/results/security/<run-id>/` |
+| `/security` | Scant je broncode, agentskills en MCP-servers (Deepsec, Cisco Skill and MCP Scanner) en valideert de bevindingen. Pentests draaien alleen op uitdrukkelijk verzoek, tegen een runtimeplatform dat je zelf aanlevert en hebt beoordeeld. De workflow vereist dat een engine die niet kon draaien als gefaald wordt gemeld, niet als schoon | `.agents/results/security/<run-id>/` |
 | `/debug` | Reproduceert de fout, fixt de root cause met een minimale wijziging, voegt een regressietest toe en zoekt elders naar hetzelfde patroon | De fix en de test; als dat nodig is, een bugnotitie in `.agents/results/bugs/` |
 | oma-refactor | Verandert de structuur zonder het gedrag te veranderen: eerst karakterisatietests, daarna refactor-only commits | `.agents/results/refactor/` |
 | `/scm` | Conventional Commits, opgesplitst per logische wijziging; branches, merges, rebases en worktrees | Commits en branches |
@@ -299,7 +296,7 @@ Daarna vindt `oma state list` de sessie en toont `oma state get <oma-sid>` (de I
 
 | Skill | Wat het doet | Schrijft |
 |---|---|---|
-| oma-search | Zoeken in docs, web en code, met een betrouwbaarheidslabel bij elke bron | Resultaten met bronvermelding |
+| oma-search | Zoeken in docs, web en code, met vermelding van wat is gelezen en wat alleen als fragment is gezien | Resultaten met bronvermelding |
 | oma-market | Pijnpunten, trends en concurrenten uit community-signalen, gestructureerd met SWOT, Porter's 5 Forces en PESTEL | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | Zoekt papers en leest daarbij een compact claimsbestand (Knows-formaat, ongeveer 700 tokens) in plaats van de volledige PDF (ongeveer 10K tokens) | `<paper>.knows.yaml` |
 | oma-academic-writing | Schrijft en auditeert academisch proza aan de hand van een rubric | Je eigen bestand |
@@ -326,7 +323,7 @@ Deze pijplijnen melden een ontbrekende bron of vendor-sleutel in plaats van stil
 
 | Hook | Wat het doet | Uitschakelen / limiet |
 |---|---|---|
-| Keyword-start | Start de bijbehorende workflow vanuit een gewoon verzoek | Vragen, geplakte tekst en codeblokken worden overgeslagen |
+| Keyword-start | Start `/orchestrate`, `/work`, `/ultrawork` of `/ralph` wanneer een gewoon verzoek die bij naam noemt | Vragen, geplakte tekst en codeblokken worden overgeslagen |
 | Skill-injector | Wijst je agent op de juiste skills voor de prompt | Gepauzeerd zolang een persistente workflow actief is |
 | Stop-gate | Zet een persistente workflow weer aan het werk; met `oma goal set --gate test` is stoppen toegestaan zodra dat script binnen 25 s met 0 eindigt | Zeg "workflow done"; hij stopt ook met blokkeren na 5 blokkades of 2 uur |
 | Refactor-guard | Markeert bij het stoppen bewerkte bestanden van meer dan 500 regels voor `refactor-engineer` | Opt-in: `refactor_guard.enabled` |
@@ -363,7 +360,7 @@ Deze pijplijnen melden een ontbrekende bron of vendor-sleutel in plaats van stil
 
 Serena biedt LSP-gebaseerde codenavigatie en diagnostiek, inclusief feedback bij native bewerkingen waar dat wordt ondersteund. De providerkeuze staat los van de agentruntime; mogelijkheden verschillen per provider en host.
 
-Agents coördineren via gewone bestanden in `.agents/state/`, zonder externe dienst. `/tools` zet MCP-tools aan of uit in gewone taal. Details: [Capability-providers](./capability-providers.md).
+Agents coördineren via gewone bestanden in `.agents/state/`, zonder externe dienst. Details: [Capability-providers](./capability-providers.md).
 
 </details>
 
@@ -415,8 +412,8 @@ Agents coördineren via gewone bestanden in `.agents/state/`, zonder externe die
 | **oma-refactor** | Refactort zonder gedragsverandering, met hotspot-targeting, karakterisatietests en refactor-only commits |
 | **oma-scholar** | Doorzoekt academische literatuur en maakt Knows-paper-sidecars voor claims, bewijs en peer review |
 | **oma-scm** | Beheert branches, merges, worktrees en Conventional Commits |
-| **oma-search** | Routeert elke zoekopdracht naar de beste bron en scoort hoe betrouwbaar het resultaat is |
-| **oma-security** | Scant broncode, agentskills en MCP-componenten; test gedeployde webapps en valideert bevindingen |
+| **oma-search** | Routeert elke zoekopdracht naar de beste bron en meldt waar elk resultaat vandaan komt en of het daadwerkelijk is gelezen |
+| **oma-security** | Scant broncode, agentskills en MCP-componenten en valideert bevindingen; pentests draaien alleen op een door de gebruiker aangeleverd en beoordeeld platform |
 | **oma-skill-creation** | Schrijft en auditeert nieuwe OMA-skills |
 | **oma-slide** | Genereert HTML-presentatiedecks en exporteert ze naar PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisioneert multi-cloud infrastructuur met Terraform |
@@ -567,7 +564,7 @@ Elk mechanisme hieronder, behalve de promptgestuurde judge, is mechanisch: een c
 | **Artefact-gate** | `oma ralph verify --json` controleert op de fase-records, de plan-JSON en resultaatbestanden van een **aparte QA-agent** en een **aparte refactor-agent**, elk gekoppeld aan vastgelegde agent-runs. | [`ralph.md`](../.agents/workflows/ralph.md) |
 | **Promptgestuurde judge** | Niet mechanisch: de `/ralph`-prompt draagt de orchestrator op een judge met verse context te spawnen die elke iteratie **elk** criterium opnieuw controleert. Niets controleert of die spawn echt heeft plaatsgevonden. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **Event log** | In een OMA-sessie voegen geslaagde gates, gefaalde gates en beslissingen elk één JSON-regel toe aan het `events.jsonl` van de sessie. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Checks per agent** | `oma verify agent <type>` draait Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs en TDD Evidence, plus type-specifieke checks zoals TypeScript, Any Types, SQL Injection en tests. | `oma verify agent --help` |
+| **Checks per agent** | `oma verify agent <type>` draait Scope Check, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs en TDD Evidence, plus type-specifieke checks zoals TypeScript, Any Types, SQL Injection en tests. | `oma verify agent --help` |
 
 > De Stop-hook legt gate-events vast in de OMA-sessie die bij de start van een persistente workflow wordt geopend. Het opslaan van events gebeurt best-effort. Als het aanmaken van de sessie mislukt (stderr toont `[oma] L1 session activation failed`), blokkeert een falende gate het stoppen nog steeds, maar wordt er geen `gate.failed`-regel geschreven. Controleer met `oma state list` of er een actieve sessie is voordat je op deze events vertrouwt of ze demonstreert. Daarna toont `oma state get <sid>` de events.
 

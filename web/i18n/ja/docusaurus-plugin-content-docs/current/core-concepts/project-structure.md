@@ -69,8 +69,9 @@ your-project/
 │   │   │
 │   │   ├── oma-mobile/
 │   │   │   ├── SKILL.md
-│   │   │   ├── resources/              ← execution, tech stack, screen templates, checks
-│   │   │   └── stack/                  ← created by /stack-set (Flutter, React Native, or Swift)
+│   │   │   ├── resources/              ← execution, tech stack index, checks
+│   │   │   ├── variants/               ← platform references (Flutter, React Native, Swift, Kotlin): stack.yaml, tech-stack.md, snippets.md
+│   │   │   └── stack/                  ← created by /stack-set from the detected project
 │   │   │
 │   │   ├── oma-db/
 │   │   │   ├── SKILL.md
@@ -88,28 +89,19 @@ your-project/
 │   │   │
 │   │   ├── oma-design/
 │   │   │   ├── SKILL.md
-│   │   │   ├── resources/
-│   │   │   │   ├── execution-protocol.md
-│   │   │   │   ├── anti-patterns.md
-│   │   │   │   ├── checklist.md
-│   │   │   │   ├── design-md-spec.md
-│   │   │   │   ├── design-tokens.md
-│   │   │   │   ├── prompt-enhancement.md
-│   │   │   │   ├── stitch-integration.md
-│   │   │   │   ├── redesign-protocol.md
-│   │   │   │   ├── asset-strategy.md
-│   │   │   │   ├── getdesign-fetcher.md
-│   │   │   │   └── error-playbook.md
-│   │   │   └── reference/
-│   │   │       ├── typography.md
-│   │   │       ├── color-and-contrast.md
-│   │   │       ├── spatial-design.md
-│   │   │       ├── motion-design.md
-│   │   │       ├── responsive-design.md
-│   │   │       ├── component-patterns.md
-│   │   │       ├── accessibility.md
-│   │   │       ├── visual-hierarchy.md
-│   │   │       └── shader-and-3d.md
+│   │   │   └── resources/
+│   │   │       ├── execution-protocol.md
+│   │   │       ├── external-design-skills.md
+│   │   │       ├── product-interface-review.md
+│   │   │       ├── redesign-protocol.md
+│   │   │       ├── design-md-spec.md
+│   │   │       ├── design-tokens.md
+│   │   │       ├── data-grid.md
+│   │   │       ├── asset-strategy.md
+│   │   │       ├── getdesign-fetcher.md
+│   │   │       ├── stitch-integration.md
+│   │   │       ├── checklist.md
+│   │   │       └── error-playbook.md
 │   │   │
 │   │   ├── oma-pm/
 │   │   │   ├── SKILL.md
@@ -117,7 +109,6 @@ your-project/
 │   │   │       ├── execution-protocol.md
 │   │   │       ├── examples.md
 │   │   │       ├── iso-planning.md
-│   │   │       ├── plan-phase-protocol.md
 │   │   │       ├── task-template.json
 │   │   │       └── error-playbook.md
 │   │   │
@@ -127,14 +118,12 @@ your-project/
 │   │   │       ├── execution-protocol.md
 │   │   │       ├── iso-quality.md
 │   │   │       ├── checklist.md
-│   │   │       ├── error-playbook.md
-│   │   │       └── verify-ship-protocol.md
+│   │   │       └── error-playbook.md
 │   │   │
 │   │   ├── oma-debug/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── execution-protocol.md
-│   │   │       ├── common-patterns.md
 │   │   │       ├── debugging-checklist.md
 │   │   │       ├── bug-report-template.md
 │   │   │       ├── checklist.md
@@ -155,10 +144,9 @@ your-project/
 │   │   ├── oma-dev-workflow/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
+│   │   │       ├── mise-basics.md
 │   │   │       ├── validation-pipeline.md
-│   │   │       ├── database-patterns.md
-│   │   │       ├── api-workflows.md
-│   │   │       ├── i18n-patterns.md
+│   │   │       ├── example-task-wiring.md
 │   │   │       ├── release-coordination.md
 │   │   │       ├── tooling-profiles.md
 │   │   │       ├── affected-checks.py
@@ -169,6 +157,7 @@ your-project/
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
 │   │   │       ├── anti-ai-patterns.md
+│   │   │       ├── style-skills.md
 │   │   │       └── lang/
 │   │   │           ├── _template.md
 │   │   │           ├── en.md
@@ -185,7 +174,6 @@ your-project/
 │   │   │   │   ├── spawn-agent.sh
 │   │   │   │   ├── parallel-run.sh
 │   │   │   │   └── verify.sh
-│   │   │   ├── templates/
 │   │   │   └── config/
 │   │   │       └── cli-config.yaml
 │   │   │
@@ -204,14 +192,14 @@ your-project/
 │   │           ├── merge-risk.md
 │   │           └── ...
 │   │
-│   ├── workflows/                    ← 21 process definitions
+│   ├── workflows/                    ← 20 process definitions
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
 │   │   ├── ralph.md                   ← Persistent: repeated execution + judge
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
-│   │   ├── scm.md / tools.md / stack-set.md / convert.md
+│   │   ├── scm.md / stack-set.md / convert.md
 │   │   ├── docs.md / explain.md / recap.md / schedule.md / video.md
 │   │   └── ...                         ← Keep this list aligned with `.agents/workflows/`
 │   │
@@ -304,18 +292,18 @@ your-project/
 **`oma-{skill}/`** はスキルごとのディレクトリです。それぞれに次があります。
 - `SKILL.md`: スキルがルーティングされたときに読み込む Layer 1。役割、ルーティング、コアルールを定義します。
 - `resources/`: オンデマンドで読む Layer 2。実行プロトコル、例、チェックリスト、エラー対応手順、技術スタック、スニペット、テンプレートを含みます。
-- 一部のスキルには追加のサブディレクトリがあります。`stack/`（インストール時に選んだ backend の variant、または `/stack-set` が生成するリファレンス。ソースリポジトリでは種を `variants/` に置きます）、`reference/`（oma-design）、スキル固有のスクリプトや設定です。
+- 一部のスキルには追加のサブディレクトリがあります。`stack/`（インストール時に選んだ backend の variant、または `/stack-set` が生成するリファレンス）、`variants/`（同梱のスタックリファレンス。variant を選ばずにインストールしたスキルには `variants/` ディレクトリが残り、対応するものを読みます）、スキル固有のスクリプトや設定です。
 
 ### workflows/
 
-`workflows/` にはスラッシュコマンドの挙動を定義する21個の Markdown ファイルがあります。各ファイルには次が含まれます。
+`workflows/` にはスラッシュコマンドの挙動を定義する20個の Markdown ファイルがあります。各ファイルには次が含まれます。
 - `description` を持つ YAML フロントマター
 - 応答言語、手順の順序、MCP ツール要件を含む必須ルールセクション
 - ベンダー検出の指示
 - 手順ごとの実行プロトコル
 - 永続ワークフローのゲート定義
 
-永続ワークフローは `orchestrate.md`、`work.md`、`ultrawork.md`、`ralph.md` です。非永続ワークフローには `plan.md`、`brainstorm.md`、`architecture.md`、`deepinit.md`、`review.md`、`security.md`、`debug.md`、`design.md`、`scm.md`、`tools.md`、`stack-set.md`、`convert.md`、`docs.md`、`explain.md`、`recap.md`、`schedule.md`、`video.md` があります。
+永続ワークフローは `orchestrate.md`、`work.md`、`ultrawork.md`、`ralph.md` です。非永続ワークフローには `plan.md`、`brainstorm.md`、`architecture.md`、`deepinit.md`、`review.md`、`security.md`、`debug.md`、`design.md`、`scm.md`、`stack-set.md`、`convert.md`、`docs.md`、`explain.md`、`recap.md`、`schedule.md`、`video.md` があります。
 
 ### agents/
 
@@ -328,7 +316,7 @@ Agent tool（Claude Code）または CLI からサブエージェントをスポ
 
 ### plan-\{sessionId\}.json
 
-`/plan` ワークフローが生成するファイルです。エージェントの割り当て、優先度、依存関係、受入基準を含む構造化されたタスク分解で、`/orchestrate` と `/work` が読み取ります。対応する人間向けのトラッカーは `docs/plans/work/{NNN}-{name}.md` にあり、ライフサイクルは `Status` フィールドで管理します。永続的なデザインリファレンスは `docs/plans/designs/{NNN}-{name}.md` に並べて保存します。
+`/plan` ワークフローが生成するファイルです。エージェントの割り当て、優先度、依存関係、受入基準を含む構造化されたタスク分解で、`/orchestrate` と `/work` が読み取ります。対応する人間向けのトラッカーは `docs/plans/work/{NNN}-{name}.md` にあり、ライフサイクルは `Status` フィールドで管理します。残しておくアプローチの提案と決定は `docs/decisions/{NNN}-{name}.md` に保存します。
 
 ### state/
 
@@ -345,7 +333,6 @@ Agent tool（Claude Code）または CLI からサブエージェントをスポ
 MCP サーバー設定です。次を含みます。
 - サーバー定義（Serena など）
 - メモリ設定：`memoryConfig.provider`、`memoryConfig.basePath`、`memoryConfig.tools`（読み取り／書き込み／編集のツール名）
-- `/tools` 管理用のツールグループ定義
 
 ---
 

@@ -64,8 +64,9 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
 <!-- oma-docs:ignore-start -->
@@ -128,14 +129,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | Tag de idioma da narração/legenda. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (alinhamento sem chave). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. Seleciona a ordem dos providers visuais; consulte [Cadeia de visuais](#visual-chain). |
 | `--voice <profile>` | Voz de narração ou `none` (o padrão; omita e o vídeo renderiza em silêncio com tempo estimado de legendas). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano` ou `none`. |
 | `--compositor <c>` | `hyperframes` (padrão) \| `mpt`. |
 | `--capture <path>` | Sua gravação para o modo demo: `.mp4`, `.mov`, `.webm` ou `.mkv`, armazenada dentro do projeto. |
 | `--source <k>` | Fonte da captura demo: `file` ou `web` (padrão: `file`). |
 | `--url <url>` | URL de contexto para `--source web`, armazenada mascarada em `manifest.json`. Obrigatória com `--source web`; nunca inicia uma captura e não substitui `--capture`. |
-| `--polish` | Sobrepõe a composição HyperFrames à gravação capturada. |
+| `--polish` | Modo demo: usa a captura como fundo da composição `Demo` do HyperFrames, na qual as informações pessoais são mascaradas. Sem ela, a captura bruta, sem mascaramento, é copiada para o MP4 de saída e nenhuma composição é executada. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | Aceitas, mas não usadas: o oma não controla um navegador nem grava a tela. |
 | `--output-dir <path>` | Diretório-base de saída. Caminhos fora de `$PWD` exigem `--allow-external-output`. |
 | `--allow-external-output` | Permite caminhos de saída fora de `$PWD`. |
@@ -159,14 +160,33 @@ As etapas de providers resolvem para um **ramo real** e, quando a etapa oferece 
 |------------|-------------|----------|
 | script | `script.json` criado pelo agente e passado com `--script <path>` (o workflow `/video` o escreve) | esqueleto determinístico de três cenas a partir do texto do briefing |
 | voice | `oma-voice` (Voicebox ou VoiceStudio, local; escolhido por `voice.backend`) com `--voice <profile>` | vídeo silencioso com tempo estimado (`--voice none`, o padrão) |
-| visual | `oma-image`, `oma-slide`, clipes de stock do Pexels quando `PEXELS_API_KEY` está definida | ativo placeholder |
-| visual: `aigc` | ainda não conectado; `RUNNINGHUB_API_KEY` habilita o provider, que ainda grava placeholders | ativo placeholder |
+| visual | imagens estáticas do `oma-image` por padrão; um frame do `oma-slide` para uma cena cujo `visual.ref` é um diretório de deck existente; clipes de stock do Pexels com `--visual stock` quando `PEXELS_API_KEY` está definida | ativo placeholder |
+| visual: `aigc` | selecionado com `--visual aigc` quando `RUNNINGHUB_API_KEY` está definida; a chamada live ainda não está conectada, então o provider ainda grava placeholders | ativo placeholder |
 | caption | `.srt` e `.vtt` alinhados a `timing.json`, no idioma do roteiro | o mesmo; a tradução para `--locale` ainda não está conectada |
 | music | trilha Strudel depois de `oma video doctor --install-strudel` | sem faixa de música |
 | capture | uma gravação que você fornece com `--capture <file>` | nenhum: sem `--capture`, o modo demo imprime instruções de gravação e sai com código 3 |
 | compositor | HyperFrames (gerenciado) ou MoneyPrinterTurbo | sem fallback de compositor; a execução falha com diagnósticos |
 
-Não há automação de credenciais: você faz qualquer login na tela durante a gravação; URLs e tokens de consulta são mascarados nos logs e no manifesto.
+### Cadeia de visuais {#visual-chain}
+
+`--visual` e o modo escolhem a ordem de providers percorrida em cada cena:
+
+| `--visual` | Modo | Ordem |
+|------------|------|-------|
+| `auto` (padrão) | `shorts`, `demo` | `providers.visual.order` (padrão `oma-image`, `pexels`, `pixelle`) |
+| `auto` (padrão) | `explainer` | `oma-slide`, `oma-image`, depois `providers.visual.order` |
+| `generate` | qualquer | `oma-image` |
+| `slide` | qualquer | `oma-slide`, `oma-image` |
+| `stock` | qualquer | `pexels`, `oma-image` |
+| `aigc` | qualquer | `pixelle`, `oma-image` |
+
+- A cadeia só avança além de um provider que está indisponível ou que lança um erro. `oma-image` e `oma-slide` estão sempre disponíveis e gravam um placeholder em vez de lançar um erro, então nada listado depois deles é alcançado. Com a ordem padrão, portanto, o `oma-image` fica com todas as cenas: o Pexels precisa de `--visual stock` mais `PEXELS_API_KEY`, e o Pixelle precisa de `--visual aigc` mais `RUNNINGHUB_API_KEY`.
+- O `oma-slide` exporta um frame somente para uma cena cujo `visual.ref` em `script.json` é o caminho de um diretório de deck existente; ele não gera um deck. O primeiro frame exportado se torna o visual da cena, então dê a cada cena de slide o seu próprio deck de um único slide. Todas as outras cenas que ele trata recebem um placeholder, o que inclui cada cena de explainer sem deck em `--visual auto`. Crie os decks com o `oma-slide` primeiro ou passe `--visual generate` para obter imagens estáticas do `oma-image`.
+- Um placeholder é registrado em `warnings` como um caminho de fallback daquela cena.
+
+### Captura de demo e mascaramento
+
+Você faz qualquer login na tela durante a gravação; o oma não automatiza credenciais, e URLs e tokens de consulta são mascarados nos logs e no manifesto. As informações pessoais na gravação são mascaradas somente na composição com `--polish`. Uma execução de demo sem `--polish` copia a captura bruta para o MP4 de saída; entregue esse arquivo somente depois de inspecionar a gravação e não encontrar nada a mascarar; caso contrário, execute novamente com `--polish`.
 
 As legendas são renderizadas como **cues estáticos em janelas**: uma única linha de legenda ativa no frame atual, quebrada por CSS, sem animação por palavra.
 

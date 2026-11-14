@@ -32,13 +32,13 @@ OMA はスキルにドメインを割り当て、タスクをエージェント�
 
 ---
 
-## 現在のカタログ: 33スキル、12定義、21ワークフロー
+## 現在のカタログ: 33スキル、12定義、20ワークフロー
 
 カタログでは、混同しやすい3つを分けています。
 
 - **[スキル](./glossary.md#skill)**は `.agents/skills/*/SKILL.md` にある33個のドメイン知識パッケージです。自然言語の意図からルーティングし、リソースを段階的に読み込みます。
 - **[エージェント定義](./glossary.md#agent-definition)**は `.agents/agents/` にある12個のファイルです。ベンダーのネイティブなサブエージェント人格を提供し、1つ以上のスキルを参照します。
-- **[ワークフロー](./glossary.md#workflow)**は `.agents/workflows/` にある21個のプロセス定義です。4つ（`orchestrate`、`work`、`ultrawork`、`ralph`）が[永続的](./glossary.md#persistent-workflow)で、残りはレポートまで実行して永続モードを維持しません。
+- **[ワークフロー](./glossary.md#workflow)**は `.agents/workflows/` にある20個のプロセス定義です。4つ（`orchestrate`、`work`、`ultrawork`、`ralph`）が[永続的](./glossary.md#persistent-workflow)で、残りはレポートまで実行して永続モードを維持しません。
 
 以下では詳細なスキルカタログを保持します。名前や説明が変わった場合は、各 `SKILL.md` のフロントマターが最新の基準です。
 
@@ -165,11 +165,10 @@ oh-my-agent に必要なものはすべて `.agents/` ディレクトリにあ�
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -301,5 +300,5 @@ oh-my-agent は Claude Code に限定されません。フック対応ベンダ�
 - **[インストール](./installation.md):** 3つのインストール方法、プリセット、CLI 設定、検証
 - **[エージェント](/docs/core-concepts/agents):** 33個のスキル、13個のディスパッチロール、チャータープリフライトの詳細
 - **[スキル](/docs/core-concepts/skills):** 2層アーキテクチャの説明
-- **[ワークフロー](/docs/core-concepts/workflows):** トリガーとフェーズを含む21個のワークフロー
+- **[ワークフロー](/docs/core-concepts/workflows):** トリガーとフェーズを含む20個のワークフロー
 - **[使い方ガイド](/docs/guide/usage):** 単一タスクから完全なオーケストレーションまでの実例

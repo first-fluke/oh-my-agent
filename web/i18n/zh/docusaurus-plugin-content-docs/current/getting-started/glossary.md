@@ -78,7 +78,7 @@ flowchart LR
 
 ### 章程 {#charter}
 
-章程是实现智能体过去在编写任何代码之前要输出的 `CHARTER_CHECK` 预检块。当前的智能体定义不再要求固定的预检输出，而是遵循共享执行策略：说明重要的假设，只有缺失的信息会影响正确性或范围时才提问，并且只暂停依赖该答案的工作。启动的子智能体无法直接询问你，因此会在 `blocked` 或 `partial` 结果中报告缺失的事实。参见[授权与澄清](../core-concepts/agents.md#charter-preflight-charter_check)。
+章程是在编写任何代码之前输出的固定预检块（`CHARTER_CHECK`）。oh-my-agent 不要求输出章程：智能体定义不要求任何固定的预检输出。智能体遵循共享执行策略：说明重要的假设，只有缺失的信息会影响正确性或范围时才提问，并且只暂停依赖该答案的工作。启动的子智能体无法直接询问你，因此会在 `blocked` 或 `partial` 结果中报告缺失的事实。参见[授权与澄清](../core-concepts/agents.md#charter-preflight-charter_check)。
 
 ### 运行记录与声明 {#run-record-and-claim}
 

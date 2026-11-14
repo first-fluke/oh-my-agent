@@ -259,7 +259,7 @@ oma image generate -r a.png,b.png "blend these styles" --vendor antigravity
 
 ## 설정
 
-- **프로젝트 설정:** `.agents/oma-config.yaml`의 `image:` 섹션입니다. 레거시 `config/image-config.yaml`은 더 이상 읽지 않습니다.
+- **프로젝트 설정:** `.agents/oma-config.yaml`의 `image:` 섹션입니다. 기본값은 CLI에 들어 있으므로 바꾸려는 키만 적으면 됩니다.
 - **환경 변수:**
   - `OMA_IMAGE_DEFAULT_VENDOR`: 설정된 기본 벤더(`auto`)를 덮어씁니다. `--vendor` 플래그 자체의 기본값은 `auto`이므로, 특정 벤더가 필요하면 명령마다 `--vendor`를 전달하세요.
   - `OMA_IMAGE_DEFAULT_OUT`: 기본 출력 디렉토리 오버라이드

@@ -1,13 +1,13 @@
 ---
 title: Workflows
-description: Vollständige Referenz aller 21 oh-my-agent-Workflows mit Slash-Befehlen, persistenten und nicht-persistenten Modi, Trigger-Keywords in 11 Sprachen, Phasen und Schritten, gelesenen und geschriebenen Dateien, Auto-Erkennung über triggers.json und keyword-detector.ts, Filterung informationeller Muster und Zustandsverwaltung.
+description: Vollständige Referenz aller 20 oh-my-agent-Workflows mit Slash-Befehlen, persistenten und nicht-persistenten Modi, Trigger-Keywords in 11 Sprachen, Phasen und Schritten, gelesenen und geschriebenen Dateien, Auto-Erkennung über triggers.json und keyword-detector.ts, Filterung informationeller Muster und Zustandsverwaltung.
 ---
 
 # Workflows
 
 Workflows sind strukturierte mehrstufige Prozesse, die durch Slash-Befehle oder natürlichsprachliche Keywords ausgelöst werden. Sie definieren, wie Agenten bei Aufgaben zusammenarbeiten — von einphasigen Hilfsprogrammen bis hin zu komplexen 5-Phasen-Qualitäts-Gates.
 
-Es gibt 21 Workflows, davon sind 4 [persistent](../getting-started/glossary.md#persistent-workflow) (sie halten den Zustand und können nicht versehentlich unterbrochen werden).
+Es gibt 20 Workflows, davon sind 4 [persistent](../getting-started/glossary.md#persistent-workflow) (sie halten den Zustand und können nicht versehentlich unterbrochen werden).
 
 ## Workflows im Überblick {#workflows-at-a-glance}
 
@@ -26,7 +26,6 @@ Es gibt 21 Workflows, davon sind 4 [persistent](../getting-started/glossary.md#p
 | [`/debug`](#debug) | Bug-Diagnose und -Behebung mit Regressionstest | Nein |
 | [`/design`](#design) | DESIGN.md mit Tokens, Komponentenmustern und Barrierefreiheitsregeln | Nein |
 | [`/scm`](#scm) | Git-Operationen und Conventional Commits | Nein |
-| [`/tools`](#tools) | Sichtbarkeit und Einschränkungen von MCP-Tools | Nein |
 | [`/convert`](#convert) | Dokumente und Medien zwischen Formaten konvertieren | Nein |
 | [`/docs`](#docs) | Erkennung und Synchronisierung von Dokumentations-Drift | Nein |
 | [`/recap`](#recap) | Tages- oder Zeitraum-Zusammenfassung der Arbeit über KI-Tools hinweg | Nein |
@@ -479,22 +478,6 @@ Cloudflares Audit-Methodik dient als Grundlage für die unabhängige Prüfung un
 
 ---
 
-### /tools
-
-**Beschreibung:** MCP-Tool-Sichtbarkeit und -Einschränkungen verwalten.
-
-**Trigger-Keywords:** Keine (von der Auto-Erkennung ausgeschlossen).
-
-**Funktionen:** Aktuellen MCP-Tool-Status anzeigen, Toolgruppen aktivieren/deaktivieren (memory, code-analysis, code-edit, file-ops), permanente oder temporäre (`--temp`) Änderungen, natürlichsprachliche Analyse ("memory tools only", "disable code edit").
-
-**Toolgruppen:**
-- memory: read_memory, write_memory, edit_memory, list_memories, delete_memory
-- code-analysis: get_symbols_overview, find_symbol, find_referencing_symbols, search_for_pattern
-- code-edit: replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol
-- file-ops: list_dir, find_file
-
----
-
 ### /convert
 
 **Beschreibung:** Konvertiert eine Datei von einem Format in ein anderes, geroutet nach Medienkategorie. **Dokumente** (PDF über `opendataloader-pdf`/`oma-pdf`; HWP/HWPX/HWPML über `kordoc`/`oma-hwp`) werden zu Markdown extrahiert. **Bild**-, **Video**- und **Audio**-Dateien werden über `ffmpeg` (bereits für `oma-video` bereitgestellt) in ein Zielformat transkodiert.
@@ -698,7 +681,6 @@ Wenn die Eingabe sowohl einem Workflow-Trigger als auch einem informationellen M
 ### Ausgeschlossene Workflows
 
 Die folgenden Workflows werden nicht per Keyword ausgelöst und müssen mit einem expliziten `/command` aufgerufen werden. `/tools` und `/stack-set` stehen in `excludedWorkflows` (sie wurden absichtlich aus der Keyword-Erkennung entfernt); `/convert` liefert schlicht keine Trigger-Keywords (die Skills `oma-pdf` und `oma-hwp` bringen ihre eigene Keyword-Erkennung mit). `/schedule` ist ein Slash-Workflow für zeitbasierte Jobs mit `oma schedule <action>`; `/explain` hat keine Trigger-Keywords, weil „explain“ alltäglich ist und die Erkennung sonst ständig Fehlalarme erzeugen würde:
-- `/tools`
 - `/stack-set`
 - `/convert`
 - `/schedule`

@@ -298,7 +298,7 @@ Utilisez cette commande après avoir modifié `.agents/agents/`, `.agents/workfl
 
 ### Reconfigurer une installation existante {#setup-workflow}
 
-Il n’existe pas de workflow `/setup`. Pour modifier un projet installé, relancez `oma install`, utilisez `oma update mcp` pour les seuls serveurs MCP de navigateur, ou lancez `/tools` dans une session d’agent pour activer ou désactiver des outils MCP. Vérifiez la résolution des modèles par agent avec `oma doctor --profile` ; les modèles épinglés par agent se trouvent sous `agents:` dans `.agents/oma-config.yaml` ([Modèles par agent](../guide/per-agent-models.md)).
+Il n’existe pas de workflow `/setup`. Pour modifier un projet installé, relancez `oma install`, ou utilisez `oma update mcp` pour choisir les serveurs MCP de navigateur. Vérifiez la résolution des modèles par agent avec `oma doctor --profile` ; les modèles épinglés par agent se trouvent sous `agents:` dans `.agents/oma-config.yaml` ([Modèles par agent](../guide/per-agent-models.md)).
 
 ---
 
@@ -1119,7 +1119,6 @@ Lorsque plusieurs plans de session ou reçus d’exécution correspondent, la v�
 
 **Contrôles communs (tous les types d’agents) :**
 - **Contrôle de portée** : lit les portées de tâche dans `.agents/results/plan-{sessionId}.json`. Compare les fichiers modifiés par `git diff` aux motifs de portée définis. Échoue si des fichiers hors de la portée attribuée à l’agent sont modifiés.
-- **Précontrôle de charte** : vérifie que le rapport de résultat sélectionné contient un bloc `CHARTER_CHECK:` correctement rempli, sans espace réservé non renseigné.
 - **Éléments de preuve TDD** : exige que le rapport sélectionné de chaque tâche concernée contienne l’ID exact de la tâche ainsi que ses propres entrées `red:` et `green:` non vides. Les rapports d’une autre session ou d’une nouvelle tentative ne peuvent pas remplacer le rapport sélectionné.
 - **Secrets codés en dur** : analyse les fichiers `.py`, `.ts`, `.tsx`, `.js`, `.dart` à la recherche de motifs comme `password = "..."` et `api_key = "..."` (les fichiers de test et d’exemple sont exclus).
 - **Commentaires TODO/FIXME** : compte les commentaires `TODO`, `FIXME`, `HACK` et `XXX` (avertit si l’un d’eux est trouvé).
@@ -1605,18 +1604,18 @@ Planifie, écrit et produit des vidéos courtes, explicatives et de démonstrati
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` accepte `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` et `--capture-stop duration:<seconds>|selector:<css>`. Utilisez `--source web --url <url>` pour une capture navigateur ; `--source file` est la valeur par défaut. `--output-dir` choisit la racine d’exécution, `--allow-external-output` autorise un chemin hors de `$PWD`, `--max-usd` fixe un plafond de coût, `-y, --yes` ignore la confirmation du coût, `--seed` stabilise les entrées de planification, `--timeout` limite chaque appel à un fournisseur visuel ou musical, `--script` injecte un `script.json` rédigé par l’agent et `--no-brief-in-manifest` stocke un hash du brief au lieu de son texte. `--dry-run` s’arrête après la planification. `--output text|json` contrôle l’enveloppe CLI.
+`generate` accepte `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` et `--capture-stop duration:<seconds>|selector:<css>`. Une démonstration utilise un enregistrement que vous fournissez avec `--capture` ; `--source file` est la valeur par défaut, et `--source web --url <url>` ajoute seulement l’URL comme contexte (le CLI n’ouvre ni n’enregistre de navigateur). `--polish` fait passer la capture par la composition `Demo`, où les informations personnelles sont masquées ; sans cette option, le MP4 de sortie est la capture brute, non masquée. `--visual stock` et `--visual aigc` sélectionnent les fournisseurs Pexels et Pixelle lorsque leurs clés sont définies, et un visuel de type slide nécessite que `visual.ref` dans le script pointe vers un répertoire de deck existant. `--output-dir` choisit la racine d’exécution, `--allow-external-output` autorise un chemin hors de `$PWD`, `--max-usd` fixe un plafond de coût, `-y, --yes` ignore la confirmation du coût, `--seed` stabilise les entrées de planification, `--timeout` limite chaque appel à un fournisseur visuel ou musical, `--script` injecte un `script.json` rédigé par l’agent et `--no-brief-in-manifest` stocke un hash du brief au lieu de son texte. `--dry-run` s’arrête après la planification. `--output text|json` contrôle l’enveloppe CLI.
 
 `doctor` vérifie la chaîne d’outils HyperFrames/MPT en cache et accepte `--install`, `--upgrade`, `--install-mpt` et `--install-strudel`. `provider list` indique la disponibilité des fournisseurs et l’état des clés. `compose` crée ou actualise la composition d’exécution et affiche le contrat d’écriture ; `render` exécute le lint, produit le rendu et sonde la sortie. L’absence du compositeur, de la composition ou d’une dépendance de la chaîne d’outils est une erreur. Le chemin réservé aux tests `OMA_VIDEO_MOCK=1` est le seul mode de remplacement ; une exécution normale ne substitue jamais un MP4 texte ou minuscule.
 
-Une sortie JSON réussie contient `runDir`, `manifestPath`, `scriptPath` et `renderSpecPath` ; le manifeste enregistre les fournisseurs sélectionnés, les entrées et les ressources générées. Après `compose`, écrivez la composition générée selon son `AUTHORING.md`, puis relancez `render`. Si une clé fournisseur est indisponible, lancez `oma video doctor` ; si la capture échoue, vérifiez l’URL, le sélecteur, l’appareil et le délai ; si le rendu échoue, corrigez les diagnostics de composition avant de réessayer.
+Une sortie JSON réussie contient `runDir`, `manifestPath`, `scriptPath` et `renderSpecPath` ; le manifeste enregistre les fournisseurs sélectionnés, les entrées et les ressources générées. Après `compose`, écrivez la composition générée selon son `AUTHORING.md`, puis relancez `render`. Si une clé fournisseur est indisponible, lancez `oma video doctor` ; si une exécution de démonstration s’arrête avec des instructions d’enregistrement, fournissez l’enregistrement avec `--capture` ; si le rendu échoue, corrigez les diagnostics de composition avant de réessayer.
 
 ### star
 

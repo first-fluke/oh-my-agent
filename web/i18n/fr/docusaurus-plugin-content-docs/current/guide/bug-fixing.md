@@ -8,7 +8,7 @@ description: Workflow de débogage structuré en sept étapes avec triage par s�
 
 ## Quand utiliser le workflow de débogage
 
-Utilisez `/debug` (ou dites « fix bug », « fix error » ou « debug » en langage naturel) lorsque vous avez un bug précis à diagnostiquer et à corriger. Le workflow fournit des étapes reproductibles pour identifier la cause racine et corriger le bug.
+Utilisez `/debug` lorsque vous avez un bug précis à diagnostiquer et à corriger. Une simple demande comme « find the root cause » charge la compétence `oma-debug` via l’indication de compétence, mais seule la commande slash démarre ce workflow. Le workflow fournit des étapes reproductibles pour identifier la cause racine et corriger le bug.
 
 Le workflow de débogage prend en charge tous les fournisseurs configurés. Les étapes 1 à 5 s'exécutent en ligne. L'étape 6 (recherche de motifs similaires) peut déléguer à un sous-agent `debug-investigator` lorsque le périmètre est large (au moins 10 fichiers ou une erreur multi-domaines), puis l'étape 7 enregistre le résultat en mémoire.
 

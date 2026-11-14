@@ -55,8 +55,8 @@ oma
 
 백엔드 스킬이 포함된 프리셋을 선택한 경우, 언어 변형을 선택하라는 메시지가 표시됩니다:
 
-- **Python**: FastAPI/SQLAlchemy (기본값)
-- **Node.js**: NestJS/Hono + Prisma/Drizzle
+- **Python**: Litestar/SQLAlchemy (기본값)
+- **Node.js**: NestJS + Prisma
 - **Rust**: Axum/Actix-web
 - **Other / Auto-detect**: 나중에 `/stack-set`으로 설정
 
@@ -380,11 +380,11 @@ oma dashboard web
 
 ### 6. 설정 설치
 
-`installConfigs()`가 보조 파일을 `.agents/config/`에 복사하고, `.agents/mcp.json`을 만들며, 사용자가 소유한 `.agents/oma-config.yaml` 또는 `.agents/oma-config.cue`를 부트스트랩합니다. 기존 사용자 파일은 `--force`를 사용하지 않는 한 보존됩니다. `oma update`도 사용자 설정을 유지하고 필요하면 새 최상위 템플릿 키를 덧붙입니다.
+`installConfigs()`가 `.agents/mcp.json`을 만들고, 사용자가 소유한 `.agents/oma-config.yaml` 또는 `.agents/oma-config.cue`를 부트스트랩합니다. 기존 사용자 파일은 `--force`를 사용하지 않는 한 보존됩니다. `oma update`도 사용자 설정을 유지하고 필요하면 새 최상위 템플릿 키를 덧붙입니다.
 
 ### 7. 스킬 설치
 
-선택된 각 스킬에 대해 `installSkill()`이 스킬 디렉토리를 `.agents/skills/{skill-name}/`에 복사합니다. 변형이 선택된 경우(예: 백엔드용 Python), 언어별 리소스가 포함된 `stack/` 디렉토리도 설정합니다.
+선택된 각 스킬에 대해 `installSkill()`이 스킬 디렉토리를 `.agents/skills/{skill-name}/`에 복사합니다. 변형이 선택된 경우(예: 백엔드용 Python), 그 변형을 스킬의 `stack/` 디렉토리에 복사하고 중복되는 `variants/` 디렉토리를 제거합니다. oma-mobile처럼 변형 없이 설치된 스킬은 `variants/` 디렉토리를 그대로 두며, 해당 스킬의 SKILL.md가 이 디렉토리를 직접 읽습니다.
 
 ### 8. 벤더 적응
 

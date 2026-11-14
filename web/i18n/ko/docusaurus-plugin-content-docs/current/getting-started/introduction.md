@@ -33,13 +33,13 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 ---
 
-## 현재 카탈로그: 스킬 33개, 정의 12개, 워크플로우 21개
+## 현재 카탈로그: 스킬 33개, 정의 12개, 워크플로우 20개
 
 카탈로그는 혼동하기 쉬운 세 가지 대상을 분리합니다.
 
 - **[스킬](./glossary.md#skill)**은 `.agents/skills/*/SKILL.md` 아래의 도메인 지식 패키지 33개입니다. 자연어 의도에서 라우팅되고 리소스를 점진적으로 로드합니다.
 - **[에이전트 정의](./glossary.md#agent-definition)**는 `.agents/agents/` 아래의 파일 12개입니다. 벤더 네이티브 서브에이전트 페르소나를 제공하고 하나 이상의 스킬을 참조합니다.
-- **[워크플로우](./glossary.md#workflow)**는 `.agents/workflows/` 아래의 프로세스 정의 21개입니다. 4개(`orchestrate`, `work`, `ultrawork`, `ralph`)는 [지속 워크플로우](./glossary.md#persistent-workflow)이고 나머지는 보고서까지 실행한 뒤 지속 모드를 유지하지 않습니다.
+- **[워크플로우](./glossary.md#workflow)**는 `.agents/workflows/` 아래의 프로세스 정의 20개입니다. 4개(`orchestrate`, `work`, `ultrawork`, `ralph`)는 [지속 워크플로우](./glossary.md#persistent-workflow)이고 나머지는 보고서까지 실행한 뒤 지속 모드를 유지하지 않습니다.
 
 아래 섹션은 자세한 스킬 카탈로그를 유지합니다. 이름이나 설명이 달라질 때는 실제 `SKILL.md` 프론트매터를 기준으로 삼으세요.
 
@@ -49,56 +49,56 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-brainstorm** | 디자인 우선 아이디어 탐색 | 사용자 의도를 탐색하고, 트레이드오프 분석과 함께 2-3가지 접근 방식을 제안하며, 코드 작성 전에 설계 문서를 생성합니다. 6단계 워크플로우: Context, Questions, Approaches, Design, Documentation, `/plan` 전환. |
+| **oma-brainstorm** | 디자인 우선 아이디어 탐색 | 사용자 의도를 탐색하고, 트레이드오프 분석과 함께 2-3가지 접근 방식을 제안하며, 코드 작성 전에 설계 문서를 생성합니다. `/brainstorm` 워크플로우는 7단계로 진행됩니다: Context, Questions, Approaches, Design, Blind Review, Documentation (`docs/decisions/`), `/plan` 전환. |
 | **oma-architecture** | 시스템 아키텍처 전문가 | 모듈/서비스/오너십 경계, 트레이드오프 분석, 이해관계자 종합. 방법론: 진단 라우팅, design-twice 비교, ATAM 방식 리스크 분석, CBAM 방식 우선순위화, ADR 방식 의사결정 기록. 기본적으로 비용을 고려합니다. |
-| **oma-pm** | 프로덕트 매니저 | 요구사항을 의존성이 있는 우선순위 태스크로 분해합니다. API 컨트랙트를 정의합니다. `.agents/results/plan-{sessionId}.json`과 세션 범위 task board를 출력합니다. ISO 21500 개념, ISO 31000 리스크 프레이밍, ISO 38500 거버넌스를 지원합니다. |
+| **oma-pm** | 프로덕트 매니저 | 요구사항을 의존성이 있는 우선순위 태스크로 분해합니다. API 컨트랙트를 정의합니다. `.agents/results/plan-{sessionId}.json`을 오케스트레이터 인계물로 출력하며, 태스크 보드는 오케스트레이터가 만들고 소유합니다. ISO 21500 개념, ISO 31000 리스크 프레이밍, ISO 38500 거버넌스를 지원합니다. |
 
 ### 구현
 
 | 에이전트 | 역할 | 기술 스택 및 리소스 |
 |-------|------|----------------------|
 | **oma-frontend** | UI/UX 전문가 | React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui, FSD-lite 아키텍처. 라이브러리: luxon (날짜), ahooks 또는 @mantine/hooks (훅), es-toolkit (유틸), Jotai/Zustand (클라이언트 상태), orval로 생성한 훅을 통한 TanStack Query (서버 상태), @tanstack/react-form + Zod (폼), better-auth (인증), nuqs (URL 상태). 리소스: `execution-protocol.md`, `tech-stack.md`, `tailwind-rules.md`, `snippets.md`, `angular-rules.md`, `error-playbook.md`, `checklist.md`. |
-| **oma-backend** | API 및 서버 전문가 | 클린 아키텍처 (Router-Service-Repository-Models). 스택 불문이며, 프로젝트 매니페스트에서 Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET을 감지합니다. 인증에 JWT + Argon2id 사용. 리소스: `execution-protocol.md`, `orm-reference.md`, `checklist.md`, `error-playbook.md`. 언어별 `stack/` 레퍼런스 생성을 위한 `/stack-set` 지원. |
-| **oma-mobile** | 크로스 플랫폼 모바일 | Flutter, Dart, Riverpod/Bloc 상태 관리, 인터셉터를 붙인 Dio로 API 호출, GoRouter 네비게이션. 클린 아키텍처: domain-data-presentation. Material Design 3 (Android) + iOS HIG. 60fps 목표. Swift 네이티브 iOS도 지원: SwiftUI + `@Observable` (iOS 17+), API 클라이언트용 Apple `swift-openapi-generator`, `App/Core/Features/Shared` 프로젝트 레이아웃. 리소스: `execution-protocol.md`, `tech-stack.md`, `screen-template.dart`, `screen-template.swift`, `screen-template.tsx`, `checklist.md`, `error-playbook.md`; 플랫폼별 variant는 `/stack-set`이 실체화합니다. |
-| **oma-db** | 데이터베이스 아키텍처 | SQL, NoSQL, 벡터 데이터베이스 모델링. 스키마 설계 (기본 3NF), 정규화, 인덱싱, 트랜잭션, 용량 계획, 백업 전략. ISO 27001/27002/22301 인식 설계 지원. 리소스: `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`. |
+| **oma-backend** | API 및 서버 전문가 | 클린 아키텍처 (Router-Service-Repository-Models). 스택 불문이며, 프로젝트 매니페스트에서 Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET을 감지합니다. 인증에 JWT + Argon2id 사용. 기본 제공 프리셋: Python (SQLAlchemy 2 (async)를 Advanced Alchemy로 사용하는 Litestar, msgspec 모델, 내장 JWT 인증), Node.js (NestJS + Prisma, Vitest로 테스트), Rust (Axum + SQLx). 이전 FastAPI 프리셋으로 설치한 프로젝트는 FastAPI를 유지합니다. 리소스: `execution-protocol.md`, `orm-reference.md`, `checklist.md`, `error-playbook.md`, 그리고 스택 레퍼런스(`stack/`가 있으면 `stack/`, 없으면 일치하는 `variants/<language>/`). 언어별 `stack/` 레퍼런스 생성을 위한 `/stack-set` 지원. |
+| **oma-mobile** | 크로스 플랫폼 모바일 | Flutter, Dart, Riverpod/Bloc 상태 관리, 인터셉터를 붙인 Dio로 API 호출, GoRouter 네비게이션. 클린 아키텍처: domain-data-presentation. Material Design 3 (Android) + iOS HIG. 60fps 목표. React Native, Swift 네이티브 iOS (iOS 17+에서 SwiftUI + `@Observable`, API 클라이언트용 Apple `swift-openapi-generator`, `App/Core/Features/Shared` 프로젝트 레이아웃), Kotlin 네이티브 Android (Jetpack Compose, Hilt, Ktor 기반으로 생성된 `*Api` 클라이언트)도 지원. 리소스: `execution-protocol.md`, `tech-stack.md`, `checklist.md`, `error-playbook.md`; 플랫폼별 `stack.yaml`, `tech-stack.md`, `snippets.md`(화면, 상태, 데이터 레이어, API 패턴)는 `variants/<platform>/`에 있습니다. 스킬은 `/stack-set`이 `stack/`을 생성했으면 `stack/`을 읽고, 그렇지 않으면 일치하는 variant를 읽습니다. |
+| **oma-db** | 데이터베이스 아키텍처 | SQL, NoSQL, 벡터 데이터베이스 모델링. 스키마 설계 (기본 3NF), 정규화, 인덱싱, 트랜잭션, 용량 계획, 백업 전략. ISO 27001/27002/22301 인식 설계 지원. 리소스: `execution-protocol.md`, `document-templates.md`, `anti-patterns.md`, `vector-db.md`, `migration-playbook.md`, `query-tuning.md`, `iso-controls.md`, `checklist.md`, `error-playbook.md`, `examples.md`. |
 
 ### 디자인
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-design** | 디자인 시스템 전문가 | 토큰, 타이포그래피, 컬러 시스템, 모션 디자인 (motion/react, GSAP, Three.js), 반응형 우선 레이아웃, WCAG 2.2 준수가 포함된 DESIGN.md를 생성합니다. 7단계 워크플로우: Setup, Extract, Enhance, Propose, Generate, Audit, Handoff. 안티 패턴("AI slop") 방지 적용. 선택적 Stitch MCP 통합. 리소스: `design-md-spec.md`, `design-tokens.md`, `anti-patterns.md`, `prompt-enhancement.md`, `stitch-integration.md`, 그리고 `reference/` 디렉토리(타이포그래피, 컬러, 공간, 모션, 반응형, 컴포넌트, 접근성, 셰이더 가이드). |
+| **oma-design** | 비주얼 시스템 및 디자인 방향 | 비주얼 시스템, `DESIGN.md`, 리디자인 방향을 정의하거나 리뷰합니다: 타이포그래피, 레이아웃, 컬러, 모션, 인터랙션 결정. 프로젝트의 디자인 의도를 파악하고 작업마다 외부 디자인 스킬 하나를 로드합니다(제품 인터페이스에는 Interface Design, 비평·감사·다듬기에는 Impeccable, 그 밖의 웹 아트 디렉션에는 Taste). 문서만 다루는 태스크와 토큰 컨트랙트 태스크는 로컬에서 처리합니다. 기존 브랜드, 스택, CJK 폰트 커버리지를 유지하며 기본 접근성 목표는 WCAG AA입니다. 결과에 실질적인 영향을 주는 미해결 선택만 질문하고, 그런 선택이 열려 있을 때만 대안 방향을 제시합니다. 구현 코드는 작성하지 않고 `oma-frontend` 또는 `oma-mobile`에 인계합니다. 선택적 Stitch 및 getdesign 입력. 리소스: `execution-protocol.md`, `external-design-skills.md`, `product-interface-review.md`, `redesign-protocol.md`, `design-md-spec.md`, `design-tokens.md`, `data-grid.md`, `asset-strategy.md`, `getdesign-fetcher.md`, `stitch-integration.md`, `checklist.md`, `error-playbook.md`. |
 
 ### 인프라, DevOps 및 관측성
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
 | **oma-tf-infra** | Infrastructure-as-code | 멀티 클라우드 Terraform (AWS, GCP, Azure, Oracle Cloud). OIDC 우선 인증, 최소 권한 IAM, Policy-as-code (OPA/Sentinel), 비용 최적화. ISO/IEC 42001 AI 제어, ISO 22301 연속성, ISO/IEC/IEEE 42010 아키텍처 문서화 지원. 리소스: `multi-cloud-examples.md`, `cost-optimization.md`, `policy-testing-examples.md`, `iso-42001-infra.md`, `checklist.md`. |
-| **oma-dev-workflow** | 모노레포 태스크 자동화 | mise task runner, CI/CD 파이프라인, 데이터베이스 마이그레이션, 릴리스 조율, git hooks, pre-commit 검증. 리소스: `validation-pipeline.md`, `database-patterns.md`, `api-workflows.md`, `i18n-patterns.md`, `release-coordination.md`, `troubleshooting.md`. |
-| **oma-observability** | 의도 기반 관측성 라우터 | MELT+P 시그널 커버리지(metrics/logs/traces/profiles/cost/audit/privacy), 전송 계층 튜닝(UDP/MTU, OTLP gRPC vs HTTP, Collector 토폴로지, 샘플링), W3C Trace Context 전파, SLO 관리와 burn-rate 알람, 인시던트 포렌식(6차원 국소화), 메타 관측성(자체 건강성, 클록 동기화, 카디널리티, 보관). CNCF 우선; Fluentd 사용 중단(Fluent Bit 또는 OTel Collector 사용). |
+| **oma-dev-workflow** | 모노레포 태스크 자동화 | mise task runner, CI/CD 파이프라인, 데이터베이스 마이그레이션, 릴리스 조율, git hooks, pre-commit 검증. 언어별 lint, format, typecheck 도구와 commitlint도 구성합니다. 리소스: `mise-basics.md`, `tooling-profiles.md`, `validation-pipeline.md`, `example-task-wiring.md`(마이그레이션, API 클라이언트 생성, i18n 빌드), `release-coordination.md`, `troubleshooting.md`. |
+| **oma-observability** | 의도 기반 관측성 라우터 | MELT+P 시그널 커버리지(metrics/logs/traces/profiles/cost/audit/privacy), 전송 계층 튜닝(UDP/MTU, OTLP gRPC vs HTTP, Collector 토폴로지, 샘플링), W3C Trace Context 전파, SLO 관리와 burn-rate 알람, 인시던트 포렌식(6차원 국소화), 메타 관측성(자체 건강성, 클록 동기화, 카디널리티, 보관). 리소스는 각자의 트리거에 따라 로드되며, Fluentd, Fluent Bit, OTel Collector 중 무엇을 쓸지는 워크로드, 플러그인, 운영 요구사항에 따라 선택합니다. |
 
 ### 품질 및 디버깅
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-qa** | 품질 보증 | 보안 감사 (OWASP Top 10), 성능 분석, 접근성 (WCAG 2.2 AA), 코드 품질 리뷰. 심각도: CRITICAL/HIGH/MEDIUM/LOW(파일:라인 및 수정 코드 포함). ISO/IEC 25010 품질 특성 및 ISO/IEC 29119 테스트 정렬 지원. 리소스: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `verify-ship-protocol.md`, `error-playbook.md`. |
-| **oma-debug** | 버그 진단 및 수정 | 재현 우선 방법론. 근본 원인 분석, 최소 수정, 필수 회귀 테스트, 유사 패턴 스캔. 심볼 추적에 코드 인텔리전스 MCP 도구(Gortex 또는 Serena) 사용. 리소스: `execution-protocol.md`, `common-patterns.md`, `debugging-checklist.md`, `bug-report-template.md`, `error-playbook.md`. |
+| **oma-qa** | 품질 보증 | 보안 감사 (OWASP Top 10), 성능 분석, 접근성 (WCAG 2.2 AA), 코드 품질 리뷰. 심각도: CRITICAL/HIGH/MEDIUM/LOW(파일:라인 및 수정 코드 포함). ISO/IEC 25010 품질 특성 및 ISO/IEC 29119 테스트 정렬 지원. 스캐너 기반 스캔과 침투 테스트는 `oma-security`가 담당합니다. 리소스: `execution-protocol.md`, `iso-quality.md`, `checklist.md`, `error-playbook.md`. |
+| **oma-debug** | 버그 진단 및 수정 | 재현 우선 방법론. 근본 원인 분석, 최소 수정, 필수 회귀 테스트, 유사 패턴 스캔. 심볼 추적에 코드 인텔리전스 MCP 도구(Gortex 또는 Serena) 사용. 리소스: `execution-protocol.md`, `checklist.md`, `debugging-checklist.md`(축약 버그 리포트, 도구 레퍼런스, 인계 라우팅), `bug-report-template.md`(Complex 또는 CRITICAL/HIGH 버그), `error-playbook.md`. |
 | **oma-refactor** | 동작을 보존하는 리팩터링 | 특성화 테스트 안전망으로 게이팅하는 안전한 점진적 구조 개선. 핫스팟 타기팅(복잡도 × 변경 빈도), 코드 스멜과 SATD 선별, 실패 시 미카도 방식 되돌리기, 상태 변경에는 expand-contract, 리팩터링만 담는 커밋(동작 변경을 섞지 않음). 엔진 우선 변환(IDE rename, jscodeshift/ast-grep)과 `uvx lizard` / `uvx radon` 기반 지표를 씁니다. 성공 기준은 가독성이며 지표는 대리 지표일 뿐입니다. |
 
 ### 현지화, 조율 및 Git
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-translation** | 컨텍스트 인식 번역 | 6장면 흐름: Prepare, Acquire, Reason, Act, Verify, Finalize. 번역 방법은 보호 구문과 의미를 읽고, 레지스터를 선택하고, 대상 언어로 재구성하고, 필요한 경우 저자 문체를 보존하는 네 단계입니다. 대상 언어별 프로파일(`resources/lang/{code}.md`)에 레지스터와 타이포그래피 규칙이 들어 있습니다. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`, `lang/{ko,ja,zh,en}.md`. |
-| **oma-orchestration** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, 파일로 보존되는 세션·태스크 보드·진행·결과 파일을 통해 조율하며, 검증 루프를 모니터링합니다. 설정: MAX_PARALLEL (기본 3), MAX_RETRIES (기본 2), POLL_INTERVAL (기본 30초). 에이전트 간 리뷰 루프와 선택적 세션 증거 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
+| **oma-translation** | 컨텍스트 인식 번역 | 번역 방법은 보호 구문과 의미를 읽고, 레지스터를 선택하고, 대상 언어로 재구성하고, 필요한 경우 저자 문체를 보존하는 네 단계입니다. 대상 언어별 프로파일(`resources/lang/{code}.md`)에 레지스터와 타이포그래피 규칙이 들어 있습니다. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`, `style-skills.md`, `lang/{ko,ja,zh,en}.md`. |
+| **oma-orchestration** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, 파일로 보존되는 세션·태스크 보드·진행·결과 파일을 통해 조율하며, 검증 루프를 모니터링합니다. 기본값: MAX_PARALLEL 3, MAX_RECOVERY_ATTEMPTS 3(원래 시도를 포함한 태스크당 재시도 및 탐색 가설 횟수). 진행 상황 폴링은 상한이 있는 백오프를 사용하며 완료 알림을 쓸 수 없을 때만 수행합니다. 태스크별 스킬 레퍼런스를 선택해 코디네이터 메모로 기록합니다. 에이전트 간 리뷰 루프와 선택적 세션 증거 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | 형상관리(SCM) + Git | 브랜치 전략, 머지/리베이스/충돌 해결, 워크트리, 베이스라인, 릴리스 상태 추적을 다룹니다. 안전한 스테이징과 Conventional Commit 메시지를 안내하며 co-author trailer는 활성화된 `scm.co_author` 설정에서 가져옵니다. |
-| **oma-coordination** | 수동 멀티 에이전트 워크플로우 가이드 | CLI `oma agent spawn`으로 PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 조율합니다. PM 분해로 시작하고 같은 우선순위 태스크를 별도 워크스페이스에서 스폰하며 실행 범위가 지정된 진행·결과 파일을 모니터링하고 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞춘 뒤 QA 리뷰로 마무리합니다. `oma-orchestration`의 수동 대응물입니다. |
+| **oma-coordination** | 공유 조율 규칙 | 멀티 에이전트 작업의 조율 규칙: 계획 재사용, 컨트랙트 정렬, 워크스페이스 소유권, QA 인계. `/work`, `/orchestrate`, `/ultrawork` 워크플로우가 로드하며, `oma agent spawn`을 쓰는 수동 단계별 조율에도 사용할 수 있습니다. 계획을 재사용하거나 만들고 같은 우선순위 태스크를 별도 워크스페이스에서 스폰하며 실행 범위가 지정된 진행·결과 파일을 모니터링하고 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞춘 뒤 QA 리뷰로 마무리합니다. 자동 실행은 `oma-orchestration`이 담당합니다. |
 
 ### 검색, 회고 및 문서 처리
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-search** | 의도 기반 검색 라우터 | 쿼리를 Context7(문서), 네이티브 웹 검색, `gh`/`glab`(코드), 로컬 코드 인텔리전스(Gortex 또는 Serena)로 라우팅. 모든 비로컬 결과에 도메인 신뢰도 점수. Fail-forward 라우팅(docs→web→fetch). 플래그: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. |
-| **oma-recap** | 크로스 도구 작업 회고 | Grok, Claude, Codex, Gemini, Qwen, Cursor, Antigravity의 대화 이력을 분석합니다. 자연어 날짜/범위 입력을 해석하고, 도구+세션별로 그룹화하며, 테마를 추출하고, 일/기간 요약을 렌더링하며 CLI가 요청 범위를 30일로 제한한 경우 이를 기록합니다. |
+| **oma-search** | 외부 소스 검색 라우터 | 요청마다 주 경로 하나를 선택합니다: `docs`(Context7, 필요하면 공식 사이트 탐색), `web`(설정된 `native`, `brave`, `exa` 프로바이더), `code`(`gh`/`glab`를 통한 `oma search code`), `fetch`(이미 알고 있는 URL). 경로, 실제 프로바이더, 콘텐츠를 읽었는지 여부, 뒷받침하는 증거, 한계와 함께 소스를 반환하며 숫자 신뢰도 점수는 매기지 않습니다. 다른 경로는 증거 공백을 메워야 할 때만 추가하고, 명시적으로 지정한 프로바이더가 실패하면 조용히 대체하지 않고 보고합니다. 플래그: `--docs`, `--code`, `--web`, `--strict`, `--wide`, `--gitlab`. 로컬 코드 탐색은 설정된 코드 도구를 사용합니다. |
+| **oma-recap** | 크로스 도구 작업 회고 | Grok, Claude, Codex, Gemini, Qwen, Cursor, Antigravity의 대화 이력을 분석합니다. 자연어 날짜/범위 입력을 해석하고, 작업 내용별로 그룹화하며(3일 이상의 범위는 프로젝트별), 테마를 추출하고, 일/기간 요약을 렌더링하며 CLI가 요청 범위를 30일로 제한한 경우 이를 기록합니다. |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | `bunx kordoc@latest`를 통한 한글 워드프로세서 문서 변환. 헤딩, 표(중첩 포함), 각주, 하이퍼링크, 이미지 보존. `flatten-tables.ts` 후처리기로 Hancom Private Use Area 문자 제거. |
 | **oma-pdf** | PDF → Markdown | `uvx opendataloader-pdf`를 통한 PDF 문서 변환. 헤딩, 표, 목록, 이미지 보존; 스캔된 PDF용 OCR 하이브리드 모드; `uvx mdformat`으로 출력 정규화. |
 
@@ -106,14 +106,14 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-academic-writing** | 출판 수준 영어 산문 | 에세이, 보고서, 요약문, 결론, 문헌 검토를 작성하고 수정하고 감사합니다. 네 가지 프로토콜을 동시에 강제합니다. 문장 구조(4가지 유형, 길이와 도입부 변화), 동사(일반 동사를 금지하고 등급화된 학술 코퍼스에서 대체), 헤징(근거의 강도에 맞춘 표현), 안티 AI 준수입니다. 판단에 앞서 인용을 요구하는 루브릭 게이트, 주장-근거 맵, 역방향 아웃라이닝을 지원합니다. 모드: `draft` / `revise` / `review`. |
-| **oma-scholar** | 연구 논문 사이드카 도우미 | Knows `.knows.yaml` 사이드카 스펙(v0.9.0 / `paper@1`)으로 학술 논문을 검색하고, 생성하고, 검증하고, 리뷰하고, 비교합니다. 주장·근거·관계에 토큰 효율적으로 접근합니다(주장만 볼 때 약 700토큰, 전체 PDF는 약 10K). knows.academy를 대상으로 `oma scholar search/resolve/get/lint`를 제공하며, 2026년 이전 논문은 OpenAlex로 자동 폴백합니다. 날조 방지 원칙에 따라 모르는 필드는 추측하지 않고 생략합니다. |
+| **oma-academic-writing** | 출판 수준 영어 산문 | 에세이, 보고서, 초록, 요약문, 결론, 문헌 검토를 작성하고 수정하고 감사합니다. 문장 구조 지침(리듬, 도입부, 문단 응집성), 동사 지침(`academic-verb-guide.md`: 정확한 의미와 근거의 강도), 근거에 맞춘 헤징, 안티 AI 산문 감사를 적용합니다. 판단에 앞서 제공된 루브릭 제약을 인용하며, 주장-근거 맵과 역방향 아웃라이닝을 사용합니다. 모드: `draft` / `revise` / `review`. |
+| **oma-scholar** | 연구 논문 사이드카 도우미 | Knows `.knows.yaml` 사이드카 스펙(v0.9.0 / `paper@1`)으로 학술 논문을 검색하고, 생성하고, 검증하고, 리뷰하고, 비교합니다. 주장·근거·관계에 토큰 효율적으로 접근합니다(주장만 볼 때 약 700토큰, 전체 PDF는 약 10K). knows.academy를 대상으로 `oma scholar search/resolve/get/lint`를 제공하며, knows.academy에 없는 논문은 OpenAlex와 Semantic Scholar로 폴백합니다. 날조 방지 원칙에 따라 모르는 필드는 추측하지 않고 생략합니다. |
 
 ### 보안
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-security** | 보안 스캔 및 검증 | 애플리케이션 소스, 에이전트 스킬, MCP 컴포넌트를 스캔하고, 범위가 지정된 웹 테스트 배포를 대상으로 침투 테스트를 실행하며, 발견 사항을 검증하고 스캔 게이트를 구성합니다. 대상별 기본 엔진은 애플리케이션 소스나 diff에는 Deepsec, 에이전트 스킬 패키지에는 Cisco Skill Scanner, MCP 컴포넌트에는 Cisco MCP Scanner, 웹 테스트 배포에는 ARTEX입니다. 폭넓은 품질 리뷰에는 `oma-qa`를, 수정에는 도메인 스킬을 사용하세요. |
+| **oma-security** | 보안 스캔 및 검증 | 애플리케이션 소스, 에이전트 스킬, MCP 컴포넌트를 스캔하고, 발견 사항을 검증하며 스캔 게이트를 구성합니다. 대상별 기본 엔진은 애플리케이션 소스나 diff에는 Deepsec, 에이전트 스킬 패키지에는 Cisco Skill Scanner, MCP 컴포넌트에는 Cisco MCP Scanner입니다. 런타임 침투 테스트에는 기본 엔진이 없습니다. 범위가 지정된 웹 테스트 배포의 침투 테스트는 ARTEX를 명시적으로 요청한 경우에만, 사용자가 제공하고 검토한 ARTEX 플랫폼에서 실행합니다. 폭넓은 품질 리뷰에는 `oma-qa`를, 수정에는 도메인 스킬을 사용하세요. |
 
 ### 문서화 및 메타 도구
 
@@ -121,7 +121,7 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 |-------|------|-----------------|
 | **oma-docs** | 문서 드리프트 탐지기 | `verify` 모드는 `docs/**/*.md`에서 깨진 참조(파일 경로, CLI 명령, 설정 키, 환경 변수, 스크립트)를 결정론적으로 검사하고 0 또는 1로 종료합니다. `sync` 모드는 git diff를 후보 문서와 연결해 호스트 LLM이 적용할 패치 제안을 문서별 확인과 함께 작성합니다(절대 자동 적용하지 않습니다). URL 검사는 `lychee`에 위임하고, CLI는 구조화된 JSON을 내보내며, 종합은 전부 호스트 LLM이 합니다(벤더 SDK를 호출하지 않습니다). `.agents/`는 절대 수정하지 않습니다. |
 | **oma-skill-creation** | SSL-lite 스킬 작성 전문가 | 네 가지 필수 섹션(Scheduling / Structural Flow / Logical Operations / References)을 갖춘 SSL-lite 형식으로 OMA 스킬을 만들고, 갱신하고, 감사합니다. 스킬 유형을 분류하고, 인라인 정규 경로를 정확히 하나만 넣고, `When NOT to use`의 교차 라우팅을 강제하며, `oma skill audit`으로 설명 충돌을 잡습니다(TF-IDF 코사인 60% 이상 경고, 75% 이상 실패). 긴 변형 설명은 `resources/`로 밀어냅니다. |
-| **oma-explanation** | 코드 변경 설명기 | diff, PR, 브랜치, 커밋 범위를 Background, Intuition, Code, Quiz 섹션이 있는 오프라인 HTML 설명서로 변환합니다. `/explain` 워크플로우가 최종 산출물을 검증하고 `.agents/results/explain/` 아래에 기록합니다. |
+| **oma-explanation** | 변경 및 주제 설명기 | diff, PR, 브랜치, 커밋 범위를 Background, Intuition, Code, Quiz 섹션이 있는 오프라인 HTML 설명서로 변환하거나, 주제를 한 페이지짜리 시각 자료로 설명합니다. 모델이 초안을 작성하면 `oma explain render`가 `.agents/results/explain/` 아래에 페이지를 기록하고, `oma explain validate`가 이를 검사하며, `oma explain render --open`이 페이지를 엽니다. |
 
 ### 시장 조사
 
@@ -133,9 +133,9 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-image** | 멀티 벤더 이미지 라우터 | 인증 상태를 인지해 Codex(ChatGPT OAuth 기반 `gpt-image-2`, CLI 우선), `agy` CLI와 Gemini Code Assist를 통한 Antigravity Gemini 계열 “nano-banana” 모델(정확한 모델은 내부 선택), Pollinations(무료 `flux` / `zimage`)로 병렬 디스패치합니다. 생성 전에 명확화와 보강 프로토콜을 거치고, 참조 이미지를 최대 10개까지 받으며, 비용 가드레일(0.20달러 이상이면 확인)과 재현용 `manifest.json`을 제공합니다. CLI는 `oma image generate`, `oma image doctor`, `oma image vendor list`입니다. |
-| **oma-slide** | 애니메이션이 풍부한 HTML 덱 생성기 | 1920×1080 고정 스테이지에서 "AI slop"을 피한 개성 있는 발표 덱을 작성한 뒤, 지오메트리를 결정론적으로 검증하고 단일 파일 HTML로 묶고 `oma slide` CLI로 PDF/PNG/PPTX로 내보냅니다. 스타일 프리셋과 과감한 템플릿, CJK는 Pretendard 규칙, `prefers-reduced-motion`과 눈에 보이는 포커스 필수, 최대 3회 자동 수정 검증 루프를 제공합니다. 이미지는 `oma-image`에 위임하며, Canva MCP 내보내기와 가져오기를 선택적으로 지원합니다. |
-| **oma-video** | 숏폼·설명·데모 라우터 | `oma video` CLI로 숏폼·릴스(9:16), 설명 영상(16:9), 사람이 녹화하는 데모(16:9)를 만듭니다. 결정론적 에셋 버스(`script.json` → `timing.json` → `render-spec.json`)가 관리되는 HyperFrames 컴포지터로 이어지며, 에셋 프로바이더는 로컬 폴백을 사용할 수 있지만 컴포지션·도구 체인·렌더 오류는 실행을 실패시킵니다. 사람의 캡처 과정에서 자격 증명을 자동화하지 않습니다. |
+| **oma-image** | 멀티 벤더 이미지 라우터 | 인증 상태를 인지해 Codex(ChatGPT OAuth 기반 `gpt-image-2`, CLI 우선), `agy` CLI와 Gemini Code Assist를 통한 Antigravity Gemini 계열 “nano-banana” 모델(정확한 모델은 내부 선택), Pollinations(무료 `flux` / `zimage`)로 병렬 디스패치합니다. 제공된 세부 정보와 합리적인 기본값으로 브리프를 확정하고 결과에 실질적인 영향을 주는 누락된 선택만 질문하며, 참조 이미지를 최대 10개까지 받고, 비용 가드레일(0.20달러 이상이면 확인)과 재현용 `manifest.json`을 제공합니다. 설정은 `.agents/oma-config.yaml`의 `image:` 아래에 있습니다. CLI는 `oma image generate`, `oma image doctor`, `oma image vendor list`입니다. |
+| **oma-slide** | 애니메이션이 풍부한 HTML 덱 생성기 | 1920×1080 고정 스테이지에서 "AI slop"을 피한 개성 있는 발표 덱을 작성한 뒤, 지오메트리를 결정론적으로 검증하고 단일 파일 HTML로 묶고 `oma slide` CLI로 PDF/PNG/PPTX로 내보냅니다. 스타일 프리셋과 과감한 템플릿, CJK는 Pretendard 규칙, `prefers-reduced-motion`과 눈에 보이는 포커스 필수, 최대 3회 자동 수정 검증 루프를 제공합니다. 이미지는 `oma-image`에 위임하며, Canva MCP 내보내기와 가져오기를 선택적으로 지원합니다. CLI는 `oma slide create`, `oma slide style get`, `oma slide asset fetch-video`, `oma slide validate`, `oma slide bundle`, `oma slide export pdf|png|pptx`입니다. |
+| **oma-video** | 숏폼·설명·데모 라우터 | `oma video` CLI로 숏폼·릴스(9:16), 설명 영상(16:9), 사람이 녹화하는 데모(16:9)를 만듭니다. 결정론적 에셋 버스(`script.json` → `timing.json` → `render-spec.json`)가 관리되는 HyperFrames 컴포지터로 이어지며, 에셋 프로바이더는 로컬 폴백을 사용할 수 있지만 컴포지션·도구 체인·렌더 오류는 실행을 실패시킵니다. 스톡과 AIGC 비주얼은 `--visual stock|aigc`로 사용하며, 슬라이드 비주얼에는 기존 덱을 가리키는 `visual.ref`가 필요합니다. 데모는 `--polish`가 있어야 마스킹된 전달 가능한 영상이 만들어지며, 없으면 출력은 원본 캡처입니다. 사람의 캡처 과정에서 자격 증명을 자동화하지 않습니다. 설정은 `.agents/oma-config.yaml`의 `video:` 아래에 있습니다. |
 | **oma-voice** | 로컬 우선 TTS와 STT | Voicebox MCP 서버로 클라우드 호출이나 호출당 비용 없이 온디바이스 알림, 에셋 TTS, 전사를 수행합니다. TTS 기본 출력은 WAV이고 로컬에서 MP3로 변환할 수 있으며, 전사는 오디오 경로나 base64를 받습니다. TTS 호출은 5000자, STT 입력은 30분으로 제한되며 저장된 에셋·전사 실행은 매니페스트를 기록합니다. |
 
 ---
@@ -166,11 +166,10 @@ oh-my-agent에 필요한 모든 것은 `.agents/` 디렉토리에 있습니다:
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -260,14 +259,15 @@ HUD는 `.claude/hooks/hud.ts`에서 Claude Code의 `statusLine` 훅 기능을 �
 
 ---
 
-## 자동 워크플로우 감지
+## 자동 감지
 
-워크플로우를 트리거하기 위해 `/command`를 입력할 필요가 없습니다. oh-my-agent의 훅 시스템이 `.agents/hooks/core/triggers.json`에 정의된 키워드 트리거와 자연어 입력을 대조하며, 이 정의는 `oma` 바이너리에 인라인되어 모든 벤더가 공유합니다. 11개 언어를 지원합니다 (한국어, 영어, 일본어, 중국어, 스페인어, 프랑스어, 독일어, 포르투갈어, 러시아어, 네덜란드어, 폴란드어).
+슬래시 명령은 워크플로우를 시작합니다. 평범한 요청의 경우 oh-my-agent의 훅 시스템이 `.agents/hooks/core/triggers.json`의 키워드 테이블과 입력을 대조하며, 이 테이블은 `oma` 바이너리에 인라인되어 모든 벤더가 공유합니다. 11개 언어를 다룹니다 (한국어, 영어, 일본어, 중국어, 스페인어, 프랑스어, 독일어, 포르투갈어, 러시아어, 네덜란드어, 폴란드어).
 
-- **실행 의도 입력** (예: "인증 기능 계획해줘") → 자동으로 워크플로우 로드
+- **스킬 힌트** (예: "보안 감사 실행해줘") → 스킬 인젝터가 일치하는 스킬을 최대 3개까지 알려 줌. 이 안내는 권고 사항이며 워크플로우를 시작하지 않음
+- **지속 워크플로우** (`orchestrate`, `work`, `ultrawork`, `ralph`) → 프롬프트가 워크플로우의 명시적 이름을 쓸 때만 평문에서 시작 (예: `ultrawork: add rate limiting`)
+- **그 밖의 모든 워크플로우** → 해당 `/command`로만 시작
 - **정보 요청 입력** (예: "orchestrate가 뭐야?") → 필터링, 워크플로우를 트리거하지 않음
 - **명시적 `/command`** → 중복 방지를 위해 훅이 감지 건너뜀
-- **지속 워크플로우**(`orchestrate`, `work`, `ultrawork`, `ralph`)가 자연어로만 매칭되면 시작하지 않고 제안만 합니다. 지속 모드는 프롬프트에 해당 워크플로우의 명시적 키워드(예: `ultrawork`, `ralph`)가 있을 때 켜집니다
 - **활성 지속 워크플로우**는 "workflow done"이라고 말할 때까지 매 메시지마다 컨텍스트 재주입
 
 모든 훅 이벤트는 `oma hook run` 표준 ABI로 전달됩니다. 벤더가 `oma-hook.sh --vendor <v> --event <nativeEvent>`를 호출하면 인프로세스 핸들러 체인으로 라우팅되고, 벤더별 형식의 출력을 stdout으로 내보냅니다(항상 exit 0, fail-open).
@@ -299,7 +299,7 @@ oh-my-agent은 Claude Code에 한정되지 않습니다. 훅을 지원하는 벤
 ## 다음 단계
 
 - **[설치](./installation.md)**: 세 가지 설치 방법, 프리셋, CLI 설정, 검증
-- **[에이전트](/docs/core-concepts/agents)**: 33개 스킬, 13개 디스패치 역할, Charter Preflight 심층 분석
+- **[에이전트](/docs/core-concepts/agents)**: 33개 스킬, 13개 디스패치 역할, 승인과 명확화 정책 심층 분석
 - **[스킬](/docs/core-concepts/skills)**: 2계층 아키텍처 설명
-- **[워크플로우](/docs/core-concepts/workflows)**: 트리거와 단계가 포함된 21개 워크플로우
+- **[워크플로우](/docs/core-concepts/workflows)**: 트리거와 단계가 포함된 20개 워크플로우
 - **[사용 가이드](/docs/guide/usage)**: 단일 태스크부터 전체 오케스트레이션까지 실제 예제

@@ -278,7 +278,6 @@ Zadania między dostawcami oraz `model_preset: free` używają `oma agent spawn`
 | `/debug` | Nietrwały | Ustrukturyzowane debugowanie: odtwórz, zdiagnozuj, napraw, napisz test regresji, przeskanuj | Badanie błędów i awarii |
 | `/design` | Nietrwały | 7-fazowy workflow projektowy tworzący DESIGN.md z tokenami | Tworzenie systemów projektowych, landing page'ów, redesign UI |
 | `/scm` | Nietrwały | Workflow SCM dla Git (branch/merge/conflict/worktree/baseline) oraz generowanie Conventional Commit z automatycznym rozpoznaniem typu/zakresu i podziałem funkcjonalności | Po zakończeniu zmian kodu albo przy zadaniach związanych z zarządzaniem konfiguracją repozytorium |
-| `/tools` | Nietrwały | Zarządzanie widocznością narzędzi MCP (włączanie/wyłączanie grup) | Sterowanie narzędziami MCP dostępnymi dla agentów |
 | `/stack-set` | Nietrwały | Automatyczne wykrywanie stosu technologicznego projektu i generowanie odwołań backendowych albo mobilnych (Swift/Flutter/RN) | Konfiguracja konwencji kodowania właściwych dla języka |
 | `/architecture` | Nietrwały | Diagnoza architektury, porównanie i zapisy decyzji | Przegląd granic albo wybór architektury |
 | `/convert` | Nietrwały | Kierowanie konwersji dokumentów do właściwej umiejętności | Konwersja plików źródłowych HWP/HWPX albo PDF |

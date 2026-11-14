@@ -92,16 +92,18 @@ Wanneer een commando de resterende argumenten doorgeeft aan een andere tool, laa
 
 ### install
 
-`oma` zonder argumenten start de interactieve installer. `oma install` is de expliciete vorm en accepteert opties voor providerselectie.
+`oma` zonder argumenten start de interactieve runtime-installer. `oma install` is de expliciete vorm en accepteert een skillpreset plus opties voor providerselectie. Gebruik [Kies een setup](../getting-started/choose-setup.md) om instructies tijdelijk voor één taak te laden.
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Optie | Toegestane waarden |
 |:-------|:----------------|
+| `--preset <name>` | Een van de tien [benoemde skillpresets](../getting-started/installation.md#presets), zoals `frontend`, `research` of `all`. Een individuele Custom-selectie maak je in het interactieve menu. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,15 +112,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 `--web-search`, `--code-intelligence` en `--semantic-memory` behouden de opgeslagen providerkeuze wanneer je ze weglaat. `--honcho-url` en `--honcho-workspace` configureren een nieuwe Honcho-verbinding wanneer die provider is geselecteerd. De rootvlag `-y, --yes` slaat vragen over en gebruikt standaardwaarden; `--global` richt zich op `$OMA_HOME/.agents/` (standaard `~/.oma/.agents/`). Een projectinstallatie blijft in `<cwd>/.agents/`, ook wanneer `OMA_HOME` is ingesteld.
 
+`--preset` heeft voorrang op de interactieve skillvraag en op de standaard `all` bij onbeheerde installatie. Onbekende namen, lege waarden en `custom` worden vóór de installatie geweigerd. De optie selecteert skillinhoud; ze filtert geen gedeelde bestanden, workflow- of agentdefinities, hooks of providerconfiguratie, en behoudt andere geïnstalleerde skills. [Workflowafhankelijkheden](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset) kunnen daardoor afwijken van de geselecteerde bundel.
+
 **Wat het doet:**
 1. Controleert op de legacy-map `.agent/` en migreert die naar `.agents/` als die bestaat.
-2. Detecteert concurrerende tools en biedt aan die te verwijderen.
-3. Vraagt om het projecttype (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+2. Detecteert in de interactieve modus andere agenttools en vraagt of die moeten worden verwijderd (standaard: behouden). Installaties met `--yes`, `OMA_YES` en in CI behouden ze; `oma update` biedt geen verwijdering aan.
+3. Gebruikt `--preset` als die is opgegeven; vraagt anders in de interactieve modus om een skillpreset of een individuele Custom-selectie. Een onbeheerde setup gebruikt standaard `all`.
 4. Als Backend is geselecteerd, vraagt het om de taalvariant (Python, Node.js, Rust, Other).
 5. Vraagt naar GitHub Copilot-symlinks.
 6. Downloadt de nieuwste tarball uit het register.
 7. Installeert gedeelde resources, workflows, configuraties en geselecteerde skills.
-8. Installeert vendor-aanpassingen voor geselecteerde vendors (projectlokale instellingen; geen stille vendor-schrijfacties op HOME-niveau).
+8. Installeert vendor-aanpassingen voor geselecteerde vendors. Zie [installatie-effecten](../getting-started/installation.md#what-the-installer-also-does-by-default) voor wijzigingen op project- en HOME-niveau.
 9. Maakt CLI-symlinks aan.
 10. Biedt aanbevolen **globale** git-configuratie aan (bevestiging via opt-in):
     - `rerere.enabled=true` — hergebruik van mergeconflicten tussen agenten
@@ -127,11 +131,13 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. Biedt aan MCP te configureren waar dat van toepassing is.
 12. Vraagt om een GitHub-star als `gh` geauthenticeerd is.
 
+De eindsamenvatting toont de geselecteerde skills en controleert de skillmanifesten waarnaar wordt verwezen aan de hand van de bestanden die er daadwerkelijk staan, inclusief behouden skills en conditionele takken. Ze meldt ontbrekende of onleesbare skillverwijzingen in workflows en agents en verwijst naar het doctor-commando voor die installatieroot. Dit is statische manifestdekking; de inhoud van resources, tools, providers en de uitvoering worden niet geverifieerd.
+
 **Voorbeeld:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor
@@ -298,7 +304,7 @@ Gebruik dit na het bewerken van `.agents/agents/`, `.agents/workflows/`, `.agent
 
 ### Een bestaande installatie opnieuw configureren {#setup-workflow}
 
-Er is geen `/setup`-workflow. Om een geïnstalleerd project te wijzigen, voer je `oma install` opnieuw uit, gebruik je `oma update mcp` voor alleen de browser-MCP-servers, of voer je `/tools` uit binnen een agentsessie om MCP-tools in of uit te schakelen. Controleer de modelresolutie per agent met `oma doctor --profile`; modelpins per agent staan onder `agents:` in `.agents/oma-config.yaml` ([Modellen per agent](../guide/per-agent-models.md)).
+Er is geen `/setup`-workflow. Om een geïnstalleerd project te wijzigen, voer je `oma install` opnieuw uit, of gebruik je `oma update mcp` om de browser-MCP-servers te kiezen. Controleer de modelresolutie per agent met `oma doctor --profile`; modelpins per agent staan onder `agents:` in `.agents/oma-config.yaml` ([Modellen per agent](../guide/per-agent-models.md)).
 
 ---
 
@@ -376,12 +382,13 @@ oma stats reset [--json] [--output <format>]
 - Tijdstip van de laatste update
 
 **Kostentelemetrie** (samengevoegd over elk `session-cost-*.md`-bestand onder `.agents/state/memories/`):
-- Totale inputtokens (benadering op basis van prompttekens; nog geen outputtokens)
+- Geregistreerde tokens, waarbij werkelijk native verbruik wordt onderscheiden van schattingen op basis van promptlengte
 - Totaal aantal spawns
-- Geschatte USD met een conservatieve tabel voor inputtokenkosten per vendor (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
+- Gereserveerde spawns en runs waarvan het native verbruik maar gedeeltelijk is gedekt
+- Geschatte USD met een tarieftabel per vendor; deze schatting staat los van de werkelijke tokenaantallen
 - Uitsplitsing per vendor (tokens · spawns · USD)
 
-De schatting is een ondergrens en geen factuurprecies bedrag. Configureer `session.quota_cap` in `.agents/oma-config.yaml` om harde budgetten af te dwingen bij het spawnen; zie de pagina Waarom oh-my-agent in Aan de slag voor de kwaliteitsgerichte hulpmiddelen waarbij deze limieten horen.
+De USD-schatting is geen factuurprecies bedrag. Configureer `session.quota_cap` in `.agents/oma-config.yaml` om de volgende spawn te blokkeren wanneer het geregistreerde tokenverbruik of het aantal spawns een limiet bereikt. Ontbrekend native verbruik behoudt een expliciete schatting, en draaiende children worden niet onderbroken. Zie [Sessiequota](../guide/configuration-reference.md#session-quota-caps).
 
 Metrieken worden opgeslagen in `.agents/state/metrics.json`; een legacy `.serena/metrics.json` wordt gelezen als die bestaat. Gegevens komen uit git-statistieken en memorybestanden.
 
@@ -1165,13 +1172,14 @@ Wanneer meerdere sessieplannen of run-receipts overeenkomen, faalt de verificati
 
 **Gemeenschappelijke controles (alle agenttypen):**
 - **Scopecontrole**: leest taakscope uit `.agents/results/plan-{sessionId}.json`. Vergelijkt gewijzigde bestanden uit `git diff` met de gedefinieerde scopepatronen. Faalt als bestanden buiten de toegewezen agentscope zijn gewijzigd.
-- **Charter-preflight**: controleert of het geselecteerde resultaatrapport een juist ingevuld blok `CHARTER_CHECK:` zonder open placeholders bevat.
 - **TDD-bewijs**: vereist dat het geselecteerde rapport van elke toepasselijke taak de exacte taak-ID en eigen, niet-lege `red:`- en `green:`-items bevat. Rapporten uit een andere sessie of nieuwe poging kunnen het geselecteerde rapport niet vervangen.
 - **Hardcoded secrets**: scant `.py`-, `.ts`-, `.tsx`-, `.js`- en `.dart`-bestanden op patronen zoals `password = "..."` en `api_key = "..."` (test- en voorbeeldbestanden uitgesloten).
 - **TODO/FIXME-commentaar**: telt commentaren met `TODO`, `FIXME`, `HACK` en `XXX` (waarschuwt als er een wordt gevonden).
 
 **Agentspecifieke controles:**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | Agenttype | Aanvullende controles |
 |:-----------|:-----------------|
 | `backend` | Syntaxisvalidatie, detectie van SQL-injectie (raw-SQL-patronen) en tests, allemaal via de `verify`-commando's in `.agents/skills/oma-backend/stack/stack.yaml` (geschreven door `/stack-set`). Overgeslagen als dat bestand ontbreekt |
@@ -1180,6 +1188,7 @@ Wanneer meerdere sessieplannen of run-receipts overeenkomen, faalt de verificati
 | `qa` | Geen mechanische checks; registreert één `QA Report`-check als `PASS` |
 | `debug` | Voert Python- of frontendtests uit op basis van het gedetecteerde projecttype |
 | `pm` | Valideert dat `.agents/results/plan-{sessionId}.json` bestaat en geldige JSON bevat |
+<!-- oma-docs:ignore-end -->
 
 **Uitvoerformaat:**
 Elke controle meldt `PASS`, `FAIL`, `WARN` of `SKIP` met een detailbericht. Het totaalresultaat is alleen `ok: true` als geen enkele controle faalt.
@@ -1658,18 +1667,18 @@ Plan, schrijf en render korte uitleg- en demovideo's. `generate` maakt de brief,
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` accepteert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` en `--capture-stop duration:<seconds>|selector:<css>`. Gebruik `--source web --url <url>` voor browseropname; `--source file` is de standaard. `--output-dir` kiest de runroot, `--allow-external-output` staat een pad buiten `$PWD` toe, `--max-usd` stelt een kostenplafond in, `-y, --yes` slaat de kostenbevestiging over, `--seed` stabiliseert planningsinvoer, `--timeout` begrenst elke aanroep van een visual- of muziekprovider, `--script` injecteert een door de agent geschreven `script.json` en `--no-brief-in-manifest` slaat een briefhash op in plaats van de tekst. `--dry-run` stopt na de planning. `--output text|json` bepaalt de CLI-envelop.
+`generate` accepteert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` en `--capture-stop duration:<seconds>|selector:<css>`. Een demo gebruikt een opname die je aanlevert met `--capture`; `--source file` is de standaard, en `--source web --url <url>` voegt alleen de URL als context toe (de CLI opent geen browser en neemt er geen op). `--polish` leidt de opname door de `Demo`-compositie, waar persoonsgegevens worden gemaskeerd; zonder die optie is de uitvoer-MP4 de ruwe, ongemaskeerde opname. `--visual stock` en `--visual aigc` selecteren de providers Pexels en Pixelle wanneer hun sleutels zijn ingesteld, en voor een slide-visual moet `visual.ref` in het script naar een bestaande deckmap verwijzen. `--output-dir` kiest de runroot, `--allow-external-output` staat een pad buiten `$PWD` toe, `--max-usd` stelt een kostenplafond in, `-y, --yes` slaat de kostenbevestiging over, `--seed` stabiliseert planningsinvoer, `--timeout` begrenst elke aanroep van een visual- of muziekprovider, `--script` injecteert een door de agent geschreven `script.json` en `--no-brief-in-manifest` slaat een briefhash op in plaats van de tekst. `--dry-run` stopt na de planning. `--output text|json` bepaalt de CLI-envelop.
 
 `doctor` controleert de gecachete HyperFrames/MPT-toolchain en accepteert `--install`, `--upgrade`, `--install-mpt` en `--install-strudel`. `provider list` rapporteert providerbeschikbaarheid en sleutelstatus. `compose` zet de runcompositie op of vernieuwt die en rapporteert het authoringcontract; `render` voert lint uit, rendert en controleert de uitvoer. Ontbrekende compositor-, compositie- of toolchaindependency's zijn fouten. Het alleen voor tests bedoelde pad `OMA_VIDEO_MOCK=1` is de enige placeholdermodus; een normale run vervangt een MP4 nooit door een tekst- of klein bestand.
 
-Geslaagde JSON-uitvoer bevat `runDir`, `manifestPath`, `scriptPath` en `renderSpecPath`; het manifest legt geselecteerde providers, invoer en gegenereerde assets vast. Schrijf na `compose` de gegenereerde compositie volgens `AUTHORING.md` en voer daarna `render` opnieuw uit. Als een providersleutel niet beschikbaar is, voer `oma video doctor` uit; als capture mislukt, controleer URL, selector, device en time-out; als renderen mislukt, herstel eerst de compositiediagnostiek.
+Geslaagde JSON-uitvoer bevat `runDir`, `manifestPath`, `scriptPath` en `renderSpecPath`; het manifest legt geselecteerde providers, invoer en gegenereerde assets vast. Schrijf na `compose` de gegenereerde compositie volgens `AUTHORING.md` en voer daarna `render` opnieuw uit. Als een providersleutel niet beschikbaar is, voer `oma video doctor` uit; als een demo-run stopt met opname-instructies, lever de opname aan met `--capture`; als renderen mislukt, herstel eerst de compositiediagnostiek.
 
 ### star
 

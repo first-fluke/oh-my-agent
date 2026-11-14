@@ -5,9 +5,21 @@ description: 설치부터 검증까지 범위가 정해진 태스크 하나를 �
 
 # 빠른 시작
 
-작은 태스크 하나를 실행하고 구체적인 결과를 기록하려면 이 페이지를 사용하세요. 프로젝트 디렉토리와 지원되는 AI CLI 또는 IDE가 하나 이상 필요합니다. 설치 프로그램은 macOS, Linux, Windows에서 `bun`, `uv`, Serena, CUE, 전역 `oma` 명령을 부트스트랩할 수 있습니다. 첫 프롬프트에는 선택한 호스트 통합이 필요하지만 프로바이더와 브라우저 통합은 선택 사항입니다.
+범위가 좁은 태스크 하나로 결과를 확인하세요. 이미 사용하는 코딩 에이전트에 스킬을 불러오거나, 프로젝트 훅, 전문 에이전트, 워크플로우가 필요하면 런타임을 설치합니다. 선택할 수 있는 경로와 각 경로의 의존성은 [설정 선택](./choose-setup.md)에서 설명합니다.
 
-## 1. 설치
+## 1. 설정 선택 {#1-install}
+
+아래의 읽기 전용 Git 태스크를 실행하려면 에이전트에게 스킬을 불러와 그 지침과 지원 디렉토리를 읽도록 요청하세요.
+
+```bash
+bunx skills use first-fluke/oh-my-agent@oma-scm
+```
+
+이어서 3단계의 태스크를 진행하세요. 스킬의 CLI 작업, 다른 스킬, 프로젝트 규칙, 외부 서비스는 별도의 의존성으로 남습니다. 이 스킬을 불러와도 OMA 설치 프로그램은 실행되지 않습니다.
+
+### 필요할 때 런타임 설치
+
+런타임 부트스트랩은 `bun`, `uv`, Serena, CUE, 전역 `oma` 명령을 준비할 수 있습니다. 이미 사용하는 AI CLI 또는 IDE를 선택하세요. 프로바이더와 브라우저 통합은 실행하려는 태스크에 따라 달라집니다.
 
 프로젝트 디렉토리에서 부트스트랩 설치 프로그램을 실행합니다.
 
@@ -21,7 +33,7 @@ Windows PowerShell에서는 다음을 실행합니다.
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-대화형 설정에서 응답 언어, CLI 벤더, [기능 프로바이더](./glossary.md#capability-provider), [모델 프리셋](./glossary.md#model-preset), 프로젝트 [스킬 프리셋](./glossary.md#skill-preset), 스택 변형을 선택합니다. 첫 실행에서는 기본값을 유지하고 이미 사용하는 벤더를 선택하며 저장소에 가장 가까운 프로젝트 프리셋을 고르세요. 각 프리셋에 포함된 스킬과 [프리셋 밖의 스킬이 필요한 워크플로우](./installation.md#workflows-that-need-skills-outside-a-preset)는 [프리셋](./installation.md#presets)을 참고하세요.
+설정은 기존 응답 언어를 유지하거나 시스템 언어를 자동으로 감지합니다. 대화형 설정에서 CLI 벤더, [기능 프로바이더](./glossary.md#capability-provider), [모델 프리셋](./glossary.md#model-preset), 프로젝트 [스킬 프리셋](./glossary.md#skill-preset), 스택 변형을 선택합니다. 첫 실행에서는 기본값을 유지하고 이미 사용하는 벤더를 선택하며 저장소에 가장 가까운 프로젝트 프리셋을 고르세요. 각 프리셋에 포함된 스킬과 [프리셋 밖의 스킬이 필요한 워크플로우](./installation.md#workflows-that-need-skills-outside-a-preset)는 [프리셋](./installation.md#presets)을 참고하세요.
 
 이미 `bun`이 있다면 설치 프로그램을 직접 실행합니다.
 
@@ -34,7 +46,7 @@ bunx oh-my-agent@latest
 
 ## 2. 결과 확인
 
-같은 프로젝트 디렉토리에서 상태 점검을 실행합니다.
+스킬을 임시로 불러온 경우에는 에이전트가 선택한 지침을 읽었는지 확인하고 태스크 자체를 검증하세요. 런타임을 설치한 경우에는 같은 프로젝트 디렉토리에서 상태 점검을 실행합니다.
 
 ```bash
 oma doctor
@@ -64,19 +76,21 @@ bunx oh-my-agent@latest doctor
 
 ## 3. 작은 태스크 하나 실행
 
-설정한 AI 도구에서 저장소를 열고 스킬 하나를 이름으로 지정해 독립적인 결과 하나를 요청합니다.
+AI 도구에서 기존 Git 저장소를 엽니다. 불러온 `oma-scm` 스킬을 사용하거나, 이름 있는 런타임 프리셋이 설치한 사본을 사용하세요. Custom 선택을 사용했다면 이 예시를 위해 `oma-scm`을 포함하세요.
 
 ```text
-Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
+Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
 ```
 
-호스트는 선택한 스킬을 식별하고 대상 하나를 검사한 뒤, 링크만 수정했거나 링크가 이미 유효하다고 보고해야 합니다. 실제로 실행한 검사가 있다면 명령 출력과 종료 코드를 함께 보고하세요.
+보고된 브랜치와 변경 사항을 실제 Git 출력과 비교하세요. 에이전트는 어떤 명령을 실행했는지와 각 명령의 종료 코드를 보고해야 합니다. 이 읽기 전용 태스크에는 코드 테스트나 빌드가 필요하지 않습니다.
 
-선택한 호스트에서 키워드 훅이 활성화되어 있으면 일치하는 워크플로우를 활성화할 수 있습니다. 스킬 라우팅은 호스트 또는 선택한 워크플로우가 수행하므로, 임의의 호스트 프롬프트만으로 훅, 특정 스킬, `CHARTER_CHECK`가 실행된다고 보장할 수 없습니다. 실행 계약은 저장소 관례를 확인하고 범위가 정해진 변경만 수행하며 어떤 검사를 실행했는지 보고해야 합니다. 정확한 파일과 명령은 프로젝트에 따라 달라집니다.
+평범한 프롬프트는 워크플로우를 시작하지 않습니다. 프롬프트 훅이 활성화된 곳에서는 권고 성격의 스킬 힌트가 추가됩니다. 스킬 라우팅은 호스트 또는 선택한 워크플로우가 수행하므로, 임의의 호스트 프롬프트만으로 훅이나 특정 스킬이 실행된다고 보장할 수 없습니다. 실행 계약은 저장소 관례를 확인하고 요청된 읽기 전용 범위를 지키며 어떤 검사를 실행했는지 보고해야 합니다. 정확한 파일과 명령은 프로젝트에 따라 달라집니다.
 
 API와 UI 경계를 넘는 태스크에는 `/work` 또는 `/orchestrate`를 명시적으로 선택합니다. 단일 도메인이라면 [단일 스킬 실행](../guide/single-skill.md)을 계속 읽으세요. 더 긴 예시는 [사용 가이드](../guide/usage.md)에 있습니다.
 
 ## 4. 규모를 키우기 전에 기본값 확인
+
+스킬을 임시로 불러오는 것만으로는 이 런타임 기본값이 설정되지 않습니다. 프로젝트 훅, 프로바이더 설정, 팀 워크플로우가 필요하면 [설정 선택](./choose-setup.md)의 런타임 경로를 사용하세요.
 
 OMA는 `model_preset: auto`, 코드 인텔리전스의 Serena, 시맨틱 메모리의 Agent Memory, 네이티브 웹 검색, 비활성화된 텔레메트리로 시작합니다. Serena는 공유 `bridge` 전송을 사용하고 별도 설정이 없으면 자동으로 업데이트됩니다. 브라우저 DevTools MCP는 선택 사항이며, 새 대화형 설정에서는 먼저 Aside를 제안합니다. 동작과 오버라이드 키는 [중요한 기본값](./important-defaults.md)에서 확인하세요.
 
@@ -84,6 +98,7 @@ OMA는 `model_preset: auto`, 코드 인텔리전스의 Serena, 시맨틱 메모�
 
 ## 다음 단계
 
+- 스킬 하나, 런타임 프리셋, Claude Code 플러그인 중에서 고르려면 [설정 선택](./choose-setup.md)
 - 우선순위, 프로바이더, 복구 선택은 [중요한 기본값](./important-defaults.md)
 - 프리셋, 벤더 설정, 전역 설치, 업데이트는 [설치](./installation.md)
 - 33개 스킬 패키지와 디스패치 역할은 [에이전트](../core-concepts/agents.md)

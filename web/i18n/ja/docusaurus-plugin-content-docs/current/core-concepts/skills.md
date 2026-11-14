@@ -97,53 +97,42 @@ flowchart TD
 │   ├── orm-reference.md              ← Domain-specific (ORM queries, N+1, transactions)
 │   ├── checklist.md
 │   └── error-playbook.md
-└── variants/                          ← Starter seeds for /stack-set
+└── variants/                          ← Stack presets; an install with a chosen preset has stack/ instead
     ├── stack.schema.json
-    ├── node/
-    ├── python/
-    └── rust/
+    ├── node/                          ← stack.yaml, tech-stack.md, snippets.md, api-template.ts
+    ├── python/                        ← stack.yaml, tech-stack.md, snippets.md, api-template.py
+    └── rust/                          ← stack.yaml, tech-stack.md, snippets.md, api-template.rs
 
 .agents/skills/oma-mobile/
 ├── SKILL.md
 ├── resources/
 │   ├── execution-protocol.md
-│   ├── tech-stack.md
-│   ├── screen-template.dart
-│   ├── screen-template.swift         ← Swift native iOS screen template
-│   ├── screen-template.tsx            ← React Native screen template
+│   ├── tech-stack.md                 ← Platform index and shared response-cache contract
 │   ├── checklist.md
 │   └── error-playbook.md
-└── variants/                          ← Platform seeds for /stack-set
+└── variants/                          ← Platform variants; read directly when stack/ does not exist
     ├── README.md
     ├── stack.schema.json
-    ├── flutter/                       ← stack.yaml, tech-stack.md, snippets.md, api-template.dart
-    ├── react-native/                  ← stack.yaml, tech-stack.md, snippets.md, api-template.ts
-    └── swift-ios/                     ← stack.yaml, tech-stack.md, snippets.md, api-template.swift
+    ├── flutter/                       ← stack.yaml, tech-stack.md, snippets.md
+    ├── kotlin-android/                ← stack.yaml, tech-stack.md, snippets.md
+    ├── react-native/                  ← stack.yaml, tech-stack.md, snippets.md
+    └── swift-ios/                     ← stack.yaml, tech-stack.md, snippets.md
 
 .agents/skills/oma-design/
 ├── SKILL.md
-├── resources/
-│   ├── execution-protocol.md
-│   ├── anti-patterns.md
-│   ├── asset-strategy.md
-│   ├── checklist.md
-│   ├── design-md-spec.md
-│   ├── design-tokens.md
-│   ├── getdesign-fetcher.md
-│   ├── prompt-enhancement.md
-│   ├── redesign-protocol.md
-│   ├── stitch-integration.md
-│   └── error-playbook.md
-└── reference/                         ← Deep reference material
-    ├── typography.md
-    ├── color-and-contrast.md
-    ├── spatial-design.md
-    ├── motion-design.md
-    ├── responsive-design.md
-    ├── component-patterns.md
-    ├── accessibility.md
-    ├── visual-hierarchy.md
-    └── shader-and-3d.md
+└── resources/
+    ├── execution-protocol.md         ← Operation scope, artifacts, and handoff
+    ├── external-design-skills.md     ← Supplier selection (Interface Design, Taste, Impeccable)
+    ├── product-interface-review.md   ← Post-implementation product-interface review
+    ├── redesign-protocol.md          ← Preserve vs Overhaul for an existing product
+    ├── design-md-spec.md             ← Creating or materially revising DESIGN.md
+    ├── design-tokens.md              ← Semantic token handoff to implementation
+    ├── data-grid.md                  ← Data table and grid rules
+    ├── asset-strategy.md             ← Actual assets, claims, provenance, placeholders
+    ├── getdesign-fetcher.md          ← Requested vendor inspiration
+    ├── stitch-integration.md         ← Requested Stitch operation
+    ├── checklist.md                  ← Affected-result verification
+    └── error-playbook.md             ← Observed supplier or design-tool failure
 ```
 
 ---
@@ -157,10 +146,10 @@ flowchart TD
 | **エラープレイブック** | `error-playbook.md` | 症状から復旧までの手順。情報や権限が足りない場合は、それに依存するアクションだけを止めます | 失敗を実際に確認した後のみ |
 | **チェックリスト** | `checklist.md` | ドメイン固有の品質検証 | 未解決の検証に関係するセクション |
 | **スニペット** | `snippets.md` | コピーして使えるコードパターン | 実装や出力の形式になじみがない場合 |
-| **例** | `examples.md` | 具体的な入出力例（oma-pm、oma-db、oma-tf-infra、oma-observability、oma-search） | 実装や出力の形式になじみがない場合 |
-| **バリアント** | `variants/` ディレクトリ | 言語・フレームワークごとのスターターシード。Backend には `node`、`python`、`rust` があり、Mobile には `flutter`、`react-native`、`swift-ios` があります。`/stack-set` はこれらを使ってプロジェクトの `stack/` を生成します。 | 対応するスタックをセットアップするとき |
-| **テンプレート** | `screen-template.{dart,swift,tsx}`（oma-mobile）、`variants/*/api-template.*` | 新しい画面や API モジュールのボイラープレート | そのファイルを作成するとき |
-| **ドメインリファレンス** | `orm-reference.md`、`anti-patterns.md` など | 特定のサブタスク向けの詳しいドメイン知識 | タスクの種類に応じて |
+| **例** | `examples.md` | 具体的な入出力例（oma-pm、oma-db、oma-tf-infra、oma-observability） | 実装や出力の形式になじみがない場合 |
+| **バリアント** | `variants/` ディレクトリ | 言語・フレームワークごとのスタックリファレンス。Backend には `node`、`python`、`rust` があり、Mobile には `flutter`、`react-native`、`swift-ios`、`kotlin-android` があります。スキルは `stack/` があればそれを、なければ対応するバリアントを使います。`/stack-set` はバリアントを起点にプロジェクトの `stack/` を作ります。 | プロジェクトに `stack/` がないとき、または対応するスタックをセットアップするとき |
+| **テンプレート** | backend のスタックリファレンスにある `api-template.*`。mobile は画面と API のパターンを `variants/<platform>/snippets.md` に置きます | 新しい API モジュールや画面のボイラープレート | そのファイルを作成するとき |
+| **ドメインリファレンス** | `orm-reference.md`、`vector-db.md`、`data-grid.md` など | 特定のサブタスク向けの詳しいドメイン知識 | タスクの種類に応じて |
 
 ---
 
@@ -313,15 +302,15 @@ context コマンドは、実際に注入されるタスクコンテキストを
 
 | タスクの種類 | 必須リソース |
 |-----------|-------------------|
-| CRUD API の作成 | 存在する場合はプロジェクトの `stack/snippets.md` と `stack/api-template.*`（`/stack-set` が生成）。ない場合は既存のプロジェクトコード |
-| 認証 | 存在する場合は `stack/snippets.md` + `stack/tech-stack.md` |
-| DB マイグレーション | 存在する場合は `stack/snippets.md`。スキーマ設計は oma-db が担当 |
+| CRUD API の作成 | スタックリファレンス（`stack/` があればそれ、なければ対応する `variants/<language>/`）の `snippets.md` と `api-template.*`。既存のプロジェクトコードとあわせて使う |
+| 認証 | スタックリファレンスの `snippets.md` + `tech-stack.md` |
+| DB マイグレーション | スタックリファレンスの `snippets.md`。スキーマ設計は oma-db が担当 |
 | パフォーマンス最適化 | `orm-reference.md` と、スキルが提供する対応する例 |
 | 既存コードの変更 | プロジェクトのコードインテリジェンスプロバイダーと関連する実行リソース |
 
 <!-- oma-docs:ignore-end -->
 
-`variants/node`、`variants/python`、`variants/rust` は `/stack-set` 用のスターターシードです。既存コードを編集するとき、エージェントはこれらを読みません。
+スタックリファレンスは補助的なもので、プロジェクトマニフェストと既存のコードが優先されます。プリセットを選んでインストールしたプロジェクトには `stack/` があり、`variants/` はありません。プラグインとソースのレイアウトには `variants/node`、`variants/python`、`variants/rust` があり、`stack/` はありません。
 
 ### Frontend エージェント
 
@@ -337,12 +326,14 @@ context コマンドは、実際に注入されるタスクコンテキストを
 
 | タスクの種類 | 必須リソース |
 |-----------|-------------------|
-| デザインシステム作成 | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| ランディングページのデザイン | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
-| デザイン監査 | checklist.md + anti-patterns.md |
-| デザイントークンのエクスポート | design-tokens.md |
-| 3D / シェーダー効果 | reference/shader-and-3d.md + reference/motion-design.md |
-| アクセシビリティレビュー | reference/accessibility.md + checklist.md |
+| あらゆるデザイン操作 | execution-protocol.md + external-design-skills.md（サプライヤーを 1 つ選択） |
+| デザインシステムの作成または改訂 | design-md-spec.md |
+| 既存のサイトやアプリのリデザイン | redesign-protocol.md |
+| デザイントークンの引き渡し | design-tokens.md |
+| 実装後のプロダクトインターフェースのレビュー | product-interface-review.md |
+| データテーブルやグリッドを中心に構成した画面 | data-grid.md |
+| 画像、ブランドマーク、プレースホルダー | asset-strategy.md |
+| デザイン監査または納品前の検証 | checklist.md |
 
 ### QA エージェント
 
@@ -370,11 +361,11 @@ context コマンドは、実際に注入されるタスクコンテキストを
 
 ## セッションの証拠と振り返りレビュー
 
-セッション記録には、重要な訂正、スコープの変更、やり直し、裁定済みのレビュー指摘を、証拠とともに残します。必要な明確化にペナルティはありません。以前の CD と EA の加重スコア、およびしきい値で発動する RCA ルールは削除されました。これらはプロンプトの指示であり、CLI が計算するメトリクスではありませんでした。
+セッション記録には、重要な訂正、スコープの変更、やり直し、裁定済みのレビュー指摘を、証拠とともに残します。必要な明確化にペナルティはなく、質問、訂正、レビューの判断に点数を付けることもありません。
 
 可能な場合は、既存のタスク結果を使ってください。設定済みのコーディネーションストアの配下に、別ファイルの `session-metrics-{sessionId}.md` を作るかどうかは任意です。失敗の繰り返しや依頼された振り返りは、学びを記録する根拠になり得ます。通常のチェックの失敗や、異議が出ている指摘が、自動的に学びになるわけではありません。過去のログは残し、新しい形式に書き換えないでください。
 
-`oma stats` は、生産性と、記録された使用量・コストのサマリーを報告します。`oma retro` は、実際のゲート、ブロッカー、決定欠落の各イベントを提案にまとめます。どちらも、これらの Markdown アーティファクトから CD / EA スコアを計算しません。
+`oma stats` は、生産性と、記録された使用量・コストのサマリーを報告します。`oma retro` は、実際のゲート、ブロッカー、決定欠落の各イベントを提案にまとめます。どちらも、これらの Markdown アーティファクトをスコアに変換しません。
 
 ## タスク分解とコンテキストの復旧
 

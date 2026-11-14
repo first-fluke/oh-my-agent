@@ -6,9 +6,21 @@ sidebar_label: 快速开始
 
 # 快速开始
 
-使用此页运行一个小任务，并记录具体结果。你需要一个项目目录，以及至少一个受支持的 AI CLI 或 IDE。安装器可在 macOS、Linux 或 Windows 上安装 `bun`、`uv`、Serena、CUE 和全局 `oma` 命令。首次提示必须使用所选的宿主集成，供应商和浏览器集成为可选项。
+用一个聚焦的任务来检查结果。可以在你已经在用的编码智能体中加载一个技能；需要项目钩子、专业智能体和工作流时，再安装运行时。[选择安装方式](./choose-setup.md)说明了可用的路径及其依赖。
 
-## 1. 安装 {#1-install}
+## 1. 选择安装方式 {#1-install}
+
+对于下面的只读 Git 任务，让你的智能体加载该技能，并阅读其说明和支持目录：
+
+```bash
+bunx skills use first-fluke/oh-my-agent@oma-scm
+```
+
+接着进行第 3 步的任务。该技能的 CLI 操作、其他技能、项目规则和外部服务仍是各自独立的依赖。加载这个技能不会运行 OMA 安装器。
+
+### 需要时安装运行时 {#install-the-runtime-when-needed}
+
+运行时引导程序可以准备 `bun`、`uv`、Serena、CUE 和全局 `oma` 命令。选择你已经在用的 AI CLI 或 IDE；提供方和浏览器集成取决于你打算运行的任务。
 
 在项目目录中运行引导安装器：
 
@@ -22,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.ps1 | iex
 ```
 
-交互式设置会询问响应语言、CLI 供应商、[能力提供方](./glossary.md#capability-provider)、[模型预设](./glossary.md#model-preset)、项目[技能预设](./glossary.md#skill-preset)以及任何技术栈变体。首次运行时保留默认值，选择你已经在使用的供应商，并选择与该仓库最接近的项目预设。各预设包含的技能，以及[需要预设之外技能的工作流](./installation.md#workflows-that-need-skills-outside-a-preset)，请参阅[预设](./installation.md#presets)。
+设置会保留已有的响应语言，或自动检测系统语言。交互式设置会询问 CLI 供应商、[能力提供方](./glossary.md#capability-provider)、[模型预设](./glossary.md#model-preset)、项目[技能预设](./glossary.md#skill-preset)以及任何技术栈变体。首次运行时保留默认值，选择你已经在使用的供应商，并选择与该仓库最接近的项目预设。各预设包含的技能，以及[需要预设之外技能的工作流](./installation.md#workflows-that-need-skills-outside-a-preset)，请参阅[预设](./installation.md#presets)。
 
 如果你已经有 `bun`，可以直接使用安装器：
 
@@ -34,7 +46,7 @@ bunx oh-my-agent@latest
 
 ## 2. 检查结果 {#2-check-the-result}
 
-在同一项目目录中运行健康检查：
+对于临时加载的技能，确认智能体已读取所选的说明，并验证任务本身。对于运行时安装，在同一项目目录中运行健康检查：
 
 ```bash
 oma doctor
@@ -64,19 +76,21 @@ bunx oh-my-agent@latest doctor
 
 ## 3. 运行一个小任务 {#3-run-one-small-task}
 
-在已配置的 AI 工具中打开仓库，请求使用一个指定技能，并要求一个自包含的结果：
+在你的 AI 工具中打开一个现有的 Git 仓库。使用已加载的 `oma-scm` 技能，或由具名运行时预设安装的副本。如果你使用了 Custom 选择，请为本示例包含 `oma-scm`：
 
 ```text
-Use the discovered `oma-docs` skill to check one existing link in this project's README. If it is stale, update only that link. Done when you report the inspected target, the exact verification command, and its exit status.
+Use oma-scm to inspect this repository's current branch and working tree. Do not edit, stage, commit, or contact remotes. Report staged, unstaged, and untracked changes, with the Git commands and exit statuses actually observed.
 ```
 
-宿主应当识别所选技能，检查一个目标，并报告：要么对链接做了有针对性的修改，要么该链接本来就有效。对于实际运行过的检查，请附上命令输出和退出状态。
+将报告的分支和变更与实际的 Git 输出进行比较。智能体应报告运行了哪些命令及其退出状态。这个只读任务不需要代码测试或构建。
 
-为所选宿主启用关键词钩子后，它可以激活匹配的工作流。技能路由由宿主或所选工作流执行，因此任意宿主提示都不能保证触发钩子、使用某个特定技能或生成 `CHARTER_CHECK`。执行契约仍应检查仓库约定，只进行范围内的修改，并报告验证结果。具体文件和命令取决于项目。
+普通提示不会启动工作流；启用了提示钩子时，它会添加一条仅供参考的技能提示。技能路由由宿主或所选工作流执行，因此任意宿主提示都不能保证触发钩子或使用某个特定技能。执行契约仍应检查仓库约定，遵守所要求的只读范围，并报告观察到的检查结果。具体文件和命令取决于项目。
 
 如果任务跨越 API 和 UI 边界，请明确选择 `/work` 或 `/orchestrate`。单一领域的任务可以继续阅读[单技能执行](../guide/single-skill.md)。[使用指南](../guide/usage.md)包含更长的示例。
 
-## 4. 在扩大规模前了解默认值 {#4-know-the-defaults-before-scaling-up}
+## 4. 在扩大规模前了解运行时默认值 {#4-know-the-runtime-defaults-before-scaling-up}
+
+临时加载技能不会配置这些运行时默认值。需要项目钩子、提供方设置或团队工作流时，请使用[选择安装方式](./choose-setup.md)中的运行时路径。
 
 OMA 默认使用 `model_preset: auto`、用于代码智能的 Serena、用于语义内存的 Agent Memory、原生网页搜索，并禁用遥测。Serena 使用共享的 `bridge` 传输，并会自动更新，除非另行配置。浏览器 DevTools MCP 需要选择启用；新的交互式设置会先提供 Aside。有关影响和覆盖键，请参阅[重要默认值](./important-defaults.md)。
 
@@ -84,6 +98,7 @@ OMA 默认使用 `model_preset: auto`、用于代码智能的 Serena、用于语
 
 ## 后续步骤 {#next-steps}
 
+- [选择安装方式](./choose-setup.md)，了解单个技能、运行时预设或 Claude Code 插件
 - [重要默认值](./important-defaults.md)，了解优先级、提供方和恢复选择
 - [安装](./installation.md)，了解预设、供应商设置、全局安装和更新
 - [智能体](../core-concepts/agents.md)，了解 33 个技能包和调度角色

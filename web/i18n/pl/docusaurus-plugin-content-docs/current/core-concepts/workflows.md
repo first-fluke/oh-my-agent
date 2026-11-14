@@ -1,13 +1,13 @@
 ---
 title: Workflowy
-description: "Pełna referencja wszystkich 21 workflowów oh-my-agent: komendy slash, tryby trwałe i nietrwałe, słowa kluczowe wyzwalające w 11 językach, fazy i kroki, odczytywane i zapisywane pliki, mechanika automatycznego wykrywania przez triggers.json i keyword-detector.ts, filtrowanie wzorców informacyjnych oraz zarządzanie stanem trybu trwałego."
+description: "Pełna referencja wszystkich 20 workflowów oh-my-agent: komendy slash, tryby trwałe i nietrwałe, słowa kluczowe wyzwalające w 11 językach, fazy i kroki, odczytywane i zapisywane pliki, mechanika automatycznego wykrywania przez triggers.json i keyword-detector.ts, filtrowanie wzorców informacyjnych oraz zarządzanie stanem trybu trwałego."
 ---
 
 # Workflowy {#workflows}
 
-Workflowy to uporządkowane, wielokrokowe procesy wyzwalane komendami slash albo słowami kluczowymi w języku naturalnym. Definiują sposób współpracy agentów nad zadaniami — od narzędzi jednofazowych po złożone, pięciofazowe bramki jakości.
+Workflowy to uporządkowane, wielokrokowe procesy uruchamiane komendami slash; cztery tryby trwałe uruchamiają się też wtedy, gdy zwykła prośba wymienia je po nazwie. Definiują sposób współpracy agentów nad zadaniami — od narzędzi jednofazowych po złożone, pięciofazowe bramki jakości.
 
-Istnieje 21 workflowów, z których 4 są [trwałe](../getting-started/glossary.md#persistent-workflow) (utrzymują stan i nie mogą zostać przypadkowo przerwane).
+Istnieje 20 workflowów, z których 4 są [trwałe](../getting-started/glossary.md#persistent-workflow) (utrzymują stan i nie mogą zostać przypadkowo przerwane).
 
 ## Workflowy w skrócie {#workflows-at-a-glance}
 
@@ -22,11 +22,10 @@ Istnieje 21 workflowów, z których 4 są [trwałe](../getting-started/glossary.
 | [`/architecture`](#architecture) | Decyzje architektoniczne, przeglądy i ADR | Nie |
 | [`/deepinit`](#deepinit) | Generowanie AGENTS.md, ARCHITECTURE.md i `docs/` dla istniejącej bazy kodu | Nie |
 | [`/review`](#review) | Przegląd QA: bezpieczeństwo, wydajność, dostępność, jakość kodu | Nie |
-| [`/security`](#security) | Skany bezpieczeństwa, pentesty wdrożonych aplikacji webowych, walidacja ustaleń, bramki CI | Nie |
+| [`/security`](#security) | Skany bezpieczeństwa kodu źródłowego, umiejętności agentów i komponentów MCP; walidacja ustaleń; bramki CI | Nie |
 | [`/debug`](#debug) | Diagnoza i naprawa błędu z testem regresji | Nie |
-| [`/design`](#design) | DESIGN.md z tokenami, wzorcami komponentów i regułami dostępności | Nie |
+| [`/design`](#design) | Ustalenia projektowe, DESIGN.md, kierunek redesignu lub tokeny designu | Nie |
 | [`/scm`](#scm) | Operacje Git i Conventional Commits | Nie |
-| [`/tools`](#tools) | Widoczność i ograniczenia narzędzi MCP | Nie |
 | [`/convert`](#convert) | Konwersja dokumentów i multimediów między formatami | Nie |
 | [`/docs`](#docs) | Wykrywanie dryfu dokumentacji i synchronizacja | Nie |
 | [`/recap`](#recap) | Dzienne lub okresowe podsumowanie pracy z narzędzi AI | Nie |
@@ -63,7 +62,7 @@ Przegląd planu korzysta z autoryzacji już udzielonej dla zadania. Agenci pytaj
 
 Workflowy trwałe działają do czasu ukończenia wszystkich zadań. Utrzymują stan w `.agents/state/` i ponownie wstrzykują kontekst `[OMA PERSISTENT MODE: ...]` przy każdej wiadomości użytkownika, dopóki nie zostaną jawnie dezaktywowane.
 
-Tryb trwały uruchamia się wyłącznie przy **jawnym wywołaniu**: slash commandzie workflowu (`/ultrawork` albo formie z przestrzenią nazw, np. `/oma:ultrawork`) lub własnej nazwie workflowu w zwykłym tekście (lista `explicit` w `triggers.json`, np. „orchestrate”, „ultrawork”/„ulw”, „ralph”/„랄프”, „work mode”). Pozostałe słowa kluczowe wyzwalające poniżej to wskazówki w języku naturalnym: wstrzykują workflow jako sugestię, nie aktywując trybu trwałego, i nigdy się nie uruchamiają, gdy pierwsza lub ostatnia linia promptu jest pytaniem kończącym się znakiem `?`.
+Tryb trwały uruchamia się wyłącznie przy **jawnym wywołaniu**: slash commandzie workflowu (`/ultrawork` albo formie z przestrzenią nazw, np. `/oma:ultrawork`) lub własnej nazwie workflowu w zwykłym tekście (lista `explicit` w `triggers.json`: „orchestrate” i wymienione tam tłumaczenia, „ultrawork”/„ulw”, „work mode”/„work workflow”, „ralph”/„랄프”). Hook słów kluczowych nie otwiera workflowu na podstawie żadnego innego zdania.
 
 ### /orchestrate {#orchestrate}
 
@@ -75,36 +74,16 @@ Tryb trwały uruchamia się wyłącznie przy **jawnym wywołaniu**: slash comman
 | Język | Słowa kluczowe |
 |----------|----------|
 | Jawne (trwałe) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-| Angielski | "do everything", "run everything", "everything in parallel", "automate everything" |
-| Koreański | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
-| Japoński | "全部実行", "全部並列で", "自動でやって" |
-| Chiński | "编排", "全部执行", "全部并行", "自动处理" |
-| Hiszpański | "ejecutar todo", "todo en paralelo" |
-| Francuski | "tout exécuter", "tout en parallèle" |
-| Niemiecki | "alles ausführen", "alles parallel" |
-| Portugalski | "executar tudo", "tudo em paralelo" |
-| Rosyjski | "выполнить всё", "всё параллельно" |
-| Niderlandzki | "alles uitvoeren", "alles parallel" |
-| Polski | "wykonaj wszystko", "wszystko równolegle" |
 
-Same słowa „parallel” i „automate” (oraz ich tłumaczenia) nie są wyzwalaczami: „run the tests in parallel” albo „automate the release notes” to zwykłe prośby, a nie orkiestracja wieloagentowa.
-
-**Wzorce regex wyzwalające** (intencja + lista dozwolonych rzeczowników, zobacz [Automatyczne wykrywanie: pole Pattern](#pattern-field-raw-regex)):
-| Sekcja | Wzorzec | Przykłady wyzwalające |
-|---------|---------|----------------------|
-| `*` (uniwersalny) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
-| `*` (uniwersalny) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
-| `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
-
-Lista dozwolonych rzeczowników (14): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. Nie pasuje do niej ani pojedyncza funkcja („implement the login feature”, „로그인 기능 구현해줘”), ani istniejąca rzecz („make the API faster”).
+Zdania takie jak „do everything”, „전부 해줘” czy „build me an app” nie uruchamiają tego workflowu.
 
 **Kroki:**
 1. **Krok 0, przygotowanie:** Odczytaj umiejętność koordynacji, przewodnik ładowania kontekstu i protokół pamięci. Wykryj dostawcę.
 2. **Krok 1, załaduj/utwórz plan:** Sprawdź `.agents/results/plan-{sessionId}.json`, a następnie najnowszy `plan-*.json`. Jeśli nie ma planu — albo plan nie jest gotowy do wykonania (zadaniu brakuje agenta, poziomu priorytetu, zależności lub kryteriów akceptacji) — deleguj inline do `/plan`, aby utworzyć plan z tym samym ID sesji. Przedstaw plan i ponownie użyj istniejącej autoryzacji; przed delegowaniem pytaj tylko o istotną brakującą decyzję albo nową autoryzację.
-3. **Krok 2, inicjalizacja sesji:** Załaduj `oma-config.yaml`, wyświetl tabelę mapowania CLI, użyj ID sesji z utworzenia planu albo wygeneruj je (`session-YYYYMMDD-HHMMSS`), a następnie utwórz `orchestrator-session-{sessionId}.md` i `task-board-{sessionId}.md` w skonfigurowanym magazynie pamięci.
-4. **Krok 3, uruchom agentów:** Dla każdego poziomu priorytetu (od najniższego: najpierw poziom 1, potem poziom 2 i tak dalej) uruchamiaj agentów metodą właściwą dla dostawcy (natywni subagenci, gdy bieżący runtime i dostawca docelowy się zgadzają; `oma agent spawn` dla pracy zewnętrznej lub między dostawcami). Nigdy nie przekraczaj MAX_PARALLEL.
-5. **Krok 4, monitoruj:** Odpytuj pliki `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` przypisane do uruchomienia oraz uporządkowane potwierdzenia, po czym aktualizuj tablicę zadań. Obserwuj ukończenia, błędy i awarie.
-6. **Krok 5, weryfikuj:** Dla każdego ukończonego agenta uruchom mechaniczną samokontrolę (lint, typecheck, testy, zakres diffu; do 3 cykli), następnie `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug i pm; pozostałe typy agentów zapisują `SKIP`), a potem krzyżowy przegląd QA. Po niepowodzeniu weryfikacji uruchom ponownie z kontekstem błędu (maksymalnie 2 retry). Powtarzające się niepowodzenia mogą uzasadniać alternatywne hipotezy, ale wszystkie próby zużywają ten sam łączny budżet odzyskiwania (`max_attempts`, domyślnie 3 łącznie z pierwotną próbą). Jeśli budżet nie wystarcza na rundę porównawczą, zachowaj nierozwiązane dowody.
+3. **Krok 2, inicjalizacja sesji:** Załaduj `oma-config.yaml`, wyświetl tabelę mapowania CLI i użyj ID sesji z utworzenia planu albo wygeneruj je (`session-YYYYMMDD-HHMMSS`). Dla każdego zadania wybierz potrzebne mu referencje umiejętności, dopasowując zadanie do sygnatur intencji zainstalowanych umiejętności; wystarczy jedna pewnie dopasowana umiejętność. Utwórz `orchestrator-session-{sessionId}.md` i `task-board-{sessionId}.md` w skonfigurowanym magazynie pamięci i zapisz tam wybrane referencje każdego zadania oraz uzasadnienie wyboru. To notatki koordynatora; launcher ich nie wymusza.
+4. **Krok 3, uruchom agentów:** Dla każdego poziomu priorytetu (od najniższego: najpierw poziom 1, potem poziom 2 i tak dalej) uruchamiaj agentów metodą właściwą dla dostawcy (natywni subagenci, gdy bieżący runtime i dostawca docelowy się zgadzają; `oma agent spawn` dla pracy zewnętrznej lub między dostawcami). Każdy agent otrzymuje swoje zadanie, kontrakty API i wybrane dla niego referencje wraz z warunkami ich ładowania. Nigdy nie przekraczaj MAX_PARALLEL (domyślnie 3).
+5. **Krok 4, monitoruj:** Sprawdzaj stan procesów przez `oma agent status`. Preferuj powiadomienia hosta o ukończeniu; w przeciwnym razie odpytuj z ograniczonym backoffem zmienione pliki `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` przypisane do uruchomienia, odczytuj uporządkowane potwierdzenia i aktualizuj tablicę zadań. Obserwuj ukończenia, błędy i awarie.
+6. **Krok 5, weryfikuj:** Dla każdego ukończonego agenta uruchom mechaniczną samokontrolę (lint, typecheck, testy, zakres diffu; do 3 cykli), następnie `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug i pm; pozostałe typy agentów zapisują `SKIP`), a potem krzyżowy przegląd QA. Po niepowodzeniu weryfikacji uruchom ponownie z kontekstem błędu. Powtarzające się niepowodzenia mogą uzasadniać alternatywne hipotezy, ale pierwotna próba, każde ponowienie i każda hipoteza zużywają ten sam łączny budżet odzyskiwania (`max_attempts`, domyślnie 3 łącznie z pierwotną próbą). Jeśli budżet nie wystarcza na rundę porównawczą, zachowaj nierozwiązane dowody.
 7. **Krok 6, zbierz:** Odczytaj pliki wyników przypisane do uruchomienia i ustrukturyzowane zgłoszenia, a następnie skompiluj podsumowanie.
 8. **Krok 7, raport końcowy:** Przedstaw podsumowanie sesji. Jeśli przeprowadzono eksperymenty, podsumuj dowody i decyzje; zapisuj wnioski tylko wtedy, gdy ustalono przyczynę nadającą się do ponownego użycia.
 
@@ -112,7 +91,7 @@ Lista dozwolonych rzeczowników (14): app, api, service, server, cli, tool, webs
 flowchart TD
   S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
   S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task board, domain gate"]
+  MK --> S2["Step 2: session ID, task references, task board"]
   S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
   S3 --> S4["Step 4: monitor with oma agent status and progress files"]
   S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
@@ -146,16 +125,8 @@ flowchart TD
 | Język | Słowa kluczowe |
 |----------|----------|
 | Jawne (trwałe) | "work mode", "work workflow" |
-| Uniwersalny | "step by step" |
-| Angielski | "one by one", "one step at a time" |
-| Koreański | "단계별", "하나씩 해줘", "차근차근" |
-| Japoński | "ステップバイステップ", "一歩ずつ" |
-| Chiński | "逐步", "一步一步" |
-| Hiszpański | "paso a paso", "uno por uno" |
-| Francuski | "étape par étape", "un par un" |
-| Niemiecki | "schritt für schritt", "der reihe nach" |
 
-Samo słowo „work” nie jest wyzwalaczem — to zwykłe słownictwo („Does this work on Windows?”).
+Samo słowo „work” nie jest wyzwalaczem — to zwykłe słownictwo („Does this work on Windows?”). „step by step” i jego tłumaczenia również nie uruchamiają tego workflowu.
 
 **Kroki:**
 1. **Krok 0, przygotowanie:** Odczytaj umiejętności, ładowanie kontekstu i protokół pamięci. Zapisz początek sesji.
@@ -250,15 +221,8 @@ flowchart TD
 | Język | Słowa kluczowe |
 |----------|----------|
 | Jawne (trwałe) | "ralph", "랄프" |
-| Angielski | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
-| Koreański | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
-| Japoński | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
-| Chiński | "不要停", "直到完成", "全部完成", "做完为止" |
-| Hiszpański | "no pares", "hasta completar", "termina todo" |
-| Francuski | "n'arrête pas", "jusqu'à complétion", "termine tout" |
-| Niemiecki | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
 
-Same frazy wznowienia („keep going”, „carry on”, „계속해”, „続けて”, „продолжай”, …) nie są wyzwalaczami: użytkownicy wpisują je, aby wznowić pracę po przerwie.
+Same frazy wznowienia („keep going”, „carry on”, „계속해”, „続けて”, „продолжай”, …) oraz sformułowania o doprowadzeniu pracy do końca („don't stop”, „끝까지 해”) nie uruchamiają tego workflowu.
 
 **Fazy:**
 1. **Faza 0, INIT:** Załaduj wymagania wstępne (ładowanie kontekstu, protokół pamięci, protokół sędziego). Zdefiniuj i zapisz mechanicznie weryfikowalne kryteria ukończenia, takie jak asercje testów, kontrole typów nieemitujące, kody wyjścia lub istnienie pliku. Kontrole builda uwzględniaj tylko po jawnym zażądaniu. Pokaż kryteria i kontynuuj w autoryzowanym zakresie. Zainicjalizuj sesję z `max_iterations: 5`.
@@ -301,18 +265,11 @@ Węzeł sędziego to sędzia uruchamiany promptem, opisany w fazie 2: workflow k
 
 **Opis:** Podział zadania sterowany przez PM. Analizuje wymagania, wybiera stos technologiczny, rozkłada zadania według priorytetów i zależności oraz definiuje kontrakty API.
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "task breakdown" |
-| Angielski | "plan" |
-| Koreański | "계획", "요구사항 분석", "스펙 분석" |
-| Japoński | "計画", "要件分析", "タスク分解" |
-| Chiński | "计划", "需求分析", "任务分解" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/plan`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
 **Kroki:** Zbierz wymagania -> przeanalizuj wykonalność techniczną (analiza kodu MCP) -> oceń złożoność (Simple/Medium/Complex) -> zdefiniuj kontrakty API (jeśli praca przekracza granice) -> rozłóż zadania -> przejrzyj z użytkownikiem -> zapisz artefakty planu (JSON maszynowy + czytelny dla człowieka tracker Markdown dla Medium/Complex).
 
-**Wynik:** `.agents/results/plan-{sessionId}.json`, zapis pamięci oraz (dla Medium/Complex) `docs/plans/work/{NNN}-{name}.md` z tabelą zadań, dziennikiem decyzji i notatkami postępu. Cykl życia śledzi pole `Status` w nagłówku Markdown (`Active` -> `Completed`); planów nie przenosi się między katalogami. Projekty utworzone przez `/brainstorm` trafiają do `docs/plans/designs/{NNN}-{name}.md`.
+**Wynik:** `.agents/results/plan-{sessionId}.json`, zapis pamięci oraz (dla Medium/Complex) `docs/plans/work/{NNN}-{name}.md` z tabelą zadań, dziennikiem decyzji i notatkami postępu. Cykl życia śledzi pole `Status` w nagłówku Markdown (`Active` -> `Completed`); planów nie przenosi się między katalogami. Podejścia wybrane przez `/brainstorm` są zapisywane w `docs/decisions/{NNN}-{name}.md`.
 
 **Wykonanie:** Inline (bez uruchamiania subagentów). Workflow `/orchestrate` lub `/work` zużywa plan, aktualizując pola zadania/statusu podczas wykonywania.
 
@@ -322,16 +279,9 @@ Węzeł sędziego to sędzia uruchamiany promptem, opisany w fazie 2: workflow k
 
 **Opis:** Ideacja w stylu design-first. Bada intencję, doprecyzowuje ograniczenia, proponuje podejścia i tworzy zatwierdzony dokument designu przed planowaniem.
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "brainstorm" |
-| Angielski | "ideate", "explore design" |
-| Koreański | "브레인스토밍", "아이디어", "설계 탐색" |
-| Japoński | "ブレインストーミング", "アイデア", "設計探索" |
-| Chiński | "头脑风暴", "创意", "设计探索" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/brainstorm`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
-**Kroki:** Zbadaj kontekst projektu (analiza MCP) -> zadawaj pytania doprecyzowujące (po jednym) -> zaproponuj 2–3 podejścia z kompromisami -> przedstaw design sekcja po sekcji (z akceptacją użytkownika na każdym etapie) -> zapisz dokument designu w `docs/plans/designs/{NNN}-{name}.md` -> przejście: zasugeruj `/plan`.
+**Kroki:** Zbadaj kontekst projektu (analiza MCP) -> zadawaj pytania doprecyzowujące (po jednym) -> zaproponuj 2–3 podejścia z kompromisami -> przedstaw design sekcja po sekcji (z akceptacją użytkownika na każdym etapie) -> runda ślepego przeglądu -> zapisz wybrane podejście w `docs/decisions/{NNN}-{name}.md` i zaktualizuj `docs/decisions/index.md` -> przejście: zasugeruj `/plan`.
 
 **Reguły:** Bez implementacji ani planowania przed akceptacją designu. Bez wyjścia kodu. YAGNI.
 
@@ -341,14 +291,7 @@ Węzeł sędziego to sędzia uruchamiany promptem, opisany w fazie 2: workflow k
 
 **Opis:** Workflow architektury oprogramowania, który diagnozuje problemy architektury, wybiera właściwą metodę analizy (routing diagnostyczny / design-twice / ATAM / CBAM / ADR), porównuje opcje, syntetyzuje opinie interesariuszy i tworzy rekomendację, przegląd albo ADR.
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "architecture", "ADR", "ATAM", "CBAM" |
-| Angielski | "architecture review", "architectural tradeoff" |
-| Koreański | "아키텍처", "설계 검토" |
-| Japoński | "アーキテクチャ" |
-| Chiński | "架构" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/architecture`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
 **Kroki:** Ujmij decyzję (nowa architektura / przegląd / analiza kompromisów / priorytetyzacja inwestycji / autorstwo ADR) -> wybierz metodologię przez routing diagnostyczny -> przeanalizuj bieżącą architekturę przez analizę kodu MCP (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> zsyntetyzuj opinie interesariuszy (tylko gdy przekrojowość uzasadnia koszt) -> przygotuj rekomendację z jawnymi założeniami, kompromisami, ryzykami i krokami walidacji -> przekaż do `/plan`, gdy potrzebna jest implementacja.
 
@@ -362,34 +305,23 @@ Węzeł sędziego to sędzia uruchamiany promptem, opisany w fazie 2: workflow k
 
 **Opis:** Pełna inicjalizacja projektu. Analizuje istniejącą bazę kodu, generuje AGENTS.md, ARCHITECTURE.md i uporządkowaną bazę wiedzy `docs/`.
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "deepinit" |
-| Koreański | "프로젝트 초기화" |
-| Japoński | "プロジェクト初期化" |
-| Chiński | "项目初始化" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/deepinit`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
-**Kroki:** Przygotowanie -> analiza bazy kodu (typ projektu, architektura, niejawne reguły, domeny, granice) -> generowanie ARCHITECTURE.md (mapa domeny, poniżej 200 linii) -> generowanie bazy wiedzy `docs/` (design-docs/, plans/, generated/, product-specs/, references/, dokumenty domenowe) -> generowanie głównego AGENTS.md (około 100 linii, spis treści) -> generowanie granicznych plików AGENTS.md (pakiety monorepo, każdy poniżej 50 linii) -> aktualizacja istniejącego harnessu (przy ponownym uruchomieniu) -> walidacja (brak martwych linków, limity linii).
+**Kroki:** Przygotowanie -> analiza bazy kodu (typ projektu, architektura, niejawne reguły, domeny, granice) -> generowanie ARCHITECTURE.md (mapa domeny, poniżej 200 linii) -> generowanie bazy wiedzy `docs/` (decisions/, plans/, generated/, product-specs/, references/, dokumenty domenowe) -> generowanie głównego AGENTS.md (około 100 linii, spis treści) -> generowanie granicznych plików AGENTS.md (pakiety monorepo, każdy poniżej 50 linii) -> aktualizacja istniejącego harnessu (przy ponownym uruchomieniu) -> walidacja (brak martwych linków, limity linii).
 
-**Wynik:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md oraz znalezione dokumenty właściwe dla domen.
+**Wynik:** AGENTS.md, ARCHITECTURE.md, docs/decisions/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md oraz znalezione dokumenty właściwe dla domen.
 
 ---
 
 ### /review {#review}
 
-**Opis:** Pełny pipeline przeglądu QA. Audyt bezpieczeństwa (OWASP Top 10), analiza wydajności, kontrola dostępności (WCAG 2.1 AA) i przegląd jakości kodu.
+**Opis:** Pełny pipeline przeglądu QA. Audyt bezpieczeństwa (OWASP Top 10), analiza wydajności, kontrola dostępności (WCAG 2.2 AA) i przegląd jakości kodu.
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "code review", "security audit", "security review" |
-| Angielski | "review" |
-| Koreański | "리뷰", "코드 검토", "보안 검토" |
-| Japoński | "レビュー", "コードレビュー", "セキュリティ監査" |
-| Chiński | "审查", "代码审查", "安全审计" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/review`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
-**Kroki:** Ustal zakres przeglądu -> automatyczne kontrole bezpieczeństwa (npm audit, bandit) -> ręczny przegląd bezpieczeństwa (OWASP Top 10) -> analiza wydajności -> przegląd dostępności (WCAG 2.1 AA) -> przegląd jakości kodu -> wygeneruj raport QA.
+**Kroki:** Ustal zakres przeglądu -> automatyczne kontrole bezpieczeństwa (`npm audit`, `bandit` albo odpowiednik dla danego stosu) -> ręczny przegląd bezpieczeństwa (OWASP Top 10) -> analiza wydajności -> przegląd dostępności (WCAG 2.2 AA) -> przegląd jakości kodu -> wygeneruj raport QA.
+
+**Zakres:** Zakres wynika z żądania: konkretne pliki, branch funkcji, PR albo cały projekt. PR lub branch jest porównywany diffem z branchem bazowym. Gdy zakres nie został podany, workflow przegląda bieżące niezacommitowane zmiany i zmiany na branchu oraz podaje to założenie; pyta tylko wtedy, gdy nie ma z czego wyprowadzić zakresu.
 
 **Opcjonalna pętla poprawka–weryfikacja** (z `--fix`): po raporcie QA uruchom agentów domenowych, aby poprawili problemy CRITICAL/HIGH, ponownie uruchom QA i powtórz maksymalnie 3 razy.
 
@@ -400,9 +332,9 @@ Węzeł sędziego to sędzia uruchamiany promptem, opisany w fazie 2: workflow k
 
 ### /security {#security}
 
-**Opis:** Uruchom umiejętność `oma-security` dla kodu źródłowego, umiejętności agentów, komponentów MCP lub wdrożonej aplikacji webowej. Workflow wybiera odpowiedni silnik, zapisuje zakres sprawdzenia i dowody, weryfikuje ustalenia oraz stosuje skonfigurowaną bramkę CI.
+**Opis:** Uruchom umiejętność `oma-security` dla kodu źródłowego, umiejętności agentów lub komponentów MCP. Workflow wybiera odpowiedni silnik, zapisuje zakres sprawdzenia i dowody, weryfikuje ustalenia oraz stosuje skonfigurowaną bramkę CI. Test penetracyjny testowego wdrożenia webowego o określonym zakresie odbywa się tylko na wyraźne żądanie ARTEX, na platformie ARTEX, którą dostarczasz i która została sprawdzona.
 
-**Punkt wejścia:** `/security`. Tutaj trafiają również prośby o uruchomienie Deepsec, skanerów Cisco lub testu penetracyjnego ARTEX.
+**Punkt wejścia:** `/security`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania. Wewnątrz workflowu Deepsec i skanery Cisco są wybierane według celu i intencji. Skan repozytorium obejmuje tylko kod źródłowy; skany umiejętności, MCP i runtime nie są dodawane w sposób dorozumiany.
 
 **Cele i silniki:**
 
@@ -411,7 +343,9 @@ Węzeł sędziego to sędzia uruchamiany promptem, opisany w fazie 2: workflow k
 | Kod źródłowy | Domyślnie Vercel Deepsec; Cisco AI Deep SAST na żądanie |
 | Pakiet umiejętności agenta | Cisco Skill Scanner |
 | Komponent lub serwer MCP | Cisco MCP Scanner |
-| Wdrożona testowa aplikacja webowa | ARTEX, w granicach autoryzowanego celu i zakresu wykonania |
+| Testowe wdrożenie webowe (test penetracyjny runtime) | Domyślnie brak. ARTEX tylko na wyraźne żądanie, na dostarczonej przez użytkownika i sprawdzonej platformie ARTEX, w granicach autoryzowanego celu i zakresu wykonania |
+
+Testowanie runtime nie ma dołączonego silnika: umiejętność nie instaluje, nie buduje ani nie wdraża platformy ARTEX. Bez wyraźnego żądania ARTEX, konkretnego testowego wdrożenia webowego i sprawdzonej platformy workflow podaje brakujący warunek wstępny, zapisuje etap runtime jako `skipped` i kontynuuje pozostałe wybrane operacje.
 
 Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania problemów w lokalnej piaskownicy. Nie dodaje kolejnego skanera ani nie dowodzi większej trafności wykrywania.
 
@@ -419,7 +353,7 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 1. Odczytaj `.agents/skills/oma-security/SKILL.md` i tylko zasoby potrzebne dla danego celu i intencji.
 2. Określ cel (`source`, `skill`, `mcp` lub `web_runtime`) i intencję (`setup`, `scan`, `diff`, `pentest`, `triage`, `validate`, `ci` lub `troubleshoot`). Sprawdź wersję wybranego silnika, dostępny interfejs, poświadczenia i budżet wykonania.
-3. Uruchom wybrany silnik w uzgodnionym zakresie. W razie potrzeby wykorzystaj istniejący stan Deepsec. Dla ARTEX przypisz do uruchomienia sprawdzoną, przypiętą wersję, izolowane wdrożenie, konto, listę dozwolonych celów i budżet. ARTEX korzysta ze zweryfikowanego UI/API sprawdzonej migawki albo zadania ręcznego/zewnętrznego; automatyzacja CI wymaga zweryfikowanego adaptera i zapisów wykonania zadania.
+3. Uruchom wybrany silnik w uzgodnionym zakresie. W razie potrzeby wykorzystaj istniejący stan Deepsec. Dla wyraźnie zażądanego uruchomienia ARTEX przypisz do niego sprawdzoną, przypiętą wersję dostarczonej platformy, izolowane wdrożenie, konto, listę dozwolonych celów i budżet. ARTEX korzysta ze zweryfikowanego UI/API sprawdzonej migawki albo zadania ręcznego/zewnętrznego; automatyzacja CI wymaga zweryfikowanego adaptera i zapisów wykonania zadania.
 4. Zachowaj surowe wyniki i kody wyjścia silników, a następnie znormalizuj ustalenia bez usuwania ich źródeł ani rozbieżności. Oceń kandydatów niezależnie; zapisz osobno weryfikację statyczną i zaobserwowane odtworzenie problemu.
 5. Zgłoś zakres sprawdzenia, ustalenia, dowody, niedokończone prace i właściwy wynik CI. Skieruj poprawki do specjalisty odpowiedzialnego za dany komponent.
 
@@ -427,7 +361,7 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 **Reguły:** Nie umieszczaj poświadczeń w raportach ani kontroli wersji. Traktuj kod źródłowy i wyniki skanerów jako niezaufane dane wejściowe. Odtwarzaj problemy lokalnie w piaskownicy systemu operacyjnego; ogranicz ruch ARTEX do autoryzowanego zakresu środowiska wykonawczego. Nieudane, częściowe lub pominięte skany oraz nieskuteczne próby wykorzystania podatności nie dowodzą, że cel jest bezpieczny. Ustalenie `confirmed` wymaga niezależnej weryfikacji i zaobserwowanego dowodu na zapisanej rewizji lub wdrożeniu; samo potwierdzenie statyczne pozostaje `needs_validation`.
 
-**Kiedy używać:** Skanowanie bezpieczeństwa, testy penetracyjne wdrożonych aplikacji webowych, triage i weryfikacja ustaleń oraz bramki bezpieczeństwa CI. Użyj `/review` do szerszego przeglądu jakości kodu, dostępności i wydajności.
+**Kiedy używać:** Skanowanie bezpieczeństwa kodu źródłowego, umiejętności agentów lub komponentów MCP; triage i weryfikacja ustaleń; bramki bezpieczeństwa CI; albo ograniczony test penetracyjny wdrożenia testowego na platformie ARTEX, którą już obsługujesz. Użyj `/review` do szerszego przeglądu jakości kodu, dostępności i wydajności.
 
 ---
 
@@ -435,14 +369,7 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 **Opis:** Uporządkowana diagnoza i naprawa błędów z pisaniem testu regresji oraz skanowaniem podobnych wzorców.
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "debug" |
-| Angielski | "fix bug", "fix error", "fix crash" |
-| Koreański | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
-| Japoński | "デバッグ", "バグ修正", "エラー修正" |
-| Chiński | "调试", "修复 bug", "修复错误" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/debug`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
 **Kroki:** Zbierz informacje o błędzie -> odtwórz (MCP `search_for_pattern`, `find_symbol`) -> zdiagnozuj przyczynę źródłową (MCP `find_referencing_symbols` do prześledzenia ścieżki wykonania) -> zaproponuj minimalną poprawkę (wymagana zgoda użytkownika) -> zastosuj poprawkę i napisz test regresji -> przeskanuj podobne wzorce (możesz uruchomić subagenta debug-investigator, gdy zakres przekracza 10 plików) -> udokumentuj błąd w pamięci.
 
@@ -452,20 +379,20 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 ### /design {#design}
 
-**Opis:** Siedmiofazowy workflow designu tworzący DESIGN.md z tokenami, wzorcami komponentów i regułami dostępności.
+**Opis:** Określa zakres zadania projektowego, dobiera odpowiednie wytyczne projektowe i dostarcza ustalenia, `DESIGN.md`, kierunek redesignu lub tokeny designu za pomocą `oma-design`. Workflow nie pisze kodu implementacji; implementacja jest przekazywana do `oma-frontend` lub `oma-mobile`. Wykonuje się inline (bez uruchamiania subagentów).
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "design system", "DESIGN.md", "design token" |
-| Angielski | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
-| Koreański | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
-| Japoński | "デザイン", "ランディングページ", "デザインシステム" |
-| Chiński | "设计", "着陆页", "设计系统" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/design`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
-**Fazy:** SETUP (zbieranie kontekstu, `.design-context.md`) -> EXTRACT (opcjonalnie z URL-i referencyjnych/Stitch) -> ENHANCE (wzmocnienie niejasnego promptu) -> PROPOSE (2–3 kierunki designu z kolorem, typografią, układem, ruchem i komponentami) -> GENERATE (DESIGN.md + tokeny CSS/Tailwind/shadcn) -> AUDIT (responsive, WCAG 2.2, heurystyki Nielsena, kontrola AI slop) -> HANDOFF (zapisz i poinformuj użytkownika).
+**Kroki:**
 
-**Wymagane:** Cały wynik musi być responsive-first (mobile 320–639 px, tablet 768 px+, desktop 1024 px+).
+1. **Załaduj umiejętność:** Odczytaj `.agents/skills/oma-design/SKILL.md` i `resources/execution-protocol.md`. Do umiejętności należą wybór dostawcy, kontrakt designu projektu i dowody dostarczenia; workflow porządkuje kolejność jej operacji i nie dodaje własnych reguł wizualnych.
+2. **Ustal zakres i kontekst:** Sklasyfikuj żądany wynik: ustalenia (audyt), dokument systemu designu, kierunek redesignu albo tokeny. Odczytaj żądanie, istniejący `DESIGN.md`, `.design-context.md`, jeśli istnieje, materiały marki, obsługiwane języki i UI, którego dotyczy zadanie. Dla istniejącej strony lub aplikacji załaduj `redesign-protocol.md` i przed zaproponowaniem zmian ustal Preserve albo Overhaul. Workflow pyta tylko o wybór, który istotnie zmienia wynik i na który nie odpowiadają żądanie, artefakty ani baza kodu. `.design-context.md` jest tworzony lub aktualizowany tylko wtedy, gdy decyzję wsparł rzeczywisty etap rozpoznania.
+3. **Dobierz wytyczne i zbierz referencje:** Wybierz jednego dostawcę dla operacji przez `external-design-skills.md` (Interface Design, Taste albo Impeccable). Zadanie wyłącznie dokumentacyjne lub dotyczące kontraktu tokenów pozostaje lokalne. Opcjonalne dane wejściowe ładują się tylko wtedy, gdy zadanie ich wymaga: żądany seed dostawcy (`getdesign-fetcher.md`), żądana operacja Stitch (`stitch-integration.md`), grafika i placeholdery (`asset-strategy.md`) albo powierzchnia zbudowana wokół tabeli danych lub siatki (`data-grid.md`). Niedostępna integracja jest zgłaszana jako ograniczenie dowodów, a nie po cichu zastępowana.
+4. **Zdecyduj o kierunku:** Zastosuj wybrane wytyczne do dowodów z projektu. Alternatywne kierunki są przedstawiane tylko wtedy, gdy nierozstrzygnięty wybór istotnie wpływa na wynik; istniejący kierunek i autoryzacja wystarczają, gdy go rozstrzygają.
+5. **Przygotuj artefakt:** System designu tworzy lub aktualizuje `DESIGN.md` zgodnie z `design-md-spec.md`, zachowując wszystkie dziewięć sekcji, w tym sekcję 9 (Agent Prompt Guide). Tokeny są zgodne z `design-tokens.md` i mapują role semantyczne na istniejący system tokenów i format motywu projektu. Audyt zwraca ustalenia ze sprawdzonym miejscem, dowodem, skutkiem i rekomendacją i niczego nie edytuje.
+6. **Zweryfikuj i przekaż:** Uruchom odpowiednie kontrole z `checklist.md` i wskaż, co zostało sprawdzone. Zaraportuj dostarczone artefakty, wybraną trasę i jej pochodzenie, wyniki weryfikacji i pozostałe ograniczenia, a następnie przekaż implementację do `oma-frontend` (web) lub `oma-mobile` (natywnie).
+
+**Ograniczenia:** Każdy kierunek mieści się w ramach marki projektu, pokrycia fontów CJK tam, gdzie te języki są obsługiwane, istniejącego stosu implementacyjnego, responsywnego zachowania od najmniejszego obsługiwanego viewportu oraz WCAG AA, chyba że projekt wyznacza ostrzejszy cel. Kontrole wymagające wyrenderowanej implementacji są określane, ale przy pracy wyłącznie na dokumentach pozostają nieuruchomione.
 
 ---
 
@@ -478,22 +405,6 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 **Kroki:** Przeanalizuj zmiany (git status, git diff) -> rozdziel funkcje (jeśli > 5 plików obejmujących różne zakresy/typy) -> ustal typ (feat/fix/refactor/docs/test/chore/style/perf) -> ustal zakres (zmieniony moduł) -> napisz opis (tryb rozkazujący, < 72 znaki) -> od razu wykonaj commit (bez promptu potwierdzającego).
 
 **Reguły:** Nigdy `git add -A`. Nigdy nie commituj sekretów. Dla wiadomości wieloliniowych używaj HEREDOC. Dodaj trailer co-author tylko wtedy, gdy efektywna konfiguracja `scm.co_author` go włącza i dostarcza obie wartości.
-
----
-
-### /tools {#tools}
-
-**Opis:** Zarządzaj widocznością i ograniczeniami narzędzi MCP.
-
-**Słowa kluczowe wyzwalające:** Brak (wyłączone z automatycznego wykrywania).
-
-**Funkcje:** Pokazuje bieżący stan narzędzi MCP, włącza/wyłącza grupy narzędzi (memory, code-analysis, code-edit, file-ops), zmiany stałe lub tymczasowe (`--temp`), analizę języka naturalnego („memory tools only”, „disable code edit”).
-
-**Grupy narzędzi:**
-- memory: read_memory, write_memory, edit_memory, list_memories, delete_memory
-- code-analysis: get_symbols_overview, find_symbol, find_referencing_symbols, search_for_pattern
-- code-edit: replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol
-- file-ops: list_dir, find_file
 
 ---
 
@@ -515,7 +426,7 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 **Opis:** Wykrywanie dryfu dokumentacji i synchronizacja przez `oma-docs`. Tryb verify znajduje uszkodzone odwołania w całym Markdownie repozytorium (domyślne glob `**/*.md`); tryb sync proponuje poprawki per dokument dla stron dotkniętych diffem gita. Wykonuje się inline (bez uruchamiania subagentów); wszyscy dostawcy wywołują bezpośrednio `oma docs`.
 
-**Słowa kluczowe wyzwalające:** Uniwersalne: "oma-docs", "docs verify", "docs sync". Angielskie: "verify docs", "check docs", "docs drift", "broken doc links", "stale docs", "sync docs", "patch docs". Koreańskie: "문서 검증", "문서 드리프트", "문서 동기화". Japońskie: "ドキュメント検証", "ドキュメント同期". Chińskie: "文档校验", "文档同步".
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/docs`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
 **Kroki:** Wykryj tryb (`verify` domyślnie; `sync`, gdy prompt wspomina sync albo podaje zakres diffu gita) -> preflight (`command -v oma`; dla sync potwierdź użyteczny diff i przejdź do `HEAD~1..HEAD` jako fallbacku) -> verify: `oma docs verify --json` (wyjście `0` czyste, `1` uszkodzone odwołania) albo sync: `oma docs sync --json` dla zakresu -> zsyntetyzuj ustalenia w kontrakcie hosta LLM (verify: grupuj według CRITICAL/HIGH/MEDIUM/LOW z konkretnymi poprawkami; sync: szkicuj minimalne poprawki unified diff) -> przedstaw każdą poprawkę sync interaktywnie (`[y] apply [n] skip [d] show diff [s] show full proposal`; nigdy nie stosuj automatycznie) -> po zastosowaniu wygeneruj indeks ponownie przez `oma docs verify --json` -> zaraportuj tryb, liczbę według rodzaju i odnośniki do `docs/generated/doc-refs.json` / `url-drift.json`.
 
@@ -532,7 +443,7 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 **Opis:** Dzienne lub okresowe podsumowanie pracy przez `oma-recap`. Rozstrzyga datę albo zakres z języka naturalnego, uruchamia `oma recap --json` dla historii wielu narzędzi AI (Grok, Claude, Codex, Qwen, Cursor, Antigravity), deleguje analizę tematów i formatowanie Markdownu do umiejętności, a następnie raportuje TL;DR oraz zapisaną ścieżkę. Wykonuje się inline (bez uruchamiania subagentów); wszyscy dostawcy wywołują bezpośrednio `oma recap`.
 
-**Słowa kluczowe wyzwalające:** Uniwersalne: "recap". Koreańskie: "리캡". Japońskie: "リキャップ".
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/recap`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
 **Kroki:** Wykryj tryb i rozstrzygnij zakres (`daily` domyślnie z dzisiejszą datą; `period`, gdy wyrażenia typu "this week" / "지난 7일" rozstrzygają się do `--window Nd`) -> wyodrębnij filtr `--tool` tylko, gdy użytkownik jawnie wymienia narzędzia (`grok, claude, codex, qwen, cursor, antigravity`) -> preflight (`command -v oma`) -> uruchom `oma recap --json` (daily: `--date YYYY-MM-DD` albo pominięte; period: `--window 7d` / `30d`) -> zsyntetyzuj i zapisz w kontrakcie umiejętności (próg tematu 15 minut, szablon dzienny albo wielodniowy) -> zaraportuj TL;DR w 3 punktach i ścieżkę zapisu.
 
@@ -547,12 +458,12 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 ### /stack-set {#stack-set}
 
-**Opis:** Automatycznie wykrywa stos technologiczny projektu i generuje referencje właściwe dla języka dla rozstrzygniętej umiejętności domenowej (backend albo mobile). Wykrywa stosy mobile (Swift/iOS przez `Package.swift`/`.xcodeproj`, Flutter przez `pubspec.yaml`, React Native przez `package.json` + react-native) i kieruje do `oma-mobile`; w przeciwnym razie do `oma-backend`. W monorepo, gdzie obecne są oba, pyta, który skonfigurować.
+**Opis:** Automatycznie wykrywa stos technologiczny projektu i generuje referencje właściwe dla języka dla rozstrzygniętej umiejętności domenowej. Manifesty backendu kierują do `oma-backend`; stosy mobile (Swift/iOS przez `Package.swift`/`.xcodeproj`, Kotlin/Android przez `settings.gradle.kts`, Flutter przez `pubspec.yaml`, React Native przez `package.json` + react-native) kierują do `oma-mobile`; manifesty frontendu (Angular, Next.js, React, Vue, Svelte) kierują do `oma-frontend`. Gdy wykryto więcej niż jedną domenę, a żądanie żadnej nie wskazuje, workflow pyta, którą skonfigurować.
 
 **Słowa kluczowe wyzwalające:** Brak (wyłączone z automatycznego wykrywania).
 
 <!-- oma-docs:ignore-start -->
-**Kroki:** Wykryj (przeskanuj manifesty: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj, Package.swift, *.xcodeproj, pubspec.yaml) -> potwierdź (wyświetl wykryty stos i uzyskaj potwierdzenie użytkownika) -> wygeneruj (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` z 8 wymaganymi wzorcami, `stack/api-template.*`) -> zweryfikuj.
+**Kroki:** Wykryj (przeskanuj manifesty: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj, Package.swift, *.xcodeproj, pubspec.yaml) -> potwierdź (wyświetl wykryty stos i uzyskaj potwierdzenie użytkownika) -> wygeneruj (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` z 8 wymaganymi wzorcami, a dla backendu `stack/api-template.*`; stos mobile trzyma fragment usługi API lub repozytorium w `stack/snippets.md`) -> zweryfikuj.
 <!-- oma-docs:ignore-end -->
 
 **Wynik:** Pliki w katalogu `stack/` rozstrzygniętej umiejętności domenowej (np. `.agents/skills/oma-backend/stack/` albo `.agents/skills/oma-mobile/stack/`). Nie modyfikuje SKILL.md ani `resources/`.
@@ -563,21 +474,14 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 **Opis:** Przeprowadź umiejętność `oma-video` od początku do końca: brief → skrypt → narracja → wizualia → napisy → render-spec → zarządzany kompozytor HyperFrames (albo MoneyPrinterTurbo). Workflow tworzy odtwarzalny katalog uruchomienia i emituje prawdziwy `.mp4` dopiero po pomyślnym przejściu kontroli kompozytora i ffprobe. Konfiguracja dostawcy może opcjonalnie nie zawierać klucza dla obsługiwanych fallbacków zasobów; błąd kompozytora albo toolchainu nadal kończy przebieg niepowodzeniem. Wykonuje się inline (bez uruchamiania subagentów).
 
-**Słowa kluczowe wyzwalające:**
-| Język | Słowa kluczowe |
-|----------|----------|
-| Uniwersalny | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
-| Angielski | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
-| Koreański | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
-| Japoński | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
-| Chiński | "生成视频", "制作视频", "短视频", "讲解视频", "演示视频" |
+**Słowa kluczowe wyzwalające:** Brak. Uruchom go przez `/video`. Hook słów kluczowych nie otwiera tego workflowu na podstawie zdania.
 
 **Kroki:**
-1. **Rozstrzygnij brief i tryb:** wybierz `shorts` (9:16), `explainer` (16:9) albo `demo` (przechwytywanie ekranu/sieci); zastosuj domyślne wartości trybu, które można nadpisać flagami.
+1. **Rozstrzygnij brief i tryb:** wybierz `shorts` (9:16), `explainer` (16:9) albo `demo` (nagranie ekranu wykonane przez człowieka i dostarczone przez `--capture`); zastosuj domyślne wartości trybu, które można nadpisać flagami.
 2. **Skomponuj skrypt:** wygeneruj sceny i narrację (LLM, gdy istnieje klucz, w przeciwnym razie deterministyczny zarys z briefu).
-3. **Zsyntetyzuj zasoby:** narracja przez `oma-voice`, wizualia przez `oma-image`/`oma-slide`/stock, dopasowanie napisów bez klucza albo nadzorowane przechwytywanie webu w przeglądarce dla `demo --source web`. Każdy dostawca przechodzi do deterministycznego fallbacku.
+3. **Zsyntetyzuj zasoby:** narracja przez `oma-voice`, wizualia domyślnie przez `oma-image`, dopasowanie napisów bez klucza, a dla `demo` wczytane nagranie wykonane przez człowieka. Klatka `oma-slide` jest używana tylko dla sceny, której `visual.ref` wskazuje istniejący katalog talii; wizualia stock (Pexels) i AIGC (Pixelle) są dostępne przez `--visual stock` lub `--visual aigc`, gdy ustawiony jest ich klucz. `--source web --url` dodaje wyłącznie kontekst URL; CLI nie otwiera ani nie nagrywa przeglądarki. Każdy dostawca przechodzi do deterministycznego fallbacku.
 4. **Zbuduj render-spec:** zapisz `render-spec.json` (granicę determinizmu) i zasoby w katalogu uruchomienia.
-5. **Renderuj:** uruchom zarządzany projekt HyperFrames (albo MoneyPrinterTurbo) jako podproces. Zwykły błąd kompozytora lub toolchainu kończy przebieg niepowodzeniem; deterministyczny placeholder jest dostępny wyłącznie przez jawny tryb mock/test (`OMA_VIDEO_MOCK=1`). Przechwytywanie na żywo zapisuje się w manifeście jako `nondeterministic`.
+5. **Renderuj:** uruchom zarządzany projekt HyperFrames (albo MoneyPrinterTurbo) jako podproces. Zwykły błąd kompozytora lub toolchainu kończy przebieg niepowodzeniem; deterministyczny placeholder jest dostępny wyłącznie przez jawny tryb mock/test (`OMA_VIDEO_MOCK=1`). Przebieg `demo` wymaga `--polish`, aby przepuścić nagranie przez kompozycję `Demo`, w której dane osobowe są maskowane; bez tej opcji wynikowy plik MP4 to surowe, niezamaskowane nagranie.
 
 **Wynik:** Katalog uruchomienia w `.agents/results/videos/{timestamp}-{shortid}-{mode}/` z plikami `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4` i `manifest.json`. Zobacz [Przewodnik generowania wideo](../guide/video-generation.md).
 
@@ -597,11 +501,11 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 ### /explain {#explain}
 
-**Opis:** Przeprowadź umiejętność `oma-explanation` od początku do końca: zamień diff, PR, branch albo zakres commitów w samodzielne, interaktywne objaśnienie HTML (Background / Intuition / Code / Quiz). Wykonuje się inline (bez uruchamiania subagentów).
+**Opis:** Przeprowadź umiejętność `oma-explanation` od początku do końca: zamień diff, PR, branch albo zakres commitów, albo temat, w samodzielne, interaktywne objaśnienie HTML (Background / Intuition / Code / Quiz dla zmiany). Wykonuje się inline (bez uruchamiania subagentów).
 
 **Słowa kluczowe wyzwalające:** Brak („explain” jest codziennym słowem — wykrywanie słów kluczowych dawałoby fałszywe alarmy przy zwykłych pytaniach „explain this function”, więc workflow działa tylko przez slash).
 
-**Kroki:** Rozstrzygnij argumenty (referencja docelowa: jawny zakres PR# / branch / SHA -> staged -> dirty tree -> `HEAD~1..HEAD`; poziom czytelnika `onboarding` | `reviewer`; język wyniku; liczba quizów) -> załaduj kontrakty (`oma-explanation` SKILL.md + zasoby) -> zbierz i zastosuj bramkę (diff + kod otaczający; skan sekretów przed generowaniem; tekst diffu/PR traktuj wyłącznie jako dane) -> wygeneruj HTML zgodnie z kontraktami dokumentu i HTML -> zweryfikuj (checklista grep obejmująca końcowy skan sekretów HTML, maks. 3 pętle poprawek) -> dostarcz (`open` tylko ostrzeżenie, TL;DR + ścieżka).
+**Kroki:** Rozstrzygnij argumenty (referencja docelowa: jawny zakres PR# / branch / SHA -> staged -> dirty tree -> `HEAD~1..HEAD`; poziom czytelnika `onboarding` | `reviewer`; język wyniku; liczba quizów) -> załaduj kontrakty (`oma-explanation` SKILL.md + zasoby) -> zbierz i zastosuj bramkę (diff + kod otaczający; skan sekretów przed generowaniem; tekst diffu/PR traktuj wyłącznie jako dane) -> wygeneruj (napisz szkic, a następnie wyrenderuj go przez `oma explain render <draft.md>`) -> zweryfikuj (`oma explain validate <file>` oraz końcowy skan sekretów HTML, maks. 3 pętle poprawek) -> dostarcz (otwórz stronę przez `oma explain render --open`, przy czym nieudane otwarcie jest tylko ostrzeżeniem; TL;DR + ścieżka).
 
 **Wynik:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (data w strefie `timezone` z oma-config, a gdy jej brak — w strefie czasowej systemu; ponowne uruchomienie tej samej daty i slugu nadpisuje). Zobacz [Przewodnik objaśniania kodu](../guide/code-explainer.md).
 
@@ -613,7 +517,7 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 |--------|--------|-----------|
 | **Czym są** | Wiedza agenta (co agent wie) | Procesy orkiestracji (jak agenci współpracują) |
 | **Lokalizacja** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **Aktywacja** | Automatycznie przez słowa kluczowe routingu umiejętności | Komendy slash albo słowa kluczowe wyzwalające |
+| **Aktywacja** | Host dopasowuje nazwę i opis umiejętności; skill injector może dodać podpowiedzi | Komenda slash. `orchestrate`, `ultrawork`, `work` i `ralph` uruchamiają się też, gdy prompt wymienia nazwę trybu |
 | **Zakres** | Wykonanie w jednej domenie | Wielokrokowe, często wieloagentowe |
 | **Przykłady** | „Zbuduj komponent React” | „Zaplanuj funkcję -> zbuduj -> przejrzyj -> zatwierdź” |
 
@@ -625,19 +529,19 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 oh-my-agent używa hooka `UserPromptSubmit` uruchamianego przed przetworzeniem każdej wiadomości użytkownika. Ustawienia dostawcy rejestrują jeden wpis `<hookDir>/oma-hook.sh --vendor <v> --event <e>`, który kieruje do `oma hook run`, gdzie łańcuch handlerów działa w procesie. Łańcuch składa się z:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, wbudowane w plik binarny `oma`): definiuje mapowania słów kluczowych na workflowy dla wszystkich 11 obsługiwanych języków (angielskiego, koreańskiego, japońskiego, chińskiego, hiszpańskiego, francuskiego, niemieckiego, portugalskiego, rosyjskiego, niderlandzkiego i polskiego).
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): logika TypeScript skanująca wejście użytkownika względem słów kluczowych wyzwalających każdego języka i wstrzykująca kontekst aktywacji workflowu.
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, wbudowane w plik binarny `oma`): tabela `workflows` kieruje słowami kluczowymi wyłącznie do `orchestrate`, `ultrawork`, `work` i `ralph`, i to tylko po jawnej nazwie każdego trybu. Podpowiedzi słów kluczowych umiejętności znajdują się w tym samym pliku i pozostają bez zmian.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): logika TypeScript skanująca wejście użytkownika względem tych jawnych nazw i wstrzykująca kontekst aktywacji workflowu.
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): egzekwuje wykonywanie workflowu trwałego przez sprawdzanie aktywnych plików stanu i ponowne wstrzykiwanie kontekstu workflowu.
 
 ### Przepływ wykrywania {#detection-flow}
 
-1. Użytkownik wpisuje wejście w języku naturalnym
-2. Hook sprawdza, czy obecna jest jawna komenda `/command` (jeśli tak, pomija wykrywanie, aby uniknąć duplikacji)
-3. Hook oczyszcza wejście (usuwa bloki kodu, ciągi w cudzysłowach i wklejone bloki echo systemu), a następnie skanuje `.agents/hooks/core/triggers.json`, obejmując zarówno listy słów kluczowych (frazy literalne), jak i `patterns` (surowy regex). Strażnik wzmocnienia tłumi ponowne wyzwolenia, jeśli ten sam workflow uruchomił się co najmniej 2 razy w ostatnich 60 sekundach.
+1. Użytkownik wpisuje prompt
+2. Hook sprawdza, czy prompt zaczyna się od `/command` (jeśli tak, pomija wstrzykiwanie słów kluczowych; komenda ładuje workflow). Trwała komenda slash nadal zapisuje plik stanu danego trybu
+3. Hook oczyszcza wejście (usuwa bloki kodu, ciągi w cudzysłowach i wklejone bloki echo systemu), a następnie skanuje listy słów kluczowych `workflows` w `.agents/hooks/core/triggers.json`. Listy te zawierają wyłącznie jawne nazwy `orchestrate`, `ultrawork`, `work` i `ralph`. Strażnik wzmocnienia tłumi ponowne wyzwolenia, jeśli ten sam workflow uruchomił się co najmniej 2 razy w ostatnich 60 sekundach.
 4. Jeśli znaleziono dopasowanie, sprawdź, czy wejście pasuje do wzorców informacyjnych
 5. Jeśli jest informacyjne (np. „what is orchestrate?”), odfiltruj je (workflow nie zostaje wyzwolony)
-6. Jeśli jest operacyjne, wstrzyknij `[OMA WORKFLOW: {workflow-name}]` do kontekstu. Gdy pasuje kilka workflowów, pierwszeństwo ma jawne wywołanie, a następnie najdłuższe słowo kluczowe.
-7. Dla workflowu trwałego tylko jawne wywołanie (`explicit` w `triggers.json`) zapisuje plik stanu trybu trwałego; dopasowanie w języku naturalnym jest wstrzykiwane jako sugestia, a prompt zakończony pytaniem (`?` w pierwszej lub ostatniej linii) w ogóle go nie wyzwala
+6. Jeśli pasuje jawna nazwa, wstrzyknij `[OMA WORKFLOW: {workflow-name}]` i poleć agentowi natychmiast rozpocząć ten workflow. Gdy pasuje kilka jawnych nazw, wygrywa najdłuższe słowo kluczowe, a następnie kolejność deklaracji
+7. To samo jawne dopasowanie zapisuje plik stanu trybu trwałego. Wymienienie trybu w krótkim pytaniu nadal go uruchamia (`ultrawork로 해줄래?`). Pytanie o sam tryb (`What is ultrawork?`) go nie uruchamia
 8. Agent odczytuje wstrzyknięty znacznik i ładuje odpowiadający plik workflowu z `.agents/workflows/`
 
 ### Konwencja sekcji językowych {#language-section-convention}
@@ -652,24 +556,23 @@ oh-my-agent używa hooka `UserPromptSubmit` uruchamianego przed przetworzeniem k
 
 Każda sekcja jest zawsze ładowana: użytkownicy piszą prompty w języku, w którym myślą, a ustawienie `language` w `.agents/oma-config.yaml` steruje wyłącznie językiem odpowiedzi. Słowo kluczowe zapisane w jednym języku może pasować tylko do promptu zawierającego to pismo, więc scalenie wszystkich sekcji nie może wyzwolić workflowu w niepowiązanych promptach.
 
-Granice słów zależą wyłącznie od samego słowa kluczowego, nigdy od `language`: słowa kluczowe ASCII dopasowują się tylko jako całe słowa (więc „work” nie pasuje do „network”, a „review” nie pasuje do „preview”), natomiast słowa kluczowe zawierające tekst spoza ASCII dopasowują się jako podciągi, ponieważ partykuły i końcówki fleksyjne w językach CJK doklejają się bezpośrednio do słowa („리뷰해줘”).
+Granice słów zależą wyłącznie od samego słowa kluczowego, nigdy od `language`: słowa kluczowe ASCII dopasowują się tylko jako całe słowa (więc „work” nie pasuje do „network”, a „ulw” nie pasuje do dłuższego identyfikatora), natomiast słowa kluczowe zawierające tekst spoza ASCII dopasowują się jako podciągi, ponieważ partykuły w językach CJK doklejają się bezpośrednio do słowa („랄프로”).
 
 
 ### Pole Pattern (surowy regex) {#pattern-field-raw-regex}
 
-Oprócz literalnych `keywords` każdy workflow może deklarować `patterns` — surowe ciągi regex kompilowane z flagami `iu`. Wzorce umożliwiają dopasowanie intencji obejmującej wiele tokenów, które w przeciwnym razie wymagałoby kombinatorycznych list słów kluczowych.
+Detektor nadal potrafi skompilować pole `patterns` workflowu: surowe ciągi regex z flagami `iu`, dla intencji obejmującej wiele tokenów, której nie da się wyrazić listą słów kluczowych. Dostarczana tabela `workflows` nie deklaruje `patterns`. Każda jawna nazwa występuje też w `keywords`, ponieważ dopasowanie liczy się jako jawne tylko wtedy, gdy dopasowany tekst słowa kluczowego znajduje się na liście `explicit` tego workflowu.
 
 ```jsonc
 {
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      // Subset of `keywords` that activates persistent mode (persistent workflows only)
-      "explicit": ["orchestrate", ...],
-      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
-      "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
-        "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
+      "explicit": ["orchestrate", "オーケストレート", "orquestar"],
+      "keywords": {
+        "*": ["orchestrate"],
+        "ja": ["オーケストレート"],
+        "es": ["orquestar"]
       }
     }
   }
@@ -692,18 +595,13 @@ Sekcja `informationalPatterns` w `.agents/hooks/core/triggers.json` definiuje fr
 | `ja` | "とは", "って何", "どうやって", "説明して" |
 | `zh` | "是什么", "什么是", "怎么", "解释" |
 
-Jeśli wejście pasuje jednocześnie do wyzwalacza workflowu i wzorca informacyjnego, wzorzec informacyjny ma priorytet i workflow nie jest wyzwalany. To blokuje prompty takie jak:
-- `"How do you build a TODO app?"`: `how do` w `*` blokuje regex intencji orchestrate
-- `"orchestrate 트리거 해주면 되나요?"`: `트리거` w `ko` blokuje słowo kluczowe orchestrate
+Jeśli wejście pasuje jednocześnie do jawnej nazwy trybu i wzorca informacyjnego, wzorzec informacyjny ma priorytet i workflow nie jest wyzwalany. To blokuje prompty takie jak:
+- `"what is orchestrate?"`: `what is` w `*` blokuje słowo kluczowe `orchestrate`
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` w `ko` blokuje słowo kluczowe `orchestrate`
 
-### Wykluczane workflowy {#excluded-workflows}
+### Workflowy, których hook słów kluczowych nie otwiera {#workflows-the-keyword-hook-does-not-open}
 
-Poniższe workflowy nie są wyzwalane słowami kluczowymi i trzeba je wywołać jawną `/command`. `/tools` i `/stack-set` znajdują się w `excludedWorkflows` (celowo usunięte z wykrywania słów kluczowych); `/convert` nie dostarcza słów kluczowych wyzwalających (umiejętności `oma-pdf` i `oma-hwp` mają własne wykrywanie); `/schedule` jest workflowem wywoływanym slashem (zadania czasowe `oma schedule <action>`); `/explain` nie dostarcza słów kluczowych, ponieważ „explain” jest codziennym słowem i wykrywanie stale dawałoby fałszywe alarmy:
-- `/tools`
-- `/stack-set`
-- `/convert`
-- `/schedule`
-- `/explain`
+Każdy workflow inny niż `orchestrate`, `ultrawork`, `work` i `ralph` uruchamia się swoją komendą slash. Plik procedury pozostaje w `.agents/workflows/`. `excludedWorkflows` wymienia `stack-set`, `schedule` i `convert`, więc bank słów kluczowych nie może kierować do tych trzech, nawet jeśli zostanie później dodany. `/explain` pozostaje dostępny tylko przez slash, ponieważ „explain” jest codziennym słowem. Podpowiedzi słów kluczowych umiejętności w tym samym pliku są osobne i nadal wstrzykują kontekst umiejętności.
 
 ---
 

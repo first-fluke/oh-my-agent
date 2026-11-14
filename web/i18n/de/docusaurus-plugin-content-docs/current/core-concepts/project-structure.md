@@ -87,28 +87,19 @@ your-project/
 │   │   │
 │   │   ├── oma-design/
 │   │   │   ├── SKILL.md
-│   │   │   ├── resources/
-│   │   │   │   ├── execution-protocol.md
-│   │   │   │   ├── anti-patterns.md
-│   │   │   │   ├── checklist.md
-│   │   │   │   ├── design-md-spec.md
-│   │   │   │   ├── design-tokens.md
-│   │   │   │   ├── prompt-enhancement.md
-│   │   │   │   ├── stitch-integration.md
-│   │   │   │   ├── redesign-protocol.md
-│   │   │   │   ├── asset-strategy.md
-│   │   │   │   ├── getdesign-fetcher.md
-│   │   │   │   └── error-playbook.md
-│   │   │   └── reference/
-│   │   │       ├── typography.md
-│   │   │       ├── color-and-contrast.md
-│   │   │       ├── spatial-design.md
-│   │   │       ├── motion-design.md
-│   │   │       ├── responsive-design.md
-│   │   │       ├── component-patterns.md
-│   │   │       ├── accessibility.md
-│   │   │       ├── visual-hierarchy.md
-│   │   │       └── shader-and-3d.md
+│   │   │   └── resources/
+│   │   │       ├── execution-protocol.md
+│   │   │       ├── external-design-skills.md
+│   │   │       ├── product-interface-review.md
+│   │   │       ├── redesign-protocol.md
+│   │   │       ├── design-md-spec.md
+│   │   │       ├── design-tokens.md
+│   │   │       ├── data-grid.md
+│   │   │       ├── asset-strategy.md
+│   │   │       ├── getdesign-fetcher.md
+│   │   │       ├── stitch-integration.md
+│   │   │       ├── checklist.md
+│   │   │       └── error-playbook.md
 │   │   │
 │   │   ├── oma-pm/
 │   │   │   ├── SKILL.md
@@ -116,7 +107,6 @@ your-project/
 │   │   │       ├── execution-protocol.md
 │   │   │       ├── examples.md
 │   │   │       ├── iso-planning.md
-│   │   │       ├── plan-phase-protocol.md
 │   │   │       ├── task-template.json
 │   │   │       └── error-playbook.md
 │   │   │
@@ -126,14 +116,12 @@ your-project/
 │   │   │       ├── execution-protocol.md
 │   │   │       ├── iso-quality.md
 │   │   │       ├── checklist.md
-│   │   │       ├── error-playbook.md
-│   │   │       └── verify-ship-protocol.md
+│   │   │       └── error-playbook.md
 │   │   │
 │   │   ├── oma-debug/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── execution-protocol.md
-│   │   │       ├── common-patterns.md
 │   │   │       ├── debugging-checklist.md
 │   │   │       ├── bug-report-template.md
 │   │   │       ├── checklist.md
@@ -154,10 +142,9 @@ your-project/
 │   │   ├── oma-dev-workflow/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
+│   │   │       ├── mise-basics.md
 │   │   │       ├── validation-pipeline.md
-│   │   │       ├── database-patterns.md
-│   │   │       ├── api-workflows.md
-│   │   │       ├── i18n-patterns.md
+│   │   │       ├── example-task-wiring.md
 │   │   │       ├── release-coordination.md
 │   │   │       ├── tooling-profiles.md
 │   │   │       ├── affected-checks.py
@@ -184,7 +171,6 @@ your-project/
 │   │   │   │   ├── spawn-agent.sh
 │   │   │   │   ├── parallel-run.sh
 │   │   │   │   └── verify.sh
-│   │   │   ├── templates/
 │   │   │   └── config/
 │   │   │       └── cli-config.yaml
 │   │   │
@@ -203,14 +189,14 @@ your-project/
 │   │           ├── merge-risk.md
 │   │           └── ...
 │   │
-│   ├── workflows/                    ← 21 process definitions
+│   ├── workflows/                    ← 20 process definitions
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
 │   │   ├── ralph.md                   ← Persistent: repeated execution + judge
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
-│   │   ├── scm.md / tools.md / stack-set.md / convert.md
+│   │   ├── scm.md / stack-set.md / convert.md
 │   │   ├── docs.md / explain.md / recap.md / schedule.md / video.md
 │   │   └── ...                         ← Keep this list aligned with `.agents/workflows/`
 │   │
@@ -311,7 +297,7 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Ver
 
 ### workflows/
 
-21 Markdown-Dateien definieren das Verhalten der Slash-Befehle. Jede Datei enthält:
+20 Markdown-Dateien definieren das Verhalten der Slash-Befehle. Jede Datei enthält:
 
 - YAML-Frontmatter mit `description`
 - Abschnitt mit Pflichtregeln (Antwortsprache, Reihenfolge der Schritte, Anforderungen an MCP-Tools)
@@ -319,7 +305,7 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Ver
 - Schrittweises Ausführungsprotokoll
 - Gate-Definitionen für persistente Workflows
 
-Persistente Workflows sind `orchestrate.md`, `work.md`, `ultrawork.md` und `ralph.md`. Zu den nicht persistenten Workflows gehören `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` und `video.md`.
+Persistente Workflows sind `orchestrate.md`, `work.md`, `ultrawork.md` und `ralph.md`. Zu den nicht persistenten Workflows gehören `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` und `video.md`.
 
 ### agents/
 
@@ -351,7 +337,6 @@ MCP-Server-Konfiguration einschließlich:
 
 - Serverdefinitionen (Serena und weitere)
 - Speicherkonfiguration: `memoryConfig.provider`, `memoryConfig.basePath` und `memoryConfig.tools` (Namen der Lese-, Schreib- und Bearbeitungswerkzeuge)
-- Definitionen von Toolgruppen für die Verwaltung über `/tools`
 
 ---
 

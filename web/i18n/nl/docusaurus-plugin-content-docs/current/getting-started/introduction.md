@@ -33,13 +33,13 @@ oh-my-agent lost dit op met specialisatie:
 
 ---
 
-## De huidige catalogus: 33 skills, 12 definities, 21 workflows
+## De huidige catalogus: 33 skills, 12 definities, 20 workflows
 
 De catalogus scheidt drie zaken die gemakkelijk door elkaar raken:
 
 - **[Skills](./glossary.md#skill)** zijn de 33 domeinkennis-pakketten onder `.agents/skills/*/SKILL.md`. Ze routeren vanuit natuurlijke taal en laden hun resources progressief.
 - **[Agentdefinities](./glossary.md#agent-definition)** zijn de 12 bestanden onder `.agents/agents/`. Ze leveren vendor-native subagentpersona's en verwijzen naar één of meer skills.
-- **[Workflows](./glossary.md#workflow)** zijn de 21 procesdefinities onder `.agents/workflows/`. Vier zijn [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` en `ralph`); de overige draaien tot een rapport en houden geen persistente modus actief.
+- **[Workflows](./glossary.md#workflow)** zijn de 20 procesdefinities onder `.agents/workflows/`. Vier zijn [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` en `ralph`); de overige draaien tot een rapport en houden geen persistente modus actief.
 
 De onderstaande secties behouden de gedetailleerde skillcatalogus. Wanneer een naam of beschrijving verandert, is de live frontmatter van `SKILL.md` leidend.
 
@@ -166,11 +166,10 @@ Alles wat oh-my-agent nodig heeft, staat in de directory `.agents/`:
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -301,5 +300,5 @@ De directory `.agents/` blijft de bron van waarheid. De installatie linkt of pro
 - **[Installatie](./installation.md)**: drie installatiemethoden, presets, CLI-setup en verificatie
 - **[Agenten](/docs/core-concepts/agents)**: uitgebreide uitleg van de 33 skills, 13 dispatchrollen en charter preflight
 - **[Skills](/docs/core-concepts/skills)**: uitleg van de architectuur met twee lagen
-- **[Workflows](/docs/core-concepts/workflows)**: alle 21 workflows met triggers en fasen
+- **[Workflows](/docs/core-concepts/workflows)**: alle 20 workflows met triggers en fasen
 - **[Gebruiksgids](/docs/guide/usage)**: praktijkvoorbeelden van enkele taken tot volledige orchestratie

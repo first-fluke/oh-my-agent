@@ -298,7 +298,7 @@ Verwende den Befehl nach Änderungen an `.agents/agents/`, `.agents/workflows/`,
 
 ### Eine bestehende Installation neu konfigurieren {#setup-workflow}
 
-Es gibt keinen `/setup`-Workflow. Um ein installiertes Projekt zu ändern, führe `oma install` erneut aus, verwende `oma update mcp` nur für Browser-MCP-Server oder führe `/tools` innerhalb einer Agentensitzung aus, um MCP-Tools zu aktivieren oder zu deaktivieren. Die Modellauflösung pro Agent prüfst du mit `oma doctor --profile`; Modell-Pins pro Agent stehen unter `agents:` in `.agents/oma-config.yaml` ([Agentenmodelle](../guide/per-agent-models.md)).
+Es gibt keinen `/setup`-Workflow. Um ein installiertes Projekt zu ändern, führe `oma install` erneut aus oder wähle mit `oma update mcp` die Browser-MCP-Server aus. Die Modellauflösung pro Agent prüfst du mit `oma doctor --profile`; Modell-Pins pro Agent stehen unter `agents:` in `.agents/oma-config.yaml` ([Agentenmodelle](../guide/per-agent-models.md)).
 
 ---
 
@@ -1168,7 +1168,6 @@ Wenn mehrere Sitzungspläne oder Laufbelege passen, schlägt die Verifikation fe
 
 **Gemeinsame Prüfungen (alle Agententypen):**
 - **Scope Check**: Liest Aufgabenscopes aus `.agents/results/plan-{sessionId}.json`. Vergleicht geänderte Dateien aus `git diff` mit den definierten Scope-Mustern. Schlägt fehl, wenn Dateien außerhalb des zugewiesenen Agentenscopes geändert wurden.
-- **Charter Preflight**: Prüft, ob der ausgewählte Ergebnisbericht einen korrekt ausgefüllten `CHARTER_CHECK:`-Block ohne offene Platzhalter enthält.
 - **TDD Evidence**: Verlangt, dass der ausgewählte Bericht jeder betroffenen Aufgabe deren exakte Task-ID sowie eigene, nicht leere `red:`- und `green:`-Einträge enthält. Berichte aus einer anderen Sitzung oder einem Wiederholungslauf können den ausgewählten Bericht nicht ersetzen.
 - **Hardcoded Secrets**: Durchsucht `.py`, `.ts`, `.tsx`, `.js`, `.dart` nach Mustern wie `password = "..."`, `api_key = "..."` (Test-/Beispieldateien ausgenommen).
 - **TODO/FIXME Comments**: Zählt Kommentare mit `TODO`, `FIXME`, `HACK`, `XXX` (warnt bei Treffern).
@@ -1662,18 +1661,18 @@ Kurzvideos, Erklärvideos und Demo-Videos planen, authoren und rendern. `generat
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` akzeptiert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` und `--capture-stop duration:<seconds>|selector:<css>`. Verwende für eine Browseraufnahme `--source web --url <url>`; `--source file` ist der Standard. `--output-dir` wählt den Laufstamm, `--allow-external-output` erlaubt einen Pfad außerhalb von `$PWD`, `--max-usd` setzt eine Kostengrenze, `-y, --yes` überspringt die Kostenbestätigung, `--seed` stabilisiert Planungseingaben, `--timeout` begrenzt jeden Aufruf eines Visual- oder Musik-Providers, `--script` injiziert ein vom Agenten verfasstes `script.json` und `--no-brief-in-manifest` speichert statt des Brieftexts dessen Hash. `--dry-run` stoppt nach der Planung. `--output text|json` steuert das CLI-Laufobjekt.
+`generate` akzeptiert `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` und `--capture-stop duration:<seconds>|selector:<css>`. Eine Demo verwendet eine Aufnahme, die du mit `--capture` bereitstellst; `--source file` ist der Standard, und `--source web --url <url>` ergänzt die URL nur als Kontext (die CLI öffnet keinen Browser und zeichnet auch keinen auf). `--polish` leitet die Aufnahme durch die `Demo`-Composition, in der personenbezogene Daten maskiert werden; ohne diese Option ist das ausgegebene MP4 die rohe, unmaskierte Aufnahme. `--visual stock` und `--visual aigc` wählen die Provider Pexels und Pixelle, wenn deren Schlüssel gesetzt sind, und ein Slide-Visual setzt voraus, dass `visual.ref` im Skript auf ein vorhandenes Deck-Verzeichnis zeigt. `--output-dir` wählt den Laufstamm, `--allow-external-output` erlaubt einen Pfad außerhalb von `$PWD`, `--max-usd` setzt eine Kostengrenze, `-y, --yes` überspringt die Kostenbestätigung, `--seed` stabilisiert Planungseingaben, `--timeout` begrenzt jeden Aufruf eines Visual- oder Musik-Providers, `--script` injiziert ein vom Agenten verfasstes `script.json` und `--no-brief-in-manifest` speichert statt des Brieftexts dessen Hash. `--dry-run` stoppt nach der Planung. `--output text|json` steuert das CLI-Laufobjekt.
 
 `doctor` prüft die zwischengespeicherte HyperFrames/MPT-Toolchain und akzeptiert `--install`, `--upgrade`, `--install-mpt` und `--install-strudel`. `provider list` meldet Providerverfügbarkeit und Schlüsselstatus. `compose` erzeugt oder aktualisiert die Lauf-Composition und meldet den Authoring-Vertrag; `render` führt Lint-Prüfungen aus, rendert und prüft die Ausgabe. Fehlender Compositor, fehlende Composition oder fehlende Toolchain-Abhängigkeiten sind Fehler. Der nur für Tests gedachte Pfad `OMA_VIDEO_MOCK=1` ist der einzige Platzhaltermodus; ein normaler Lauf ersetzt niemals die Ausgabe durch eine Text- oder winzige MP4-Datei.
 
-Eine erfolgreiche JSON-Ausgabe enthält `runDir`, `manifestPath`, `scriptPath` und `renderSpecPath`; das Manifest verzeichnet ausgewählte Provider, Eingaben und erzeugte Artefakte. Nach `compose` authorst du die erzeugte Composition gemäß ihrer `AUTHORING.md` und führst danach `render` erneut aus. Wenn ein Provider-Schlüssel fehlt, führe `oma video doctor` aus; bei fehlgeschlagener Aufnahme prüfe URL, Selector, Gerät und Timeout; bei fehlgeschlagenem Render behebe zuerst die Composition-Diagnose.
+Eine erfolgreiche JSON-Ausgabe enthält `runDir`, `manifestPath`, `scriptPath` und `renderSpecPath`; das Manifest verzeichnet ausgewählte Provider, Eingaben und erzeugte Artefakte. Nach `compose` authorst du die erzeugte Composition gemäß ihrer `AUTHORING.md` und führst danach `render` erneut aus. Wenn ein Provider-Schlüssel fehlt, führe `oma video doctor` aus; stoppt ein Demo-Lauf mit Aufnahmeanweisungen, stelle die Aufnahme mit `--capture` bereit; bei fehlgeschlagenem Render behebe zuerst die Composition-Diagnose.
 
 ### star
 

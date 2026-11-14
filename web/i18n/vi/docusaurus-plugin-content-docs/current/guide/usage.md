@@ -279,7 +279,6 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 | `/debug` | Không liên tục | Debug có cấu trúc: tái hiện, chẩn đoán, sửa, regression test, quét | Điều tra bug và error |
 | `/design` | Không liên tục | Workflow design 7 giai đoạn tạo DESIGN.md với token | Xây design system, landing page, UI redesign |
 | `/scm` | Không liên tục | Workflow SCM cho Git (branch/merge/conflict/worktree/baseline) và tạo Conventional Commit với tự động phát hiện type/scope, tách feature | Sau thay đổi code hoặc task quản lý cấu hình repository |
-| `/tools` | Không liên tục | Quản lý khả năng hiển thị tool MCP (bật/tắt nhóm) | Kiểm soát tool MCP agent có thể dùng |
 | `/stack-set` | Không liên tục | Tự phát hiện tech stack và tạo tham chiếu backend hoặc mobile (Swift/Flutter/RN) | Thiết lập quy ước code theo ngôn ngữ |
 | `/architecture` | Không liên tục | Chẩn đoán kiến trúc, so sánh và ghi quyết định | Review ranh giới hoặc chọn kiến trúc |
 | `/convert` | Không liên tục | Định tuyến chuyển đổi tài liệu tới skill phù hợp | Chuyển đổi file HWP/HWPX hoặc PDF |

@@ -22,7 +22,7 @@ OMA 将[技能](../getting-started/glossary.md#skill)、调度角色和[智能�
 | [`oma-architecture`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-architecture/SKILL.md) | Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs. |
 | [`oma-backend`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-backend/SKILL.md) | Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db. |
 | [`oma-brainstorm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-brainstorm/SKILL.md) | Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration. |
-| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step. |
+| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination. |
 | [`oma-db`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-db/SKILL.md) | Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend. |
 | [`oma-debug`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-debug/SKILL.md) | Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests. |
 | [`oma-design`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-design/SKILL.md) | Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions. |
@@ -44,7 +44,7 @@ OMA 将[技能](../getting-started/glossary.md#skill)、调度角色和[智能�
 | [`oma-scholar`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scholar/SKILL.md) | Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis. |
 | [`oma-scm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scm/SKILL.md) | Manage Git branches, merges, conflicts, commits, and release baselines. Use for repository history and change-management operations. |
 | [`oma-search`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-search/SKILL.md) | Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools. |
-| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation. |
+| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components, validate findings, and configure scan gates. Penetration tests of a scoped web test deployment run only on a user-supplied, reviewed runtime platform. Use oma-qa for broad quality reviews and domain skills for remediation. |
 | [`oma-skill-creation`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-skill-creation/SKILL.md) | Create or revise OMA skills and their references. Use for skill routing, execution contracts, conditional loading, and authoring validation. |
 | [`oma-slide`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-slide/SKILL.md) | Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery. |
 | [`oma-tf-infra`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-tf-infra/SKILL.md) | Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes. |
@@ -127,15 +127,15 @@ flowchart TD
 | **质量** | oma-qa | 安全审计（OWASP）、性能、无障碍（WCAG）、代码质量审查 |
 | **调试** | oma-debug | Bug 复现、根因分析、最小修复、回归测试 |
 | **本地化** | oma-translation | 保留语气、语域和领域术语的上下文感知翻译 |
-| **协调** | oma-orchestration、oma-coordination | 自动化和手动多智能体编排 |
+| **协调** | oma-orchestration、oma-coordination | 自动化多智能体编排；共享协调规则和手动逐步协调 |
 | **Git** | oma-scm | Conventional Commits 生成、按功能拆分提交 |
-| **搜索与检索** | oma-search | 带信任度评分的意图驱动搜索路由（Context7 文档、网络、`gh`/`glab` 代码、本地代码智能） |
+| **搜索与检索** | oma-search | 面向外部来源并附带引用的搜索路由（Context7 文档、网络提供程序、`gh`/`glab` 远程代码、已知 URL 抓取） |
 | **回顾** | oma-recap | 跨工具对话历史分析与主题化工作摘要 |
 | **文档处理** | oma-hwp、oma-pdf | 将 HWP/HWPX/HWPML 和 PDF 转为 Markdown，供 LLM/RAG 摄取 |
 | **文档** | oma-docs | 文档维护：损坏引用、受 diff 影响的文档、翻译漂移，以及译文文档 lint |
 | **讲解** | oma-explanation | 为代码变更（diff、PR、分支、提交范围）或主题、系统、问题生成离线 HTML 讲解 |
 | **学术写作** | oma-academic-writing、oma-scholar | 面向发表的学术写作起草与审查，以及 Knows sidecar 学术研究、搜索和同行评审 |
-| **安全** | oma-security | 扫描应用源码、智能体技能包、MCP 组件和已授权的 Web 测试部署（Deepsec、Cisco 扫描器、ARTEX），并进行独立的发现验证和 CI 关卡 |
+| **安全** | oma-security | 扫描应用源码、智能体技能包和 MCP 组件（Deepsec、Cisco 扫描器），并进行独立的发现验证和 CI 关卡；对限定范围的 Web 测试部署的渗透测试，只在用户提供并已审查的 ARTEX 平台上运行 |
 | **重构** | oma-refactor | 以保持行为为目标的渐进式重组，定位热点并使用特征测试安全网，提交仅含重构 |
 | **市场研究** | oma-market | 基于社区信号的痛点、趋势、竞品和发现研究，并使用意图自动选择的 SWOT、Porter 五力和 PESTEL 框架 |
 | **技能编写** | oma-skill-creation | 以 SSL-lite 格式创建并验证 OMA 技能 |
@@ -162,7 +162,7 @@ flowchart TD
 - 逐节呈现设计，只解决仍未确定的关键选择
 - YAGNI：只设计需要的部分
 
-**工作流：** 7 个阶段：上下文、提问、方案（可选用 TRIZ-lite 提供初始思路）、设计、盲审、文档（保存到 `docs/plans/designs/`）、过渡到 `/plan`。
+**工作流：** `/brainstorm` 工作流包含 7 个步骤：上下文、提问、方案（可选用 TRIZ-lite 提供初始思路）、设计、盲审、文档（保存到 `docs/decisions/`）、过渡到 `/plan`。
 
 ---
 
@@ -199,7 +199,7 @@ flowchart TD
 - 最小化依赖以实现最大并行执行
 - 安全和测试是每个任务的一部分（不是独立阶段）
 - 任务必须可由单个智能体完成
-- 输出 JSON 计划和会话范围的任务看板，以兼容编排器
+- 输出 JSON 计划，作为交给编排器的交接物；任务看板由编排器创建并负责
 
 **输出：** `.agents/results/plan-{sessionId}.json`，使用数字优先级层级（`1` = 独立，层级越低越先运行），以及配置的内存存储中运行范围的报告 `result-{agentId}-{taskId}-{runId}-{sessionId}.md`。
 
@@ -255,11 +255,15 @@ flowchart TD
 
 **领域：** API、服务端逻辑、认证、数据库操作。
 
-**何时使用：** REST/GraphQL API、数据库迁移、认证、服务端业务逻辑和后台任务。
+**何时使用：** REST/GraphQL API、API 变更所需的数据访问代码和迁移、认证、服务端业务逻辑和后台任务。
+
+**何时不使用：** 模式建模、索引设计和查询调优（使用 oma-db），前端 UI（使用 oma-frontend），移动端代码（使用 oma-mobile）。
 
 **架构：** Router（HTTP）-> Service（业务逻辑）-> Repository（数据访问）-> Models。
 
-**栈检测：** 读取项目清单文件（pyproject.toml、package.json、Cargo.toml、go.mod 等）确定语言和框架。如果缺少项目专用约定，要求用户运行 `/stack-set`；该命令会根据随附的 schema 和模板物化解析后的 `stack/` 参考资料。
+**栈检测：** 先读取项目清单文件（pyproject.toml、package.json、Cargo.toml、go.mod 等）和现有代码，确定语言和框架。栈参考资料只是补充：存在 `stack/` 时使用它，否则使用匹配的 `variants/<language>/`。选定了预设的已安装项目有 `stack/` 而没有 `variants/`；插件布局和源码布局有 `variants/` 而没有 `stack/`。两者都不适用时，智能体会询问用户或建议运行 `/stack-set`。
+
+**随附预设：** Python（Litestar，通过 Advanced Alchemy 使用 SQLAlchemy 2（异步）、msgspec 模型、内置 JWT 认证）、Node.js（NestJS + Prisma，用 Vitest 测试）和 Rust（Axum + SQLx）。用早期 FastAPI 预设安装的项目继续使用 FastAPI。这些默认值仅在目标项目尚无既定选择时适用；限定范围的编辑并不授权迁移技术栈。
 
 **核心规则：**
 - 整洁架构：路由处理器中不放业务逻辑
@@ -269,33 +273,40 @@ flowchart TD
 - 在支持的地方使用异步；所有签名加类型注解
 - 通过集中错误模块处理自定义异常
 - 显式 ORM 加载策略、事务边界和安全生命周期
+- 验证命令从项目中选取（优先使用 `stack/stack.yaml` 的 `verify:` 块），仅在用户或当前工作流要求时运行；未运行的检查会如实报告
 
 <!-- oma-docs:ignore-start -->
-项目专用的 `stack/stack.yaml`、`stack/tech-stack.md`、代码片段和 API 模板由 `/stack-set` 按需生成；在栈被物化之前这些文件不存在。
+栈参考资料包含 `stack.yaml`（结构化声明，以及 `oma verify agent backend` 运行的 `verify:` 契约）、`tech-stack.md`、`snippets.md` 和 `api-template.*`。`/stack-set` 会根据检测到的代码库生成项目专用的 `stack/`。
 <!-- oma-docs:ignore-end -->
 
 ---
 
 ### oma-mobile
 
-**领域：** 跨平台和原生移动应用（Flutter、React Native 和 Swift 原生 iOS）。
+**领域：** 跨平台和原生移动应用（Flutter、React Native、Swift 原生 iOS 和 Kotlin 原生 Android）。
 
 **何时使用：** 原生移动应用（iOS + Android）、移动端特定 UI 模式、平台功能（相机、GPS、推送通知）、离线优先架构；采用 SwiftUI 和 `swift-openapi-generator` 的 Swift 原生 iOS 应用。
 
-**架构：** 整洁架构：domain -> data -> presentation。Swift iOS 使用 `App/Core/Features/Shared` 项目布局。
+**架构：** 整洁架构：domain -> data -> presentation。Swift iOS 使用 `App/Core/Features/Shared` 项目布局。Kotlin Android 使用 `app/{ui,data,di}` + `api-client`。业务逻辑绝不放在 widget、view 或 composable 中。
 
 **技术栈：**
 - Flutter/Dart：Riverpod/Bloc（状态管理）、带拦截器的 Dio（API）、GoRouter（导航）、Material Design 3（Android）+ iOS HIG。
+- React Native：Zustand + TanStack Query（状态）、封装在 TanStack Query hooks 之后的 axios（API）。
 - Swift 原生 iOS（iOS 17+）：SwiftUI + `@Observable`（Observation 框架），使用 Apple `swift-openapi-generator` 生成 API 客户端，`App/Core/Features/Shared` 布局。
+- Kotlin 原生 Android（API 26+）：Jetpack Compose + Material 3、`@HiltViewModel` + `StateFlow`、基于 Ktor 并注入 OkHttp 引擎的 OpenAPI Generator（`kotlin` / `jvm-ktor`）客户端，`app/{ui,data,di}` + `api-client` 布局。
 
 **核心规则：**
-- 使用 Riverpod/Bloc 管理状态（复杂逻辑不使用原始 setState）
-- 所有控制器在 `dispose()` 方法中释放
-- 使用带拦截器的 Dio 调用 API；优雅处理离线状态
-- 目标 60fps；在两个平台上测试
+- 状态管理采用各变体自己的方案（Flutter：Riverpod/Bloc；React Native：Zustand + TanStack Query；Swift：`@MainActor @Observable`；Kotlin：`@HiltViewModel` + `StateFlow`）；复杂逻辑不使用原始 setState 或临时拼凑的状态
+- 按平台的生命周期释放资源：Flutter 控制器在 `dispose()` 中释放，React Native 使用 effect 清理函数，Swift 使用结构化的 `.task {}`，Kotlin 使用 `viewModelScope`
+- 使用平台的传输层，并拦截处理认证、重试和日志；优雅处理离线状态
+- 目标 60fps；覆盖应用发布的每个平台
+- 密钥只存放在安全存储中（flutter_secure_storage、Keychain、react-native-keychain、基于 Android Keystore 的存储）
+- 关键用户流程做 E2E：Maestro（Flutter、React Native、Kotlin）或 XCUITest（Swift 原生）
+- 测试和 E2E 检查仅在用户或当前工作流要求时运行；构建仅在明确请求时运行
 - Swift：iOS 17+ 使用 `@Observable` 而不是 `ObservableObject`；通过 `swift-openapi-generator` 根据 OpenAPI 规范生成 API 客户端
+- Kotlin：规范覆盖的端点调用生成的 `*Api`；Ktor 是与引擎无关的一层，因此 OkHttp 引擎在构建客户端的地方注入，测试中用 `MockEngine` 替换它
 
-**平台种子：** `variants/` 提供 `flutter/`、`react-native/` 和 `swift-ios/`，每个都包含 `stack.yaml`、`tech-stack.md`、`snippets.md` 和一个 API 模板，另有共享的 `stack.schema.json`。它们是 `/stack-set` 的起始素材，编辑现有代码时无需阅读。
+**平台变体：** `variants/` 提供 `flutter/`、`react-native/`、`swift-ios/` 和 `kotlin-android/`，每个都包含 `stack.yaml`、`tech-stack.md` 和 `snippets.md`（数据层、状态、界面和测试模式，包括 API service 或 repository 代码片段），另有共享的 `stack.schema.json`。存在 `stack/` 时智能体使用它，否则直接读取匹配的 `variants/<platform>/`；`/stack-set` 以变体为种子，根据检测到的项目写入 `stack/`。未选定变体就安装的技能会保留其 `variants/` 目录。
 
 ---
 
@@ -322,26 +333,37 @@ flowchart TD
 
 ### oma-design
 
-**领域：** 设计系统、UI/UX、DESIGN.md 管理。
+**领域：** 视觉系统、`DESIGN.md` 和重新设计方向：排版、布局、色彩、动效和交互设计决策。
 
-**何时使用：** 创建或修订设计系统和 DESIGN.md，重新设计现有网站或应用（保留或彻底改造），着陆页、设计令牌、调色板、排版、响应式布局、无障碍审查。
+**何时使用：** 定义或修订视觉系统或重大的设计方向，审查现有 UI 或细化已选定的方向，从现有 UI、截图或提供的参考资料中提取设计决策。
 
-**工作流：** 7 个阶段：设置（上下文收集）-> 提取（可选，从参考 URL）-> 增强（模糊提示增强）-> 提案（2-3 个设计方向）-> 生成（DESIGN.md + 令牌）-> 审计（响应式、WCAG、Nielsen、AI 泛滥检查）-> 交接。
+**何时不使用：** 实现应用 UI 或导出特定框架的令牌（使用 oma-frontend 或 oma-mobile），规划产品范围（使用 oma-pm），生成图像（使用 oma-image），一般的正确性或安全审查（使用 oma-qa 或 oma-security）。
 
-**反模式强制执行（"杜绝 AI 泛滥"）：**
-- 排版：默认系统字体栈；无正当理由不使用默认 Google Fonts
-- 色彩：禁止紫蓝渐变、渐变球体/斑块、纯白配纯黑
-- 布局：禁止嵌套卡片、仅桌面布局、千篇一律的 3 指标统计布局
-- 动效：禁止到处使用弹跳缓动、禁止超过 800ms 的动画、必须尊重 prefers-reduced-motion
-- 组件：禁止到处使用毛玻璃效果，所有交互元素需要键盘/触摸替代
+**供给方选择：** 该技能先确定项目的设计意图，再通过 `resources/external-design-skills.md` 为每项操作加载一个外部设计技能：
+
+| 操作 | 供给方 |
+|------|--------|
+| 仪表板、管理后台、SaaS 产品 UI 或内部工具的视觉方向 | Interface Design |
+| 产品界面实现后的层级、密度、一致性或工艺审查 | Interface Design `design-review` |
+| 其他针对现有 UI 的评审、无障碍或技术审计、打磨或系统提取 | Impeccable |
+| 其他新的 Web 艺术指导或已授权的视觉彻底改造 | Taste |
+| 不涉及新视觉判断的纯文档或令牌契约任务 | 留在本地处理 |
+
+**工作流：** 检查 UI、设计工件和简报，确定范围、平台、现有技术栈、语言、品牌保留和验证方式 -> 选择并加载供给方 -> 将结果应用到所请求的决策或工件 -> 用 `resources/checklist.md` 检查受影响的结果，并将实现交给前端或移动端专家。
 
 **核心规则：**
-- 存在时复用 `.design-context.md` 和 `DESIGN.md`；仅当实质性的探索过程为决策提供依据时才创建 `.design-context.md`
+- 存在时复用 `.design-context.md` 和 `DESIGN.md`；仅当视觉系统发生变化时才更新 `DESIGN.md`，仅当实质性的探索过程为决策提供依据时才创建 `.design-context.md`
+- 限定范围的修正复用受影响的 UI 和令牌，不需要探索文档
 - 对现有网站或应用，遵循 `resources/redesign-protocol.md`，并在提案前判定 Preserve 还是 Overhaul
-- 默认系统字体栈（ko/ja/zh 使用 CJK 就绪字体）
-- 所有设计至少达到 WCAG AA 标准
-- 响应式优先（移动端为默认）
-- 提出 2-3 个方向，获得确认
+- 在授权范围内保留现有品牌、内容、URL、导航、表单契约、分析埋点和法律文本
+- 现有字体合适时予以保留；对于 ko/ja/zh，验证字形覆盖、回退字体、换行和可读的字体度量
+- 默认无障碍目标是 WCAG AA，项目有更严格目标时以项目为准；响应式、减弱动效和平台要求会一并带入所选的供给方
+- 使用项目的真实素材和宣称；概念稿和占位内容要标明
+- 保留现有的实现技术栈；CSS、Tailwind、组件库语法和依赖由实现专家负责
+- 仅审查的操作保持只读
+- 只询问尚未解决的关键选择；明确请求的供给方不可用时如实报告，不做替换
+
+**输出：** 所请求的设计决策、发现或实现交接，附带观察到的证据、所选的供给方和操作，以及能力或验证方面的限制。只有满足上述条件时才写入 `DESIGN.md` 和 `.design-context.md`。Stitch 和 getdesign 是可选输入。
 
 ---
 
@@ -370,14 +392,18 @@ flowchart TD
 
 **领域：** 单体仓库任务自动化和 CI/CD。
 
-**何时使用：** 运行开发服务器、跨应用执行 lint/format/typecheck、数据库迁移、API 生成、i18n 构建、生产构建、CI/CD 优化、提交前验证。
+**何时使用：** 运行开发服务器、跨应用执行 lint/format/typecheck、数据库迁移、API 生成、i18n 构建、生产构建、CI/CD 优化、提交前验证，以及配置各语言的 lint、format 和 typecheck 工具、Dockerfile lint 和 commitlint。
 
 **核心规则：**
-- 始终使用 `mise run` 任务而非直接使用包管理器命令
-- 仅对变更的应用运行 lint/test
-- 使用 commitlint 验证提交消息
-- CI 应跳过未变更的应用
-- 存在 mise 任务时不要使用直接的包管理器命令
+- 使用 `mise run` 任务而非直接使用包管理器命令；用 `mise tasks --all` 查找任务，运行不熟悉的任务前先阅读其定义
+- 只对变更的范围运行 lint 和 test；CI 应跳过未变更的应用
+- 通过在本地配置好的 `commit-msg` 钩子用 commitlint 验证提交消息；绝不在 Git 钩子中拉取软件包
+- 检查类任务不得修改文件：提供 `lint`、`format:check` 和 `typecheck`，会修改文件的 `format` 单独放置
+- 跳过的验证不算通过；无法运行的检查器应报告为未完成，而不是用占位内容或一次构建替代
+- 优先使用封闭式（hermetic）测试；需要 Docker 或外部服务的测试应放入单独的、需主动启用的集成任务，置于默认钩子和必需的 CI 关卡之外
+- 绝不在 `mise.toml` 中硬编码密钥；未经确认绝不运行破坏性任务
+
+**资源：** `mise-basics.md`、`tooling-profiles.md`、`validation-pipeline.md`、`example-task-wiring.md`（迁移、可选的本地 Docker 基础设施、API 客户端生成、i18n 构建）、`release-coordination.md` 和 `troubleshooting.md`，各自在其声明的触发条件下加载。
 
 ---
 
@@ -396,17 +422,20 @@ flowchart TD
 - MELT+P 信号覆盖：metrics、logs、traces、profiles、cost、audit、privacy
 - 日志管道迁移，需对照当前上游支持情况和项目要求进行评估
 
-**何时不使用：** LLM ops / gen_ai 可观测性（使用 Langfuse、Arize Phoenix、LangSmith、Braintrust）、数据管道 lineage（OpenLineage + Marquez、dbt test、Airflow lineage）、IoT / 数据中心物理层遥测（Nlyte、Sunbird、Device42）、混沌工程编排（Chaos Mesh、Litmus、Gremlin、ChaosToolkit）、GPU / TPU 基础设施（NVIDIA DCGM Exporter）、软件供应链（sigstore、in-toto、SLSA）、事件响应工作流 / 告警派单（PagerDuty、OpsGenie、Grafana OnCall）、已由该供应商自有技能 覆盖的单供应商配置。
+**何时不使用：** LLM ops / gen_ai 可观测性（使用 Langfuse、Arize Phoenix、LangSmith、Braintrust）、数据管道 lineage（OpenLineage + Marquez、dbt test、Airflow lineage）、IoT / 数据中心物理层遥测（Nlyte、Sunbird、Device42）、混沌工程编排（Chaos Mesh、Litmus、Gremlin、ChaosToolkit）、GPU / TPU 基础设施（NVIDIA DCGM Exporter）、软件供应链（sigstore、in-toto、SLSA）、事件响应工作流 / 告警派单（PagerDuty、Jira Service Management、Grafana Cloud IRM）、完整的 TLS 数据包检查、安全扫描或渗透测试（使用 oma-security；本技能只覆盖安全遥测）、已由该供应商自有技能 覆盖的单供应商配置。
 
 **核心规则：**
 - 路由前先分类意图：setup | migrate | investigate | alert | trace | tune | route
-- 类别优先，而非供应商注册表：通过 `resources/vendor-categories.md` 委派给供应商自有技能；不重复供应商文档
-- 传输层调优是护城河：UDP/MTU 阈值、OTLP 协议选择、Collector 拓扑与采样配方是其他 skill 未覆盖的深度
-- 元可观测性不可妥协：在声明搭建完成前，验证管道自身健康度、时钟同步（< 100 ms 漂移）、基数与保留策略
-- CNCF 优先偏好：Prometheus、Jaeger、Thanos、Fluent Bit、OpenTelemetry、Cortex、OpenCost、OpenFeature、Flagger、Falco
-- Fluentd 仍是 CNCF Graduated 项目；CNCF 2025-10 发布的 Fluentd 到 Fluent Bit 指南是迁移指南，而非弃用声明。应根据工作负载、插件和运维要求在 Fluentd、Fluent Bit 或 OTel Collector 之间选择
-- W3C Trace Context 作为默认 propagator；按云做转换（AWS X-Ray `X-Amzn-Trace-Id`、GCP Cloud Trace、Datadog、Cloudflare、Linkerd）
-- 隐私优先于功能：PII 脱敏、采样感知的 baggage 规则、SOC2/ISO 不可变审计 + GDPR/PIPA 删除应在采集时应用，而不仅是在存储层
+- 按触发条件加载资源：先是执行协议，然后是意图路由选中的那一份指南，之后只有在触发条件出现时才加载层、边界、信号或传输指南。没有任何参考资料需要强制预加载
+- 仅在需要类别选型或供应商委派时使用 `resources/vendor-categories.md`；委派给供应商自有技能，而不是重复供应商文档
+- 只加载与所观察到的问题相符的那一份传输指南：UDP/MTU、OTLP 协议、Collector 拓扑或采样
+- 在声明搭建完成前，对照项目要求验证管道健康度、时钟同步、基数上限和保留策略，并记录未能运行的检查
+- 当前的上游支持情况、属性稳定性和迁移指引会影响建议时，根据官方文档和 CNCF 状态加以核实。资源文件不逐个固定规范版本；关于规范和 semconv 时效性的唯一说明位于 `resources/standards.md`
+- W3C Trace Context 作为默认 propagator，需要时按 `resources/boundaries/cross-application.md` 做各云的转换
+- 在采集时应用 PII 脱敏和采样感知的 baggage 控制；检查目标系统的保留、删除和审计要求
+- 交付可用的配置或明确标注的提案；脚手架和未经验证的检查不算完成搭建
+
+覆盖矩阵包含四个层（L3、L4、mesh、L7）、四个边界（multi-tenant、cross-application、SLO、release）和七种信号（metrics、logs、traces、profiles、cost、audit、privacy）。
 
 ---
 
@@ -415,6 +444,8 @@ flowchart TD
 **领域：** 质量保证，涵盖安全、性能、无障碍和代码质量。
 
 **何时使用：** 部署前的最终审查、安全审计、性能分析、无障碍合规、测试覆盖率分析。
+
+**何时不使用：** 由扫描器驱动的扫描、渗透测试、发现验证或安全 CI 关卡（使用 oma-security），初始实现和新功能（使用领域智能体）。
 
 **审查优先级顺序：** 安全 > 性能 > 无障碍 > 代码质量。
 
@@ -426,8 +457,10 @@ flowchart TD
 
 **核心规则：**
 - 每个发现必须包含文件:行号、描述和修复方案
-- 先运行自动化工具（npm audit、bandit、lighthouse）
-- 不允许误报；每个发现必须可复现
+- 选择与检测到的技术栈和审查范围相符的自动化检查（例如依赖审计、静态安全分析或运行时性能审计）；工具或目标不可用时改为静态审查
+- 审查请求或当前工作流需要这些证据时，运行项目的 lint、测试和覆盖率命令；否则报告为未运行
+- 每个缺陷发现都必须可复现；假设和无法执行的检查记录为验证缺口，必需检查尚未验证时不给出 PASS
+- 这里的安全发现属于代码审查发现；扫描器候选结果、漏洞利用证明以及 `confirmed` / `needs_validation` 判定归 oma-security 负责
 - 提供修复代码，而非仅描述
 
 ---
@@ -443,9 +476,10 @@ flowchart TD
 **核心规则：**
 - 找到根因，而非仅处理症状
 - 最小修复：只改必要的部分
-- 每个修复都要有回归测试
+- 每个修复都要有回归测试；连同最初失败的检查一起重跑（修复前红、修复后绿）
+- 仅在用户或当前工作流要求时运行更大范围的测试套件；否则报告为未运行
 - 在其他地方搜索相似模式
-- 记录到 `.agents/results/`
+- 在 `.agents/results/bugs/` 下记录 Bug：使用 `resources/debugging-checklist.md` 中的精简报告；对于 Complex 或 CRITICAL/HIGH 级别的 Bug，使用完整的 `resources/bug-report-template.md`
 
 **使用的代码智能工具（Gortex 或 Serena）：**
 - `find_symbol("functionName")` 或 Gortex 符号导航：定位函数
@@ -460,7 +494,7 @@ flowchart TD
 
 **何时使用：** 翻译 UI 字符串、文档、营销文案，审查现有翻译，创建术语表。
 
-**六幕流程：** Prepare、Acquire、Reason、Act、Verify 和 Finalize。翻译方法有四步：阅读含义和受保护语法，选择语域，在目标语言中重构，并在适当处保留作者风格。
+**翻译方法：** 共四步：阅读含义和受保护语法，选择语域，在目标语言中重构，并在适当处保留作者风格。验证力度与内容风险相称：受保护语法和结构始终检查；实质性内容和审查模式还会使用评分标准（自然度、准确性、语域、术语、技术完整性）。
 
 **核心规则：**
 - 先扫描现有区域设置文件以匹配惯例
@@ -484,9 +518,13 @@ flowchart TD
 |------|-------|------|
 | MAX_PARALLEL | 3 | 最大并发子智能体数 |
 | MAX_RECOVERY_ATTEMPTS | 3 | 每个任务的重试和探索假设总数，包括原始尝试 |
-| POLL_INTERVAL | 30s | `oma agent spawn` 运行的状态检查间隔（Claude Code 原生子智能体同步返回） |
+| POLL_INTERVAL | 有界退避 | 仅在没有完成通知时作为回退（Claude Code 原生子智能体同步返回） |
+
+这些是工作流默认值；模型、供应商、并行度和预算设置从项目配置中解析。
 
 **工作流阶段：** 规划 → 参考资料（为每个任务选择参考资料）→ 设置（会话和任务看板工件）→ 执行（在 MAX_PARALLEL 范围内调度就绪任务）→ 监控 → 验证（审查循环）→ 收集（声明和运行范围的报告）。
+
+**任务参考资料：** 每个任务都会与已安装技能的意图签名进行匹配，由协调者选出它需要的参考资料。有一个可信匹配的技能就足够；只有分类不确定或某个依赖需要另一个领域时，这个集合才会扩大。选择结果及其原因作为协调者备注记录在任务看板中；启动器不会强制执行它们。
 
 **智能体间审查循环：** 图示和循环上限参见[编排流程](#orchestration-flow)。
 
@@ -516,11 +554,11 @@ flowchart TD
 
 ### oma-coordination
 
-**领域：** 手动逐步多智能体协调指南。
+**领域：** 多智能体工作的共享协调规则：计划复用、契约对齐、工作区归属和 QA 交接。
 
-**何时使用：** 多领域工作中，希望逐步监督启动、监控、契约对齐和 QA，而不是完全自动化编排。
+**何时使用：** 任何调度多个专业智能体的工作流。`/work`、`/orchestrate` 和 `/ultrawork` 会加载本技能并应用其护栏。由你亲自推动每次调度的手动逐步协调，以及多个智能体共享 API 或数据契约的情况，也使用本技能。
 
-**何时不使用：** 完全自动化的并行执行（使用 oma-orchestration）、单一领域的任务（直接使用对应领域的智能体）。
+**何时不使用：** 单一领域的任务（直接使用对应领域的智能体）。自动化的调度、监控和验证归 oma-orchestration 负责；本技能只提供它所应用的规则。
 
 **核心规则：**
 - 复用有效的计划；仅当分解或契约必须变更时才调用 oma-pm
@@ -531,27 +569,38 @@ flowchart TD
 
 **工作流：** 规划（复用或交给 PM）→ 按优先级层启动 → 监控 → QA 审查 → 修复问题 → 交付。
 
-**与 oma-orchestration 的区别：** coordination 是手动且有引导的（用户控制节奏），orchestrator 是自动化的（智能体以最少的用户干预启动并运行）。
+**与 oma-orchestration 的区别：** coordination 提供规则，并引导由用户控制节奏的手动运行；orchestrator 负责自动化执行（调度解析、并行上限、恢复预算和审查循环）。
 
 ---
 
 ### oma-search
 
-**领域：** 带域信任度评分的意图驱动搜索路由，将查询路由到 Context7（文档）、原生网络搜索、`gh`/`glab`（代码）、本地代码智能（Gortex 或 Serena）。
+**领域：** 面向外部来源的搜索路由。它选择请求所需的通道，并返回附带支持证据和检索限制的来源。
 
-**何时使用：** 查找官方库/框架文档，关于教程/示例/对比/解决方案的网络调研，针对实现模式的 GitHub/GitLab 代码搜索，搜索通道不明确的查询（自动路由），需要搜索基础设施的其他技能（共享调用）。
+**路由：**
 
-**何时不使用：** 仅限本地的代码库探索（直接使用代码智能 MCP），Git 历史或 blame 分析（使用 oma-scm），完整架构调研（使用 oma-architecture，该技能可能在内部调用本技能）。
+| 路由 | 执行方式 | 范围 |
+|------|---------|------|
+| `docs` | Context7 库解析和查询；需要时查找官方站点 | 所请求版本约束内的官方文档 |
+| `web` | 配置的 `providers.web`：`native` 使用运行时工具，`brave` 或 `exa` 使用 CLI 适配器 | 发现与查询相关的 URL |
+| `code` | 通过所选代码托管方（`gh` 或 `glab`）运行 `oma search code` | 托管方和仓库约束内的远程实现匹配 |
+| `fetch` | 可用的 URL 读取器或 `oma search fetch <url>` | 读取已提供或已发现的 URL |
+
+**何时使用：** 库文档、网络调研、远程代码搜索、读取已知 URL，以及需要选择外部来源通道的请求。其他技能通过它获取外部来源。
+
+**何时不使用：** 仅限本地的代码库探索（直接使用配置的代码智能），Git 历史或 blame 分析（使用 oma-scm），架构分析（使用 oma-architecture）。
 
 **核心规则：**
-- 显式的 `--docs`、`--code` 或 `--web` 决定路由；否则使用 `resources/intent-rules.md` 分类意图
-- 一次查询、一条最佳路由：除非意图模糊，否则避免冗余的多路由
-- 为每个结果评信任分：所有非本地结果均从注册表获得域信任标签
-- 其他标志：`--strict` 在评分后按信任度过滤结果，`--wide` 保留已标注的较低信任度结果，`--gitlab` 选择 GitLab 作为代码托管方
-- 失败则前进：如主路由失败，优雅降级（docs→web，web→`oma search fetch` 策略）
-- 无需额外 MCP：文档用 Context7，网络用运行时原生能力，代码用 CLI，本地用配置的提供程序（Gortex 或 Serena）
-- 供应商中立的网络搜索：使用当前运行时提供的任何方案（WebSearch、Google、Bing）
-- 仅域级信任度：无子路径或页面级评分
+- 显式的 `--docs`、`--code` 或 `--web` 决定路由；否则由技能选择一条主路由，仅在选择不明确时才使用 `resources/intent-rules.md`
+- 只有剩余的证据缺口需要时才增加另一条路由；该技能默认不会扇出到多条路由
+- `--strict` 要求使用合适的一手或官方来源，且支持内容已经过检查；`--wide` 纳入范围更广的结果并说明其局限；`--gitlab` 选择 GitLab 作为代码托管方
+- 结果带有来源 URL 或文件引用、路由、实际使用的提供程序、来源类型、内容读取状态、支持证据和重要的局限
+- 搜索摘要和摘录只是有限的证据；未读过的来源会被标明
+- 不编造信任分：提供程序名称或域标签并不能验证某一条具体主张。`oma search trust <domain>` 是可选的域诊断，需要解读来源出处时适用 `resources/source-provenance.md`
+- 网络提供程序不可用、未认证或被限流时会如实报告；明确选定的提供程序不会被悄悄换成原生搜索
+- 搜索没有候选 URL 时，在原有约束内细化查询或报告无结果；URL 抓取不能替代缺失的搜索结果
+- 没有来源满足 `--strict` 时，报告这一缺口；范围更广的结果集不能满足严格请求
+- 不会自动安装任何东西：提供程序、浏览器或依赖都不会
 
 ---
 
@@ -617,27 +666,27 @@ flowchart TD
 
 **何时使用：** 起草或修订学术报告、论文或分析章节，撰写执行摘要、结论或文献综述，将带有 AI 腔的文字改写为自然的学术英语，将草稿打磨到评分标准的最高档（HD、A、top-band），审查文字的句式变化、动词质量、限定语和反 AI 合规性。
 
-**何时不使用：** 翻译（使用 oma-translation），来源发现、引文收集或文献检索（使用 oma-scholar），评分标准解析与任务分解（使用 oma-pm），代码文档、README 或 API 参考文本（使用相应领域技能），非正式或营销文案，非英语学术写作（先用英语起草，再交给 oma-translation）。
+**何时不使用：** 翻译（使用 oma-translation），来源发现、引文收集或文献检索（使用 oma-scholar），代码文档、README 或 API 参考文本（使用相应领域技能），非正式或营销文案，非英语学术写作（先用英语起草，再交给 oma-translation）。
 
 **模式：** `draft`（标题 + 正文 + Writing Notes + Claim-Evidence Map），`revise`（原文 + 修订稿 + 变更列表），`review`（PASS/FAIL 合规报告，涵盖句式结构、动词质量、反 AI、具体性、限定语、段落清晰度、节奏以及主张与证据的对应）。
 
 **核心规则：**
-- 先引用再判断：应用任何规则前，先引用评分标准或约束的原文
+- 判断是否合规之前，先引用所提供的评分标准约束；没有评分标准时，对照所请求的范围说明发现，而不是自行编造标准
 - 每句话都可验证；绝不编造数据、统计或引文
-- 禁用的泛化动词（`show`、`have`、`make`、`do`、`get`、`use`……）不得作为主要动词
-- 变换句型、长度和句首；同类句子不得连续出现 3 句或以上
-- 限定语强度与证据强度相匹配；不使用第一人称 `I think`/`I believe`
+- 按确切含义和证据支持选择动词（`resources/academic-verb-guide.md`）；常见动词准确且自然时予以保留
+- 结合上下文审视重复的结构和句子长度（`resources/sentence-structure-reference.md`）；在有助于清晰表达的地方调整节奏，不设句型配额
+- 按 `resources/hedging-guide.md` 使限定语强度与证据强度相匹配，包括其中对强调词和第一人称观点标记的限制
 - 每个主张都要在 Claim-Evidence Map 中对应证据；削弱或删除缺乏支持的主张
 
-**工作流：** 6 个步骤：READ（阅读评分标准或草稿并引用约束）、PLAN（按 Topic-Support-Conclude 规划段落）、DRAFT（遵循全部四项协议起草）、AUDIT（对照反 AI 检查清单审查）、REVERSE-OUTLINE（反向大纲并构建 Claim-Evidence Map）、POLISH（朗读、衔接、具体性、字数、节奏）。
+**工作流：** 6 个步骤：READ（阅读评分标准或草稿并引用约束）、PLAN（按 Topic-Support-Conclude 规划段落）、DRAFT（按句式、动词和限定语指引起草）、AUDIT（对照反 AI 检查清单审查）、REVERSE-OUTLINE（反向大纲并构建 Claim-Evidence Map）、POLISH（衔接、具体性、字数、节奏、段落长度变化）。
 
 ---
 
 ### oma-security
 
-**领域：** 针对应用源码、智能体技能包、MCP 组件和已授权 Web 测试部署的安全扫描与验证。
+**领域：** 针对应用源码、智能体技能包和 MCP 组件的安全扫描与验证。对限定范围的 Web 测试部署的渗透测试，只在用户提供并已审查的运行时平台上运行。
 
-**何时使用：** 扫描仓库或源码 diff；检查技能包、MCP 服务器或配置；对具体且已授权的测试部署运行有边界的渗透测试；验证扫描器候选结果；配置特定引擎的 CI 关卡；排查扫描器的凭据、覆盖范围、匹配器、配额或可恢复状态问题。
+**何时使用：** 扫描仓库或源码 diff；检查技能包、MCP 服务器或配置；在你提供并已审查的运行时平台上，对具体且已授权的测试部署运行有边界的运行时渗透测试；验证扫描器候选结果；配置特定引擎的 CI 关卡；排查扫描器的凭据、覆盖范围、匹配器、配额或可恢复状态问题。
 
 **何时不使用：** 广泛的正确性、性能、无障碍或质量审查（使用 oma-qa），不实际执行的工具比较或调研（使用 oma-search），安全架构决策（使用 oma-architecture），产品代码中的修复（使用 oma-debug 或负责的后端、前端、移动端、基础设施技能）。
 
@@ -648,11 +697,12 @@ flowchart TD
 | 应用源码或源码 diff | Deepsec（明确选择时使用 Cisco AI Deep SAST） |
 | 智能体技能目录或包 | Cisco Skill Scanner |
 | MCP 源码、配置或服务器 | Cisco MCP Scanner |
-| Web 测试部署 | ARTEX |
+| Web 测试部署（`web_runtime`、`pentest`） | 默认没有。仅在明确请求时使用 ARTEX，且须在用户提供并已审查的平台上 |
 | 有边界的本地复现 | Cloudflare 验证方法（无外部网络） |
 
 **核心规则：**
 - 一般的仓库扫描只选择源码；不会隐含地加入技能、MCP 和运行时扫描
+- 运行时测试没有随附或默认的引擎。运行时请求或“源码加运行时”请求不会隐含地选择 ARTEX，该技能也不会安装、构建或部署 ARTEX 平台。如果没有明确的 ARTEX 请求、具体的 Web 测试部署和已审查的平台，运行时阶段会记录为 `skipped`，其他已选操作继续进行
 - 失败或空结果绝不会自动选择其他引擎、模型或付费分析器
 - 保留并恢复现有的 `.deepsec/` 状态；绝不为抹掉失败或噪声较多的运行而重新初始化
 - 已安装的密钥或工具并不授权付费调用或更大的范围；按共享执行策略复用已有授权
@@ -688,7 +738,7 @@ flowchart TD
 
 **何时使用：** 将 diff、拉取请求、分支或提交范围，或者主题、系统、问题讲解为一个可离线使用的 HTML 页面。
 
-**工作流：** 模型先写 Markdown 草稿；`oma explain render` 将其转为位于 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` 的单个 HTML 文件，`oma explain validate` 对其进行检查。只能通过 `/explain`、点名该技能或委派来激活；该技能不参与关键词提示。
+**工作流：** 模型先写 Markdown 草稿；`oma explain render` 将其转为位于 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` 的单个 HTML 文件，`oma explain validate` 对其进行检查（最多修复并重新验证 3 次）。页面通过 `oma explain render --open` 打开；打开失败不算失败。只能通过 `/explain`、点名该技能或委派来激活；该技能不参与关键词提示。
 
 **何时不使用：** 普通文档页面、实际功能实现或幻灯片（演示文稿使用 `oma-slide`）。
 
@@ -703,20 +753,21 @@ flowchart TD
 **何时不使用：** 编辑现有图像或照片处理，生成视频或音频（使用 oma-video / oma-voice），根据结构化数据内联合成矢量/SVG，简单的素材缩放或格式转换。
 
 **核心规则：**
-- 调用前先澄清：若主体、风格、构图或用途不明确，先询问，或扩展提示词并向用户展示扩展后的版本
+- 确定简报：使用已提供的细节和合理的创意默认值，只有缺失的选择会实质性改变结果时才询问。生成已获授权时，扩展后的提示词无需另行批准
 - 按认证状态调度：只运行已认证的供应商；使用 `--vendor all` 时，每个请求的供应商都必须可用
 - 成本护栏：预估成本 ≥ $0.20 的运行需先确认（`--yes`/`OMA_IMAGE_YES=1` 可绕过）；默认的 `pollinations` 和 `antigravity` 免费
 - 路径安全：输出到 `$PWD` 之外需要 `--allow-external-output`；`n` 最大为 5
 - 记录输出：每次运行都会在图像旁写入 `manifest.json`，包含提示词、供应商/模型、输入和工件元数据。它记录的是可复现性数据，不保证生成像素完全相同的图像。
 - 通过 `--reference <path>` 自动转发附带的参考图像（codex/antigravity）
+- 项目设置位于 `.agents/oma-config.yaml` 的 `image:` 下；随附默认值内置于 CLI
 
-**工作流：** PREPARE（澄清或扩展提示词，选择供应商）→ ACQUIRE（验证认证、参考图和输出路径）→ ACT（`oma image generate`）→ VERIFY（清单、文件、退出码）→ FINALIZE（输出路径 + 警告）。
+**工作流：** PREPARE（确定简报，选择供应商）→ ACQUIRE（验证认证、参考图和输出路径）→ ACT（`oma image generate`）→ VERIFY（清单、文件、退出码）→ FINALIZE（输出路径 + 警告）。
 
 ---
 
 ### oma-market
 
-**领域：** 基于社区信号的市场研究：痛点提取、趋势检测、竞品定位和发现。研究在上游 [`last30days`](https://github.com/mvanhorn/last30days-skill) 引擎上运行（Reddit、X、YouTube、TikTok、Instagram、HN、Polymarket、GitHub、arXiv、Techmeme、Digg、LinkedIn、StockTwits、Bluesky、网页等），oma 会自动将其保持在最新版本。
+**领域：** 基于社区信号的市场研究：痛点提取、趋势检测、竞品定位和发现。研究在上游 [`last30days`](https://github.com/mvanhorn/last30days-skill) 引擎上运行（Reddit、X、YouTube、TikTok、Instagram、HN、Polymarket、GitHub、arXiv、Techmeme、Digg、LinkedIn、StockTwits、Bluesky、网页等），该引擎通过 skills CLI 作为技能安装。
 
 **何时使用：** 从社区帖子中提取真实用户痛点，在 7/30/90/180 天窗口内检测某个类别的趋势，竞品情绪分析以及 SWOT / Porter 五力定位，开放式发现（`--discover`），人物 / 公司 / 股票代码研究，招聘信号，后续深挖。
 
@@ -724,14 +775,14 @@ flowchart TD
 
 **核心规则：**
 - 先 detect-trap：没有预检绝不运行引擎（仅在用户明确再次确认时使用 `--force`）
-- 唯一引擎，始终最新：`oma market resolve` 在使用前刷新托管副本（`~/.cache/oma-market/last30days/<tag>/`）；只有离线且没有缓存时，过时的用户安装副本才作为回退
+- 唯一引擎，作为技能安装：`oma market resolve` 读取 skills CLI 的安装（或固定版本）；`oma market update` 在用户同意后，缺失时安装、已有时更新
 - 逐字遵循解析出的引擎 `SKILL.md`；唯一的替换是用 `oma market run <args>` 代替原始的 `python3 scripts/last30days.py` 调用
 - 绝不仅依赖 WebSearch：没有引擎、没有 Python 3.12+ 或退出码非零 → 停止并报告
 - 带密钥的来源只有通过上游设置向导并获得用户同意后才启用；跳过的来源仍在页脚中显示
-- 框架只引用引擎聚类；写入文件前强制执行首行徽章和上游 LAW
+- 框架只引用引擎聚类。引擎的徽章是第一行；先写出候选简报，然后已写入的文件必须通过上游 LAWs 1 至 8 和 `resources/output-laws.md` 自检，之后才能交付
 - 每次运行在 `.agents/results/market/{topic-slug}-{YYYYMMDD}.md` 生成一份简报；框架按意图自动切换（pain/trend → SWOT，competitor → SWOT + Porter 五力，discovery → SWOT + PESTEL）
 
-**工作流：** detect-trap → `oma market resolve` → 读取上游 SKILL.md → 上游研究前步骤（设置向导、handle/subreddit 解析、查询计划）→ `oma market run … --emit=compact` → 按上游 OUTPUT CONTRACT 综合 → 添加框架 → 自检 → 写入。
+**工作流：** detect-trap → `oma market resolve` → 读取上游 SKILL.md → 上游研究前步骤（设置向导、handle/subreddit 解析、查询计划）→ `oma market run … --emit=compact` → 按上游 OUTPUT CONTRACT 综合 → 在引擎正文和引擎页脚之间加入框架章节 → 写入 → 对已写入的文件自检、修复并重新检查。
 
 ---
 
@@ -751,7 +802,7 @@ flowchart TD
 - 经济性：可读性是主要目标；不要重构计划删除的代码或冷门的低变更率代码
 - 偏离约定需要走 oma-architecture ADR 路由，而不是局部修改；所有指标都只是代理（Goodhart）
 
-**工作流：** PREPARE（分类 greenfield/brownfield、规模关卡、热点排序）→ ACQUIRE（通过符号工具读取代码，收集指标和 git 信号）→ REASON（规划原子变换序列 / expand-contract）→ ACT（一个以引擎为先的变换）→ VERIFY（不修改测试并重跑 → 提交，或 Mikado 回退）→ FINALIZE（指标变化 + 可读性结论）。
+**工作流：** PREPARE（分类 greenfield/brownfield、项目已有的规模关卡、热点排序）→ ACQUIRE（通过符号工具读取代码，收集指标和 git 信号）→ REASON（规划原子变换序列 / expand-contract）→ ACT（一个以引擎为先的变换）→ VERIFY（不修改测试并重跑 → 提交，或 Mikado 回退；无法执行测试时，在下一个变换之前停下，并将已应用的变换报告为未验证）→ FINALIZE（指标变化 + 可读性结论）。
 
 ---
 
@@ -768,7 +819,8 @@ flowchart TD
 **核心规则：**
 - 目标规范是 v0.9.0 / `paper@1` 配置；由宿主 LLM 生成 sidecar（绝不调用外部 LLM SDK）
 - 防止编造：若源文未显示 DOI、期刊或年份，则完全省略该键；永远不要写 `doi: TODO` 或猜测
-- 字段名必须准确，`provenance.actor` 为单个对象，枚举封闭，数字不加引号
+- 字段形态严格遵循 `resources/sidecar-spec.md`：字段名、单个 `provenance.actor` 对象、封闭枚举、不加引号的数字，以及带前缀的 kebab-case ID
+- 本地生成规则和 lint 跟随的是生产兼容性，而非完整的 v0.9 规范 schema；导入或 lint 第三方记录时，差异由 `resources/canonical-delta.md` 说明
 - 有证据的主张使用 `supported_by`；定义和开放问题可以只锚定来源。每条陈述的关系少于 1.5 时 `oma scholar lint` 会警告，但该比例只是诊断指标，不是配额
 - 分享前验证（`oma scholar lint`）；第三方 sidecar 使用 `--lenient`
 - 对较旧或非 2026 年论文使用 knows.academy → OpenAlex 回退；公共代理 API 不需要认证
@@ -798,9 +850,9 @@ flowchart TD
 
 ### oma-slide
 
-**领域：** 在固定 1920×1080 舞台上生成带丰富动画的 HTML 演示文稿，并通过 `oma slide` CLI 确定性地验证、打包和导出为 PDF/PNG/PPTX。
+**领域：** 在固定 1920×1080 舞台上生成带丰富动画的 HTML 演示文稿，并通过 `oma slide` CLI 确定性地验证、打包和导出为 PDF/PNG/PPTX；另有 `native-pptx` 路由，通过上游 [ppt-master](https://github.com/hugohe3/ppt-master) 技能生成可编辑的 PowerPoint 文件。
 
-**何时使用：** 根据主题或大纲创建新演示文稿，增强或重新排版现有演示文稿，生成带动画和设计规范审美的逐页 HTML，将演示文稿导出为 PDF/PNG/PPTX，应用命名样式预设，导出到 Canva 或从 Canva 导入。
+**何时使用：** 根据主题或大纲创建新演示文稿，增强或重新排版现有演示文稿，生成带动画和设计规范审美的逐页 HTML，将演示文稿导出为 PDF/PNG/PPTX，应用命名样式预设，导出到 Canva 或从 Canva 导入。需要可编辑的 PPTX、在保留设计的前提下填充或编辑现有 PPTX、把文档转成 PPTX 演示文稿、可复用模板或带旁白的 PPTX/MP4 时，使用 `native-pptx` 路由。
 
 **何时不使用：** 没有幻灯片的普通文档创建，单独生成图像（直接使用 oma-image），定义品牌或设计系统（使用 oma-design），不需要生成而只做确定性 CLI 操作（validate/bundle/export）（直接调用 `oma slide` CLI）。
 
@@ -808,51 +860,62 @@ flowchart TD
 - 技能负责编写 HTML；CLI 负责其他所有工作（脚手架、验证、打包、导出）
 - 仅使用本地素材：`<img src>`/`<video src>` 中不得使用远程 URL，只能使用 `./assets/<file>`
 - CJK → 任意韩语、日语或中文幻灯片都必须使用 Pretendard 字体
-- 每张幻灯片都必须有 `prefers-reduced-motion` 包装器、可见焦点状态和 `data-om-validate`
+- 每张幻灯片都必须有 `prefers-reduced-motion` 包装器、可见焦点状态和规范的幻灯片结构：`oma slide validate` 把 `.deck-stage` 内的每个 `.slide` 当作 1920×1080 画幅来测量，不提供按幻灯片或按元素的豁免
 - 验证最多自动修复 3 次，之后将 diff 提交给用户
 - 图像生成交给 oma-image；Canva MCP 是可选的，只有在用户明确同意后才会自动配置
+- `native-pptx`：从运行时技能目录或通过 `bunx skills use hugohe3/ppt-master@ppt-master` 加载 ppt-master，绝不修改它，只有获得同意后才安装其 Python 包，并遵循它自己的关卡
 
-**工作流：** 7 个阶段：DETECT（模式）、DISCOVER（澄清并评估素材）、STYLE（3 个实时预览 → 用户选择）、GENERATE（以 1920×1080 生成 `slide-NN.html`）、VALIDATE（`oma slide validate`，≤3 次自动修复循环）、REVIEW（查看器 + 可选 bbox 编辑器）、DELIVER（`bundle` + 可选 PDF/PNG/PPTX 导出）。
+**CLI：** `oma slide create`（搭建工作区）、`oma slide style get`（获取样式文件）、`oma slide asset fetch-video`（下载视频）、`oma slide import pptx`、`oma slide validate`、`oma slide bundle`、`oma slide export pdf|png|pptx`、`oma slide edit` 和 `oma slide doctor`。
+
+**工作流：** 7 个阶段：DETECT（路由 + 模式）、DISCOVER（复用已提供的目的、受众、幻灯片数量和素材；只有缺失的选择会实质性影响演示文稿时，才合并成一个问题询问）、STYLE（已提供的样式、现有演示文稿的惯例或合适的预设；只有请求探索样式或方向是尚未确定的关键选择时，才提供 3 个实时预览）、GENERATE（以 1920×1080 生成 `slide-NN.html`）、VALIDATE（`oma slide validate`，≤3 次自动修复循环）、REVIEW（查看器 + 可选 bbox 编辑器）、DELIVER（`bundle` + 可选 PDF/PNG/PPTX 导出）。
 
 ---
 
 ### oma-video
 
-**领域：** 通过 `oma video` CLI 生成短视频、讲解视频和真人录制演示视频，组合脚本 → 旁白 → 视觉素材 → 字幕 → HyperFrames 渲染。
+**领域：** 通过 `oma video` CLI 创建视频，并用本地媒体工具分析和编辑现有片段。
 
-**何时使用：** 从主题生成短视频（shorts/reels，9:16），从 README、代码或数据生成讲解视频（16:9/9:16），从屏幕录制（`--source file`）或对任意 URL 的监督式有头 Web 应用录制（`--source web`）生成演示或导览视频，确定性地重新渲染现有运行。
+**何时使用：** 生成短视频和讲解视频，用真人录制的 `--capture` 文件制作演示，重新渲染现有运行，提取帧，分析画面中可见的物体，去除停顿，以及组装配音片段。
 
-**何时不使用：** 生成单张静态图像（使用 oma-image），生成演示文稿（使用 oma-slide；视频会在内部调用它生成讲解帧），只生成语音音频（使用 oma-voice），对现有成品 mp4 做非线性编辑，直播（监督式 Web 录制在范围内）。
+**何时不使用：** 单张静态图像（oma-image）、演示文稿（oma-slide）、纯音频处理或语音生成/转录（oma-voice）、口语翻译（oma-translation）或直播。
 
 **核心规则：**
-- 调用前先澄清或推断模式；向用户展示推断出的计划，而不是根据含糊简报静默渲染
-- 对受支持的素材回退，供应商配置可以不使用密钥；付费供应商（Pexels、Pixelle）仅在存在环境密钥时自动启用，而合成器失败时绝不会用回退视频替代
-- 成本护栏：≥ `$0.20`（`--yes`/`OMA_VIDEO_YES=1` 可绕过）；时长上限 180 秒、场景上限 40 个
+- 处理现有片段时，先路由到媒体处理参考资料，再考虑创作模式或供应商选择；这些操作使用已安装的工具，而不是新的 CLI 生成模式
+- 对受支持的素材回退，供应商配置可以不使用密钥。素材库和 AIGC 供应商（Pexels、Pixelle）只有在使用 `--visual stock` 或 `--visual aigc` 且存在相应环境密钥时才会用到；否则视觉素材是无需密钥的 `oma-image` 静态图。合成器失败时绝不会用回退视频替代
+- 只有当场景的 `visual.ref` 是已有的演示文稿目录时，才使用 `oma-slide` 帧；该供应商不会生成演示文稿，没有演示文稿的幻灯片场景会渲染占位内容
+- 创作时使用成本护栏：≥ `$0.20`（已获授权的付费工作使用 `--yes`/`OMA_VIDEO_YES=1`）；时长上限 180 秒、场景上限 40 个；这些设置位于 `.agents/oma-config.yaml` 的 `video:` 下
 - 渲染输入记录在 `render-spec.json`、素材、种子和嵌入的 Pretendard 中；`OMA_VIDEO_MOCK=1` 是用于 golden fixture 的测试工具，不是用户交付物
-- 演示需要人在回路中：Web 录制只打开有头浏览器，在人驱动流程时录制，禁止凭据自动化；日志和清单中会遮蔽 `--url` 和令牌
+- 演示采集由人完成；`--source web --url` 只提供上下文，不会开始录制，也不会自动登录。日志和清单中要遮蔽 URL 令牌
+- 演示需要 `--polish` 才能让采集内容经过 `Demo` 组合，个人信息在其中被遮蔽。不加 `--polish` 时，输出的 MP4 是未经遮蔽的原始采集内容，只有在个人信息检查确认没有需要遮蔽的内容后才能交付
 - 路径安全（输出到 `$PWD` 之外需使用 `--allow-external-output`）
 
-**工作流：** PREPARE（模式、画面比例、语区，澄清或扩展简报）→ ACQUIRE（探测供应商可用性、验证录制路径、检查成本）→ ACT（脚本 → 语音 ∥ 视觉素材 ∥ 字幕 → render-spec → 渲染）→ VERIFY（schema、清单哈希、退出码、mp4）→ FINALIZE（运行目录 + mp4 路径 + 覆盖率警告）。
+**工作流：** PREPARE（模式、画面比例、语区；说明推断出的默认值，只有答案会改变结果时才询问）→ ACQUIRE（探测供应商可用性、验证录制路径、检查成本）→ ACT（脚本 → 语音 ∥ 视觉素材 ∥ 字幕 → render-spec → 渲染）→ VERIFY（schema、清单哈希、退出码、mp4）→ FINALIZE（运行目录 + mp4 路径 + 覆盖率警告）。
+
+现有片段的处理使用源流/PTS 检查、明确的选帧或剪切标准，以及统一的音视频编辑时间线。语音检测器和振幅检测器可能给出不同结果；应根据所请求的内容裁定有争议的区间，而不是增加剪切。配音可以保留原始编码的画面，只替换其音频。
 
 ---
 
 ### oma-voice
 
-**领域：** 通过 Voicebox MCP 服务器进行本地优先的文本转语音和语音转文本，完全在设备上运行，无云端、无 API 密钥、无单次调用费用。
+**领域：** 通过 Voicebox 在本地生成和转录语音，并用 FFmpeg 对现有音频做转换、时长适配和响度处理。
 
 **何时使用：** 生成智能体任务完成或阻塞时的短通知音频，制作旁白或音频素材（mp3 或 wav），将本地音频文件（mp3、wav、m4a、webm、flac）转录为 Markdown，对不同 profile id 重新运行相同文本以比较语音配置。
+
+也可用于将现有语音适配到所请求的时间窗口、重采样、声道转换，以及按要求的响度配置处理。视频中的放置仍由 oma-video 负责。
 
 **何时不使用：** 云端 TTS 或高保真多语言云端语音，实时终端麦克风听写（使用 Voicebox 的热键听写），上传语音克隆样本或创建 profile（在 Voicebox 桌面应用界面中完成），视频、音乐或声音设计。
 
 **核心规则：**
-- 必须使用 Voicebox：握手或 `GET /health` 失败时退出，并给出一次性安装或启动提示；不要重试或自动重新启动
-- 必须有 profile：若 `voicebox_list_profiles` 为空，指引用户打开应用界面，然后退出
-- 长度限制：每次 TTS 最多 5000 个字符（2000 个字符时警告），STT 最长 30 分钟；v1 不会自动分块
+- 生成和转录必须使用 Voicebox；处理现有音频时会绕过它的健康检查、profile 检查和模型检查
+- 只有 TTS 需要 profile；转录和本地文件处理不需要
+- 长度限制：每次 TTS 最多 5000 个字符，STT 最长 30 分钟；v1 不会自动分块
 - 自动调用透明度：只有任务超过 `auto_notify_after_sec`（默认 60 秒）时才发送通知；始终用一行说明意图
-- 路径安全（输出到 `$PWD` 之外时警告并确认）；SIGINT 不写入部分输出
-- 每次生成都必须有清单；不设成本护栏（Voicebox 免费）
+- 明确请求的输出路径即授权写入该位置；可能替换无关文件且意图不明时先澄清。被中断的调用不写入部分输出
+- 持久化的音频和转录带有清单；处理操作记录真实的来源和操作数据，不编造生成 ID
 
 **工作流：** PREPARE（验证文本、音频、语言、路径和 profile）→ ACQUIRE（缺少信号时仅澄清一次）→ ACT（MCP `voicebox_speak` 或 `voicebox_transcribe`）→ VERIFY（音频或转录存在且清单字段完整）→ FINALIZE（写入 `manifest.json`，报告路径）。
+
+针对现有文件的请求会先分派到本地处理，而不是进入上述 Voicebox 流程。保留原始音频，根据所请求的交付要求推导速度和响度目标，并将技术测量与未经评估的语音自然度分开。
 
 ---
 
@@ -921,9 +984,9 @@ oma agent spawn qa prompts/review.md session-01 --task-id task-5 --read-only
 运行多智能体工作流（`/orchestrate` 或 `/work`）时：
 
 1. **PM 智能体**将请求分解为带数字优先级层级（`1` = 无依赖；层级越低越先运行）、依赖关系和验收标准的任务。有效的现有计划会被复用
-2. **初始化会话**：生成会话 ID，并在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`
+2. **初始化会话**：生成会话 ID，为每个任务选择参考资料，并在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`
 3. **第 1 层任务**并行启动（最多 MAX_PARALLEL 个并发智能体）
-4. **监控进度**：对于 `oma agent spawn` 运行，编排器每隔 POLL_INTERVAL 轮询运行范围的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件；Claude Code 原生子智能体同步返回
+4. **监控进度**：编排器优先使用宿主的完成通知；对于没有完成通知的 `oma agent spawn` 运行，由一个协调者以有界退避轮询发生变化的运行范围 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件。Claude Code 原生子智能体同步返回
 5. **后续层级**在其依赖完成后启动
 6. **审查循环**对每个完成的智能体运行（见下文）
 7. **收集结果**：来自运行范围的结果文件和结构化声明

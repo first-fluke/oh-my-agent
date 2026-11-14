@@ -23,7 +23,7 @@ Sau đó chạy `oma doctor` và gõ `/plan add user accounts with a settings pa
 | | Mang lại gì cho bạn | Thử ngay |
 |---|---|---|
 | **12 vai trò chuyên gia** | PM, kiến trúc sư, kỹ sư backend, frontend, mobile, database và infra, QA reviewer, debugger, refactorer, docs curator, researcher ([gặp gỡ họ](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **21 workflow** | Slash command từ `/brainstorm` và `/plan` đến `/review`, `/debug` và `/scm`. Hầu hết cũng có thể khởi động từ một yêu cầu thông thường (bộ từ khóa cho tối đa 11 ngôn ngữ) | "review this PR" |
+| **20 workflow** | Slash command từ `/brainstorm` và `/plan` đến `/review`, `/debug` và `/scm`. Bốn chế độ đa agent cũng khởi động khi một yêu cầu thông thường gọi tên chúng | "ultrawork: add rate limiting" |
 | **33 skill** | Kiến thức chuyên môn chỉ được tải khi task cần: UI, API, schema, Terraform, CI, bảo mật, git, observability | tự tải, ví dụ "add a Terraform S3 bucket" |
 | **File bạn có thể mở** | Kế hoạch, design doc, API contract, ADR, ghi chú bug, kết quả theo từng agent, bằng chứng bảo mật, tài liệu giải thích HTML, bản tóm tắt | `ls .agents/results` |
 | **Kiểm tra test và artifact** | Trong một workflow chạy dài, script `test`, `lint` hoặc `typecheck` của chính bạn phải pass thì agent mới được dừng; `oma ralph verify` kiểm tra xem một lần chạy `/ralph` đã để lại file kế hoạch, QA và refactor hay chưa | `/ultrawork …`, rồi `oma goal set --gate test` |
@@ -112,8 +112,6 @@ Trong các preset có tên, chỉ `All` mới bao gồm coordination, orchestrat
    ```text
    /plan add user accounts with a settings page
    ```
-
-   Hoặc chỉ cần viết "plan user accounts with a settings page": trên các runtime có prompt hook, từ khóa sẽ khởi động cùng workflow đó.
 4. **Xem kết quả.** `/plan` chạy trong phiên hiện tại. Với công việc trải trên nhiều mảng như ví dụ này, nó ghi ra `.agents/results/plan-<session-id>.json` và một tracker tại `docs/plans/work/<NNN>-<name>.md`. Một yêu cầu nhỏ, chỉ thuộc một mảng sẽ nhận một khuyến nghị trực tiếp thay vì file kế hoạch.
 
 Sau các bước này, bạn có thể đánh giá công cụ có phù hợp hay không. Để tiếp tục, hãy chạy `/work` hoặc `/orchestrate` trên kế hoạch đó.
@@ -125,11 +123,11 @@ Chính agent của bạn dẫn dắt đội ngũ. Trong `/work`, `/orchestrate` 
 
 | Chuyên gia của bạn | Mang theo | Gọi bằng | Để lại |
 |---|---|---|---|
-| **Product manager** (`pm-planner`) | oma-pm | `/plan`, hoặc "plan the payment feature" | Một JSON kế hoạch và một tracker trong `docs/plans/work/` cho công việc mức Medium và Complex (yêu cầu mức Simple nhận khuyến nghị trực tiếp) |
+| **Product manager** (`pm-planner`) | oma-pm | `/plan` | Một JSON kế hoạch và một tracker trong `docs/plans/work/` cho công việc mức Medium và Complex (yêu cầu mức Simple nhận khuyến nghị trực tiếp) |
 | **Kiến trúc sư** (`architecture-reviewer`) | oma-architecture | `/architecture` | Một ADR hoặc khuyến nghị trong `.agents/results/architecture/` |
 | **Kỹ sư backend, frontend, mobile, database và infra** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`, `/orchestrate` | Code, test và một file `result-<agent>` cho mỗi task |
-| **QA reviewer** (`qa-reviewer`) | oma-qa | `/review`, hoặc "review this PR" | Các phát hiện xếp hạng từ CRITICAL đến LOW, mỗi phát hiện có file:line và code sửa lỗi |
-| **Debugger** (`debug-investigator`) | oma-debug | `/debug`, hoặc "fix this bug" | Một bản sửa tối thiểu, một regression test và một ghi chú bug trong `.agents/results/bugs/` khi cần thiết |
+| **QA reviewer** (`qa-reviewer`) | oma-qa | `/review` | Các phát hiện xếp hạng từ CRITICAL đến LOW, mỗi phát hiện có file:line và code sửa lỗi |
+| **Debugger** (`debug-investigator`) | oma-debug | `/debug` | Một bản sửa tối thiểu, một regression test và một ghi chú bug trong `.agents/results/bugs/` khi cần thiết |
 
 <details>
 <summary>Ba vai trò còn lại, và các skill không có vai trò</summary>
@@ -138,7 +136,7 @@ Chính agent của bạn dẫn dắt đội ngũ. Trong `/work`, `/orchestrate` 
 |---|---|---|---|
 | **Refactorer** (`refactor-engineer`) | oma-refactor | phase REFINE của `/ultrawork` | Các commit `refactor:` giữ nguyên hành vi và một báo cáo `result-refactor-<session>.md` |
 | **Docs curator** (`docs-curator`) | oma-docs | `/docs`, hoặc "verify docs" | `docs/generated/doc-refs.json` và các bản vá tài liệu bạn duyệt |
-| **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | một yêu cầu nghiên cứu | Nguồn có trích dẫn kèm nhãn độ tin cậy; báo cáo thị trường trong `.agents/results/market/` |
+| **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | một yêu cầu nghiên cứu | Nguồn có trích dẫn kèm xuất xứ của chúng; báo cáo thị trường trong `.agents/results/market/` |
 
 Kỹ sư infra (`tf-infra-engineer`) được dặn phải hỏi trước khi chạy bất kỳ `apply` hoặc `destroy` nào mang tính phá hủy hoặc trên production. Các skill còn lại (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, nội dung và media) không có vai trò riêng. Agent của bạn tự tải chúng, và với hầu hết trong số đó, skill injector sẽ gợi ý đúng skill dựa trên prompt của bạn.
 
@@ -148,7 +146,7 @@ Kỹ sư infra (`tf-infra-engineer`) được dặn phải hỏi trước khi ch
 ## Đội ngũ phối hợp thế nào
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -169,14 +167,14 @@ Mỗi bước chuyển một file cho bước tiếp theo. `/brainstorm` lưu m�
 | "Đừng dừng cho đến khi thật sự xong" | `/ralph` | Lặp lại `/ultrawork` với một trọng tài được spawn riêng, có ngữ cảnh mới, cho đến khi mọi tiêu chí đều pass; dừng kèm báo cáo dở dang khi tiêu chí bị chặn hoặc sau 5 iteration |
 | Đội ngũ chạy theo lịch | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Một log Markdown cho mỗi lần chạy, trong `~/.oma/schedule/runs/<id>/` |
 
-Bạn không cần slash command. Trên các runtime có prompt hook, yêu cầu thông thường (bộ từ khóa cho tối đa 11 ngôn ngữ) có thể khởi động hầu hết các workflow: "review this PR" khởi động `/review`. Mô tả cả một ứng dụng ("Build a TODO app with user authentication") sẽ gợi ý `/orchestrate`, và agent của bạn quyết định có chạy hay không. Từ khóa bên trong code block sẽ bị bỏ qua.
+Slash command khởi động một workflow. Yêu cầu thông thường thì không, nhưng trên các runtime có prompt hook, nó vẫn nhận được một gợi ý skill: bộ từ khóa cho tối đa 11 ngôn ngữ được so khớp với prompt và chỉ cho agent của bạn các skill tương ứng ("run a security audit" kéo `oma-qa` vào). Gợi ý này chỉ mang tính tham khảo, và từ khóa bên trong code block sẽ bị bỏ qua.
 
-`/orchestrate`, `/work`, `/ultrawork` và `/ralph` là **persistent** khi bạn gọi chúng bằng tên, dưới dạng slash command hoặc văn bản thường ("ultrawork: add rate limiting"). Khi đó agent sẽ bị đưa quay lại làm việc mỗi khi nó cố dừng sớm (tối đa 5 lần hoặc 2 giờ) cho đến khi bạn nói **"workflow done"**. Một yêu cầu chỉ khớp lỏng lẻo thì chỉ gợi ý chúng.
+`/orchestrate`, `/work`, `/ultrawork` và `/ralph` là **persistent** khi bạn gọi chúng bằng tên, dưới dạng slash command hoặc văn bản thường ("ultrawork: add rate limiting"). Khi đó agent sẽ bị đưa quay lại làm việc mỗi khi nó cố dừng sớm (tối đa 5 lần hoặc 2 giờ) cho đến khi bạn nói **"workflow done"**. Đây là bốn workflow duy nhất mà một câu thông thường có thể khởi động, và chỉ khi gọi bằng tên.
 
 Trong [benchmark](../benchmarks/README.md) (một prompt, Claude Code với năm cấu hình add-on khác nhau, kể cả bản thuần, `claude-opus-4-6`, mỗi cấu hình build một lần), oma đạt 80.6 so với 70.7 của Claude Code thuần. Chi phí cao gấp 1.7 lần ($4.04 so với $2.37), còn thời gian chạy lâu gấp 1.8 lần.
 
 <details>
-<summary>Toàn bộ 21 workflow</summary>
+<summary>Toàn bộ 20 workflow</summary>
 
 | Lệnh | Chức năng |
 |---------|--------------|
@@ -185,7 +183,7 @@ Trong [benchmark](../benchmarks/README.md) (một prompt, Claude Code với năm
 | `/convert` | Chuyển PDF/HWP sang Markdown, hoặc chuyển mã ảnh, video và âm thanh bằng ffmpeg |
 | `/debug` | Tái hiện bug, sửa nguyên nhân gốc, viết regression test và quét các pattern tương tự |
 | `/deepinit` | Phân tích codebase hiện có và ghi lại thành AGENTS.md, ARCHITECTURE.md và một kho kiến thức docs/ |
-| `/design` | Xây dựng hệ thống thiết kế, DESIGN.md và token kèm kiểm tra accessibility |
+| `/design` | Xác định phạm vi của một task thiết kế và bàn giao các phát hiện, DESIGN.md hoặc token thông qua oma-design |
 | `/docs` | Tìm tham chiếu tài liệu bị hỏng và đề xuất bản vá cho những tài liệu mà một diff chạm tới |
 | `/explain` | Biến diff, PR, nhánh hoặc một chủ đề thành tài liệu giải thích HTML tương tác độc lập |
 | `/orchestrate` | Chạy các agent song song, điều phối chúng qua trạng thái file và kiểm chứng kết quả (persistent) |
@@ -197,12 +195,11 @@ Trong [benchmark](../benchmarks/README.md) (một prompt, Claude Code với năm
 | `/scm` | Xử lý branch, merge, conflict, worktree và Conventional Commits |
 | `/security` | Quét mã nguồn, skill của agent và thành phần MCP, xác minh phát hiện và thiết lập gate CI |
 | `/stack-set` | Phát hiện tech stack của bạn và tạo tài liệu tham chiếu riêng cho stack đó để các domain skill dùng |
-| `/tools` | Liệt kê, bật và tắt MCP tool bằng ngôn ngữ tự nhiên |
 | `/ultrawork` | Năm phase (PLAN, IMPL, VERIFY, REFINE, SHIP), mỗi lượt review chạy trong một phiên reviewer mới (persistent) |
 | `/video` | Biến một bản brief thành file MP4 hoàn chỉnh qua pipeline không bắt buộc có key |
 | `/work` | Điều phối nhiều agent trong dự án đa domain, có PM lập kế hoạch và QA review (persistent) |
 
-Độ chính xác của việc kích hoạt được đo lường chứ không phải phỏng đoán: `oma verify triggers` chấm điểm bộ phát hiện trên một corpus 212 prompt tiếng Anh và tiếng Hàn đã gán nhãn, và CI sẽ thất bại nếu tỷ lệ kích hoạt nhầm vượt 10% hoặc tỷ lệ bỏ sót vượt 20%. Lần đo gần nhất: **0% missed-fire, 5.3% false-fire**. Tài liệu tham chiếu đầy đủ: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
+Độ chính xác của việc kích hoạt được đo lường chứ không phải phỏng đoán: `oma verify triggers` chấm điểm bộ phát hiện trên một corpus 212 prompt tiếng Anh và tiếng Hàn đã gán nhãn, và CI sẽ thất bại nếu tỷ lệ kích hoạt nhầm vượt 10% hoặc tỷ lệ bỏ sót vượt 20%. Lần đo gần nhất: **0% missed-fire, 0% false-fire**. Tài liệu tham chiếu đầy đủ: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
 
@@ -244,10 +241,10 @@ Sau đó, `oma state list` tìm ra phiên và `oma state get <oma-sid>` (ID mà 
 
 | Lệnh | Chức năng | Ghi ra |
 |---|---|---|
-| `/brainstorm` | Mỗi lần chỉ hỏi một câu để làm rõ, đề xuất 2-3 hướng tiếp cận khác nhau về cách làm, rồi chuyển sang `/plan`. Không viết code | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | Mỗi lần chỉ hỏi một câu để làm rõ, đề xuất 2-3 hướng tiếp cận khác nhau về cách làm, rồi chuyển sang `/plan`. Không viết code | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | Đánh giá quy mô công việc là Simple, Medium hay Complex; với Medium và Complex, chia thành các task, mỗi task có một agent, các phụ thuộc, tiêu chí chấp nhận và một lệnh kiểm tra, đồng thời định nghĩa API contract khi công việc vượt qua một ranh giới | `.agents/results/plan-<sid>.json`, `docs/plans/work/<NNN>-<name>.md`, contract trong `.agents/results/api-contracts/` khi cần |
 | `/architecture` | Trước tiên đọc các quyết định đã có, so sánh ít nhất 2 phương án và đánh dấu các ADR bị thay thế là superseded | Một ADR hoặc khuyến nghị trong `.agents/results/architecture/` |
-| `/design` | Đề xuất 2-3 hướng, sau đó viết `DESIGN.md` kèm token và kiểm tra responsive layout cùng accessibility | `DESIGN.md`, token CSS/Tailwind/shadcn |
+| `/design` | Xác lập phạm vi và bối cảnh, chọn hướng dẫn thiết kế cho task, rồi bàn giao các phát hiện từ đợt kiểm tra, `DESIGN.md` hoặc token được ánh xạ vào hệ thống token sẵn có của dự án | Các phát hiện, `DESIGN.md`, design token |
 
 </details>
 
@@ -274,7 +271,7 @@ Sau đó, `oma state list` tìm ra phiên và `oma state get <oma-sid>` (ID mà 
 | Lệnh hoặc skill | Chức năng | Ghi ra |
 |---|---|---|
 | `/review` | Kiểm tra dependency, rồi OWASP Top 10, hiệu suất, WCAG 2.2 AA và chất lượng code. Mọi phát hiện đều có file:line và code sửa lỗi | Báo cáo trong chat cùng một bản ghi memory; không có file báo cáo |
-| `/security` | Quét mã nguồn, skill của agent và MCP server của bạn (Deepsec, Cisco Skill and MCP Scanner), và khi có một bản triển khai thử nghiệm đã giới hạn phạm vi, chạy pen test ARTEX. Workflow yêu cầu engine nào không chạy được phải được báo là thất bại, không phải là sạch | `.agents/results/security/<run-id>/` |
+| `/security` | Quét mã nguồn, skill của agent và MCP server của bạn (Deepsec, Cisco Skill and MCP Scanner), đồng thời xác minh các phát hiện. Pen test chỉ chạy khi được yêu cầu rõ ràng, trên một nền tảng runtime mà bạn cung cấp và đã rà soát. Workflow yêu cầu engine nào không chạy được phải được báo là thất bại, không phải là sạch | `.agents/results/security/<run-id>/` |
 | `/debug` | Tái hiện lỗi, sửa nguyên nhân gốc bằng thay đổi tối thiểu, thêm regression test và quét cùng pattern ở những chỗ khác | Bản sửa và test; một ghi chú bug trong `.agents/results/bugs/` khi cần thiết |
 | oma-refactor | Thay đổi cấu trúc mà không đổi hành vi: characterization test trước, rồi các commit chỉ chứa refactor | `.agents/results/refactor/` |
 | `/scm` | Conventional Commits tách theo thay đổi logic; branch, merge, rebase và worktree | Commit và branch |
@@ -299,7 +296,7 @@ Sau đó, `oma state list` tìm ra phiên và `oma state get <oma-sid>` (ID mà 
 
 | Skill | Chức năng | Ghi ra |
 |---|---|---|
-| oma-search | Tìm kiếm tài liệu, web và code, gắn nhãn độ tin cậy cho từng nguồn | Kết quả có trích dẫn |
+| oma-search | Tìm kiếm tài liệu, web và code, ghi rõ nội dung nào đã được đọc và nội dung nào chỉ được trích đoạn | Kết quả có trích dẫn |
 | oma-market | Pain point, xu hướng và đối thủ từ tín hiệu cộng đồng, trình bày theo khung SWOT, Porter's 5 Forces và PESTEL | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | Tìm kiếm bài báo bằng cách đọc một file claim cô đọng (định dạng Knows, khoảng 700 token) thay vì toàn bộ PDF (khoảng 10K token) | `<paper>.knows.yaml` |
 | oma-academic-writing | Soạn và kiểm tra văn bản học thuật theo rubric | File của bạn |
@@ -326,7 +323,7 @@ Các pipeline này báo rõ khi thiếu nguồn hoặc key của vendor thay vì
 
 | Hook | Chức năng | Cách tắt / giới hạn |
 |---|---|---|
-| Khởi động bằng từ khóa | Khởi động workflow tương ứng từ một yêu cầu thông thường | Bỏ qua câu hỏi, văn bản dán vào và code block |
+| Khởi động bằng từ khóa | Khởi động `/orchestrate`, `/work`, `/ultrawork` hoặc `/ralph` khi một yêu cầu thông thường gọi tên workflow đó | Bỏ qua câu hỏi, văn bản dán vào và code block |
 | Skill injector | Chỉ cho agent đúng skill cho prompt | Tạm dừng khi có persistent workflow đang hoạt động |
 | Stop gate | Đưa persistent workflow quay lại làm việc; với `oma goal set --gate test`, việc dừng được cho phép khi script đó thoát với mã 0 trong vòng 25 giây | Nói "workflow done"; nó cũng tự gỡ sau 5 lần chặn hoặc 2 giờ |
 | Refactor guard | Khi dừng, đánh dấu các file đã sửa dài quá 500 dòng cho `refactor-engineer` | Phải bật thủ công: `refactor_guard.enabled` |
@@ -363,7 +360,7 @@ Các pipeline này báo rõ khi thiếu nguồn hoặc key của vendor thay vì
 
 Serena cung cấp khả năng điều hướng mã và chẩn đoán dựa trên LSP, bao gồm phản hồi sau khi chỉnh sửa native nếu được hỗ trợ. Việc chọn provider độc lập với runtime của agent; khả năng thay đổi tùy theo provider và host.
 
-Các agent phối hợp qua các file thường trong `.agents/state/`, không cần dịch vụ bên ngoài. `/tools` bật hoặc tắt MCP tool bằng ngôn ngữ tự nhiên. Chi tiết: [Capability Provider](./capability-providers.md).
+Các agent phối hợp qua các file thường trong `.agents/state/`, không cần dịch vụ bên ngoài. Chi tiết: [Capability Provider](./capability-providers.md).
 
 </details>
 
@@ -415,8 +412,8 @@ Các agent phối hợp qua các file thường trong `.agents/state/`, không c
 | **oma-refactor** | Tái cấu trúc mã mà không đổi hành vi, dùng hotspot, characterization test và commit chỉ chứa refactor |
 | **oma-scholar** | Tìm kiếm tài liệu học thuật và tạo sidecar bài báo Knows cho luận điểm, bằng chứng và bình duyệt |
 | **oma-scm** | Quản lý nhánh, merge, worktree và Conventional Commits |
-| **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và chấm điểm mức độ đáng tin của kết quả |
-| **oma-security** | Quét mã nguồn, skill của agent và thành phần MCP; kiểm thử ứng dụng web đã triển khai và xác minh phát hiện |
+| **oma-search** | Định tuyến mỗi truy vấn đến nguồn tốt nhất và cho biết mỗi kết quả đến từ đâu, đã thực sự được đọc hay chưa |
+| **oma-security** | Quét mã nguồn, skill của agent và thành phần MCP, đồng thời xác minh phát hiện; pen test chỉ chạy trên nền tảng do người dùng cung cấp và đã được rà soát |
 | **oma-skill-creation** | Soạn và kiểm tra skill OMA mới |
 | **oma-slide** | Tạo deck trình bày HTML và xuất sang PDF/PNG/PPTX |
 | **oma-tf-infra** | Triển khai hạ tầng đa đám mây bằng Terraform |
@@ -567,7 +564,7 @@ Mọi cơ chế dưới đây, trừ trọng tài theo prompt, đều mang tính
 | **Artifact gate** | `oma ralph verify --json` kiểm tra bản ghi các phase, JSON kế hoạch và file kết quả từ **một QA agent riêng biệt** và **một refactor agent riêng biệt**, mỗi thứ gắn với các lần chạy agent đã được ghi lại. | [`ralph.md`](../.agents/workflows/ralph.md) |
 | **Trọng tài theo prompt** | Không mang tính máy móc: prompt của `/ralph` yêu cầu orchestrator spawn một trọng tài với ngữ cảnh mới, kiểm tra lại **mọi** tiêu chí ở từng iteration. Không có gì kiểm tra xem việc spawn đó có thực sự diễn ra hay không. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **Nhật ký sự kiện** | Trong một phiên OMA, mỗi lần gate pass, gate fail và mỗi quyết định đều thêm một dòng JSON vào `events.jsonl` của phiên đó. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Kiểm tra theo từng agent** | `oma verify agent <type>` chạy Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs và TDD Evidence, cộng thêm các kiểm tra theo loại như TypeScript, Any Types, SQL Injection và test. | `oma verify agent --help` |
+| **Kiểm tra theo từng agent** | `oma verify agent <type>` chạy Scope Check, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs và TDD Evidence, cộng thêm các kiểm tra theo loại như TypeScript, Any Types, SQL Injection và test. | `oma verify agent --help` |
 
 > Stop hook ghi event của gate vào phiên OMA được mở khi persistent workflow bắt đầu. Việc ghi event là best-effort. Nếu không tạo được phiên (stderr in ra `[oma] L1 session activation failed`), gate thất bại vẫn chặn việc dừng nhưng không ghi dòng `gate.failed`. Trước khi dựa vào các event này hoặc đem ra demo, hãy dùng `oma state list` để kiểm tra có phiên đang hoạt động. Sau đó, `oma state get <sid>` sẽ hiển thị event của phiên.
 

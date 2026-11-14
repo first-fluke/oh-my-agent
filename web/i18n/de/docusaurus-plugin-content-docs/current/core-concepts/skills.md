@@ -108,42 +108,30 @@ Quelle: `cli/commands/agent/spawn-status.ts`, `cli/platform/agent-config/loaders
 ├── resources/
 │   ├── execution-protocol.md
 │   ├── tech-stack.md
-│   ├── screen-template.dart
-│   ├── screen-template.swift         ← Swift native iOS screen template
-│   ├── screen-template.tsx            ← React Native screen template
 │   ├── checklist.md
 │   └── error-playbook.md
 └── variants/                          ← Platform seeds for /stack-set
     ├── README.md
     ├── stack.schema.json
-    ├── flutter/                       ← stack.yaml, tech-stack.md, snippets.md, api-template.dart
-    ├── react-native/                  ← stack.yaml, tech-stack.md, snippets.md, api-template.ts
-    └── swift-ios/                     ← stack.yaml, tech-stack.md, snippets.md, api-template.swift
+    ├── flutter/                       ← stack.yaml, tech-stack.md, snippets.md
+    ├── react-native/                  ← stack.yaml, tech-stack.md, snippets.md
+    └── swift-ios/                     ← stack.yaml, tech-stack.md, snippets.md
 
 .agents/skills/oma-design/
 ├── SKILL.md
-├── resources/
-│   ├── execution-protocol.md
-│   ├── anti-patterns.md
-│   ├── asset-strategy.md
-│   ├── checklist.md
-│   ├── design-md-spec.md
-│   ├── design-tokens.md
-│   ├── getdesign-fetcher.md
-│   ├── prompt-enhancement.md
-│   ├── redesign-protocol.md
-│   ├── stitch-integration.md
-│   └── error-playbook.md
-└── reference/                         ← Deep reference material
-    ├── typography.md
-    ├── color-and-contrast.md
-    ├── spatial-design.md
-    ├── motion-design.md
-    ├── responsive-design.md
-    ├── component-patterns.md
-    ├── accessibility.md
-    ├── visual-hierarchy.md
-    └── shader-and-3d.md
+└── resources/
+    ├── execution-protocol.md
+    ├── external-design-skills.md
+    ├── product-interface-review.md
+    ├── redesign-protocol.md
+    ├── design-md-spec.md
+    ├── design-tokens.md
+    ├── data-grid.md
+    ├── asset-strategy.md
+    ├── getdesign-fetcher.md
+    ├── stitch-integration.md
+    ├── checklist.md
+    └── error-playbook.md
 ```
 
 ---
@@ -157,7 +145,7 @@ Quelle: `cli/commands/agent/spawn-status.ts`, `cli/platform/agent-config/loaders
 | **Fehler-Playbook** | `error-playbook.md` | Schritte vom Symptom zur Wiederherstellung; fehlende Informationen oder Befugnisse pausieren nur die davon abhängige Aktion | Nur nach einem beobachteten Fehler |
 | **Checkliste** | `checklist.md` | Domänenspezifische Qualitätsverifikation | Relevante Abschnitte, für offene Verifikation |
 | **Snippets** | `snippets.md` | Kopierbereite Code-Muster | Ungewohnte Implementierung oder Ausgabeform |
-| **Beispiele** | `examples.md` | Ausgearbeitete Ein-/Ausgabebeispiele (oma-pm, oma-db, oma-tf-infra, oma-observability, oma-search) | Ungewohnte Implementierung oder Ausgabeform |
+| **Beispiele** | `examples.md` | Ausgearbeitete Ein-/Ausgabebeispiele (oma-pm, oma-db, oma-tf-infra, oma-observability) | Ungewohnte Implementierung oder Ausgabeform |
 | **Varianten** | `variants/`-Verzeichnis | Sprach-/Framework-Starter-Seeds. Backend liefert `node`, `python` und `rust`; Mobile liefert `flutter`, `react-native` und `swift-ios`. `/stack-set` erzeugt daraus das `stack/` des Projekts. | Wenn ein passender Stack eingerichtet wird |
 | **Vorlagen** | `screen-template.{dart,swift,tsx}` (oma-mobile), `variants/*/api-template.*` | Boilerplate für einen neuen Screen oder ein neues API-Modul | Beim Erstellen dieser Datei |
 | **Domänenreferenz** | `orm-reference.md`, `anti-patterns.md` usw. | Vertiefte Domänenkenntnisse für spezifische Teilaufgaben | Aufgabentypspezifisch |
@@ -337,12 +325,10 @@ Dies sind Beispiele für Referenzen, die herangezogen werden, wenn die Aufgabe s
 
 | Aufgabentyp | Erforderliche Ressourcen |
 |-----------|-------------------|
-| Design-System-Erstellung | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Landingpage-Design | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
-| Design-Audit | checklist.md + anti-patterns.md |
+| Design-System-Erstellung | design-md-spec.md |
+| Design-Audit | checklist.md |
 | Design-Token-Export | design-tokens.md |
-| 3D- / Shader-Effekte | reference/shader-and-3d.md + reference/motion-design.md |
-| Barrierefreiheits-Review | reference/accessibility.md + checklist.md |
+| Barrierefreiheits-Review | checklist.md |
 
 ### QA-Agent {#qa-agent}
 

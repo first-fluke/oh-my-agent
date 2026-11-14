@@ -8,7 +8,7 @@ description: Strukturierter Debugging-Workflow in sieben Schritten mit Schweregr
 
 ## Wann der Debug-Workflow eingesetzt wird
 
-Verwenden Sie `/debug` (oder sagen Sie in natürlicher Sprache "fix bug", "fix error", "debug"), wenn Sie einen bestimmten Bug diagnostizieren und beheben möchten. Der Workflow bietet einen strukturierten, reproduzierbaren Ansatz zum Debuggen, der die häufige Falle vermeidet, Symptome statt Ursachen zu beheben.
+Verwenden Sie `/debug`, wenn Sie einen bestimmten Bug diagnostizieren und beheben möchten. Eine einfache Anfrage wie "find the root cause" lädt den Skill `oma-debug` über den Skill-Hinweis, aber nur der Slash-Befehl startet diesen Workflow. Der Workflow bietet einen strukturierten, reproduzierbaren Ansatz zum Debuggen, der die häufige Falle vermeidet, Symptome statt Ursachen zu beheben.
 
 Der Debug-Workflow unterstützt alle konfigurierten Anbieter. Die Schritte 1-5 werden inline ausgeführt. Schritt 6 (Scan nach ähnlichen Mustern) kann an einen `debug-investigator`-Subagenten delegiert werden, wenn der Scan-Umfang groß ist (10+ Dateien oder domänenübergreifende Fehler); anschließend legt Schritt 7 den Memory-Eintrag an.
 

@@ -52,7 +52,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 | | 제공하는 것 | 써 보기 |
 |---|---|---|
 | **전문 역할 12개** | PM, 아키텍트, 백엔드·프런트엔드·모바일·데이터베이스·인프라 엔지니어, QA 리뷰어, 디버거, 리팩터러, 문서 큐레이터, 리서처([팀 소개](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **워크플로우 21개** | `/brainstorm`, `/plan`부터 `/review`, `/debug`, `/scm`까지의 슬래시 커맨드. 대부분은 평범한 요청으로도 시작됩니다(최대 11개 언어의 키워드 뱅크) | "review this PR" |
+| **워크플로우 20개** | `/brainstorm`, `/plan`부터 `/review`, `/debug`, `/scm`까지의 슬래시 커맨드. 멀티 에이전트 모드 네 가지는 평범한 요청에서 이름을 부르는 것으로도 시작됩니다 | "ultrawork: add rate limiting" |
 | **스킬 33개** | 태스크에 필요할 때만 불러오는 도메인 노하우: UI, API, 스키마, Terraform, CI, 보안, git, 관측성 | 저절로 불러옴. 예: "add a Terraform S3 bucket" |
 | **직접 열어 볼 수 있는 파일** | 계획, 설계 문서, API 계약, ADR, 버그 노트, 에이전트별 결과, 보안 증거, HTML 설명서, 요약 | `ls .agents/results` |
 | **워크플로우 검사** | 오래 실행되는 워크플로우에서는 프로젝트의 `test`, `lint`, `typecheck` 스크립트가 통과해야 에이전트가 멈출 수 있습니다. `oma ralph verify`는 `/ralph` 실행이 plan, QA, refactor 파일을 남겼는지 확인합니다 | `/ultrawork …` 후 `oma goal set --gate test` |
@@ -160,11 +160,11 @@ oma install --preset frontend --yes
 
 | 전문가 | 갖춘 스킬 | 부르는 방법 | 남기는 것 |
 |---|---|---|---|
-| **프로덕트 매니저** (`pm-planner`) | oma-pm | `/plan`, 또는 "plan the payment feature" | Medium·Complex 작업에는 plan JSON과 `docs/plans/work/`의 트래커(Simple 요청에는 바로 권고안) |
+| **프로덕트 매니저** (`pm-planner`) | oma-pm | `/plan` | Medium·Complex 작업에는 plan JSON과 `docs/plans/work/`의 트래커(Simple 요청에는 바로 권고안) |
 | **아키텍트** (`architecture-reviewer`) | oma-architecture | `/architecture` | `.agents/results/architecture/`의 ADR 또는 권고안 |
 | **백엔드, 프런트엔드, 모바일, 데이터베이스, 인프라 엔지니어** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`, `/orchestrate` | 코드, 테스트, 태스크마다 `result-<agent>` 파일 |
-| **QA 리뷰어** (`qa-reviewer`) | oma-qa | `/review`, 또는 "review this PR" | CRITICAL부터 LOW까지 순위를 매긴 발견 사항. 각각 file:line과 수정 코드 포함 |
-| **디버거** (`debug-investigator`) | oma-debug | `/debug`, 또는 "fix this bug" | 최소한의 수정, 회귀 테스트, 필요할 때 `.agents/results/bugs/`의 버그 노트 |
+| **QA 리뷰어** (`qa-reviewer`) | oma-qa | `/review` | CRITICAL부터 LOW까지 순위를 매긴 발견 사항. 각각 file:line과 수정 코드 포함 |
+| **디버거** (`debug-investigator`) | oma-debug | `/debug` | 최소한의 수정, 회귀 테스트, 필요할 때 `.agents/results/bugs/`의 버그 노트 |
 
 <details>
 <summary>나머지 세 역할, 그리고 역할이 없는 스킬</summary>
@@ -173,7 +173,7 @@ oma install --preset frontend --yes
 |---|---|---|---|
 | **리팩터러** (`refactor-engineer`) | oma-refactor | `/ultrawork`의 REFINE phase | 동작을 보존하는 `refactor:` 커밋과 `result-refactor-<session>.md` 보고서 |
 | **문서 큐레이터** (`docs-curator`) | oma-docs | `/docs`, 또는 "verify docs" | `docs/generated/doc-refs.json`과 승인한 문서 패치 |
-| **리서처** (`research-explorer`) | oma-search, oma-market, oma-scholar | 리서치 요청 | 신뢰도 라벨이 붙은 출처, `.agents/results/market/`의 시장 브리프 |
+| **리서처** (`research-explorer`) | oma-search, oma-market, oma-scholar | 리서치 요청 | 어디서 어떻게 얻었는지가 표시된 출처, `.agents/results/market/`의 시장 브리프 |
 
 인프라 엔지니어(`tf-infra-engineer`)는 파괴적이거나 프로덕션을 대상으로 하는 `apply`, `destroy`를 실행하기 전에 먼저 묻도록 지시받습니다. 나머지 스킬(brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, 콘텐츠와 미디어)에는 전담 역할이 없습니다. 에이전트가 직접 불러오며, 대부분은 스킬 인젝터가 프롬프트를 보고 알맞은 스킬을 제안합니다.
 
@@ -183,7 +183,7 @@ oma install --preset frontend --yes
 ## 팀이 함께 일하는 방식
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -204,14 +204,14 @@ oma install --preset frontend --yes
 | "정말 끝날 때까지 멈추지 마" | `/ralph` | 별도로 띄운 새 컨텍스트의 judge가 모든 기준을 통과로 판정할 때까지 `/ultrawork`를 반복. 기준이 막히거나 5회 iteration이 지나면 부분 보고서를 내고 멈춤 |
 | 정해진 주기로 일하는 팀 | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 실행마다 `~/.oma/schedule/runs/<id>/`에 Markdown 로그 하나 |
 
-슬래시 커맨드를 꼭 쓰지 않아도 됩니다. 프롬프트 hook이 있는 런타임에서는 평범한 요청(최대 11개 언어의 키워드 뱅크)으로 대부분의 워크플로우를 시작할 수 있습니다. "review this PR"은 `/review`를 시작합니다. 앱 전체를 설명하면("Build a TODO app with user authentication") `/orchestrate`를 제안하고, 실행할지는 에이전트가 판단합니다. 코드 블록 안의 키워드는 무시됩니다.
+워크플로우는 슬래시 커맨드로 시작합니다. 평범한 요청은 워크플로우를 시작하지 않지만, 프롬프트 hook이 있는 런타임에서는 스킬 힌트를 받습니다. 최대 11개 언어의 키워드 뱅크가 프롬프트와 일치하는 키워드를 찾아 에이전트에 맞는 스킬을 알려 줍니다("run a security audit"은 `oma-qa`를 불러옵니다). 힌트는 권고일 뿐이며, 코드 블록 안의 키워드는 무시됩니다.
 
-`/orchestrate`, `/work`, `/ultrawork`, `/ralph`는 슬래시 커맨드로든 평문으로든("ultrawork: add rate limiting") 이름으로 호출하면 **persistent** 워크플로우가 됩니다. 이때 에이전트가 일찍 멈추려 하면 "**workflow done**"이라고 말할 때까지 다시 작업으로 돌려보냅니다(최대 5회 또는 2시간). 느슨하게 일치하는 요청은 이 워크플로우를 제안만 합니다.
+`/orchestrate`, `/work`, `/ultrawork`, `/ralph`는 슬래시 커맨드로든 평문으로든("ultrawork: add rate limiting") 이름으로 호출하면 **persistent** 워크플로우가 됩니다. 이때 에이전트가 일찍 멈추려 하면 "**workflow done**"이라고 말할 때까지 다시 작업으로 돌려보냅니다(최대 5회 또는 2시간). 평범한 문장으로 시작할 수 있는 워크플로우는 이 넷뿐이며, 그것도 이름으로 호출할 때만 시작됩니다.
 
 **측정 결과와 유의사항.** [벤치마크](../benchmarks/README.md)(프롬프트 하나, 아무것도 더하지 않은 구성을 포함해 애드온 구성이 서로 다른 Claude Code 다섯 개, `claude-opus-4-6`, 구성당 빌드 1회)에서 oma는 80.6점으로 순수 Claude Code의 70.7점보다 높았지만, 비용은 1.7배($4.04 대 $2.37), 시간은 1.8배가 들었습니다.
 
 <details>
-<summary>워크플로우 21개 전체</summary>
+<summary>워크플로우 20개 전체</summary>
 
 | 커맨드 | 하는 일 |
 |---------|--------------|
@@ -220,7 +220,7 @@ oma install --preset frontend --yes
 | `/convert` | PDF/HWP를 Markdown으로 변환하거나 ffmpeg로 이미지, 영상, 오디오를 트랜스코딩 |
 | `/debug` | 버그를 재현하고 근본 원인을 고친 뒤 회귀 테스트를 작성하고 비슷한 패턴을 찾아봄 |
 | `/deepinit` | 기존 코드베이스를 AGENTS.md, ARCHITECTURE.md, docs/ 지식 베이스로 정리 |
-| `/design` | 접근성 검사를 거친 디자인 시스템, DESIGN.md, 토큰을 구축 |
+| `/design` | 디자인 태스크의 범위를 정하고 oma-design으로 발견 사항, DESIGN.md, 토큰을 전달 |
 | `/docs` | 깨진 문서 참조를 찾고 diff가 건드린 문서에 대한 패치를 제안 |
 | `/explain` | diff, PR, 브랜치, 주제를 self-contained 인터랙티브 HTML 설명서로 변환 |
 | `/orchestrate` | 에이전트를 병렬로 실행하고 파일 상태로 조율한 뒤 결과를 검증 (persistent) |
@@ -232,12 +232,11 @@ oma install --preset frontend --yes
 | `/scm` | 브랜치, 머지, 충돌, 워크트리, Conventional Commits를 처리 |
 | `/security` | 소스, 에이전트 스킬, MCP 구성 요소를 스캔하고 발견 사항을 검증한 뒤 CI 게이트를 설정 |
 | `/stack-set` | 기술 스택을 감지해 도메인 스킬용 스택별 레퍼런스를 생성 |
-| `/tools` | MCP 도구를 평이한 말로 조회하고 켜고 끔 |
 | `/ultrawork` | 다섯 phase(PLAN, IMPL, VERIFY, REFINE, SHIP), 리뷰마다 새 리뷰어 세션에서 실행 (persistent) |
 | `/video` | 키 없이도 동작하는 파이프라인으로 브리프를 완성된 MP4로 제작 |
 | `/work` | PM 계획과 QA 리뷰를 곁들여 여러 도메인에 걸친 프로젝트에서 여러 에이전트를 조율 (persistent) |
 
-`oma verify triggers`는 라벨링된 영어·한국어 프롬프트 212개 코퍼스로 감지기를 평가합니다. 오발화가 10%를 넘거나 미발화가 20%를 넘으면 CI가 실패합니다. 최근 측정값: **미발화 0%, 오발화 5.3%**. 전체 레퍼런스: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
+`oma verify triggers`는 라벨링된 영어·한국어 프롬프트 212개 코퍼스로 감지기를 평가합니다. 오발화가 10%를 넘거나 미발화가 20%를 넘으면 CI가 실패합니다. 최근 측정값: **미발화 0%, 오발화 0%**. 전체 레퍼런스: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
 
@@ -279,10 +278,10 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | 커맨드 | 하는 일 | 쓰는 파일 |
 |---|---|---|
-| `/brainstorm` | 한 번에 하나씩 확인 질문을 던지고, 서로 다르게 동작하는 접근법 2~3가지를 제안한 뒤 `/plan`으로 넘깁니다. 코드는 쓰지 않습니다 | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | 한 번에 하나씩 확인 질문을 던지고, 서로 다르게 동작하는 접근법 2~3가지를 제안한 뒤 `/plan`으로 넘깁니다. 코드는 쓰지 않습니다 | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | 작업 규모를 Simple, Medium, Complex로 판정합니다. Medium과 Complex 작업은 태스크로 나누어 각 태스크에 에이전트, 의존성, 인수 기준, 확인 커맨드를 지정하고, 작업이 경계를 넘으면 API 계약을 정의합니다 | `.agents/results/plan-<sid>.json`, `docs/plans/work/<NNN>-<name>.md`, 필요하면 `.agents/results/api-contracts/`의 계약 |
 | `/architecture` | 이전 결정부터 읽고, 최소 2개의 옵션을 비교하며, 대체된 ADR은 superseded로 표시합니다 | `.agents/results/architecture/`의 ADR 또는 권고안 |
-| `/design` | 2~3가지 방향을 제안한 뒤 토큰이 포함된 `DESIGN.md`를 쓰고, 반응형 레이아웃과 접근성을 감사합니다 | `DESIGN.md`, CSS/Tailwind/shadcn 토큰 |
+| `/design` | 범위와 컨텍스트를 확인하고 태스크에 맞는 디자인 가이드를 고른 뒤, 감사 발견 사항이나 `DESIGN.md`, 또는 프로젝트의 기존 토큰 시스템에 매핑한 토큰을 전달합니다 | 발견 사항, `DESIGN.md`, 디자인 토큰 |
 
 </details>
 
@@ -309,7 +308,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 | 커맨드 또는 스킬 | 하는 일 | 쓰는 파일 |
 |---|---|---|
 | `/review` | 의존성 감사를 한 뒤 OWASP Top 10, 성능, WCAG 2.2 AA, 코드 품질을 리뷰합니다. 모든 발견 사항에 file:line과 수정 코드가 붙습니다 | 채팅의 보고서와 메모리 기록. 보고서 파일은 없음 |
-| `/security` | 소스, 에이전트 스킬, MCP 서버를 스캔하고(Deepsec, Cisco Skill and MCP Scanner), 범위가 정해진 테스트 배포가 있으면 ARTEX 펜테스트를 실행합니다. 워크플로우는 실행에 실패한 엔진을 깨끗하다고 보고하지 말고 실패로 보고하도록 요구합니다 | `.agents/results/security/<run-id>/` |
+| `/security` | 소스, 에이전트 스킬, MCP 서버를 스캔하고(Deepsec, Cisco Skill and MCP Scanner) 발견 사항을 검증합니다. 펜테스트는 명시적으로 요청한 경우에만, 사용자가 제공하고 검토한 런타임 플랫폼을 대상으로 실행합니다. 워크플로우는 실행에 실패한 엔진을 깨끗하다고 보고하지 말고 실패로 보고하도록 요구합니다 | `.agents/results/security/<run-id>/` |
 | `/debug` | 실패를 재현하고, 최소한의 변경으로 근본 원인을 고치고, 회귀 테스트를 추가한 뒤, 같은 패턴이 다른 곳에도 있는지 찾아봅니다 | 수정과 테스트. 필요할 때 `.agents/results/bugs/`의 버그 노트 |
 | oma-refactor | 동작은 그대로 두고 구조만 바꿉니다. 특성화 테스트를 먼저 쓰고, 그다음 리팩토링만 담은 커밋을 만듭니다 | `.agents/results/refactor/` |
 | `/scm` | 논리적 변경 단위로 나눈 Conventional Commits. 브랜치, 머지, 리베이스, 워크트리 | 커밋과 브랜치 |
@@ -334,7 +333,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | 스킬 | 하는 일 | 쓰는 파일 |
 |---|---|---|
-| oma-search | 문서, 웹, 코드 검색. 출처마다 신뢰도 라벨을 붙입니다 | 출처가 달린 결과 |
+| oma-search | 문서, 웹, 코드 검색. 실제로 읽은 것과 발췌만 본 것을 구분해 표시합니다 | 출처가 달린 결과 |
 | oma-market | 커뮤니티 시그널에서 페인 포인트, 트렌드, 경쟁사를 찾아 SWOT, Porter's 5 Forces, PESTEL로 정리합니다 | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | 전체 PDF(약 10K 토큰) 대신 압축된 claims 파일(Knows 형식, 약 700 토큰)을 읽는 논문 검색 | `<paper>.knows.yaml` |
 | oma-academic-writing | 루브릭에 맞춰 학술 문장을 작성하고 감사합니다 | 사용자의 파일 |
@@ -361,7 +360,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | Hook | 하는 일 | 끄는 방법 / 한도 |
 |---|---|---|
-| 키워드 시작 | 평범한 요청에서 맞는 워크플로우를 시작합니다 | 질문, 붙여 넣은 텍스트, 코드 블록은 건너뜀 |
+| 키워드 시작 | 평범한 요청이 `/orchestrate`, `/work`, `/ultrawork`, `/ralph`를 이름으로 부르면 그 워크플로우를 시작합니다 | 질문, 붙여 넣은 텍스트, 코드 블록은 건너뜀 |
 | 스킬 인젝터 | 프롬프트에 맞는 스킬을 에이전트에 알려 줍니다 | persistent workflow가 활성 상태인 동안 일시 중지 |
 | Stop 게이트 | persistent workflow를 다시 작업으로 돌려보냅니다. `oma goal set --gate test`를 설정하면 그 스크립트가 25초 안에 0으로 종료될 때 종료를 허용합니다 | "workflow done"이라고 말하기. 5번 차단되거나 2시간이 지나도 풀림 |
 | 리팩터 가드 | 종료 시점에 500줄이 넘는 수정 파일을 `refactor-engineer`용으로 표시합니다 | 옵트인: `refactor_guard.enabled` |
@@ -398,7 +397,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 Serena는 LSP 기반 코드 탐색과 진단을 제공하며, 지원되는 경우 네이티브 편집 피드백도 제공합니다. 프로바이더 선택은 에이전트 런타임과 별개이며, 기능은 프로바이더와 호스트에 따라 다릅니다.
 
-에이전트는 외부 서비스 없이 `.agents/state/`의 평범한 파일로 서로 조율합니다. `/tools`는 평이한 말로 MCP 도구를 켜고 끕니다. 자세한 내용: [기능 프로바이더](./capability-providers.md).
+에이전트는 외부 서비스 없이 `.agents/state/`의 평범한 파일로 서로 조율합니다. 자세한 내용: [기능 프로바이더](./capability-providers.md).
 
 </details>
 
@@ -450,8 +449,8 @@ Serena는 LSP 기반 코드 탐색과 진단을 제공하며, 지원되는 경�
 | **oma-refactor** | 핫스팟 선정, 특성화 테스트, 리팩토링 전용 커밋으로 동작을 바꾸지 않고 리팩토링 |
 | **oma-scholar** | 학술 문헌을 검색하고, 주장·근거·동료 평가를 담은 Knows 논문 sidecar를 생성 |
 | **oma-scm** | 브랜치, 머지, 워크트리, Conventional Commits 관리 |
-| **oma-search** | 각 쿼리를 가장 적합한 소스로 라우팅하고 결과를 얼마나 신뢰할 수 있는지 점수화 |
-| **oma-security** | 소스, 에이전트 스킬, MCP 구성 요소를 스캔하고, 배포된 웹 앱을 테스트하며 발견 사항을 검증 |
+| **oma-search** | 각 쿼리를 가장 적합한 소스로 라우팅하고, 결과마다 출처와 실제로 읽었는지 여부를 보고 |
+| **oma-security** | 소스, 에이전트 스킬, MCP 구성 요소를 스캔하고 발견 사항을 검증. 펜테스트는 사용자가 제공하고 검토한 플랫폼에서만 실행 |
 | **oma-skill-creation** | 새 OMA 스킬을 작성하고 점검 |
 | **oma-slide** | HTML 프레젠테이션 덱을 생성하고 PDF/PNG/PPTX로 내보냄 |
 | **oma-tf-infra** | Terraform으로 멀티 클라우드 인프라를 프로비저닝 |
@@ -602,7 +601,7 @@ OMA는 추적 대상인 Claude Code 및 Codex 하네스 실행에서 도구 호�
 | **산출물 게이트** | `oma ralph verify --json`은 phase 기록, plan JSON, **별개의 QA 에이전트**와 **별개의 refactor 에이전트**가 남긴 result 파일을 확인하며, 각각은 기록된 에이전트 실행과 연결되어 있어야 합니다. | [`ralph.md`](../.agents/workflows/ralph.md) |
 | **프롬프트 기반 judge** | 기계적이지 않습니다. `/ralph` 프롬프트는 오케스트레이터에게 새 컨텍스트의 judge를 띄워 매 iteration마다 **모든** 기준을 다시 확인하라고 지시합니다. judge를 실제로 띄웠는지 확인하는 장치는 없습니다. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **이벤트 로그** | OMA 세션 안에서는 게이트 통과, 게이트 실패, 판정이 각각 JSON 한 줄로 세션의 `events.jsonl`에 추가됩니다. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **에이전트별 체크** | `oma verify agent <type>`은 Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs, TDD Evidence에 TypeScript, Any Types, SQL Injection, 테스트 같은 유형별 체크를 더해 실행합니다. | `oma verify agent --help` |
+| **에이전트별 체크** | `oma verify agent <type>`은 Scope Check, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs, TDD Evidence에 TypeScript, Any Types, SQL Injection, 테스트 같은 유형별 체크를 더해 실행합니다. | `oma verify agent --help` |
 
 > **세션 이벤트 기록.** Stop hook은 persistent workflow가 시작될 때 열린 OMA 세션에 게이트 이벤트를 기록합니다. 이벤트 기록은 최선 노력 방식입니다. 그 세션을 만들지 못하면(stderr에 `[oma] L1 session activation failed`가 출력됨) 실패한 게이트는 여전히 종료를 막지만 `gate.failed` 줄은 기록되지 않습니다. 기록에 의존하거나 데모로 보여 주기 전에 `oma state list`에 활성 세션이 표시되는지 확인하세요. 그러면 `oma state get <sid>`로 이벤트를 볼 수 있습니다.
 

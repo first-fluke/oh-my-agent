@@ -279,7 +279,6 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 | `/debug` | Niet-persistent | Gestructureerd debuggen: reproduceren, diagnosticeren, fixen, regressietest en scan | Bugs en fouten onderzoeken |
 | `/design` | Niet-persistent | Designworkflow met 7 fasen die DESIGN.md met tokens oplevert | Designsysteem, landingspagina of UI-redesign maken |
 | `/scm` | Niet-persistent | SCM-workflow voor Git (branch/merge/conflict/worktree/baseline) plus Conventional Commit-generatie met automatische type-/scopedetectie en featuresplitsing | Na codewijzigingen of bij repository configuration management |
-| `/tools` | Niet-persistent | MCP-toolzichtbaarheid beheren (groepen in-/uitschakelen) | Bepalen welke MCP-tools agenten mogen gebruiken |
 | `/stack-set` | Niet-persistent | Projecttechstack automatisch detecteren en backend- of mobile-referenties genereren (Swift/Flutter/RN) | Taalspecifieke codeconventies instellen |
 | `/architecture` | Niet-persistent | Architectuur diagnosticeren, vergelijken en beslisrecords maken | Grenzen reviewen of architectuur kiezen |
 | `/convert` | Niet-persistent | Documentconversie naar de passende skill routeren | HWP/HWPX- of PDF-bronbestanden converteren |

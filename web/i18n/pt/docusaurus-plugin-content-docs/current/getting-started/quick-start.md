@@ -71,7 +71,7 @@ Use the discovered `oma-docs` skill to check one existing link in this project's
 
 O host deve identificar a skill selecionada, inspecionar um alvo e informar uma edição pontual do link ou que o link já é válido. Inclua a saída do comando e o status de saída de qualquer verificação que tenha realmente sido executada.
 
-Quando o hook de palavras-chave está habilitado para o host selecionado, ele pode ativar um workflow correspondente. O roteamento de skills é feito pelo host ou pelo workflow selecionado, portanto um prompt arbitrário do host não garante um hook, uma skill específica ou um `CHARTER_CHECK`. O contrato de execução ainda deve inspecionar as convenções do repositório, fazer somente a alteração no escopo e informar a verificação. Os arquivos e comandos exatos dependem do projeto.
+Um prompt em linguagem natural não inicia nenhum workflow; onde o hook de prompt está habilitado, ele acrescenta uma dica de skill, que é apenas uma sugestão. O roteamento de skills é feito pelo host ou pelo workflow selecionado, portanto um prompt arbitrário do host não garante um hook nem uma skill específica. O contrato de execução ainda deve inspecionar as convenções do repositório, fazer somente a alteração no escopo e informar a verificação. Os arquivos e comandos exatos dependem do projeto.
 
 Para uma tarefa que atravesse limites de API e UI, selecione `/work` ou `/orchestrate` explicitamente. Para um único domínio, continue com [Execução de uma única skill](../guide/single-skill.md). O [Guia de uso](../guide/usage.md) contém exemplos mais longos.
 

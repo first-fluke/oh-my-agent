@@ -6,13 +6,13 @@ description: Detaillierte Anleitung für Einzeldomänen-Aufgaben in oh-my-agent 
 
 # Einzelne Skill-Ausführung
 
-Einzelne Skill-Ausführung ist der schnelle Weg: ein Agent, eine Domäne, eine fokussierte Aufgabe. Es gibt keinen Orchestrierungsaufwand und keine Multi-Agenten-Koordination. Ein Host oder ausgewählter Workflow kann einen natürlichsprachlichen Prompt an den Skill routen; das Hook-System selbst erkennt Workflows, und das Routing hängt von der ausgewählten Laufzeit ab.
+Einzelne Skill-Ausführung ist der schnelle Weg: ein Agent, eine Domäne, eine fokussierte Aufgabe. Es gibt keinen Orchestrierungsaufwand und keine Multi-Agenten-Koordination. Ein Host oder ausgewählter Workflow kann einen natürlichsprachlichen Prompt an den Skill routen; das Hook-System ergänzt anhand von Keywords Skill-Hinweise, und das Routing hängt von der ausgewählten Laufzeit ab.
 
 ## Schnellweg
 
 1. Führen Sie einmal `oma doctor` aus, um die Integration des ausgewählten Hosts zu prüfen. Optionale Anbieterwarnungen blockieren keine Aufgabe, die diese Anbieter nicht verwendet.
 2. Beschreiben Sie eine in sich geschlossene Änderung mit klaren Angaben zu **Ziel**, **Kontext**, **Einschränkungen** und **Fertig wenn**.
-3. Der ausgewählte Skill untersucht das Repository, nennt seinen Umfang, wenn der aktive Ausführungsvertrag ein `CHARTER_CHECK` verlangt, und meldet, welche Prüfungen tatsächlich liefen.
+3. Der ausgewählte Skill untersucht das Repository, nennt jede Annahme, die das Ergebnis beeinflusst, und meldet, welche Prüfungen tatsächlich liefen.
 4. Wenn die Aufgabe API-, UI-, Datenbank- oder Mobile-Grenzen überschreitet, beenden Sie den Einzel-Skill-Lauf und wechseln Sie zu `/work` oder `/orchestrate`.
 
 Bei hängenden verwalteten Läufen verwenden Sie `oma agent status <session-id> [agent-id]` und prüfen Sie vor einem erneuten Versuch die Belege in `.agents/state/agent-runs/` sowie den injizierten Claim-Pfad. Siehe [Wichtige Defaults](../getting-started/important-defaults.md) zum Anbieter- und Wiederherstellungsverhalten.
@@ -112,17 +112,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **Geladene Ressourcen:**
    - `execution-protocol.md` (immer)
    - `snippets.md` (Formular- und Zod-Muster sowie vorhandene Komponenten-Muster, sofern der Skill sie bereitstellt)
-4. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **Implementierung:**
+4. **Implementierung:**
    - Erstellt `src/features/auth/components/login-form.tsx` (Client Component mit `"use client"`)
    - Erstellt `src/features/auth/utils/login-schema.ts` (Zod-Schema)
    - Erstellt `src/features/auth/components/skeleton/login-form-skeleton.tsx`
@@ -130,7 +121,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Formular über `@tanstack/react-form` mit Zod-Validierung
    - Absolute Imports mit `@/`
    - Eine Komponente pro Datei
-6. **Verifikation:**
+5. **Verifikation:**
    - Checkliste: ARIA-Labels vorhanden, semantische Überschriften, Tastaturnavigation funktioniert
    - Mobil: rendert korrekt bei 320px-Viewport
    - Performance: kein CLS
@@ -163,16 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - passendes `stack/snippets.md` oder `variants/{node,python,rust}/snippets.md`, falls verfügbar
    - passende `stack/tech-stack.md` oder Verweise auf den Varianten-Tech-Stack, falls verfügbar
 <!-- oma-docs:ignore-end -->
-5. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **Implementierung:**
+5. **Implementierung:**
    - Repository: `TaskRepository.find_by_user(user_id, cursor, status, limit)` mit parametrisierter Abfrage
    - Service: `TaskService.get_user_tasks(user_id, cursor, status, limit)` — Geschäftslogik-Wrapper
    - Router: `GET /api/tasks` mit JWT-Auth-Middleware, Eingabevalidierung, Antwortformatierung
@@ -200,19 +182,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **Schwierigkeitsbewertung:** Mittel (Einstellungsbildschirm + Zustandsverwaltung + Offline-Behandlung)
 3. **Geladene Ressourcen:**
    - `execution-protocol.md`
-   - `snippets.md` (Bildschirmvorlage, Riverpod-Provider-Muster)
-   - `screen-template.dart`
-4. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (Muster für Bildschirm, Riverpod-Provider und Datenschicht) oder `stack/snippets.md`, wenn `/stack-set` es erzeugt hat
+   - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
-5. **Implementierung:**
+4. **Implementierung:**
    - Bildschirm: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget mit Riverpod)
    - Provider: `lib/features/settings/providers/settings_provider.dart`
    - Repository: `lib/features/settings/data/settings_repository.dart`
@@ -245,17 +218,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (Ergebnisstruktur)
    - `examples.md`
    - `anti-patterns.md` (Review während der Optimierung)
-4. **Ausführungsvertrag (falls aktiviert) kann `CHARTER_CHECK` ausgeben:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **Workflow:** Erkunden (Entitäten, Beziehungen, Zugriffsmuster, Volumenschätzungen) -> Entwerfen (externe/konzeptionelle/interne Schemata, Constraints, Lebenszyklusfelder) -> Optimieren (Indizes für Abfragemuster, Partitionierungsstrategie, Backup-Plan, Anti-Pattern-Review)
-6. **Ergebnisse:**
+4. **Workflow:** Erkunden (Entitäten, Beziehungen, Zugriffsmuster, Volumenschätzungen) -> Entwerfen (externe/konzeptionelle/interne Schemata, Constraints, Lebenszyklusfelder) -> Optimieren (Indizes für Abfragemuster, Partitionierungsstrategie, Backup-Plan, Anti-Pattern-Review)
+5. **Ergebnisse:**
    - Zusammenfassung des externen Schemas (Sichten pro Rolle: Admin, Projektmanager, Teammitglied)
    - Konzeptionelles Schema mit ERD (Organisation 1:N Projekt, Projekt 1:N Aufgabe, Organisation 1:N Teammitgliedschaft usw.)
    - Internes Schema mit physischem DDL, Indizes, Partitionierung
@@ -320,7 +284,7 @@ Auf diese Signale achten, die anzeigen, dass von Einzelner-Skill- zu Multi-Agent
 | Signal | Bedeutung | Aktion |
 |--------|--------------|--------|
 | Agent sagt "dies erfordert eine Backend-Änderung" | Aufgabe hat domänenübergreifende Abhängigkeiten | Zu `/work` wechseln — Backend-Agent hinzufügen |
-| CHARTER_CHECK des Agenten zeigt "Must NOT do"-Elemente, die tatsächlich benötigt werden | Umfang überschreitet eine Domäne | Das vollständige Feature zuerst mit `/plan` planen |
+| Agent meldet Arbeit, die er ausgelassen hat, weil sie außerhalb der Domäne des Skills liegt | Umfang überschreitet eine Domäne | Das vollständige Feature zuerst mit `/plan` planen |
 | Korrektur kaskadiert in 3+ Dateien über verschiedene Schichten | Eine Korrektur betrifft mehrere Domänen | `/debug` mit breiterem Umfang verwenden, oder `/work` |
 | Agent entdeckt eine API-Vertrags-Diskrepanz | Frontend-/Backend-Unstimmigkeit | `/plan` zur Vertragsdefinition ausführen, dann beide Agenten erneut starten |
 | Qualitäts-Gate scheitert an Integrationspunkten | Komponenten passen nicht richtig zusammen | `/review` ausführen oder einen QA-Durchgang hinzufügen: `oma agent spawn qa "Review the integration" SESSION_ID --read-only` |

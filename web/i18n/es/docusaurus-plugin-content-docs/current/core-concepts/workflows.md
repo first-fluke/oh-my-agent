@@ -1,13 +1,13 @@
 ---
 title: Flujos de trabajo
-description: Referencia completa de los 21 flujos de trabajo de oh-my-agent, incluidos los comandos slash, los modos persistente y no persistente, las palabras clave de activación en 11 idiomas, las fases y los pasos, los archivos que se leen y escriben, la autodetección mediante triggers.json y keyword-detector.ts, el filtrado de patrones informativos y la gestión del estado del modo persistente.
+description: Referencia completa de los 20 flujos de trabajo de oh-my-agent, incluidos los comandos slash, los modos persistente y no persistente, las palabras clave de activación en 11 idiomas, las fases y los pasos, los archivos que se leen y escriben, la autodetección mediante triggers.json y keyword-detector.ts, el filtrado de patrones informativos y la gestión del estado del modo persistente.
 ---
 
 # Flujos de trabajo
 
 Los flujos de trabajo son procesos estructurados de varios pasos que se activan mediante comandos slash o palabras clave en lenguaje natural. Definen cómo colaboran los agentes en las tareas, desde utilidades de una sola fase hasta puertas de calidad complejas de 5 fases.
 
-Hay 21 flujos de trabajo, 4 de ellos [persistentes](../getting-started/glossary.md#persistent-workflow) (mantienen el estado y no se pueden interrumpir accidentalmente).
+Hay 20 flujos de trabajo, 4 de ellos [persistentes](../getting-started/glossary.md#persistent-workflow) (mantienen el estado y no se pueden interrumpir accidentalmente).
 
 ## Flujos de trabajo de un vistazo
 
@@ -26,7 +26,6 @@ Hay 21 flujos de trabajo, 4 de ellos [persistentes](../getting-started/glossary.
 | [`/debug`](#debug) | Diagnóstico y corrección de bugs con una prueba de regresión | No |
 | [`/design`](#design) | DESIGN.md con tokens, patrones de componentes y reglas de accesibilidad | No |
 | [`/scm`](#scm) | Operaciones de Git y Conventional Commits | No |
-| [`/tools`](#tools) | Visibilidad y restricciones de las herramientas MCP | No |
 | [`/convert`](#convert) | Convertir documentos y contenido multimedia entre formatos | No |
 | [`/docs`](#docs) | Detección de desviaciones en la documentación y sincronización | No |
 | [`/recap`](#recap) | Resumen del trabajo diario o de un periodo en varias herramientas de IA | No |
@@ -479,22 +478,6 @@ La metodología de auditoría de Cloudflare guía la verificación independiente
 
 ---
 
-### /tools
-
-**Descripción:** Gestiona la visibilidad y las restricciones de herramientas MCP.
-
-**Palabras clave de activación:** Ninguna (excluido de la autodetección).
-
-**Funciones:** Muestra el estado actual de herramientas MCP, activa o desactiva grupos de herramientas (memory, code-analysis, code-edit, file-ops), aplica cambios permanentes o temporales (`--temp`) y analiza lenguaje natural ("memory tools only", "disable code edit").
-
-**Grupos de herramientas:**
-- memory: read_memory, write_memory, edit_memory, list_memories, delete_memory
-- code-analysis: get_symbols_overview, find_symbol, find_referencing_symbols, search_for_pattern
-- code-edit: replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol
-- file-ops: list_dir, find_file
-
----
-
 ### /convert
 
 **Descripción:** Convierte un archivo de un formato a otro y enruta por categoría de medio. Los **documentos** (PDF mediante `opendataloader-pdf`/`oma-pdf`; HWP/HWPX/HWPML mediante `kordoc`/`oma-hwp`) se extraen a Markdown. Los archivos de **imagen**, **vídeo** y **audio** se transcodifican al formato de destino con `ffmpeg` (ya disponible para `oma-video`).
@@ -698,7 +681,6 @@ Si la entrada coincide con un disparador de flujo y un patrón informativo, el p
 ### Flujos excluidos
 
 Los siguientes flujos no se activan por palabras clave y deben invocarse mediante un `/command` explícito. `/tools` y `/stack-set` aparecen en `excludedWorkflows` (se retiraron deliberadamente de la autodetección); `/convert` no incluye palabras clave de activación (las habilidades `oma-pdf` y `oma-hwp` tienen su propia detección); `/schedule` es un flujo invocado con slash (`oma schedule <action>` para trabajos temporizados); `/explain` no incluye palabras clave porque "explain" es vocabulario cotidiano y la detección produciría falsos positivos constantes:
-- `/tools`
 - `/stack-set`
 - `/convert`
 - `/schedule`

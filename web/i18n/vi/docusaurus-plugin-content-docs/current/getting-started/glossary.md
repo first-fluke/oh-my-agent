@@ -78,7 +78,7 @@ Cross-context review là quy tắc yêu cầu mỗi bước review trong `/ultra
 
 ### Charter {#charter}
 
-Charter là khối preflight `CHARTER_CHECK` mà các agent triển khai từng phải ghi trước khi viết code. Các định nghĩa agent hiện tại không yêu cầu output preflight cố định. Thay vào đó, agent tuân theo execution policy dùng chung: nêu các giả định quan trọng, chỉ hỏi khi thông tin còn thiếu ảnh hưởng đến tính đúng đắn hoặc phạm vi, và chỉ tạm dừng phần việc phụ thuộc vào câu trả lời. Subagent được spawn không thể hỏi bạn trực tiếp, nên nó báo cáo thông tin còn thiếu trong kết quả `blocked` hoặc `partial`. Xem [Ủy quyền và làm rõ](../core-concepts/agents.md#charter-preflight-charter_check).
+Charter là một khối preflight cố định (`CHARTER_CHECK`) được ghi trước khi viết code. oh-my-agent không yêu cầu khối nào như vậy: các định nghĩa agent không đòi hỏi output preflight cố định. Agent tuân theo execution policy dùng chung: nêu các giả định quan trọng, chỉ hỏi khi thông tin còn thiếu ảnh hưởng đến tính đúng đắn hoặc phạm vi, và chỉ tạm dừng phần việc phụ thuộc vào câu trả lời. Subagent được spawn không thể hỏi bạn trực tiếp, nên nó báo cáo thông tin còn thiếu trong kết quả `blocked` hoặc `partial`. Xem [Ủy quyền và làm rõ](../core-concepts/agents.md#charter-preflight-charter_check).
 
 ### Run record và claim {#run-record-and-claim}
 

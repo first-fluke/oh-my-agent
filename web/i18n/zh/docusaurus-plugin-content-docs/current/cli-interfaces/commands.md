@@ -299,7 +299,7 @@ oma link opencode --global
 
 ### 重新配置已有安装 {#setup-workflow}
 
-没有 `/setup` 工作流。要更改已安装的项目，请重新运行 `oma install`；如果只需调整浏览器 MCP 服务器，使用 `oma update mcp`；也可以在智能体会话中运行 `/tools` 来启用或禁用 MCP 工具。用 `oma doctor --profile` 检查各智能体的模型解析结果；按智能体固定的模型位于 `.agents/oma-config.yaml` 的 `agents:` 下（[按智能体配置模型](../guide/per-agent-models.md)）。
+没有 `/setup` 工作流。要更改已安装的项目，请重新运行 `oma install`，或使用 `oma update mcp` 选择浏览器 MCP 服务器。用 `oma doctor --profile` 检查各智能体的模型解析结果；按智能体固定的模型位于 `.agents/oma-config.yaml` 的 `agents:` 下（[按智能体配置模型](../guide/per-agent-models.md)）。
 
 ---
 
@@ -1119,7 +1119,6 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 **通用检查**（所有智能体类型）：
 - **范围检查**：读取 `.agents/results/plan-{sessionId}.json` 中的任务范围，将 `git diff` 中的变更文件与定义的范围模式比较。如果修改了智能体分配范围之外的文件，则检查失败。
-- **Charter Preflight**：验证所选的结果报告包含正确填写的 `CHARTER_CHECK:` 块，且没有未填写的占位符。
 - **TDD 证据**：要求每个适用任务所选的报告包含确切的任务 ID，以及属于该任务的非空 `red:` 和 `green:` 条目。来自其他会话或重试的报告不能替代所选的报告。
 - **硬编码机密**：扫描 `.py`、`.ts`、`.tsx`、`.js`、`.dart` 文件中类似 `password = "..."`、`api_key = "..."` 的模式（排除测试和示例文件）。
 - **TODO/FIXME 注释**：统计 `TODO`、`FIXME`、`HACK`、`XXX` 注释（发现任何一条都会警告）。
@@ -1605,18 +1604,18 @@ oma image doctor --output json
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` 接受 `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout` 和 `--capture-stop duration:<seconds>|selector:<css>`。浏览器采集使用 `--source web --url <url>`；默认为 `--source file`。`--output-dir` 选择运行根目录，`--allow-external-output` 允许使用 `$PWD` 之外的路径，`--max-usd` 设置成本上限，`-y, --yes` 跳过成本确认，`--seed` 稳定规划输入，`--timeout` 限制每次视觉和音乐提供方调用的时长，`--script` 注入由智能体编写的 `script.json`，`--no-brief-in-manifest` 只存储简述的哈希，而不存储原文。`--dry-run` 在规划完成后停止。`--output text|json` 控制 CLI 输出信封。
+`generate` 接受 `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout` 和 `--capture-stop duration:<seconds>|selector:<css>`。demo 使用你通过 `--capture` 提供的录制文件；默认为 `--source file`，`--source web --url <url>` 只会把该 URL 作为上下文加入（CLI 不会打开浏览器，也不会录制）。`--polish` 让采集内容经过 `Demo` 组合，个人信息在其中被遮蔽；不加该选项时，输出的 MP4 就是未经遮蔽的原始采集内容。`--visual stock` 和 `--visual aigc` 在设置了相应密钥时选择 Pexels 和 Pixelle 提供方；幻灯片视觉素材需要脚本中的 `visual.ref` 指向已有的演示文稿目录。`--output-dir` 选择运行根目录，`--allow-external-output` 允许使用 `$PWD` 之外的路径，`--max-usd` 设置成本上限，`-y, --yes` 跳过成本确认，`--seed` 稳定规划输入，`--timeout` 限制每次视觉和音乐提供方调用的时长，`--script` 注入由智能体编写的 `script.json`，`--no-brief-in-manifest` 只存储简述的哈希，而不存储原文。`--dry-run` 在规划完成后停止。`--output text|json` 控制 CLI 输出信封。
 
 `doctor` 检查缓存的 HyperFrames/MPT 工具链，接受 `--install`、`--upgrade`、`--install-mpt` 和 `--install-strudel`。`provider list` 报告提供方的可用性和密钥状态。`compose` 为运行搭建或刷新组合，并报告编写契约；`render` 对输出执行 lint、渲染和探测。缺少合成器、组合或工具链依赖都会报错。仅供测试使用的 `OMA_VIDEO_MOCK=1` 路径是唯一的占位模式；正常运行绝不会用文本或极小的文件冒充 MP4。
 
-成功时的 JSON 输出包含 `runDir`、`manifestPath`、`scriptPath` 和 `renderSpecPath`；清单记录所选的提供方、输入和生成的素材。运行 `compose` 后，按照生成的 `AUTHORING.md` 编写组合，然后重新运行 `render`。如果缺少提供方密钥，运行 `oma video doctor`；如果采集失败，检查 URL、选择器、设备和超时设置；如果渲染失败，先修复组合诊断中报告的问题再重试。
+成功时的 JSON 输出包含 `runDir`、`manifestPath`、`scriptPath` 和 `renderSpecPath`；清单记录所选的提供方、输入和生成的素材。运行 `compose` 后，按照生成的 `AUTHORING.md` 编写组合，然后重新运行 `render`。如果缺少提供方密钥，运行 `oma video doctor`；如果 demo 运行停下并给出录制说明，请通过 `--capture` 提供录制文件；如果渲染失败，先修复组合诊断中报告的问题再重试。
 
 ### star（Star） {#star}
 

@@ -125,11 +125,10 @@ Après l'installation, votre projet contient :
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                  # Other selected skills
-├── workflows/               # Workflow definitions (all 21, every preset)
+├── workflows/               # Workflow definitions (all 20, every preset)
 ├── agents/                  # Subagent definitions (all 12, every preset)
 ├── hooks/                   # Hook sources (core/, variants/)
 ├── rules/                   # Project rules
-├── config/                  # Shipped defaults (defaults.yaml)
 ├── results/                 # Plans and agent results (populated by workflows)
 └── state/                   # Persistent workflow and coordination state
     └── memories/            # Runtime coordination state

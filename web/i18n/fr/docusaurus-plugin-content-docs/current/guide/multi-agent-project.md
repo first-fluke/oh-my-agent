@@ -88,10 +88,10 @@ Deux voies d'exécution sont possibles :
 
 1. Charge `.agents/results/plan-{sessionId}.json`, en créant un plan en ligne via `/plan` lorsqu'aucun plan utilisable n'existe.
 2. Initialise une session avec un identifiant au format `session-YYYYMMDD-HHMMSS`.
-3. Crée `orchestrator-session-{sessionId}.md` et `task-board-{sessionId}.md` dans le répertoire mémoire.
-4. Lance les agents par niveau de priorité ; chacun reçoit la description de la tâche, les contrats d'API et le contexte.
-5. Surveille la progression en interrogeant les fichiers `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`.
-6. Vérifie chaque agent terminé via `verify.sh`. PASS (code de sortie 0) accepte le résultat ; FAIL (code de sortie 1) relance avec le contexte de l'erreur (2 tentatives maximum) ; un échec persistant déclenche la boucle d'exploration.
+3. Sélectionne les références de compétences dont chaque tâche a besoin et crée `orchestrator-session-{sessionId}.md` et `task-board-{sessionId}.md` dans le répertoire mémoire. Les références sélectionnées y sont consignées comme notes du coordinateur ; le lanceur ne les impose pas.
+4. Lance les agents par niveau de priorité ; chacun reçoit la description de la tâche, les contrats d'API, le contexte et ses références sélectionnées.
+5. Surveille la progression grâce aux notifications de fin de l'hôte, ou en interrogeant avec un backoff borné les fichiers `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` qui ont changé.
+6. Vérifie chaque agent terminé : un auto-contrôle mécanique, puis `verify.sh` pour les agents backend, frontend, mobile, qa, debug et pm (les autres types consignent `SKIP`), puis une revue croisée QA. PASS (code de sortie 0) poursuit ; FAIL (code de sortie 1) relance avec le contexte de l'erreur dans la limite du budget de récupération partagé (3 tentatives par tâche par défaut, tentative initiale comprise). Les reprises et les hypothèses d'exploration puisent dans le même budget ; lorsqu'il est épuisé, la tâche est signalée `partial` ou `failed`.
 7. Collecte tous les fichiers `result-{agentId}-{taskId}-{runId}-{sessionId}.md` et compile un rapport final.
 
 ### Étape 3 : agent spawn pour la gestion d'agents au niveau CLI
@@ -134,7 +134,7 @@ Consultez [les modèles par agent](./per-agent-models.md) pour les détails de c
 
 Le workflow de revue exécute un pipeline QA complet :
 
-1. **Définir le périmètre :** demande ce qu'il faut examiner (fichiers précis, branche de fonctionnalité ou projet entier).
+1. **Définir le périmètre :** reprend le périmètre de la demande (fichiers précis, branche de fonctionnalité, PR ou projet entier). Sans périmètre indiqué, examine les changements non commités et ceux de la branche en cours, et énonce cette hypothèse ; ne pose la question que lorsqu'il n'a rien à partir de quoi délimiter le périmètre.
 2. **Vérifications de sécurité automatisées :** exécute `npm audit`, `bandit` ou l'équivalent.
 3. **Revue manuelle OWASP Top 10 :** injection, authentification défaillante, données sensibles, contrôle d'accès, mauvaise configuration, désérialisation non sécurisée, composants vulnérables et journalisation insuffisante.
 4. **Analyse des performances :** requêtes N+1, index manquants, pagination sans limite, fuites mémoire, re-rendus inutiles et tailles de bundle.

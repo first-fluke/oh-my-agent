@@ -202,7 +202,6 @@ Add tests for: profile save, logout flow, offline state.
 3. **ロードされるリソース：**
    - `execution-protocol.md`
    - `snippets.md`（画面テンプレート、Riverpodプロバイダーパターン）
-   - `screen-template.dart`
 4. **実行コントラクト：** 有効な場合は`CHARTER_CHECK`を出力することがあります。
    ```text
    CHARTER_CHECK:

@@ -9,7 +9,7 @@ description: "Guia de uso do OMA, cobrindo a seleção de tarefas orientada ao l
 ## Início rápido
 
 1. Abra seu projeto em uma IDE ou CLI selecionada com IA (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen ou outro host compatível)
-2. O host selecionado pode carregar [skills](../getting-started/glossary.md#skill) de `.agents/skills/`; hooks habilitados podem detectar [workflows](../getting-started/glossary.md#workflow) por palavras-chave em linguagem natural
+2. O host selecionado pode carregar [skills](../getting-started/glossary.md#skill) de `.agents/skills/`; hooks habilitados adicionam dicas de skill a partir de palavras-chave em linguagem natural e iniciam um [workflow](../getting-started/glossary.md#workflow) somente pelo comando de barra dele ou, no caso dos quatro modos persistentes, pelo nome
 3. Descreva em linguagem natural o que você quer. O host ou workflow selecionado encaminha a tarefa para a skill relevante
 4. Para trabalho com vários agentes, use `/work` ou `/orchestrate`
 
@@ -24,6 +24,7 @@ Tarefas de um único domínio não precisam de sintaxe especial. Use o [guia de 
 | Um bug com mensagem de erro | `/debug` mais o erro e os passos de reprodução | [Correção de bugs](./bug-fixing.md) |
 | Acompanhar os agentes enquanto executam | `oma dashboard terminal` | [Monitoramento do dashboard](./dashboard-monitoring.md) |
 | Auditar ou retomar resultados de agentes | `oma agent resume SESSION_ID --dry-run` | [Resultados e retomada](./agent-results-and-resume.md) |
+| Encontrar ou migrar documentos do OMA | `oma docs migrate --dry-run` | [Layout de artefatos](./artifact-layout.md) |
 | Algo falhou | `oma doctor --json` | [Solução de problemas](./troubleshooting.md) |
 
 ---
@@ -42,23 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. Os recursos da camada 2 são carregados sob demanda:
    - `execution-protocol.md`: o workflow de 4 etapas (Analyze, Plan, Implement, Verify)
    - `snippets.md`: padrões de formulário e validação com Zod, além de padrões de componentes existentes quando a skill os fornece
-4. O agente produz um **CHARTER_CHECK**:
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
 <!-- oma-docs:ignore-start -->
-5. O agente implementa:
+4. O agente implementa:
    - Componente React com TypeScript em `src/features/auth/components/login-form.tsx`
    - Schema de validação Zod em `src/features/auth/utils/login-validation.ts`
    - Testes Vitest em `src/features/auth/utils/__tests__/login-validation.test.ts`
    - Skeleton de carregamento em `src/features/auth/components/skeleton/login-form-skeleton.tsx`
 <!-- oma-docs:ignore-end -->
-6. O agente executa a checklist: acessibilidade (labels ARIA, HTML semântico, navegação por teclado), viewport mobile, performance (sem CLS) e error boundaries
+5. O agente executa a checklist: acessibilidade (labels ARIA, HTML semântico, navegação por teclado), viewport mobile, performance (sem CLS) e error boundaries
 
 **Resultado esperado:** Um componente React delimitado com TypeScript, validação, testes e evidências de acessibilidade quando o projeto oferecer essas verificações. O prompt e o workflow selecionado determinam quais arquivos e verificações realmente serão executados.
 
@@ -74,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **O que acontece:**
 
 1. Essa solicitação abrange trabalho de frontend, backend e mobile. O agente host pode usar esse escopo para recomendar uma abordagem de coordenação.
-2. Com o hook de detecção de palavras-chave habilitado, "Build a TODO app" corresponde a um padrão configurado de `/orchestrate` e pode ativá-lo. O hook corresponde ao texto; ele não classifica a solicitação como multi-domínio. Use um comando explícito para selecionar o workflow desejado.
+2. O hook de detecção de palavras-chave não inicia um workflow a partir dessa frase: ele ativa somente `orchestrate`, `ultrawork`, `work` ou `ralph`, e apenas quando o prompt cita o modo pelo nome. Ele não classifica a solicitação como multi-domínio. Use um comando explícito para selecionar o workflow desejado.
 
 **Usando `/work` (passo a passo com controle do usuário):**
 
@@ -153,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **Você digita:**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **O que acontece:**
 
-1. `oma-design` é ativada (palavras-chave: "design", "landing page", "dark", "premium")
-2. **Fase 1, SETUP:** Verifica `.design-context.md`. Se estiver ausente, pergunta:
-   - Quais idiomas o serviço suporta? (somente en / + CJK)
-   - Público-alvo? (B2B, usuários técnicos, 25-45)
-   - Personalidade da marca? (profissional / premium)
-   - Direção estética? (dark premium)
-   - Sites de referência? (o usuário fornece exemplos)
-   - Acessibilidade? (WCAG AA)
-3. **Fase 3, ENHANCE:** Se o prompt for vago, transforma-o em uma especificação seção por seção
-4. **Fase 4, PROPOSE:** Apresenta 3 direções de design:
-   - **Direção A: "Midnight Observatory"**: Navy profundo (#0f1729), acentos cyan (#22d3ee), Inter + JetBrains Mono, layout bento grid, revelações acionadas por scroll
-   - **Direção B: "Carbon Interface"**: Cinza neutro (#18181b), acentos amber (#f59e0b), fontes do sistema, layout xadrez, micro-interações acionadas por hover
-   - **Direção C: "Deep Space"**: Dark puro (#0a0a0a), acentos emerald (#10b981), Geist + Geist Mono, seções full-bleed, animações de entrada
-5. **Fase 5, GENERATE:** Com base na direção escolhida, gera:
-   - `DESIGN.md` com 6 seções (tipografia, cor, espaçamento, movimento, componentes, acessibilidade)
-   - propriedades customizadas CSS
-   - extensões da configuração Tailwind
-   - variáveis de tema shadcn/ui
-6. **Fase 6, AUDIT:** Executa verificações de responsividade (mínimo de 320px), WCAG 2.2, heurísticas de Nielsen e detecção de AI slop
-7. **Fase 7, HANDOFF:** "Design concluído. Execute `/orchestrate` para implementar com oma-frontend."
+1. **Carregar a skill:** O workflow lê a skill `oma-design` e seu protocolo de execução. A skill é responsável pela seleção do fornecedor e pelo contrato de design do projeto.
+2. **Estabelecer escopo e contexto:** A solicitação é classificada como um documento de sistema de design. O workflow lê o `DESIGN.md` existente, o `.design-context.md` quando presente, o material de marca, os idiomas suportados e a UI afetada, e procura bibliotecas de UI, arquivos de tema e tokens existentes. Para um produto existente, ele primeiro estabelece Preserve ou Overhaul. Pergunta apenas sobre uma escolha que altere materialmente o resultado e que a solicitação e o codebase não respondam; este prompt já informa os idiomas, o público e a meta de acessibilidade, portanto nenhum questionário é feito.
+3. **Selecionar orientações e reunir referências:** Uma skill de design externa é selecionada para a operação: Interface Design para um dashboard ou uma UI de produto SaaS, Taste para as demais direções de arte web novas, Impeccable para crítica ou polimento de uma UI existente. Uma seed de vendor solicitada, uma operação do Stitch, orientações de assets ou regras de data grid são carregadas somente quando a tarefa as exige.
+4. **Decidir a direção:** As orientações selecionadas são aplicadas às evidências do projeto. Direções alternativas são apresentadas somente quando uma escolha não resolvida afeta materialmente o resultado; uma direção que você já escolheu é reutilizada. Toda direção permanece dentro da marca, da cobertura de fontes CJK para o coreano, da stack de implementação existente, do comportamento responsivo a partir do menor viewport suportado e do WCAG AA.
+5. **Produzir o artefato:** O `DESIGN.md` é criado ou atualizado com todas as nove seções, incluindo a Seção 9 (Agent Prompt Guide). Os tokens mapeiam papéis semânticos para o sistema de tokens e o formato de tema que o projeto já tem; nenhuma configuração paralela é introduzida. Nenhum código de implementação é escrito.
+6. **Verificar e fazer o handoff:** Os itens aplicáveis da checklist são verificados, e o que foi inspecionado é indicado. As verificações que precisam de uma implementação renderizada são especificadas, mas ficam sem execução. O relatório lista os artefatos entregues, a rota selecionada, os resultados da verificação e os limites restantes, e então passa a implementação para `oma-frontend` (web) ou `oma-mobile` (nativo).
 
 ---
 
@@ -273,17 +251,16 @@ Tarefas entre vendors e `model_preset: free` usam `oma agent spawn`. O dispatch 
 | `/plan` | Não persistente | Breakdown de tarefas conduzido pelo PM, contratos de API e artefatos de plano acompanhados em `docs/plans/work/` (arquivos sequenciais `NNN-name.md`, campo Status para o ciclo de vida) | Antes de qualquer trabalho complexo com vários agentes; funcionalidades complexas que precisam de progresso acompanhado e registros de decisão |
 | `/brainstorm` | Não persistente | Ideação orientada ao design com propostas de 2-3 abordagens | Antes de se comprometer com uma abordagem de implementação |
 | `/deepinit` | Não persistente | Inicialização completa do projeto (AGENTS.md, ARCHITECTURE.md, docs/) | Configurar o oh-my-agent em um codebase existente |
-| `/review` | Não persistente | Pipeline de QA: segurança OWASP, performance, acessibilidade e qualidade do código | Antes de fazer merge, revisão pré-deploy |
-| `/security` | Não persistente | Faz varreduras no código-fonte da aplicação, em skills de agentes ou em componentes MCP; executa testes de penetração web com escopo definido contra uma implantação de teste; valida achados e configura gates de segurança por meio de `oma-security` | Antes de um release, ou quando uma mudança precisa de varredura ou gate de segurança |
+| `/review` | Não persistente | Pipeline de QA: segurança OWASP, performance, acessibilidade e qualidade do código. O escopo vem da solicitação e, por padrão, são as mudanças atuais | Antes de fazer merge, revisão pré-deploy |
+| `/security` | Não persistente | Faz varreduras no código-fonte da aplicação, em skills de agentes ou em componentes MCP, valida achados e configura gates de segurança por meio de `oma-security`. Testes de penetração em uma implantação web de teste com escopo definido só são executados em uma plataforma de execução fornecida e revisada pelo usuário | Antes de um release, ou quando uma mudança precisa de varredura ou gate de segurança |
 | `/debug` | Não persistente | Debugging estruturado: reproduzir, diagnosticar, corrigir, teste de regressão e varredura | Investigar bugs e erros |
-| `/design` | Não persistente | Workflow de design em 7 fases que produz DESIGN.md com tokens | Construir sistemas de design, landing pages e redesigns de UI |
+| `/design` | Não persistente | Delimita uma tarefa de design, seleciona as orientações de design aplicáveis e entrega achados, `DESIGN.md`, uma direção de redesign ou design tokens por meio de `oma-design` | Definir ou revisar um sistema visual, redesigns de UI e auditorias de design |
 | `/scm` | Não persistente | Workflow de SCM para Git (branch/merge/conflito/worktree/baseline) e geração de Conventional Commit com detecção automática de tipo/escopo e divisão por funcionalidade | Depois de concluir mudanças de código ou ao tratar tarefas de gerenciamento de configuração do repositório |
-| `/tools` | Não persistente | Gerenciamento da visibilidade de ferramentas MCP (habilitar/desabilitar grupos) | Controlar quais ferramentas MCP os agentes podem usar |
-| `/stack-set` | Não persistente | Detecta automaticamente a stack do projeto e gera referências para backend ou mobile (Swift/Flutter/RN) | Configurar convenções de código específicas da linguagem |
+| `/stack-set` | Não persistente | Detecta automaticamente a stack do projeto e gera referências para backend, frontend ou mobile (Swift/Kotlin/Flutter/RN) | Configurar convenções de código específicas da linguagem |
 | `/architecture` | Não persistente | Diagnóstico de arquitetura, comparação e registros de decisão | Revisar fronteiras ou escolher uma arquitetura |
 | `/convert` | Não persistente | Encaminha a conversão de documentos para a skill apropriada | Converter fontes HWP/HWPX ou PDF |
 | `/docs` | Não persistente | Verificação da documentação e propostas de sincronização direcionadas ao diff | Conferir a documentação contra o codebase atual |
-| `/explain` | Não persistente | Gera e valida um explainer HTML offline de mudanças de código | Ensinar um diff, PR, branch ou intervalo de commits |
+| `/explain` | Não persistente | Gera um explainer HTML offline para uma mudança de código ou um tópico, valida-o com `oma explain validate` e o abre com `oma explain render --open` | Ensinar um diff, PR, branch ou intervalo de commits, ou explicar um tópico |
 | `/recap` | Não persistente | Resume o trabalho nos históricos das ferramentas de IA compatíveis | Retrospectivas diárias ou por período |
 | `/schedule` | Não persistente | Registra jobs recorrentes de agentes | Recaps noturnos, scans ou manutenção |
 | `/video` | Não persistente | Compõe vídeos reproduzíveis a partir de scripts, narração e visuais | Shorts, explainers e demos |
@@ -293,7 +270,7 @@ Tarefas entre vendors e `model_preset: free` usam `oma agent spawn`. O dispatch 
 
 ## Exemplos de auto-detecção
 
-O oh-my-agent detecta palavras-chave de workflows em 11 idiomas. Estes exemplos mostram como a linguagem natural aciona workflows:
+O hook de palavras-chave inicia somente os quatro modos persistentes, e apenas quando o prompt cita o modo pelo nome. Os demais workflows começam pelo respectivo comando de barra.
 
 | Você digita | Workflow detectado | Idioma |
 |-------------|-------------------|--------|
@@ -305,6 +282,8 @@ O oh-my-agent detecta palavras-chave de workflows em 11 idiomas. Estes exemplos 
 | "work workflow로 진행해줘" | `/work` | Coreano |
 | "ralph this task" | `/ralph` | Inglês |
 | "랄프로 끝까지 해줘" | `/ralph` | Coreano |
+
+Frases como "plan the authentication feature", "fix the login bug", "do everything in parallel" e "don't stop until it's done" não iniciam um workflow.
 
 **Consultas informativas são filtradas:**
 
@@ -326,20 +305,20 @@ O preset `all` do instalador segue o registro ativo. A tabela agrupa cada skill 
 | **oma-academic-writing** | Redação acadêmica, revisão e análise anti-AI | Prosa orientada à publicação e revisões de claims/evidências |
 | **oma-architecture** | Fronteiras de sistema, tradeoffs e ADRs | Recomendação de arquitetura ou registro de decisão |
 | **oma-backend** | APIs, auth, lógica de servidor e migrações | Alterações de router/serviço/repositório e verificação |
-| **oma-brainstorm** | Ideias ambíguas e comparação de abordagens | Documento de design em `docs/plans/designs/` |
-| **oma-coordination** | Coordenação manual de vários agentes | Orientação passo a passo para tarefas e handoffs |
+| **oma-brainstorm** | Ideias ambíguas e comparação de abordagens | Rascunho de decisão em `docs/decisions/` |
+| **oma-coordination** | Regras compartilhadas de coordenação para `/work`, `/orchestrate` e `/ultrawork`; coordenação manual passo a passo | Orientação sobre reutilização de plano, alinhamento de contratos, responsabilidade pelos workspaces e handoff para QA |
 | **oma-db** | Design de schema, ERD, ajuste de queries e planejamento de capacidade | Documentação de schema, migrações e plano de recuperação |
 | **oma-debug** | Reprodução de bugs e análise de causa raiz | Correção mínima, evidência de regressão e varredura de padrões |
-| **oma-security** | Varredura de segurança de código-fonte, skills de agentes e MCP; testes de penetração web com escopo definido | Achados validados e configuração de gates de varredura |
-| **oma-design** | Sistemas de design, landing pages e tokens | `DESIGN.md`, tokens e orientação de componentes |
+| **oma-security** | Varredura de segurança de código-fonte, skills de agentes e MCP; testes de penetração somente em uma plataforma de execução fornecida e revisada pelo usuário | Achados validados e configuração de gates de varredura |
+| **oma-design** | Sistemas visuais, `DESIGN.md`, direção de redesign e revisão de design de UI | Decisão de design ou achados, `DESIGN.md` quando o sistema muda e um handoff de implementação |
 | **oma-dev-workflow** | CI/CD, monorepos, migrações e automação de releases | Configuração de workflow e verificações de release |
 | **oma-docs** | Referências quebradas e deriva documental | Relatório de verificação ou candidatos de sync por diff |
-| **oma-explanation** | Walkthroughs de diff, PR, branch ou commits | Explainer HTML offline com Background, Intuition, Code e Quiz |
+| **oma-explanation** | Walkthroughs de diff, PR, branch ou commits; explicações de tópicos | Explainer HTML offline (Background, Intuition, Code e Quiz para uma mudança) |
 | **oma-frontend** | Componentes UI, formulários, páginas e estilização Angular ou React | Alterações frontend e verificações relevantes |
 | **oma-hwp** | Conversão HWP/HWPX/HWPML | Markdown com headings, tabelas, imagens e links |
 | **oma-image** | Geração de imagens e assets visuais | Execução de imagem reproduzível com manifest |
 | **oma-market** | Pain points, tendências, concorrentes e pesquisa de descoberta | Brief de pesquisa compatível com LAW e frameworks |
-| **oma-mobile** | Trabalho Flutter, React Native e Swift iOS | Telas mobile, estado, integração de plataforma e testes |
+| **oma-mobile** | Trabalho Flutter, React Native, Swift iOS e Kotlin Android | Telas mobile, estado, integração de plataforma e testes |
 | **oma-observability** | Traces, métricas, logs, profiles, SLOs e forense de incidentes | Recomendação de observabilidade por camada ou orientação de implementação |
 | **oma-orchestration** | Execução paralela automatizada de agentes | Planos coordenados, atualizações de memória e coleta de resultados |
 | **oma-pdf** | Conversão de PDF e extração com OCR | Markdown com ordem de leitura, tabelas, listas e imagens |
@@ -349,7 +328,7 @@ O preset `all` do instalador segue o registro ativo. A tabela agrupa cada skill 
 | **oma-refactor** | Reestruturação que preserva o comportamento | Mudanças de refatoração com evidências de caracterização e de qualidade |
 | **oma-scholar** | Pesquisa acadêmica e sidecars de artigos | Operações validadas sobre sidecars `.knows.yaml` |
 | **oma-scm** | Branches Git, worktrees, baselines e higiene de commits | Plano de SCM ou saída de Conventional Commit |
-| **oma-search** | Busca com pontuação de confiança em docs, web, código e recursos locais | Resultados de busca roteados com rótulos de confiança |
+| **oma-search** | Documentação externa, fontes da web, código remoto e leitura de URLs conhecidas | Fontes citadas com rota, provider, evidências e limitações |
 | **oma-skill-creation** | Criar e auditar skills OMA | Arquivos de skill SSL-lite e resultados de `oma skill audit` |
 | **oma-slide** | Decks de apresentação HTML e exportações | HTML empacotado validado, PDF, PNG ou PPTX |
 | **oma-tf-infra** | Infraestrutura Terraform, IAM e policy-as-code | Módulos, planos e controles Terraform |
@@ -407,6 +386,12 @@ Quando você executa `oma agent spawn`, a CLI:
 
 Os agentes coordenam por meio de arquivos duráveis em `.agents/state/memories/` (projetos antigos recorrem ao caminho legado `.serena/memories/`). O orquestrador escreve arquivos de sessão e quadro de tarefas específicos da execução. Cada execução escreve `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` e `result-{agentId}-{taskId}-{runId}-{sessionId}.md` quando a saída Markdown de progresso ou resultado está habilitada; recibos e claims estruturados em `.agents/state/agent-runs/` são a autoridade para criações via CLI. Os agentes leem e escrevem esses arquivos com suas ferramentas nativas; o mapeamento de ferramentas permanece configurável em `.agents/mcp.json → memoryConfig.tools`.
 
+### Documentos e relatórios
+
+Use `docs/decisions/` para propostas de abordagem e ADRs, com um campo `Status` como `draft`, `accepted` ou `superseded`. O design de UI pertence ao `DESIGN.md`. Os planos de trabalho ficam em `docs/plans/work/`, e os contratos de API adotados ficam em `docs/plans/contracts/`.
+
+Relatórios de execução e rascunhos de contratos pertencem a `.agents/results/`. Quando um documento se tornar uma referência mantida do projeto, mova-o para o diretório `docs/` correspondente e deixe um link no local anterior. Consulte [Layout de artefatos](./artifact-layout.md) para o layout completo e os comandos de migração.
+
 ### Workspaces
 
 <!-- oma-docs:ignore-start -->
@@ -451,7 +436,7 @@ Os problemas comuns estão abaixo. Para mensagens de erro, falhas no resultado d
 | Dashboard mostra "No agents detected yet" | Os agentes ainda não escreveram na memória, ou o dashboard observa outro diretório | Aguarde o primeiro arquivo de progresso; execute a partir da raiz do projeto ou passe `--project-root <path>` |
 | `oma dashboard web` encerra com "port 9847 is already in use" | Outro processo está usando a porta | `DASHBOARD_PORT=8080 oma dashboard web` |
 | Relatório QA tem mais de 50 problemas | Normal na primeira revisão de codebases grandes | Concentre-se primeiro na severidade CRITICAL e HIGH. Documente MEDIUM/LOW para sprints futuras. |
-| Auto-detecção aciona o workflow errado | Ambiguidade de palavras-chave | Use `/command` explícito em vez de linguagem natural. Relate falsos acionamentos para melhoria. |
+| Um modo persistente inicia quando você só mencionou o nome dele | O prompt cita `orchestrate`, `ultrawork`, `work mode` ou `ralph` fora de uma pergunta ou de um bloco de código | Diga "workflow done" para liberá-lo. Relate falsos acionamentos para melhoria. |
 | Workflow persistente não para | O arquivo de estado ainda existe | Diga "workflow done" no chat ou exclua manualmente o arquivo de estado de `.agents/state/` |
 | Agente bloqueado em esclarecimento HIGH | Requisitos muito ambíguos | Forneça as respostas específicas solicitadas pelo agente e execute novamente |
 | Ferramentas MCP não funcionam | Serena não configurado ou não executando | Execute `oma doctor` para verificar a configuração MCP |
@@ -467,6 +452,7 @@ Os problemas comuns estão abaixo. Para mensagens de erro, falhas no resultado d
 - Um bug com mensagem de erro: [Correção de bugs](./bug-fixing.md)
 - Acompanhar uma execução: [Monitoramento do dashboard](./dashboard-monitoring.md)
 - Auditar ou retomar resultados de agentes: [Resultados e retomada](./agent-results-and-resume.md)
+- Encontrar ou migrar documentos do OMA: [Layout de artefatos](./artifact-layout.md)
 - Algo falhou: [Solução de problemas](./troubleshooting.md)
 - Detalhes de integração no projeto: [Guia de integração](./integration.md)
 - Termos usados nestes guias: [Glossário](../getting-started/glossary.md)

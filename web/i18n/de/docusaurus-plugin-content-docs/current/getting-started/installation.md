@@ -5,6 +5,21 @@ description: oh-my-agent installieren, Skills und Provider auswählen, die erzeu
 
 # Installation
 
+Beginnen Sie für eine einzelne Aufgabe mit [einem einzelnen Skill](./choose-setup.md#load-one-skill). Für Projekt-Hooks und Team-Workflows verwenden Sie die Laufzeitinstallation unten. Der [Setup-Leitfaden](./choose-setup.md) trennt das Laden von Anweisungen, Skill-Presets und die Installation über den Claude-Code-Marketplace.
+
+Für Grok Bot verwenden Sie die [Installationsseite für Grok Bot](/grok-bot/). Der native Link **Add to Grok Bot** setzt einen genehmigten Eintrag im Cursor Marketplace voraus; solange die Registrierung aussteht, ist er nicht verfügbar. Die separate [Anleitung zur manuellen Installation](https://github.com/first-fluke/oh-my-agent/blob/main/integrations/grok-bot/README.md) erklärt `oma install --target grok-bot` für den Bot-Computer. Die Laufzeitintegration von Grok Build weiter unten ist ein anderes Installationsziel.
+
+## Mit einem KI-Agenten installieren {#install-with-an-ai-agent}
+
+Fügen Sie Folgendes in Ihren Coding-Agenten ein:
+
+```text
+Install and configure oh-my-agent in this project by following this guide:
+https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-install.md
+```
+
+Die [Installationsanleitung für Agenten](https://github.com/first-fluke/oh-my-agent/blob/main/docs/agent-install.md) behandelt die Vorbereitung der CLI, die nicht interaktive Projekteinrichtung und die Prüfung mit `oma doctor`.
+
 ## Voraussetzungen
 
 - **Eine KI-gestützte IDE oder CLI:** mindestens ein unterstützter Host wie Claude Code, Codex CLI, Qwen Code, Antigravity CLI (`agy`), Cursor, OpenCode, Kimi Code CLI, Kiro, CommandCode, pi, GitHub Copilot oder Hermes
@@ -12,7 +27,7 @@ description: oh-my-agent installieren, Skills und Provider auswählen, die erzeu
 - **uv:** Python-Paketmanager (das Bootstrap-Skript bietet die Installation an, wenn es fehlt)
 - **Code-Intelligence-Provider:** Serena ist der Standardprovider. Bei entsprechender Provider-Konfiguration wird auch Gortex unterstützt. Der Installer kann Serena über `uv tool install` einrichten und mit einer Warnung fortfahren, wenn eine optionale Abhängigkeit fehlt. Ist Gortex ausgewählt, registrieren `oma install` und `oma update` im Projektmodus das Projekt beim Gortex-Daemon (`gortex track`), sofern es noch nicht verfolgt wird, und tragen die von OMA erzeugten Verzeichnisse über die Gortex-CLI in die Ausschlussliste dieses Projekts ein; in den Projektbaum wird nichts geschrieben. Gortex selbst muss separat installiert werden.
 
-Der Installer gruppiert Integrationen nach Fähigkeiten. Zu den Hook-Vendors gehören Antigravity, Claude, Codex, CommandCode, Cursor, Grok, Kimi, Kiro und Qwen; OpenCode und pi verwenden Erweiterungsbrücken; GitHub Copilot und Hermes erhalten Skill-Links; ZCode erhält Workflow-Befehle. Sie können mehrere Vendors auswählen, für die erste Aufgabe genügt jedoch der Host, den Sie verwenden möchten.
+Der Installer gruppiert Integrationen nach Fähigkeiten. Zu den Hook-Vendors gehören Antigravity, Claude, Codex, CommandCode, Copilot, Cursor, Grok, Kimi, Kiro und Qwen; OpenCode und pi verwenden Erweiterungsbrücken; Hermes erhält Skill-Links; ZCode erhält Workflow-Befehle. Sie können mehrere Vendors auswählen, für die erste Aufgabe genügt jedoch der Host, den Sie verwenden möchten.
 
 ---
 
@@ -79,30 +94,57 @@ Wählen Sie das Preset, das zur Arbeit im Repository passt. Die Skill-Namen unte
 | **backend** | Eine API oder einen Service mit Datenbank | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
 | **mobile** | Nur eine Mobile-App | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
 | **devops** | Arbeit an Infrastruktur, CI/CD und Observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **security** | Sicherheitsscans, Code-Review und Behebung | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Papers, Marktforschung und PDF/HWP-Konvertierung | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Design-Assets, Bilder, Sprache und schriftliche Inhalte | design, image, voice, academic-writing, translation, scm | 6 |
 
 Presets sind Skill-Bundles; sie erzeugen keine eigene Subagent-Definition pro Skill. Das Preset `all` wird aus der aktuellen Skill-Registry erweitert, daher kann die Liste mit dem Repository wachsen. Domänen-Presets enthalten nur die Skills für diesen Schwerpunkt.
 
+Wählen Sie ein Preset über die Befehlszeile:
+
+```bash
+oma install --preset frontend --yes
+```
+
+`--preset` verwendet die Namen aus der Tabelle und hat Vorrang vor der interaktiven Skill-Abfrage und dem nicht interaktiven Standard `all`. Ein unbekannter Name wird abgelehnt, bevor die Installation beginnt. Ohne die Option bleibt der bisherige Auswahlablauf erhalten. Die Option wählt Skills aus; gemeinsame Dateien, Agenten, Workflows, Hooks und die Provider-Einrichtung folgen weiterhin dem Laufzeit-Installer. Eine erneute Installation mit einem kleineren Preset behält zuvor installierte Skills. Eine benutzerdefinierte Auswahl gibt es nur im interaktiven Menü; `custom` und leere Werte akzeptiert `--preset` nicht.
+
+Lesen Sie nach der Installation die Liste der ausgewählten Skills und den Bericht zur Workflow-Verfügbarkeit. Ein Workflow wird nur bereitgestellt, wenn die Manifeste seiner erforderlichen Skills gültige Namen und Beschreibungen haben. Bereits vorhandene, beibehaltene Skills können diese Anforderungen erfüllen. Bedingte Referenzen werden getrennt gemeldet und erweitern das ausgewählte Preset nicht. Diese Prüfung deckt Manifeste ab; Tools, Provider, Zugangsdaten und die Ausführung brauchen weiterhin eigene Prüfungen.
+
 ### Workflows, die Skills außerhalb eines Presets benötigen {#workflows-that-need-skills-outside-a-preset}
 
-Jedes Preset installiert alle Workflow- und Agentendefinitionen, aber mehrere Workflows lesen einen Skill, den Domänen-Presets nicht installieren. Prüfen Sie diese Tabelle, bevor Sie ein Domänen-Preset wählen:
+Jedes Preset kopiert die Workflow- und Agentendefinitionen. Befehle und Prompts werden nur für Workflows bereitgestellt, deren erforderliche Skills verfügbar sind. Eine frische Frontend-Installation lässt zum Beispiel `/work` nicht verfügbar, weil `oma-coordination` fehlt; die vorhandenen PM- und QA-Skills erfüllen die übrigen Einstiegsanforderungen bereits. Der Installer meldet diesen fehlenden Skill, ohne auf `all` umzuschalten.
 
-| Workflow | Liest Skill | Presets, die ihn enthalten |
+| Workflow | Erforderliche Einstiegs-Skills | Presets, die sie enthalten |
 |----------|-------------|-------------------------|
-| `/work`, `/orchestrate` | oma-coordination, oma-orchestration | all |
-| `/ultrawork`, `/ralph` | oma-coordination; der dabei gestartete Agent `refactor-engineer` verwendet oma-refactor | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
+| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
-| `/security` | oma-security | all |
+| `/security` | oma-security | all, security |
 | `/recap` | oma-recap | all |
 | `/video` | oma-video | all |
-| `/convert` (PDF, HWP) | oma-pdf, oma-hwp | all, research |
 | `/design` | oma-design | all, fullstack, fullstack-web, fullstack-mobile, frontend, content |
-| `/architecture`, `/brainstorm`, `/plan`, `/review`, `/debug` | oma-architecture, oma-brainstorm, oma-pm, oma-qa, oma-debug | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/architecture` | oma-architecture | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
+| `/plan` | oma-pm | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/review` | oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops, security |
 | `/scm` | oma-scm | jedes Preset |
 
-Um einen fehlenden Skill später hinzuzufügen, führen Sie `oma doctor` im Projekt-Root aus, bestätigen die Abfrage zu fehlenden Skills und wählen **Select individually**.
+Zweigspezifische Referenzen bleiben Hinweise. `/convert` wählt zum Beispiel PDF-, HWP- oder Video-Tools, nachdem es seine Eingabe geprüft hat; `/ralph` und `/ultrawork` können für einen Refactoring-Zweig `oma-refactor` brauchen. Diese Referenzen sind keine unbedingten Einstiegsanforderungen.
+
+Führen Sie `oma doctor` aus, um fehlende oder ungültige Manifeste zu diagnostizieren. Um einen fehlenden Skill hinzuzufügen, führen Sie `oma install` aus und wählen **Select individually**. Führen Sie nach der Reparatur eines Manifests `oma link` aus, um die Workflow-Bereitstellung zu aktualisieren; eine erneute Installation aktualisiert sie ebenfalls. Verwenden Sie bei einer globalen OMA-Installation den passenden `--global`-Geltungsbereich. Vorhandene Benutzerbefehle bleiben erhalten, wenn nicht verfügbare OMA-Befehle entfernt werden.
+
+### Domain-Plugins {#domain-plugins}
+
+Benutzer des Claude-Code-Marketplace können einen Domain-Eintrag wählen, nachdem sie den Marketplace `oh-my-agent` hinzugefügt haben:
+
+```bash
+claude plugin install oma-frontend@oh-my-agent
+# Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
+```
+
+Die Domain-Einträge enthalten 8 Frontend-, 6 Security- oder 8 Research-Skills und eine passende Auswahl nativer Agenten. Ihr Session-Bootstrap übergibt dieses Preset an den Laufzeit-Installer. Die gemeinsame Laufzeiteinrichtung und bereits installierte Skills folgen dem oben beschriebenen Installer-Verhalten. Der Eintrag `oma` behält das vollständige Plugin. Dieselben Domain-Roots sind im erzeugten Codex-Marketplace-Katalog sowie in den Katalogen für Grok Build und ZCode deklariert. Antigravity CLI (`agy plugin install ./antigravity-plugin` auf dem erzeugten Baum oder dem Release-Asset `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode und Kimi Code (`/plugins install`) lesen jeweils ihr eigenes erzeugtes Manifest; die genauen Schritte je Host stehen unter [Claude-kompatible Plugin-Hosts](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts).
+
+Die gepinnten Host-CI-Jobs registrieren den lokalen Marketplace auf frischen Runnern, installieren Domain-Einträge und prüfen das resultierende Inventar. Diese Prüfungen laufen ohne Modellaufrufe. Laufzeit-Zugangsdaten, externe Provider und eine erfolgreiche erste Aufgabe brauchen weiterhin eine eigene Verifikation. Release-Prüfungen verlangen außerdem, dass beide Manifeste in jedem Domain-Root zur CLI-Version passen und einen Release-Please-Versions-Updater haben.
 
 Die gemeinsamen Ressourcen (`_shared/`) werden unabhängig vom Preset immer installiert. Dazu gehören Core-Routing, Context Loading, Prompt-Struktur, Vendor-Erkennung, Ausführungsprotokolle und Memory-Protokoll.
 
@@ -124,11 +166,10 @@ Nach der Installation enthält Ihr Projekt:
 │   │   ├── SKILL.md
 │   │   └── resources/
 │   └── ...                  # Other selected skills
-├── workflows/               # Workflow definitions (all 21, every preset)
+├── workflows/               # Workflow definitions (all 20, every preset)
 ├── agents/                  # Subagent definitions (all 12, every preset)
 ├── hooks/                   # Hook sources (core/, variants/)
 ├── rules/                   # Project rules
-├── config/                  # Shipped defaults (defaults.yaml)
 ├── results/                 # Plans and agent results (populated by workflows)
 └── state/                   # Persistent workflow and coordination state
     └── memories/            # Runtime coordination state
@@ -297,9 +338,8 @@ agents:
 |------|-----|--------------|--------------|
 | `language` | string | Ja | Antwortsprachcode. Unterstützt en, ko, ja, zh, es, fr, de, pt, ru, nl, pl. |
 | `model_preset` | string | Ja | Aktiver Schlüssel des [Modell-Presets](./glossary.md#model-preset). `auto` folgt der aktuellen Laufzeit; feste Schlüssel sind `free`, `antigravity`, `claude`, `codex`, `qwen`, `cursor`, `kiro` und `mixed`. Auch benutzerdefinierte Preset-Schlüssel sind gültig. Siehe [Modelle pro Agent](../guide/per-agent-models.md). |
-| `default_cli` | string | Nein | Fallback-CLI für `oma agent spawn`, wenn explizite Agenteneinstellungen und das ausgewählte Preset keinen Vendor auflösen. |
-| `free` | map | Nein | FreeLLMAPI-Gateway-Einstellungen bei `model_preset: free`; API-Schlüssel gehören in Umgebungsvariablen. |
-| `providers` | map | Nein | Fähigkeits-Provider: `code_intelligence` (`serena` oder `gortex`), `code_intelligence_guard` (`block` oder `off`), `docs` (`context7`), `web` (`native` oder `brave`) und `semantic_memory` (`agentmemory`, `honcho` oder `none`). |
+| `agents` | map | Nein | Modell-Überschreibungen pro Rolle; `agents.default` enthält `cli` (die Fallback-CLI für `oma agent spawn`, wenn explizite Agenteneinstellungen und das ausgewählte Preset keinen Vendor auflösen) sowie die Standardwerte für `effort`, `thinking` und `memory`. |
+| `providers` | map | Nein | Fähigkeits-Provider: `code_intelligence` (`serena` oder `gortex`), `code_intelligence_guard` (`block` oder `off`), `docs` (`context7`), `web` (`native` oder `brave`) und `semantic_memory` (`agentmemory`, `honcho` oder `none`); deren Abschnitte für Zugangsdaten (`brave`, `exa`, `honcho`); und benannte LLM-Provider wie `free` (das FreeLLMAPI-Gateway, das `model_preset: free` verwendet). API-Schlüssel gehören in Umgebungsvariablen. |
 | `date_format` | string | Nein | Zeitstempelformat (`ISO`, `US`, `EU`). Standard: `ISO`. |
 | `timezone` | string | Nein | Zeitzonenkennung (zum Beispiel `Asia/Seoul`). Ohne Wert wird die Zeitzone des Hosts verwendet. |
 | `auto_update_cli` | boolean | Nein | Ob routinemäßige CLI-Prüfungen im Hintergrund aktualisieren dürfen. Standard: `true` (mit `false` deaktivieren). |

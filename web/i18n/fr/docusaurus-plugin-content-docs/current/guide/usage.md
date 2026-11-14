@@ -278,7 +278,6 @@ Les tâches inter-fournisseurs et `model_preset: free` utilisent `oma agent spaw
 | `/debug` | Non persistant | Débogage structuré : reproduire, diagnostiquer, corriger, tester, rechercher | Enquêter sur des bugs et erreurs |
 | `/design` | Non persistant | Workflow design en 7 phases qui produit DESIGN.md avec tokens | Construire un système de design, une landing page ou une refonte UI |
 | `/scm` | Non persistant | Workflow SCM Git (branche/fusion/conflit/worktree/baseline) et génération de Conventional Commit avec détection automatique type/scope et découpage | Après des changements de code ou pour les tâches de gestion de configuration du dépôt |
-| `/tools` | Non persistant | Gérer la visibilité des outils MCP (activer/désactiver des groupes) | Contrôler les outils accessibles aux agents |
 | `/stack-set` | Non persistant | Détecter la stack et générer les références backend ou mobile (Swift/Flutter/RN) | Configurer les conventions propres au langage |
 | `/architecture` | Non persistant | Diagnostiquer, comparer et consigner les décisions d’architecture | Revoir des frontières ou choisir une architecture |
 | `/convert` | Non persistant | Router la conversion vers la compétence appropriée | Convertir des fichiers HWP/HWPX ou PDF |

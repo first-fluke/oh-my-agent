@@ -31,13 +31,13 @@ oh-my-agent rozdziela te obszary między wyspecjalizowane umiejętności i agent
 
 ---
 
-## Obecny katalog: 33 umiejętności, 12 definicji, 21 workflowów {#the-current-catalog-33-skills-12-definitions-21-workflows}
+## Obecny katalog: 33 umiejętności, 12 definicji, 20 workflowów {#the-current-catalog-33-skills-12-definitions-20-workflows}
 
 Katalog składa się z trzech elementów:
 
 - **[Umiejętności](./glossary.md#skill)** to 33 pakiety wiedzy domenowej w `.agents/skills/*/SKILL.md`. Kierują na podstawie intencji wyrażonej naturalnym językiem i progresywnie ładują zasoby.
 - **[Definicje agentów](./glossary.md#agent-definition)** to 12 plików w `.agents/agents/`. Dostarczają natywne dla dostawcy persony subagentów i odwołują się do co najmniej jednej umiejętności.
-- **[Workflowy](./glossary.md#workflow)** to 21 definicji procesów w `.agents/workflows/`. Cztery są [trwałe](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu trwałego.
+- **[Workflowy](./glossary.md#workflow)** to 20 definicji procesów w `.agents/workflows/`. Cztery są [trwałe](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu trwałego.
 
 Gdy nazwa lub opis umiejętności się zmienia, rozstrzygający jest frontmatter aktywnego `SKILL.md`.
 
@@ -166,11 +166,10 @@ Wszystko, czego potrzebuje oh-my-agent, znajduje się w katalogu `.agents/`:
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -301,5 +300,5 @@ Katalog `.agents/` pozostaje źródłem prawdy. Instalacja tworzy dowiązania lu
 - **[Instalacja](./installation.md)**: trzy metody instalacji, presety, konfiguracja CLI i weryfikacja
 - **[Agenci](/docs/core-concepts/agents)**: szczegółowe omówienie 33 umiejętności, 13 ról dispatchu i charter preflight
 - **[Umiejętności](/docs/core-concepts/skills)**: wyjaśnienie architektury dwuwarstwowej
-- **[Workflowy](/docs/core-concepts/workflows)**: wszystkie 21 workflowów z wyzwalaczami i fazami
+- **[Workflowy](/docs/core-concepts/workflows)**: wszystkie 20 workflowów z wyzwalaczami i fazami
 - **[Przewodnik użycia](/docs/guide/usage)**: rzeczywiste przykłady od pojedynczych zadań po pełną orkiestrację

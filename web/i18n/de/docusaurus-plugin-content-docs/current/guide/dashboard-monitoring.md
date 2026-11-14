@@ -89,7 +89,7 @@ Die Dashboards lesen aus dem `.agents/state/memories/`-Verzeichnis. Dieses Verze
 | `orchestrator-session.md` | `/orchestrate` Schritt 2 | Sitzungs-ID, Startzeit, Status (RUNNING/COMPLETED/FAILED), Workflow-Version |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | Sitzungsmetadaten, Phasenfortschritt, Zusammenfassung der Benutzeranfrage |
 | `task-board.md` | Orchestrierungs-Workflows | Markdown-Tabelle mit Agentenzuweisungen, Status und Aufgaben |
-| `progress-{agent}.md` | Jeder gestartete Agent | Aktuelle Turn-Nummer, woran der Agent arbeitet, Zwischenergebnisse |
+| `progress-{agent}-{task}-{run}-{session}.md` | Jeder gestartete Agent | Angehängte `## Turn N`-Einträge: was der Agent getan hat, aktueller Status, geänderte Dateien |
 | `result-{agent}.md` | Jeder abgeschlossene Agent | Endstatus (COMPLETED/FAILED), geänderte Dateien, gefundene Probleme, Ergebnisse |
 | `debug-{id}.md` | `/debug`-Workflow | Bug-Diagnose, Grundursache, angewendete Korrektur, Regressionstest-Speicherort |
 | `experiment-ledger-{sessionId}.md` | Tatsächliche Experimente | Vergleichbare Belege für Baseline und Kandidat, erforderliche Prüfungen und Entscheidungen |
@@ -105,7 +105,7 @@ Das Dashboard verwendet mehrere Strategien zur Informationsextraktion:
 
 3. **Agentenerkennung:** Ohne Task Board werden Agenten durch Scannen aller `.md`-Dateien nach `**Agent**: {name}`-Mustern, `Agent: {name}`-Zeilen oder Dateinamen mit `_agent` oder `-agent` entdeckt.
 
-4. **Turn-Zählung:** Für jeden entdeckten Agenten werden `progress-{agent}.md`-Dateien gelesen und die Turn-Nummer aus `turn: N`-Mustern extrahiert.
+4. **Turn-Zählung:** Für jeden entdeckten Agenten wird die neueste Datei genommen, deren Name mit `progress-{agent}` beginnt, und darin die letzte `Turn N`-Zeile (oder `turn: N`) gelesen.
 
 5. **Aktivitäts-Feed:** Listet die 5 zuletzt modifizierten `.md`-Dateien, extrahiert die letzte aussagekräftige Zeile (Überschriften, Statuszeilen, Aktionspunkte) als Aktivitätsnachricht. Das Web-Dashboard stellt außerdem die Recap-Ansicht unter `/recap` bereit.
 
@@ -124,13 +124,13 @@ Der obere Bereich zeigt:
 Die Agententabelle zeigt jeden erkannten Agenten mit:
 - **Agentenname:** Die Domänenkennung (backend, frontend, mobile, qa, debug, pm).
 - **Status:** Aktueller Zustand mit visuellem Indikator (läuft/abgeschlossen/fehlgeschlagen/blockiert/ausstehend).
-- **Turn:** Die aktuelle Turn-Nummer des Agenten (wie viele Iterationen er abgeschlossen hat). Aus Fortschrittsdateien extrahiert.
+- **Turn:** Die Nummer des jüngsten Fortschrittseintrags des Agenten. Aus Fortschrittsdateien extrahiert; gezählt werden Einträge, nicht Modell-Turns.
 - **Aufgabe:** Kurze Beschreibung der aktuellen Arbeit des Agenten (bei Bedarf gekürzt).
 
 ### Agentenfortschritt
 
-Der Fortschritt wird über `progress-{agent}.md`-Dateien verfolgt. Jede Datei wird vom Agenten während der Arbeit aktualisiert. Das Dashboard fragt diese Dateien ab nach:
-- Turn-Nummer (wird mit dem Fortschritt des Agenten erhöht).
+Der Fortschritt wird über `progress-{agent}-*.md`-Dateien verfolgt. Jeder Agent hängt an einem sinnvollen Kontrollpunkt (ein abgeschlossener Schritt, ein Blocker, ein geänderter Ansatz) einen Eintrag an. Das Dashboard fragt diese Dateien ab nach:
+- Turn-Nummer (die Nummer des jüngsten Eintrags).
 - Aktuelle Aktion (was der Agent gerade tut).
 - Zwischenergebnisse (Teilabschlüsse).
 

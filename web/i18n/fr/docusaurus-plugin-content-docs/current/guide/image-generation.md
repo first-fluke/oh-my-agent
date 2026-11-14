@@ -259,7 +259,7 @@ Pour voir exactement ce qui a été envoyé au fournisseur, consultez le champ `
 
 ## Configuration
 
-- **Configuration du projet :** section `image:` de `.agents/oma-config.yaml`. L'ancien `config/image-config.yaml` n'est plus lu.
+- **Configuration du projet :** section `image:` de `.agents/oma-config.yaml`. Les valeurs par défaut livrées se trouvent dans le CLI : n'écrivez donc que les clés que vous modifiez.
 - **Variables d'environnement :**
   - `OMA_IMAGE_DEFAULT_VENDOR` : remplace le fournisseur par défaut configuré (`auto`). Le flag `--vendor` lui-même vaut `auto` par défaut ; passez donc `--vendor` à chaque commande lorsque vous avez besoin d'un fournisseur précis ;
   - `OMA_IMAGE_DEFAULT_OUT` : remplace le répertoire de sortie par défaut ;

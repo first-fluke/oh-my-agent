@@ -69,8 +69,9 @@ your-project/
 │   │   │
 │   │   ├── oma-mobile/
 │   │   │   ├── SKILL.md
-│   │   │   ├── resources/              ← execution, tech stack, screen templates, checks
-│   │   │   └── stack/                  ← created by /stack-set (Flutter, React Native, or Swift)
+│   │   │   ├── resources/              ← execution, tech stack index, checks
+│   │   │   ├── variants/               ← platform references (Flutter, React Native, Swift, Kotlin): stack.yaml, tech-stack.md, snippets.md
+│   │   │   └── stack/                  ← created by /stack-set from the detected project
 │   │   │
 │   │   ├── oma-db/
 │   │   │   ├── SKILL.md
@@ -88,28 +89,19 @@ your-project/
 │   │   │
 │   │   ├── oma-design/
 │   │   │   ├── SKILL.md
-│   │   │   ├── resources/
-│   │   │   │   ├── execution-protocol.md
-│   │   │   │   ├── anti-patterns.md
-│   │   │   │   ├── checklist.md
-│   │   │   │   ├── design-md-spec.md
-│   │   │   │   ├── design-tokens.md
-│   │   │   │   ├── prompt-enhancement.md
-│   │   │   │   ├── stitch-integration.md
-│   │   │   │   ├── redesign-protocol.md
-│   │   │   │   ├── asset-strategy.md
-│   │   │   │   ├── getdesign-fetcher.md
-│   │   │   │   └── error-playbook.md
-│   │   │   └── reference/
-│   │   │       ├── typography.md
-│   │   │       ├── color-and-contrast.md
-│   │   │       ├── spatial-design.md
-│   │   │       ├── motion-design.md
-│   │   │       ├── responsive-design.md
-│   │   │       ├── component-patterns.md
-│   │   │       ├── accessibility.md
-│   │   │       ├── visual-hierarchy.md
-│   │   │       └── shader-and-3d.md
+│   │   │   └── resources/
+│   │   │       ├── execution-protocol.md
+│   │   │       ├── external-design-skills.md
+│   │   │       ├── product-interface-review.md
+│   │   │       ├── redesign-protocol.md
+│   │   │       ├── design-md-spec.md
+│   │   │       ├── design-tokens.md
+│   │   │       ├── data-grid.md
+│   │   │       ├── asset-strategy.md
+│   │   │       ├── getdesign-fetcher.md
+│   │   │       ├── stitch-integration.md
+│   │   │       ├── checklist.md
+│   │   │       └── error-playbook.md
 │   │   │
 │   │   ├── oma-pm/
 │   │   │   ├── SKILL.md
@@ -117,7 +109,6 @@ your-project/
 │   │   │       ├── execution-protocol.md
 │   │   │       ├── examples.md
 │   │   │       ├── iso-planning.md
-│   │   │       ├── plan-phase-protocol.md
 │   │   │       ├── task-template.json
 │   │   │       └── error-playbook.md
 │   │   │
@@ -127,14 +118,12 @@ your-project/
 │   │   │       ├── execution-protocol.md
 │   │   │       ├── iso-quality.md
 │   │   │       ├── checklist.md
-│   │   │       ├── error-playbook.md
-│   │   │       └── verify-ship-protocol.md
+│   │   │       └── error-playbook.md
 │   │   │
 │   │   ├── oma-debug/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
 │   │   │       ├── execution-protocol.md
-│   │   │       ├── common-patterns.md
 │   │   │       ├── debugging-checklist.md
 │   │   │       ├── bug-report-template.md
 │   │   │       ├── checklist.md
@@ -155,10 +144,9 @@ your-project/
 │   │   ├── oma-dev-workflow/
 │   │   │   ├── SKILL.md
 │   │   │   └── resources/
+│   │   │       ├── mise-basics.md
 │   │   │       ├── validation-pipeline.md
-│   │   │       ├── database-patterns.md
-│   │   │       ├── api-workflows.md
-│   │   │       ├── i18n-patterns.md
+│   │   │       ├── example-task-wiring.md
 │   │   │       ├── release-coordination.md
 │   │   │       ├── tooling-profiles.md
 │   │   │       ├── affected-checks.py
@@ -169,6 +157,7 @@ your-project/
 │   │   │   └── resources/
 │   │   │       ├── translation-rubric.md
 │   │   │       ├── anti-ai-patterns.md
+│   │   │       ├── style-skills.md
 │   │   │       └── lang/
 │   │   │           ├── _template.md
 │   │   │           ├── en.md
@@ -185,7 +174,6 @@ your-project/
 │   │   │   │   ├── spawn-agent.sh
 │   │   │   │   ├── parallel-run.sh
 │   │   │   │   └── verify.sh
-│   │   │   ├── templates/
 │   │   │   └── config/
 │   │   │       └── cli-config.yaml
 │   │   │
@@ -204,14 +192,14 @@ your-project/
 │   │           ├── merge-risk.md
 │   │           └── ...
 │   │
-│   ├── workflows/                    ← 21 process definitions
+│   ├── workflows/                    ← 20 process definitions
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
 │   │   ├── ralph.md                   ← Persistent: repeated execution + judge
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
-│   │   ├── scm.md / tools.md / stack-set.md / convert.md
+│   │   ├── scm.md / stack-set.md / convert.md
 │   │   ├── docs.md / explain.md / recap.md / schedule.md / video.md
 │   │   └── ...                         ← Keep this list aligned with `.agents/workflows/`
 │   │
@@ -304,11 +292,11 @@ C'est ici que se trouve l'expertise des compétences. Le catalogue actuel compre
 **`oma-{skill}/`** : répertoires propres aux compétences. Chacun contient :
 - `SKILL.md` : couche 1, chargée lorsque la compétence est routée ; identité, routage et règles fondamentales
 - `resources/` : couche 2, chargée à la demande ; protocoles d'exécution, exemples, checklists, guides de résolution d'erreurs, stacks techniques, extraits et modèles
-- Certaines compétences ont d'autres sous-répertoires : `stack/` (la variante backend choisie à l'installation, ou les références générées par `/stack-set` ; le dépôt source conserve les graines dans `variants/`), `reference/` (`oma-design`) et des scripts ou configurations propres à la compétence.
+- Certaines compétences ont d'autres sous-répertoires : `stack/` (la variante backend choisie à l'installation, ou les références générées par `/stack-set`), `variants/` (les références de stack livrées ; une compétence installée sans variante choisie conserve son répertoire `variants/` et lit celle qui correspond) et des scripts ou configurations propres à la compétence.
 
 ### workflows/ {#workflows}
 
-21 fichiers Markdown définissent le comportement des commandes slash. Chaque fichier contient :
+20 fichiers Markdown définissent le comportement des commandes slash. Chaque fichier contient :
 - un frontmatter YAML avec `description`
 - une section de règles obligatoires (langue des réponses, ordre des étapes, exigences des outils MCP)
 - les instructions de détection du fournisseur
@@ -316,7 +304,7 @@ C'est ici que se trouve l'expertise des compétences. Le catalogue actuel compre
 - les définitions de portes (pour les workflows persistants)
 
 Workflows persistants : `orchestrate.md`, `work.md`, `ultrawork.md` et `ralph.md`.
-Les workflows non persistants comprennent `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `tools.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` et `video.md`.
+Les workflows non persistants comprennent `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` et `video.md`.
 
 ### agents/ {#agents}
 
@@ -329,7 +317,7 @@ Les workflows non persistants comprennent `plan.md`, `brainstorm.md`, `architect
 
 ### plan-\{sessionId\}.json {#plan-sessionidjson}
 
-Généré par le workflow `/plan`. Contient le découpage structuré de la tâche avec les affectations d'agents, les priorités, les dépendances et les critères d'acceptation. Consommé par `/orchestrate` et `/work`. Le suivi permanent lisible par les humains se trouve dans `docs/plans/work/{NNN}-{name}.md` (son cycle de vie est suivi par le champ `Status`). Les références de conception permanentes sont conservées dans `docs/plans/designs/{NNN}-{name}.md`.
+Généré par le workflow `/plan`. Contient le découpage structuré de la tâche avec les affectations d'agents, les priorités, les dépendances et les critères d'acceptation. Consommé par `/orchestrate` et `/work`. Le suivi permanent lisible par les humains se trouve dans `docs/plans/work/{NNN}-{name}.md` (son cycle de vie est suivi par le champ `Status`). Les propositions d'approche retenues et les décisions sont conservées dans `docs/decisions/{NNN}-{name}.md`.
 
 ### state/ {#state}
 
@@ -346,7 +334,6 @@ Fichiers de résultats des agents. Les agents terminés les créent avec un stat
 Configuration des serveurs MCP, notamment :
 - les définitions des serveurs (Serena, etc.)
 - la configuration de la mémoire : `memoryConfig.provider`, `memoryConfig.basePath`, `memoryConfig.tools` (noms des outils de lecture/écriture/édition)
-- les définitions de groupes d'outils pour la gestion par `/tools`
 
 ---
 

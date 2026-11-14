@@ -33,13 +33,13 @@ oh-my-agent giải quyết bằng chuyên môn hóa:
 
 ---
 
-## Danh mục hiện tại: 33 skill, 12 định nghĩa, 21 workflow
+## Danh mục hiện tại: 33 skill, 12 định nghĩa, 20 workflow
 
 Danh mục tách riêng ba khái niệm dễ nhầm:
 
 - **[Skill](./glossary.md#skill)** là 33 gói kiến thức domain dưới `.agents/skills/*/SKILL.md`. Chúng định tuyến từ ý định trong ngôn ngữ tự nhiên và tải tài nguyên theo từng lớp.
 - **[Định nghĩa agent](./glossary.md#agent-definition)** là 12 tệp dưới `.agents/agents/`. Chúng cung cấp persona subagent theo vendor và tham chiếu tới một hoặc nhiều skill.
-- **[Workflow](./glossary.md#workflow)** là 21 định nghĩa quy trình dưới `.agents/workflows/`. Bốn workflow là [liên tục](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` và `ralph`); các workflow còn lại chạy tới báo cáo rồi không giữ chế độ liên tục.
+- **[Workflow](./glossary.md#workflow)** là 20 định nghĩa quy trình dưới `.agents/workflows/`. Bốn workflow là [liên tục](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` và `ralph`); các workflow còn lại chạy tới báo cáo rồi không giữ chế độ liên tục.
 
 Các phần dưới đây giữ lại danh mục skill chi tiết. Khi tên hoặc mô tả thay đổi, frontmatter của `SKILL.md` đang chạy là nguồn có thẩm quyền.
 
@@ -166,11 +166,10 @@ Mọi thứ oh-my-agent cần đều nằm trong thư mục `.agents/`:
 ├── skills/           # 33 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 21 workflow definitions
+├── workflows/        # 20 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
-├── config/           # Shipped defaults (defaults.yaml)
 ├── results/          # Plans (plan-{sessionId}.json) and agent results
 └── state/            # Active workflow state files
 ```
@@ -303,5 +302,5 @@ Thư mục `.agents/` vẫn là nguồn sự thật. Việc cài đặt link ho�
 - **[Cài đặt](./installation.md)**: Ba phương pháp cài đặt, preset, thiết lập CLI và xác minh
 - **[Các agent](/docs/core-concepts/agents)**: Tìm hiểu sâu 33 skill, 13 vai trò dispatch và charter preflight
 - **[Skill](/docs/core-concepts/skills)**: Giải thích kiến trúc hai lớp
-- **[Các workflow](/docs/core-concepts/workflows)**: Toàn bộ 21 workflow cùng trigger và phase
+- **[Các workflow](/docs/core-concepts/workflows)**: Toàn bộ 20 workflow cùng trigger và phase
 - **[Hướng dẫn sử dụng](/docs/guide/usage)**: Ví dụ thực tế từ task đơn lẻ tới orchestration đầy đủ

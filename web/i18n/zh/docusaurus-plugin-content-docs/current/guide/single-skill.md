@@ -201,7 +201,6 @@ Add tests for: profile save, logout flow, offline state.
 3. **加载的资源：**
    - `execution-protocol.md`
    - `snippets.md`（界面模板、Riverpod provider 模式）
-   - `screen-template.dart`
 4. **执行契约（启用时）可能输出 `CHARTER_CHECK`：**
    ```text
    CHARTER_CHECK:

@@ -22,7 +22,7 @@ OMA는 [스킬](../getting-started/glossary.md#skill), 디스패치 역할, [에
 | [`oma-architecture`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-architecture/SKILL.md) | Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs. |
 | [`oma-backend`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-backend/SKILL.md) | Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db. |
 | [`oma-brainstorm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-brainstorm/SKILL.md) | Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration. |
-| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step. |
+| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination. |
 | [`oma-db`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-db/SKILL.md) | Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend. |
 | [`oma-debug`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-debug/SKILL.md) | Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests. |
 | [`oma-design`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-design/SKILL.md) | Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions. |
@@ -44,7 +44,7 @@ OMA는 [스킬](../getting-started/glossary.md#skill), 디스패치 역할, [에
 | [`oma-scholar`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scholar/SKILL.md) | Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis. |
 | [`oma-scm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scm/SKILL.md) | Manage Git branches, merges, conflicts, commits, and release baselines. Use for repository history and change-management operations. |
 | [`oma-search`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-search/SKILL.md) | Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools. |
-| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation. |
+| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components, validate findings, and configure scan gates. Penetration tests of a scoped web test deployment run only on a user-supplied, reviewed runtime platform. Use oma-qa for broad quality reviews and domain skills for remediation. |
 | [`oma-skill-creation`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-skill-creation/SKILL.md) | Create or revise OMA skills and their references. Use for skill routing, execution contracts, conditional loading, and authoring validation. |
 | [`oma-slide`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-slide/SKILL.md) | Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery. |
 | [`oma-tf-infra`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-tf-infra/SKILL.md) | Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes. |
@@ -127,15 +127,15 @@ flowchart TD
 | **품질** | oma-qa | 보안 감사 (OWASP), 성능, 접근성 (WCAG), 코드 품질 리뷰 |
 | **디버깅** | oma-debug | 버그 재현, 근본 원인 분석, 최소 수정, 회귀 테스트 |
 | **현지화** | oma-translation | 톤, 레지스터, 도메인 용어를 유지하는 컨텍스트 인식 번역 |
-| **조율** | oma-orchestration, oma-coordination | 자동화 및 수동 멀티 에이전트 오케스트레이션 |
+| **조율** | oma-orchestration, oma-coordination | 자동화된 멀티 에이전트 오케스트레이션. 공유 조율 규칙과 수동 단계별 조율 |
 | **Git** | oma-scm | Conventional Commits 생성, 기능별 커밋 분할 |
-| **검색 및 탐색** | oma-search | 신뢰도 점수가 있는 의도 기반 검색 라우터 (Context7 문서, 웹, `gh`/`glab` 코드, 로컬 코드 인텔리전스) |
+| **검색 및 탐색** | oma-search | 인용을 붙이는 외부 소스 검색 라우터 (Context7 문서, 웹 프로바이더, `gh`/`glab` 원격 코드, 알려진 URL 가져오기) |
 | **회고** | oma-recap | 크로스 도구 대화 이력 분석 및 주제별 작업 요약 |
 | **문서 처리** | oma-hwp, oma-pdf | LLM/RAG 수집을 위한 HWP/HWPX/HWPML 및 PDF → Markdown 변환 |
 | **문서화** | oma-docs | 문서 유지보수: 깨진 참조, diff의 영향을 받는 문서, 번역 드리프트, 번역 문서 린트 |
 | **설명** | oma-explanation | 코드 변경(diff, PR, 브랜치, 커밋 범위)이나 주제·시스템·질문을 다루는 오프라인 HTML 설명서 |
 | **학술 글쓰기** | oma-academic-writing, oma-scholar | 출판 수준 학술 산문 작성과 감사, Knows 사이드카 기반 학술 연구·검색·동료 검토 |
-| **보안** | oma-security | 애플리케이션 소스, 에이전트 스킬 패키지, MCP 컴포넌트, 승인된 웹 테스트 배포 스캔(Deepsec, Cisco 스캐너, ARTEX). 발견 사항의 독립 검증과 CI 게이트 포함 |
+| **보안** | oma-security | 애플리케이션 소스, 에이전트 스킬 패키지, MCP 컴포넌트 스캔(Deepsec, Cisco 스캐너). 발견 사항의 독립 검증과 CI 게이트 포함. 범위가 정해진 웹 테스트 배포의 침투 테스트는 사용자가 제공하고 검토한 ARTEX 플랫폼에서만 실행 |
 | **리팩터링** | oma-refactor | 동작을 보존하는 점진적 구조 개선. 핫스팟 타기팅, 특성화 테스트 안전망, 리팩터링만 담는 커밋 |
 | **시장 조사** | oma-market | 커뮤니티 신호 기반 페인·트렌드·경쟁·발견 조사. 의도에 따라 SWOT / Porter's 5F / PESTEL 자동 선택 |
 | **스킬 작성** | oma-skill-creation | SSL-lite 형식으로 OMA 스킬을 만들고 검증 |
@@ -162,7 +162,7 @@ flowchart TD
 - 설계를 섹션별로 제시하되, 아직 열려 있는 중요한 선택만 확정
 - YAGNI: 필요한 것만 설계
 
-**워크플로우:** 7단계: 컨텍스트, 질문, 접근 방식(선택적으로 TRIZ-lite로 시작점 마련), 설계, 블라인드 리뷰, 문서화(`docs/plans/designs/`에 저장), `/plan`으로 전환.
+**워크플로우:** `/brainstorm` 워크플로우의 7단계: 컨텍스트, 질문, 접근 방식(선택적으로 TRIZ-lite로 시작점 마련), 설계, 블라인드 리뷰, 문서화(`docs/decisions/`에 저장), `/plan`으로 전환.
 
 ---
 
@@ -199,7 +199,7 @@ flowchart TD
 - 최대 병렬 실행을 위해 의존성 최소화
 - 보안과 테스팅은 모든 태스크의 일부 (별도 단계가 아님)
 - 태스크는 단일 에이전트가 완료 가능해야 함
-- 오케스트레이터 호환성을 위한 JSON 계획과 세션 범위 태스크 보드 출력
+- 오케스트레이터 인계용으로 JSON 계획을 출력하며, 태스크 보드는 오케스트레이터가 만들고 소유
 
 **출력:** 숫자 우선순위 티어(`1` = 독립, 낮은 티어가 먼저 실행)가 담긴 `.agents/results/plan-{sessionId}.json`, 그리고 설정된 메모리 저장소에 기록되는 실행 범위 보고서 `result-{agentId}-{taskId}-{runId}-{sessionId}.md`.
 
@@ -255,11 +255,15 @@ flowchart TD
 
 **도메인:** API, 서버 사이드 로직, 인증, 데이터베이스 연산.
 
-**사용 시기:** REST/GraphQL API, 데이터베이스 마이그레이션, 인증, 서버 비즈니스 로직, 백그라운드 작업.
+**사용 시기:** REST/GraphQL API, API 변경에 필요한 데이터 접근 코드와 마이그레이션, 인증, 서버 비즈니스 로직, 백그라운드 작업.
+
+**사용하지 말아야 할 때:** 스키마 모델링, 인덱스 설계, 쿼리 튜닝(oma-db 사용), 프론트엔드 UI(oma-frontend 사용), 모바일 코드(oma-mobile 사용).
 
 **아키텍처:** Router (HTTP) -> Service (비즈니스 로직) -> Repository (데이터 접근) -> Models.
 
-**스택 감지:** 프로젝트 매니페스트(pyproject.toml, package.json, Cargo.toml, go.mod 등)를 읽어 언어와 프레임워크를 결정합니다. 프로젝트별 관례가 없으면 사용자에게 `/stack-set` 실행을 요청하며, 이 명령이 제공된 스키마와 템플릿에서 해석된 `stack/` 레퍼런스를 실체화합니다.
+**스택 감지:** 먼저 프로젝트 매니페스트(pyproject.toml, package.json, Cargo.toml, go.mod 등)와 기존 코드를 읽어 언어와 프레임워크를 결정합니다. 스택 레퍼런스는 보조 자료이며, `stack/`이 있으면 그것을, 없으면 일치하는 `variants/<language>/`를 사용합니다. 프리셋을 선택해 설치한 프로젝트에는 `stack/`이 있고 `variants/`가 없으며, 플러그인 레이아웃과 소스 레이아웃에는 `variants/`가 있고 `stack/`이 없습니다. 어느 쪽에도 해당하지 않으면 에이전트가 사용자에게 묻거나 `/stack-set`을 제안합니다.
+
+**제공되는 프리셋:** Python(Litestar, Advanced Alchemy를 통한 SQLAlchemy 2 (async), msgspec 모델, 내장 JWT 인증), Node.js(NestJS + Prisma, Vitest로 테스트), Rust(Axum + SQLx). 이전 FastAPI 프리셋으로 설치한 프로젝트는 FastAPI를 그대로 유지합니다. 이 기본값은 대상 프로젝트에 이미 정해진 선택이 없을 때만 적용되며, 범위가 정해진 수정이 스택 마이그레이션까지 승인하는 것은 아닙니다.
 
 **핵심 규칙:**
 - 클린 아키텍처: 라우트 핸들러에 비즈니스 로직 금지
@@ -269,33 +273,40 @@ flowchart TD
 - 지원되는 곳에서 비동기; 모든 시그니처에 타입 어노테이션
 - 중앙 집중식 에러 모듈을 통한 커스텀 예외
 - 명시적 ORM 로딩 전략, 트랜잭션 경계, 안전한 라이프사이클
+- 검증 명령은 프로젝트에서 선택하고(`stack/stack.yaml`의 `verify:` 블록 우선), 사용자나 활성 워크플로우가 요구할 때만 실행하며, 실행하지 않은 검사는 보고
 
 <!-- oma-docs:ignore-start -->
-필요할 때 `/stack-set`이 프로젝트별 `stack/stack.yaml`, `stack/tech-stack.md`, 스니펫, API 템플릿을 생성합니다. 스택을 실체화하기 전에는 이 파일들이 존재하지 않습니다.
+스택 레퍼런스에는 `stack.yaml`(구조화된 선언과 `oma verify agent backend`가 실행하는 `verify:` 컨트랙트), `tech-stack.md`, `snippets.md`, `api-template.*`이 들어 있습니다. `/stack-set`은 감지한 코드베이스에서 프로젝트별 `stack/`을 생성합니다.
 <!-- oma-docs:ignore-end -->
 
 ---
 
 ### oma-mobile
 
-**도메인:** 크로스 플랫폼 및 네이티브 모바일 앱 (Flutter, React Native, Swift 네이티브 iOS).
+**도메인:** 크로스 플랫폼 및 네이티브 모바일 앱 (Flutter, React Native, Swift 네이티브 iOS, Kotlin 네이티브 Android).
 
 **사용 시기:** 네이티브 모바일 앱(iOS + Android), 모바일 특화 UI 패턴, 플랫폼 기능(카메라, GPS, 푸시 알림), 오프라인 우선 아키텍처; SwiftUI와 `swift-openapi-generator`를 사용하는 Swift 네이티브 iOS 앱.
 
-**아키텍처:** 클린 아키텍처: domain -> data -> presentation. Swift iOS의 경우: `App/Core/Features/Shared` 프로젝트 레이아웃.
+**아키텍처:** 클린 아키텍처: domain -> data -> presentation. Swift iOS의 경우: `App/Core/Features/Shared` 프로젝트 레이아웃. Kotlin Android의 경우: `app/{ui,data,di}` + `api-client`. 비즈니스 로직은 위젯, 뷰, 컴포저블에 두지 않습니다.
 
 **기술 스택:**
 - Flutter/Dart: Riverpod/Bloc (상태 관리), 인터셉터를 붙인 Dio (API), GoRouter (네비게이션), Material Design 3 (Android) + iOS HIG.
+- React Native: Zustand + TanStack Query (상태), TanStack Query 훅 뒤에 둔 axios (API).
 - Swift 네이티브 iOS (iOS 17+): SwiftUI + `@Observable` (Observation framework), API 클라이언트용 Apple `swift-openapi-generator`, `App/Core/Features/Shared` 레이아웃.
+- Kotlin 네이티브 Android (API 26+): Jetpack Compose + Material 3, `@HiltViewModel` + `StateFlow`, OkHttp 엔진을 주입한 Ktor 위에서 동작하는 OpenAPI Generator(`kotlin` / `jvm-ktor`) 클라이언트, `app/{ui,data,di}` + `api-client` 레이아웃.
 
 **핵심 규칙:**
-- 상태 관리에 Riverpod/Bloc (복잡한 로직에 raw setState 금지)
-- 모든 컨트롤러를 `dispose()` 메서드에서 해제
-- API 호출에 interceptors가 있는 Dio; 오프라인을 우아하게 처리
-- 60fps 목표; 양 플랫폼에서 테스트
+- 상태 관리는 변형이 정한 방식을 사용 (Flutter: Riverpod/Bloc, React Native: Zustand + TanStack Query, Swift: `@MainActor @Observable`, Kotlin: `@HiltViewModel` + `StateFlow`). 복잡한 로직에 raw setState나 임시방편 상태 사용 금지
+- 플랫폼의 라이프사이클에 맞춰 리소스 해제: Flutter 컨트롤러는 `dispose()`, React Native는 effect 클린업, Swift는 구조화된 `.task {}`, Kotlin은 `viewModelScope`
+- 인증/재시도/로깅 인터셉션을 갖춘 플랫폼 전송 계층 사용; 오프라인을 우아하게 처리
+- 60fps 목표; 앱이 출시되는 모든 플랫폼을 커버
+- 시크릿은 보안 저장소에만 보관 (flutter_secure_storage, Keychain, react-native-keychain, Android Keystore 기반 저장소)
+- 핵심 사용자 흐름에 E2E: Maestro (Flutter, React Native, Kotlin) 또는 XCUITest (Swift 네이티브)
+- 테스트와 E2E 검사는 사용자나 활성 워크플로우가 요구할 때만 실행하고, 빌드는 명시적으로 요청받았을 때만 실행
 - Swift: iOS 17+에서는 `ObservableObject` 대신 `@Observable` 사용; `swift-openapi-generator`로 OpenAPI 스펙에서 API 클라이언트 생성
+- Kotlin: 스펙이 다루는 엔드포인트에는 생성된 `*Api`를 호출. Ktor는 엔진에 구애받지 않는 계층이므로 클라이언트를 만드는 곳에서 OkHttp 엔진을 주입하고, 테스트에서는 `MockEngine`으로 대체
 
-**플랫폼 시드:** `variants/`에는 `flutter/`, `react-native/`, `swift-ios/`가 들어 있고, 각각 `stack.yaml`, `tech-stack.md`, `snippets.md`, API 템플릿을 담으며 공유 `stack.schema.json`도 함께 제공됩니다. 이들은 `/stack-set`용 시작 자료이며, 기존 코드를 수정할 때 반드시 읽어야 하는 자료는 아닙니다.
+**플랫폼 변형:** `variants/`에는 `flutter/`, `react-native/`, `swift-ios/`, `kotlin-android/`가 들어 있고, 각각 `stack.yaml`, `tech-stack.md`, `snippets.md`(데이터 계층, 상태, 화면, 테스트 패턴. API 서비스 또는 리포지토리 스니펫 포함)를 담으며 공유 `stack.schema.json`도 함께 제공됩니다. 에이전트는 `stack/`이 있으면 그것을 사용하고, 없으면 일치하는 `variants/<platform>/`를 직접 읽습니다. `/stack-set`은 변형을 시드로 삼아 감지한 프로젝트에서 `stack/`을 작성합니다. 변형 없이 설치된 스킬은 `variants/` 디렉토리를 그대로 유지합니다.
 
 ---
 
@@ -322,26 +333,37 @@ flowchart TD
 
 ### oma-design
 
-**도메인:** 디자인 시스템, UI/UX, DESIGN.md 관리.
+**도메인:** 비주얼 시스템, `DESIGN.md`, 리디자인 방향: 타이포그래피, 레이아웃, 컬러, 모션, 인터랙션 디자인 결정.
 
-**사용 시기:** 디자인 시스템과 DESIGN.md를 만들거나 수정할 때, 기존 사이트나 앱을 리디자인할 때(보존 또는 전면 개편), 랜딩 페이지, 디자인 토큰, 컬러 팔레트, 타이포그래피, 반응형 레이아웃, 접근성 리뷰.
+**사용 시기:** 비주얼 시스템이나 큰 디자인 방향을 정의하거나 수정할 때, 기존 UI를 리뷰하거나 선택한 방향을 다듬을 때, 기존 UI·스크린샷·제공된 레퍼런스에서 디자인 결정을 추출할 때.
 
-**워크플로우:** 7단계: Setup (컨텍스트 수집) -> Extract (선택적, 참조 URL에서) -> Enhance (모호한 프롬프트 증강) -> Propose (2-3가지 디자인 방향) -> Generate (DESIGN.md + 토큰) -> Audit (반응형, WCAG, Nielsen, AI slop 검사) -> Handoff.
+**사용하지 말아야 할 때:** 애플리케이션 UI 구현이나 프레임워크별 토큰 내보내기(oma-frontend 또는 oma-mobile 사용), 제품 범위 기획(oma-pm 사용), 이미지 생성(oma-image 사용), 일반적인 정확성 또는 보안 리뷰(oma-qa 또는 oma-security 사용).
 
-**안티 패턴 적용 ("no AI slop"):**
-- 타이포그래피: 기본 시스템 폰트 스택; 정당화 없이 기본 Google Fonts 사용 금지
-- 컬러: 보라-파랑 그라디언트 금지, 그라디언트 오브/블롭 금지, 순수 검정 위에 순수 흰색 금지
-- 레이아웃: 중첩 카드 금지, 데스크탑 전용 레이아웃 금지, 틀에 박힌 3-메트릭 통계 레이아웃 금지
-- 모션: 모든 곳에 bounce easing 금지, 800ms 초과 애니메이션 금지, prefers-reduced-motion 반드시 존중
-- 컴포넌트: 모든 곳에 glassmorphism 금지, 모든 인터랙티브 요소에 키보드/터치 대안 필요
+**공급자 선택:** 스킬은 프로젝트의 디자인 의도를 파악한 뒤 `resources/external-design-skills.md`를 통해 작업마다 외부 디자인 스킬 하나를 로드합니다:
+
+| 작업 | 공급자 |
+|-----------|----------|
+| 대시보드, 관리자 패널, SaaS 제품 UI, 내부 도구의 비주얼 방향 | Interface Design |
+| 구현 후 제품 인터페이스의 위계, 밀도, 일관성, 완성도 리뷰 | Interface Design `design-review` |
+| 그 밖의 기존 UI 비평, 접근성 또는 기술 감사, 다듬기, 시스템 추출 | Impeccable |
+| 그 밖의 신규 웹 아트 디렉션 또는 승인된 비주얼 전면 개편 | Taste |
+| 새로운 시각적 판단이 필요 없는 문서 전용 또는 토큰 컨트랙트 태스크 | 로컬에서 처리 |
+
+**워크플로우:** UI, 디자인 산출물, 브리프를 살펴 범위, 플랫폼, 기존 스택, 언어, 브랜드 보존, 검증을 확정 -> 공급자를 선택해 로드 -> 요청된 결정이나 산출물에 결과를 적용 -> 영향받는 결과를 `resources/checklist.md`로 점검하고 구현을 프론트엔드 또는 모바일 전문 에이전트에 인계.
 
 **핵심 규칙:**
-- `.design-context.md`와 `DESIGN.md`가 있으면 재사용하고, 실질적인 탐색 과정이 결정에 영향을 줄 때만 `.design-context.md`를 생성
+- `.design-context.md`와 `DESIGN.md`가 있으면 재사용하고, `DESIGN.md`는 비주얼 시스템이 바뀔 때만 갱신하며, 실질적인 탐색 과정이 결정에 영향을 줄 때만 `.design-context.md`를 생성
+- 범위가 정해진 수정은 영향받는 UI와 토큰을 재사용하며, 탐색 문서가 필요하지 않음
 - 기존 사이트나 앱은 `resources/redesign-protocol.md`를 따르고, 제안하기 전에 Preserve와 Overhaul 중 어느 쪽인지 분류
-- 기본 시스템 폰트 스택 (ko/ja/zh용 CJK 지원 폰트)
-- 모든 디자인에 WCAG AA 최소 준수
-- 반응형 우선 (모바일이 기본)
-- 2-3가지 방향 제시 후 확인 받기
+- 기존 브랜드, 콘텐츠, URL, 네비게이션, 폼 컨트랙트, 애널리틱스, 법적 고지 문구를 승인된 범위 안에서 유지
+- 기존 폰트가 적합하면 유지하고, ko/ja/zh는 글리프 커버리지, 폴백, 줄바꿈, 읽기 좋은 메트릭을 확인
+- WCAG AA가 기본 접근성 목표이며, 프로젝트 기준이 더 엄격하면 그 기준을 따름. 반응형, reduced-motion, 플랫폼 요구 사항은 선택한 공급자에도 그대로 적용
+- 실제 프로젝트 에셋과 주장을 사용하고, 콘셉트와 플레이스홀더에는 레이블을 붙임
+- 기존 구현 스택을 유지하며, CSS, Tailwind, 컴포넌트 라이브러리 문법, 의존성은 구현 전문 에이전트가 담당
+- 리뷰 전용 작업은 읽기 전용으로 유지
+- 아직 해결되지 않은 중요한 선택만 질문하며, 명시적으로 요청된 공급자를 쓸 수 없으면 대체하지 않고 보고
+
+**출력:** 요청된 디자인 결정, 발견 사항, 또는 구현 인계. 관찰한 증거, 선택한 공급자와 작업, 기능 또는 검증의 한계를 함께 담습니다. `DESIGN.md`와 `.design-context.md`는 위 조건에 해당할 때만 작성합니다. Stitch와 getdesign은 선택적 입력입니다.
 
 ---
 
@@ -370,14 +392,18 @@ flowchart TD
 
 **도메인:** 모노레포 태스크 자동화와 CI/CD.
 
-**사용 시기:** 개발 서버 실행, 앱 전체에서 lint/format/typecheck 실행, 데이터베이스 마이그레이션, API 생성, i18n 빌드, 프로덕션 빌드, CI/CD 최적화, pre-commit 검증.
+**사용 시기:** 개발 서버 실행, 앱 전체에서 lint/format/typecheck 실행, 데이터베이스 마이그레이션, API 생성, i18n 빌드, 프로덕션 빌드, CI/CD 최적화, pre-commit 검증, 그리고 언어별 lint·format·typecheck 도구, Dockerfile 린트, commitlint 설정.
 
 **핵심 규칙:**
-- 직접적인 패키지 매니저 명령 대신 항상 `mise run` 태스크 사용
-- 변경된 앱에서만 lint/test 실행
-- commitlint로 커밋 메시지 검증
-- CI에서 변경되지 않은 앱 건너뛰기
-- mise 태스크가 있으면 직접 패키지 매니저 명령 사용 금지
+- 직접적인 패키지 매니저 명령 대신 `mise run` 태스크를 사용하고, `mise tasks --all`로 태스크를 찾으며, 낯선 태스크는 실행하기 전에 정의를 읽음
+- 변경된 범위에서 lint와 test를 실행하고, CI에서는 변경되지 않은 앱을 건너뜀
+- 로컬에 프로비저닝한 `commit-msg` 훅을 통해 commitlint로 커밋 메시지를 검증하며, Git 훅에서 패키지를 가져오지 않음
+- 검사 태스크는 파일을 변경하지 않게 유지: `lint`, `format:check`, `typecheck`를 노출하고, 파일을 변경하는 `format`은 따로 둠
+- 건너뛴 검증 실행은 통과가 아님. 실행할 수 없는 검사기는 플레이스홀더나 빌드로 대체하지 않고 미완료로 보고
+- 밀폐형(hermetic) 테스트를 우선하며, Docker나 외부 서비스가 필요한 테스트는 기본 훅과 필수 CI 게이트 밖의 별도 옵트인 통합 태스크에 둠
+- `mise.toml`에 시크릿을 하드코딩하지 않고, 확인 없이 파괴적 태스크를 실행하지 않음
+
+**리소스:** `mise-basics.md`, `tooling-profiles.md`, `validation-pipeline.md`, `example-task-wiring.md`(마이그레이션, 선택적 로컬 Docker 인프라, API 클라이언트 생성, i18n 빌드), `release-coordination.md`, `troubleshooting.md`. 각각 명시된 트리거에 따라 로드됩니다.
 
 ---
 
@@ -396,17 +422,20 @@ flowchart TD
 - MELT+P 시그널 커버리지: metrics, logs, traces, profiles, cost, audit, privacy
 - 현재 업스트림 지원 상황과 프로젝트 요구 사항을 기준으로 평가하는 로그 파이프라인 마이그레이션
 
-**사용하지 말아야 할 때:** LLM ops / gen_ai 관측성(Langfuse, Arize Phoenix, LangSmith, Braintrust 사용), 데이터 파이프라인 lineage(OpenLineage + Marquez, dbt test, Airflow lineage), IoT / 데이터센터 물리 계층 텔레메트리(Nlyte, Sunbird, Device42), 카오스 엔지니어링 오케스트레이션(Chaos Mesh, Litmus, Gremlin, ChaosToolkit), GPU / TPU 인프라(NVIDIA DCGM Exporter), 소프트웨어 공급망(sigstore, in-toto, SLSA), 인시던트 대응 워크플로우 / 페이징(PagerDuty, OpsGenie, Grafana OnCall), 해당 벤더의 고유 스킬로 이미 다루는 단일 벤더 셋업.
+**사용하지 말아야 할 때:** LLM ops / gen_ai 관측성(Langfuse, Arize Phoenix, LangSmith, Braintrust 사용), 데이터 파이프라인 lineage(OpenLineage + Marquez, dbt test, Airflow lineage), IoT / 데이터센터 물리 계층 텔레메트리(Nlyte, Sunbird, Device42), 카오스 엔지니어링 오케스트레이션(Chaos Mesh, Litmus, Gremlin, ChaosToolkit), GPU / TPU 인프라(NVIDIA DCGM Exporter), 소프트웨어 공급망(sigstore, in-toto, SLSA), 인시던트 대응 워크플로우 / 페이징(PagerDuty, Jira Service Management, Grafana Cloud IRM), 전체 TLS 패킷 검사, 보안 스캔이나 침투 테스트(oma-security 사용. 이 스킬은 보안 텔레메트리만 다룸), 해당 벤더의 고유 스킬로 이미 다루는 단일 벤더 셋업.
 
 **핵심 규칙:**
 - 라우팅 전에 의도 분류: setup | migrate | investigate | alert | trace | tune | route
-- 벤더 레지스트리가 아닌 카테고리 우선: `resources/vendor-categories.md`를 통해 벤더 소유 스킬에 위임하고 벤더 문서를 중복 작성하지 않음
-- 전송 계층 튜닝이 차별점: UDP/MTU 임계값, OTLP 프로토콜 선택, Collector 토폴로지, 샘플링 레시피는 다른 스킬이 다루지 않는 깊이
-- 메타 관측성은 타협 불가: 셋업 완료를 선언하기 전에 파이프라인 자체 건강성, 클록 동기화(< 100 ms 드리프트), 카디널리티, 보관을 검증
-- CNCF 우선 선호: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
-- Fluentd는 여전히 CNCF Graduated 프로젝트이며, Fluentd에서 Fluent Bit로 넘어가는 CNCF 2025-10 가이드는 마이그레이션 가이드이지 사용 중단 공지가 아님. 워크로드, 플러그인, 운영 요구 사항에 따라 Fluentd, Fluent Bit, OTel Collector 중에서 선택
-- W3C Trace Context가 기본 propagator; 클라우드별 변환(AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
-- 기능보다 프라이버시 우선: PII 마스킹, 샘플링 인식 baggage 규칙, SOC2/ISO 불변 감사 + GDPR/PIPA 삭제권은 저장이 아닌 수집 시점에 적용
+- 리소스는 트리거에 따라 로드: 실행 프로토콜, 의도 경로가 선택한 가이드 하나, 그다음 계층·경계·시그널·전송 가이드는 해당 트리거가 있을 때만. 반드시 미리 로드해야 하는 레퍼런스는 없음
+- `resources/vendor-categories.md`는 카테고리 선택이나 벤더 위임이 필요할 때만 사용하고, 벤더 문서를 중복 작성하지 말고 벤더 소유 스킬에 위임
+- 관찰된 문제에 맞는 전송 가이드 하나만 로드: UDP/MTU, OTLP 프로토콜, Collector 토폴로지, 샘플링
+- 셋업 완료를 선언하기 전에 파이프라인 건강성, 클록 동기화, 카디널리티 한도, 보관을 프로젝트 요구 사항에 맞춰 검증하고, 실행하지 못한 검사를 기록
+- 권고에 영향을 주는 경우 현재 업스트림 지원 상황, 속성 안정성, 마이그레이션 지침을 공식 문서와 CNCF 상태에서 확인. 리소스 파일에는 파일별 스펙 버전 고정이 없으며, 스펙과 semconv의 최신성은 `resources/standards.md` 한 곳에서만 명시
+- W3C Trace Context가 기본 propagator이며, 필요한 경우 `resources/boundaries/cross-application.md`의 클라우드별 변환을 사용
+- PII 마스킹과 샘플링 인식 baggage 제어를 수집 시점에 적용하고, 대상 시스템의 보관·삭제·감사 요구 사항을 확인
+- 동작하는 설정이나 명시적으로 레이블을 붙인 제안을 전달하며, 스캐폴드와 검증되지 않은 검사는 완료된 셋업으로 치지 않음
+
+커버리지 매트릭스는 계층 4개(L3, L4, mesh, L7), 경계 4개(multi-tenant, cross-application, SLO, release), 시그널 7개(metrics, logs, traces, profiles, cost, audit, privacy)로 구성됩니다.
 
 ---
 
@@ -415,6 +444,8 @@ flowchart TD
 **도메인:** 품질 보증 (보안, 성능, 접근성, 코드 품질).
 
 **사용 시기:** 배포 전 최종 리뷰, 보안 감사, 성능 분석, 접근성 준수, 테스트 커버리지 분석.
+
+**사용하지 말아야 할 때:** 스캐너 기반 스캔, 침투 테스트, 발견 사항 검증, 보안 CI 게이트(oma-security 사용), 초기 구현과 신규 기능(도메인 에이전트 사용).
 
 **리뷰 우선순위:** 보안 > 성능 > 접근성 > 코드 품질.
 
@@ -426,8 +457,10 @@ flowchart TD
 
 **핵심 규칙:**
 - 모든 발견 사항에 파일:라인, 설명, 수정 방안 포함 필수
-- 먼저 자동화 도구 실행 (npm audit, bandit, lighthouse)
-- 오탐 금지 (모든 발견 사항은 재현 가능해야 함)
+- 감지된 스택과 리뷰 범위에 맞는 자동화 검사를 선택 (예: 의존성 감사, 정적 보안 분석, 런타임 성능 감사). 도구나 대상을 쓸 수 없으면 정적으로 리뷰
+- 리뷰 요청이나 활성 워크플로우가 그 증거를 요구할 때 프로젝트의 lint, test, 커버리지 명령을 실행하고, 그렇지 않으면 실행하지 않았다고 보고
+- 모든 결함 발견 사항은 재현 가능해야 함. 가설과 실행할 수 없는 검사는 검증 공백으로 기록하며, 필수 검사가 검증되지 않은 동안에는 PASS를 내지 않음
+- 여기서 다루는 보안 발견 사항은 코드 리뷰 발견 사항이며, 스캐너 후보, 익스플로잇 증명, `confirmed` / `needs_validation` 판정은 oma-security가 담당
 - 설명만이 아닌 수정 코드 제공
 
 ---
@@ -443,9 +476,10 @@ flowchart TD
 **핵심 규칙:**
 - 증상이 아닌 근본 원인 식별
 - 최소 수정: 필요한 것만 변경
-- 모든 수정에 회귀 테스트
+- 모든 수정에 회귀 테스트. 원래 실패하던 검사와 함께 다시 실행 (수정 전 red, 수정 후 green)
+- 더 넓은 테스트 스위트는 사용자나 활성 워크플로우가 요구할 때만 실행하고, 그렇지 않으면 실행하지 않았다고 보고
 - 다른 곳에서 유사한 패턴 검색
-- `.agents/results/`에 문서화
+- 버그를 `.agents/results/bugs/` 아래에 문서화: `resources/debugging-checklist.md`의 축약 보고서, 또는 Complex이거나 CRITICAL/HIGH인 버그에는 전체 `resources/bug-report-template.md`
 
 **사용하는 코드 인텔리전스 도구 (Gortex 또는 Serena):**
 - `find_symbol("functionName")` 또는 Gortex 심볼 탐색: 함수 위치 찾기
@@ -460,7 +494,7 @@ flowchart TD
 
 **사용 시기:** UI 문자열, 문서, 마케팅 카피 번역, 기존 번역 검토, 용어집 생성.
 
-**6장면 흐름:** Prepare, Acquire, Reason, Act, Verify, Finalize입니다. 번역 방법은 보호해야 할 구문과 의미를 읽고, 레지스터를 선택하고, 대상 언어로 재구성하고, 필요한 경우 저자의 문체를 보존하는 네 단계입니다.
+**번역 방법:** 보호해야 할 구문과 의미를 읽고, 레지스터를 선택하고, 대상 언어로 재구성하고, 필요한 경우 저자의 문체를 보존하는 네 단계입니다. 검증은 콘텐츠 위험에 비례합니다. 보호 구문과 구조는 항상 검사하고, 실질적인 콘텐츠와 리뷰 모드에는 루브릭(자연스러움, 정확성, 레지스터, 용어, 기술적 무결성)도 사용합니다.
 
 **핵심 규칙:**
 - 먼저 기존 로케일 파일을 스캔해 프로젝트 관례에 맞추기
@@ -484,9 +518,13 @@ flowchart TD
 |---------|---------|-------------|
 | MAX_PARALLEL | 3 | 최대 동시 서브에이전트 수 |
 | MAX_RECOVERY_ATTEMPTS | 3 | 원래 시도를 포함한, 태스크당 재시도와 탐색 가설의 총 횟수 |
-| POLL_INTERVAL | 30초 | `oma agent spawn` 실행의 상태 확인 간격 (Claude Code 네이티브 서브에이전트는 동기적으로 반환) |
+| POLL_INTERVAL | 상한이 있는 백오프 | 완료 알림을 쓸 수 없을 때만 쓰는 폴백 (Claude Code 네이티브 서브에이전트는 동기적으로 반환) |
+
+이 값들은 워크플로우 기본값이며, 모델, 벤더, 병렬도, 예산 설정은 프로젝트 설정에서 결정됩니다.
 
 **워크플로우 단계:** Plan → References (태스크별 레퍼런스 선택) → Setup (세션과 태스크 보드 산출물) → Execute (MAX_PARALLEL 안에서 준비된 태스크 디스패치) → Monitor → Verify (리뷰 루프) → Collect (클레임과 실행 범위 보고서).
+
+**태스크 레퍼런스:** 각 태스크를 설치된 스킬의 의도 시그니처와 대조하고, 코디네이터가 태스크에 필요한 레퍼런스를 선택합니다. 확실하게 일치하는 스킬 하나면 충분하며, 분류가 불확실하거나 의존성 때문에 다른 도메인이 필요할 때만 범위를 넓힙니다. 선택 내용과 그 이유는 태스크 보드에 코디네이터 메모로 기록되며, 런처가 이를 강제하지는 않습니다.
 
 **에이전트 간 리뷰 루프:** 다이어그램과 루프 한도는 [오케스트레이션 흐름](#orchestration-flow)을 참고하세요.
 
@@ -516,11 +554,11 @@ flowchart TD
 
 ### oma-coordination
 
-**도메인:** 수동 단계별 멀티 에이전트 조율 가이드.
+**도메인:** 멀티 에이전트 작업을 위한 공유 조율 규칙: 계획 재사용, 컨트랙트 정렬, 워크스페이스 소유권, QA 인계.
 
-**사용 시기:** 완전 자동 오케스트레이션 대신 스폰, 모니터링, 컨트랙트 정렬, QA를 단계별로 직접 감독하고 싶은 멀티 도메인 작업.
+**사용 시기:** 전문 에이전트를 둘 이상 디스패치하는 모든 워크플로우. `/work`, `/orchestrate`, `/ultrawork`가 이 스킬을 로드하고 그 가드레일을 적용합니다. 디스패치를 하나씩 직접 진행하는 수동 단계별 조율에도, 에이전트들이 API나 데이터 컨트랙트를 공유할 때도 사용합니다.
 
-**사용하지 말아야 할 때:** 완전 자동 병렬 실행(oma-orchestration 사용), 단일 도메인 작업(해당 도메인 에이전트 직접 사용).
+**사용하지 말아야 할 때:** 단일 도메인 작업(해당 도메인 에이전트 직접 사용). 자동화된 디스패치, 모니터링, 검증은 oma-orchestration이 담당하며, 이 스킬은 거기서 적용되는 규칙만 제공합니다.
 
 **핵심 규칙:**
 - 유효한 계획은 재사용하고, 분해나 컨트랙트를 바꿔야 할 때만 oma-pm 호출
@@ -531,27 +569,38 @@ flowchart TD
 
 **워크플로우:** 계획(재사용 또는 PM) → 우선순위 티어별 스폰 → 모니터링 → QA 리뷰 → 이슈 수정 → 배포.
 
-**oma-orchestration와 차이:** coordination은 수동 가이드(사용자가 속도 제어), orchestrator는 자동(최소 사용자 개입으로 에이전트가 스폰·실행).
+**oma-orchestration와 차이:** coordination은 규칙을 제공하고 사용자가 속도를 제어하는 수동 실행을 안내하며, orchestrator는 자동화된 실행(디스패치 해석, 병렬도 한도, 복구 예산, 리뷰 루프)을 담당.
 
 ---
 
 ### oma-search
 
-**도메인:** 도메인 신뢰도 점수를 사용하는 의도 기반 검색 라우터입니다. 쿼리를 Context7(문서), 네이티브 웹 검색, `gh`/`glab`(코드), 로컬 코드 인텔리전스(Gortex 또는 Serena)로 라우팅합니다.
+**도메인:** 외부 소스 검색 라우터입니다. 요청에 필요한 채널을 선택하고, 뒷받침 증거와 조회 한계를 붙여 소스를 반환합니다.
 
-**사용 시기:** 공식 라이브러리/프레임워크 문서 찾기, 튜토리얼/예제/비교/솔루션을 위한 웹 리서치, 구현 패턴을 위한 GitHub/GitLab 코드 검색, 검색 채널이 불명확한 쿼리(자동 라우팅), 검색 인프라가 필요한 다른 스킬(공유 호출).
+**경로:**
 
-**사용하지 말아야 할 때:** 로컬 전용 코드베이스 탐색(코드 인텔리전스 MCP를 직접 사용), Git 이력 또는 blame 분석(oma-scm 사용), 전체 아키텍처 리서치(이 스킬을 내부적으로 호출할 수 있는 oma-architecture 사용).
+| 경로 | 실행 | 범위 |
+|-------|-----------|-------|
+| `docs` | Context7 라이브러리 해석과 쿼리. 필요하면 공식 사이트 탐색 | 요청된 버전 제약 안의 공식 문서 |
+| `web` | 설정된 `providers.web`: `native`는 런타임 도구, `brave`나 `exa`는 CLI 어댑터 | 쿼리와 관련된 URL 발견 |
+| `code` | 선택된 코드 호스트(`gh` 또는 `glab`)를 통한 `oma search code` | 호스트와 저장소 제약 안의 원격 구현 일치 항목 |
+| `fetch` | 사용 가능한 URL 리더 또는 `oma search fetch <url>` | 이미 제공되었거나 발견된 URL 읽기 |
+
+**사용 시기:** 라이브러리 문서, 웹 리서치, 원격 코드 검색, 알려진 URL 읽기, 그리고 외부 소스 채널을 선택해야 하는 요청. 다른 스킬도 외부 소스를 얻을 때 이 스킬을 사용합니다.
+
+**사용하지 말아야 할 때:** 로컬 전용 코드베이스 탐색(설정된 코드 인텔리전스를 직접 사용), Git 이력 또는 blame 분석(oma-scm 사용), 아키텍처 분석(oma-architecture 사용).
 
 **핵심 규칙:**
-- 명시적인 `--docs`, `--code`, `--web`이 경로를 선택하며, 그렇지 않으면 `resources/intent-rules.md`로 의도를 분류
-- 하나의 쿼리, 하나의 최적 경로 (의도가 모호하지 않은 한 중복 멀티 라우팅을 피함)
-- 모든 결과에 신뢰도 점수 (모든 비로컬 결과는 레지스트리의 도메인 신뢰도 레이블을 받음)
-- 그 밖의 플래그: `--strict`는 점수를 매긴 뒤 신뢰도로 결과를 거르고, `--wide`는 레이블이 붙은 낮은 신뢰도 결과도 유지하며, `--gitlab`은 GitLab을 코드 호스트로 선택
-- Fail forward: 주 경로가 실패하면 우아하게 폴백(docs→web, web→`oma search fetch` 전략)
-- 추가 MCP 불필요: 문서는 Context7, 웹은 런타임 네이티브, 코드는 CLI, 로컬은 설정된 프로바이더(Gortex 또는 Serena)
-- 벤더 중립 웹 검색: 현재 런타임이 제공하는 것을 그대로 사용(WebSearch, Google, Bing)
-- 도메인 수준 신뢰도만 사용 (하위 경로 또는 페이지 수준 점수 없음)
+- 명시적인 `--docs`, `--code`, `--web`이 경로를 선택하며, 그렇지 않으면 스킬이 주 경로 하나를 선택하고 선택이 불분명할 때만 `resources/intent-rules.md`를 사용
+- 남은 증거 공백 때문에 필요할 때만 다른 경로를 추가하며, 기본적으로 여러 경로로 펼치지 않음
+- `--strict`는 뒷받침하는 내용을 직접 확인한 적합한 1차 또는 공식 소스를 요구하고, `--wide`는 더 넓은 결과를 그 한계와 함께 포함하며, `--gitlab`은 GitLab을 코드 호스트로 선택
+- 결과에는 소스 URL 또는 파일 참조, 경로, 실제 프로바이더, 소스 유형, 내용을 읽었는지 여부, 뒷받침 증거, 중요한 한계가 담김
+- 검색 스니펫과 발췌는 제한적인 증거이며, 읽지 않은 소스는 읽지 않았다고 밝힘
+- 신뢰도 점수를 만들어내지 않음: 프로바이더 이름이나 도메인 레이블이 개별 주장을 검증해 주지는 않음. `oma search trust <domain>`은 선택적인 도메인 진단이고, 출처를 해석해야 할 때는 `resources/source-provenance.md`를 적용
+- 사용할 수 없거나, 인증되지 않았거나, 속도 제한에 걸린 웹 프로바이더는 보고하며, 명시적으로 선택한 프로바이더를 네이티브 검색으로 말없이 대체하지 않음
+- 후보 URL이 없는 검색은 원래 제약 안에서 다듬거나 결과 없음으로 보고하며, URL 조회가 누락된 검색 결과를 대신하지 않음
+- `--strict`를 충족하는 소스가 없으면 그 공백을 보고하며, 더 넓은 결과 집합이 strict 요청을 충족하지는 않음
+- 아무것도 자동으로 설치하지 않음: 프로바이더, 브라우저, 의존성 모두 해당
 
 ---
 
@@ -617,27 +666,27 @@ flowchart TD
 
 **사용 시기:** 학술 보고서·에세이·분석 절을 작성하거나 수정할 때, 요약문이나 결론이나 문헌 검토를 쓸 때, AI 티가 나는 산문을 자연스러운 학술 영어로 다시 쓸 때, 초안을 최상위 루브릭 수준(HD, A, top-band)까지 다듬을 때, 문장 다양성·동사 품질·헤징·안티 AI 준수를 기준으로 산문을 검토할 때.
 
-**사용하지 말아야 할 때:** 번역(oma-translation 사용), 출처 발굴·인용 수집·문헌 검색(oma-scholar 사용), 루브릭 해석과 태스크 분해(oma-pm 사용), 코드 문서·README·API 레퍼런스 텍스트(해당 도메인 스킬 사용), 비격식 문체나 마케팅 카피, 영어가 아닌 학술 글쓰기(영어로 먼저 쓰고 oma-translation에 넘기기).
+**사용하지 말아야 할 때:** 번역(oma-translation 사용), 출처 발굴·인용 수집·문헌 검색(oma-scholar 사용), 코드 문서·README·API 레퍼런스 텍스트(해당 도메인 스킬 사용), 비격식 문체나 마케팅 카피, 영어가 아닌 학술 글쓰기(영어로 먼저 쓰고 oma-translation에 넘기기).
 
 **모드:** `draft`(헤딩 + 산문 + Writing Notes + 주장-근거 맵), `revise`(원문 + 수정본 + 변경 목록), `review`(문장 구조, 동사 품질, 안티 AI, 구체성, 헤징, 문단 명료성, 리듬, 주장-근거 정합성에 대한 PASS/FAIL 준수 보고서).
 
 **핵심 규칙:**
-- 판단에 앞선 인용: 규칙을 적용하기 전에 루브릭이나 제약의 원문을 그대로 인용
+- 준수 여부를 판단하기 전에 제공된 루브릭 제약을 인용하고, 루브릭이 없으면 기준을 지어내지 말고 요청된 범위에 비추어 발견 사항을 설명
 - 모든 문장은 검증 가능해야 하며, 데이터·통계·인용을 절대 지어내지 않음
-- 금지된 일반 동사(`show`, `have`, `make`, `do`, `get`, `use` 등)를 본동사로 쓰지 않음
-- 문장 유형·길이·도입부를 변화시키고, 같은 유형을 3개 이상 연달아 쓰지 않음
-- 헤지의 강도를 근거의 강도에 맞추고, `I think` / `I believe` 같은 1인칭을 쓰지 않음
+- 정확한 의미와 근거의 뒷받침 정도에 맞춰 동사를 선택하고(`resources/academic-verb-guide.md`), 흔한 동사라도 정확하고 자연스러우면 그대로 둠
+- 반복되는 구조와 문장 길이를 문맥 안에서 검토하고(`resources/sentence-structure-reference.md`), 문장 유형 할당량 없이 명료성이 나아지는 곳에서 리듬을 바꿈
+- `resources/hedging-guide.md`에 따라 헤지의 강도를 근거의 강도에 맞추며, 강조어와 1인칭 의견 표지에 대한 제한도 따름
 - 모든 주장을 주장-근거 맵의 근거와 연결하고, 근거 없는 주장은 약화하거나 삭제
 
-**워크플로우:** 6단계입니다. 루브릭과 초안을 READ하며 제약을 인용, 문단을 Topic-Support-Conclude로 PLAN, 네 프로토콜을 모두 지키며 DRAFT, 안티 AI 체크리스트로 AUDIT, 역방향 아웃라인과 주장-근거 맵 작성, 소리 내어 읽기·응집성·구체성·분량·리듬을 POLISH.
+**워크플로우:** 6단계입니다. 루브릭과 초안을 READ하며 제약을 인용, 문단을 Topic-Support-Conclude로 PLAN, 문장·동사·헤징 지침에 따라 DRAFT, 안티 AI 체크리스트로 AUDIT, 역방향 아웃라인과 주장-근거 맵 작성, 응집성·구체성·분량·리듬·문단 길이 변화를 POLISH.
 
 ---
 
 ### oma-security
 
-**도메인:** 애플리케이션 소스, 에이전트 스킬 패키지, MCP 컴포넌트, 승인된 웹 테스트 배포를 대상으로 하는 보안 스캔과 검증.
+**도메인:** 애플리케이션 소스, 에이전트 스킬 패키지, MCP 컴포넌트를 대상으로 하는 보안 스캔과 검증. 범위가 정해진 웹 테스트 배포의 침투 테스트는 사용자가 제공하고 검토한 런타임 플랫폼에서만 실행됩니다.
 
-**사용 시기:** 저장소나 소스 diff를 스캔할 때, 스킬 패키지나 MCP 서버 또는 설정을 점검할 때, 구체적으로 승인된 테스트 배포를 대상으로 범위를 제한한 침투 테스트를 실행할 때, 스캐너 후보를 검증할 때, 엔진별 CI 게이트를 구성할 때, 스캐너의 자격 증명·커버리지·매처·쿼터·재개 가능 상태 문제를 해결할 때.
+**사용 시기:** 저장소나 소스 diff를 스캔할 때, 스킬 패키지나 MCP 서버 또는 설정을 점검할 때, 사용자가 제공하고 검토한 런타임 플랫폼에서 구체적으로 승인된 테스트 배포를 대상으로 범위를 제한한 런타임 침투 테스트를 실행할 때, 스캐너 후보를 검증할 때, 엔진별 CI 게이트를 구성할 때, 스캐너의 자격 증명·커버리지·매처·쿼터·재개 가능 상태 문제를 해결할 때.
 
 **사용하지 말아야 할 때:** 광범위한 정확성·성능·접근성·품질 리뷰(oma-qa 사용), 실행 없이 하는 도구 비교나 조사(oma-search 사용), 보안 아키텍처 결정(oma-architecture 사용), 제품 코드의 수정(oma-debug 또는 담당 backend/frontend/mobile/infrastructure 스킬 사용).
 
@@ -648,11 +697,12 @@ flowchart TD
 | 애플리케이션 소스 또는 소스 diff | Deepsec (명시적으로 선택하면 Cisco AI Deep SAST) |
 | 에이전트 스킬 디렉토리 또는 패키지 | Cisco Skill Scanner |
 | MCP 소스, 설정, 서버 | Cisco MCP Scanner |
-| 웹 테스트 배포 | ARTEX |
+| 웹 테스트 배포 (`web_runtime`, `pentest`) | 기본값 없음. 명시적으로 요청한 경우에만, 사용자가 제공하고 검토한 플랫폼에서 ARTEX 사용 |
 | 범위를 제한한 로컬 재현 | Cloudflare 검증 방식 (외부 네트워크 없음) |
 
 **핵심 규칙:**
 - 일반 저장소 스캔은 소스만 선택하며, 스킬·MCP·런타임 스캔을 암묵적으로 추가하지 않음
+- 런타임 테스트에는 번들되거나 기본으로 지정된 엔진이 없음. 런타임 요청이나 소스와 런타임을 함께 다루는 요청이 ARTEX를 암묵적으로 선택하지 않으며, 스킬은 ARTEX 플랫폼을 설치·빌드·배포하지 않음. 명시적인 ARTEX 요청, 구체적인 웹 테스트 배포, 검토된 플랫폼이 모두 갖춰지지 않으면 런타임 단계를 `skipped`로 기록하고 선택된 다른 작업은 계속 진행
 - 실패하거나 비어 있는 결과가 다른 엔진, 모델, 유료 분석기를 자동으로 선택하지 않음
 - 기존 `.deepsec/` 상태를 보존하고 재개하며, 실패했거나 노이즈가 많은 실행을 지우려고 다시 초기화하지 않음
 - 키나 도구가 설치되어 있다고 해서 유료 호출이나 더 넓은 범위가 승인된 것은 아님. 공유 실행 정책에 따라 기존 승인을 재사용
@@ -688,7 +738,7 @@ flowchart TD
 
 **사용 시기:** diff, pull request, 브랜치, 커밋 범위, 또는 주제·시스템·질문을 오프라인에서도 볼 수 있는 HTML 페이지 하나로 설명할 때.
 
-**워크플로우:** 모델이 Markdown 초안을 쓰면 `oma explain render`가 이를 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` HTML 파일 하나로 만들고, `oma explain validate`가 검사합니다. 이 스킬은 `/explain`, 스킬 이름 지정, 위임으로만 활성화되며 키워드 힌트에서는 제외됩니다.
+**워크플로우:** 모델이 Markdown 초안을 쓰면 `oma explain render`가 이를 `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` HTML 파일 하나로 만들고, `oma explain validate`가 검사합니다(수정과 재검증은 최대 3회). 페이지는 `oma explain render --open`으로 열며, 열기에 실패해도 실패로 보지 않습니다. 이 스킬은 `/explain`, 스킬 이름 지정, 위임으로만 활성화되며 키워드 힌트에서는 제외됩니다.
 
 **사용하지 말아야 할 때:** 일반 문서 페이지, 실제 기능 구현, 발표 덱 작성에는 사용하지 않습니다(발표에는 `oma-slide` 사용).
 
@@ -703,20 +753,21 @@ flowchart TD
 **사용하지 말아야 할 때:** 기존 이미지를 편집하거나 사진을 보정할 때, 비디오나 오디오를 생성할 때(oma-video / oma-voice 사용), 구조화된 데이터로 인라인 벡터나 SVG를 합성할 때, 단순 에셋 리사이즈나 포맷 변환.
 
 **핵심 규칙:**
-- 호출 전에 명확화: 피사체·스타일·구도·용도가 모호하면 먼저 묻거나, 프롬프트를 보강해 확장본을 사용자에게 보여주기
+- 브리프 확정: 제공된 세부 정보와 합리적인 창작 기본값을 사용하고, 빠진 선택이 결과를 크게 바꿀 때만 질문. 생성이 이미 승인되어 있으면 확장한 프롬프트에 별도 승인이 필요하지 않음
 - 인증을 인지한 디스패치: 인증된 벤더만 실행하고, `--vendor all`에서는 요청한 모든 벤더가 사용 가능해야 함
 - 비용 가드레일: 추정 비용이 0.20달러 이상이면 확인(`--yes` / `OMA_IMAGE_YES=1`로 우회). 기본값인 `pollinations`와 `antigravity`는 무료
 - 경로 안전성: `$PWD` 밖으로 출력하려면 `--allow-external-output`이 필요하고 최대 `n`은 5
 - 기록된 출력: 모든 실행이 프롬프트, 벤더/모델, 입력, 산출물 메타데이터가 담긴 `manifest.json`을 이미지 옆에 작성합니다. 재현성 데이터를 기록하지만 픽셀이 동일한 이미지를 보장하지는 않습니다.
 - 첨부된 참조 이미지를 `--reference <path>`로 자동 전달(codex, antigravity)
+- 프로젝트 설정은 `.agents/oma-config.yaml`의 `image:` 아래에 있고, 제공되는 기본값은 CLI에 있음
 
-**워크플로우:** PREPARE(프롬프트 명확화와 보강, 벤더 선택) → ACQUIRE(인증, 참조, 출력 경로 검증) → ACT(`oma image generate`) → VERIFY(매니페스트, 파일, 종료 코드) → FINALIZE(출력 경로와 경고).
+**워크플로우:** PREPARE(브리프 확정, 벤더 선택) → ACQUIRE(인증, 참조, 출력 경로 검증) → ACT(`oma image generate`) → VERIFY(매니페스트, 파일, 종료 코드) → FINALIZE(출력 경로와 경고).
 
 ---
 
 ### oma-market
 
-**도메인:** 커뮤니티 신호 기반 시장 조사: 페인 포인트 추출, 트렌드 감지, 경쟁 포지셔닝, 발견. 조사는 업스트림 [`last30days`](https://github.com/mvanhorn/last30days-skill) 엔진(Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, 웹 등)에서 실행되며, oma가 이 엔진을 자동으로 최신 릴리스로 유지합니다.
+**도메인:** 커뮤니티 신호 기반 시장 조사: 페인 포인트 추출, 트렌드 감지, 경쟁 포지셔닝, 발견. 조사는 업스트림 [`last30days`](https://github.com/mvanhorn/last30days-skill) 엔진(Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, 웹 등)에서 실행되며, 이 엔진은 skills CLI를 통해 스킬로 설치됩니다.
 
 **사용 시기:** 커뮤니티 게시물에서 실제 사용자 페인 포인트를 뽑을 때, 7일·30일·90일·180일 구간에서 카테고리 트렌드를 감지할 때, 경쟁사 정서 분석과 SWOT / Porter's 5F 포지셔닝, 개방형 발견 조사(`--discover`), 인물·회사·티커 조사, 채용 신호, 후속 심층 조사.
 
@@ -728,10 +779,10 @@ flowchart TD
 - 해석된 엔진의 `SKILL.md`를 그대로 따름. 유일한 대체는 원시 `python3 scripts/last30days.py` 호출 대신 `oma market run <args>`를 쓰는 것
 - WebSearch만으로 대신하지 않음: 엔진이 없거나, Python 3.12+가 없거나, 0이 아닌 종료 코드가 나오면 중단하고 보고
 - 키가 필요한 소스는 사용자 동의를 받아 업스트림 설정 마법사로만 활성화하며, 건너뛴 소스는 푸터에 계속 표시
-- 프레임워크는 엔진 클러스터만 인용하며, 파일을 쓰기 전에 배지를 첫 줄에 두고 업스트림 LAW를 적용
+- 프레임워크는 엔진 클러스터만 인용. 엔진의 배지를 첫 줄에 두고, 후보 브리프를 먼저 작성한 뒤, 전달하기 전에 작성된 파일이 업스트림 LAW 1~8과 `resources/output-laws.md` 자체 점검을 통과해야 함
 - 실행 한 번에 브리프 하나를 `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`에 작성. 프레임워크는 의도에 따라 자동 선택(pain·trend는 SWOT, competitor는 SWOT + Porter's 5F, discovery는 SWOT + PESTEL)
 
-**워크플로우:** detect-trap → `oma market resolve` → 업스트림 SKILL.md 읽기 → 업스트림 사전 조사 단계(설정 마법사, 핸들·서브레딧 해석, 쿼리 계획) → `oma market run … --emit=compact` → 업스트림 OUTPUT CONTRACT에 따라 종합 → 프레임워크 추가 → 자체 점검 → 작성.
+**워크플로우:** detect-trap → `oma market resolve` → 업스트림 SKILL.md 읽기 → 업스트림 사전 조사 단계(설정 마법사, 핸들·서브레딧 해석, 쿼리 계획) → `oma market run … --emit=compact` → 업스트림 OUTPUT CONTRACT에 따라 종합 → 엔진 본문과 엔진 푸터 사이에 프레임워크 섹션 추가 → 작성 → 작성된 파일을 자체 점검하고, 수정한 뒤 다시 점검.
 
 ---
 
@@ -751,7 +802,7 @@ flowchart TD
 - 경제성: 가독성이 가장 큰 목표이며, 삭제 예정 코드나 변경이 드문 차가운 코드는 리팩터링하지 않음
 - 관례에서 벗어나려면 로컬 수정이 아니라 oma-architecture의 ADR 경로를 거쳐야 하고, 모든 지표는 대리 지표입니다(굿하트의 법칙)
 
-**워크플로우:** PREPARE(그린필드·브라운필드 분류, 크기 게이트, 핫스팟 순위) → ACQUIRE(심볼 도구로 코드 읽기, 지표와 git 신호 수집) → REASON(원자적 변환 순서 또는 expand-contract 계획) → ACT(엔진 우선 변환 하나) → VERIFY(테스트를 그대로 다시 돌려 통과하면 커밋, 실패하면 미카도 되돌리기) → FINALIZE(지표 변화와 가독성 판정).
+**워크플로우:** PREPARE(그린필드·브라운필드 분류, 프로젝트에 이미 있는 크기 게이트, 핫스팟 순위) → ACQUIRE(심볼 도구로 코드 읽기, 지표와 git 신호 수집) → REASON(원자적 변환 순서 또는 expand-contract 계획) → ACT(엔진 우선 변환 하나) → VERIFY(테스트를 그대로 다시 돌려 통과하면 커밋, 실패하면 미카도 되돌리기. 테스트 실행이 배제된 경우에는 다음 변환 전에 멈추고 적용한 변환을 미검증으로 보고) → FINALIZE(지표 변화와 가독성 판정).
 
 ---
 
@@ -768,7 +819,8 @@ flowchart TD
 **핵심 규칙:**
 - 목표 스펙은 v0.9.0 / `paper@1` 프로파일이며, 사이드카는 호스트 LLM이 생성합니다(외부 LLM SDK를 셸로 호출하지 않습니다)
 - 날조 방지: DOI·게재지·연도가 원문에서 보이지 않으면 키 자체를 생략하고, `doi: TODO`를 쓰거나 추측하지 않음
-- 필드 이름은 정확하게, `provenance.actor`는 객체 하나로, 열거형은 닫힌 집합으로, 숫자는 따옴표 없이
+- 필드 형태는 `resources/sidecar-spec.md`를 정확히 따름: 필드 이름, 단일 `provenance.actor` 객체, 닫힌 열거형, 따옴표 없는 숫자, 접두사가 붙은 kebab-case ID
+- 로컬 생성 규칙과 lint는 프로덕션 호환성을 기준으로 하며, 정규 v0.9 스키마 전체를 따르는 것은 아님. 서드파티 레코드를 가져오거나 lint할 때 생기는 차이는 `resources/canonical-delta.md`가 다룸
 - 근거가 있는 주장은 `supported_by`를 쓰고, 정의와 열린 질문은 원문에 고정된 채로 둘 수 있음. `oma scholar lint`는 진술당 관계가 1.5 미만이면 경고하지만, 이 비율은 진단 지표이지 할당량이 아님
 - 공유 전에 검증(`oma scholar lint`). 서드파티 사이드카에는 `--lenient` 사용
 - 오래되었거나 2026년 이전 논문은 knows.academy에서 OpenAlex로 폴백하며, 공개 프록시 API는 인증이 필요 없음
@@ -798,9 +850,9 @@ flowchart TD
 
 ### oma-slide
 
-**도메인:** 1920×1080 고정 스테이지에서 애니메이션이 풍부한 HTML 발표 덱을 생성하고, `oma slide` CLI로 결정론적으로 검증·번들·내보내기(PDF/PNG/PPTX)를 수행합니다.
+**도메인:** 1920×1080 고정 스테이지에서 애니메이션이 풍부한 HTML 발표 덱을 생성하고, `oma slide` CLI로 결정론적으로 검증·번들·내보내기(PDF/PNG/PPTX)를 수행합니다. 업스트림 [ppt-master](https://github.com/hugohe3/ppt-master) 스킬로 편집 가능한 PowerPoint 파일을 만드는 `native-pptx` 경로도 제공합니다.
 
-**사용 시기:** 주제나 개요로 새 발표 자료를 만들 때, 기존 덱을 개선하거나 형식을 바꿀 때, 애니메이션과 디자인 원칙을 적용한 슬라이드별 HTML을 생성할 때, 덱을 PDF/PNG/PPTX로 내보낼 때, 이름 붙은 스타일 프리셋을 적용할 때, Canva로 내보내거나 가져올 때.
+**사용 시기:** 주제나 개요로 새 발표 자료를 만들 때, 기존 덱을 개선하거나 형식을 바꿀 때, 애니메이션과 디자인 원칙을 적용한 슬라이드별 HTML을 생성할 때, 덱을 PDF/PNG/PPTX로 내보낼 때, 이름 붙은 스타일 프리셋을 적용할 때, Canva로 내보내거나 가져올 때. 편집 가능한 PPTX가 필요할 때, 기존 PPTX의 디자인을 유지한 채 내용을 채우거나 편집할 때, 문서를 PPTX 덱으로 바꿀 때, 재사용 가능한 템플릿이나 내레이션이 들어간 PPTX/MP4가 필요할 때는 `native-pptx` 경로를 사용합니다.
 
 **사용하지 말아야 할 때:** 슬라이드가 없는 일반 문서를 만들 때, 이미지 생성만 필요할 때(oma-image 직접 사용), 브랜드나 디자인 시스템을 정의할 때(oma-design 사용), 생성 없이 결정론적 CLI 작업만 할 때(`oma slide` CLI를 직접 호출).
 
@@ -808,11 +860,14 @@ flowchart TD
 - 스킬은 HTML만 작성하고, 나머지(스캐폴드, 검증, 번들, 내보내기)는 전부 CLI가 담당
 - 로컬 에셋만 사용: `<img src>`와 `<video src>`에 원격 URL을 쓰지 않고 `./assets/<file>`만 씀
 - 한국어·일본어·중국어 슬라이드에는 Pretendard 폰트 필수
-- 모든 슬라이드에 `prefers-reduced-motion` 래퍼, 눈에 보이는 포커스 상태, `data-om-validate` 필수
+- 모든 슬라이드에 `prefers-reduced-motion` 래퍼, 눈에 보이는 포커스 상태, 정규 슬라이드 구조 필수: `oma slide validate`는 `.deck-stage` 안의 각 `.slide`를 1920×1080 프레임으로 측정하며, 슬라이드별·요소별 예외는 없음
 - 검증 자동 수정은 최대 3회까지 돌리고, 그 뒤에는 diff를 사용자에게 보여줌
 - 이미지 생성은 oma-image에 위임하며, Canva MCP는 선택 사항이고 사용자가 명시적으로 동의할 때만 자동 프로비저닝
+- `native-pptx`: 런타임 스킬 카탈로그 또는 `bunx skills use hugohe3/ppt-master@ppt-master`로 ppt-master를 로드하고, 이를 절대 수정하지 않으며, Python 패키지는 동의를 받았을 때만 설치하고, ppt-master 자체의 게이트를 따름
 
-**워크플로우:** 7단계입니다. DETECT(모드) → DISCOVER(명확화와 에셋 평가) → STYLE(라이브 미리보기 3개를 보여주고 사용자가 선택) → GENERATE(1920×1080 `slide-NN.html`) → VALIDATE(`oma slide validate`, 자동 수정 3회 이하) → REVIEW(뷰어와 선택적 bbox 편집기) → DELIVER(`bundle`과 선택적 PDF/PNG/PPTX 내보내기).
+**CLI:** `oma slide create`(워크스페이스 스캐폴드), `oma slide style get`(스타일 파일 가져오기), `oma slide asset fetch-video`(비디오 다운로드), `oma slide import pptx`, `oma slide validate`, `oma slide bundle`, `oma slide export pdf|png|pptx`, `oma slide edit`, `oma slide doctor`.
+
+**워크플로우:** 7단계입니다. DETECT(경로와 모드) → DISCOVER(제공된 목적, 청중, 슬라이드 수, 에셋을 재사용하고, 덱에 크게 영향을 주는 빠진 선택이 있을 때만 질문을 하나로 묶어서 함) → STYLE(제공된 스타일, 기존 덱 관례, 또는 적합한 프리셋. 라이브 미리보기 3개는 스타일 탐색을 요청받았거나 방향이 아직 열려 있는 중요한 선택일 때만 제시) → GENERATE(1920×1080 `slide-NN.html`) → VALIDATE(`oma slide validate`, 자동 수정 3회 이하) → REVIEW(뷰어와 선택적 bbox 편집기) → DELIVER(`bundle`과 선택적 PDF/PNG/PPTX 내보내기).
 
 ---
 
@@ -826,13 +881,15 @@ flowchart TD
 
 **핵심 규칙:**
 - 기존 영상 요청은 생성 모드·프로바이더를 선택하기 전에 미디어 처리 참고자료로 분기합니다. 설치된 도구를 사용하며 새 CLI 생성 모드를 추가한 것은 아닙니다
-- 지원되는 에셋 폴백에는 키를 선택적으로 설정할 수 있습니다. 유료 프로바이더(Pexels, Pixelle)는 환경 키가 있을 때만 자동 활성화되며, 컴포지터 실패를 폴백 영상으로 대체하지 않음
-- 새 영상 생성에는 `$0.20` 이상 비용 가드레일과 180초·40장면 제한이 적용됩니다. `--yes` / `OMA_VIDEO_YES=1`은 이미 허용된 유료 작업에만 사용합니다
+- 지원되는 에셋 폴백에는 키를 선택적으로 설정할 수 있습니다. 스톡과 AIGC 프로바이더(Pexels, Pixelle)는 `--visual stock` 또는 `--visual aigc`와 해당 환경 키가 있을 때만 사용되며, 그렇지 않으면 비주얼은 키가 필요 없는 `oma-image` 스틸입니다. 컴포지터 실패를 폴백 영상으로 대체하지 않습니다
+- `oma-slide` 프레임은 `visual.ref`가 기존 덱 디렉토리인 장면에만 사용합니다. 프로바이더는 덱을 생성하지 않으며, 덱이 없는 슬라이드 장면은 플레이스홀더로 렌더링됩니다
+- 새 영상 생성에는 `$0.20` 이상 비용 가드레일과 180초·40장면 제한이 적용됩니다. `--yes` / `OMA_VIDEO_YES=1`은 이미 허용된 유료 작업에만 사용합니다. 이 설정은 `.agents/oma-config.yaml`의 `video:` 아래에 있습니다
 - `render-spec.json`, 에셋, 시드, 임베드된 Pretendard에 렌더 입력을 기록합니다. `OMA_VIDEO_MOCK=1`은 골든 픽스처를 위한 테스트 하네스이며 사용자 산출물이 아닙니다.
 - 데모는 사람이 녹화합니다. `--source web --url`은 맥락만 제공하며 녹화나 로그인을 자동화하지 않습니다. URL 토큰은 로그와 매니페스트에서 마스킹합니다
+- 데모는 `--polish`가 있어야 캡처가 `Demo` 컴포지션을 거치며, 개인정보는 그 컴포지션에서 마스킹됩니다. `--polish`가 없으면 출력 MP4는 마스킹되지 않은 원본 캡처이며, 개인정보 점검에서 마스킹할 것이 없다고 확인된 뒤에만 전달할 수 있습니다
 - 경로 안전성(`$PWD` 밖으로 출력하려면 `--allow-external-output`)
 
-**워크플로우:** PREPARE(모드·화면비·로케일, 브리프 명확화와 보강) → ACQUIRE(프로바이더 가용성 확인, 캡처 경로 검증, 비용 확인) → ACT(스크립트 → 음성과 비주얼과 자막 → render-spec → 렌더) → VERIFY(스키마, 매니페스트 해시, 종료 코드, mp4) → FINALIZE(실행 디렉토리, mp4 경로, 커버리지 경고).
+**워크플로우:** PREPARE(모드·화면비·로케일. 추론한 기본값을 밝히고, 답에 따라 결과가 달라질 때만 질문) → ACQUIRE(프로바이더 가용성 확인, 캡처 경로 검증, 비용 확인) → ACT(스크립트 → 음성과 비주얼과 자막 → render-spec → 렌더) → VERIFY(스키마, 매니페스트 해시, 종료 코드, mp4) → FINALIZE(실행 디렉토리, mp4 경로, 커버리지 경고).
 
 기존 영상은 원본 스트림·PTS를 확인하고, 프레임 선택·구간 제거 기준을 정한 뒤 공통 A/V 편집 타임라인을 적용합니다. 음성·음량 검출기가 다르게 판단한 구간은 요청된 내용을 기준으로 처리합니다. 더 많이 자르는 것을 목표로 삼지 않습니다. 더빙은 원본 영상의 인코딩 스트림을 복사하고 음성을 교체할 수 있습니다.
 
@@ -851,9 +908,9 @@ flowchart TD
 **핵심 규칙:**
 - 음성 생성·전사에는 Voicebox가 필요합니다. 기존 파일 처리는 Voicebox 상태·프로필·모델 검사를 거치지 않습니다
 - 프로필은 TTS에만 필요합니다. 전사와 로컬 파일 처리에는 필요하지 않습니다
-- 길이 제한: TTS는 호출당 5000자(2000자에서 경고), STT는 30분입니다. v1은 자동 분할하지 않습니다
+- 길이 제한: TTS는 호출당 5000자, STT는 30분입니다. v1은 자동 분할하지 않습니다
 - 자동 호출의 투명성: 알림은 작업이 `auto_notify_after_sec`(기본 60초)를 넘을 때만 발동하며, 항상 한 줄로 의도를 밝힙니다
-- 사용자가 명시한 출력 경로에는 저장할 수 있습니다. 관련 없는 파일을 덮어쓸지 모호할 때만 확인합니다. SIGINT 시 부분 출력을 남기지 않습니다
+- 사용자가 명시한 출력 경로에는 저장할 수 있습니다. 관련 없는 파일을 덮어쓸지 모호할 때만 확인합니다. 호출이 중단되면 부분 출력을 남기지 않습니다
 - 저장한 음성·전사에는 매니페스트를 남깁니다. 파일 처리는 실제 원본·작업 정보를 기록하며 생성 id를 만들어내지 않습니다
 
 **워크플로우:** PREPARE(텍스트·오디오·언어·경로·프로필 검증) → ACQUIRE(신호가 빠졌으면 한 번만 명확화) → ACT(MCP `voicebox_speak` 또는 `voicebox_transcribe`) → VERIFY(오디오·전사 존재 여부와 매니페스트 필드) → FINALIZE(`manifest.json` 작성, 경로 보고).
@@ -927,9 +984,9 @@ oma agent spawn qa prompts/review.md session-01 --task-id task-5 --read-only
 멀티 에이전트 워크플로우(`/orchestrate` 또는 `/work`) 실행 시:
 
 1. **PM 에이전트**가 요청을 숫자 우선순위 티어(`1` = 의존성 없음, 낮은 티어가 먼저 실행), 의존성, 인수 기준이 있는 태스크로 분해. 유효한 기존 계획이 있으면 재사용
-2. **세션 초기화**: 세션 ID를 생성하고 설정된 메모리 저장소에 `orchestrator-session-{sessionId}.md`와 `task-board-{sessionId}.md`를 생성
+2. **세션 초기화**: 세션 ID를 생성하고, 태스크별 레퍼런스를 선택한 뒤, 설정된 메모리 저장소에 `orchestrator-session-{sessionId}.md`와 `task-board-{sessionId}.md`를 생성
 3. **티어 1 태스크**를 병렬로 시작 (최대 MAX_PARALLEL 동시 에이전트)
-4. **진행 상황 모니터링**: `oma agent spawn` 실행이라면 오케스트레이터가 매 POLL_INTERVAL마다 실행 범위의 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 파일을 폴링하며, Claude Code 네이티브 서브에이전트는 동기적으로 반환
+4. **진행 상황 모니터링**: 오케스트레이터는 호스트의 완료 알림을 우선 사용하며, 완료 알림이 없는 `oma agent spawn` 실행이라면 코디네이터 하나가 변경된 실행 범위의 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 파일을 상한이 있는 백오프로 폴링. Claude Code 네이티브 서브에이전트는 동기적으로 반환
 5. **이후 티어**는 의존성이 완료되면 시작
 6. **리뷰 루프**: 완료된 에이전트마다 실행 (아래 참고)
 7. **결과 수집**: 실행 범위가 지정된 결과 파일과 구조화된 클레임에서 결과를 모음

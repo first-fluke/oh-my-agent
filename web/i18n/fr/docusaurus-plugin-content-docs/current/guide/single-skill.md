@@ -203,8 +203,7 @@ Add tests for: profile save, logout flow, offline state.
 2. **Évaluation de la difficulté :** moyenne (écran de réglages, gestion d'état et fonctionnement hors ligne).
 3. **Ressources chargées :**
    - `execution-protocol.md` ;
-   - `snippets.md` (modèle d'écran et motif de provider Riverpod) ;
-   - `screen-template.dart`.
+   - `snippets.md` (modèle d'écran et motif de provider Riverpod).
 4. **Contrat d'exécution (lorsqu'il est activé) :** il peut émettre un `CHARTER_CHECK` :
    ```text
    CHARTER_CHECK:

@@ -65,7 +65,7 @@ oma video compose <runDir>
 oma video render <runDir> --output json
 
 # Demo from your own recording; without --polish the recording itself becomes the output
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
 <!-- oma-docs:ignore-start -->

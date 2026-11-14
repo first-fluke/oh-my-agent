@@ -6,13 +6,13 @@ description: Guía detallada para tareas de un solo dominio en oh-my-agent, con 
 
 # Ejecución de una skill individual
 
-La ejecución de una skill individual es la vía rápida: un agente, un dominio y una tarea enfocada. No añade sobrecarga de orquestación ni coordinación entre agentes. El host o el flujo seleccionado puede enrutar un prompt en lenguaje natural a la skill; el sistema de hooks detecta los flujos por su cuenta y el comportamiento del enrutamiento depende del runtime seleccionado.
+La ejecución de una skill individual es la vía rápida: un agente, un dominio y una tarea enfocada. No añade sobrecarga de orquestación ni coordinación entre agentes. El host o el flujo seleccionado puede enrutar un prompt en lenguaje natural a la skill; el sistema de hooks añade sugerencias de skills a partir de palabras clave y el comportamiento del enrutamiento depende del runtime seleccionado.
 
 ## Ruta rápida
 
 1. Ejecuta `oma doctor` una vez para confirmar la integración con el host seleccionado. Las advertencias opcionales sobre proveedores no bloquean una tarea que no los use.
 2. Describe un cambio autocontenido con una condición clara de **Objetivo**, **Contexto**, **Restricciones** y **Completado cuando**.
-3. La skill seleccionada inspeccionará el repositorio, declarará su alcance cuando el contrato de ejecución activo requiera un CHARTER_CHECK e informará qué comprobaciones ejecutó realmente.
+3. La skill seleccionada inspeccionará el repositorio, declarará cualquier suposición que afecte al resultado e informará qué comprobaciones ejecutó realmente.
 4. Si la tarea crece y cruza los límites de API, UI, base de datos o mobile, detén la ejecución individual y cambia a `/work` u `/orchestrate`.
 
 Para ejecuciones administradas atascadas, usa `oma agent status <session-id> [agent-id]`; después inspecciona los receipts de `.agents/state/agent-runs/` y la ruta de claim inyectada antes de reintentar. Consulta [Valores predeterminados importantes](../getting-started/important-defaults.md) para conocer el comportamiento de los proveedores y la recuperación.
@@ -112,17 +112,8 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 3. **Recursos cargados:**
    - `execution-protocol.md` (siempre).
    - `snippets.md` (patrones de formularios y Zod, además de los patrones de componentes existentes cuando la skill los proporcione).
-4. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: form validation, accessibility, loading state, tests
-   - Assumptions: Next.js App Router, @tanstack/react-form + Zod, shadcn/ui, FSD-lite architecture
-   ```
 <!-- oma-docs:ignore-start -->
-5. **Implementación:**
+4. **Implementación:**
    - Crea `src/features/auth/components/login-form.tsx` (Client Component con `"use client"`).
    - Crea `src/features/auth/utils/login-schema.ts` (esquema de Zod).
    - Crea `src/features/auth/components/skeleton/login-form-skeleton.tsx`.
@@ -130,7 +121,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
    - Gestiona el formulario con `@tanstack/react-form` y validación de Zod.
    - Usa importaciones absolutas con `@/`.
    - Mantiene un componente por archivo.
-6. **Verificación:**
+5. **Verificación:**
    - Lista de verificación: hay etiquetas ARIA, encabezados semánticos y navegación por teclado.
    - Mobile: se renderiza correctamente en un viewport de 320px.
    - Rendimiento: no hay CLS.
@@ -163,16 +154,7 @@ Add tests for: auth required, pagination, status filter, empty results.
    - `stack/snippets.md` coincidente o `variants/{node,python,rust}/snippets.md` si está disponible.
    - `stack/tech-stack.md` coincidente o referencias de stack de la variante si están disponibles.
 <!-- oma-docs:ignore-end -->
-5. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: backend
-   - Must NOT do: frontend UI, mobile screens, database schema changes
-   - Success criteria: authenticated endpoint, cursor pagination, status filter, tests
-   - Assumptions: existing JWT auth middleware, PostgreSQL, existing Task model
-   ```
-6. **Implementación:**
+5. **Implementación:**
    - Repositorio: `TaskRepository.find_by_user(user_id, cursor, status, limit)` con una consulta parametrizada.
    - Servicio: `TaskService.get_user_tasks(user_id, cursor, status, limit)` (envoltorio de lógica de negocio).
    - Router: `GET /api/tasks` con middleware de autenticación JWT, validación de entradas y formateo de respuestas.
@@ -200,19 +182,10 @@ Add tests for: profile save, logout flow, offline state.
 2. **Evaluación de dificultad:** Media (pantalla de ajustes, gestión de estado y manejo sin conexión).
 3. **Recursos cargados:**
    - `execution-protocol.md`.
-   - `snippets.md` (plantilla de pantalla y patrón de proveedor Riverpod).
-   - `screen-template.dart`.
-4. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: mobile
-   - Must NOT do: backend API changes, web frontend, database schema
-   - Success criteria: profile editing, notification toggles, logout, offline
-   - Assumptions: existing auth service, Dio interceptors, Riverpod, GoRouter
-   ```
+   - `variants/flutter/snippets.md` (patrones de pantalla, de proveedor Riverpod y de capa de datos), o `stack/snippets.md` cuando `/stack-set` lo ha generado.
+   - `variants/flutter/tech-stack.md`.
 <!-- oma-docs:ignore-start -->
-5. **Implementación:**
+4. **Implementación:**
    - Pantalla: `lib/features/settings/presentation/settings_screen.dart` (Stateless Widget con Riverpod).
    - Proveedores: `lib/features/settings/providers/settings_provider.dart`.
    - Repositorio: `lib/features/settings/data/settings_repository.dart`.
@@ -245,17 +218,8 @@ Add deliverables: data standards table, glossary, migration script.
    - `document-templates.md` (estructura de entregables).
    - `examples.md`.
    - `anti-patterns.md` (revisión durante la optimización).
-4. **El contrato de ejecución puede emitir `CHARTER_CHECK` cuando está habilitado:**
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: database
-   - Must NOT do: API implementation, frontend UI, infrastructure
-   - Success criteria: schema, ERD, indexes, capacity estimate, backup strategy
-   - Assumptions: PostgreSQL, 3NF, soft delete, multi-tenant with RLS
-   ```
-5. **Flujo de trabajo:** Explorar (entidades, relaciones, patrones de acceso y estimaciones de volumen) -> Diseñar (esquemas externo, conceptual e interno, restricciones y campos de ciclo de vida) -> Optimizar (índices para los patrones de consulta, estrategia de particionado, plan de copias de seguridad y revisión de anti-patrones).
-6. **Entregables:**
+4. **Flujo de trabajo:** Explorar (entidades, relaciones, patrones de acceso y estimaciones de volumen) -> Diseñar (esquemas externo, conceptual e interno, restricciones y campos de ciclo de vida) -> Optimizar (índices para los patrones de consulta, estrategia de particionado, plan de copias de seguridad y revisión de anti-patrones).
+5. **Entregables:**
    - Resumen del esquema externo (vistas por rol: admin, gerente de proyecto y miembro del equipo).
    - Esquema conceptual con ERD (Organization 1:N Project, Project 1:N Task, Organization 1:N TeamMembership, etc.).
    - Esquema interno con DDL físico, índices y particionado.
@@ -320,7 +284,7 @@ Observa estas señales que indican que deberías cambiar de una skill individual
 | Señal | Qué significa | Acción |
 |--------|--------------|--------|
 | El agente dice «esto requiere un cambio de backend» | La tarea tiene dependencias entre dominios | Cambia a `/work` y agrega un agente de backend. |
-| El `CHARTER_CHECK` del agente muestra elementos «Must NOT do» que en realidad son necesarios | El alcance supera un dominio | Planifica primero toda la funcionalidad con `/plan`. |
+| El agente informa de trabajo que dejó sin hacer porque queda fuera del dominio de la skill | El alcance supera un dominio | Planifica primero toda la funcionalidad con `/plan`. |
 | Una corrección se propaga a 3+ archivos de distintas capas | Una corrección afecta a varios dominios | Usa `/debug` con un alcance mayor o `/work`. |
 | El agente descubre un desajuste en un contrato API | Hay un desacuerdo entre frontend y backend | Ejecuta `/plan` para definir los contratos y vuelve a generar ambos agentes. |
 | La puerta de calidad falla en puntos de integración | Los componentes no se conectan correctamente | Ejecuta `/review` o agrega una pasada de QA: `oma agent spawn qa "Review the integration" SESSION_ID --read-only`. |

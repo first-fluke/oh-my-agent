@@ -201,7 +201,6 @@ Add tests for: profile save, logout flow, offline state.
 3. **Załadowane zasoby:**
    - `execution-protocol.md`
    - `snippets.md` (szablon ekranu, wzorzec providera Riverpod)
-   - `screen-template.dart`
 4. **Kontrakt wykonania (gdy włączony) może wypisać `CHARTER_CHECK`:**
    ```text
    CHARTER_CHECK:

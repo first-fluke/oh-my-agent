@@ -88,10 +88,10 @@ Você tem dois caminhos de execução:
 
 1. Carrega `.agents/results/plan-{sessionId}.json`, criando um plano inline por meio de `/plan` quando não existe um plano utilizável.
 2. Inicializa uma sessão com o formato de ID `session-YYYYMMDD-HHMMSS`.
-3. Cria `orchestrator-session-{sessionId}.md` e `task-board-{sessionId}.md` no diretório de memória.
-4. Inicia agentes por tier de prioridade, cada um recebendo: descrição da tarefa, contratos de API e contexto.
-5. Monitora o progresso consultando os arquivos `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`.
-6. Verifica cada agente concluído por meio de `verify.sh`. PASS (exit 0) aceita; FAIL (exit 1) inicia novamente com o contexto do erro (no máximo 2 retries); uma falha persistente ativa o Exploration Loop.
+3. Seleciona as referências de skill de que cada tarefa precisa e cria `orchestrator-session-{sessionId}.md` e `task-board-{sessionId}.md` no diretório de memória. As referências selecionadas são registradas ali como notas do coordenador; o launcher não as impõe.
+4. Inicia agentes por tier de prioridade, cada um recebendo: descrição da tarefa, contratos de API, contexto e as referências selecionadas para ele.
+5. Monitora o progresso pelas notificações de conclusão do host ou consultando, com backoff limitado, os arquivos `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` alterados.
+6. Verifica cada agente concluído: uma autoverificação mecânica, depois `verify.sh` para os agentes backend, frontend, mobile, qa, debug e pm (os outros tipos registram `SKIP`) e, por fim, uma revisão cruzada de QA. PASS (exit 0) segue adiante; FAIL (exit 1) inicia novamente com o contexto do erro, dentro do orçamento de recuperação compartilhado (por padrão, 3 tentativas por tarefa, incluindo a original). Retries e hipóteses de exploração consomem o mesmo orçamento; quando ele se esgota, a tarefa é reportada como `partial` ou `failed`.
 7. Coleta todos os arquivos `result-{agentId}-{taskId}-{runId}-{sessionId}.md` e compila um relatório final.
 
 ### Etapa 3: agent spawn para gerenciamento de agentes no nível da CLI
@@ -134,7 +134,7 @@ Consulte [Modelos por agente](./per-agent-models.md) para detalhes de configura�
 
 O workflow de revisão executa um pipeline QA completo:
 
-1. **Identificar escopo:** Pergunta o que revisar (arquivos específicos, branch de funcionalidade ou projeto inteiro).
+1. **Identificar escopo:** Obtém o escopo a partir do pedido (arquivos específicos, uma branch de funcionalidade, um PR ou o projeto inteiro). Sem escopo informado, revisa as alterações atuais não commitadas e as da branch e declara essa suposição; só pergunta quando não há nada de onde derivar o escopo.
 2. **Verificações de segurança automatizadas:** Executa `npm audit`, `bandit` ou equivalente.
 3. **Revisão manual do OWASP Top 10:** Injeção, auth quebrada, dados sensíveis, controle de acesso, configuração incorreta, desserialização insegura, componentes vulneráveis e logging insuficiente.
 4. **Análise de performance:** Queries N+1, índices ausentes, paginação sem limite, vazamentos de memória, re-renders desnecessários e tamanho de bundles.

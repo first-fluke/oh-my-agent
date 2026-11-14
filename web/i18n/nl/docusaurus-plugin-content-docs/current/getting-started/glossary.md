@@ -5,8 +5,6 @@ description: Korte definities van oh-my-agent-termen, waaronder skills, workflow
 
 # Woordenlijst
 
-Elke entry geeft een korte definitie en linkt naar de pagina die de term uitgebreid behandelt. Waar een woord in verschillende delen van OMA iets anders betekent, staat dat in de entry.
-
 ## Bouwstenen
 
 ### Skill {#skill}
@@ -80,7 +78,7 @@ Cross-context review is de regel dat elke reviewstap in `/ultrawork` draait in e
 
 ### Charter {#charter}
 
-Het charter is het preflightblok `CHARTER_CHECK` dat implementatieagenten vroeger vóór elke regel code schreven. De huidige agentdefinities vereisen geen vaste preflightoutput. Agenten volgen in plaats daarvan het gedeelde uitvoeringsbeleid: ze benoemen wezenlijke aannames, vragen alleen iets wanneer ontbrekende informatie de correctheid of scope verandert, en pauzeren alleen het werk dat van het antwoord afhangt. Een gespawnde subagent kan jou niet rechtstreeks iets vragen, dus meldt hij het ontbrekende gegeven in een `blocked`- of `partial`-resultaat. Zie [Autorisatie en verduidelijking](../core-concepts/agents.md#charter-preflight-charter_check).
+Een charter is een vast preflightblok (`CHARTER_CHECK`) dat vóór elke regel code wordt geschreven. oh-my-agent vereist er geen: agentdefinities vragen geen vaste preflightoutput. Agenten volgen het gedeelde uitvoeringsbeleid: ze benoemen wezenlijke aannames, vragen alleen iets wanneer ontbrekende informatie de correctheid of scope verandert, en pauzeren alleen het werk dat van het antwoord afhangt. Een gespawnde subagent kan jou niet rechtstreeks iets vragen, dus meldt hij het ontbrekende gegeven in een `blocked`- of `partial`-resultaat. Zie [Autorisatie en verduidelijking](../core-concepts/agents.md#charter-preflight-charter_check).
 
 ### Runrecord en claim {#run-record-and-claim}
 

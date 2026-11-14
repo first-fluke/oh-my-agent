@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 | | 能给你什么 | 试一试 |
 |---|---|---|
 | **12 个专家角色** | PM、架构师、后端、前端、移动端、数据库和基础设施工程师、QA 审查者、调试者、重构者、文档管理员、研究员（[认识他们](#meet-the-team)） | `/orchestrate build a TODO app with login` |
-| **21 个工作流** | 斜杠命令，从 `/brainstorm`、`/plan` 到 `/review`、`/debug` 和 `/scm`。大多数也能从一句普通请求启动（关键词库最多覆盖 11 种语言） | “review this PR” |
+| **20 个工作流** | 斜杠命令，从 `/brainstorm`、`/plan` 到 `/review`、`/debug` 和 `/scm`。四种多 agent 模式在普通请求点名时也会启动 | “ultrawork: add rate limiting” |
 | **33 个技能** | 只在任务需要时加载的领域知识：UI、API、schema、Terraform、CI、安全、git、可观测性 | 自动加载，例如“add a Terraform S3 bucket” |
 | **能打开的文件** | 计划、设计文档、API 契约、ADR、bug 笔记、各 agent 的结果、安全证据、HTML 讲解文档、回顾总结 | `ls .agents/results` |
 | **工作流检查** | 在长时间运行的工作流中，你自己的 `test`、`lint` 或 `typecheck` 脚本必须通过，agent 才能停下；`oma ralph verify` 会检查一次 `/ralph` 运行是否留下了计划、QA 和重构文件 | `/ultrawork …`，然后 `oma goal set --gate test` |
@@ -112,8 +112,6 @@ oma
    ```text
    /plan add user accounts with a settings page
    ```
-
-   也可以直接写“plan user accounts with a settings page”：在支持 prompt hook 的运行时上，关键词会启动同一个工作流。
 4. **看看得到了什么。** `/plan` 在当前会话中运行。对于像这样横跨多个领域的工作，它会写入 `.agents/results/plan-<session-id>.json`，并在 `docs/plans/work/<NNN>-<name>.md` 生成一份跟踪文件。小型、单一领域的请求则会直接得到一条建议，而不是计划文件。
 
 对于较大的任务，可以基于这份计划运行 `/work` 或 `/orchestrate`。
@@ -125,11 +123,11 @@ oma
 
 | 你的专家 | 携带的技能 | 调用方式 | 留下的产出 |
 |---|---|---|---|
-| **产品经理**（`pm-planner`） | oma-pm | `/plan`，或“plan the payment feature” | 对于 Medium 和 Complex 级别的工作，留下一份计划 JSON，并在 `docs/plans/work/` 中留下一份跟踪文件（Simple 请求会直接得到建议） |
+| **产品经理**（`pm-planner`） | oma-pm | `/plan` | 对于 Medium 和 Complex 级别的工作，留下一份计划 JSON，并在 `docs/plans/work/` 中留下一份跟踪文件（Simple 请求会直接得到建议） |
 | **架构师**（`architecture-reviewer`） | oma-architecture | `/architecture` | `.agents/results/architecture/` 中的一份 ADR 或建议 |
 | **后端、前端、移动端、数据库和基础设施工程师** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`、`/orchestrate` | 代码、测试，以及每个任务一份 `result-<agent>` 文件 |
-| **QA 审查者**（`qa-reviewer`） | oma-qa | `/review`，或“review this PR” | 按 CRITICAL 到 LOW 排序的发现，每条都带 file:line 和修复代码 |
-| **调试者**（`debug-investigator`） | oma-debug | `/debug`，或“fix this bug” | 最小修复、一个回归测试，必要时在 `.agents/results/bugs/` 中留下一份 bug 笔记 |
+| **QA 审查者**（`qa-reviewer`） | oma-qa | `/review` | 按 CRITICAL 到 LOW 排序的发现，每条都带 file:line 和修复代码 |
+| **调试者**（`debug-investigator`） | oma-debug | `/debug` | 最小修复、一个回归测试，必要时在 `.agents/results/bugs/` 中留下一份 bug 笔记 |
 
 <details>
 <summary>另外三个角色，以及没有对应角色的技能</summary>
@@ -138,7 +136,7 @@ oma
 |---|---|---|---|
 | **重构者**（`refactor-engineer`） | oma-refactor | `/ultrawork` 的 REFINE 阶段 | 保持行为不变的 `refactor:` 提交，以及一份 `result-refactor-<session>.md` 报告 |
 | **文档管理员**（`docs-curator`） | oma-docs | `/docs`，或“verify docs” | `docs/generated/doc-refs.json`，以及你批准的文档补丁 |
-| **研究员**（`research-explorer`） | oma-search, oma-market, oma-scholar | 一个研究请求 | 带可信度标签的引用来源；`.agents/results/market/` 中的市场简报 |
+| **研究员**（`research-explorer`） | oma-search, oma-market, oma-scholar | 一个研究请求 | 注明出处的引用来源；`.agents/results/market/` 中的市场简报 |
 
 基础设施工程师（`tf-infra-engineer`）被要求在任何破坏性或生产环境的 `apply` 或 `destroy` 之前先征求你的同意。其余技能（brainstorm、security、scm、dev-workflow、observability、explanation、recap、translation、coordination、orchestration、skill-creation，以及内容与媒体类技能）没有专属角色。你的 agent 会自行加载它们，其中大多数还会由技能注入器根据你的 prompt 推荐合适的那个。
 
@@ -148,7 +146,7 @@ oma
 ## 团队如何协作
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -169,14 +167,14 @@ oma
 | “真正做完之前别停” | `/ralph` | 搭配单独 spawn、拥有全新上下文的 judge 反复运行 `/ultrawork`，直到每条标准都通过；当标准受阻或满 5 轮后停止，并给出部分完成报告 |
 | 定时运行的团队 | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 每次运行在 `~/.oma/schedule/runs/<id>/` 中留下一份 Markdown 日志 |
 
-斜杠命令不是必需的。在支持 prompt hook 的运行时上，普通请求（关键词库最多覆盖 11 种语言）可以启动大多数工作流：“review this PR”会启动 `/review`。描述一整个应用（“Build a TODO app with user authentication”）会建议使用 `/orchestrate`，由你的 agent 决定是否运行。代码块中的关键词会被忽略。
+斜杠命令会启动工作流。普通请求不会，但在支持 prompt hook 的运行时上，它仍会得到一条技能提示：最多覆盖 11 种语言的关键词库会匹配 prompt，并为你的 agent 指出匹配的技能（“run a security audit”会带入 `oma-qa`）。这条提示只是建议，代码块中的关键词会被忽略。
 
-`/orchestrate`、`/work`、`/ultrawork` 和 `/ralph` 在你按名称调用时（斜杠命令或纯文本，如“ultrawork: add rate limiting”）是**持久型**的。此后 agent 每次想提前停下，都会被送回去继续工作（最多 5 次或 2 小时），直到你说 **“workflow done”**。如果请求只是大致匹配，则只会建议使用它们。
+`/orchestrate`、`/work`、`/ultrawork` 和 `/ralph` 在你按名称调用时（斜杠命令或纯文本，如“ultrawork: add rate limiting”）是**持久型**的。此后 agent 每次想提前停下，都会被送回去继续工作（最多 5 次或 2 小时），直到你说 **“workflow done”**。只有这四个工作流能由一句普通的话启动，而且必须点名。
 
 **实测数据，附带说明。** 在[基准测试](../benchmarks/README.md)中（一个 prompt；Claude Code 搭配五种不同的附加配置，含纯 Claude Code；`claude-opus-4-6`；每种各构建一次），oma 得分 80.6，纯 Claude Code 为 70.7；成本是后者的 1.7 倍（$4.04 对 $2.37），耗时是后者的 1.8 倍。
 
 <details>
-<summary>全部 21 个工作流</summary>
+<summary>全部 20 个工作流</summary>
 
 | 命令 | 作用 |
 |---------|--------------|
@@ -185,7 +183,7 @@ oma
 | `/convert` | 把 PDF/HWP 转成 Markdown，或用 ffmpeg 转码图像、视频和音频 |
 | `/debug` | 复现 bug、修复根因、编写回归测试，并扫描类似模式 |
 | `/deepinit` | 把现有代码库梳理成 AGENTS.md、ARCHITECTURE.md 和 docs/ 知识库 |
-| `/design` | 构建设计系统、DESIGN.md 和设计 token，并做无障碍检查 |
+| `/design` | 界定设计任务的范围，并通过 oma-design 交付发现、DESIGN.md 或设计 token |
 | `/docs` | 找出失效的文档引用，并为 diff 涉及的文档提出补丁 |
 | `/explain` | 把 diff、PR、分支或主题做成自包含的交互式 HTML 讲解文档 |
 | `/orchestrate` | 并行运行多个 agent，通过文件状态协调它们，并验证结果（持久型） |
@@ -197,12 +195,11 @@ oma
 | `/scm` | 处理分支、合并、冲突、worktree 和 Conventional Commits |
 | `/security` | 扫描源码、agent 技能和 MCP 组件，验证发现，并设置 CI 门禁 |
 | `/stack-set` | 检测你的技术栈，为领域技能生成针对该技术栈的参考资料 |
-| `/tools` | 用自然语言列出、启用和禁用 MCP 工具 |
 | `/ultrawork` | 五个阶段（PLAN、IMPL、VERIFY、REFINE、SHIP），每次审查都在全新的审查者会话中进行（持久型） |
 | `/video` | 通过密钥可选的流水线，把一份 brief 做成完整的 MP4 |
 | `/work` | 借助 PM 规划和 QA 审查，协调多个 agent 完成跨领域项目（持久型） |
 
-`oma verify triggers` 使用一份带标注、包含 212 条英文和韩文提示的语料评估检测器，误检超过 10% 或漏检超过 20% 时 CI 就会失败。最近一次实测：**漏检 0%，误检 5.3%**。完整参考：[工作流](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)。
+`oma verify triggers` 使用一份带标注、包含 212 条英文和韩文提示的语料评估检测器，误检超过 10% 或漏检超过 20% 时 CI 就会失败。最近一次实测：**漏检 0%，误检 0%**。完整参考：[工作流](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)。
 
 </details>
 
@@ -244,10 +241,10 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | 命令 | 作用 | 写入 |
 |---|---|---|
-| `/brainstorm` | 每次只问一个澄清问题，提出 2-3 种做法各不相同的方案，然后交给 `/plan`。不写代码 | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | 每次只问一个澄清问题，提出 2-3 种做法各不相同的方案，然后交给 `/plan`。不写代码 | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | 把工作规模评估为 Simple、Medium 或 Complex；对于 Medium 和 Complex 的工作，拆成任务，每个任务都有 agent、依赖、验收标准和检查命令，并在工作跨越边界时定义 API 契约 | `.agents/results/plan-<sid>.json`、`docs/plans/work/<NNN>-<name>.md`，需要时在 `.agents/results/api-contracts/` 中写入契约 |
 | `/architecture` | 先阅读以往的决策，至少比较 2 个选项，并把被取代的 ADR 标记为 superseded | `.agents/results/architecture/` 中的一份 ADR 或建议 |
-| `/design` | 提出 2-3 个方向，然后写出带 token 的 `DESIGN.md`，并审查响应式布局和无障碍 | `DESIGN.md`、CSS/Tailwind/shadcn token |
+| `/design` | 确定范围和上下文，为任务选择设计指引，然后交付审查发现、`DESIGN.md`，或映射到项目现有 token 体系的 token | 发现、`DESIGN.md`、设计 token |
 
 </details>
 
@@ -274,7 +271,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 | 命令或技能 | 作用 | 写入 |
 |---|---|---|
 | `/review` | 先做依赖审计，然后检查 OWASP Top 10、性能、WCAG 2.2 AA 和代码质量。每条发现都带 file:line 和修复代码 | 报告输出在聊天中，外加一条 memory 记录；没有报告文件 |
-| `/security` | 扫描你的源码、agent 技能和 MCP 服务器（Deepsec、Cisco Skill and MCP Scanner），并在提供限定范围的测试部署时运行 ARTEX 渗透测试。工作流要求把未能运行的引擎报告为失败，而不是“干净” | `.agents/results/security/<run-id>/` |
+| `/security` | 扫描你的源码、agent 技能和 MCP 服务器（Deepsec、Cisco Skill and MCP Scanner），并验证发现。渗透测试仅在明确请求时运行，且只针对由你提供并已审查的运行时平台。工作流要求把未能运行的引擎报告为失败，而不是“干净” | `.agents/results/security/<run-id>/` |
 | `/debug` | 复现故障，用最小改动修复根因，添加回归测试，并在其他地方扫描同样的模式 | 修复和测试；必要时在 `.agents/results/bugs/` 中留下一份 bug 笔记 |
 | oma-refactor | 改变结构而不改变行为：先写表征测试（characterization test），再做只含重构的提交 | `.agents/results/refactor/` |
 | `/scm` | 按逻辑变更拆分的 Conventional Commits；分支、合并、rebase 和 worktree | 提交和分支 |
@@ -299,7 +296,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | 技能 | 作用 | 写入 |
 |---|---|---|
-| oma-search | 文档、网页和代码搜索，每个来源都带可信度标签 | 带引用的结果 |
+| oma-search | 文档、网页和代码搜索，并注明哪些内容实际读过、哪些只看了摘录 | 带引用的结果 |
 | oma-market | 从社区信号中挖掘痛点、趋势和竞争对手，并用 SWOT、波特五力和 PESTEL 框架梳理 | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | 检索论文时读取精简的论断文件（Knows 格式，约 700 token），而不是完整 PDF（约 10K token） | `<paper>.knows.yaml` |
 | oma-academic-writing | 对照评分标准起草和审校学术文章 | 你的文件 |
@@ -326,7 +323,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | Hook | 作用 | 关闭方式 / 限制 |
 |---|---|---|
-| 关键词启动 | 从普通请求启动匹配的工作流 | 会跳过提问、粘贴的文本和代码块 |
+| 关键词启动 | 普通请求点名 `/orchestrate`、`/work`、`/ultrawork` 或 `/ralph` 时启动它 | 会跳过提问、粘贴的文本和代码块 |
 | 技能注入器 | 根据 prompt 为 agent 指出合适的技能 | 持久型工作流运行期间暂停 |
 | Stop 门禁 | 把持久型工作流送回去继续工作；设置了 `oma goal set --gate test` 时，只有该脚本在 25 秒内以 0 退出才允许停止 | 说“workflow done”；阻止 5 次或 2 小时后也会自动解除 |
 | 重构守卫 | 停止时标出超过 500 行的已编辑文件，交给 `refactor-engineer` | 需手动开启：`refactor_guard.enabled` |
@@ -363,7 +360,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 Serena 提供基于 LSP 的代码导航和诊断，并在支持时反馈原生编辑结果。能力提供方的选择独立于 agent 运行时；可用能力因提供方和宿主而异。
 
-agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何外部服务。`/tools` 用自然语言开启或关闭 MCP 工具。详情：[能力提供方](./capability-providers.md)。
+agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何外部服务。详情：[能力提供方](./capability-providers.md)。
 
 </details>
 
@@ -415,8 +412,8 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 | **oma-refactor** | 借助热点定位、特性化测试和纯重构提交，在不改变行为的前提下重构代码 |
 | **oma-scholar** | 检索学术文献，并生成涵盖论点、证据与同行评审的 Knows 论文 sidecar |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
-| **oma-search** | 将每条查询路由到最合适的来源，并为结果的可信度打分 |
-| **oma-security** | 扫描源代码、代理技能和 MCP 组件；测试已部署的 Web 应用并验证发现 |
+| **oma-search** | 将每条查询路由到最合适的来源，并报告每条结果的出处以及是否实际读过 |
+| **oma-security** | 扫描源代码、代理技能和 MCP 组件并验证发现；渗透测试仅在用户提供并已审查的平台上运行 |
 | **oma-skill-creation** | 编写并审核新的 OMA 技能 |
 | **oma-slide** | 生成 HTML 演示文稿，并导出为 PDF/PNG/PPTX |
 | **oma-tf-infra** | 用 Terraform 配置多云基础设施 |
@@ -567,7 +564,7 @@ OMA 会检查工作流生成的产出物。[实际运行效果](#see-it-work)展
 | **产出物门禁** | `oma ralph verify --json` 会检查 phase 记录、plan JSON，以及来自**独立 QA agent** 和**独立 refactor agent** 的 result 文件，每一项都绑定到已记录的 agent 运行。 | [`ralph.md`](../.agents/workflows/ralph.md) |
 | **prompt 驱动的 judge** | 不是机械的：`/ralph` 的 prompt 要求编排器 spawn 一个拥有全新上下文的 judge，每一轮都重新检查**每一条**标准。没有任何东西会检查这次 spawn 是否真的发生。 | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **事件日志** | 在 OMA 会话中，门禁通过、门禁失败和决策各会向该会话的 `events.jsonl` 追加一行 JSON。 | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **按 agent 检查** | `oma verify agent <type>` 会运行 Scope Check、Charter Preflight、Hardcoded Secrets、TODO/FIXME Comments、Declared outputs 和 TDD Evidence，外加按类型的检查，例如 TypeScript、Any Types、SQL Injection 和测试。 | `oma verify agent --help` |
+| **按 agent 检查** | `oma verify agent <type>` 会运行 Scope Check、Hardcoded Secrets、TODO/FIXME Comments、Declared outputs 和 TDD Evidence，外加按类型的检查，例如 TypeScript、Any Types、SQL Injection 和测试。 | `oma verify agent --help` |
 
 > **会话事件记录：** Stop hook 会把门禁事件记在持久型工作流启动时开启的那个 OMA 会话下。事件写入是尽力而为的。如果这个会话没能创建（stderr 中会出现 `[oma] L1 session activation failed`），失败的门禁仍然会阻止停止，但不会写下任何 `gate.failed` 行。在依赖这份留痕或拿它做演示之前，先确认 `oma state list` 显示有一个活跃会话；之后 `oma state get <sid>` 会显示它的事件。
 

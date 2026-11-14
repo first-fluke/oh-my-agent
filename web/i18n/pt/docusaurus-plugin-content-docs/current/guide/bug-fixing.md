@@ -8,7 +8,7 @@ description: Workflow estruturado de debugging em sete etapas, com triagem de se
 
 ## Quando usar o workflow de debug
 
-Use `/debug` (ou diga "fix bug", "fix error" ou "debug" em linguagem natural) quando tiver um bug específico para diagnosticar e corrigir. O workflow organiza uma investigação reproduzível para distinguir os sintomas da causa raiz antes de escolher uma correção.
+Use `/debug` quando tiver um bug específico para diagnosticar e corrigir. Um pedido em linguagem natural como "find the root cause" carrega a skill `oma-debug` por meio da dica de skill, mas somente o comando de barra inicia este workflow. O workflow organiza uma investigação reproduzível para distinguir os sintomas da causa raiz antes de escolher uma correção.
 
 O workflow de debug é compatível com todos os vendors configurados. As etapas 1-5 executam inline. A etapa 6 (varredura de padrões similares) pode delegar a um subagente `debug-investigator` quando o escopo da varredura for amplo (10+ arquivos ou erros de vários domínios), seguida do registro em memória da etapa 7.
 

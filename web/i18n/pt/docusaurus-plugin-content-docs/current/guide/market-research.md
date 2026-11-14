@@ -1,7 +1,7 @@
 ---
 title: "Guia: Pesquisa de mercado (engine last30days)"
 sidebar_label: Pesquisa de mercado
-description: Como a skill oma-market do oh-my-agent executa pesquisa de sinais da comunidade no engine upstream mvanhorn/last30days, mantido automaticamente na release mais recente — seção de configuração market, oma market resolve / update / run, gate detect-trap, mapeamento de intenção para frameworks e modos de falha.
+description: Como a skill oma-market do oh-my-agent executa pesquisa de sinais da comunidade no engine upstream mvanhorn/last30days, instalado como skill por meio da skills CLI — seção de configuração market, oma market resolve / update / run, gate detect-trap, mapeamento de intenção para frameworks e modos de falha.
 ---
 
 # Pesquisa de mercado
@@ -89,14 +89,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` recusa tópicos com armadilha de palavras-chave e compras demográficas (sai com 2) e sugere uma reformulação. Um tópico vazio ou com mais de 200 caracteres sai com 4.
 2. `oma market resolve --json` resolve o engine e o Python; para em `ok: false`.
 3. O agente lê o `SKILL.md` do engine resolvido do início ao fim e o segue: assistente de configuração da primeira execução, resolução prévia de handles/subreddits/hashtags (quando WebSearch estiver disponível), planejamento da consulta e gate de pré-condições.
 4. `oma market run "<topic>" <flags> --emit=compact` usa argumentos idênticos à chamada upstream `python3 scripts/last30days.py`; `--save-dir` é adicionado a partir de `market.save_dir`.
-5. A síntese segue o OUTPUT CONTRACT upstream (badge na primeira linha, clusters de evidências ordenados e LAWs 1–8); depois o oma acrescenta seções de framework que citam somente clusters do engine:
+5. A síntese segue o OUTPUT CONTRACT upstream (badge na primeira linha, clusters de evidências ordenados e LAWs 1–8); depois o oma adiciona seções de framework, posicionadas entre o corpo do engine e o rodapé do engine, que citam somente clusters do engine:
 
 | Intenção | Modelagem do engine | Frameworks |
 |---|---|---|
@@ -105,7 +105,7 @@ flowchart TD
 | competitor | `"A vs B"` → fluxo de comparação upstream | SWOT + Porter's 5F |
 | discovery | `--discover`, depois follow-ups `--drill` | SWOT + PESTEL |
 
-6. Faça a autoverificação e escreva `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
+6. Escreva `.agents/results/market/{topic-slug}-{YYYYMMDD}.md` e depois execute a autoverificação contra o arquivo escrito; corrija e verifique novamente antes de entregar o brief.
 
 ---
 

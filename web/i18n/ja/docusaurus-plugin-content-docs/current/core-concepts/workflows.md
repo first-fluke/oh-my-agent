@@ -1,13 +1,13 @@
 ---
 title: ワークフロー
-description: oh-my-agent の 21 ワークフローを網羅するリファレンスです。スラッシュコマンド、永続・非永続モード、11 言語のトリガーキーワード、フェーズとステップ、読み書きするファイル、`triggers.json` と `keyword-detector.ts` による自動検出、情報パターンのフィルターリング、永続モードの状態管理を説明します。
+description: oh-my-agent の 20 ワークフローを網羅するリファレンスです。スラッシュコマンド、永続・非永続モード、11 言語のトリガーキーワード、フェーズとステップ、読み書きするファイル、`triggers.json` と `keyword-detector.ts` による自動検出、情報パターンのフィルターリング、永続モードの状態管理を説明します。
 ---
 
 # ワークフロー
 
-ワークフローは、スラッシュコマンドまたは自然言語のキーワードで起動する、構造化された複数ステップのプロセスです。単一フェーズのユーティリティから、5 フェーズの複雑な品質ゲートまで、エージェントがタスクでどう協力するかを定義します。
+ワークフローは、スラッシュコマンドで開始する、構造化された複数ステップのプロセスです。4 つの永続モードは、通常の依頼で名前を挙げたときにも始まります。単一フェーズのユーティリティから、5 フェーズの複雑な品質ゲートまで、エージェントがタスクでどう協力するかを定義します。
 
-21 個のワークフローがあり、そのうち 4 個は[永続的](../getting-started/glossary.md#persistent-workflow)です。永続ワークフローは状態を維持し、誤って中断されません。
+20 個のワークフローがあり、そのうち 4 個は[永続的](../getting-started/glossary.md#persistent-workflow)です。永続ワークフローは状態を維持し、誤って中断されません。
 
 ## ワークフロー一覧
 
@@ -22,11 +22,10 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 | [`/architecture`](#architecture) | アーキテクチャの意思決定、レビュー、ADR | いいえ |
 | [`/deepinit`](#deepinit) | 既存のコードベース向けに AGENTS.md、ARCHITECTURE.md、`docs/` を生成 | いいえ |
 | [`/review`](#review) | QA レビュー：セキュリティ、パフォーマンス、アクセシビリティ、コード品質 | いいえ |
-| [`/security`](#security) | セキュリティスキャン、デプロイ済み Web のペネトレーションテスト、指摘の検証、CI ゲート | いいえ |
+| [`/security`](#security) | ソース、エージェントスキル、MCP コンポーネントのセキュリティスキャン、指摘の検証、CI ゲート | いいえ |
 | [`/debug`](#debug) | 回帰テストを伴うバグの診断と修正 | いいえ |
-| [`/design`](#design) | トークン、コンポーネントパターン、アクセシビリティルールを含む DESIGN.md | いいえ |
+| [`/design`](#design) | デザインの指摘、DESIGN.md、リデザインの方向性、またはデザイントークン | いいえ |
 | [`/scm`](#scm) | Git 操作と Conventional Commits | いいえ |
-| [`/tools`](#tools) | MCP ツールの可視性と制限 | いいえ |
 | [`/convert`](#convert) | ドキュメントとメディアの形式変換 | いいえ |
 | [`/docs`](#docs) | ドキュメントのドリフト検出と同期 | いいえ |
 | [`/recap`](#recap) | AI ツールをまたいだ日次または期間ごとの作業の振り返り | いいえ |
@@ -63,7 +62,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 
 永続ワークフローはすべてのタスクが完了するまで続きます。`.agents/state/` に状態を保持し、明示的に無効化するまで各ユーザーメッセージに `[OMA PERSISTENT MODE: ...]` コンテキストを再注入します。
 
-永続モードが始まるのは、**明示的な呼び出し**があったときだけです。明示的な呼び出しとは、ワークフローのスラッシュコマンド（`/ultrawork`、または `/oma:ultrawork` のような名前空間付きの形式）か、平文で書いたワークフロー自身の名前を指します（`triggers.json` の `explicit` リスト。例："orchestrate"、"ultrawork"/"ulw"、"ralph"/"랄프"、"work mode"）。下に示すそのほかのトリガーキーワードは、自然言語のヒントです。これらは永続モードを有効にせず、ワークフローを提案として注入するだけです。プロンプトの最初または最後の行が `?` で終わる質問のときは、まったく起動しません。
+永続モードが始まるのは、**明示的な呼び出し**があったときだけです。明示的な呼び出しとは、ワークフローのスラッシュコマンド（`/ultrawork`、または `/oma:ultrawork` のような名前空間付きの形式）か、平文で書いたワークフロー自身の名前を指します（`triggers.json` の `explicit` リスト："orchestrate" とその一覧にある翻訳、"ultrawork"/"ulw"、"work mode"/"work workflow"、"ralph"/"랄프"）。キーワードフックが、それ以外の文からワークフローを開くことはありません。
 
 ### /orchestrate
 
@@ -76,38 +75,17 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 | 言語 | キーワード |
 |----------|----------|
 | 明示的な呼び出し（永続） | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-| English | "do everything", "run everything", "everything in parallel", "automate everything" |
-| Korean | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
-| Japanese | "全部実行", "全部並列で", "自動でやって" |
-| Chinese | "编排", "全部执行", "全部并行", "自动处理" |
-| Spanish | "ejecutar todo", "todo en paralelo" |
-| French | "tout exécuter", "tout en parallèle" |
-| German | "alles ausführen", "alles parallel" |
-| Portuguese | "executar tudo", "tudo em paralelo" |
-| Russian | "выполнить всё", "всё параллельно" |
-| Dutch | "alles uitvoeren", "alles parallel" |
-| Polish | "wykonaj wszystko", "wszystko równolegle" |
 
-単独の "parallel" や "automate"（およびその翻訳語）はトリガーではありません。"run the tests in parallel" や "automate the release notes" は通常の依頼であり、マルチエージェントのオーケストレーションではありません。
-
-**トリガー正規表現パターン**（意図と名詞ホワイトリスト。[自動検出：パターンフィールド](#pattern-field-raw-regex)を参照）：
-
-| セクション | パターン | 起動する例 |
-|---------|---------|----------------------|
-| `*`（ユニバーサル） | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
-| `*`（ユニバーサル） | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
-| `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
-
-名詞ホワイトリスト（14 個）：app、api、service、server、cli、tool、website、dashboard、system、backend、frontend、prototype、mvp、bot。単一の機能（"implement the login feature"、"로그인 기능 구현해줘"）や既存のもの（"make the API faster"）には一致しません。
+"do everything"、"전부 해줘"、"build me an app" のような文では、このワークフローは始まりません。
 
 **ステップ：**
 
 1. **Step 0、準備：** coordination スキル、context-loading ガイド、memory protocol を読み、ベンダーを検出します。
 2. **Step 1、プランのロード/作成：** `.agents/results/plan-{sessionId}.json`、次に最新の `plan-*.json` を確認します。プランがない場合、またはエージェント、優先度ティア、依存関係、受入基準のいずれかが欠けていて実行可能でない場合は、同じセッション ID を保ったまま `/plan` にインラインで作成を委任します。プランを提示し、既存の承認を引き継ぎます。委任前に確認するのは、重要な未決定事項または新しい承認が必要な場合だけです。
-3. **Step 2、セッションの初期化：** `oma-config.yaml` をロードし、CLI マッピング表を表示します。プラン作成時のセッション ID を再利用するか、`session-YYYYMMDD-HHMMSS` を生成します。設定済みのメモリストアに `orchestrator-session-{sessionId}.md` と `task-board-{sessionId}.md` を作成します。
-4. **Step 3、エージェントのスポーン：** 優先度ティアごとに（低い番号から順に、ティア 1、次にティア 2 と進みます）、ベンダーに適した方法でエージェントをスポーンします。同じランタイムとベンダーならネイティブサブエージェントを使い、外部または異なるベンダーなら `oma agent spawn` を使います。MAX_PARALLEL を超えません。
-5. **Step 4、モニタリング：** 実行単位の `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` と構造化された実行記録をポーリングし、タスクボードを更新します。完了、失敗、クラッシュを監視します。
-6. **Step 5、検証：** 完了したエージェントごとに、機械的なセルフチェック（lint、型チェック、テスト、diff の範囲。最大 3 サイクル）を実行し、次に `verify.sh {agent-type} {workspace}` を実行します（対象は backend、frontend、mobile、qa、debug、pm で、それ以外のエージェントタイプは `SKIP` を記録します）。最後に QA クロスレビューを行います。verify に失敗したら、エラーのコンテキストを付けて最大 2 回まで再スポーンします。失敗が続く場合は別の仮説を検討する理由になり得ますが、すべての試行は同じ合計の復旧予算（`max_attempts`、元の試行を含めてデフォルト 3）を消費します。予算で比較ラウンドを賄えない場合は、未解決の証拠を保全します。
+3. **Step 2、セッションの初期化：** `oma-config.yaml` をロードし、CLI マッピング表を表示します。プラン作成時のセッション ID を再利用するか、`session-YYYYMMDD-HHMMSS` を生成します。タスクごとに、インストール済みスキルのインテントシグネチャと照合して、必要なスキルリファレンスを選びます。確信を持って一致したスキルが 1 つあれば十分です。設定済みのメモリストアに `orchestrator-session-{sessionId}.md` と `task-board-{sessionId}.md` を作成し、各タスクで選んだリファレンスと選択の理由をそこに記録します。これらはコーディネーターのメモであり、ランチャーが強制することはありません。
+4. **Step 3、エージェントのスポーン：** 優先度ティアごとに（低い番号から順に、ティア 1、次にティア 2 と進みます）、ベンダーに適した方法でエージェントをスポーンします。同じランタイムとベンダーならネイティブサブエージェントを使い、外部または異なるベンダーなら `oma agent spawn` を使います。各エージェントは、タスク、API コントラクト、選択されたリファレンスとそのロード条件を受け取ります。MAX_PARALLEL（デフォルト 3）を超えません。
+5. **Step 4、モニタリング：** `oma agent status` でプロセスの状態を確認します。ホストの完了通知を優先し、通知がない場合は、変更のあった実行単位の `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` を上限付きバックオフでポーリングします。構造化された実行記録を読み、タスクボードを更新します。完了、失敗、クラッシュを監視します。
+6. **Step 5、検証：** 完了したエージェントごとに、機械的なセルフチェック（lint、型チェック、テスト、diff の範囲。最大 3 サイクル）を実行し、次に `verify.sh {agent-type} {workspace}` を実行します（対象は backend、frontend、mobile、qa、debug、pm で、それ以外のエージェントタイプは `SKIP` を記録します）。最後に QA クロスレビューを行います。verify に失敗したら、エラーのコンテキストを付けて再スポーンします。失敗が続く場合は別の仮説を検討する理由になり得ますが、元の試行、各再試行、各仮説は、同じ合計の復旧予算（`max_attempts`、元の試行を含めてデフォルト 3）を消費します。予算で比較ラウンドを賄えない場合は、未解決の証拠を保全します。
 7. **Step 6、収集：** 実行単位の結果ファイルと構造化された申告を読み、サマリーを作成します。
 8. **Step 7、最終レポート：** セッションサマリーを提示します。実験を実施した場合は証拠と判断をまとめ、教訓を記録するのは再利用できる原因が特定できた場合に限ります。
 
@@ -115,7 +93,7 @@ description: oh-my-agent の 21 ワークフローを網羅するリファレン
 flowchart TD
   S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
   S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task board, domain gate"]
+  MK --> S2["Step 2: session ID, task references, task board"]
   S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
   S3 --> S4["Step 4: monitor with oma agent status and progress files"]
   S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
@@ -150,16 +128,8 @@ flowchart TD
 | 言語 | キーワード |
 |----------|----------|
 | 明示的な呼び出し（永続） | "work mode", "work workflow" |
-| Universal | "step by step" |
-| English | "one by one", "one step at a time" |
-| Korean | "단계별", "하나씩 해줘", "차근차근" |
-| Japanese | "ステップバイステップ", "一歩ずつ" |
-| Chinese | "逐步", "一步一步" |
-| Spanish | "paso a paso", "uno por uno" |
-| French | "étape par étape", "un par un" |
-| German | "schritt für schritt", "der reihe nach" |
 
-単独の "work" はトリガーではありません。日常的な語彙だからです（"Does this work on Windows?"）。
+単独の "work" はトリガーではありません。日常的な語彙だからです（"Does this work on Windows?"）。"step by step" とその翻訳でも、このワークフローは始まりません。
 
 **ステップ：**
 
@@ -257,15 +227,8 @@ flowchart TD
 | 言語 | キーワード |
 |------|-----------|
 | 明示的な呼び出し（永続） | "ralph", "랄프" |
-| English | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
-| Korean | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
-| Japanese | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
-| Chinese | "不要停", "直到完成", "全部完成", "做完为止" |
-| Spanish | "no pares", "hasta completar", "termina todo" |
-| French | "n'arrête pas", "jusqu'à complétion", "termine tout" |
-| German | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
 
-単独の再開フレーズ（"keep going"、"carry on"、"계속해"、"続けて"、"продолжай" など）はトリガーではありません。ユーザーは中断後に再開するためにこれらを入力するからです。
+単独の再開フレーズ（"keep going"、"carry on"、"계속해"、"続けて"、"продолжай" など）や、完了を求める言い回し（"don't stop"、"끝까지 해"）では、このワークフローは始まりません。
 
 **フェーズ：**
 
@@ -309,19 +272,11 @@ judge ノードは Phase 2 で説明した、プロンプトで指示される j
 
 **説明：** PM 主導でタスクを分解します。要件を分析し、技術スタックを選び、依存関係付きの優先タスクと API コントラクトを定義します。
 
-**トリガーキーワード：**
-
-| 言語 | キーワード |
-|----------|----------|
-| Universal | "task breakdown" |
-| English | "plan" |
-| Korean | "계획", "요구사항 분석", "스펙 분석" |
-| Japanese | "計画", "要件分析", "タスク分解" |
-| Chinese | "计划", "需求分析", "任务分解" |
+**トリガーキーワード：** なし。`/plan` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
 **ステップ：** 要件収集 -> 技術的実現可能性の分析（MCP コード解析） -> 複雑度の評価（Simple / Medium / Complex） -> 必要なら API コントラクトを定義 -> タスクを分解 -> ユーザーレビュー -> 成果物を保存（機械可読 JSON と、Medium / Complex の場合は人間向け Markdown トラッカー）。
 
-**出力：** `.agents/results/plan-{sessionId}.json`、メモリ書き込み、Medium / Complex では `docs/plans/work/{NNN}-{name}.md`（タスク表、決定ログ、進捗ノート付き）。ライフサイクルは Markdown ヘッダーの `Status` フィールド（`Active` -> `Completed`）で管理します。プランをフォルダー間で移動しません。`/brainstorm` で作成した設計は `docs/plans/designs/{NNN}-{name}.md` に保存します。
+**出力：** `.agents/results/plan-{sessionId}.json`、メモリ書き込み、Medium / Complex では `docs/plans/work/{NNN}-{name}.md`（タスク表、決定ログ、進捗ノート付き）。ライフサイクルは Markdown ヘッダーの `Status` フィールド（`Active` -> `Completed`）で管理します。プランをフォルダー間で移動しません。`/brainstorm` で選んだアプローチは `docs/decisions/{NNN}-{name}.md` に保存します。
 
 **実行：** インラインで行い、サブエージェントはスポーンしません。`/orchestrate` または `/work` が実行中にタスクとステータスを更新します。
 
@@ -331,17 +286,9 @@ judge ノードは Phase 2 で説明した、プロンプトで指示される j
 
 **説明：** デザインファーストのアイデア出しです。意図を探索し、制約を明確化し、2〜3 のアプローチを提案して、計画前に承認済みの設計ドキュメントを作成します。
 
-**トリガーキーワード：**
+**トリガーキーワード：** なし。`/brainstorm` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
-| 言語 | キーワード |
-|----------|----------|
-| Universal | "brainstorm" |
-| English | "ideate", "explore design" |
-| Korean | "브레인스토밍", "아이디어", "설계 탐색" |
-| Japanese | "ブレインストーミング", "アイデア", "設計探索" |
-| Chinese | "头脑风暴", "创意", "设计探索" |
-
-**ステップ：** プロジェクトコンテキストを探索（MCP 解析） -> 一度に 1 つずつ確認質問 -> トレードオフ付きで 2〜3 のアプローチを提案 -> ユーザーの承認を得ながらセクション単位で設計を提示 -> `docs/plans/designs/{NNN}-{name}.md` に設計を保存 -> `/plan` を提案。
+**ステップ：** プロジェクトコンテキストを探索（MCP 解析） -> 一度に 1 つずつ確認質問 -> トレードオフ付きで 2〜3 のアプローチを提案 -> ユーザーの承認を得ながらセクション単位で設計を提示 -> ブラインドレビューのラウンド -> 選んだアプローチを `docs/decisions/{NNN}-{name}.md` に保存し、`docs/decisions/index.md` を更新 -> `/plan` を提案。
 
 **ルール：** 設計の承認前に実装や計画を行いません。コードを出力しません。YAGNI を守ります。
 
@@ -351,15 +298,7 @@ judge ノードは Phase 2 で説明した、プロンプトで指示される j
 
 **説明：** アーキテクチャの問題を診断し、診断ルーティング / design-twice / ATAM / CBAM / ADR の適切な分析手法を選び、選択肢を比較し、ステークホルダーの意見を統合して、推奨案、レビュー、または ADR を作成します。
 
-**トリガーキーワード：**
-
-| 言語 | キーワード |
-|----------|----------|
-| Universal | "architecture", "ADR", "ATAM", "CBAM" |
-| English | "architecture review", "architectural tradeoff" |
-| Korean | "아키텍처", "설계 검토" |
-| Japanese | "アーキテクチャ" |
-| Chinese | "架构" |
+**トリガーキーワード：** なし。`/architecture` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
 **ステップ：** 判断を枠付け（新しいアーキテクチャ / レビュー / トレードオフ分析 / 投資優先順位付け / ADR 作成） -> 診断ルーティングで方法を選択 -> MCP コード解析（`get_symbols_overview`、`find_symbol`、`find_referencing_symbols`）で現在のアーキテクチャを分析 -> 必要な場合だけステークホルダーの意見を統合 -> 前提、トレードオフ、リスク、検証手順が明確な推奨案を作成 -> 実装が必要なら `/plan` に引き渡します。
 
@@ -373,36 +312,23 @@ judge ノードは Phase 2 で説明した、プロンプトで指示される j
 
 **説明：** 既存のコードベースを分析し、AGENTS.md、ARCHITECTURE.md、構造化された `docs/` ナレッジベースを生成してプロジェクトを初期化します。
 
-**トリガーキーワード：**
+**トリガーキーワード：** なし。`/deepinit` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
-| 言語 | キーワード |
-|----------|----------|
-| Universal | "deepinit" |
-| Korean | "프로젝트 초기화" |
-| Japanese | "プロジェクト初期化" |
-| Chinese | "项目初始化" |
+**ステップ：** 準備 -> コードベースの分析（プロジェクト種別、アーキテクチャ、暗黙のルール、ドメイン、境界） -> ARCHITECTURE.md を生成（ドメインマップ、200 行未満） -> `docs/` ナレッジベースを生成（decisions/、plans/、generated/、product-specs/、references/、ドメイン文書） -> ルート AGENTS.md を生成（目次付き、約 100 行） -> 境界 AGENTS.md を生成（モノレポのパッケージごと、各 50 行未満） -> 既存ハーネスを更新（再実行の場合） -> 検証（デッドリンクと行数制限がないこと）。
 
-**ステップ：** 準備 -> コードベースの分析（プロジェクト種別、アーキテクチャ、暗黙のルール、ドメイン、境界） -> ARCHITECTURE.md を生成（ドメインマップ、200 行未満） -> `docs/` ナレッジベースを生成（design-docs/、plans/、generated/、product-specs/、references/、ドメイン文書） -> ルート AGENTS.md を生成（目次付き、約 100 行） -> 境界 AGENTS.md を生成（モノレポのパッケージごと、各 50 行未満） -> 既存ハーネスを更新（再実行の場合） -> 検証（デッドリンクと行数制限がないこと）。
-
-**出力：** AGENTS.md、ARCHITECTURE.md、docs/design-docs/、docs/plans/、docs/PLANS.md、docs/QUALITY-SCORE.md、docs/CODE-REVIEW.md、検出したドメイン固有のドキュメント。
+**出力：** AGENTS.md、ARCHITECTURE.md、docs/decisions/、docs/plans/、docs/PLANS.md、docs/QUALITY-SCORE.md、docs/CODE-REVIEW.md、検出したドメイン固有のドキュメント。
 
 ---
 
 ### /review
 
-**説明：** OWASP Top 10 のセキュリティ監査、パフォーマンス分析、WCAG 2.1 AA のアクセシビリティ確認、コード品質レビューを行う QA パイプラインです。
+**説明：** OWASP Top 10 のセキュリティ監査、パフォーマンス分析、WCAG 2.2 AA のアクセシビリティ確認、コード品質レビューを行う QA パイプラインです。
 
-**トリガーキーワード：**
+**トリガーキーワード：** なし。`/review` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
-| 言語 | キーワード |
-|----------|----------|
-| Universal | "code review", "security audit", "security review" |
-| English | "review" |
-| Korean | "리뷰", "코드 검토", "보안 검토" |
-| Japanese | "レビュー", "コードレビュー", "セキュリティ監査" |
-| Chinese | "审查", "代码审查", "安全审计" |
+**ステップ：** レビュー範囲の特定 -> 自動セキュリティチェック（`npm audit`、`bandit`、またはスタックの同等ツール） -> OWASP Top 10 の手動セキュリティレビュー -> パフォーマンス分析 -> WCAG 2.2 AA のアクセシビリティレビュー -> コード品質レビュー -> QA レポートの生成。
 
-**ステップ：** レビュー範囲の特定 -> 自動セキュリティチェック（npm audit、bandit） -> OWASP Top 10 の手動セキュリティレビュー -> パフォーマンス分析 -> WCAG 2.1 AA のアクセシビリティレビュー -> コード品質レビュー -> QA レポートの生成。
+**スコープ：** スコープは依頼から決まります。特定のファイル、機能ブランチ、PR、またはプロジェクト全体です。PR やブランチは、そのベースブランチとの差分を取ります。スコープの指定がない場合、ワークフローは現在の未コミットの変更とブランチの変更をレビューし、その前提を明示します。スコープを決める手がかりが何もない場合にだけ質問します。
 
 **任意の修正・検証ループ**（`--fix`）：QA レポート後にドメインエージェントをスポーンして CRITICAL / HIGH を修正し、QA を再実行します。最大 3 回繰り返します。
 
@@ -412,9 +338,9 @@ judge ノードは Phase 2 で説明した、プロンプトで指示される j
 
 ### /security
 
-**説明：** ソースコード、エージェントスキル、MCP コンポーネント、デプロイ済み Web アプリケーションを対象に `oma-security` スキルを実行します。ワークフローは適切なエンジンを選び、カバレッジと証拠を記録し、指摘を検証して、設定された CI ゲートを適用します。
+**説明：** ソースコード、エージェントスキル、MCP コンポーネントを対象に `oma-security` スキルを実行します。ワークフローは適切なエンジンを選び、カバレッジと証拠を記録し、指摘を検証して、設定された CI ゲートを適用します。スコープを定めた Web テスト環境のペネトレーションテストは、ARTEX を明示的に依頼された場合に限り、ユーザーが用意したレビュー済みの ARTEX プラットフォームに対して実行します。
 
-**入口：** `/security`。Deepsec や Cisco スキャナーの実行、ARTEX によるペネトレーションテストを求める場合も、このワークフローにルーティングします。
+**入口：** `/security`。キーワードフックが文からこのワークフローを開くことはありません。ワークフロー内では、対象と意図に応じて Deepsec と Cisco スキャナーを選びます。リポジトリスキャンではソースだけを選び、スキル、MCP、ランタイムのスキャンを暗黙に追加しません。
 
 **対象とエンジン：**
 
@@ -423,7 +349,9 @@ judge ノードは Phase 2 で説明した、プロンプトで指示される j
 | ソースコード | デフォルトは Vercel Deepsec。指定があれば Cisco AI Deep SAST を使用 |
 | エージェントスキルのパッケージ | Cisco Skill Scanner |
 | MCP コンポーネントまたはサーバー | Cisco MCP Scanner |
-| デプロイ済みのテスト用 Web アプリケーション | 許可された対象と実行範囲に限定して ARTEX を使用 |
+| Web テスト環境（ランタイムペネトレーションテスト） | デフォルトではなし。ARTEX は、明示的に依頼された場合に限り、ユーザーが用意したレビュー済みの ARTEX プラットフォーム上で、許可された対象と実行範囲に限定して使用 |
+
+ランタイムテストには同梱のエンジンがありません。このスキルは ARTEX プラットフォームをインストール、ビルド、デプロイしません。明示的な ARTEX のリクエスト、具体的な Web テスト環境、レビュー済みのプラットフォームがそろわない場合、ワークフローは不足している前提条件を示し、ランタイムのステージを `skipped` として記録して、選択された他の操作を続けます。
 
 Cloudflare の監査手法を、独立した検証とローカルサンドボックスでの再現に適用します。追加のスキャナーではなく、検出精度の優位性を示すものでもありません。
 
@@ -431,7 +359,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 1. `.agents/skills/oma-security/SKILL.md` を読み、対象と意図に必要なリソースだけを読み込みます。
 2. 対象（`source`、`skill`、`mcp`、`web_runtime`）と意図（`setup`、`scan`、`diff`、`pentest`、`triage`、`validate`、`ci`、`troubleshoot`）を解決します。選択したエンジンのバージョン、利用可能なインターフェース、認証情報、実行予算を確認します。
-3. 合意した範囲で選択したエンジンを実行します。該当する場合は既存の Deepsec の状態を再利用します。ARTEX は、レビューしてバージョンを固定したものを使います。隔離されたデプロイ先、アカウント、対象の許可リスト、予算を実行に紐付けます。ARTEX は、レビュー済みスナップショットで検証した UI/API、または手動・外部タスクで実行します。CI での自動化には、検証済みアダプターとタスクの実行記録が必要です。
+3. 合意した範囲で選択したエンジンを実行します。該当する場合は既存の Deepsec の状態を再利用します。明示的に依頼された ARTEX の実行は、用意されたプラットフォームのレビュー済みで固定したバージョンと、隔離されたデプロイ先、アカウント、対象の許可リスト、予算に紐付けます。ARTEX は、レビュー済みスナップショットで検証した UI/API、または手動・外部タスクで実行します。CI での自動化には、検証済みアダプターとタスクの実行記録が必要です。
 4. 未加工の結果とエンジンの終了コードを保存し、出所や判定の不一致を失わない形で指摘を正規化します。候補を独立してレビューし、静的な検証と実際に観測した再現結果を分けて記録します。
 5. カバレッジ、指摘、証拠、未完了の作業、該当する CI の結果を報告します。修正は影響を受けるコンポーネントの担当専門家に引き渡します。
 
@@ -439,7 +367,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 **ルール：** 認証情報をレポートやバージョン管理に含めません。ソースとスキャナーの出力は信頼できない入力として扱います。ローカルでの再現は OS サンドボックスで実行し、ARTEX の通信は許可されたランタイムの範囲に限定します。失敗、一部のみ完了、スキップしたスキャンや、成功しなかったエクスプロイトの試行は、対象が安全である根拠にはなりません。`confirmed` と判定するには、記録したリビジョンまたはデプロイで、独立した検証と観測による実証が必要です。静的な裏付けだけの場合は `needs_validation` のままにします。
 
-**使用すべき場合：** セキュリティスキャン、デプロイ済み Web アプリケーションのペネトレーションテスト、指摘のトリアージと検証、CI セキュリティゲートに使います。コード品質、アクセシビリティ、パフォーマンスも含むレビューには `/review` を使います。
+**使用すべき場合：** ソース、エージェントスキル、MCP コンポーネントのセキュリティスキャン、指摘のトリアージと検証、CI セキュリティゲート、またはすでに運用している ARTEX プラットフォーム上での、テスト環境に対する範囲を限定したペネトレーションテストに使います。コード品質、アクセシビリティ、パフォーマンスも含むレビューには `/review` を使います。
 
 ---
 
@@ -447,15 +375,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 **説明：** 再現、診断、修正、回帰テスト、類似パターンのスキャンを含む構造化されたバグ診断と修正です。
 
-**トリガーキーワード：**
-
-| 言語 | キーワード |
-|----------|----------|
-| Universal | "debug" |
-| English | "fix bug", "fix error", "fix crash" |
-| Korean | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
-| Japanese | "デバッグ", "バグ修正", "エラー修正" |
-| Chinese | "调试", "修复 bug", "修复错误" |
+**トリガーキーワード：** なし。`/debug` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
 **ステップ：** エラー情報を収集 -> MCP（`search_for_pattern`、`find_symbol`）で再現 -> MCP の `find_referencing_symbols` で実行経路を追跡して根本原因を診断 -> 最小修正を提案（ユーザー確認が必要） -> 修正と回帰テストを実装 -> 類似パターンをスキャン（10 ファイル超なら debug-investigator サブエージェントをスポーンできる） -> メモリにバグを記録します。
 
@@ -465,21 +385,20 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 ### /design
 
-**説明：** DESIGN.md、トークン、コンポーネントパターン、アクセシビリティルールを生成する 7 フェーズのデザインワークフローです。
+**説明：** デザインタスクのスコープを定め、適用するデザインガイダンスを選び、`oma-design` を通じて指摘、`DESIGN.md`、リデザインの方向性、またはデザイントークンを提供します。このワークフローは実装コードを書きません。実装は `oma-frontend` または `oma-mobile` に引き渡します。インラインで実行し、サブエージェントはスポーンしません。
 
-**トリガーキーワード：**
+**トリガーキーワード：** なし。`/design` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
-| 言語 | キーワード |
-|----------|----------|
-| Universal | "design system", "DESIGN.md", "design token" |
-| English | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
-| Korean | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
-| Japanese | "デザイン", "ランディングページ", "デザインシステム" |
-| Chinese | "设计", "着陆页", "设计系统" |
+**ステップ：**
 
-**フェーズ：** SETUP（コンテキスト収集、`.design-context.md`） -> EXTRACT（任意、参照 URL / Stitch から） -> ENHANCE（曖昧なプロンプトの補強） -> PROPOSE（色、タイポグラフィ、レイアウト、モーション、コンポーネントを含む 2〜3 の方向性） -> GENERATE（DESIGN.md + CSS / Tailwind / shadcn トークン） -> AUDIT（レスポンシブ、WCAG 2.2、Nielsen ヒューリスティクス、AI スロップ確認） -> HANDOFF（保存してユーザーに通知）。
+1. **スキルをロード：** `.agents/skills/oma-design/SKILL.md` と `resources/execution-protocol.md` を読みます。サプライヤーの選択、プロジェクトのデザインコントラクト、納品の証拠はスキルが担当します。ワークフローはその操作の順序を決めるだけで、独自のビジュアルルールは追加しません。
+2. **スコープとコンテキストを確定：** 依頼された結果を、指摘（監査）、デザインシステムのドキュメント、リデザインの方向性、トークンのいずれかに分類します。依頼内容、既存の `DESIGN.md`、`.design-context.md`（ある場合）、ブランド資料、対応言語、影響する UI を読みます。既存のサイトやアプリケーションでは `redesign-protocol.md` をロードし、変更を提案する前に Preserve か Overhaul かを決めます。ワークフローが質問するのは、結果を大きく変える選択で、依頼、成果物、コードベースから答えが得られない場合だけです。`.design-context.md` は、実質的な調査が判断の材料になった場合にだけ作成または更新します。
+3. **ガイダンスを選び、リファレンスを集める：** `external-design-skills.md` を通じて、操作に対してサプライヤーを 1 つ選びます（Interface Design、Taste、Impeccable）。ドキュメントのみ、またはトークンコントラクトのタスクはローカルで処理します。任意の入力は、タスクが必要とする場合にだけロードします。対象は、依頼されたベンダーシード（`getdesign-fetcher.md`）、依頼された Stitch の操作（`stitch-integration.md`）、画像とプレースホルダー（`asset-strategy.md`）、データテーブルやグリッドを中心に構成した画面（`data-grid.md`）です。利用できない連携は、黙って置き換えず、証拠の制限として報告します。
+4. **方向性を決める：** 選んだガイダンスをプロジェクトの証拠に適用します。別の方向性を提示するのは、未解決の選択が結果に大きく影響する場合だけです。既存の方向性と承認で答えが出る場合は、それで十分です。
+5. **成果物を作成：** デザインシステムでは、`design-md-spec.md` に従って `DESIGN.md` を作成または更新し、Section 9（Agent Prompt Guide）を含む 9 つのセクションをすべて維持します。トークンは `design-tokens.md` に従い、セマンティックロールをプロジェクト既存のトークンシステムとテーマ形式に対応付けます。監査では、確認した場所、証拠、影響、推奨を添えた指摘を返し、何も編集しません。
+6. **検証して引き渡す：** `checklist.md` の該当するチェックを実行し、何を確認したかを明記します。納品した成果物、選択したルートとその出所、検証結果、残っている制限を報告し、実装を `oma-frontend`（Web）または `oma-mobile`（ネイティブ）に引き渡します。
 
-**必須事項：** すべての出力をレスポンシブファーストにします（モバイル 320〜639px、タブレット 768px 以上、デスクトップ 1024px 以上）。
+**制約：** どの方向性も、プロジェクトのブランド、対応言語に CJK が含まれる場合のフォントのカバー範囲、既存の実装スタック、サポートする最小のビューポートからのレスポンシブな挙動、WCAG AA（プロジェクトがより厳しい目標を設定している場合はそちら）の範囲に収めます。レンダリングされた実装が必要なチェックは、ドキュメントのみの作業では指定するだけで実行しません。
 
 ---
 
@@ -492,23 +411,6 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 **ステップ：** 変更を分析（git status、git diff） -> 5 ファイルを超え、異なるスコープ/種類にまたがる場合は機能を分割 -> 種類を決定（feat / fix / refactor / docs / test / chore / style / perf） -> 変更モジュールからスコープを決定 -> 命令形で説明を作成（72 文字未満） -> 直ちにコミットを実行（確認プロンプトなし）。
 
 **ルール：** `git add -A` を使いません。シークレットをコミットしません。複数行メッセージには HEREDOC を使います。Co-Author トレーラーは、有効な `scm.co_author` 設定に名前とメールアドレスがある場合だけ追加します。
-
----
-
-### /tools
-
-**説明：** MCP ツールの可視性と制限を管理します。
-
-**トリガーキーワード：** なし（自動検出から除外）。
-
-**機能：** 現在の MCP ツール状態の表示、ツールグループ（memory、code-analysis、code-edit、file-ops）の有効化/無効化、永続または一時（`--temp`）変更、自然言語の解析（「memory tools only」「disable code edit」）。
-
-**ツールグループ：**
-
-- memory: read_memory、write_memory、edit_memory、list_memories、delete_memory
-- code-analysis: get_symbols_overview、find_symbol、find_referencing_symbols、search_for_pattern
-- code-edit: replace_symbol_body、insert_after_symbol、insert_before_symbol、rename_symbol
-- file-ops: list_dir、find_file
 
 ---
 
@@ -530,7 +432,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 **説明：** `oma-docs` によるドキュメントドリフトの検出と同期です。Verify はすべてのリポジトリ Markdown（デフォルトの glob は `**/*.md`）で壊れた参照を探し、Sync は Git 差分で影響を受けるドキュメントごとのパッチを提案します。インラインで実行し、ベンダーに関わらず `oma docs` を直接呼び出します。
 
-**トリガーキーワード：** Universal：`oma-docs`、`docs verify`、`docs sync`。English：`verify docs`、`check docs`、`docs drift`、`broken doc links`、`stale docs`、`sync docs`、`patch docs`。Korean：`문서 검증`、`문서 드리프트`、`문서 동기화`。Japanese：`ドキュメント検証`、`ドキュメント同期`。Chinese：`文档校验`、`文档同步`。
+**トリガーキーワード：** なし。`/docs` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
 **ステップ：** モードを検出（デフォルトは `verify`、プロンプトが sync または Git 差分範囲を含む場合は `sync`） -> 事前確認（`command -v oma`。Sync では使用可能な差分を確認し、`HEAD~1..HEAD` にフォールバック） -> Verify：`oma docs verify --json`（終了コード `0` はクリーン、`1` は壊れた参照）または Sync：範囲に対する `oma docs sync --json` -> ホスト LLM 契約に従って結果を合成（Verify は CRITICAL / HIGH / MEDIUM / LOW 別に具体的な修正、Sync は最小の unified-diff パッチ） -> Sync パッチを文書ごとに対話的に提示（`[y] apply [n] skip [d] show diff [s] show full proposal`。自動適用しない） -> 適用したら `oma docs verify --json` でインデックスを再生成 -> モード、種類別件数、`docs/generated/doc-refs.json` / `url-drift.json` の場所を報告。
 
@@ -547,7 +449,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 **説明：** `oma-recap` による日次または期間の作業リキャップです。自然言語から日付または期間を解決し、複数の AI ツール履歴（Grok、Claude、Codex、Qwen、Cursor、Antigravity）に対して `oma recap --json` を実行し、テーマ分析と Markdown 形式への整形をスキルに委任して、保存先と TL;DR を報告します。インラインで実行し、サブエージェントはスポーンしません。ベンダーに関わらず `oma recap` を直接呼び出します。
 
-**トリガーキーワード：** Universal：`recap`。Korean：`리캡`。Japanese：`リキャップ`。
+**トリガーキーワード：** なし。`/recap` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
 **ステップ：** モードと期間を検出（デフォルトは `daily`、今日の日次。`this week` や `지난 7일` なら `period` として `--window Nd` を使う） -> ユーザーが明示した場合だけ `--tool` フィルターを抽出（`grok, claude, codex, qwen, cursor, antigravity`） -> `command -v oma` を事前確認 -> `oma recap --json` を実行（日次は `--date YYYY-MM-DD` または省略、期間は `--window 7d` / `30d`） -> 15 分テーマ閾値とテンプレートで保存 -> 3 項目の TL;DR と保存先を報告。
 
@@ -562,12 +464,12 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 ### /stack-set
 
-**説明：** プロジェクトの技術スタックを自動検出し、解決したドメインスキル（Backend または Mobile）の言語固有リファレンスを生成します。`Package.swift` / `.xcodeproj` の Swift/iOS、`pubspec.yaml` の Flutter、`package.json` と react-native の React Native を検出して `oma-mobile` へルーティングします。それ以外は `oma-backend` にルーティングします。モノレポで両方がある場合は、どちらを設定するか尋ねます。
+**説明：** プロジェクトの技術スタックを自動検出し、解決したドメインスキルの言語固有リファレンスを生成します。バックエンドのマニフェストは `oma-backend` へルーティングします。モバイルのスタック（`Package.swift` / `.xcodeproj` の Swift/iOS、`settings.gradle.kts` の Kotlin/Android、`pubspec.yaml` の Flutter、`package.json` と react-native の React Native）は `oma-mobile` へルーティングします。フロントエンドのマニフェスト（Angular、Next.js、React、Vue、Svelte）は `oma-frontend` へルーティングします。複数のドメインが検出され、依頼がどれかを指定していない場合、ワークフローはどれを設定するか尋ねます。
 
 **トリガーキーワード：** なし（自動検出から除外）。
 
 <!-- oma-docs:ignore-start -->
-**ステップ：** マニフェストを検出（pyproject.toml、package.json、Cargo.toml、pom.xml、go.mod、mix.exs、Gemfile、*.csproj、Package.swift、*.xcodeproj、pubspec.yaml） -> 確認（検出したスタックを表示してユーザーの確認を得る） -> 生成（`stack/stack.yaml`、`stack/tech-stack.md`、8 つの必須パターンを含む `stack/snippets.md`、`stack/api-template.*`） -> 検証。
+**ステップ：** マニフェストを検出（pyproject.toml、package.json、Cargo.toml、pom.xml、go.mod、mix.exs、Gemfile、*.csproj、Package.swift、*.xcodeproj、pubspec.yaml） -> 確認（検出したスタックを表示してユーザーの確認を得る） -> 生成（`stack/stack.yaml`、`stack/tech-stack.md`、8 つの必須パターンを含む `stack/snippets.md`、backend では `stack/api-template.*`。モバイルのスタックは API サービスまたはリポジトリのスニペットを `stack/snippets.md` に置く） -> 検証。
 <!-- oma-docs:ignore-end -->
 
 **出力：** 解決したドメインスキルの `stack/` ディレクトリ（例：`.agents/skills/oma-backend/stack/` または `.agents/skills/oma-mobile/stack/`）。`SKILL.md` や `resources/` は変更しません。
@@ -578,23 +480,15 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 **説明：** `oma-video` スキルをエンドツーエンドで実行します。brief → script → narration → visuals → captions → render-spec → 管理対象の HyperFrames（または MoneyPrinterTurbo）という流れです。再現可能な実行ディレクトリを作り、コンポジターと ffprobe の確認が通った場合だけ実際の `.mp4` を出力します。対応するアセットのフォールバックはキーなしでも使えますが、コンポジターやツールチェーンの失敗は失敗のままです。インラインで実行し、サブエージェントはスポーンしません。
 
-**トリガーキーワード：**
-
-| 言語 | キーワード |
-|----------|----------|
-| Universal | `/video`、`oma-video`、`hyperframes`、`shorts`、`reels`、`screencast` |
-| English | `generate video`、`create a video`、`make a video`、`short-form video`、`explainer video`、`demo video`、`walkthrough video`、`video from readme`、`video from code` |
-| Korean | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
-| Japanese | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
-| Chinese | "生成视频", "制作视频", "短视频", "讲解视频", "演示视频" |
+**トリガーキーワード：** なし。`/video` で開始します。キーワードフックが文からこのワークフローを開くことはありません。
 
 **ステップ：**
 
-1. **brief と mode を解決：** `shorts`（9:16）、`explainer`（16:9）、`demo`（画面/Web キャプチャ）を選び、フラグで上書きできるデフォルトを適用します。
+1. **brief と mode を解決：** `shorts`（9:16）、`explainer`（16:9）、`demo`（`--capture` で渡す、人間による画面録画）を選び、フラグで上書きできるデフォルトを適用します。
 2. **script を構成：** シーンとナレーションを生成します（キーがあれば LLM、なければ brief から決定的なアウトライン）。
-3. **アセットを合成：** `oma-voice` でナレーション、`oma-image` / `oma-slide` / stock で映像、キー不要のキャプション同期、または `demo --source web` の監督付きブラウザキャプチャを使います。各プロバイダーは決定的フォールバックへ切り替わります。
+3. **アセットを合成：** `oma-voice` でナレーション、デフォルトでは `oma-image` で映像、キー不要のキャプション同期を使い、`demo` では取り込んだ人間の録画を使います。`oma-slide` のフレームは、`visual.ref` が既存のデッキディレクトリを指すシーンにだけ使います。ストック（Pexels）と AIGC（Pixelle）の映像は、キーが設定されていれば `--visual stock` または `--visual aigc` で使えます。`--source web --url` は URL のコンテキストを追加するだけで、CLI がブラウザを開いたり録画したりすることはありません。各プロバイダーは決定的フォールバックへ切り替わります。
 4. **render-spec を作成：** 決定性の境界となる `render-spec.json` とアセットを実行ディレクトリに書き込みます。
-5. **レンダー：** 管理対象の HyperFrames プロジェクト（または MoneyPrinterTurbo）をサブプロセスとして起動します。通常のコンポジターまたはツールチェーンの失敗は失敗として扱い、決定的なプレースホルダーは明示的なモック/テスト経路（`OMA_VIDEO_MOCK=1`）でだけ使用できます。ライブキャプチャはマニフェストに `nondeterministic` と記録します。
+5. **レンダー：** 管理対象の HyperFrames プロジェクト（または MoneyPrinterTurbo）をサブプロセスとして起動します。通常のコンポジターまたはツールチェーンの失敗は失敗として扱い、決定的なプレースホルダーは明示的なモック/テスト経路（`OMA_VIDEO_MOCK=1`）でだけ使用できます。`demo` の実行では、キャプチャを `Demo` composition に通して個人情報をマスクするために `--polish` が必要です。指定しない場合、出力される MP4 はマスクされていない生のキャプチャです。
 
 **出力：** `.agents/results/videos/{timestamp}-{shortid}-{mode}/` にある実行ディレクトリ。`script.json`、`render-spec.json`、`timing.json`、`captions.{srt,vtt}`、`audio/`、`visuals/`、`{composition}.mp4`、`manifest.json` を含みます。[動画生成ガイド](../guide/video-generation.md)を参照してください。
 
@@ -614,11 +508,11 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 ### /explain
 
-**説明：** `oma-explanation` スキルをエンドツーエンドで実行し、差分、PR、ブランチ、コミット範囲を自己完結したインタラクティブ HTML 解説（Background / Intuition / Code / Quiz）に変換します。インラインで実行し、サブエージェントはスポーンしません。
+**説明：** `oma-explanation` スキルをエンドツーエンドで実行し、差分、PR、ブランチ、コミット範囲、またはトピックを、自己完結したインタラクティブ HTML 解説（変更の場合は Background / Intuition / Code / Quiz）に変換します。インラインで実行し、サブエージェントはスポーンしません。
 
 **トリガーキーワード：** なし。「explain」は日常語であり、キーワード検出では通常の「この関数を説明して」のような質問を誤検出するため、スラッシュ専用です。
 
-**ステップ：** 引数を解決（対象 ref：明示的な PR# / ブランチ / SHA 範囲 -> staged -> dirty tree -> `HEAD~1..HEAD`、読者レベル `onboarding` | `reviewer`、出力言語、問題数） -> コントラクトをロード（`oma-explanation` SKILL.md + resources） -> 収集とゲート（差分と周辺コード、生成前のシークレットスキャン、差分/PR テキストを厳密にデータとして扱う） -> ドキュメントと HTML コントラクトに従って HTML を生成 -> 検証（最終 HTML のシークレットスキャンを含む grep チェック、最大 3 回の修正ループ） -> 配布（`open` は警告のみ、TL;DR + パス）。
+**ステップ：** 引数を解決（対象 ref：明示的な PR# / ブランチ / SHA 範囲 -> staged -> dirty tree -> `HEAD~1..HEAD`、読者レベル `onboarding` | `reviewer`、出力言語、問題数） -> コントラクトをロード（`oma-explanation` SKILL.md + resources） -> 収集とゲート（差分と周辺コード、生成前のシークレットスキャン、差分/PR テキストを厳密にデータとして扱う） -> 生成（下書きを書き、`oma explain render <draft.md>` でレンダリング） -> 検証（`oma explain validate <file>` と最終 HTML のシークレットスキャン、最大 3 回の修正ループ） -> 配布（`oma explain render --open` でページを開く。開くのに失敗しても警告のみ。TL;DR + パス）。
 
 **出力：** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`（日付は oma-config の `timezone`、未設定ならシステムのタイムゾーン。同じ日付と slug で再実行すると上書き）。[コード解説ガイド](../guide/code-explainer.md)を参照してください。
 
@@ -630,7 +524,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 |--------|--------|-----------|
 | **対象** | エージェントの専門知識（何を知っているか） | 調整されたプロセス（どう協力するか） |
 | **場所** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **起動** | スキルルーティングキーワードで自動 | スラッシュコマンドまたはトリガーキーワード |
+| **起動** | ホストがスキルの名前と説明に照合する。スキルインジェクターがヒントを追加することもある | スラッシュコマンド。`orchestrate`、`ultrawork`、`work`、`ralph` は、プロンプトがモード名を挙げたときにも始まる |
 | **範囲** | 単一ドメインの実行 | 複数ステップ、多くの場合は複数エージェント |
 | **例** | 「React コンポーネントを作る」 | 「計画 -> 実装 -> レビュー -> コミット」 |
 
@@ -642,19 +536,19 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` フックを使います。ベンダーの設定は単一の `<hookDir>/oma-hook.sh --vendor <v> --event <e>` エントリを登録し、処理チェーンをインプロセスで実行する `oma hook run` へルーティングします。チェーンは次の 3 つで構成されます。
 
-1. **`triggers.json`**（`.agents/hooks/core/triggers.json`、`oma` バイナリに埋め込み）：11 の対応言語（英語、韓国語、日本語、中国語、スペイン語、フランス語、ドイツ語、ポルトガル語、ロシア語、オランダ語、ポーランド語）のキーワードとワークフローの対応を定義します。
-2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：ユーザー入力をすべての言語のトリガーキーワードと照合し、ワークフローの起動コンテキストを注入する TypeScript ロジックです。
+1. **`triggers.json`**（`.agents/hooks/core/triggers.json`、`oma` バイナリに埋め込み）：`workflows` テーブルがキーワードでルーティングするのは `orchestrate`、`ultrawork`、`work`、`ralph` だけで、それも各モードの明示的な名前による場合に限ります。スキルのキーワードヒントは同じファイルにあり、変更はありません。
+2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：ユーザー入力をこれらの明示的な名前と照合し、ワークフローの起動コンテキストを注入する TypeScript ロジックです。
 3. **`persistent-mode.ts`**（`.agents/hooks/core/persistent-mode.ts`）：状態ファイルを確認して永続ワークフローの実行を強制し、ワークフローコンテキストを再注入します。
 
 ### 検出フロー
 
-1. ユーザーが自然言語を入力します。
-2. フックが明示的な `/command` の有無を確認します。存在すれば重複を避けるため検出をスキップします。
-3. フックが入力をサニタイズし（コードブロック、引用符付き文字列、貼り付けたシステムエコーブロックを除去）、`.agents/hooks/core/triggers.json` に対してキーワードリスト（リテラルフレーズ）と `patterns`（生の正規表現）をスキャンします。強化ガードは、同じワークフローが直近 60 秒で 2 回以上起動していれば再トリガーを抑制します。
+1. ユーザーがプロンプトを入力します。
+2. フックは、プロンプトが `/command` で始まるかを確認します（始まる場合はキーワードの注入をスキップし、コマンドがワークフローをロードします）。永続ワークフローのスラッシュコマンドは、この場合もそのモードの状態ファイルを書き込みます。
+3. フックが入力をサニタイズし（コードブロック、引用符付き文字列、貼り付けたシステムエコーブロックを除去）、`.agents/hooks/core/triggers.json` の `workflows` のキーワードリストをスキャンします。これらのリストに含まれるのは、`orchestrate`、`ultrawork`、`work`、`ralph` の明示的な名前だけです。強化ガードは、同じワークフローが直近 60 秒で 2 回以上起動していれば再トリガーを抑制します。
 4. 一致があれば、入力が情報パターンにも一致するか確認します。
 5. 情報を求める入力（例：「what is orchestrate?」）ならフィルターし、ワークフローを起動しません。
-6. 実行要求なら `[OMA WORKFLOW: {workflow-name}]` をコンテキストへ注入します。複数のワークフローが一致した場合は、明示的な呼び出しが優先され、次に最も長いキーワードが優先されます。
-7. 永続ワークフローでは、明示的な呼び出し（`triggers.json` の `explicit`）だけが永続モードの状態ファイルを書き込みます。自然言語での一致は提案として注入され、質問で終わるプロンプト（最初または最後の行が `?`）では一切起動しません。
+6. 明示的な名前が一致した場合は `[OMA WORKFLOW: {workflow-name}]` を注入し、そのワークフローをすぐに開始するようエージェントに指示します。複数の明示的な名前が一致した場合は、最も長いキーワードが優先され、次に宣言順で決まります。
+7. 同じ明示的な一致が、永続モードの状態ファイルを書き込みます。短い質問の中でモード名を挙げた場合も開始します（`ultrawork로 해줄래?`）。モードについての質問（`What is ultrawork?`）では開始しません。
 8. エージェントが注入されたタグを読み、`.agents/workflows/` から対応するワークフローファイルをロードします。
 
 ### 言語セクションの規約
@@ -669,23 +563,22 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 すべてのセクションは常にロードされます。ユーザーは自分が考える言語でプロンプトを入力するため、`.agents/oma-config.yaml` の `language` 設定が制御するのは応答言語だけです。ある言語で書かれたキーワードは、その言語の文字を含むプロンプトにしか一致しません。そのため、すべてのセクションを統合しても、無関係なプロンプトで起動することはありません。
 
-単語境界はキーワード自体だけで決まり、`language` には左右されません。ASCII のキーワードは単語全体にだけ一致します（そのため "work" は "network" に、"review" は "preview" に一致しません）。一方、非 ASCII のテキストを含むキーワードは、CJK の助詞や活用語尾が単語に直接つながるため、部分文字列として一致します（"리뷰해줘"）。
+単語境界はキーワード自体だけで決まり、`language` には左右されません。ASCII のキーワードは単語全体にだけ一致します（そのため "work" は "network" に一致せず、"ulw" はより長い識別子に一致しません）。一方、非 ASCII のテキストを含むキーワードは、CJK の助詞が単語に直接つながるため、部分文字列として一致します（"랄프로"）。
 
 ### パターンフィールド（生の正規表現） {#pattern-field-raw-regex}
 
-リテラルな `keywords` に加え、各ワークフローは `patterns` を宣言できます。`patterns` は `iu` フラグでコンパイルする生の正規表現文字列です。パターンを使うと、組み合わせの多いキーワードリストなしに複数トークンの意図を照合できます。
+検出器は、ワークフローの `patterns` フィールドを引き続きコンパイルできます。`patterns` は `iu` フラグ付きの生の正規表現文字列で、キーワードリストでは表現できない複数トークンの意図に使います。同梱の `workflows` テーブルは `patterns` を宣言していません。明示的な名前はすべて `keywords` にも含まれます。一致が明示的とみなされるのは、一致したキーワードのテキストがそのワークフローの `explicit` リストにある場合だけだからです。
 
 ```jsonc
 {
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      // Subset of `keywords` that activates persistent mode (persistent workflows only)
-      "explicit": ["orchestrate", ...],
-      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
-      "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
-        "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
+      "explicit": ["orchestrate", "オーケストレート", "orquestar"],
+      "keywords": {
+        "*": ["orchestrate"],
+        "ja": ["オーケストレート"],
+        "es": ["orquestar"]
       }
     }
   }
@@ -709,20 +602,14 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 | `ja` | "とは", "って何", "どうやって", "説明して" |
 | `zh` | "是什么", "什么是", "怎么", "解释" |
 
-入力がワークフローのトリガーと情報パターンの両方に一致した場合、情報パターンを優先し、ワークフローを起動しません。次のプロンプトをブロックする仕組みです。
+入力が明示的なモード名と情報パターンの両方に一致した場合、情報パターンを優先し、ワークフローを起動しません。次のようなプロンプトをブロックする仕組みです。
 
-- `"How do you build a TODO app?"`：`*` の `how do` が orchestrate の意図正規表現をブロックします。
-- `"orchestrate 트리거 해주면 되나요?"`：`ko` の `트리거` が orchestrate キーワードをブロックします。
+- `"what is orchestrate?"`：`*` の `what is` が `orchestrate` キーワードをブロックします。
+- `"orchestrate 트리거 해주면 되나요?"`：`ko` の `트리거` が `orchestrate` キーワードをブロックします。
 
-### 除外ワークフロー
+### キーワードフックが開かないワークフロー
 
-次のワークフローはキーワード検出の対象外で、明示的な `/command` で起動します。`/tools` と `/stack-set` は `excludedWorkflows` に含まれます。`/convert` はトリガーキーワードを持たないだけです（`oma-pdf` と `oma-hwp` のスキルが独自のキーワード検出を持ちます）。`/schedule` は時間ベースの `oma schedule <action>` を使うスラッシュ起動ワークフローです。`/explain` は日常語の「explain」で誤検出するためトリガーキーワードを持ちません。
-
-- `/tools`
-- `/stack-set`
-- `/convert`
-- `/schedule`
-- `/explain`
+`orchestrate`、`ultrawork`、`work`、`ralph` 以外のワークフローは、すべてスラッシュコマンドから開始します。手順ファイルは `.agents/workflows/` に残ります。`excludedWorkflows` には `stack-set`、`schedule`、`convert` が含まれるため、後からキーワードバンクが追加されても、この 3 つにはルーティングできません。`/explain` は、"explain" が日常語であるためスラッシュ専用のままです。同じファイルにあるスキルのキーワードヒントは別の仕組みで、引き続きスキルのコンテキストを注入します。
 
 ---
 

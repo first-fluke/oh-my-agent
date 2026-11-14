@@ -92,16 +92,18 @@ OMA の他のプロセスは、いくつかの内部エントリーポイント�
 
 ### install {#install}
 
-引数なしの `oma` はインタラクティブインストーラーを起動します。明示的な形式は `oma install` で、プロバイダー選択オプションを指定できます。
+引数なしの `oma` はインタラクティブなランタイムインストーラーを起動します。明示的な形式は `oma install` で、スキルプリセットとプロバイダー選択オプションを指定できます。1 つのタスクのために一時的に指示をロードする方法は、[Choose a setup](../getting-started/choose-setup.md) を参照してください。
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | オプション | 指定できる値 |
 |:-------|:----------------|
+| `--preset <name>` | 10 個の[名前付きスキルプリセット](../getting-started/installation.md#presets)のいずれか（`frontend`、`research`、`all` など）。Custom で個別に選ぶ場合はインタラクティブメニューを使います。 |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,15 +112,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 `--web-search`、`--code-intelligence`、`--semantic-memory` を省略すると保存済みのプロバイダー選択を使います。そのプロバイダーを選んだ場合、`--honcho-url` と `--honcho-workspace` で新しい Honcho 接続を設定します。ルートの `-y, --yes` はプロンプトを省略してデフォルトを使い、`--global` は `$OMA_HOME/.agents/`（デフォルトは `~/.oma/.agents/`）を対象にします。`OMA_HOME` を設定していても、プロジェクトへのインストール先は `<cwd>/.agents/` のままです。
 
+`--preset` は、インタラクティブなスキルプロンプトと、無人実行時のデフォルトである `all` より優先されます。未知の名前、空の値、`custom` はインストール前に拒否されます。このオプションはスキルの内容を選ぶもので、共有ファイル、ワークフローとエージェントの定義、フック、プロバイダーのセットアップは絞り込まず、インストール済みの他のスキルも残します。そのため、[ワークフローの依存関係](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)は、選択したバンドルと異なる場合があります。
+
 **動作:**
 1. 古い `.agent/` ディレクトリを確認し、見つかった場合は `.agents/` へ移行します。
-2. 競合するツールを検出し、削除を提案します。
-3. プロジェクト種別（All、Fullstack、Frontend、Backend、Mobile、DevOps、Custom）を尋ねます。
+2. インタラクティブモードでは、他のエージェントツールを検出し、アンインストールするかどうかを尋ねます（デフォルト: 維持）。`--yes`、`OMA_YES`、CI でのインストールでは維持します。`oma update` は削除を提案しません。
+3. `--preset` が指定されていればそれを使います。指定がない場合、インタラクティブモードではスキルプリセットまたは Custom での個別選択を尋ねます。無人セットアップのデフォルトは `all` です。
 4. Backend を選ぶと、言語のバリアント（Python、Node.js、Rust、その他）を尋ねます。
 5. GitHub Copilot のシンボリックリンクを確認します。
 6. レジストリから最新の tarball をダウンロードします。
 7. 共通リソース、ワークフロー、設定、選択したスキルをインストールします。
-8. 選択したベンダー向けの適応ファイルをインストールします（プロジェクト固有の設定であり、HOME 側へ黙って書き込みません）。
+8. 選択したベンダー向けの適応ファイルをインストールします。プロジェクトと HOME 側への変更については[インストールの影響](../getting-started/installation.md#what-the-installer-also-does-by-default)を参照してください。
 9. CLI のシンボリックリンクを作成します。
 10. 推奨する **global** Git 設定をオプトインで提案します。
     - `rerere.enabled=true` 。 マルチエージェントのマージ競合を再利用します。
@@ -127,11 +131,13 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. 該当する場合は MCP の設定を提案します。
 12. `gh` が認証済みなら GitHub スターを尋ねます。
 
+最後のサマリーには選択したスキルが表示されます。また、保持されているスキルや条件分岐を含め、実際に存在するファイルを使って、参照されているスキルマニフェストを確認します。ワークフローやエージェントが参照するスキルが見つからない、または読み取れない場合はそれを報告し、そのインストールルート向けの doctor コマンドを案内します。これはマニフェストの静的なカバレッジであり、リソースの内容、ツール、プロバイダー、実行は検証しません。
+
 **例:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor {#doctor}
@@ -298,7 +304,7 @@ oma link opencode --global
 
 ### 既存のインストールを再設定する {#setup-workflow}
 
-`/setup` ワークフローはありません。インストール済みのプロジェクトを変更するには、`oma install` を再実行するか、ブラウザー MCP サーバーだけを変更する場合は `oma update mcp` を使うか、エージェントセッション内で `/tools` を実行して MCP ツールを有効化または無効化します。エージェントごとのモデル解決は `oma doctor --profile` で確認します。エージェントごとのモデル固定は `.agents/oma-config.yaml` の `agents:` 配下に記述します（[エージェント別モデル](../guide/per-agent-models.md)）。
+`/setup` ワークフローはありません。インストール済みのプロジェクトを変更するには、`oma install` を再実行するか、`oma update mcp` でブラウザー MCP サーバーを選び直します。エージェントごとのモデル解決は `oma doctor --profile` で確認します。エージェントごとのモデル固定は `.agents/oma-config.yaml` の `agents:` 配下に記述します（[エージェント別モデル](../guide/per-agent-models.md)）。
 
 ---
 
@@ -376,12 +382,13 @@ oma stats reset [--json] [--output <format>]
 - 最終更新時刻
 
 **コストテレメトリー**（`.agents/state/memories/` 配下のすべての `session-cost-*.md` ファイルを集計）:
-- 入力トークン合計（プロンプト文字数からの近似値。現時点では出力トークンを含みません）
-- 起動回数
-- 控えめなベンダー別入力トークン単価表で見積もった USD（Claude $3/M、Codex $5/M、Gemini $0.3/M、Qwen $0/M、Cursor $5/M、Antigravity $0.3/M）
+- 記録されたトークン数。ネイティブの実使用量と、プロンプトの長さからの推定値を区別します
+- 起動回数の合計
+- 予約済みの起動と、ネイティブ使用量が一部しか取得できなかった実行
+- ベンダー別の単価表で見積もった USD。この見積もりは実際のトークン数とは別のものです
 - ベンダー別内訳（トークン数・起動回数・USD）
 
-この見積もりは下限であり、請求額を正確に表すものではありません。起動時に厳密な予算を適用するには `.agents/oma-config.yaml` の `session.quota_cap` を設定してください。上限を含む品質優先の仕組みについては、Getting Started の Why oh-my-agent ページを参照してください。
+USD の見積もりは、請求額を正確に表すものではありません。記録されたトークン使用量または起動回数が上限に達したときに次の起動をブロックするには、`.agents/oma-config.yaml` の `session.quota_cap` を設定してください。ネイティブ使用量が取得できない場合は推定値であることを明示して保持し、実行中の子プロセスは中断しません。[セッションのクォータ上限](../guide/configuration-reference.md#session-quota-caps)を参照してください。
 
 メトリクスは `.agents/state/metrics.json` に保存されます。従来の `.serena/metrics.json` があれば読み込みます。データは Git の統計とメモリファイルから収集します。
 
@@ -1160,13 +1167,14 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 **共通チェック（全エージェント種別）:**
 - **Scope Check:** `.agents/results/plan-{sessionId}.json` のタスク範囲を読みます。`git diff` の変更ファイルを定義済みの範囲パターンと比較し、担当範囲外のファイルが変更されていれば失敗します。
-- **Charter Preflight:** 選択した結果レポートに、未記入のプレースホルダーがない、正しく記入された `CHARTER_CHECK:` ブロックがあることを確認します。
 - **TDD Evidence:** 該当する各タスクの選択レポートに、そのタスクの正確なタスク ID と、空でない独自の `red:` と `green:` のエントリがあることを求めます。別のセッションや再試行のレポートで、選択したレポートを置き換えることはできません。
 - **Hardcoded Secrets:** `.py`、`.ts`、`.tsx`、`.js`、`.dart` ファイルを調べ、`password = "..."` や `api_key = "..."` のようなパターンを検出します（テスト/例ファイルは除外）。
 - **TODO/FIXME コメント:** `TODO`、`FIXME`、`HACK`、`XXX` コメントを数え、見つかった場合は警告します。
 
 **エージェント種別ごとの追加チェック:**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | エージェント種別 | 追加チェック |
 |:-----------|:-----------------|
 | `backend` | `.agents/skills/oma-backend/stack/stack.yaml`（`/stack-set` が生成）の `verify` コマンドによる構文検証、SQL インジェクション検出（raw SQL パターン）、テスト実行。このファイルがない場合はスキップ |
@@ -1175,6 +1183,7 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 | `qa` | 機械的なチェックはありません。`QA Report` チェックを 1 件 `PASS` として記録します |
 | `debug` | プロジェクト種別に応じて Python またはフロントエンドのテストを実行します。 |
 | `pm` | `.agents/results/plan-{sessionId}.json` の存在と有効な JSON を確認します。 |
+<!-- oma-docs:ignore-end -->
 
 **出力形式:**
 各チェックは詳細メッセージ付きで `PASS`、`FAIL`、`WARN`、`SKIP` のいずれかを返します。失敗が 0 件の場合だけ全体結果は `ok: true` です。
@@ -1652,18 +1661,18 @@ oma image doctor --output json
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` は `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop duration:<seconds>|selector:<css>` を受け付けます。ブラウザーキャプチャには `--source web --url <url>` を使い、デフォルトのソースは `--source file` です。`--output-dir` は実行ルート、`--allow-external-output` は `$PWD` 外のパス、`--max-usd` はコスト上限、`-y, --yes` はコスト確認の省略、`--seed` は計画入力の安定化、`--timeout` はビジュアル・音楽プロバイダー呼び出しごとの制限時間、`--script` はエージェントが書いた `script.json` の注入、`--no-brief-in-manifest` は本文の代わりに brief ハッシュの保存を指定します。`--dry-run` は計画後に停止し、`--output text|json` は CLI エンベロープを制御します。
+`generate` は `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop duration:<seconds>|selector:<css>` を受け付けます。デモは `--capture` で渡した録画を使います。デフォルトは `--source file` で、`--source web --url <url>` は URL をコンテキストとして追加するだけです（CLI がブラウザーを開いたり録画したりすることはありません）。`--polish` はキャプチャを `Demo` composition に通し、そこで個人情報をマスクします。指定しない場合、出力される MP4 はマスクされていない生のキャプチャです。`--visual stock` と `--visual aigc` は、キーが設定されていれば Pexels と Pixelle のプロバイダーを選択します。スライドのビジュアルには、スクリプトの `visual.ref` が既存のデッキディレクトリを指している必要があります。`--output-dir` は実行ルート、`--allow-external-output` は `$PWD` 外のパス、`--max-usd` はコスト上限、`-y, --yes` はコスト確認の省略、`--seed` は計画入力の安定化、`--timeout` はビジュアル・音楽プロバイダー呼び出しごとの制限時間、`--script` はエージェントが書いた `script.json` の注入、`--no-brief-in-manifest` は本文の代わりに brief ハッシュの保存を指定します。`--dry-run` は計画後に停止し、`--output text|json` は CLI エンベロープを制御します。
 
 `doctor` はキャッシュ済み HyperFrames/MPT ツールチェーンを確認し、`--install`、`--upgrade`、`--install-mpt`、`--install-strudel` を受け付けます。`provider list` はプロバイダーの利用可能性とキー状態を報告します。`compose` は実行用 composition を作成または更新して作成規約を示し、`render` は lint、レンダー、出力検査を行います。compositor、composition、ツールチェーンの不足はエラーです。テスト専用の `OMA_VIDEO_MOCK=1` だけがプレースホルダーモードで、通常の実行はテキストや小さなファイルを MP4 の代わりにしません。
 
-JSON が成功すると `runDir`、`manifestPath`、`scriptPath`、`renderSpecPath` が含まれます。マニフェストには選択したプロバイダー、入力、生成アセットを記録します。`compose` の後は生成された composition を `AUTHORING.md` に従って作成し、`render` を再実行します。プロバイダーキーがない場合は `oma video doctor`、キャプチャに失敗した場合は URL、セレクター、デバイス、タイムアウト、レンダーに失敗した場合は composition の診断を確認します。
+JSON が成功すると `runDir`、`manifestPath`、`scriptPath`、`renderSpecPath` が含まれます。マニフェストには選択したプロバイダー、入力、生成アセットを記録します。`compose` の後は生成された composition を `AUTHORING.md` に従って作成し、`render` を再実行します。プロバイダーキーがない場合は `oma video doctor` を実行し、デモの実行が録画の手順を示して停止した場合は `--capture` で録画を渡し、レンダーに失敗した場合は composition の診断を確認します。
 
 ### star {#star}
 

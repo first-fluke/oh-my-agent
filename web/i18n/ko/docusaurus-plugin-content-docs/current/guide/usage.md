@@ -9,7 +9,7 @@ description: OMA 사용 가이드입니다. 독자 관점의 태스크 선택, �
 ## 빠른 시작
 
 1. 선택한 AI IDE 또는 CLI에서 프로젝트를 엽니다 (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen 또는 지원되는 다른 호스트)
-2. 선택한 호스트가 `.agents/skills/`의 [스킬](../getting-started/glossary.md#skill)을 읽을 수 있고, 활성화된 훅은 자연어 키워드로 [워크플로우](../getting-started/glossary.md#workflow)를 감지할 수 있습니다
+2. 선택한 호스트가 `.agents/skills/`의 [스킬](../getting-started/glossary.md#skill)을 읽을 수 있고, 활성화된 훅은 자연어 키워드로 스킬 힌트를 추가하며 [워크플로우](../getting-started/glossary.md#workflow)는 해당 슬래시 커맨드로만, 네 가지 지속 모드의 경우에는 그 이름으로도 시작합니다
 3. 원하는 것을 자연어로 설명하면 호스트 또는 선택한 워크플로우가 관련 스킬로 라우팅합니다
 4. 멀티 에이전트 작업에는 `/work` 또는 `/orchestrate`를 사용합니다
 
@@ -24,6 +24,7 @@ description: OMA 사용 가이드입니다. 독자 관점의 태스크 선택, �
 | 에러 메시지가 있는 버그 | `/debug`와 함께 에러 및 재현 단계 전달 | [버그 수정](./bug-fixing.md) |
 | 실행 중인 에이전트 지켜보기 | `oma dashboard terminal` | [대시보드 모니터링](./dashboard-monitoring.md) |
 | 에이전트 결과 감사 또는 재개 | `oma agent resume SESSION_ID --dry-run` | [결과 확인과 재개](./agent-results-and-resume.md) |
+| OMA 문서 찾기 또는 마이그레이션 | `oma docs migrate --dry-run` | [아티팩트 레이아웃](./artifact-layout.md) |
 | 무언가 실패함 | `oma doctor --json` | [문제 해결](./troubleshooting.md) |
 
 ---
@@ -42,23 +43,14 @@ Create a login form component with email and password fields, client-side valida
 3. Layer 2 리소스가 필요 시 로딩됩니다:
    - `execution-protocol.md`: 4단계 워크플로우 (분석, 계획, 구현, 검증)
    - `snippets.md`: 폼과 Zod 유효성 검사 패턴, 그리고 스킬이 제공하는 경우 기존 컴포넌트 패턴
-4. 에이전트가 **CHARTER_CHECK**를 출력합니다:
-   ```text
-   CHARTER_CHECK:
-   - Clarification level: LOW
-   - Task domain: frontend
-   - Must NOT do: backend API, database, mobile screens
-   - Success criteria: email/password validation, accessible labels, keyboard-friendly
-   - Assumptions: React + TypeScript, shadcn/ui, TailwindCSS v4, @tanstack/react-form + Zod
-   ```
 <!-- oma-docs:ignore-start -->
-5. 에이전트가 구현합니다:
+4. 에이전트가 구현합니다:
    - `src/features/auth/components/login-form.tsx`에 TypeScript React 컴포넌트
    - `src/features/auth/utils/login-validation.ts`에 Zod 유효성 검사 스키마
    - `src/features/auth/utils/__tests__/login-validation.test.ts`에 Vitest 테스트
    - `src/features/auth/components/skeleton/login-form-skeleton.tsx`에 로딩 스켈레톤
 <!-- oma-docs:ignore-end -->
-6. 에이전트가 체크리스트를 실행합니다: 접근성 (ARIA 레이블, 시맨틱 HTML, 키보드 네비게이션), 모바일 뷰포트, 성능 (CLS 없음), error boundaries
+5. 에이전트가 체크리스트를 실행합니다: 접근성 (ARIA 레이블, 시맨틱 HTML, 키보드 네비게이션), 모바일 뷰포트, 성능 (CLS 없음), error boundaries
 
 **예상 결과:** 프로젝트가 해당 검사를 지원하면 범위가 정해진 TypeScript React 컴포넌트와 유효성 검사, 테스트, 접근성 근거가 생성됩니다. 실제로 생성되는 파일과 실행되는 검사는 프롬프트와 선택한 워크플로우에 따라 달라집니다.
 
@@ -74,7 +66,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
 **진행 과정:**
 
 1. 이 요청은 프론트엔드, 백엔드, 모바일 작업에 걸쳐 있습니다. 호스트 에이전트는 이 범위를 바탕으로 조율 방식을 추천할 수 있습니다.
-2. 키워드 감지 훅이 활성화되어 있으면 "Build a TODO app"이 설정된 `/orchestrate` 패턴과 일치해 워크플로우가 활성화될 수 있습니다. 훅은 텍스트를 대조할 뿐이며, 요청을 멀티 도메인으로 분류하지는 않습니다. 원하는 워크플로우는 명시적인 명령으로 선택하세요.
+2. 키워드 감지 훅은 이 문장으로 워크플로우를 시작하지 않습니다. 훅은 `orchestrate`, `ultrawork`, `work`, `ralph`만 활성화하며, 그것도 프롬프트가 해당 모드의 이름을 말할 때만 활성화합니다. 요청을 멀티 도메인으로 분류하지도 않습니다. 원하는 워크플로우는 명시적인 명령으로 선택하세요.
 
 **`/work` 사용 (단계별 사용자 제어):**
 
@@ -153,31 +145,17 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **입력:**
 ```text
-Design a dark premium landing page for my B2B SaaS analytics product
+/design Define a dark, premium visual system for my B2B SaaS analytics product. English and Korean, WCAG AA.
 ```
 
 **진행 과정:**
 
-1. `oma-design`이 활성화 (키워드: "design", "landing page", "dark", "premium")
-2. **Phase 1, SETUP:** `.design-context.md` 확인. 없으면 질문:
-   - 서비스가 지원하는 언어는? (영어만 / + CJK)
-   - 대상 사용자? (B2B, 기술 사용자, 25-45세)
-   - 브랜드 성격? (전문적 / 프리미엄)
-   - 미적 방향? (다크 프리미엄)
-   - 참조 사이트? (사용자가 예시 제공)
-   - 접근성? (WCAG AA)
-3. **Phase 3, ENHANCE:** 프롬프트가 모호하면 섹션별 사양으로 변환
-4. **Phase 4, PROPOSE:** 3가지 디자인 방향 제시:
-   - **방향 A: "Midnight Observatory"**: 짙은 네이비(#0f1729), 시안 액센트(#22d3ee), Inter + JetBrains Mono, 벤토 그리드 레이아웃, 스크롤 드리븐 리빌
-   - **방향 B: "Carbon Interface"**: 중성 그레이(#18181b), 앰버 액센트(#f59e0b), 시스템 폰트, 체스 레이아웃, 호버 드리븐 마이크로 인터랙션
-   - **방향 C: "Deep Space"**: 순수 다크(#0a0a0a), 에메랄드 액센트(#10b981), Geist + Geist Mono, 풀 블리드 섹션, 입장 애니메이션
-5. **Phase 5, GENERATE:** 선택된 방향을 기반으로 생성:
-   - 6개 섹션(타이포그래피, 컬러, 스페이싱, 모션, 컴포넌트, 접근성)이 포함된 `DESIGN.md`
-   - CSS 커스텀 프로퍼티
-   - Tailwind config 확장
-   - shadcn/ui 테마 변수
-6. **Phase 6, AUDIT:** 반응형(320px 최소), WCAG 2.2, Nielsen 휴리스틱, AI slop 감지 검사 실행
-7. **Phase 7, HANDOFF:** "디자인 완료. oma-frontend로 구현하려면 `/orchestrate`를 실행하세요."
+1. **스킬 로드:** 워크플로우가 `oma-design` 스킬과 그 실행 프로토콜을 읽습니다. 공급자 선택과 프로젝트 디자인 컨트랙트는 스킬이 담당합니다.
+2. **범위와 컨텍스트 확정:** 요청을 디자인 시스템 문서로 분류합니다. 워크플로우는 기존 `DESIGN.md`, `.design-context.md`(있는 경우), 브랜드 자료, 지원 언어, 영향받는 UI를 읽고 기존 UI 라이브러리, 테마 파일, 토큰을 찾습니다. 기존 제품이라면 먼저 Preserve인지 Overhaul인지 정합니다. 결과를 실질적으로 바꾸면서 요청과 코드베이스로는 답할 수 없는 선택만 질문합니다. 이 프롬프트는 언어, 대상 사용자, 접근성 목표를 이미 밝히고 있으므로 질문지가 뒤따르지 않습니다.
+3. **지침 선택과 레퍼런스 수집:** 작업에 맞는 외부 디자인 스킬 하나를 선택합니다. 대시보드나 SaaS 제품 UI에는 Interface Design, 그 밖의 새로운 웹 아트 디렉션에는 Taste, 기존 UI의 비평이나 다듬기에는 Impeccable을 씁니다. 요청된 벤더 시드, Stitch 작업, 에셋 지침, 데이터 그리드 규칙은 태스크에 필요할 때만 로드합니다.
+4. **방향 결정:** 선택한 지침을 프로젝트 증거에 적용합니다. 대안 방향은 미해결 선택이 결과에 실질적인 영향을 줄 때만 제시하며, 이미 선택한 방향은 재사용합니다. 모든 방향은 브랜드, 한국어를 위한 CJK 폰트 커버리지, 기존 구현 스택, 지원하는 가장 작은 뷰포트부터의 반응형 동작, WCAG AA 범위 안에 머뭅니다.
+5. **산출물 생성:** Section 9(Agent Prompt Guide)를 포함한 아홉 개 섹션 전체를 갖춘 `DESIGN.md`를 만들거나 갱신합니다. 토큰은 시맨틱 역할을 프로젝트의 기존 토큰 시스템과 테마 형식에 매핑하며, 병행 설정을 새로 도입하지 않습니다. 구현 코드는 작성하지 않습니다.
+6. **검증과 인계:** 해당하는 체크리스트 항목을 점검하고 무엇을 검사했는지 명시합니다. 렌더링된 구현이 필요한 검사는 명세만 하고 실행하지 않은 상태로 둡니다. 보고서는 전달한 산출물, 선택한 경로, 검증 결과, 남은 한계를 나열한 뒤 구현을 `oma-frontend`(웹) 또는 `oma-mobile`(네이티브)에 인계합니다.
 
 ---
 
@@ -273,17 +251,16 @@ oma stats get
 | `/plan` | 비지속 | PM 주도 태스크 분해, API 컨트랙트, `docs/plans/work/`의 추적 계획 아티팩트(순번 `NNN-name.md`, 수명 주기를 나타내는 Status 필드)를 만듭니다 | 복잡한 멀티 에이전트 작업 전, 진행과 결정 로그를 추적해야 하는 복잡한 기능 |
 | `/brainstorm` | 비지속 | 2~3가지 접근 방식 제안을 포함한 디자인 우선 아이디어를 탐색합니다 | 구현 접근 방식을 정하기 전 |
 | `/deepinit` | 비지속 | 전체 프로젝트 초기화(AGENTS.md, ARCHITECTURE.md, docs/)를 수행합니다 | 기존 코드베이스에 oh-my-agent를 설정할 때 |
-| `/review` | 비지속 | OWASP 보안, 성능, 접근성, 코드 품질을 검토하는 QA 파이프라인입니다 | 코드 병합 전 또는 배포 전 리뷰 |
-| `/security` | 비지속 | `oma-security`로 애플리케이션 소스, 에이전트 스킬, MCP 컴포넌트를 스캔하고, 테스트 배포를 대상으로 범위가 지정된 웹 침투 테스트를 실행하며, 발견 사항을 검증하고 보안 게이트를 구성합니다 | 릴리스 전, 또는 변경에 보안 스캔이나 게이트가 필요할 때 |
+| `/review` | 비지속 | OWASP 보안, 성능, 접근성, 코드 품질을 검토하는 QA 파이프라인입니다. 범위는 요청에서 가져오며 기본값은 현재 변경 사항입니다 | 코드 병합 전 또는 배포 전 리뷰 |
+| `/security` | 비지속 | `oma-security`로 애플리케이션 소스, 에이전트 스킬, MCP 컴포넌트를 스캔하고, 발견 사항을 검증하며 보안 게이트를 구성합니다. 범위가 지정된 웹 테스트 배포의 침투 테스트는 사용자가 제공하고 검토한 런타임 플랫폼을 대상으로만 실행합니다 | 릴리스 전, 또는 변경에 보안 스캔이나 게이트가 필요할 때 |
 | `/debug` | 비지속 | 재현, 진단, 수정, 회귀 테스트, 패턴 스캔을 포함한 구조화된 디버깅을 수행합니다 | 버그와 오류를 조사할 때 |
-| `/design` | 비지속 | 토큰이 포함된 DESIGN.md를 만드는 7단계 디자인 워크플로우입니다 | 디자인 시스템, 랜딩 페이지, UI 재설계 |
+| `/design` | 비지속 | 디자인 태스크의 범위를 정하고 적용할 디자인 지침을 선택한 뒤 `oma-design`으로 발견 사항, `DESIGN.md`, 재설계 방향 또는 디자인 토큰을 전달합니다 | 비주얼 시스템 정의 또는 리뷰, UI 재설계, 디자인 감사 |
 | `/scm` | 비지속 | Git의 SCM 워크플로우(브랜치·머지·충돌·워크트리·베이스라인)와 type/scope 자동 감지 및 기능별 분할을 갖춘 Conventional Commit 생성 | 코드 변경 후 또는 저장소 형상 관리 태스크를 처리할 때 |
-| `/tools` | 비지속 | MCP 도구 가시성을 관리합니다(그룹 활성화·비활성화) | 에이전트가 사용할 MCP 도구를 제어할 때 |
-| `/stack-set` | 비지속 | 프로젝트 기술 스택을 자동 감지해 백엔드 또는 모바일(Swift/Flutter/RN) 레퍼런스를 생성합니다 | 언어별 코딩 규칙을 설정할 때 |
+| `/stack-set` | 비지속 | 프로젝트 기술 스택을 자동 감지해 백엔드, 프론트엔드 또는 모바일(Swift/Kotlin/Flutter/RN) 레퍼런스를 생성합니다 | 언어별 코딩 규칙을 설정할 때 |
 | `/architecture` | 비지속 | 아키텍처 진단, 비교, 결정 기록을 수행합니다 | 경계를 검토하거나 아키텍처를 선택할 때 |
 | `/convert` | 비지속 | 문서 변환을 알맞은 스킬로 전달합니다 | HWP/HWPX 또는 PDF 원본 파일을 변환할 때 |
 | `/docs` | 비지속 | 문서 검증과 diff 대상 동기화 제안을 수행합니다 | 문서를 현재 코드베이스와 대조할 때 |
-| `/explain` | 비지속 | 오프라인 HTML 코드 변경 설명서를 만들고 검증합니다 | diff, PR, 브랜치 또는 커밋 범위를 설명할 때 |
+| `/explain` | 비지속 | 코드 변경이나 주제를 다루는 오프라인 HTML 설명서를 만들고, `oma explain validate`로 검증한 뒤 `oma explain render --open`으로 엽니다 | diff, PR, 브랜치 또는 커밋 범위를 설명하거나 주제를 설명할 때 |
 | `/recap` | 비지속 | 지원되는 AI 도구 이력에서 작업을 요약합니다 | 일일 또는 기간별 회고 |
 | `/schedule` | 비지속 | 반복 에이전트 작업을 등록합니다 | 야간 회고, 스캔 또는 정기 관리 작업 |
 | `/video` | 비지속 | 스크립트, 내레이션, 시각 자료로 재현 가능한 영상을 구성합니다 | 숏폼, 설명 영상, 데모 |
@@ -329,19 +306,19 @@ oma stats get
 | **oma-architecture** | 시스템 경계, 트레이드오프, ADR | 아키텍처 권고 또는 결정 기록 |
 | **oma-backend** | API, 인증, 서버 로직, 마이그레이션 | 라우터·서비스·리포지토리 변경과 검증 |
 | **oma-brainstorm** | 모호한 아이디어와 접근 방식 비교 | `docs/plans/designs/` 설계 문서 |
-| **oma-coordination** | 수동 멀티 에이전트 조율 | 단계별 태스크와 핸드오프 안내 |
+| **oma-coordination** | `/work`, `/orchestrate`, `/ultrawork`의 공유 조율 규칙과 수동 단계별 조율 | 계획 재사용, 컨트랙트 정렬, 워크스페이스 소유권, QA 인계 안내 |
 | **oma-db** | 스키마, ERD, 쿼리 튜닝, 용량 계획 | 스키마 문서, 마이그레이션, 복구 계획 |
 | **oma-debug** | 버그 재현과 근본 원인 분석 | 최소 수정, 회귀 근거, 유사 패턴 스캔 |
-| **oma-security** | 소스, 에이전트 스킬, MCP 보안 스캔과 범위가 지정된 웹 침투 테스트 | 검증된 발견 사항과 스캔 게이트 설정 |
-| **oma-design** | 디자인 시스템, 랜딩 페이지, 토큰 | `DESIGN.md`, 토큰, 컴포넌트 안내 |
+| **oma-security** | 소스, 에이전트 스킬, MCP 보안 스캔. 침투 테스트는 사용자가 제공하고 검토한 런타임 플랫폼에서만 실행 | 검증된 발견 사항과 스캔 게이트 설정 |
+| **oma-design** | 비주얼 시스템, `DESIGN.md`, 재설계 방향, UI 디자인 리뷰 | 디자인 결정 또는 발견 사항, 시스템이 바뀔 때의 `DESIGN.md`, 구현 인계 |
 | **oma-dev-workflow** | CI/CD, 모노레포, 마이그레이션, 릴리스 자동화 | 워크플로우 설정과 릴리스 검사 |
 | **oma-docs** | 깨진 참조와 문서 드리프트 | 검증 보고서 또는 diff 대상 동기화 후보 |
-| **oma-explanation** | diff, PR, 브랜치, 커밋 설명 | Background, Intuition, Code, Quiz가 있는 오프라인 HTML 설명서 |
+| **oma-explanation** | diff, PR, 브랜치, 커밋 설명과 주제 설명 | 오프라인 HTML 설명서(변경의 경우 Background, Intuition, Code, Quiz) |
 | **oma-frontend** | UI 컴포넌트, 폼, 페이지, Angular/React 스타일링 | 프론트엔드 변경과 관련 검사 |
 | **oma-hwp** | HWP/HWPX/HWPML 변환 | 헤딩, 표, 이미지, 링크가 있는 Markdown |
 | **oma-image** | 이미지 생성과 시각 자료 | 매니페스트가 포함된 재현 가능한 이미지 실행 |
 | **oma-market** | 문제점, 트렌드, 경쟁사, 발견 조사 | 프레임워크가 포함된 LAW 준수 조사 브리프 |
-| **oma-mobile** | Flutter, React Native, Swift iOS 작업 | 모바일 화면, 상태, 플랫폼 통합, 테스트 |
+| **oma-mobile** | Flutter, React Native, Swift iOS, Kotlin Android 작업 | 모바일 화면, 상태, 플랫폼 통합, 테스트 |
 | **oma-observability** | 트레이스, 메트릭, 로그, 프로파일, SLO, 장애 포렌식 | 계층형 관측성 권고 또는 구현 안내 |
 | **oma-orchestration** | 자동 병렬 에이전트 실행 | 조율된 계획, 메모리 갱신, 결과 수집 |
 | **oma-pdf** | PDF 변환과 OCR 인식 추출 | 읽기 순서, 표, 목록, 이미지가 있는 Markdown |
@@ -351,7 +328,7 @@ oma stats get
 | **oma-refactor** | 동작을 보존하는 구조 개선 | 특성화 테스트와 품질 근거가 있는 리팩터링 |
 | **oma-scholar** | 학술 검색과 논문 사이드카 | 검증된 `.knows.yaml` 사이드카 작업 |
 | **oma-scm** | Git 브랜치, 워크트리, 베이스라인, 커밋 위생 | SCM 계획 또는 Conventional Commit 출력 |
-| **oma-search** | 신뢰도 점수가 있는 문서, 웹, 코드, 로컬 검색 | 신뢰 라벨이 붙은 라우팅 검색 결과 |
+| **oma-search** | 외부 문서, 웹 소스, 원격 코드, 알려진 URL 읽기 | 경로, 프로바이더, 증거, 한계가 표시된 인용 소스 |
 | **oma-skill-creation** | OMA 스킬 생성과 감사 | SSL-lite 스킬 파일과 `oma skill audit` 결과 |
 | **oma-slide** | HTML 발표 자료와 내보내기 | 검증된 번들 HTML, PDF, PNG, PPTX |
 | **oma-tf-infra** | Terraform 인프라, IAM, 정책 코드 | Terraform 모듈, 계획, 제어 항목 |
@@ -409,6 +386,12 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 
 에이전트는 `.agents/state/memories/`의 영속 파일로 조율됩니다(오래된 프로젝트는 레거시 `.serena/memories/` 경로로 폴백). 오케스트레이터는 실행 범위가 지정된 세션·태스크 보드 파일을 작성합니다. Markdown 진행·결과 출력이 활성화되면 각 실행은 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`와 `result-{agentId}-{taskId}-{runId}-{sessionId}.md`를 기록하며, CLI 스폰에서는 `.agents/state/agent-runs/` 아래의 구조화된 실행 기록과 클레임이 기준입니다. 에이전트는 네이티브 파일 도구로 이 파일들을 읽고 쓰며, 도구 매핑은 `.agents/mcp.json → memoryConfig.tools`에서 설정할 수 있습니다.
 
+### 문서와 보고서
+
+접근 방식 제안과 ADR은 `docs/decisions/`에 두고 `draft`, `accepted`, `superseded` 같은 `Status` 필드를 사용합니다. UI 디자인은 `DESIGN.md`에 둡니다. 작업 계획은 `docs/plans/work/`에, 채택된 API 컨트랙트는 `docs/plans/contracts/`에 둡니다.
+
+실행 보고서와 컨트랙트 초안은 `.agents/results/`에 둡니다. 문서가 유지 관리되는 프로젝트 레퍼런스가 되면 관련 `docs/` 디렉토리로 옮기고 이전 위치에 링크를 남기세요. 전체 레이아웃과 마이그레이션 명령은 [아티팩트 레이아웃](./artifact-layout.md)을 참고하세요.
+
 ### 워크스페이스
 
 <!-- oma-docs:ignore-start -->
@@ -453,7 +436,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | 대시보드에 "No agents detected yet" 표시 | 에이전트가 아직 메모리에 쓰지 않았거나, 대시보드가 다른 디렉토리를 감시함 | 첫 진행 파일을 기다리고, 프로젝트 루트에서 실행하거나 `--project-root <path>` 전달 |
 | `oma dashboard web`이 "port 9847 is already in use"로 종료됨 | 다른 프로세스가 포트를 점유 중 | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA 보고서에 50개 이상 이슈 | 대규모 코드베이스의 첫 리뷰에서는 정상 | CRITICAL과 HIGH 심각도에 집중. MEDIUM/LOW는 향후 스프린트를 위해 문서화. |
-| 자동 감지가 잘못된 워크플로우 트리거 | 키워드 모호성 | 자연어 대신 명시적 `/command` 사용. 개선을 위해 오탐 보고. |
+| 이름만 언급했는데 지속 모드가 시작됨 | 프롬프트가 질문이나 코드 블록 밖에서 `orchestrate`, `ultrawork`, `work mode`, `ralph`를 언급함 | "workflow done"이라고 말해 해제. 개선을 위해 오탐 보고. |
 | 지속 워크플로우가 중단되지 않음 | 상태 파일이 여전히 존재 | 채팅에서 "workflow done"이라고 말하거나 `.agents/state/`에서 상태 파일 수동 삭제 |
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 너무 모호 | 에이전트가 요청한 구체적인 답변 제공 후 재실행 |
 | MCP 도구가 작동하지 않음 | Serena가 설정되지 않았거나 실행 중이지 않음 | `oma doctor`로 MCP 설정 확인 |
@@ -469,6 +452,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 - 에러 메시지가 있는 버그: [버그 수정](./bug-fixing.md)
 - 실행 지켜보기: [대시보드 모니터링](./dashboard-monitoring.md)
 - 에이전트 결과 감사 또는 재개: [결과 확인과 재개](./agent-results-and-resume.md)
+- OMA 문서 찾기 또는 마이그레이션: [아티팩트 레이아웃](./artifact-layout.md)
 - 무언가 실패함: [문제 해결](./troubleshooting.md)
 - 프로젝트 통합 세부사항: [통합 가이드](./integration.md)
 - 이 가이드에서 쓰는 용어: [용어집](../getting-started/glossary.md)

@@ -55,8 +55,8 @@ O instalador pergunta **What type of project?** e oferece um [preset de skills](
 
 Se você selecionou um preset que inclui a skill de backend, será solicitado que escolha uma variante de linguagem:
 
-- **Python:** FastAPI/SQLAlchemy (padrão)
-- **Node.js:** NestJS/Hono + Prisma/Drizzle
+- **Python:** Litestar/SQLAlchemy (padrão)
+- **Node.js:** NestJS + Prisma
 - **Rust:** Axum/Actix-web
 - **Other / Auto-detect:** configure mais tarde com `/stack-set`
 
@@ -380,11 +380,11 @@ O instalador baixa o tarball da versão mais recente das releases do GitHub do o
 
 ### 6. Instalação da configuração
 
-`installConfigs()` copia arquivos auxiliares para `.agents/config/`, cria `.agents/mcp.json` e inicializa a configuração pertencente ao usuário em `.agents/oma-config.yaml` ou `.agents/oma-config.cue`. Arquivos do usuário existentes são preservados, a menos que `--force` seja usado; `oma update` também mantém a configuração do usuário e acrescenta novas chaves de nível superior do template quando necessário.
+`installConfigs()` cria `.agents/mcp.json` e inicializa a configuração pertencente ao usuário em `.agents/oma-config.yaml` ou `.agents/oma-config.cue`. Arquivos do usuário existentes são preservados, a menos que `--force` seja usado; `oma update` também mantém a configuração do usuário e acrescenta novas chaves de nível superior do template quando necessário.
 
 ### 7. Instalação de skills
 
-Para cada skill selecionada, `installSkill()` copia o diretório da skill para `.agents/skills/{skill-name}/`. Se uma variante for selecionada (por exemplo, Python para backend), também configura o diretório `stack/` com recursos específicos da linguagem.
+Para cada skill selecionada, `installSkill()` copia o diretório da skill para `.agents/skills/{skill-name}/`. Se uma variante for selecionada (por exemplo, Python para backend), também copia essa variante para o diretório `stack/` da skill e remove o diretório `variants/`, que se torna redundante. Uma skill instalada sem variante, como a oma-mobile, mantém o diretório `variants/`, que o SKILL.md dela lê diretamente.
 
 ### 8. Adaptações dos vendors
 

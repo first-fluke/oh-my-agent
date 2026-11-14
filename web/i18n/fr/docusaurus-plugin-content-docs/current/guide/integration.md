@@ -55,8 +55,8 @@ L'installateur demande **What type of project?** et propose un [preset de compé
 
 Si vous sélectionnez un preset qui inclut la compétence backend, l'installateur vous demande de choisir une variante de langage :
 
-- **Python** : FastAPI/SQLAlchemy (par défaut)
-- **Node.js** : NestJS/Hono + Prisma/Drizzle
+- **Python** : Litestar/SQLAlchemy (par défaut)
+- **Node.js** : NestJS + Prisma
 - **Rust** : Axum/Actix-web
 - **Other / Auto-detect** : configurez-le ensuite avec `/stack-set`
 
@@ -381,11 +381,11 @@ L'installateur télécharge la dernière archive de publication depuis les relea
 
 ### 6. Installation de la configuration
 
-`installConfigs()` copie les fichiers auxiliaires vers `.agents/config/`, crée `.agents/mcp.json` et initialise la configuration appartenant à l'utilisateur `.agents/oma-config.yaml` ou `.agents/oma-config.cue`. Les fichiers utilisateur existants sont conservés sauf avec `--force` ; `oma update` conserve également la configuration utilisateur et ajoute, si nécessaire, les nouvelles clés de premier niveau du modèle.
+`installConfigs()` crée `.agents/mcp.json` et initialise la configuration appartenant à l'utilisateur `.agents/oma-config.yaml` ou `.agents/oma-config.cue`. Les fichiers utilisateur existants sont conservés sauf avec `--force` ; `oma update` conserve également la configuration utilisateur et ajoute, si nécessaire, les nouvelles clés de premier niveau du modèle.
 
 ### 7. Installation des compétences
 
-Pour chaque compétence sélectionnée, `installSkill()` copie le répertoire de la compétence vers `.agents/skills/{skill-name}/`. Si une variante est choisie (par exemple Python pour le backend), il configure aussi le répertoire `stack/` avec les ressources propres au langage.
+Pour chaque compétence sélectionnée, `installSkill()` copie le répertoire de la compétence vers `.agents/skills/{skill-name}/`. Si une variante est choisie (par exemple Python pour le backend), il copie aussi cette variante dans le répertoire `stack/` de la compétence et supprime le répertoire `variants/` devenu redondant. Une compétence installée sans variante, comme oma-mobile, conserve son répertoire `variants/`, que son SKILL.md lit directement.
 
 ### 8. Adaptations par fournisseur
 

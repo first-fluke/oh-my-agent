@@ -97,53 +97,42 @@ Nguồn: `cli/commands/agent/spawn-status.ts`, `cli/platform/agent-config/loader
 │   ├── orm-reference.md              ← Domain-specific (ORM queries, N+1, transactions)
 │   ├── checklist.md
 │   └── error-playbook.md
-└── variants/                          ← Starter seeds for /stack-set
+└── variants/                          ← Stack presets; an install with a chosen preset has stack/ instead
     ├── stack.schema.json
-    ├── node/
-    ├── python/
-    └── rust/
+    ├── node/                          ← stack.yaml, tech-stack.md, snippets.md, api-template.ts
+    ├── python/                        ← stack.yaml, tech-stack.md, snippets.md, api-template.py
+    └── rust/                          ← stack.yaml, tech-stack.md, snippets.md, api-template.rs
 
 .agents/skills/oma-mobile/
 ├── SKILL.md
 ├── resources/
 │   ├── execution-protocol.md
-│   ├── tech-stack.md
-│   ├── screen-template.dart
-│   ├── screen-template.swift         ← Swift native iOS screen template
-│   ├── screen-template.tsx            ← React Native screen template
+│   ├── tech-stack.md                 ← Platform index and shared response-cache contract
 │   ├── checklist.md
 │   └── error-playbook.md
-└── variants/                          ← Platform seeds for /stack-set
+└── variants/                          ← Platform variants; read directly when stack/ does not exist
     ├── README.md
     ├── stack.schema.json
-    ├── flutter/                       ← stack.yaml, tech-stack.md, snippets.md, api-template.dart
-    ├── react-native/                  ← stack.yaml, tech-stack.md, snippets.md, api-template.ts
-    └── swift-ios/                     ← stack.yaml, tech-stack.md, snippets.md, api-template.swift
+    ├── flutter/                       ← stack.yaml, tech-stack.md, snippets.md
+    ├── kotlin-android/                ← stack.yaml, tech-stack.md, snippets.md
+    ├── react-native/                  ← stack.yaml, tech-stack.md, snippets.md
+    └── swift-ios/                     ← stack.yaml, tech-stack.md, snippets.md
 
 .agents/skills/oma-design/
 ├── SKILL.md
-├── resources/
-│   ├── execution-protocol.md
-│   ├── anti-patterns.md
-│   ├── asset-strategy.md
-│   ├── checklist.md
-│   ├── design-md-spec.md
-│   ├── design-tokens.md
-│   ├── getdesign-fetcher.md
-│   ├── prompt-enhancement.md
-│   ├── redesign-protocol.md
-│   ├── stitch-integration.md
-│   └── error-playbook.md
-└── reference/                         ← Deep reference material
-    ├── typography.md
-    ├── color-and-contrast.md
-    ├── spatial-design.md
-    ├── motion-design.md
-    ├── responsive-design.md
-    ├── component-patterns.md
-    ├── accessibility.md
-    ├── visual-hierarchy.md
-    └── shader-and-3d.md
+└── resources/
+    ├── execution-protocol.md         ← Operation scope, artifacts, and handoff
+    ├── external-design-skills.md     ← Supplier selection (Interface Design, Taste, Impeccable)
+    ├── product-interface-review.md   ← Post-implementation product-interface review
+    ├── redesign-protocol.md          ← Preserve vs Overhaul for an existing product
+    ├── design-md-spec.md             ← Creating or materially revising DESIGN.md
+    ├── design-tokens.md              ← Semantic token handoff to implementation
+    ├── data-grid.md                  ← Data table and grid rules
+    ├── asset-strategy.md             ← Actual assets, claims, provenance, placeholders
+    ├── getdesign-fetcher.md          ← Requested vendor inspiration
+    ├── stitch-integration.md         ← Requested Stitch operation
+    ├── checklist.md                  ← Affected-result verification
+    └── error-playbook.md             ← Observed supplier or design-tool failure
 ```
 
 ---
@@ -157,10 +146,10 @@ Nguồn: `cli/commands/agent/spawn-status.ts`, `cli/platform/agent-config/loader
 | **Error Playbook** | `error-playbook.md` | Các bước từ triệu chứng đến phục hồi; thiếu thông tin hoặc thẩm quyền chỉ tạm dừng hành động phụ thuộc | Chỉ sau khi quan sát thấy lỗi |
 | **Checklist** | `checklist.md` | Xác minh chất lượng theo lĩnh vực | Các phần liên quan, cho phần xác minh chưa giải quyết |
 | **Snippets** | `snippets.md` | Mẫu mã sẵn sàng copy-paste | Cách triển khai hoặc dạng đầu ra chưa quen thuộc |
-| **Examples** | `examples.md` | Ví dụ input/output đã giải (oma-pm, oma-db, oma-tf-infra, oma-observability, oma-search) | Cách triển khai hoặc dạng đầu ra chưa quen thuộc |
-| **Variants** | Thư mục `variants/` | Seed khởi đầu theo ngôn ngữ/framework. Backend cung cấp `node`, `python` và `rust`; mobile cung cấp `flutter`, `react-native` và `swift-ios`. `/stack-set` dùng chúng để tạo `stack/` của dự án. | Khi đang thiết lập một stack tương ứng |
-| **Templates** | `screen-template.{dart,swift,tsx}` (oma-mobile), `variants/*/api-template.*` | Boilerplate cho một screen hoặc module API mới | Khi tạo file đó |
-| **Domain Reference** | `orm-reference.md`, `anti-patterns.md`, v.v. | Kiến thức lĩnh vực chuyên sâu cho subtask cụ thể | Theo loại task |
+| **Examples** | `examples.md` | Ví dụ input/output đã giải (oma-pm, oma-db, oma-tf-infra, oma-observability) | Cách triển khai hoặc dạng đầu ra chưa quen thuộc |
+| **Variants** | Thư mục `variants/` | Tham chiếu stack theo ngôn ngữ/framework. Backend cung cấp `node`, `python` và `rust`; mobile cung cấp `flutter`, `react-native`, `swift-ios` và `kotlin-android`. Skill dùng `stack/` khi nó tồn tại, nếu không thì dùng variant tương ứng; `/stack-set` lấy một variant làm seed cho `stack/` của dự án. | Khi dự án không có `stack/`, hoặc khi đang thiết lập một stack tương ứng |
+| **Templates** | `api-template.*` trong tham chiếu stack của backend; mobile giữ các mẫu screen và API trong `variants/<platform>/snippets.md` | Boilerplate cho một module API hoặc screen mới | Khi tạo file đó |
+| **Domain Reference** | `orm-reference.md`, `vector-db.md`, `data-grid.md`, v.v. | Kiến thức lĩnh vực chuyên sâu cho subtask cụ thể | Theo loại task |
 
 ---
 
@@ -313,15 +302,15 @@ Việc xác minh tuân theo rủi ro của task và yêu cầu của project. Nh
 
 | Loại task | Tài nguyên bắt buộc |
 |-----------|-------------------|
-| Tạo CRUD API | `stack/snippets.md` và `stack/api-template.*` của dự án (do `/stack-set` tạo) khi có; nếu không, dùng mã hiện có của dự án |
-| Xác thực | `stack/snippets.md` + `stack/tech-stack.md` khi có |
-| Database migration | `stack/snippets.md` khi có; thiết kế schema chuyển sang oma-db |
+| Tạo CRUD API | `snippets.md` và `api-template.*` từ tham chiếu stack (`stack/` khi có, nếu không thì `variants/<language>/` tương ứng), cùng với mã hiện có của dự án |
+| Xác thực | `snippets.md` + `tech-stack.md` từ tham chiếu stack |
+| Database migration | `snippets.md` từ tham chiếu stack; thiết kế schema chuyển sang oma-db |
 | Tối ưu hiệu suất | `orm-reference.md` và mọi ví dụ tương ứng do skill cung cấp |
 | Sửa mã hiện có | Provider code-intelligence của project và tài nguyên thực thi liên quan |
 
 <!-- oma-docs:ignore-end -->
 
-`variants/node`, `variants/python` và `variants/rust` là seed khởi đầu cho `/stack-set`; agent không đọc chúng khi sửa mã hiện có.
+Tham chiếu stack chỉ mang tính bổ trợ: manifest của dự án và mã hiện có được ưu tiên trước. Một dự án đã cài với preset đã chọn có `stack/` và không có `variants/`; bố cục plugin và bố cục source có `variants/node`, `variants/python` và `variants/rust` và không có `stack/`.
 
 ### Frontend agent
 
@@ -337,12 +326,14 @@ Việc xác minh tuân theo rủi ro của task và yêu cầu của project. Nh
 
 | Loại task | Tài nguyên bắt buộc |
 |-----------|-------------------|
-| Tạo design system | reference/typography.md + reference/color-and-contrast.md + reference/spatial-design.md + design-md-spec.md |
-| Thiết kế landing page | reference/component-patterns.md + reference/motion-design.md + prompt-enhancement.md |
-| Audit design | checklist.md + anti-patterns.md |
-| Xuất design token | design-tokens.md |
-| Hiệu ứng 3D / shader | reference/shader-and-3d.md + reference/motion-design.md |
-| Review accessibility | reference/accessibility.md + checklist.md |
+| Mọi thao tác thiết kế | execution-protocol.md + external-design-skills.md (chọn một supplier) |
+| Tạo hoặc chỉnh sửa design system | design-md-spec.md |
+| Redesign một site hoặc ứng dụng hiện có | redesign-protocol.md |
+| Bàn giao design token | design-tokens.md |
+| Review giao diện sản phẩm sau triển khai | product-interface-review.md |
+| Bề mặt xây quanh một bảng dữ liệu hoặc grid | data-grid.md |
+| Hình ảnh, brand mark hoặc placeholder | asset-strategy.md |
+| Audit design hoặc xác minh trước khi bàn giao | checklist.md |
 
 ### QA agent
 
@@ -370,11 +361,11 @@ Cách soạn nhắm đúng mục tiêu này tránh tải tài nguyên không c�
 
 ## Bằng chứng session và review retrospective {#session-evidence-and-retrospective-review}
 
-Bản ghi session lưu lại các lần sửa hướng đáng kể, thay đổi phạm vi, việc làm lại và các phát hiện review đã được phân xử, kèm bằng chứng. Việc làm rõ cần thiết không bị phạt. Điểm có trọng số CD và EA trước đây cùng các quy tắc RCA kích hoạt theo ngưỡng đã bị loại bỏ; chúng vốn là chỉ dẫn trong prompt chứ không phải số liệu do CLI tính toán.
+Bản ghi session lưu lại các lần sửa hướng đáng kể, thay đổi phạm vi, việc làm lại và các phát hiện review đã được phân xử, kèm bằng chứng. Việc làm rõ cần thiết không bị phạt, và không có điểm nào được gán cho câu hỏi, lần sửa hướng hay nhận định review.
 
 Hãy dùng kết quả task hiện có khi có thể. File `session-metrics-{sessionId}.md` riêng là tùy chọn trong coordination store đã cấu hình. Việc thất bại lặp lại hoặc retrospective được yêu cầu có thể đủ cơ sở để rút ra một bài học, nhưng một check thất bại thông thường hay một phát hiện đang bị tranh luận thì không tự động tạo thành bài học. Hãy giữ nguyên log lịch sử; không viết lại chúng theo định dạng mới.
 
-`oma stats` báo cáo năng suất và các bản tóm tắt sử dụng/chi phí đã ghi nhận. `oma retro` nhóm các sự kiện thực tế gồm gate, blocker và thiếu quyết định thành các gợi ý. Cả hai đều không tính điểm CD/EA từ các artifact Markdown này.
+`oma stats` báo cáo năng suất và các bản tóm tắt sử dụng/chi phí đã ghi nhận. `oma retro` nhóm các sự kiện thực tế gồm gate, blocker và thiếu quyết định thành các gợi ý. Cả hai đều không biến các artifact Markdown này thành điểm số.
 
 ## Phân rã task và phục hồi ngữ cảnh {#task-decomposition-and-context-recovery}
 

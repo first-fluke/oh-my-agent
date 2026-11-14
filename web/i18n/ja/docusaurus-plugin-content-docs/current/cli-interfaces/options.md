@@ -168,8 +168,10 @@ oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .pat
 ### install {#install}
 
 ```text
-oma install [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
+oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
+
+`--preset` は 10 個の[名前付きスキルプリセット](../getting-started/installation.md#presets)のいずれかを選び、対話式のスキルプロンプトと、無人実行時のデフォルトである `all` を上書きします。未知の名前、空の値、`custom` はインストール前に失敗します。個別に選ぶ場合は対話式の Custom メニューを使います。プリセットはスキルを選択するもので、ランタイムの共有ファイル、ワークフローとエージェントの定義、フック、プロバイダー、保持されているスキルはそのまま残ります。一時的に 1 つのスキルの指示だけをロードする方法は、[Choose a setup](../getting-started/choose-setup.md) を参照してください。
 
 対話式インストーラーは選択したプロバイダー設定を `.agents/oma-config.yaml` に書き込みます。`.agents/oma-config.cue` がある場合はそちらが優先されるため、CUE 設定にまだ含まれていない選択は gitignore 対象のローカルオーバーレイ `.agents/oma-config.local.yaml` に書き込まれます。ブラウザー DevTools の選択と `oma memory keys` の vault 参照も同じ規則に従い、CLI ベンダーの選択と `oma model propose --write` は `oma-config.yaml` がない場合に同じ規則に従います。プロバイダーフラグで web-search、code-intelligence、semantic-memory の連携先を選び、そのプロバイダーを選択した場合は `--honcho-url` と `--honcho-workspace` で Honcho メモリサービスを設定します。インストール中に確認を求められた場合はルートの `-y, --yes` フラグが適用されます。
 
@@ -458,7 +460,7 @@ oma video render <run-dir> [--output <format>]
 oma video provider list [--output <format>]
 ```
 
-`video generate` は計画およびキャプチャ制御の `--mode`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor`、`--capture`、`--source`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop` を受け付けます。さらに `--output-dir`、`--allow-external-output`、`--max-usd`、`--seed`、`--timeout`、`--script`、`--dry-run`、`--yes`、`--output`、`--no-brief-in-manifest` も使えます。ブラウザーキャプチャには `--source web --url <url>` を使い、デフォルトのソースは `file` です。通常のレンダーには作成済みの composition と動作する compositor が必要です。プレースホルダーは `OMA_VIDEO_MOCK=1` のテスト経路に限られます。
+`video generate` は計画およびキャプチャ制御の `--mode`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor`、`--capture`、`--source`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout`、`--capture-stop` を受け付けます。さらに `--output-dir`、`--allow-external-output`、`--max-usd`、`--seed`、`--timeout`、`--script`、`--dry-run`、`--yes`、`--output`、`--no-brief-in-manifest` も使えます。デモは `--capture` で渡した録画を使います。デフォルトのソースは `file` で、`--source web --url <url>` は URL をコンテキストとして追加するだけです。`--polish` はキャプチャを `Demo` composition に通し、そこで個人情報をマスクします。指定しない場合、出力される MP4 は生のキャプチャです。通常のレンダーには作成済みの composition と動作する compositor が必要です。プレースホルダーは `OMA_VIDEO_MOCK=1` のテスト経路に限られます。
 
 `video doctor` は HyperFrames/MPT/Strudel ツールチェーンを確認または準備します。`compose` は実行用 composition の契約を準備し、`render` は lint、レンダー、出力検査を行います。`provider list` はプロバイダーとキーの状態を報告します。実行マニフェストと復旧手順は [動画生成](../guide/video-generation.md) を参照してください。
 
@@ -630,7 +632,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `diagram resolve` | — | `--engine <engine>`, `--refresh`, `--offline`, `--json`, `--output <format>` | Report which diagram engine workflows should use, and where archify lives |
 | `diagram update` | — | `--json`, `--output <format>` | Install archify with the skills CLI when missing, otherwise update it (bunx skills add\|update -g -y) |
 | `docs i18n` | — | `--json`, `--min-severity <level>` (default: `MEDIUM`) | Detect drift between English source docs (web/docs) and i18n translations (web/i18n/{lang}/...). Emits structural signals (line count, heading count, last-commit timestamp) per pair so the host LLM can decide which translations need a diff-sync patch. The CLI never edits translations. |
-| `docs lint` | — | `--json`, `--locales <list>` | Lint translated docs for content-level anti-patterns (em-dashes in CJK targets, etc.). Complements `oma docs i18n` (structural drift) with style/anti-pattern checks per oma-translation SKILL.md § Stage 4. The CLI never auto-fixes — it only reports issues for the host LLM to restructure. |
+| `docs lint` | — | `--json`, `--locales <list>` | Lint translated docs for content-level anti-patterns (em-dashes in CJK targets, etc.). Complements `oma docs i18n` (structural drift) with style/anti-pattern checks per the oma-translation language profiles. The CLI never auto-fixes — it only reports issues for the host LLM to restructure. |
 | `docs migrate` | — | `--dry-run`, `--json` | Consolidate engineering decisions and result reports into their canonical directories |
 | `docs sync` | `[diff-range]` | `--json` | Given a git diff, list docs that reference changed files. The host LLM (skill runtime) is expected to read this list plus the diff and propose patches per the SKILL.md contract — the CLI never auto-edits docs. Default diff-range: --cached (staged changes), fallback to HEAD~1..HEAD. |
 | `docs verify` | `[path]` | `--json`, `--report-file <path>`, `--no-urls`, `--urls-sync` | Extract file, link, and script references from docs and report broken targets. Regenerates docs/generated/doc-refs.json as a side effect. Exit code: 0 = clean, 1 = broken refs found. URL link checking is delegated to `lychee` (install: brew install lychee). |

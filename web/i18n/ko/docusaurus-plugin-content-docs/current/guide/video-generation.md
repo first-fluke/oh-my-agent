@@ -64,8 +64,9 @@ oma video generate "three quick tips for better focus" --mode shorts --script ./
 oma video compose <runDir>
 oma video render <runDir> --output json
 
-# Demo from your own recording; without --polish the recording itself becomes the output
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
+# Demo from your own recording. --polish routes it through the Demo composition,
+# where personal information is masked. Without --polish the output MP4 is the raw, unmasked recording.
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4
 ```
 
 <!-- oma-docs:ignore-start -->
@@ -91,7 +92,7 @@ oma video generate "product walkthrough" --mode demo --capture ./capture.mp4
 <a id="항상-최신-hyperframes-사용-컴포지션은-직접-작성"></a>
 ## 관리되는 HyperFrames 도구 체인과 컴포지션 작성
 
-oh-my-agent는 **HyperFrames 컴포지션 코드를 함께 제공하지 않습니다**. 각 실행은 `<runDir>/hyperframes/`에 자체 프로젝트를 가지며, 이 프로젝트는 `oma video compose`가 최신 npm HyperFrames(툴체인 캐시 `~/.cache/oma-video/hyperframes/<version>/`, `node_modules` 심볼릭 링크로 공유)와 HEAD 기준 [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)(`~/.cache/oma-video/hyperframes-skills/`)를 바탕으로 스캐폴딩합니다. 에이전트는 스캐폴드의 `AUTHORING.md`, 스킬, `.agents/skills/oma-video/resources/hyperframes-authoring/`의 모드 사양을 따라 생성된 컴포지션 소스를 작성합니다.
+oh-my-agent는 **HyperFrames 컴포지션 코드를 함께 제공하지 않습니다**. 각 실행은 `<runDir>/hyperframes/`에 자체 프로젝트를 가지며, 이 프로젝트는 `oma video compose`가 최신 npm HyperFrames(툴체인 캐시 `~/.cache/oma-video/hyperframes/<version>/`, `node_modules` 심볼릭 링크로 공유)와 [skills CLI](https://github.com/vercel-labs/skills)로 설치한 [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes)의 `hyperframes`, `hyperframes-cli` 스킬을 바탕으로 스캐폴딩합니다. 에이전트는 스캐폴드의 `AUTHORING.md`, 스킬, `.agents/skills/oma-video/resources/hyperframes-authoring/`의 모드 사양을 따라 생성된 컴포지션 소스를 작성합니다.
 
 ```bash
 oma video generate "…"                     # → render-spec.json + <runDir>/hyperframes/ (composition pending)
@@ -100,14 +101,15 @@ oma video compose <runDir> --output json   # refresh scaffold / print the contra
 oma video render <runDir> --output json    # lint → render with the cached HyperFrames CLI → ffprobe; exit 1 on any failure
 ```
 
-- 최신 버전 확인(npm + GitHub)은 `video.hyperframes.check_interval_min`(기본 60, `0`이면 모든 compose 호출)의 적용을 받습니다. `oma update`도 이 주기를 따르고 `oma video doctor --upgrade`는 확인을 강제로 실행하며, 오프라인 실행은 캐시된 툴체인을 사용하고 `stale` 상태를 보고합니다.
+- 툴체인 최신 버전 확인(npm)은 `video.hyperframes.check_interval_min`(기본 60, `0`이면 모든 compose 호출)의 적용을 받습니다. `oma update`도 이 주기를 따르고 `oma video doctor --upgrade`는 확인을 강제로 실행하며, 오프라인 실행은 캐시된 툴체인을 사용하고 `stale` 상태를 보고합니다.
+- 스킬: `oma video doctor --install`은 없는 스킬을 설치하고(`bunx skills add heygen-com/hyperframes --skill hyperframes --skill hyperframes-cli -g -y`), `--upgrade`는 설치된 스킬도 업데이트하며, `oma update`는 이미 설치된 스킬만 업데이트합니다. 스킬이 없으면 `AUTHORING.md`가 대신 업스트림 문서를 링크합니다. 예전 `~/.cache/oma-video/hyperframes-skills/` 사본은 더 이상 읽지 않으므로 삭제해도 됩니다.
 - 재현성의 기준은 실행 디렉토리의 `render-spec.json`, 작성된 컴포지션 소스, 생성된 HyperFrames 패키지 메타데이터에 기록된 툴체인 버전입니다. 같은 실행을 다시 렌더링하면 해당 렌더링 계약을 재사용하고, 새 실행은 최신 HyperFrames를 확인합니다.
 - lint나 렌더링 실패를 플레이스홀더로 **숨기지 않습니다**(플레이스홀더는 `OMA_VIDEO_MOCK=1`에서만 존재합니다). `oma video render`는 진단과 함께 종료 코드 1을 반환하고, 에이전트가 최신 스킬로 컴포지션을 수정합니다. 새 HyperFrames 릴리스에서 생긴 문제는 컴포지션 버그이며, 버전을 고정할 이유가 아닙니다.
 
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---
@@ -130,14 +132,14 @@ oma video provider list         # provider availability + key/fallback status
 | `--aspect <a>` | `9:16` \| `16:9` \| `1:1` \| `auto`. |
 | `--locale <lang>` | 내레이션과 자막의 언어 태그. |
 | `--captions <s>` | `tiktok` \| `lower-third` \| `none` (키가 필요 없는 정렬). |
-| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. |
+| `--visual <m>` | `auto` \| `generate` \| `stock` \| `aigc` \| `slide`. 비주얼 프로바이더 순서를 선택합니다. [비주얼 체인](#visual-chain)을 참고하세요. |
 | `--voice <profile>` | 내레이션 음성, 또는 `none`(기본값입니다. 생략하면 자막 타이밍을 추정해 무음으로 렌더링합니다). |
 | `--music <mode>` | `upbeat`, `calm`, `cinematic`, `lofi`, `piano`, 또는 `none`. |
 | `--compositor <c>` | `hyperframes`(기본값) \| `mpt`. |
 | `--capture <path>` | 데모 모드용 사용자 녹화: `.mp4`, `.mov`, `.webm`, `.mkv`이며 프로젝트 안에 저장되어 있어야 합니다. |
 | `--source <k>` | 데모 캡처 소스: `file` 또는 `web`(기본값: `file`). |
 | `--url <url>` | `--source web`의 컨텍스트 URL로, `manifest.json`에 마스킹되어 저장됩니다. `--source web`에서는 필수이며, 캡처를 시작하지 않고 `--capture`를 대체하지도 않습니다. |
-| `--polish` | 캡처한 화면 위에 HyperFrames 컴포지션을 겹칩니다. |
+| `--polish` | 데모 모드: 캡처를 HyperFrames `Demo` 컴포지션의 배경으로 사용하며, 이 컴포지션에서 개인정보가 마스킹됩니다. 이 플래그가 없으면 마스킹되지 않은 원본 캡처가 출력 MP4로 복사되고 컴포지션은 실행되지 않습니다. |
 | `--device`, `--ready-selector`, `--show-cursor`, `--capture-timeout`, `--capture-stop` | 받아들이지만 사용하지 않습니다. oma는 브라우저를 조작하거나 화면을 녹화하지 않습니다. |
 | `--output-dir <path>` | 출력 기본 디렉토리입니다. `$PWD` 외부 경로에는 `--allow-external-output`이 필요합니다. |
 | `--allow-external-output` | `$PWD` 외부의 출력 경로를 허용합니다. |
@@ -161,14 +163,33 @@ oma video provider list         # provider availability + key/fallback status
 |------------|-------------|----------|
 | 스크립트 | `--script <path>`로 전달한 에이전트 작성 `script.json`(`/video` 워크플로우가 작성) | 브리프 텍스트로 만드는 결정론적 3장면 스켈레톤 |
 | 음성 | `--voice <profile>`과 함께 `oma-voice`(Voicebox 또는 VoiceStudio, 로컬; `voice.backend`로 선택) | 추정 타이밍의 무음 영상(`--voice none`, 기본값) |
-| 비주얼 | `oma-image`, `oma-slide`, `PEXELS_API_KEY`가 설정되면 Pexels 스톡 클립 | 플레이스홀더 에셋 |
-| 비주얼: `aigc` | 아직 연결되지 않음. `RUNNINGHUB_API_KEY`가 프로바이더를 활성화하지만 여전히 플레이스홀더를 씀 | 플레이스홀더 에셋 |
+| 비주얼 | 기본은 `oma-image` 스틸. `visual.ref`가 기존 덱 디렉토리인 장면에는 `oma-slide` 프레임. `PEXELS_API_KEY`가 설정된 상태에서 `--visual stock`을 쓰면 Pexels 스톡 클립 | 플레이스홀더 에셋 |
+| 비주얼: `aigc` | `RUNNINGHUB_API_KEY`가 설정된 상태에서 `--visual aigc`로 선택. 실제 호출은 아직 연결되지 않아 프로바이더가 여전히 플레이스홀더를 씀 | 플레이스홀더 에셋 |
 | 자막 | 스크립트 언어로 `timing.json`에 맞춰 정렬한 `.srt`와 `.vtt` | 동일. `--locale`로의 번역은 아직 연결되지 않음 |
 | 음악 | `oma video doctor --install-strudel` 이후 Strudel 배경 음악 | 음악 트랙 없음 |
 | 캡처 | `--capture <file>`로 전달한 사용자 녹화 | 없음. `--capture`가 없으면 데모 모드는 녹화 안내를 출력하고 종료 코드 3으로 끝남 |
 | 컴포지터 | HyperFrames(관리형) 또는 MoneyPrinterTurbo | 컴포지터 폴백 없음. 진단과 함께 실행이 실패합니다 |
 
-자격 증명을 자동화하지 않습니다. 녹화 중 화면 로그인은 사용자가 직접 하며, URL과 쿼리 토큰은 로그와 매니페스트에서 마스킹합니다.
+### 비주얼 체인 {#visual-chain}
+
+`--visual`과 모드가 장면마다 차례로 시도할 프로바이더 순서를 정합니다.
+
+| `--visual` | 모드 | 순서 |
+|------------|------|-------|
+| `auto`(기본값) | `shorts`, `demo` | `providers.visual.order`(기본값 `oma-image`, `pexels`, `pixelle`) |
+| `auto`(기본값) | `explainer` | `oma-slide`, `oma-image`, 그다음 `providers.visual.order` |
+| `generate` | 모든 모드 | `oma-image` |
+| `slide` | 모든 모드 | `oma-slide`, `oma-image` |
+| `stock` | 모든 모드 | `pexels`, `oma-image` |
+| `aigc` | 모든 모드 | `pixelle`, `oma-image` |
+
+- 체인은 사용할 수 없거나 예외를 던지는 프로바이더만 건너뛰고 다음으로 넘어갑니다. `oma-image`와 `oma-slide`는 항상 사용할 수 있고 예외를 던지는 대신 플레이스홀더를 쓰므로, 그 뒤에 나열된 프로바이더에는 도달하지 않습니다. 따라서 기본 순서에서는 `oma-image`가 모든 장면을 맡습니다. Pexels에는 `--visual stock`과 `PEXELS_API_KEY`가, Pixelle에는 `--visual aigc`와 `RUNNINGHUB_API_KEY`가 필요합니다.
+- `oma-slide`는 `script.json`의 `visual.ref`가 기존 덱 디렉토리의 경로인 장면에 대해서만 프레임을 내보내며, 덱을 생성하지는 않습니다. 내보낸 첫 프레임이 장면 비주얼이 되므로 슬라이드 장면마다 슬라이드가 하나뿐인 전용 덱을 지정하세요. `oma-slide`가 처리하는 나머지 장면은 모두 플레이스홀더를 받으며, `--visual auto`에서 덱이 없는 explainer 장면도 여기에 해당합니다. 먼저 `oma-slide`로 덱을 만들거나, `oma-image` 스틸을 쓰려면 `--visual generate`를 전달하세요.
+- 플레이스홀더는 해당 장면의 폴백 경로로 `warnings`에 기록됩니다.
+
+### 데모 캡처와 마스킹
+
+녹화 중 화면 로그인은 사용자가 직접 합니다. oma는 자격 증명을 자동화하지 않으며, URL과 쿼리 토큰은 로그와 매니페스트에서 마스킹합니다. 영상에 담긴 개인정보는 `--polish` 컴포지션에서만 마스킹됩니다. `--polish` 없이 실행한 데모는 원본 캡처를 출력 MP4로 복사합니다. 이 파일은 영상을 직접 확인해 마스킹할 내용이 없다고 판단한 뒤에만 전달하고, 그렇지 않으면 `--polish`를 붙여 다시 실행하세요.
 
 자막은 **정적 윈도 큐**로 렌더링합니다. 현재 프레임에서 활성인 자막 한 줄을 CSS로 줄바꿈해 보여주며, 단어 단위 애니메이션은 없습니다.
 

@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/in
 | | สิ่งที่คุณได้ | ลองใช้ |
 |---|---|---|
 | **12 บทบาทผู้เชี่ยวชาญ** | PM, สถาปนิก, วิศวกร backend, frontend, mobile, ฐานข้อมูล และ infra, ผู้รีวิว QA, ผู้ดีบัก, ผู้รีแฟกเตอร์, ผู้ดูแลเอกสาร, นักวิจัย ([รู้จักพวกเขา](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **21 เวิร์กโฟลว์** | คำสั่ง slash ตั้งแต่ `/brainstorm` และ `/plan` ไปจนถึง `/review`, `/debug` และ `/scm` ส่วนใหญ่เริ่มจากคำขอธรรมดาได้ด้วย (คลังคำสำคัญสูงสุด 11 ภาษา) | "review this PR" |
+| **20 เวิร์กโฟลว์** | คำสั่ง slash ตั้งแต่ `/brainstorm` และ `/plan` ไปจนถึง `/review`, `/debug` และ `/scm` ส่วนโหมดหลายเอเจนต์ทั้งสี่ยังเริ่มได้เมื่อคำขอธรรมดาเรียกชื่อโหมดนั้น | "ultrawork: add rate limiting" |
 | **33 skill** | ความรู้เฉพาะโดเมนที่โหลดเฉพาะเมื่องานต้องใช้: UI, API, schema, Terraform, CI, ความปลอดภัย, git, observability | โหลดเอง เช่น "add a Terraform S3 bucket" |
 | **ไฟล์ที่คุณเปิดดูได้** | แผนงาน เอกสารดีไซน์ API contract, ADR บันทึกบัค ผลลัพธ์รายเอเจนต์ หลักฐานด้านความปลอดภัย เอกสารอธิบาย HTML และสรุปงาน | `ls .agents/results` |
 | **การตรวจเวิร์กโฟลว์** | ในเวิร์กโฟลว์ที่รันนาน สคริปต์ `test`, `lint` หรือ `typecheck` ของคุณเองต้องผ่านก่อนเอเจนต์จะหยุดได้ ส่วน `oma ralph verify` ตรวจว่าการรัน `/ralph` ทิ้งไฟล์แผน QA และ refactor ไว้ | `/ultrawork …` แล้วตามด้วย `oma goal set --gate test` |
@@ -112,8 +112,6 @@ oma
    ```text
    /plan add user accounts with a settings page
    ```
-
-   หรือแค่เขียนว่า "plan user accounts with a settings page" ก็ได้ เพราะบน runtime ที่มี prompt hook คำสำคัญนี้จะเริ่มเวิร์กโฟลว์เดียวกัน
 4. **ดูว่าได้อะไรออกมา** `/plan` รันในเซสชันปัจจุบัน สำหรับงานที่ครอบคลุมหลายส่วนอย่างงานนี้ มันจะเขียน `.agents/results/plan-<session-id>.json` และ tracker ที่ `docs/plans/work/<NNN>-<name>.md` ส่วนคำขอเล็กๆ ที่อยู่ในส่วนเดียวจะได้คำแนะนำโดยตรงแทนไฟล์แผน
 
 สำหรับงานที่มีหลายส่วน ให้ใช้แผนนี้กับ `/work` หรือ `/orchestrate`
@@ -125,11 +123,11 @@ oma
 
 | ผู้เชี่ยวชาญของคุณ | skill ที่ใช้ | เรียกใช้ด้วย | สิ่งที่ทิ้งไว้ |
 |---|---|---|---|
-| **ผู้จัดการผลิตภัณฑ์** (`pm-planner`) | oma-pm | `/plan` หรือ "plan the payment feature" | JSON แผนงานและ tracker ใน `docs/plans/work/` สำหรับงานระดับ Medium และ Complex (คำขอระดับ Simple จะได้คำแนะนำโดยตรง) |
+| **ผู้จัดการผลิตภัณฑ์** (`pm-planner`) | oma-pm | `/plan` | JSON แผนงานและ tracker ใน `docs/plans/work/` สำหรับงานระดับ Medium และ Complex (คำขอระดับ Simple จะได้คำแนะนำโดยตรง) |
 | **สถาปนิก** (`architecture-reviewer`) | oma-architecture | `/architecture` | ADR หรือคำแนะนำใน `.agents/results/architecture/` |
 | **วิศวกร backend, frontend, mobile, ฐานข้อมูล และ infra** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`, `/orchestrate` | โค้ด เทสต์ และไฟล์ `result-<agent>` หนึ่งไฟล์ต่องาน |
-| **ผู้รีวิว QA** (`qa-reviewer`) | oma-qa | `/review` หรือ "review this PR" | ผลการตรวจที่จัดลำดับจาก CRITICAL ถึง LOW แต่ละข้อมี file:line และโค้ดแก้ไข |
-| **ผู้ดีบัก** (`debug-investigator`) | oma-debug | `/debug` หรือ "fix this bug" | การแก้ไขขั้นต่ำ regression test และบันทึกบัคใน `.agents/results/bugs/` เมื่อจำเป็น |
+| **ผู้รีวิว QA** (`qa-reviewer`) | oma-qa | `/review` | ผลการตรวจที่จัดลำดับจาก CRITICAL ถึง LOW แต่ละข้อมี file:line และโค้ดแก้ไข |
+| **ผู้ดีบัก** (`debug-investigator`) | oma-debug | `/debug` | การแก้ไขขั้นต่ำ regression test และบันทึกบัคใน `.agents/results/bugs/` เมื่อจำเป็น |
 
 <details>
 <summary>อีกสามบทบาท และ skill ที่ไม่มีบทบาทประจำ</summary>
@@ -138,7 +136,7 @@ oma
 |---|---|---|---|
 | **ผู้รีแฟกเตอร์** (`refactor-engineer`) | oma-refactor | เฟส REFINE ของ `/ultrawork` | คอมมิต `refactor:` ที่คงพฤติกรรมเดิม และรายงาน `result-refactor-<session>.md` |
 | **ผู้ดูแลเอกสาร** (`docs-curator`) | oma-docs | `/docs` หรือ "verify docs" | `docs/generated/doc-refs.json` และแพตช์เอกสารที่คุณอนุมัติ |
-| **นักวิจัย** (`research-explorer`) | oma-search, oma-market, oma-scholar | คำขอด้านการวิจัย | แหล่งอ้างอิงพร้อมป้ายระดับความน่าเชื่อถือ และสรุปตลาดใน `.agents/results/market/` |
+| **นักวิจัย** (`research-explorer`) | oma-search, oma-market, oma-scholar | คำขอด้านการวิจัย | แหล่งอ้างอิงพร้อมที่มาของแต่ละแหล่ง และสรุปตลาดใน `.agents/results/market/` |
 
 วิศวกร infra (`tf-infra-engineer`) ถูกกำหนดให้ถามก่อน `apply` หรือ `destroy` ใดๆ ที่ทำลายข้อมูลหรือกระทบ production ส่วน skill ที่เหลือ (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation รวมถึงคอนเทนต์และมีเดีย) ไม่มีบทบาทประจำ เอเจนต์ของคุณจะโหลดเอง และสำหรับ skill ส่วนใหญ่ ตัว skill injector จะแนะนำ skill ที่เหมาะสมจาก prompt ของคุณ
 
@@ -148,7 +146,7 @@ oma
 ## ทีมทำงานร่วมกันอย่างไร
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -169,14 +167,14 @@ oma
 | "อย่าหยุดจนกว่าจะเสร็จจริง" | `/ralph` | ทำ `/ultrawork` ซ้ำโดยมีผู้ตัดสินที่ spawn แยกต่างหากและมีคอนเท็กซ์ใหม่ จนกว่าทุกเกณฑ์จะผ่าน และจะหยุดพร้อมรายงานบางส่วนเมื่อเกณฑ์ติดขัดหรือครบ 5 iteration |
 | ทีมที่ทำงานตามเวลาที่ตั้งไว้ | `oma schedule create qa-reviewer "review open PRs" --every 2h` | log แบบ Markdown หนึ่งไฟล์ต่อการรันใน `~/.oma/schedule/runs/<id>/` |
 
-คุณไม่จำเป็นต้องใช้คำสั่ง slash บน runtime ที่มี prompt hook คำขอธรรมดา (คลังคำสำคัญสูงสุด 11 ภาษา) เริ่มเวิร์กโฟลว์ส่วนใหญ่ได้ เช่น "review this PR" จะเริ่ม `/review` การอธิบายแอปทั้งตัว ("Build a TODO app with user authentication") จะแนะนำ `/orchestrate` และเอเจนต์ของคุณจะตัดสินใจเองว่าจะรันหรือไม่ คำสำคัญที่อยู่ในบล็อกโค้ดจะถูกละเว้น
+คำสั่ง slash เป็นตัวเริ่มเวิร์กโฟลว์ ส่วนคำขอธรรมดาไม่ได้เริ่มเวิร์กโฟลว์ แต่บน runtime ที่มี prompt hook คำขอนั้นยังได้รับคำแนะนำ skill อยู่ โดยคลังคำสำคัญสูงสุด 11 ภาษาจะจับคู่กับ prompt แล้วชี้ให้เอเจนต์ของคุณใช้ skill ที่ตรงกัน ("run a security audit" จะดึง `oma-qa` เข้ามา) คำแนะนำนี้ไม่มีผลบังคับ และคำสำคัญที่อยู่ในบล็อกโค้ดจะถูกละเว้น
 
-`/orchestrate`, `/work`, `/ultrawork` และ `/ralph` เป็นแบบ **persistent** เมื่อคุณเรียกด้วยชื่อ ไม่ว่าจะเป็นคำสั่ง slash หรือข้อความธรรมดา ("ultrawork: add rate limiting") จากนั้นเมื่อเอเจนต์พยายามหยุดก่อนเวลา มันจะถูกส่งกลับไปทำงานต่อ (สูงสุด 5 ครั้งหรือ 2 ชั่วโมง) จนกว่าคุณจะพูดว่า **"workflow done"** ส่วนคำขอที่ตรงกันแบบหลวมๆ จะแค่แนะนำเวิร์กโฟลว์เหล่านี้เท่านั้น
+`/orchestrate`, `/work`, `/ultrawork` และ `/ralph` เป็นแบบ **persistent** เมื่อคุณเรียกด้วยชื่อ ไม่ว่าจะเป็นคำสั่ง slash หรือข้อความธรรมดา ("ultrawork: add rate limiting") จากนั้นเมื่อเอเจนต์พยายามหยุดก่อนเวลา มันจะถูกส่งกลับไปทำงานต่อ (สูงสุด 5 ครั้งหรือ 2 ชั่วโมง) จนกว่าคุณจะพูดว่า **"workflow done"** มีเพียงสี่เวิร์กโฟลว์นี้เท่านั้นที่ประโยคธรรมดาเริ่มได้ และต้องเรียกด้วยชื่อเท่านั้น
 
 **วัดผลแล้ว แต่มีข้อควรระวัง** ใน[เบนช์มาร์ก](../benchmarks/README.md) (prompt เดียว, Claude Code กับการตั้งค่าส่วนเสริม 5 แบบ รวมถึงแบบไม่มีส่วนเสริม, `claude-opus-4-6`, บิลด์แบบละหนึ่งครั้ง) oma ได้คะแนน 80.6 เทียบกับ 70.7 ของ Claude Code แบบปกติ โดยมีค่าใช้จ่ายสูงกว่า 1.7 เท่า ($4.04 เทียบกับ $2.37) และใช้เวลามากกว่า 1.8 เท่า
 
 <details>
-<summary>เวิร์กโฟลว์ทั้ง 21 ตัว</summary>
+<summary>เวิร์กโฟลว์ทั้ง 20 ตัว</summary>
 
 | คำสั่ง | หน้าที่ |
 |---------|--------------|
@@ -185,7 +183,7 @@ oma
 | `/convert` | แปลง PDF/HWP เป็น Markdown หรือแปลงไฟล์ภาพ วิดีโอ และเสียงด้วย ffmpeg |
 | `/debug` | ทำให้บัคเกิดซ้ำ แก้ที่สาเหตุต้นตอ เขียน regression test และสแกนหารูปแบบที่คล้ายกัน |
 | `/deepinit` | สำรวจโค้ดเบสที่มีอยู่แล้วสรุปเป็น AGENTS.md, ARCHITECTURE.md และคลังความรู้ docs/ |
-| `/design` | สร้าง design system, DESIGN.md และ tokens พร้อมการตรวจ accessibility |
+| `/design` | กำหนดขอบเขตงานดีไซน์ แล้วส่งมอบผลการตรวจ, DESIGN.md หรือ tokens ผ่าน oma-design |
 | `/docs` | หา reference ในเอกสารที่เสีย และเสนอแพตช์สำหรับเอกสารที่ diff ไปแตะ |
 | `/explain` | แปลง diff, PR, branch หรือหัวข้อใดๆ เป็นเอกสารอธิบาย HTML แบบอินเทอร์แอกทีฟในไฟล์เดียว |
 | `/orchestrate` | รันเอเจนต์แบบขนาน ประสานงานผ่านสถานะในไฟล์ และตรวจสอบผลลัพธ์ (persistent) |
@@ -197,12 +195,11 @@ oma
 | `/scm` | จัดการ branch, merge, conflict, worktree และ Conventional Commits |
 | `/security` | สแกนซอร์สโค้ด skill ของเอเจนต์ และส่วนประกอบ MCP ตรวจสอบผลที่พบ และตั้งค่า gate ของ CI |
 | `/stack-set` | ตรวจหา tech stack ของคุณและสร้าง reference เฉพาะ stack ให้ domain skill ใช้ |
-| `/tools` | แสดงรายการ เปิด และปิดเครื่องมือ MCP ด้วยภาษาธรรมดา |
 | `/ultrawork` | 5 เฟส (PLAN, IMPL, VERIFY, REFINE, SHIP) โดยแต่ละการรีวิวรันในเซสชันผู้รีวิวใหม่ (persistent) |
 | `/video` | เปลี่ยน brief เป็นไฟล์ MP4 ที่เสร็จสมบูรณ์ผ่านไปป์ไลน์ที่ไม่บังคับต้องมีคีย์ |
 | `/work` | ประสานงานเอเจนต์หลายตัวในโปรเจกต์หลายโดเมน โดยมี PM วางแผนและ QA รีวิว (persistent) |
 
-`oma verify triggers` ประเมินตัวตรวจจับด้วยชุดข้อมูล prompt ภาษาอังกฤษและภาษาเกาหลี 212 รายการที่ติดป้ายกำกับไว้ และ CI จะล้มเหลวหากอัตรา false-fire เกิน 10% หรืออัตรา missed-fire เกิน 20% ผลวัดล่าสุด: **0% missed-fire, 5.3% false-fire** เอกสารอ้างอิงฉบับเต็ม: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)
+`oma verify triggers` ประเมินตัวตรวจจับด้วยชุดข้อมูล prompt ภาษาอังกฤษและภาษาเกาหลี 212 รายการที่ติดป้ายกำกับไว้ และ CI จะล้มเหลวหากอัตรา false-fire เกิน 10% หรืออัตรา missed-fire เกิน 20% ผลวัดล่าสุด: **0% missed-fire, 0% false-fire** เอกสารอ้างอิงฉบับเต็ม: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/)
 
 </details>
 
@@ -244,10 +241,10 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | คำสั่ง | หน้าที่ | ไฟล์ที่เขียน |
 |---|---|---|
-| `/brainstorm` | ถามคำถามเพื่อความชัดเจนทีละข้อ และเสนอ 2-3 แนวทางที่ทำงานต่างกัน แล้วส่งต่อให้ `/plan` ไม่เขียนโค้ด | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | ถามคำถามเพื่อความชัดเจนทีละข้อ และเสนอ 2-3 แนวทางที่ทำงานต่างกัน แล้วส่งต่อให้ `/plan` ไม่เขียนโค้ด | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | ประเมินขนาดงานเป็น Simple, Medium หรือ Complex สำหรับงาน Medium และ Complex จะแบ่งเป็นงานย่อยที่แต่ละงานมีเอเจนต์ dependency เกณฑ์การยอมรับ และคำสั่งตรวจสอบ และกำหนด API contract เมื่องานข้ามขอบเขต | `.agents/results/plan-<sid>.json`, `docs/plans/work/<NNN>-<name>.md` และ contract ใน `.agents/results/api-contracts/` เมื่อจำเป็น |
 | `/architecture` | อ่านการตัดสินใจก่อนหน้าก่อน เปรียบเทียบอย่างน้อย 2 ทางเลือก และทำเครื่องหมาย ADR ที่ถูกแทนที่ว่า superseded | ADR หรือคำแนะนำใน `.agents/results/architecture/` |
-| `/design` | เสนอ 2-3 แนวทาง จากนั้นเขียน `DESIGN.md` พร้อม tokens และตรวจ responsive layout และ accessibility | `DESIGN.md`, tokens สำหรับ CSS/Tailwind/shadcn |
+| `/design` | กำหนดขอบเขตและบริบท เลือกแนวทางดีไซน์ที่เหมาะกับงาน จากนั้นส่งมอบผลการตรวจ, `DESIGN.md` หรือ tokens ที่แมปเข้ากับระบบ token เดิมของโปรเจกต์ | ผลการตรวจ, `DESIGN.md`, design tokens |
 
 </details>
 
@@ -274,7 +271,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 | คำสั่งหรือ skill | หน้าที่ | ไฟล์ที่เขียน |
 |---|---|---|
 | `/review` | ตรวจ dependency ก่อน จากนั้นตรวจ OWASP Top 10 ประสิทธิภาพ WCAG 2.2 AA และคุณภาพโค้ด ผลการตรวจทุกข้อมี file:line และโค้ดแก้ไข | รายงานในแชตพร้อมบันทึก memory ไม่มีไฟล์รายงาน |
-| `/security` | สแกนซอร์สโค้ด skill ของเอเจนต์ และเซิร์ฟเวอร์ MCP ของคุณ (Deepsec, Cisco Skill and MCP Scanner) และเมื่อมี test deployment ที่กำหนดขอบเขตไว้ จะรัน pen test ด้วย ARTEX เวิร์กโฟลว์กำหนดให้รายงาน engine ที่รันไม่สำเร็จว่าล้มเหลว ไม่ใช่ว่าสะอาด | `.agents/results/security/<run-id>/` |
+| `/security` | สแกนซอร์สโค้ด skill ของเอเจนต์ และเซิร์ฟเวอร์ MCP ของคุณ (Deepsec, Cisco Skill and MCP Scanner) แล้วตรวจสอบผลที่พบ ส่วน pen test จะรันเฉพาะเมื่อร้องขออย่างชัดเจน และรันกับแพลตฟอร์ม runtime ที่คุณจัดเตรียมและตรวจทานแล้วเท่านั้น เวิร์กโฟลว์กำหนดให้รายงาน engine ที่รันไม่สำเร็จว่าล้มเหลว ไม่ใช่ว่าสะอาด | `.agents/results/security/<run-id>/` |
 | `/debug` | ทำให้ความผิดพลาดเกิดซ้ำ แก้ที่สาเหตุต้นตอด้วยการเปลี่ยนแปลงขั้นต่ำ เพิ่ม regression test และสแกนหารูปแบบเดียวกันในที่อื่น | การแก้ไขและเทสต์ พร้อมบันทึกบัคใน `.agents/results/bugs/` เมื่อจำเป็น |
 | oma-refactor | เปลี่ยนโครงสร้างโดยไม่เปลี่ยนพฤติกรรม: เขียน characterization test ก่อน แล้วจึงคอมมิตเฉพาะ refactor | `.agents/results/refactor/` |
 | `/scm` | Conventional Commits ที่แยกตามการเปลี่ยนแปลงเชิงตรรกะ รวมถึง branch, merge, rebase และ worktree | คอมมิตและ branch |
@@ -299,7 +296,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | Skill | หน้าที่ | ไฟล์ที่เขียน |
 |---|---|---|
-| oma-search | ค้นหาเอกสาร เว็บ และโค้ด พร้อมป้ายระดับความน่าเชื่อถือในแต่ละแหล่ง | ผลลัพธ์พร้อมแหล่งอ้างอิง |
+| oma-search | ค้นหาเอกสาร เว็บ และโค้ด พร้อมระบุว่าแหล่งใดอ่านจริงและแหล่งใดเห็นเพียงข้อความที่ตัดตอนมา | ผลลัพธ์พร้อมแหล่งอ้างอิง |
 | oma-market | หา pain point เทรนด์ และคู่แข่งจากสัญญาณคอมมิวนิตี้ แล้ววิเคราะห์ด้วยกรอบ SWOT, Porter's 5 Forces และ PESTEL | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | ค้นหางานวิจัยโดยอ่านไฟล์ข้อกล่าวอ้างแบบกะทัดรัด (รูปแบบ Knows ประมาณ 700 token) แทน PDF ฉบับเต็ม (ประมาณ 10K token) | `<paper>.knows.yaml` |
 | oma-academic-writing | ร่างและตรวจสอบงานเขียนเชิงวิชาการตาม rubric | ไฟล์ของคุณ |
@@ -326,7 +323,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 | Hook | หน้าที่ | วิธีปิด / ขีดจำกัด |
 |---|---|---|
-| เริ่มด้วยคำสำคัญ | เริ่มเวิร์กโฟลว์ที่ตรงกันจากคำขอธรรมดา | ข้ามคำถาม ข้อความที่วางมา และบล็อกโค้ด |
+| เริ่มด้วยคำสำคัญ | เริ่ม `/orchestrate`, `/work`, `/ultrawork` หรือ `/ralph` เมื่อคำขอธรรมดาเรียกชื่อเวิร์กโฟลว์นั้น | ข้ามคำถาม ข้อความที่วางมา และบล็อกโค้ด |
 | Skill injector | ชี้ให้เอเจนต์ของคุณใช้ skill ที่เหมาะกับ prompt | หยุดชั่วคราวขณะที่ persistent workflow ทำงานอยู่ |
 | Stop gate | ส่ง persistent workflow กลับไปทำงานต่อ เมื่อใช้ `oma goal set --gate test` จะอนุญาตให้หยุดเมื่อสคริปต์นั้นจบด้วย exit code 0 ภายใน 25 วินาที | พูดว่า "workflow done" นอกจากนี้ยังปลดเองหลังบล็อกครบ 5 ครั้งหรือ 2 ชั่วโมง |
 | Refactor guard | ตอนหยุด จะชี้ไฟล์ที่แก้ไขซึ่งยาวเกิน 500 บรรทัดให้ `refactor-engineer` | ต้องเปิดเอง: `refactor_guard.enabled` |
@@ -363,7 +360,7 @@ oma    `test` exits 0: stop allowed, gate.passed appended to the session log
 
 Serena ให้บริการนำทางโค้ดและวินิจฉัยปัญหาด้วย LSP รวมถึง feedback จากการแก้ไขแบบเนทีฟเมื่อรองรับ การเลือก provider แยกจาก runtime ของเอเจนต์ ความสามารถจะแตกต่างกันไปตาม provider และโฮสต์
 
-เอเจนต์ประสานงานกันผ่านไฟล์ธรรมดาใน `.agents/state/` โดยไม่พึ่งบริการภายนอก `/tools` เปิดหรือปิดเครื่องมือ MCP ด้วยภาษาธรรมดา รายละเอียด: [ผู้ให้บริการความสามารถ (Capability Providers)](./capability-providers.md)
+เอเจนต์ประสานงานกันผ่านไฟล์ธรรมดาใน `.agents/state/` โดยไม่พึ่งบริการภายนอก รายละเอียด: [ผู้ให้บริการความสามารถ (Capability Providers)](./capability-providers.md)
 
 </details>
 
@@ -415,8 +412,8 @@ Serena ให้บริการนำทางโค้ดและวิน�
 | **oma-refactor** | รีแฟกเตอร์โค้ดโดยไม่เปลี่ยนพฤติกรรม ด้วยการเลือก hotspot, characterization test และคอมมิตที่มีเฉพาะการ refactor |
 | **oma-scholar** | ค้นหาวรรณกรรมเชิงวิชาการ และสร้าง Knows paper sidecar สำหรับข้อกล่าวอ้าง หลักฐาน และ peer review |
 | **oma-scm** | จัดการ branch, merge, worktree และ Conventional Commits |
-| **oma-search** | ส่งแต่ละคำค้นไปยังแหล่งที่เหมาะที่สุด และให้คะแนนว่าผลลัพธ์น่าเชื่อถือแค่ไหน |
-| **oma-security** | สแกนซอร์สโค้ด สกิลของเอเจนต์ และส่วนประกอบ MCP ทดสอบเว็บแอปที่ปรับใช้แล้ว และตรวจสอบผลที่พบ |
+| **oma-search** | ส่งแต่ละคำค้นไปยังแหล่งที่เหมาะที่สุด และรายงานว่าผลลัพธ์แต่ละรายการมาจากไหนและได้อ่านจริงหรือไม่ |
+| **oma-security** | สแกนซอร์สโค้ด สกิลของเอเจนต์ และส่วนประกอบ MCP แล้วตรวจสอบผลที่พบ ส่วน pen test จะรันเฉพาะบนแพลตฟอร์มที่ผู้ใช้จัดเตรียมและตรวจทานแล้วเท่านั้น |
 | **oma-skill-creation** | เขียนและตรวจสอบ OMA skill ใหม่ |
 | **oma-slide** | สร้าง HTML presentation deck และส่งออกเป็น PDF/PNG/PPTX |
 | **oma-tf-infra** | จัดเตรียม multi-cloud infrastructure ด้วย Terraform |
@@ -567,7 +564,7 @@ OMA ยังบันทึก metadata ของการเรียกใช
 | **Artifact gate** | `oma ralph verify --json` ตรวจหาบันทึกของเฟส ไฟล์ JSON ของแผน และไฟล์ผลลัพธ์จาก **QA agent คนละตัว** และ **refactor agent คนละตัว** โดยแต่ละอย่างผูกกับการรันเอเจนต์ที่บันทึกไว้ | [`ralph.md`](../.agents/workflows/ralph.md) |
 | **ผู้ตัดสินที่ถูกสั่งผ่าน prompt** | ไม่ใช่เชิงกลไก: prompt ของ `/ralph` สั่งให้ออร์เคสเตรเตอร์ spawn ผู้ตัดสินที่มีคอนเท็กซ์ใหม่ ซึ่งตรวจซ้ำ **ทุก** เกณฑ์ในทุก iteration ไม่มีสิ่งใดตรวจสอบว่าการ spawn นั้นเกิดขึ้นจริง | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **Event log** | ในเซสชัน OMA ทุกครั้งที่ gate ผ่าน gate ไม่ผ่าน และทุกการตัดสินใจ จะเพิ่ม JSON หนึ่งบรรทัดลงใน `events.jsonl` ของเซสชันนั้น | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **การตรวจรายเอเจนต์** | `oma verify agent <type>` รัน Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs และ TDD Evidence บวกกับการตรวจเฉพาะประเภท เช่น TypeScript, Any Types, SQL Injection และเทสต์ | `oma verify agent --help` |
+| **การตรวจรายเอเจนต์** | `oma verify agent <type>` รัน Scope Check, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs และ TDD Evidence บวกกับการตรวจเฉพาะประเภท เช่น TypeScript, Any Types, SQL Injection และเทสต์ | `oma verify agent --help` |
 
 > **การบันทึก event ของเซสชัน:** Stop hook จะบันทึก event ของ gate ไว้ภายใต้เซสชัน OMA ที่เปิดขึ้นตอนที่ persistent workflow เริ่มทำงาน การเขียน event เป็นแบบ best-effort หากสร้างเซสชันนั้นไม่สำเร็จ (stderr จะแสดง `[oma] L1 session activation failed`) gate ที่ไม่ผ่านก็ยังบล็อกการหยุดอยู่ดี แต่จะไม่มีการเขียนบรรทัด `gate.failed` ลงไป ก่อนจะพึ่งพาร่องรอยนี้หรือนำไปเดโม ให้ตรวจสอบว่า `oma state list` แสดงเซสชันที่ยังทำงานอยู่ จากนั้น `oma state get <sid>` จะแสดง event ของเซสชันนั้น
 

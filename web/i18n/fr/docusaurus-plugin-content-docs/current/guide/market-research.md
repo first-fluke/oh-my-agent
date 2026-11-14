@@ -1,7 +1,7 @@
 ---
 title: "Guide : Étude de marché (moteur last30days)"
 sidebar_label: Étude de marché
-description: Comment la compétence oma-market d’oh-my-agent mène une recherche de signaux communautaires sur le moteur amont mvanhorn/last30days, maintenu automatiquement à la dernière version — section de configuration market, oma market resolve / update / run, porte detect-trap, correspondance intention-cadre et modes d’échec.
+description: Comment la compétence oma-market d’oh-my-agent mène une recherche de signaux communautaires sur le moteur amont mvanhorn/last30days, installé comme compétence via le CLI skills — section de configuration market, oma market resolve / update / run, porte detect-trap, correspondance intention-cadre et modes d’échec.
 ---
 
 # Étude de marché
@@ -89,14 +89,14 @@ flowchart TD
   resolve -->|"ok: true"| contract["Read the engine SKILL.md"]
   contract --> run["oma market run (same args as upstream)"]
   run --> synth["Synthesize per OUTPUT CONTRACT + frameworks"]
-  synth --> check["Self-check, write the brief"]
+  synth --> check["Write the brief, then self-check the written file"]
 ```
 
 1. `oma market detect-trap "<topic>"` — refuse les sujets pièges par mots-clés et de shopping démographique (sortie 2) avec une suggestion de reformulation. Un sujet vide ou de plus de 200 caractères termine avec le code de sortie 4.
 2. `oma market resolve --json` — moteur + Python ; s’arrête avec `ok: false`.
 3. L’agent lit de haut en bas le `SKILL.md` du moteur résolu et le suit : assistant de configuration de première exécution, résolution préalable des handles / subreddits / hashtags de recherche (lorsque WebSearch est disponible), planification des requêtes et porte de précondition.
 4. `oma market run "<topic>" <flags> --emit=compact` — arguments identiques à l’appel amont `python3 scripts/last30days.py` ; `--save-dir` est ajouté depuis `market.save_dir`.
-5. La synthèse suit le OUTPUT CONTRACT amont (badge en première ligne, groupes de preuves classés, LAWs 1–8), puis oma ajoute des sections de cadres qui ne citent que les groupes du moteur :
+5. La synthèse suit le OUTPUT CONTRACT amont (badge en première ligne, groupes de preuves classés, LAWs 1–8), puis oma ajoute des sections de cadres, placées entre le corps du moteur et le pied de page du moteur, qui ne citent que les groupes du moteur :
 
 | Intention | Mise en forme moteur | Cadres |
 |---|---|---|
@@ -105,7 +105,7 @@ flowchart TD
 | concurrent | `"A vs B"` → flux de comparaison amont | SWOT + 5F de Porter |
 | découverte | `--discover`, puis suivis `--drill` | SWOT + PESTEL |
 
-6. Auto-vérifier, puis écrire `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`.
+6. Écrire `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`, puis exécuter l’auto-vérification sur le fichier écrit ; corriger et revérifier avant de livrer le brief.
 
 ---
 

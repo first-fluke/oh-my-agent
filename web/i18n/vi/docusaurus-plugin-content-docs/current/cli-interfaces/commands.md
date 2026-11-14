@@ -298,7 +298,7 @@ Dùng lệnh này sau khi sửa `.agents/agents/`, `.agents/workflows/`, `.agent
 
 ### Cấu hình lại một bản cài đặt có sẵn {#setup-workflow}
 
-Không có workflow `/setup`. Để thay đổi một project đã cài, hãy chạy lại `oma install`, dùng `oma update mcp` chỉ cho browser MCP server, hoặc chạy `/tools` bên trong một session agent để bật hoặc tắt các công cụ MCP. Kiểm tra việc phân giải model theo từng agent bằng `oma doctor --profile`; các model pin theo từng agent nằm dưới `agents:` trong `.agents/oma-config.yaml` ([Cấu hình model theo từng agent](../guide/per-agent-models.md)).
+Không có workflow `/setup`. Để thay đổi một project đã cài, hãy chạy lại `oma install`, hoặc dùng `oma update mcp` để chọn browser MCP server. Kiểm tra việc phân giải model theo từng agent bằng `oma doctor --profile`; các model pin theo từng agent nằm dưới `agents:` trong `.agents/oma-config.yaml` ([Cấu hình model theo từng agent](../guide/per-agent-models.md)).
 
 ---
 
@@ -1168,7 +1168,6 @@ Khi có nhiều session plan hoặc run receipt khớp, việc xác minh thất 
 
 **Kiểm tra chung (mọi loại agent):**
 - **Kiểm tra phạm vi**: Đọc phạm vi task trong `.agents/results/plan-{sessionId}.json`. So sánh các file thay đổi theo `git diff` với các mẫu phạm vi đã định nghĩa. Thất bại nếu có file bị sửa ngoài phạm vi được giao cho agent.
-- **Charter Preflight**: Xác minh báo cáo kết quả đã chọn chứa block `CHARTER_CHECK:` được điền đúng, không còn placeholder nào chưa điền.
 - **Bằng chứng TDD**: Yêu cầu báo cáo đã chọn của mỗi task áp dụng phải chứa chính xác task ID của nó và các mục `red:` và `green:` riêng, không rỗng. Báo cáo từ session khác hoặc lần retry khác không thể thay thế báo cáo đã chọn.
 - **Secret hardcode**: Quét các file `.py`, `.ts`, `.tsx`, `.js`, `.dart` để tìm các mẫu như `password = "..."`, `api_key = "..."` (loại trừ file test/ví dụ).
 - **Comment TODO/FIXME**: Đếm các comment `TODO`, `FIXME`, `HACK`, `XXX` (cảnh báo nếu tìm thấy).
@@ -1662,18 +1661,18 @@ Lập kế hoạch, author và render video short-form, explainer và demo. `gen
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` nhận `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` và `--capture-stop duration:<seconds>|selector:<css>`. Dùng `--source web --url <url>` để capture bằng browser; `--source file` là mặc định. `--output-dir` chọn run root, `--allow-external-output` cho phép path nằm ngoài `$PWD`, `--max-usd` đặt trần chi phí, `-y, --yes` bỏ qua bước xác nhận chi phí, `--seed` cố định input planning, `--timeout` giới hạn thời gian của mỗi lần gọi provider visual và music, `--script` inject một `script.json` do agent viết và `--no-brief-in-manifest` lưu hash của brief thay vì nội dung brief. `--dry-run` dừng sau bước planning. `--output text|json` điều khiển CLI envelope.
+`generate` nhận `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout` và `--capture-stop duration:<seconds>|selector:<css>`. Demo dùng bản ghi do bạn cung cấp qua `--capture`; `--source file` là mặc định, còn `--source web --url <url>` chỉ thêm URL làm ngữ cảnh (CLI không mở hay ghi hình browser). `--polish` đưa capture qua composition `Demo`, nơi thông tin cá nhân được che; không có nó thì MP4 output là capture thô, chưa che. `--visual stock` và `--visual aigc` chọn provider Pexels và Pixelle khi key của chúng đã được đặt, còn visual dạng slide cần `visual.ref` trong script trỏ tới một thư mục deck có sẵn. `--output-dir` chọn run root, `--allow-external-output` cho phép path nằm ngoài `$PWD`, `--max-usd` đặt trần chi phí, `-y, --yes` bỏ qua bước xác nhận chi phí, `--seed` cố định input planning, `--timeout` giới hạn thời gian của mỗi lần gọi provider visual và music, `--script` inject một `script.json` do agent viết và `--no-brief-in-manifest` lưu hash của brief thay vì nội dung brief. `--dry-run` dừng sau bước planning. `--output text|json` điều khiển CLI envelope.
 
 `doctor` kiểm tra toolchain HyperFrames/MPT đã cache và nhận `--install`, `--upgrade`, `--install-mpt` và `--install-strudel`. `provider list` báo availability và trạng thái key của provider. `compose` scaffold hoặc làm mới composition của run và báo authoring contract; `render` chạy lint, render và probe output. Thiếu compositor, composition hoặc dependency của toolchain đều là lỗi. Đường `OMA_VIDEO_MOCK=1` chỉ dành cho test là chế độ placeholder duy nhất; một lần chạy bình thường không bao giờ thay thế bằng MP4 là file text hay file rất nhỏ.
 
-Output JSON thành công chứa `runDir`, `manifestPath`, `scriptPath` và `renderSpecPath`; manifest ghi lại các provider đã chọn, input và asset đã tạo. Sau `compose`, hãy author composition đã sinh theo `AUTHORING.md` của nó, rồi chạy lại `render`. Nếu thiếu provider key, chạy `oma video doctor`; nếu capture thất bại, kiểm tra URL, selector, device và timeout; nếu render thất bại, sửa các diagnostics của composition trước khi thử lại.
+Output JSON thành công chứa `runDir`, `manifestPath`, `scriptPath` và `renderSpecPath`; manifest ghi lại các provider đã chọn, input và asset đã tạo. Sau `compose`, hãy author composition đã sinh theo `AUTHORING.md` của nó, rồi chạy lại `render`. Nếu thiếu provider key, chạy `oma video doctor`; nếu một lần chạy demo dừng lại kèm hướng dẫn ghi hình, hãy cung cấp bản ghi bằng `--capture`; nếu render thất bại, sửa các diagnostics của composition trước khi thử lại.
 
 ### star
 

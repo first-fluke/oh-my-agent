@@ -152,9 +152,9 @@ Bei einem Treffer wird die Erzeugung sofort beendet. Nur die maskierten Fundstel
 
 ## Validierungs-Checkliste
 
-Nach der Erzeugung wird die Ausgabedatei mit einer grep-basierten Checkliste geprüft: keine externen Ressourcen-Ladeverweise, Einhaltung von `pre`/`pre-wrap` in Code-Containern, Vorhandensein des Quiz-Skripts, das Dateinamensformat `{YYYY-MM-DD}-{slug}.html` (Datum in der `timezone` aus oma-config, sonst in der Systemzeitzone) und der Secret-Scan des fertigen HTML. Bei einem Fehler korrigiert die Schleife bis zu **3 Iterationen** lang und validiert erneut; anschließend beendet sie sich und zeigt die verbleibenden Fehler an, statt stillschweigend auszuliefern.
+Nach der Erzeugung führt der Workflow `oma explain validate <file>` und den Secret-Scan des fertigen HTML gegen die Ausgabedatei aus. Der Validator ist die maßgebliche Prüfung: keine externen Ressourcen-Ladeverweise, Einhaltung von `pre`/`pre-wrap` in Code-Containern, Vorhandensein des Quiz-Skripts und das Dateinamensformat `{YYYY-MM-DD}-{slug}.html` (Datum in der `timezone` aus oma-config, sonst in der Systemzeitzone). Die grep-Befehle im HTML-Vertrag des Skills sind ergänzende Stichproben, kein Ersatz. Bei einem Fehler korrigiert die Schleife bis zu **3 Iterationen** lang und validiert erneut; anschließend beendet sie sich und zeigt die verbleibenden Fehler an, statt stillschweigend auszuliefern.
 
-Dies ist eine Einschränkung der Version 1: Die Validierung ist datei- und grep-basiert und prüft nur das *Vorhandensein* des Quiz-Skripts, nicht dessen vollständige Verhaltenskorrektheit. Verwenden Sie für eine manuelle Prüfung einen Browser (oder den Chrome-DevTools-MCP), wenn Sie das Verhalten des Quiz sicher beurteilen müssen.
+Dies ist eine Einschränkung der Version 1: Die Validierung ist dateibasiert und prüft nur das *Vorhandensein* des Quiz-Skripts, nicht dessen vollständige Verhaltenskorrektheit. Verwenden Sie für eine manuelle Prüfung einen Browser (oder den Chrome-DevTools-MCP), wenn Sie das Verhalten des Quiz sicher beurteilen müssen.
 
 Sie können ein vorhandenes Artefakt mit dem registrierten CLI-Befehl validieren:
 
@@ -185,7 +185,7 @@ Die erste Form prüft eine einzelne HTML-Datei. Die Verzeichnisform prüft jeden
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-Das Datum richtet sich nach `timezone` in oma-config; ohne Wert gilt die Systemzeitzone. Ein erneuter Lauf mit demselben Datum und Slug überschreibt die vorherige Datei. Das Bewahren eines älteren Laufs liegt in Ihrer Verantwortung. Nach bestandener Validierung versucht der Workflow, die Seite zu öffnen (nur Warnung; in einer Headless-Umgebung wird stattdessen nur der Pfad gemeldet), und gibt eine TL;DR-Zusammenfassung samt Dateipfad aus. `oma explain render --open` öffnet die Seite direkt im Browser.
+Das Datum richtet sich nach `timezone` in oma-config; ohne Wert gilt die Systemzeitzone. Ein erneuter Lauf mit demselben Datum und Slug überschreibt die vorherige Datei. Das Bewahren eines älteren Laufs liegt in Ihrer Verantwortung. Nach bestandener Validierung öffnet der Workflow die Seite, indem er den validierten Entwurf mit `oma explain render --open` rendert, und gibt eine TL;DR-Zusammenfassung samt Dateipfad aus. Ein fehlgeschlagenes Öffnen ist eine Warnung, kein Fehler: In einer Headless-Umgebung wird stattdessen der Pfad gemeldet.
 
 ---
 
@@ -203,8 +203,8 @@ Wenn `diagram.explain_sidecar: true` in `oma-config.yaml` gesetzt ist oder Sie d
 | Fehlende oder nicht authentifizierte `gh`-CLI (PR-Referenz) | Installations-/Authentifizierungshinweise plus lokale Branch-Diff-Alternative |
 | Merge/Rebase läuft | Stoppen — der Arbeitsbaum ist instabil |
 | Kein Git-Verzeichnis | Änderungsmodus: sofort stoppen. Der Themenmodus läuft ohne Git. |
-| Validierung schlägt nach 3 Korrekturschleifen fehl | Stoppen und fehlerhafte Checklistenpunkte anzeigen |
-| `open` schlägt fehl / Headless-Umgebung | Nur Warnung — der gemeldete Pfad reicht aus |
+| Validierung schlägt nach 3 Korrekturschleifen fehl | Stoppen und die fehlerhaften Punkte anzeigen |
+| `--open` schlägt in einer Headless-Umgebung fehl | Nur Warnung — der gemeldete Pfad reicht aus |
 
 ---
 

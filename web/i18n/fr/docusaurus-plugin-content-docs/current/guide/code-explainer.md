@@ -152,9 +152,9 @@ Les secrets sont contrôlés deux fois :
 
 ## Checklist de validation
 
-Après génération, une checklist fondée sur grep s’exécute sur le fichier de sortie : aucune référence chargeant une ressource externe, conformité des conteneurs de code `pre`/`pre-wrap`, présence du script de quiz, format de nom `{YYYY-MM-DD}-{slug}.html` (date dans la `timezone` d’oma-config, sinon dans le fuseau horaire du système) et scan final des secrets HTML. En cas d’échec, la boucle corrige et revalide jusqu’à **3 itérations**, puis s’arrête et expose les éléments restants en échec au lieu de livrer silencieusement.
+Après génération, le workflow exécute `oma explain validate <file>` et le scan final des secrets HTML sur le fichier de sortie. Le validateur est le contrôle principal : aucune référence chargeant une ressource externe, conformité des conteneurs de code `pre`/`pre-wrap`, présence du script de quiz et format de nom `{YYYY-MM-DD}-{slug}.html` (date dans la `timezone` d’oma-config, sinon dans le fuseau horaire du système). Les commandes grep du contrat HTML de la compétence sont des vérifications ponctuelles complémentaires, pas un substitut. En cas d’échec, la boucle corrige et revalide jusqu’à **3 itérations**, puis s’arrête et expose les éléments restants en échec au lieu de livrer silencieusement.
 
-C’est une contrainte v1 : la validation est fondée sur des fichiers et grep et vérifie uniquement la *présence* du script de quiz (pas sa correction comportementale complète). Utilisez un navigateur (ou le MCP chrome-devtools) pour exercer manuellement le quiz lorsque la confiance comportementale est importante.
+C’est une contrainte v1 : la validation est fondée sur des fichiers et vérifie uniquement la *présence* du script de quiz (pas sa correction comportementale complète). Utilisez un navigateur (ou le MCP chrome-devtools) pour exercer manuellement le quiz lorsque la confiance comportementale est importante.
 
 Vous pouvez valider un artefact existant avec la commande CLI enregistrée :
 
@@ -185,7 +185,7 @@ La première forme vérifie un seul fichier HTML. La forme répertoire vérifie 
 .agents/results/explain/{YYYY-MM-DD}-{slug}.html
 ```
 
-La date suit la `timezone` d’oma-config, ou à défaut le fuseau horaire du système. Relancer la même date et le même slug écrase le fichier précédent — vous êtes responsable de conserver une exécution antérieure. Après réussite de la validation, le workflow tente d’ouvrir la page (avertissement seulement ; un environnement sans interface revient simplement au signalement du chemin) et signale un TL;DR ainsi que le chemin du fichier. `oma explain render --open` ouvre directement la page dans le navigateur.
+La date suit la `timezone` d’oma-config, ou à défaut le fuseau horaire du système. Relancer la même date et le même slug écrase le fichier précédent — vous êtes responsable de conserver une exécution antérieure. Après réussite de la validation, le workflow ouvre la page en rendant le brouillon validé avec `oma explain render --open` et signale un TL;DR ainsi que le chemin du fichier. Un échec d’ouverture est un avertissement, pas un échec : un environnement sans interface revient au signalement du chemin.
 
 ---
 
@@ -203,8 +203,8 @@ Lorsque `diagram.explain_sidecar: true` est défini dans `oma-config.yaml` ou qu
 | CLI `gh` manquant ou non authentifié (référence PR) | Indications d’installation/authentification, avec alternative de diff de branche locale |
 | Fusion/rebase en cours | Arrêter — arbre de travail instable |
 | Répertoire non Git | Mode change : arrêt immédiat. Le mode topic fonctionne sans git. |
-| Échec de validation après 3 boucles de correction | Arrêter et exposer les éléments de checklist en échec |
-| Échec de `open` / environnement sans interface | Avertissement seulement — le chemin signalé suffit |
+| Échec de validation après 3 boucles de correction | Arrêter et exposer les éléments en échec |
+| Échec de `--open` dans un environnement sans interface | Avertissement seulement — le chemin signalé suffit |
 
 ---
 

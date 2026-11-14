@@ -22,7 +22,7 @@ Deze tabel is de gezaghebbende lijst van geïnstalleerde skills. `cli/scripts/ge
 | [`oma-architecture`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-architecture/SKILL.md) | Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs. |
 | [`oma-backend`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-backend/SKILL.md) | Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db. |
 | [`oma-brainstorm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-brainstorm/SKILL.md) | Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration. |
-| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step. |
+| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination. |
 | [`oma-db`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-db/SKILL.md) | Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend. |
 | [`oma-debug`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-debug/SKILL.md) | Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests. |
 | [`oma-design`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-design/SKILL.md) | Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions. |
@@ -44,7 +44,7 @@ Deze tabel is de gezaghebbende lijst van geïnstalleerde skills. `cli/scripts/ge
 | [`oma-scholar`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scholar/SKILL.md) | Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis. |
 | [`oma-scm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-scm/SKILL.md) | Manage Git branches, merges, conflicts, commits, and release baselines. Use for repository history and change-management operations. |
 | [`oma-search`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-search/SKILL.md) | Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools. |
-| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation. |
+| [`oma-security`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-security/SKILL.md) | Scan application source, agent skills, and MCP components, validate findings, and configure scan gates. Penetration tests of a scoped web test deployment run only on a user-supplied, reviewed runtime platform. Use oma-qa for broad quality reviews and domain skills for remediation. |
 | [`oma-skill-creation`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-skill-creation/SKILL.md) | Create or revise OMA skills and their references. Use for skill routing, execution contracts, conditional loading, and authoring validation. |
 | [`oma-slide`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-slide/SKILL.md) | Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery. |
 | [`oma-tf-infra`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-tf-infra/SKILL.md) | Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes. |
@@ -127,15 +127,15 @@ flowchart TD
 | **Kwaliteit** | oma-qa | Beveiligingsaudit (OWASP), prestaties, toegankelijkheid (WCAG) en codekwaliteitsreview |
 | **Debugging** | oma-debug | Bugs reproduceren, oorzaken analyseren, minimale fixes en regressietests |
 | **Lokalisatie** | oma-translation | Contextbewuste vertaling met behoud van toon, register en domeintermen |
-| **Coördinatie** | oma-orchestration, oma-coordination | Geautomatiseerde en handmatige multi-agentorchestratie |
+| **Coördinatie** | oma-orchestration, oma-coordination | Geautomatiseerde multi-agentorchestratie; gedeelde coördinatieregels en handmatige stapsgewijze coördinatie |
 | **Git** | oma-scm | Conventional Commits genereren en commits per functie opsplitsen |
-| **Zoeken en ophalen** | oma-search | Intentgebaseerde zoekrouter met trust scoring (Context7-documentatie, web, `gh`/`glab`-code en lokale code-intelligentie) |
+| **Zoeken en ophalen** | oma-search | Zoekrouter voor externe bronnen met bronvermelding (Context7-documentatie, webproviders, externe code via `gh`/`glab` en het ophalen van bekende URL's) |
 | **Retrospectief** | oma-recap | Conversatiegeschiedenis over tools heen analyseren en thematische werksamenvattingen maken |
 | **Documentverwerking** | oma-hwp, oma-pdf | HWP/HWPX/HWPML en PDF naar Markdown converteren voor LLM/RAG-inname |
 | **Documentatie** | oma-docs | Documentatieonderhoud: kapotte verwijzingen, docs die door een diff worden geraakt, vertaaldrift en linting van vertaalde docs |
 | **Uitleg** | oma-explanation | Offline HTML-uitleg van een codewijziging (diff, PR, branch, commitreeks) of van een onderwerp, systeem of vraag |
 | **Academisch schrijven** | oma-academic-writing, oma-scholar | Publicatieklare academische tekst opstellen/controleren en Knows-sidecars voor onderzoek, zoeken en peerreview |
-| **Beveiliging** | oma-security | Applicatiebroncode, agentskillpakketten, MCP-componenten en geautoriseerde webtestdeployments scannen (Deepsec, Cisco-scanners, ARTEX), met onafhankelijke validatie van bevindingen en CI-gates |
+| **Beveiliging** | oma-security | Applicatiebroncode, agentskillpakketten en MCP-componenten scannen (Deepsec, Cisco-scanners), met onafhankelijke validatie van bevindingen en CI-gates; penetratietests van een afgebakende webtestdeployment alleen op een door de gebruiker aangeleverd en beoordeeld ARTEX-platform |
 | **Refactoring** | oma-refactor | Gedragsbehoudende, stapsgewijze herstructurering met hotspotselectie, karakteriseringstests als vangnet en refactor-only commits |
 | **Marktonderzoek** | oma-market | Communitysignalen onderzoeken naar pijnpunten, trends, concurrenten en discovery met intentafhankelijke SWOT/Porter's 5F/PESTEL-frameworks |
 | **Skill-auteurschap** | oma-skill-creation | OMA-skills maken en valideren in SSL-lite-formaat |
@@ -162,7 +162,7 @@ Deze samenvattingen beschrijven het domein en de belangrijkste regels van elke s
 - Werk het ontwerp sectie voor sectie uit en beslis alleen over open wezenlijke keuzes
 - YAGNI: ontwerp alleen wat nodig is
 
-**Workflow:** 7 fasen: Context, Questions, Approaches (optioneel gevoed met TRIZ-lite), Design, Blind Review, Documentation (opslaan in `docs/plans/designs/`) en overgang naar `/plan`.
+**Workflow:** De `/brainstorm`-workflow doorloopt 7 stappen: Context, Questions, Approaches (optioneel gevoed met TRIZ-lite), Design, Blind Review, Documentation (opslaan in `docs/decisions/`) en overgang naar `/plan`.
 
 ---
 
@@ -199,7 +199,7 @@ Deze samenvattingen beschrijven het domein en de belangrijkste regels van elke s
 - Minimaliseer afhankelijkheden voor maximale parallelle uitvoering
 - Beveiliging en testen horen bij elke taak; het zijn geen aparte fasen
 - Taken moeten door één agent te voltooien zijn
-- Lever het JSON-plan plus een sessiegebonden task board voor orchestratorcompatibiliteit
+- Lever het JSON-plan als overdracht aan de orchestrator; de orchestrator maakt en beheert het task board
 
 **Uitvoer:** `.agents/results/plan-{sessionId}.json` met numerieke prioriteitstiers (`1` = onafhankelijk, lagere tiers draaien eerst), plus het rungebonden rapport `result-{agentId}-{taskId}-{runId}-{sessionId}.md` in de geconfigureerde geheugenopslag.
 
@@ -255,11 +255,15 @@ Deze samenvattingen beschrijven het domein en de belangrijkste regels van elke s
 
 **Domein:** API's, serverlogica, authenticatie en databasebewerkingen.
 
-**Wanneer gebruiken:** REST/GraphQL-API's, databasemigraties, auth, serverbedrijfslogica en achtergrondtaken.
+**Wanneer gebruiken:** REST/GraphQL-API's, de datatoegangscode en migraties die een API-wijziging nodig heeft, auth, serverbedrijfslogica en achtergrondtaken.
+
+**Wanneer NIET gebruiken:** Schemamodellering, indexontwerp en query-tuning (gebruik oma-db), frontend-UI (gebruik oma-frontend) of mobiele code (gebruik oma-mobile).
 
 **Architectuur:** Router (HTTP) -> Service (bedrijfslogica) -> Repository (datatoegang) -> Models.
 
-**Stackdetectie:** Leest projectmanifesten (pyproject.toml, package.json, Cargo.toml, go.mod enzovoort) om taal en framework te bepalen. Als projectspecifieke conventies ontbreken, vraagt de agent om `/stack-set` uit te voeren; die opdracht materialiseert de opgeloste `stack/`-referenties uit de meegeleverde schema's en sjablonen.
+**Stackdetectie:** Leest eerst projectmanifesten (pyproject.toml, package.json, Cargo.toml, go.mod enzovoort) en bestaande code om taal en framework te bepalen. De stackreferentie is aanvullend: `stack/` wanneer die bestaat, anders de bijbehorende `variants/<language>/`. Een geïnstalleerd project met een gekozen preset heeft `stack/` en geen `variants/`; de plugin- en bronindelingen hebben `variants/` en geen `stack/`. Als geen van beide van toepassing is, vraagt de agent het de gebruiker of stelt hij `/stack-set` voor.
+
+**Meegeleverde presets:** Python (Litestar met SQLAlchemy 2 (async) via Advanced Alchemy, msgspec-modellen, ingebouwde JWT-auth), Node.js (NestJS + Prisma, getest met Vitest) en Rust (Axum + SQLx). Een project dat met de eerdere FastAPI-preset is geïnstalleerd, behoudt FastAPI. Deze standaarden gelden alleen wanneer het doelproject geen gevestigde keuze heeft; een afgebakende wijziging geeft geen toestemming voor een stackmigratie.
 
 **Kernregels:**
 - Clean architecture: geen bedrijfslogica in route handlers
@@ -269,33 +273,40 @@ Deze samenvattingen beschrijven het domein en de belangrijkste regels van elke s
 - Gebruik async waar dat wordt ondersteund en type-annotaties op alle signatures
 - Gebruik custom exceptions via een gecentraliseerde foutmodule
 - Definieer expliciete ORM-laadstrategie, transactiegrenzen en een veilige levenscyclus
+- Verificatiecommando's worden uit het project gekozen (bij voorkeur het `verify:`-blok van `stack/stack.yaml`) en alleen uitgevoerd wanneer de gebruiker of de actieve workflow dat vereist; niet-uitgevoerde controles worden gemeld
 
 <!-- oma-docs:ignore-start -->
-Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sjablonen worden indien nodig gegenereerd door `/stack-set`; ze bestaan nog niet voordat de stack is gematerialiseerd.
+De stackreferentie bevat `stack.yaml` (de gestructureerde declaratie en het `verify:`-contract dat `oma verify agent backend` uitvoert), `tech-stack.md`, `snippets.md` en `api-template.*`. `/stack-set` genereert een projectspecifieke `stack/` uit de gedetecteerde codebase.
 <!-- oma-docs:ignore-end -->
 
 ---
 
 ### oma-mobile
 
-**Domein:** Cross-platform en native mobiele apps (Flutter, React Native en native Swift iOS).
+**Domein:** Cross-platform en native mobiele apps (Flutter, React Native, native Swift iOS en native Kotlin Android).
 
 **Wanneer gebruiken:** Native mobiele apps (iOS + Android), mobielspecifieke UI-patronen, platformfuncties (camera, GPS, pushmeldingen), offline-first architectuur en native Swift iOS-apps met SwiftUI en `swift-openapi-generator`.
 
-**Architectuur:** Clean Architecture: domain -> data -> presentation. Voor Swift iOS: de projectindeling `App/Core/Features/Shared`.
+**Architectuur:** Clean Architecture: domain -> data -> presentation. Voor Swift iOS: de projectindeling `App/Core/Features/Shared`. Voor Kotlin Android: `app/{ui,data,di}` + `api-client`. Bedrijfslogica staat nooit in widgets, views of composables.
 
 **Technologiestacks:**
 - Flutter/Dart: Riverpod/Bloc (state management), Dio met interceptors (API), GoRouter (navigatie), Material Design 3 (Android) + iOS HIG.
+- React Native: Zustand + TanStack Query (state), axios achter TanStack Query-hooks (API).
 - Native Swift iOS (iOS 17+): SwiftUI + `@Observable` (Observation-framework), Apple's `swift-openapi-generator` voor API-clients en indeling `App/Core/Features/Shared`.
+- Native Kotlin Android (API 26+): Jetpack Compose + Material 3, `@HiltViewModel` + `StateFlow`, OpenAPI Generator-clients (`kotlin` / `jvm-ktor`) over Ktor met een geïnjecteerde OkHttp-engine en indeling `app/{ui,data,di}` + `api-client`.
 
 **Kernregels:**
-- Gebruik Riverpod/Bloc voor state management (geen kale setState voor complexe logica)
-- Ruim alle controllers op in de methode `dispose()`
-- Gebruik Dio met interceptors voor API-aanroepen en handel offline situaties netjes af
-- Streef naar 60fps en test op beide platforms
+- State management volgt de oplossing van de variant (Flutter: Riverpod/Bloc; React Native: Zustand + TanStack Query; Swift: `@MainActor @Observable`; Kotlin: `@HiltViewModel` + `StateFlow`); geen kale setState of ad-hocstate voor complexe logica
+- Geef resources vrij via de levenscyclus van het platform: Flutter-controllers in `dispose()`, effect-cleanups in React Native, gestructureerde `.task {}` in Swift, `viewModelScope` in Kotlin
+- Gebruik het transport van het platform met interceptie voor auth, retry en logging; handel offline situaties netjes af
+- Streef naar 60fps; dek elk platform waarop de app wordt uitgebracht
+- Secrets staan alleen in beveiligde opslag (flutter_secure_storage, Keychain, react-native-keychain, opslag op basis van Android Keystore)
+- E2E voor kritieke gebruikersflows: Maestro (Flutter, React Native, Kotlin) of XCUITest (native Swift)
+- Tests en E2E-controles draaien alleen wanneer de gebruiker of de actieve workflow dat vereist; builds draaien alleen op uitdrukkelijk verzoek
 - Swift: gebruik `@Observable` boven `ObservableObject` op iOS 17+; genereer API-clients uit OpenAPI-specs via `swift-openapi-generator`
+- Kotlin: roep de gegenereerde `*Api` aan voor endpoints die de spec dekt; Ktor is een engine-agnostische laag, dus de OkHttp-engine wordt geïnjecteerd waar de client wordt gebouwd en `MockEngine` vervangt die in tests
 
-**Platformseeds:** `variants/` levert `flutter/`, `react-native/` en `swift-ios/`, elk met `stack.yaml`, `tech-stack.md`, `snippets.md` en een API-sjabloon, plus het gedeelde `stack.schema.json`. Het is startmateriaal voor `/stack-set`, geen verplichte lectuur voor wijzigingen aan bestaande code.
+**Platformvarianten:** `variants/` levert `flutter/`, `react-native/`, `swift-ios/` en `kotlin-android/`, elk met `stack.yaml`, `tech-stack.md` en `snippets.md` (patronen voor datalaag, state, scherm en tests, inclusief het snippet voor de API-service of repository), plus het gedeelde `stack.schema.json`. De agent gebruikt `stack/` wanneer die bestaat en leest anders rechtstreeks de bijbehorende `variants/<platform>/`; `/stack-set` schrijft `stack/` uit het gedetecteerde project, met de variant als startpunt. Een skill die zonder variant is geïnstalleerd, behoudt zijn `variants/`-map.
 
 ---
 
@@ -322,26 +333,37 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 ### oma-design
 
-**Domein:** Designsystemen, UI/UX en beheer van DESIGN.md.
+**Domein:** Visuele systemen, `DESIGN.md` en herontwerprichting: beslissingen over typografie, layout, kleur, beweging en interactieontwerp.
 
-**Wanneer gebruiken:** Designsystemen en DESIGN.md maken of herzien, een bestaande site of app herontwerpen (behouden of omgooien), landingspagina's, designtokens, kleurenpaletten, typografie, responsive layouts en toegankelijkheidsreview.
+**Wanneer gebruiken:** Een visueel systeem of een ingrijpende ontwerprichting definiëren of herzien, een bestaande UI reviewen of een gekozen richting verfijnen, of ontwerpbeslissingen afleiden uit bestaande UI, screenshots of aangeleverde referenties.
 
-**Workflow:** 7 fasen: Setup (context verzamelen) -> Extract (optioneel, uit referentie-URL's) -> Enhance (vage prompt verrijken) -> Propose (2-3 ontwerprichtingen) -> Generate (DESIGN.md + tokens) -> Audit (responsive, WCAG, Nielsen, AI-slopcontrole) -> Handoff.
+**Wanneer NIET gebruiken:** Applicatie-UI implementeren of frameworkspecifieke tokens exporteren (gebruik oma-frontend of oma-mobile), productscope plannen (gebruik oma-pm), een afbeelding genereren (gebruik oma-image) of algemene correctheids- of beveiligingsreview (gebruik oma-qa of oma-security).
 
-**Antipatroonhandhaving ("geen AI-slop"):**
-- Typografie: standaard een systeemfontstack; geen standaard Google Fonts zonder onderbouwing
-- Kleur: geen paars-naar-blauwe gradients, gradient-orbs of blobs, en geen puur wit op puur zwart
-- Layout: geen geneste kaarten, desktop-only layouts of generieke statistieklayouts met drie metrieken
-- Beweging: overal bounce easing gebruiken mag niet, animaties duren maximaal 800ms en moeten `prefers-reduced-motion` respecteren
-- Componenten: geen glassmorphism overal; elk interactief element heeft een toetsenbord- en touchalternatief
+**Leverancierselectie:** De skill bepaalt de ontwerpintentie van het project en laadt via `resources/external-design-skills.md` één externe designskill per operatie:
+
+| Operatie | Leverancier |
+|-----------|----------|
+| Visuele richting voor dashboards, adminpanelen, SaaS-product-UI of interne tools | Interface Design |
+| Review na implementatie van hiërarchie, dichtheid, consistentie of afwerking van een productinterface | Interface Design `design-review` |
+| Andere kritiek op bestaande UI, toegankelijkheids- of technische audit, polish of systeemextractie | Impeccable |
+| Andere nieuwe art direction voor het web of een geautoriseerde visuele overhaul | Taste |
+| Taak met alleen documentatie of een tokencontract, zonder nieuw visueel oordeel | Blijft lokaal |
+
+**Workflow:** UI, designartefacten en briefing inspecteren en scope, platform, bestaande stack, talen, merkbehoud en verificatie vaststellen -> de leverancier selecteren en laden -> het resultaat toepassen op de gevraagde beslissing of het gevraagde artefact -> het betrokken resultaat controleren met `resources/checklist.md` en de implementatie overdragen aan de frontend- of mobile-specialist.
 
 **Kernregels:**
-- Hergebruik `.design-context.md` en `DESIGN.md` wanneer ze bestaan; maak `.design-context.md` alleen aan wanneer een inhoudelijke verkenningsronde de beslissing onderbouwt
+- Hergebruik `.design-context.md` en `DESIGN.md` wanneer ze bestaan; werk `DESIGN.md` alleen bij wanneer het visuele systeem verandert, en maak `.design-context.md` alleen aan wanneer een inhoudelijke verkenningsronde de beslissing onderbouwt
+- Een afgebakende correctie hergebruikt de betrokken UI en tokens; daar is geen verkenningsdocument voor nodig
 - Volg voor een bestaande site of app `resources/redesign-protocol.md` en classificeer Preserve versus Overhaul voordat je voorstellen doet
-- Gebruik standaard een systeemfontstack (CJK-klare fonts voor ko/ja/zh)
-- Hanteer minimaal WCAG AA voor elk ontwerp
-- Werk responsive-first, met mobiel als uitgangspunt
-- Presenteer 2-3 richtingen en vraag om bevestiging
+- Behoud bestaand merk, content, URL's, navigatie, formuliercontracten, analytics en juridische tekst binnen de geautoriseerde scope
+- Behoud bestaande fonts wanneer ze geschikt zijn; controleer voor ko/ja/zh de glyphdekking, fallback, regelafbreking en leesbare metrics
+- WCAG AA is het standaarddoel voor toegankelijkheid, of het strengere doel van het project; eisen voor responsive gedrag, reduced motion en het platform gelden ook voor de geselecteerde leverancier
+- Gebruik echte projectassets en claims; label concepten en placeholders
+- Behoud de bestaande implementatiestack; de implementatiespecialist is verantwoordelijk voor CSS, Tailwind, de syntax van componentbibliotheken en dependencies
+- Operaties die alleen een review zijn, blijven read-only
+- Vraag alleen naar de wezenlijke onopgeloste keuze; een uitdrukkelijk gevraagde leverancier die niet beschikbaar is, wordt gemeld en niet vervangen
+
+**Uitvoer:** De gevraagde ontwerpbeslissing, bevindingen of implementatieoverdracht met waargenomen bewijs, de geselecteerde leverancier en operatie, en beperkingen in capability of verificatie. `DESIGN.md` en `.design-context.md` worden alleen geschreven wanneer aan de voorwaarden hierboven is voldaan. Stitch en getdesign zijn optionele inputs.
 
 ---
 
@@ -370,14 +392,18 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Domein:** Taakautomatisering en CI/CD voor monorepo's.
 
-**Wanneer gebruiken:** Devservers draaien, lint/format/typecheck uitvoeren over apps, databasemigraties, API-generatie, i18n-builds, productiebuilds, CI/CD-optimalisatie en pre-commitvalidatie.
+**Wanneer gebruiken:** Devservers draaien, lint/format/typecheck uitvoeren over apps, databasemigraties, API-generatie, i18n-builds, productiebuilds, CI/CD-optimalisatie, pre-commitvalidatie en het configureren van taalspecifieke lint-, format- en typechecktools, Dockerfile-linting en commitlint.
 
 **Kernregels:**
-- Gebruik altijd `mise run`-taken in plaats van directe package-managercommando's
-- Draai lint/test alleen voor gewijzigde apps
-- Valideer commitberichten met commitlint
-- Laat CI ongewijzigde apps overslaan
-- Gebruik nooit directe package-managercommando's wanneer er mise-taken bestaan
+- Gebruik `mise run`-taken in plaats van directe package-managercommando's; vind ze met `mise tasks --all` en lees de definitie van een onbekende taak voordat je die uitvoert
+- Draai lint en test op de gewijzigde scope; laat CI ongewijzigde apps overslaan
+- Valideer commitberichten met commitlint via een lokaal geprovisioneerde `commit-msg`-hook; haal nooit packages op vanuit een Git-hook
+- Houd controletaken niet-muterend: bied `lint`, `format:check` en `typecheck` aan en houd de muterende `format` apart
+- Een overgeslagen validatierun is geen geslaagde run; een checker die niet kan draaien, wordt als onvolledig gemeld en niet vervangen door een placeholder of een build
+- Geef de voorkeur aan hermetische tests; tests die Docker of externe services nodig hebben, horen in een aparte opt-in-integratietaak buiten de standaardhooks en de verplichte CI-gates
+- Hardcode nooit secrets in `mise.toml`; voer nooit destructieve taken uit zonder bevestiging
+
+**Resources:** `mise-basics.md`, `tooling-profiles.md`, `validation-pipeline.md`, `example-task-wiring.md` (migraties, optionele lokale Docker-infrastructuur, generatie van API-clients, i18n-builds), `release-coordination.md` en `troubleshooting.md`, elk geladen op de vermelde trigger.
 
 ---
 
@@ -396,17 +422,20 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 - MELT+P-signaaldekking: metrics, logs, traces, profiles, cost, audit, privacy
 - Migraties van logpipelines, beoordeeld tegen de huidige upstream-ondersteuning en de projectrequirements
 
-**Wanneer NIET gebruiken:** LLM ops/gen_ai-observability (gebruik Langfuse, Arize Phoenix, LangSmith, Braintrust), data-pipeline-lineage (OpenLineage + Marquez, dbt test, Airflow lineage), IoT-/fysieke datacentertelemetrie (Nlyte, Sunbird, Device42), orchestratie van chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), GPU-/TPU-infrastructuur (NVIDIA DCGM Exporter), software supply chain (sigstore, in-toto, SLSA), incidentresponsworkflow/paging (PagerDuty, OpsGenie, Grafana OnCall) of een single-vendor setup die al door de eigen skill van die vendor wordt gedekt.
+**Wanneer NIET gebruiken:** LLM ops/gen_ai-observability (gebruik Langfuse, Arize Phoenix, LangSmith, Braintrust), data-pipeline-lineage (OpenLineage + Marquez, dbt test, Airflow lineage), IoT-/fysieke datacentertelemetrie (Nlyte, Sunbird, Device42), orchestratie van chaos engineering (Chaos Mesh, Litmus, Gremlin, ChaosToolkit), GPU-/TPU-infrastructuur (NVIDIA DCGM Exporter), software supply chain (sigstore, in-toto, SLSA), incidentresponsworkflow/paging (PagerDuty, Jira Service Management, Grafana Cloud IRM), volledige TLS-pakketinspectie, beveiligingsscans of penetratietests (gebruik oma-security; deze skill dekt alleen beveiligingstelemetrie) of een single-vendor setup die al door de eigen skill van die vendor wordt gedekt.
 
 **Kernregels:**
 - Classificeer de intent vóór routering: setup | migrate | investigate | alert | trace | tune | route
-- Kies eerst de categorie, niet het vendorregister: delegeer via `resources/vendor-categories.md` naar vendor-eigen skills en dupliceer geen vendordocumentatie
-- Transporttuning is het onderscheidende onderdeel: UDP/MTU-drempels, OTLP-protocolkeuze, Collectortopologie en samplingrecepten worden elders niet diep behandeld
-- Meta-observability is niet onderhandelbaar: valideer pipeline-zelfgezondheid, kloksynchronisatie (< 100 ms drift), cardinality en retentie vóór je een setup voltooid noemt
-- Geef de voorkeur aan CNCF: Prometheus, Jaeger, Thanos, Fluent Bit, OpenTelemetry, Cortex, OpenCost, OpenFeature, Flagger, Falco
-- Fluentd blijft CNCF Graduated; de CNCF-gids van 2025-10 over Fluentd naar Fluent Bit is een migratiegids, geen deprecation. Kies Fluentd, Fluent Bit of de OTel Collector op basis van workload-, plugin- en operationele requirements
-- Gebruik W3C Trace Context als standaardpropagator; vertaal per cloud (AWS X-Ray `X-Amzn-Trace-Id`, GCP Cloud Trace, Datadog, Cloudflare, Linkerd)
-- Privacy vóór features: pas PII-redactie, samplingbewuste baggage-regels en onveranderlijke SOC2/ISO-audit plus GDPR/PIPA-wissing toe bij collectie, niet alleen bij opslag
+- Laad resources op hun trigger: het uitvoeringsprotocol, de ene gids die de intentroute selecteert en daarna alleen een laag-, grens-, signaal- of transportgids wanneer de trigger daarvan aanwezig is. Geen enkele referentie wordt verplicht vooraf geladen
+- Gebruik `resources/vendor-categories.md` alleen wanneer categoriekeuze of vendordelegatie nodig is; delegeer naar vendor-eigen skills in plaats van vendordocumentatie te dupliceren
+- Laad de ene transportgids die past bij het waargenomen probleem: UDP/MTU, OTLP-protocol, Collectortopologie of sampling
+- Verifieer, voordat je een setup voltooid noemt, pipelinegezondheid, kloksynchronisatie, cardinalitylimieten en retentie aan de hand van de projectrequirements, en leg controles vast die niet konden draaien
+- Verifieer de huidige upstream-ondersteuning, de stabiliteit van attributen en de migratierichtlijnen aan de hand van officiële documentatie en de CNCF-status wanneer die de aanbeveling beïnvloeden. Resourcebestanden bevatten geen versiepins van specs per bestand; `resources/standards.md` bevat de enige verklaring over de actualiteit van spec en semconv
+- Gebruik W3C Trace Context als standaardpropagator, met waar nodig cloudvertalingen uit `resources/boundaries/cross-application.md`
+- Pas PII-redactie en samplingbewuste baggage-controles toe bij collectie; controleer de eisen voor retentie, wissing en audit van het doelsysteem
+- Lever werkende configuratie of expliciet gelabelde voorstellen; scaffolds en niet-geverifieerde controles tellen niet als voltooide setup
+
+De dekkingsmatrix heeft vier lagen (L3, L4, mesh, L7), vier grenzen (multi-tenant, cross-application, SLO, release) en zeven signalen (metrics, logs, traces, profiles, cost, audit, privacy).
 
 ---
 
@@ -415,6 +444,8 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 **Domein:** Kwaliteitsborging voor beveiliging, prestaties, toegankelijkheid en codekwaliteit.
 
 **Wanneer gebruiken:** Eindreview vóór deployment, beveiligingsaudits, prestatieanalyse, toegankelijkheidscompliance en analyse van testdekking.
+
+**Wanneer NIET gebruiken:** Scannergestuurde scans, penetratietests, validatie van bevindingen of beveiligings-CI-gates (gebruik oma-security), of initiële implementatie en nieuwe features (gebruik de domeinagenten).
 
 **Reviewprioriteit:** Beveiliging > Prestaties > Toegankelijkheid > Codekwaliteit.
 
@@ -426,8 +457,10 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Kernregels:**
 - Elke bevinding bevat bestand:regel, beschrijving en fix
-- Draai eerst geautomatiseerde tools (npm audit, bandit, lighthouse)
-- Geen false positives; elke bevinding moet reproduceerbaar zijn
+- Kies de geautomatiseerde controles die passen bij de gedetecteerde stack en de reviewscope (bijvoorbeeld een dependency-audit, statische beveiligingsanalyse of een runtime-prestatieaudit); review statisch waar een tool of doel niet beschikbaar is
+- Draai de lint-, test- en coveragecommando's van het project wanneer het reviewverzoek of de actieve workflow dat bewijs vereist; meld ze anders als niet uitgevoerd
+- Elke defectbevinding moet reproduceerbaar zijn; hypotheses en niet-beschikbare controles worden vastgelegd als verificatiegaten, en er wordt geen PASS afgegeven zolang vereiste controles ongeverifieerd zijn
+- Beveiligingsbevindingen zijn hier code-reviewbevindingen; scannerkandidaten, exploitbewijs en de disposities `confirmed` / `needs_validation` horen bij oma-security
 - Lever remediatiecode, niet alleen een beschrijving
 
 ---
@@ -443,9 +476,10 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 **Kernregels:**
 - Zoek de grondoorzaak, niet alleen de symptomen
 - Minimale fix: verander alleen wat nodig is
-- Elke fix krijgt een regressietest
+- Elke fix krijgt een regressietest; draai die opnieuw samen met de oorspronkelijk falende controle (rood vóór de fix, groen erna)
+- Draai bredere suites alleen wanneer de gebruiker of de actieve workflow dat vereist; meld ze anders als niet uitgevoerd
 - Zoek elders naar vergelijkbare patronen
-- Documenteer in `.agents/results/`
+- Documenteer de bug onder `.agents/results/bugs/`: het beknopte rapport in `resources/debugging-checklist.md`, of het volledige `resources/bug-report-template.md` voor Complex- of CRITICAL/HIGH-bugs
 
 **Gebruikte code-intelligentietools (Gortex of Serena):**
 - `find_symbol("functionName")` of symbolnavigatie in Gortex: lokaliseer de functie
@@ -460,7 +494,7 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Wanneer gebruiken:** UI-teksten, documentatie en marketingteksten vertalen, bestaande vertalingen reviewen of woordenlijsten maken.
 
-**Zes scènes:** Prepare, Acquire, Reason, Act, Verify en Finalize. De vertaalmethode heeft vier stappen: betekenis en beschermde syntax lezen, register kiezen, reconstrueren in de doeltaal en de auteursstijl behouden waar die past.
+**Vertaalmethode:** Vier stappen: betekenis en beschermde syntax lezen, register kiezen, reconstrueren in de doeltaal en de auteursstijl behouden waar die past. De verificatie staat in verhouding tot het inhoudsrisico: beschermde syntax en structuur worden altijd gecontroleerd; voor inhoudelijke content en de reviewmodus geldt ook de rubric (natuurlijkheid, nauwkeurigheid, register, terminologie, technische integriteit).
 
 **Kernregels:**
 - Scan eerst bestaande locale-bestanden om conventies te volgen
@@ -484,9 +518,13 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 |---------|---------|-------------|
 | MAX_PARALLEL | 3 | Maximum aantal gelijktijdige subagenten |
 | MAX_RECOVERY_ATTEMPTS | 3 | Totaal aantal herhaalpogingen en exploratiehypotheses per taak, de oorspronkelijke poging inbegrepen |
-| POLL_INTERVAL | 30s | Interval voor statuscontroles van `oma agent spawn`-runs (native subagenten van Claude Code keren synchroon terug) |
+| POLL_INTERVAL | begrensde backoff | Alleen als fallback wanneer voltooiingsmeldingen niet beschikbaar zijn (native subagenten van Claude Code keren synchroon terug) |
+
+Dit zijn workflowstandaarden; model-, vendor-, parallellisme- en budgetinstellingen worden bepaald door de projectconfiguratie.
 
 **Workflowfasen:** Plan → References (referenties per taak selecteren) → Setup (sessie- en task-board-artefacten) → Execute (gereedstaande taken dispatchen binnen MAX_PARALLEL) → Monitor → Verify (reviewlus) → Collect (claims en rungebonden rapporten).
+
+**Taakreferenties:** Elke taak wordt vergeleken met de intentsignaturen van de geïnstalleerde skills, en de coördinator selecteert de referenties die de taak nodig heeft. Eén skill die met vertrouwen matcht, is voldoende; de set wordt alleen uitgebreid wanneer de classificatie onzeker is of een afhankelijkheid een ander domein vereist. De selectie en de reden ervoor worden als coördinatornotities op het task board vastgelegd; de launcher dwingt ze niet af.
 
 **Reviewlus tussen agenten:** zie [Orchestratiestroom](#orchestration-flow) voor het diagram en de luslimieten.
 
@@ -516,11 +554,11 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 ### oma-coordination
 
-**Domein:** Handleiding voor handmatige, stapsgewijze multi-agentcoördinatie.
+**Domein:** Gedeelde coördinatieregels voor multi-agentwerk: hergebruik van plannen, contractafstemming, eigenaarschap van werkruimtes en QA-overdracht.
 
-**Wanneer gebruiken:** Werk over meerdere domeinen waarbij je spawnen, monitoren, contractafstemming en QA stap voor stap wilt begeleiden in plaats van volledig geautomatiseerde orchestratie.
+**Wanneer gebruiken:** Elke workflow die meer dan één specialistische agent dispatcht. `/work`, `/orchestrate` en `/ultrawork` laden deze skill en passen de guardrails ervan toe. Gebruik de skill ook voor handmatige, stapsgewijze coördinatie waarbij je elke dispatch zelf aanstuurt, en wanneer agenten een API- of datacontract delen.
 
-**Wanneer NIET gebruiken:** Volledig geautomatiseerde parallelle uitvoering (gebruik oma-orchestration) of taken binnen één domein (gebruik de domeinagent direct).
+**Wanneer NIET gebruiken:** Taken binnen één domein (gebruik de domeinagent direct). Geautomatiseerde dispatch, monitoring en verificatie horen bij oma-orchestration; deze skill levert alleen de regels die daarbij worden toegepast.
 
 **Kernregels:**
 - Hergebruik een geldig plan; roep oma-pm alleen aan wanneer de decompositie of contracten moeten veranderen
@@ -531,27 +569,38 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Workflow:** Plan (hergebruiken of PM) → spawnen per prioriteitstier → monitoren → QA-review → problemen oplossen → opleveren.
 
-**Verschil met oma-orchestration:** Coordination is handmatig en begeleid (de gebruiker bepaalt het tempo); orchestrator is geautomatiseerd (agenten worden met minimale gebruikersinterventie gespawnd en uitgevoerd).
+**Verschil met oma-orchestration:** Coordination levert de regels en begeleidt een handmatige run waarin de gebruiker het tempo bepaalt; de orchestrator is verantwoordelijk voor de geautomatiseerde uitvoering (dispatchresolutie, de parallellismelimiet, het herstelbudget en de reviewlus).
 
 ---
 
 ### oma-search
 
-**Domein:** Intentgebaseerde zoekrouter met trust scoring per domein. Routeert queries naar Context7 (docs), native web search, `gh`/`glab` (code) en lokale code-intelligentie (Gortex of Serena).
+**Domein:** Zoekrouter voor externe bronnen. De skill kiest het kanaal dat een verzoek nodig heeft en levert bronnen met ondersteunend bewijs en ophaalbeperkingen.
 
-**Wanneer gebruiken:** Officiële bibliotheek- en frameworkdocumentatie vinden, webonderzoek doen naar tutorials/voorbeelden/vergelijkingen/oplossingen, GitHub/GitLab-code zoeken naar implementatiepatronen, queries routeren waarvan het kanaal onduidelijk is (automatische routering) en zoekinfrastructuur leveren aan andere skills (gedeelde invocatie).
+**Routes:**
 
-**Wanneer NIET gebruiken:** Alleen-lokale codebaseverkenning (gebruik de code-intelligentie-MCP direct), Git-historie of blame-analyse (gebruik oma-scm) of volledig architectuuronderzoek (gebruik oma-architecture, die deze skill intern kan aanroepen).
+| Route | Uitvoering | Scope |
+|-------|-----------|-------|
+| `docs` | Bibliotheekresolutie en queries via Context7; zo nodig de officiële site opzoeken | Officiële documentatie binnen de gevraagde versiebeperkingen |
+| `web` | De geconfigureerde `providers.web`: runtimetools voor `native`, een CLI-adapter voor `brave` of `exa` | URL's vinden die relevant zijn voor een query |
+| `code` | `oma search code` via de geselecteerde codehost (`gh` of `glab`) | Externe implementatiematches binnen de beperkingen van host en repository |
+| `fetch` | Een beschikbare URL-lezer of `oma search fetch <url>` | Een URL lezen die al is aangeleverd of gevonden |
+
+**Wanneer gebruiken:** Bibliotheekdocumentatie, webonderzoek, zoeken in externe code, een bekende URL lezen en verzoeken waarbij het externe bronkanaal nog gekozen moet worden. Andere skills gebruiken deze skill om externe bronnen te verkrijgen.
+
+**Wanneer NIET gebruiken:** Alleen-lokale codebaseverkenning (gebruik de geconfigureerde code-intelligentie direct), Git-historie of blame-analyse (gebruik oma-scm) of architectuuranalyse (gebruik oma-architecture).
 
 **Kernregels:**
-- Een expliciete `--docs`, `--code` of `--web` kiest de route; classificeer anders de intent met `resources/intent-rules.md`
-- Eén query, één beste route; vermijd redundante multi-route tenzij de intent ambigu is
-- Geef elk resultaat een trust score; alle niet-lokale resultaten krijgen domeinlabels uit het register
-- Overige vlaggen: `--strict` filtert resultaten na het scoren op trust, `--wide` behoudt gelabelde resultaten met lagere trust en `--gitlab` kiest GitLab als codehost
-- Fail forward: valt de primaire route uit, val dan netjes terug (docs→web, web→`oma search fetch`-strategieën)
-- Extra MCP is niet nodig: Context7 voor docs, runtime-native voor web, CLI voor code en de ingestelde provider (Gortex of Serena) voor lokaal
-- Web search is vendoragnostisch: gebruik wat de huidige runtime biedt (WebSearch, Google, Bing)
-- Ken trust alleen op domeinniveau toe; gebruik geen scores voor subpaden of afzonderlijke pagina's
+- Een expliciete `--docs`, `--code` of `--web` kiest de route; anders kiest de skill één primaire route en gebruikt die `resources/intent-rules.md` alleen wanneer de keuze onduidelijk is
+- Een andere route wordt alleen toegevoegd wanneer het resterende bewijsgat dat vereist; de skill waaiert niet standaard uit
+- `--strict` vereist geschikte primaire of officiële bronnen waarvan de ondersteunende inhoud is geïnspecteerd; `--wide` neemt bredere resultaten op met hun beperkingen; `--gitlab` kiest GitLab als codehost
+- Resultaten bevatten de bron-URL of bestandsverwijzing, de route, de werkelijke provider, het brontype, de status van het lezen van de inhoud, het ondersteunende bewijs en wezenlijke beperkingen
+- Zoeksnippets en fragmenten zijn beperkt bewijs; ongelezen bronnen worden als zodanig aangeduid
+- Geen gefabriceerde trust scores: een providernaam of domeinlabel verifieert geen afzonderlijke claim. `oma search trust <domain>` is een optionele domeindiagnose, en `resources/source-provenance.md` is van toepassing wanneer herkomst interpretatie vraagt
+- Een webprovider die niet beschikbaar of niet geauthenticeerd is of een rate limit bereikt, wordt gemeld; een expliciete providerkeuze wordt niet stilzwijgend door native search vervangen
+- Een zoekopdracht zonder kandidaat-URL's wordt binnen de oorspronkelijke beperkingen verfijnd of als geen resultaat gemeld; het ophalen van een URL vervangt geen ontbrekende zoekresultaten
+- Wanneer geen bron aan `--strict` voldoet, wordt het gat gemeld; een bredere resultatenset voldoet niet aan het strikte verzoek
+- Er wordt niets automatisch geïnstalleerd: geen provider, browser of dependency
 
 ---
 
@@ -617,27 +666,27 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Wanneer gebruiken:** Academische rapporten, essays of analysesecties opstellen of reviseren, executive summaries, conclusies of literatuuroverzichten schrijven, AI-achtig klinkende tekst herschrijven tot natuurlijk academisch Engels, een concept volgens de rubric reviseren, of tekst beoordelen op zinsvariatie, werkwoordkwaliteit, hedging en anti-AI-naleving.
 
-**Wanneer NIET gebruiken:** Vertalen (gebruik oma-translation), bronnen zoeken, citaties verzamelen of literatuur doorzoeken (gebruik oma-scholar), rubric parsen en taken opsplitsen (gebruik oma-pm), codedocumentatie/README/API-referentietekst (gebruik de relevante domeinskill), informele of marketingtekst, of niet-Engelse academische tekst (schrijf eerst in het Engels en draag daarna over aan oma-translation).
+**Wanneer NIET gebruiken:** Vertalen (gebruik oma-translation), bronnen zoeken, citaties verzamelen of literatuur doorzoeken (gebruik oma-scholar), codedocumentatie/README/API-referentietekst (gebruik de relevante domeinskill), informele of marketingtekst, of niet-Engelse academische tekst (schrijf eerst in het Engels en draag daarna over aan oma-translation).
 
 **Modi:** `draft` (heading + prose + Writing Notes + Claim-Evidence Map), `revise` (origineel + revisie + lijst met wijzigingen) en `review` (PASS/FAIL-rapport over zinsstructuur, werkwoordkwaliteit, anti-AI, specificiteit, hedging, alineahelderheid, ritme en claim-evidence-alignment).
 
 **Kernregels:**
-- Citeer vóór je oordeelt: haal eerst de letterlijke rubric- of constrainttekst aan
+- Citeer aangeleverde rubricconstraints voordat je de naleving beoordeelt; leg zonder rubric de bevindingen uit ten opzichte van de gevraagde scope in plaats van criteria te verzinnen
 - Elke zin moet verifieerbaar zijn; verzin geen gegevens, statistieken of citaties
-- Verboden generieke werkwoorden (`show`, `have`, `make`, `do`, `get`, `use`, …) mogen geen hoofdwerkwoord zijn
-- Varieer zinstype, lengte en openingswoorden; schrijf nooit drie of meer zinnen van hetzelfde type achter elkaar
-- Stem de sterkte van hedging af op de sterkte van het bewijs; gebruik geen eerste persoon `I think`/`I believe`
+- Kies werkwoorden op hun exacte betekenis en onderbouwing (`resources/academic-verb-guide.md`); behoud een gangbaar werkwoord wanneer het nauwkeurig en natuurlijk is
+- Beoordeel herhaalde structuur en zinslengte in context (`resources/sentence-structure-reference.md`); pas het ritme aan waar dat de helderheid verbetert, zonder quota per zinstype
+- Stem de sterkte van hedging af op de sterkte van het bewijs volgens `resources/hedging-guide.md`, inclusief de grenzen die daarin gelden voor intensifiers en meningsmarkeerders in de eerste persoon
 - Koppel elke claim aan bewijs in de Claim-Evidence Map; verzwak of verwijder claims zonder bewijs
 
-**Workflow:** 6 stappen — READ (rubric/concept lezen en constraints citeren), PLAN (alinea's plannen als Topic-Support-Conclude), DRAFT (schrijven volgens alle vier protocollen), AUDIT (toetsen aan de anti-AI-checklist), REVERSE-OUTLINE (plus Claim-Evidence Map opbouwen) en POLISH (hardop lezen, samenhang, specificiteit, woordenaantal en ritme).
+**Workflow:** 6 stappen — READ (rubric/concept lezen en constraints citeren), PLAN (alinea's plannen als Topic-Support-Conclude), DRAFT (schrijven volgens de richtlijnen voor zinnen, werkwoorden en hedging), AUDIT (toetsen aan de anti-AI-checklist), REVERSE-OUTLINE (plus Claim-Evidence Map opbouwen) en POLISH (samenhang, specificiteit, woordenaantal, ritme en variatie in alinealengte).
 
 ---
 
 ### oma-security
 
-**Domein:** Beveiligingsscans en -validatie voor applicatiebroncode, agentskillpakketten, MCP-componenten en geautoriseerde webtestdeployments.
+**Domein:** Beveiligingsscans en -validatie voor applicatiebroncode, agentskillpakketten en MCP-componenten. Penetratietests van een afgebakende webtestdeployment draaien alleen op een door de gebruiker aangeleverd en beoordeeld runtimeplatform.
 
-**Wanneer gebruiken:** Een repository of een source-diff scannen; een skillpakket of een MCP-server of -configuratie inspecteren; een afgebakende penetratietest uitvoeren tegen een concrete, geautoriseerde testdeployment; kandidaten van scanners valideren; een engine-specifieke CI-gate configureren; problemen met credentials, dekking, matchers, quota of hervatbare state van een scanner oplossen.
+**Wanneer gebruiken:** Een repository of een source-diff scannen; een skillpakket of een MCP-server of -configuratie inspecteren; een afgebakende runtime-penetratietest uitvoeren tegen een concrete, geautoriseerde testdeployment op een runtimeplatform dat je zelf aanlevert en hebt beoordeeld; kandidaten van scanners valideren; een engine-specifieke CI-gate configureren; problemen met credentials, dekking, matchers, quota of hervatbare state van een scanner oplossen.
 
 **Wanneer NIET gebruiken:** Brede review van correctheid, prestaties, toegankelijkheid of kwaliteit (gebruik oma-qa), toolvergelijkingen of onderzoek zonder uitvoering (gebruik oma-search), beslissingen over beveiligingsarchitectuur (gebruik oma-architecture), remediatie in productcode (gebruik oma-debug of de verantwoordelijke backend-/frontend-/mobile-/infrastructuurskill).
 
@@ -648,11 +697,12 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 | Applicatiebroncode of source-diff | Deepsec (Cisco AI Deep SAST wanneer expliciet gekozen) |
 | Map of pakket van een agentskill | Cisco Skill Scanner |
 | MCP-broncode, -configuratie of -server | Cisco MCP Scanner |
-| Webtestdeployment | ARTEX |
+| Webtestdeployment (`web_runtime`, `pentest`) | Standaard geen. ARTEX alleen op uitdrukkelijk verzoek, op een door de gebruiker aangeleverd en beoordeeld platform |
 | Afgebakende lokale reproductie | Validatiemethode van Cloudflare (geen extern netwerk) |
 
 **Kernregels:**
 - Een algemene repositoryscan selecteert alleen broncode; skill-, MCP- en runtimescans worden niet impliciet toegevoegd
+- Runtimetests hebben geen meegeleverde of standaardengine. Een runtimeverzoek of een verzoek voor broncode plus runtime selecteert ARTEX niet impliciet, en de skill installeert, bouwt of deployt geen ARTEX-platform. Zonder een uitdrukkelijk ARTEX-verzoek, een concrete webtestdeployment en een beoordeeld platform wordt de runtimefase als `skipped` vastgelegd en gaan de andere geselecteerde operaties door
 - Een mislukt of leeg resultaat selecteert nooit automatisch een andere engine, een ander model of een betaalde analyzer
 - Behoud en hervat bestaande `.deepsec/`-state; initialiseer nooit opnieuw om een mislukte of rumoerige run te wissen
 - Een geïnstalleerde key of tool geeft geen toestemming voor betaalde calls of een bredere scope; hergebruik bestaande autorisatie volgens het gedeelde uitvoeringsbeleid
@@ -688,7 +738,7 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Wanneer gebruiken:** Een diff, pull request, branch of commitreeks, of een onderwerp, systeem of vraag, uitleggen als één HTML-pagina die offline werkt.
 
-**Workflow:** Het model schrijft een Markdown-concept; `oma explain render` maakt daar één HTML-bestand van in `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, en `oma explain validate` controleert het. Activering gebeurt alleen via `/explain`, door de skill te noemen of via delegatie; de skill is uitgesloten van keywordhints.
+**Workflow:** Het model schrijft een Markdown-concept; `oma explain render` maakt daar één HTML-bestand van in `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`, en `oma explain validate` controleert het (corrigeren en opnieuw valideren, maximaal 3 keer). De pagina wordt geopend met `oma explain render --open`; een mislukte open is geen fout. Activering gebeurt alleen via `/explain`, door de skill te noemen of via delegatie; de skill is uitgesloten van keywordhints.
 
 **Wanneer NIET gebruiken:** Een gewone docs-pagina, live feature-implementatie of slide deck (gebruik `oma-slide` voor presentaties).
 
@@ -703,20 +753,21 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 **Wanneer NIET gebruiken:** Een bestaande afbeelding bewerken of foto's manipuleren, video of audio genereren (gebruik oma-video/oma-voice), inline vector/SVG-compositie uit gestructureerde data of eenvoudige asset-resizing/-conversie.
 
 **Kernregels:**
-- Verduidelijk vóór invocatie: als onderwerp, stijl, compositie of gebruik onduidelijk is, stel eerst een vraag of verrijk de prompt en toon de uitgebreide versie
+- Werk de briefing uit: gebruik aangeleverde details en redelijke creatieve standaarden, en vraag alleen wanneer een ontbrekende keuze het resultaat wezenlijk verandert. Een uitgebreide prompt heeft geen aparte goedkeuring nodig wanneer generatie al is geautoriseerd
 - Auth-bewuste dispatch: voer alleen geauthenticeerde vendors uit; met `--vendor all` moet elke gevraagde vendor beschikbaar zijn
 - Kostengate: bevestig runs met een geschatte kosten van ≥ $0.20 (`--yes`/`OMA_IMAGE_YES=1` omzeilt dit); `pollinations` en `antigravity` zijn standaard gratis
 - Padveiligheid: output buiten `$PWD` vereist `--allow-external-output`; maximaal `n` = 5
 - Geregistreerde output: elke run schrijft naast de afbeeldingen een `manifest.json` met prompt, vendor/model, inputs en artifactmetadata. Dit legt reproduceerbaarheidsgegevens vast, maar belooft geen pixelidentieke output.
 - Stuur bijgevoegde referentieafbeeldingen automatisch door via `--reference <path>` (codex/antigravity)
+- Projectinstellingen staan onder `image:` in `.agents/oma-config.yaml`; meegeleverde standaarden staan in de CLI
 
-**Workflow:** PREPARE (prompt verduidelijken/verrijken, vendor kiezen) → ACQUIRE (auth, referenties en outputpad valideren) → ACT (`oma image generate`) → VERIFY (manifest, bestanden en exitcode) → FINALIZE (outputpaden en waarschuwingen).
+**Workflow:** PREPARE (briefing uitwerken, vendor kiezen) → ACQUIRE (auth, referenties en outputpad valideren) → ACT (`oma image generate`) → VERIFY (manifest, bestanden en exitcode) → FINALIZE (outputpaden en waarschuwingen).
 
 ---
 
 ### oma-market
 
-**Domein:** Marktonderzoek op basis van communitysignalen: pijnpunten, trends, concurrentiepositionering en discovery. Onderzoek gebruikt de upstream [`last30days`](https://github.com/mvanhorn/last30days-skill)-engine (Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web en meer), die OMA automatisch op de nieuwste release houdt.
+**Domein:** Marktonderzoek op basis van communitysignalen: pijnpunten, trends, concurrentiepositionering en discovery. Onderzoek gebruikt de upstream [`last30days`](https://github.com/mvanhorn/last30days-skill)-engine (Reddit, X, YouTube, TikTok, Instagram, HN, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, web en meer), die als skill wordt geïnstalleerd via de skills-CLI.
 
 **Wanneer gebruiken:** Echte pijnpunten uit communityposts halen, trends detecteren binnen een venster van 7/30/90/180 dagen, sentiment van concurrenten analyseren met SWOT/Porter's 5F, open discovery (`--discover`), personen/bedrijven/tickers onderzoeken, hiring-signalen zoeken of vervolgonderzoek uitvoeren.
 
@@ -724,14 +775,14 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 **Kernregels:**
 - Eerst detect-trap: start de engine nooit zonder preflight (`--force` alleen na expliciete bevestiging door de gebruiker)
-- Eén engine, altijd de nieuwste: `oma market resolve` vernieuwt de beheerde kopie (`~/.cache/oma-market/last30days/<tag>/`) vóór gebruik; een stale lokaal geïnstalleerde kopie is alleen fallback wanneer offline niets gecached is
+- Eén engine, geïnstalleerd als skill: `oma market resolve` leest de installatie van de skills-CLI (of een pin); `oma market update` installeert de engine wanneer die ontbreekt en werkt die anders bij, nadat de gebruiker akkoord is gegaan
 - Volg de `SKILL.md` van de opgeloste engine letterlijk; de enige vervanging is `oma market run <args>` in plaats van de ruwe aanroep `python3 scripts/last30days.py`
 - Nooit alleen WebSearch: geen engine, geen Python 3.12+ of een niet-nul exitcode → stoppen en rapporteren
 - Bronnen met keys worden alleen via de upstream setup wizard met gebruikersconsent ingeschakeld; overgeslagen bronnen blijven in de footer zichtbaar
-- Frameworks citeren alleen engineclusters; badge op de eerste regel en upstream LAWs worden gehandhaafd vóór het bestand wordt geschreven
+- Frameworks citeren alleen engineclusters. De badge van de engine is de eerste regel; eerst wordt de kandidaat-brief geschreven, daarna moeten upstream LAWs 1–8 en de self-check uit `resources/output-laws.md` slagen op het geschreven bestand voordat het wordt opgeleverd
 - Eén brief per run in `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`; frameworks schakelen automatisch volgens intent (pain/trend → SWOT, competitor → SWOT + Porter's 5F, discovery → SWOT + PESTEL)
 
-**Workflow:** detect-trap → `oma market resolve` → upstream SKILL.md lezen → upstream pre-research-stappen (setup wizard, handle/subreddit oplossen, queryplan) → `oma market run … --emit=compact` → synthese volgens upstream OUTPUT CONTRACT → frameworks toevoegen → self-check → schrijven.
+**Workflow:** detect-trap → `oma market resolve` → upstream SKILL.md lezen → upstream pre-research-stappen (setup wizard, handle/subreddit oplossen, queryplan) → `oma market run … --emit=compact` → synthese volgens upstream OUTPUT CONTRACT → de frameworksecties toevoegen tussen de enginebody en de enginefooter → schrijven → self-check op het geschreven bestand, corrigeren en opnieuw controleren.
 
 ---
 
@@ -751,7 +802,7 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 - Economisch: leesbaarheid is het hoofddoel; refactor geen code die verdwijnt of koude code met weinig churn
 - Afwijken van conventies vereist de ADR-route van oma-architecture, geen lokale wijziging; alle metrics zijn proxies (Goodhart)
 
-**Workflow:** PREPARE (green/brownfield classificeren, size gates, hotspotrangschikking) → ACQUIRE (code lezen via symboltools, metrics + git-signalen verzamelen) → REASON (atomaire transformatievolgorde/expand-contract plannen) → ACT (één engine-first-transformatie) → VERIFY (tests ongewijzigd opnieuw draaien → commit, of Mikado revert) → FINALIZE (metricdelta + oordeel over leesbaarheid).
+**Workflow:** PREPARE (green/brownfield classificeren, een eventuele bestaande size gate van het project, hotspotrangschikking) → ACQUIRE (code lezen via symboltools, metrics + git-signalen verzamelen) → REASON (atomaire transformatievolgorde/expand-contract plannen) → ACT (één engine-first-transformatie) → VERIFY (tests ongewijzigd opnieuw draaien → commit, of Mikado revert; is testuitvoering uitgesloten, stop dan vóór de volgende transformatie en meld de toegepaste transformatie als niet geverifieerd) → FINALIZE (metricdelta + oordeel over leesbaarheid).
 
 ---
 
@@ -768,7 +819,8 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 **Kernregels:**
 - Doelspecificatie is v0.9.0 / `paper@1`-profiel; het host-LLM genereert sidecars (roep nooit een extern LLM-SDK aan)
 - Anti-fabricatie: als DOI/venue/jaar niet in de bron staat, laat de key volledig weg; schrijf nooit `doi: TODO` en gok niet
-- Gebruik exacte veldnamen, één `provenance.actor`-object, gesloten enums en ongequote getallen
+- Veldvormen volgen `resources/sidecar-spec.md` exact: veldnamen, het ene `provenance.actor`-object, gesloten enums, ongequote getallen en kebab-case-ID's met prefix
+- Lokale generatieregels en lint volgen productiecompatibiliteit, niet het volledige canonieke v0.9-schema; `resources/canonical-delta.md` behandelt het verschil bij het importeren of linten van een record van derden
 - Claims met bewijs gebruiken `supported_by`; definities en open vragen mogen aan de bron verankerd blijven. `oma scholar lint` waarschuwt onder 1.5 relaties per statement, maar die verhouding is een diagnose, geen quotum
 - Valideer vóór delen (`oma scholar lint`); gebruik `--lenient` voor sidecars van derden
 - knows.academy → OpenAlex-fallback voor oudere of niet-2026 papers; de publieke proxy-API heeft geen auth nodig
@@ -798,9 +850,9 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 
 ### oma-slide
 
-**Domein:** HTML-presentatiedecks met veel animatie op een vast podium van 1920×1080, met deterministische validate/bundle/export naar PDF/PNG/PPTX via de `oma slide`-CLI.
+**Domein:** HTML-presentatiedecks met veel animatie op een vast podium van 1920×1080, met deterministische validate/bundle/export naar PDF/PNG/PPTX via de `oma slide`-CLI, plus een `native-pptx`-route die bewerkbare PowerPoint-bestanden maakt via de upstream-skill [ppt-master](https://github.com/hugohe3/ppt-master).
 
-**Wanneer gebruiken:** Een nieuwe presentatie maken vanuit een onderwerp of outline, een bestaand deck verbeteren of herformatteren, per-slide HTML met animaties en design-doctrine-esthetiek genereren, een deck exporteren naar PDF/PNG/PPTX, een benoemde stijlpreset toepassen of exporteren naar/importeren uit Canva.
+**Wanneer gebruiken:** Een nieuwe presentatie maken vanuit een onderwerp of outline, een bestaand deck verbeteren of herformatteren, per-slide HTML met animaties en design-doctrine-esthetiek genereren, een deck exporteren naar PDF/PNG/PPTX, een benoemde stijlpreset toepassen of exporteren naar/importeren uit Canva. Gebruik de `native-pptx`-route voor een bewerkbare PPTX, om een bestaande PPTX in te vullen of te bewerken met behoud van het ontwerp, om een document om te zetten in een PPTX-deck, voor herbruikbare sjablonen of voor PPTX/MP4 met narratie.
 
 **Wanneer NIET gebruiken:** Gewone documentcreatie zonder slides, alleen beeldgeneratie (gebruik oma-image direct), een merk/designsysteem definiëren (gebruik oma-design) of deterministische CLI-operaties (validate/bundle/export) zonder generatie (roep de `oma slide`-CLI direct aan).
 
@@ -808,51 +860,62 @@ Projectspecifieke `stack/stack.yaml`, `stack/tech-stack.md`, snippets en API-sja
 - De skill schrijft HTML; de CLI doet de rest (scaffold, validate, bundle, export)
 - Alleen lokale assets: geen remote URL's in `<img src>`/`<video src>`, alleen `./assets/<file>`
 - CJK → Pretendard-font verplicht op elke Koreaanse/Japanse/Chinese slide
-- `prefers-reduced-motion`-wrapper, zichtbare focus states en `data-om-validate` zijn op elke slide verplicht
+- `prefers-reduced-motion`-wrapper, zichtbare focus states en de canonieke slidestructuur op elke slide: `oma slide validate` meet elke `.slide` binnen `.deck-stage` als het frame van 1920×1080, zonder opt-out per slide of per element
 - Maximaal 3 autofix-iteraties bij validatie; toon daarna de diff aan de gebruiker
 - Delegeert beeldgeneratie naar oma-image; Canva MCP is optioneel en wordt alleen met expliciete gebruikersconsent automatisch geprovisioneerd
+- `native-pptx`: laadt ppt-master uit de skillcatalogus van de runtime of met `bunx skills use hugohe3/ppt-master@ppt-master`, wijzigt die nooit, installeert de Python-packages ervan alleen met toestemming en volgt de eigen gates ervan
 
-**Workflow:** 7 fasen — DETECT (modus), DISCOVER (verduidelijken + assets beoordelen), STYLE (3 live previews → gebruiker kiest), GENERATE (`slide-NN.html` op 1920×1080), VALIDATE (`oma slide validate`, ≤3 autofix-lussen), REVIEW (viewer + optionele bbox-editor), DELIVER (`bundle` + optionele PDF/PNG/PPTX-export).
+**CLI:** `oma slide create` (werkruimte-scaffold), `oma slide style get` (een stijlbestand ophalen), `oma slide asset fetch-video` (video downloaden), `oma slide import pptx`, `oma slide validate`, `oma slide bundle`, `oma slide export pdf|png|pptx`, `oma slide edit` en `oma slide doctor`.
+
+**Workflow:** 7 fasen — DETECT (route + modus), DISCOVER (het aangeleverde doel, publiek, aantal slides en de assets hergebruiken; één gebundelde vraag, alleen voor ontbrekende keuzes die het deck wezenlijk beïnvloeden), STYLE (de aangeleverde stijl, bestaande deckconventies of een passende preset; 3 live previews alleen wanneer om stijlverkenning is gevraagd of de richting een wezenlijke open keuze is), GENERATE (`slide-NN.html` op 1920×1080), VALIDATE (`oma slide validate`, ≤3 autofix-lussen), REVIEW (viewer + optionele bbox-editor), DELIVER (`bundle` + optionele PDF/PNG/PPTX-export).
 
 ---
 
 ### oma-video
 
-**Domein:** Short-form-, uitleg- en door mensen opgenomen demovideo's genereren via de `oma video`-CLI, van script → narratie → visuals → captions → HyperFrames-render.
+**Domein:** Video's maken via de `oma video`-CLI, plus bestaande clips analyseren en bewerken met lokale mediatools.
 
-**Wanneer gebruiken:** Short-formvideo (shorts/reels, 9:16) genereren vanuit een onderwerp, explainers (16:9/9:16) uit een README/code/data, demo's/walkthroughs uit een schermopname (`--source file`) of begeleide capture in een zichtbaar browservenster van een willekeurige URL (`--source web`), of een bestaande run deterministisch opnieuw renderen.
+**Wanneer gebruiken:** Short-formvideo's en explainers genereren, demo's maken van een door een mens opgenomen `--capture`-bestand, een bestaande run opnieuw renderen, frames extraheren, zichtbare objecten analyseren, pauzes verwijderen en nagesynchroniseerde clips samenstellen.
 
-**Wanneer NIET gebruiken:** Eén stilstaand beeld genereren (gebruik oma-image), een slide deck genereren (gebruik oma-slide; video gebruikt die intern voor explainerframes), alleen spraakaudio genereren (gebruik oma-voice), niet-lineair editen van een bestaand voltooid mp4-bestand of live streamen (begeleide webcapture valt wel binnen scope).
+**Wanneer NIET gebruiken:** Eén stilstaand beeld (oma-image), een slide deck (oma-slide), verwerking van alleen audio of spraakgeneratie/-transcriptie (oma-voice), gesproken vertaling (oma-translation) of live streamen.
 
 **Kernregels:**
-- Verduidelijk of leid de modus af vóór invocatie; toon het afgeleide plan in plaats van stil te renderen vanuit een vage briefing
-- Providerconfiguratie is optioneel voor ondersteunde asset-fallbacks; betaalde providers (Pexels, Pixelle) worden alleen automatisch ingeschakeld als hun env-key aanwezig is, terwijl een compositorfout nooit wordt vervangen door een fallbackvideo
-- Kostengate bij ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` omzeilt); limieten van 180s duur / 40 scènes
+- Routeer werk aan bestaande clips naar de referentie voor mediaverwerking vóór de keuze van creatiemodus of provider; deze operaties gebruiken geïnstalleerde tools, geen nieuwe generatiemodus van de CLI
+- Providerconfiguratie is optioneel voor ondersteunde asset-fallbacks. Stock- en AIGC-providers (Pexels, Pixelle) worden alleen bereikt met `--visual stock` of `--visual aigc` en hun env-key; anders zijn visuals sleutelvrije `oma-image`-stills. Een compositorfout wordt nooit vervangen door een fallbackvideo
+- Een `oma-slide`-frame wordt alleen gebruikt voor een scène waarvan `visual.ref` een bestaande deckmap is; de provider genereert geen deck, en een slidescène zonder deck rendert een placeholder
+- Creatie gebruikt de kostengate bij ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` voor al geautoriseerd betaald werk) en limieten van 180s duur / 40 scènes; deze instellingen staan onder `video:` in `.agents/oma-config.yaml`
 - Renderinputs staan in `render-spec.json`, assets, seed en ingesloten Pretendard; `OMA_VIDEO_MOCK=1` is een testharnas voor golden fixtures, geen gebruikersdeliverable
-- Demo is human-in-the-loop: webcapture opent alleen een headed browser en neemt op terwijl een mens de flow bestuurt — GEEN credentialautomatisering; `--url` en tokens worden gemaskeerd in logs/manifest
+- Een demo-opname wordt door een mens gemaakt; `--source web --url` levert context en start geen opname en automatiseert geen login. Maskeer URL-tokens in logs/manifest
+- Een demo heeft `--polish` nodig om de opname door de `Demo`-compositie te leiden, waar persoonsgegevens worden gemaskeerd. Zonder `--polish` is de uitvoer-MP4 de ruwe, ongemaskeerde opname, die alleen mag worden opgeleverd nadat de controle op persoonsgegevens niets te maskeren vond
 - Padveiligheid (`--allow-external-output` voor output buiten `$PWD`)
 
-**Workflow:** PREPARE (modus/aspect/locale, briefing verduidelijken/versterken) → ACQUIRE (providerbeschikbaarheid peilen, capturepad valideren, kosten controleren) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, manifesthashes, exitcode, mp4) → FINALIZE (run-dir + mp4-pad + dekkingswaarschuwingen).
+**Workflow:** PREPARE (modus/aspect/locale; vermeld de afgeleide standaarden en vraag alleen wanneer het antwoord het resultaat verandert) → ACQUIRE (providerbeschikbaarheid peilen, capturepad valideren, kosten controleren) → ACT (script → voice ∥ visuals ∥ captions → render-spec → render) → VERIFY (schema, manifesthashes, exitcode, mp4) → FINALIZE (run-dir + mp4-pad + dekkingswaarschuwingen).
+
+Bestaande clips gebruiken inspectie van bronstreams/PTS, expliciete criteria voor frameselectie of cuts en een gemeenschappelijke bewerkingstijdlijn voor audio en video. Spraak- en amplitudedetectoren kunnen elkaar tegenspreken; los de betwiste intervallen op vanuit de gevraagde inhoud in plaats van het aantal cuts te verhogen. Bij nasynchronisatie kan het oorspronkelijke gecodeerde beeld worden gekopieerd terwijl de audio wordt vervangen.
 
 ---
 
 ### oma-voice
 
-**Domein:** Local-first text-to-speech en speech-to-text via de Voicebox MCP-server — volledig lokaal, zonder cloud, API-keys of kosten per call.
+**Domein:** Lokale spraakgeneratie en -transcriptie via Voicebox, plus conversie, duurpassing en loudnessverwerking van bestaande audio met FFmpeg.
 
 **Wanneer gebruiken:** Korte notificatieaudio genereren voor voltooide agenttaken of blockers, voice-over/narratie/audio-assets (mp3 of wav) maken, lokale audiobestanden (mp3, wav, m4a, webm, flac) naar Markdown transcriberen of voiceprofielen vergelijken door dezelfde tekst opnieuw te draaien met verschillende profiel-ID's.
+
+Gebruik de skill ook om bestaande spraak in een gevraagd tijdvenster te passen, voor resampling, kanaalconversie en gevraagde loudnessprofielen. Plaatsing in video blijft bij oma-video.
 
 **Wanneer NIET gebruiken:** Cloud-TTS of meertalige cloudstemmen met hoge fidelity, realtime terminalmicrofoondictatie (gebruik Voicebox' hotkey-dictation), sample-upload voor voice cloning/profielcreatie (doe dat in de UI van de Voicebox-desktopapp) of video-/muziek-/sounddesign.
 
 **Kernregels:**
-- Voicebox is vereist: bij een mislukte handshake/`GET /health` stop je met één installatie-/starttip; probeer niet opnieuw en herstart niet automatisch
-- Een profiel is vereist: als `voicebox_list_profiles` leeg is, wijs je de gebruiker naar de app-UI en stop je
-- Lengtelimieten: TTS maximaal 5000 tekens per call (waarschuw bij 2000), STT maximaal 30 minuten; v1 chunkt niet automatisch
+- Voicebox is vereist voor generatie en transcriptie; verwerking van bestaande audio slaat de health-, profiel- en modelcontroles ervan over
+- Een profiel is alleen vereist voor TTS; transcriptie en lokale bestandsverwerking hebben er geen nodig
+- Lengtelimieten: TTS maximaal 5000 tekens per call, STT maximaal 30 minuten; v1 chunkt niet automatisch
 - Transparantie bij auto-invocatie: notificaties alleen bij taken langer dan `auto_notify_after_sec` (standaard 60s); kondig de intent altijd in één regel aan
-- Padveiligheid (waarschuw + bevestiging voor output buiten `$PWD`); SIGINT schrijft geen gedeeltelijke output
-- Een manifest is vereist voor elke generatie; geen kostengate (Voicebox is gratis)
+- Een uitdrukkelijk gevraagd outputpad autoriseert die bestemming; vraag om verduidelijking bij een dubbelzinnige vervanging van niet-gerelateerde bestanden. Een onderbroken call schrijft geen gedeeltelijke output
+- Opgeslagen audio en transcripten bevatten een manifest; verwerking legt echte bron- en operatiegegevens vast zonder verzonnen generatie-ID's
 
 **Workflow:** PREPARE (tekst/audio/taal/pad/profiel valideren) → ACQUIRE (eenmalig verduidelijken als een signaal ontbreekt) → ACT (MCP `voicebox_speak` of `voicebox_transcribe`) → VERIFY (aanwezigheid van audio/transcript + manifestvelden) → FINALIZE (`manifest.json` schrijven, pad rapporteren).
+
+Verzoeken voor bestaande bestanden worden naar lokale verwerking gedispatcht vóór deze Voicebox-reeks. Behoud de ruwe audio, leid tempo- en loudnessdoelen af uit de gevraagde oplevering en houd technische metingen gescheiden van niet-beoordeelde natuurlijkheid van de spraak.
 
 ---
 
@@ -921,9 +984,9 @@ oma agent spawn qa prompts/review.md session-01 --task-id task-5 --read-only
 Bij een multi-agentworkflow (`/orchestrate` of `/work`):
 
 1. **PM-agent** splitst het verzoek op in taken met numerieke prioriteitstiers (`1` = geen afhankelijkheden; lagere tiers draaien eerst), afhankelijkheden en acceptatiecriteria. Een geldig bestaand plan wordt hergebruikt
-2. **Sessie geïnitialiseerd:** sessie-ID gegenereerd, `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` aangemaakt in de geconfigureerde geheugenopslag
+2. **Sessie geïnitialiseerd:** sessie-ID gegenereerd, referenties per taak geselecteerd, en `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` aangemaakt in de geconfigureerde geheugenopslag
 3. **Tier 1-taken** starten parallel (maximaal MAX_PARALLEL gelijktijdige agenten)
-4. **Voortgang gemonitord:** voor `oma agent spawn`-runs pollt de orchestrator elke POLL_INTERVAL de rungebonden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-bestanden; native subagenten van Claude Code keren synchroon terug
+4. **Voortgang gemonitord:** de orchestrator geeft de voorkeur aan voltooiingsmeldingen van de host; voor `oma agent spawn`-runs zonder die meldingen pollt één coördinator de gewijzigde rungebonden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-bestanden met begrensde backoff. Native subagenten van Claude Code keren synchroon terug
 5. **Latere tiers** starten wanneer hun afhankelijkheden zijn voltooid
 6. **Reviewlus** draait voor elke voltooide agent (zie hieronder)
 7. **Resultaten verzameld** uit rungebonden resultaatbestanden en gestructureerde claims

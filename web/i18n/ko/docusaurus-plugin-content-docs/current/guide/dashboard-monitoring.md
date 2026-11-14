@@ -89,7 +89,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 | `orchestrator-session.md` | `/orchestrate` 2단계 | 세션 ID, 시작 시간, 상태 (RUNNING/COMPLETED/FAILED), 워크플로우 버전 |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | 세션 메타데이터, 단계 진행, 사용자 요청 요약 |
 | `task-board.md` | 오케스트레이션 워크플로우 | 에이전트 할당, 상태, 태스크가 포함된 Markdown 테이블 |
-| `progress-{agent}.md` | 각 생성된 에이전트 | 현재 턴 번호, 에이전트가 작업 중인 내용, 중간 결과 |
+| `progress-{agent}-{task}-{run}-{session}.md` | 각 생성된 에이전트 | 덧붙여 쓰는 `## Turn N` 항목: 에이전트가 한 일, 현재 상태, 변경된 파일 |
 | `result-{agent}.md` | 각 완료된 에이전트 | 최종 상태 (COMPLETED/FAILED), 변경된 파일, 발견된 이슈, 산출물 |
 | `debug-{id}.md` | `/debug` 워크플로우 | 버그 진단, 근본 원인, 적용된 수정, 회귀 테스트 위치 |
 | `experiment-ledger-{sessionId}.md` | 실제 실험 | 비교 가능한 기준선/후보 증거, 필수 검사, 결정 |
@@ -105,7 +105,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 
 3. **에이전트 탐지**: 태스크 보드가 없으면 모든 `.md` 파일에서 `**Agent**: {name}` 패턴, `Agent: {name}` 줄, 또는 `_agent`나 `-agent`를 포함하는 파일명을 스캔하여 에이전트를 발견합니다.
 
-4. **턴 카운팅**: 발견된 각 에이전트에 대해 `progress-{agent}.md` 파일을 읽고 `turn: N` 패턴에서 턴 번호를 추출합니다.
+4. **턴 카운팅**: 발견된 각 에이전트에 대해 이름이 `progress-{agent}`로 시작하는 파일 중 가장 최근 것을 골라 그 안의 마지막 `Turn N`(또는 `turn: N`) 줄을 읽습니다.
 
 5. **활동 피드**: 가장 최근에 수정된 5개의 `.md` 파일을 나열하고, 마지막 의미 있는 줄(헤더, 상태 줄, 액션 항목)을 활동 메시지로 추출합니다. 웹 대시보드는 `/recap`에서 요약 보기도 제공합니다.
 
@@ -124,13 +124,13 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 에이전트 테이블에 감지된 모든 에이전트가 표시됩니다:
 - **에이전트 이름**: 도메인 식별자 (backend, frontend, mobile, qa, debug, pm).
 - **상태**: 시각적 인디케이터와 함께 현재 상태 (running/completed/failed/blocked/pending).
-- **턴**: 에이전트의 현재 턴 번호 (완료한 반복 횟수). 진행 파일에서 추출.
+- **턴**: 에이전트의 최신 진행 항목 번호. 진행 파일에서 추출하며, 모델 턴이 아니라 항목 수를 셉니다.
 - **태스크**: 에이전트가 작업 중인 내용의 간략한 설명 (화면에 맞게 잘림).
 
 ### 에이전트 진행
 
-진행 상황은 `progress-{agent}.md` 파일을 통해 추적됩니다. 각 파일은 에이전트가 작업하면서 업데이트합니다. 대시보드는 이 파일을 폴링하여 다음을 확인합니다:
-- 턴 번호 (에이전트가 진행하면서 증가).
+진행 상황은 `progress-{agent}-*.md` 파일을 통해 추적됩니다. 각 에이전트는 의미 있는 체크포인트(단계 완료, 블로커, 접근 방식 변경)마다 항목을 덧붙입니다. 대시보드는 이 파일을 폴링하여 다음을 확인합니다:
+- 턴 번호 (최신 항목 번호).
 - 현재 작업 (에이전트가 지금 하고 있는 것).
 - 중간 결과 (부분 완료).
 

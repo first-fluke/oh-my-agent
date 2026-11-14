@@ -1,13 +1,13 @@
 ---
 title: Các workflow
-description: Tham chiếu đầy đủ cho 21 workflow oh-my-agent, gồm lệnh slash, chế độ liên tục và không liên tục, từ khóa trigger bằng 11 ngôn ngữ, các giai đoạn và bước, file đọc và ghi, cơ chế phát hiện tự động qua triggers.json và keyword-detector.ts, lọc mẫu thông tin và quản lý trạng thái chế độ liên tục.
+description: Tham chiếu đầy đủ cho 20 workflow oh-my-agent, gồm lệnh slash, chế độ liên tục và không liên tục, từ khóa trigger bằng 11 ngôn ngữ, các giai đoạn và bước, file đọc và ghi, cơ chế phát hiện tự động qua triggers.json và keyword-detector.ts, lọc mẫu thông tin và quản lý trạng thái chế độ liên tục.
 ---
 
 # Các workflow
 
-Workflow là quy trình nhiều bước có cấu trúc, được kích hoạt bởi lệnh slash hoặc từ khóa ngôn ngữ tự nhiên. Chúng định nghĩa cách agent cộng tác trong task, từ tiện ích một giai đoạn đến cổng chất lượng phức tạp 5 giai đoạn.
+Workflow là quy trình nhiều bước có cấu trúc, được khởi động bằng lệnh slash; bốn chế độ liên tục cũng khởi động khi một yêu cầu thông thường gọi tên chúng. Chúng định nghĩa cách agent cộng tác trong task, từ tiện ích một giai đoạn đến cổng chất lượng phức tạp 5 giai đoạn.
 
-Có 21 workflow, trong đó 4 workflow là [liên tục](../getting-started/glossary.md#persistent-workflow) (duy trì trạng thái và không thể bị ngắt do vô tình).
+Có 20 workflow, trong đó 4 workflow là [liên tục](../getting-started/glossary.md#persistent-workflow) (duy trì trạng thái và không thể bị ngắt do vô tình).
 
 ## Tổng quan các workflow {#workflows-at-a-glance}
 
@@ -22,11 +22,10 @@ Có 21 workflow, trong đó 4 workflow là [liên tục](../getting-started/glos
 | [`/architecture`](#architecture) | Quyết định kiến trúc, review kiến trúc và ADR | Không |
 | [`/deepinit`](#deepinit) | Tạo AGENTS.md, ARCHITECTURE.md và `docs/` cho codebase hiện có | Không |
 | [`/review`](#review) | QA review: bảo mật, hiệu suất, accessibility, chất lượng mã | Không |
-| [`/security`](#security) | Quét bảo mật, pentest web đã triển khai, xác minh phát hiện, cổng CI | Không |
+| [`/security`](#security) | Quét bảo mật mã nguồn, skill của agent và thành phần MCP; xác minh phát hiện; cổng CI | Không |
 | [`/debug`](#debug) | Chẩn đoán và sửa bug kèm regression test | Không |
-| [`/design`](#design) | DESIGN.md với token, pattern component và rule accessibility | Không |
+| [`/design`](#design) | Các phát hiện về design, DESIGN.md, định hướng redesign hoặc design token | Không |
 | [`/scm`](#scm) | Thao tác Git và Conventional Commits | Không |
-| [`/tools`](#tools) | Khả năng hiển thị và hạn chế của MCP tool | Không |
 | [`/convert`](#convert) | Chuyển đổi tài liệu và media giữa các định dạng | Không |
 | [`/docs`](#docs) | Phát hiện drift tài liệu và đồng bộ | Không |
 | [`/recap`](#recap) | Tóm tắt công việc theo ngày hoặc giai đoạn trên các AI tool | Không |
@@ -63,7 +62,7 @@ Việc đánh giá kế hoạch kế thừa quyền đã được cấp cho task
 
 Workflow liên tục tiếp tục chạy cho đến khi tất cả task hoàn thành. Chúng duy trì trạng thái trong `.agents/state/` và đưa lại ngữ cảnh `[OMA PERSISTENT MODE: ...]` vào mỗi tin nhắn người dùng cho đến khi được vô hiệu hóa tường minh.
 
-Chế độ liên tục chỉ bắt đầu khi có **lời gọi tường minh**: slash command của workflow (`/ultrawork`, hoặc dạng có namespace như `/oma:ultrawork`), hoặc chính tên của workflow dưới dạng văn bản thường (danh sách `explicit` trong `triggers.json`, ví dụ "orchestrate", "ultrawork"/"ulw", "ralph"/"랄프", "work mode"). Các từ khóa trigger khác bên dưới là gợi ý bằng ngôn ngữ tự nhiên: chúng đưa workflow vào dưới dạng gợi ý mà không kích hoạt chế độ liên tục, và không bao giờ kích hoạt khi dòng đầu hoặc dòng cuối của prompt là một câu hỏi kết thúc bằng `?`.
+Chế độ liên tục chỉ bắt đầu khi có **lời gọi tường minh**: slash command của workflow (`/ultrawork`, hoặc dạng có namespace như `/oma:ultrawork`), hoặc chính tên của workflow dưới dạng văn bản thường (danh sách `explicit` trong `triggers.json`: "orchestrate" và các bản dịch được liệt kê của nó, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). Hook từ khóa không mở workflow từ bất kỳ câu nào khác.
 
 ### /orchestrate
 
@@ -75,36 +74,16 @@ Chế độ liên tục chỉ bắt đầu khi có **lời gọi tường minh**
 | Ngôn ngữ | Từ khóa |
 |----------|----------|
 | Tường minh (liên tục) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-| Tiếng Anh | "do everything", "run everything", "everything in parallel", "automate everything" |
-| Tiếng Hàn | "전부 실행", "전부 해", "전부 병렬로", "자동으로 해줘" |
-| Tiếng Nhật | "全部実行", "全部並列で", "自動でやって" |
-| Tiếng Trung | "编排", "全部执行", "全部并行", "自动处理" |
-| Tiếng Tây Ban Nha | "ejecutar todo", "todo en paralelo" |
-| Tiếng Pháp | "tout exécuter", "tout en parallèle" |
-| Tiếng Đức | "alles ausführen", "alles parallel" |
-| Tiếng Bồ Đào Nha | "executar tudo", "tudo em paralelo" |
-| Tiếng Nga | "выполнить всё", "всё параллельно" |
-| Tiếng Hà Lan | "alles uitvoeren", "alles parallel" |
-| Tiếng Ba Lan | "wykonaj wszystko", "wszystko równolegle" |
 
-Các từ trần "parallel"/"automate" (và bản dịch của chúng) không phải là trigger: "run the tests in parallel" hay "automate the release notes" là những yêu cầu thông thường, không phải điều phối đa agent.
-
-**Mẫu regex trigger** (ý định + danh sách trắng danh từ, xem [Phát hiện tự động: trường Pattern](#pattern-field-raw-regex)):
-| Phần | Pattern | Ví dụ kích hoạt |
-|---------|---------|----------------------|
-| `*` (universal) | `(build\|create\|make\|develop\|implement\|scaffold) + (me)? + (a\|an) + [modifier]{0,3} + <noun>` | "Build a TODO app with user authentication", "Create an awesome web service", "Develop a backend with PostgreSQL" |
-| `*` (universal) | `i want a/an + <noun>` | "I want a CLI for parsing logs" |
-| `ko` | `<noun> + (을\|를\|이\|가)? + (만들어\|구현해\|개발해 + 변형)` | "TODO 앱 만들어줘", "REST API 구현해", "백엔드를 개발해주세요" |
-
-Danh sách trắng danh từ (14): app, api, service, server, cli, tool, website, dashboard, system, backend, frontend, prototype, mvp, bot. Một feature đơn lẻ ("implement the login feature", "로그인 기능 구현해줘") hoặc một thứ đã có sẵn ("make the API faster") không khớp.
+Các câu như "do everything", "전부 해줘" hay "build me an app" không khởi động workflow này.
 
 **Các bước:**
 1. **Bước 0, Chuẩn bị:** Đọc skill coordination, hướng dẫn context-loading và memory protocol. Phát hiện vendor.
 2. **Bước 1, Tải/tạo plan:** Kiểm tra `.agents/results/plan-{sessionId}.json` rồi đến `plan-*.json` mới nhất. Nếu không có plan, hoặc plan chưa sẵn sàng để thực thi (task thiếu agent, tier ưu tiên, dependency hoặc acceptance criteria), giao `/plan` inline để tạo plan với cùng session ID. Trình bày plan và dùng lại quyền đã cấp; chỉ hỏi khi thiếu quyết định quan trọng hoặc cần quyền mới trước khi giao.
-3. **Bước 2, Khởi tạo session:** Tải `oma-config.yaml`, hiển thị bảng ánh xạ CLI, dùng session ID từ lúc tạo plan hoặc tạo ID mới (`session-YYYYMMDD-HHMMSS`), rồi tạo `orchestrator-session-{sessionId}.md` và `task-board-{sessionId}.md` trong memory store đã cấu hình.
-4. **Bước 3, Spawn agent:** Với từng tier ưu tiên (thấp nhất trước: tier 1, rồi tier 2, v.v.), spawn agent bằng phương thức phù hợp vendor (subagent native khi runtime hiện tại và vendor đích trùng nhau; `oma agent spawn` cho vendor ngoài hoặc khác vendor). Không vượt quá MAX_PARALLEL.
-5. **Bước 4, Giám sát:** Poll file `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` theo run và receipt có cấu trúc, sau đó cập nhật task board. Theo dõi hoàn thành, thất bại và crash.
-6. **Bước 5, Xác minh:** Với mỗi agent hoàn tất, chạy self-check cơ học (lint, typecheck, test, phạm vi diff; tối đa 3 vòng), sau đó `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug và pm; các loại agent khác ghi `SKIP`), rồi QA cross-review. Khi verify thất bại, spawn lại với ngữ cảnh lỗi (tối đa 2 lần thử lại). Thất bại lặp lại có thể là lý do để thử các giả thuyết thay thế, nhưng mọi lần thử đều tiêu tốn cùng một ngân sách phục hồi tổng (`max_attempts`, mặc định 3 kể cả lần đầu). Giữ lại bằng chứng chưa được giải quyết nếu ngân sách không đủ cho một vòng so sánh.
+3. **Bước 2, Khởi tạo session:** Tải `oma-config.yaml`, hiển thị bảng ánh xạ CLI, và dùng session ID từ lúc tạo plan hoặc tạo ID mới (`session-YYYYMMDD-HHMMSS`). Với mỗi task, chọn các tham chiếu skill mà task cần bằng cách so khớp task với intent signature của các skill đã cài; một skill khớp với độ tin cậy cao là đủ. Tạo `orchestrator-session-{sessionId}.md` và `task-board-{sessionId}.md` trong memory store đã cấu hình, rồi ghi vào đó các tham chiếu đã chọn của từng task cùng lý do lựa chọn. Đây là ghi chú của coordinator; launcher không cưỡng chế chúng.
+4. **Bước 3, Spawn agent:** Với từng tier ưu tiên (thấp nhất trước: tier 1, rồi tier 2, v.v.), spawn agent bằng phương thức phù hợp vendor (subagent native khi runtime hiện tại và vendor đích trùng nhau; `oma agent spawn` cho vendor ngoài hoặc khác vendor). Mỗi agent nhận task của mình, các API contract và các tham chiếu đã chọn kèm điều kiện tải của chúng. Không vượt quá MAX_PARALLEL (mặc định 3).
+5. **Bước 4, Giám sát:** Kiểm tra tình trạng process bằng `oma agent status`. Ưu tiên thông báo hoàn thành từ host; nếu không có, poll các file `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` theo run đã thay đổi với backoff có giới hạn, đọc các receipt có cấu trúc và cập nhật task board. Theo dõi hoàn thành, thất bại và crash.
+6. **Bước 5, Xác minh:** Với mỗi agent hoàn tất, chạy self-check cơ học (lint, typecheck, test, phạm vi diff; tối đa 3 vòng), sau đó `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug và pm; các loại agent khác ghi `SKIP`), rồi QA cross-review. Khi verify thất bại, spawn lại với ngữ cảnh lỗi. Thất bại lặp lại có thể là lý do để thử các giả thuyết thay thế, nhưng lần thử ban đầu, mỗi lần thử lại và mỗi giả thuyết đều tiêu tốn cùng một ngân sách phục hồi tổng (`max_attempts`, mặc định 3 kể cả lần đầu). Giữ lại bằng chứng chưa được giải quyết nếu ngân sách không đủ cho một vòng so sánh.
 7. **Bước 6, Thu thập:** Đọc file result theo run và claim có cấu trúc, rồi biên soạn tóm tắt.
 8. **Bước 7, Báo cáo cuối:** Trình bày tóm tắt session. Nếu đã chạy thí nghiệm, hãy tóm tắt bằng chứng và các quyết định; chỉ ghi lại bài học khi đã xác lập được nguyên nhân có thể tái sử dụng.
 
@@ -112,7 +91,7 @@ Danh sách trắng danh từ (14): app, api, service, server, cli, tool, website
 flowchart TD
   S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
   S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task board, domain gate"]
+  MK --> S2["Step 2: session ID, task references, task board"]
   S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
   S3 --> S4["Step 4: monitor with oma agent status and progress files"]
   S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
@@ -146,16 +125,8 @@ flowchart TD
 | Ngôn ngữ | Từ khóa |
 |----------|----------|
 | Tường minh (liên tục) | "work mode", "work workflow" |
-| Phổ quát | "step by step" |
-| Tiếng Anh | "one by one", "one step at a time" |
-| Tiếng Hàn | "단계별", "하나씩 해줘", "차근차근" |
-| Tiếng Nhật | "ステップバイステップ", "一歩ずつ" |
-| Tiếng Trung | "逐步", "一步一步" |
-| Tiếng Tây Ban Nha | "paso a paso", "uno por uno" |
-| Tiếng Pháp | "étape par étape", "un par un" |
-| Tiếng Đức | "schritt für schritt", "der reihe nach" |
 
-Từ trần "work" không phải là trigger — đó là từ vựng thông thường ("Does this work on Windows?").
+Từ trần "work" không phải là trigger — đó là từ vựng thông thường ("Does this work on Windows?"). "step by step" và các bản dịch của nó cũng không khởi động workflow này.
 
 **Các bước:**
 1. **Bước 0, Chuẩn bị:** Đọc skill, context-loading và memory protocol. Ghi thời điểm bắt đầu session.
@@ -249,15 +220,8 @@ flowchart TD
 | Ngôn ngữ | Từ khóa |
 |----------|----------|
 | Tường minh (liên tục) | "ralph", "랄프" |
-| Tiếng Anh | "don't stop", "until done", "keep going until", "finish everything", "run to completion" |
-| Tiếng Hàn | "멈추지마", "끝까지 해", "완료될때까지", "때까지 계속", "끝장내" |
-| Tiếng Nhật | "止まるな", "完了まで", "最後まで", "全部終わらせて" |
-| Tiếng Trung | "不要停", "直到完成", "全部完成", "做完为止" |
-| Tiếng Tây Ban Nha | "no pares", "hasta completar", "termina todo" |
-| Tiếng Pháp | "n'arrête pas", "jusqu'à complétion", "termine tout" |
-| Tiếng Đức | "hör nicht auf", "bis zur fertigstellung", "alles fertigstellen" |
 
-Các cụm từ tiếp tục trần ("keep going", "carry on", "계속해", "続けて", "продолжай", …) không phải là trigger: người dùng gõ chúng để tiếp tục sau khi bị gián đoạn.
+Các cụm từ tiếp tục trần ("keep going", "carry on", "계속해", "続けて", "продолжай", …) và các cách diễn đạt về việc hoàn thành ("don't stop", "끝까지 해") không khởi động workflow này.
 
 **Các phase:**
 1. **Phase 0, INIT:** Tải prerequisite (context-loading, memory protocol, judge protocol). Định nghĩa và ghi tiêu chí hoàn thành có thể kiểm chứng bằng máy, chẳng hạn test assertion, type check không tạo output, exit code hoặc sự tồn tại của file. Chỉ thêm check build khi được yêu cầu rõ. Hiển thị tiêu chí và tiếp tục trong phạm vi quyền đã cấp. Khởi tạo session với `max_iterations: 5`.
@@ -300,18 +264,11 @@ Nút judge là judge được chỉ định qua prompt như mô tả ở Phase 2
 
 **Mô tả:** Phân rã task do PM dẫn dắt. Phân tích yêu cầu, chọn tech stack, chia thành task có ưu tiên và dependency, định nghĩa API contract.
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "task breakdown" |
-| Tiếng Anh | "plan" |
-| Tiếng Hàn | "계획", "요구사항 분석", "스펙 분석" |
-| Tiếng Nhật | "計画", "要件分析", "タスク分解" |
-| Tiếng Trung | "计划", "需求分析", "任务分解" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/plan`. Hook từ khóa không mở workflow này từ một câu.
 
 **Các bước:** Thu thập yêu cầu -> phân tích khả thi kỹ thuật (MCP code analysis) -> đánh giá độ phức tạp (Simple/Medium/Complex) -> định nghĩa API contract (nếu vượt ranh giới) -> phân rã thành task -> review với người dùng -> lưu artifact plan (JSON máy đọc được + tracker Markdown cho người đọc với Medium/Complex).
 
-**Đầu ra:** `.agents/results/plan-{sessionId}.json`, ghi memory và (với Medium/Complex) `docs/plans/work/{NNN}-{name}.md` có bảng task, decision log, progress notes. Vòng đời được theo dõi qua field `Status` trong header Markdown (`Active` -> `Completed`); plan không bị chuyển giữa các thư mục. Design tạo bởi `/brainstorm` nằm tại `docs/plans/designs/{NNN}-{name}.md`.
+**Đầu ra:** `.agents/results/plan-{sessionId}.json`, ghi memory và (với Medium/Complex) `docs/plans/work/{NNN}-{name}.md` có bảng task, decision log, progress notes. Vòng đời được theo dõi qua field `Status` trong header Markdown (`Active` -> `Completed`); plan không bị chuyển giữa các thư mục. Hướng tiếp cận được chọn qua `/brainstorm` được lưu tại `docs/decisions/{NNN}-{name}.md`.
 
 **Thực thi:** Inline (không spawn subagent). `/orchestrate` hoặc `/work` sử dụng plan và cập nhật field task/status trong lúc thực thi.
 
@@ -321,16 +278,9 @@ Nút judge là judge được chỉ định qua prompt như mô tả ở Phase 2
 
 **Mô tả:** Ideation ưu tiên thiết kế. Khám phá ý định, làm rõ ràng buộc, đề xuất các hướng tiếp cận và tạo tài liệu thiết kế được duyệt trước khi lập plan.
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "brainstorm" |
-| Tiếng Anh | "ideate", "explore design" |
-| Tiếng Hàn | "브레인스토밍", "아이디어", "설계 탐색" |
-| Tiếng Nhật | "ブレインストーミング", "アイデア", "設計探索" |
-| Tiếng Trung | "头脑风暴", "创意", "设计探索" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/brainstorm`. Hook từ khóa không mở workflow này từ một câu.
 
-**Các bước:** Khám phá ngữ cảnh project (MCP analysis) -> hỏi câu làm rõ (mỗi lần một câu) -> đề xuất 2-3 hướng cùng đánh đổi -> trình bày design theo từng phần (người dùng duyệt từng bước) -> lưu tài liệu design tại `docs/plans/designs/{NNN}-{name}.md` -> chuyển tiếp: gợi ý `/plan`.
+**Các bước:** Khám phá ngữ cảnh project (MCP analysis) -> hỏi câu làm rõ (mỗi lần một câu) -> đề xuất 2-3 hướng cùng đánh đổi -> trình bày design theo từng phần (người dùng duyệt từng bước) -> vòng blind review -> lưu hướng tiếp cận đã chọn tại `docs/decisions/{NNN}-{name}.md` và cập nhật `docs/decisions/index.md` -> chuyển tiếp: gợi ý `/plan`.
 
 **Quy tắc:** Không triển khai hoặc lập plan trước khi design được duyệt. Không xuất code. Áp dụng YAGNI.
 
@@ -340,14 +290,7 @@ Nút judge là judge được chỉ định qua prompt như mô tả ở Phase 2
 
 **Mô tả:** Workflow kiến trúc phần mềm chẩn đoán vấn đề kiến trúc, chọn phương pháp phân tích phù hợp (diagnostic routing / design-twice / ATAM / CBAM / ADR), so sánh phương án, tổng hợp ý kiến stakeholder và tạo recommendation, review hoặc ADR.
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "architecture", "ADR", "ATAM", "CBAM" |
-| Tiếng Anh | "architecture review", "architectural tradeoff" |
-| Tiếng Hàn | "아키텍처", "설계 검토" |
-| Tiếng Nhật | "アーキテクチャ" |
-| Tiếng Trung | "架构" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/architecture`. Hook từ khóa không mở workflow này từ một câu.
 
 **Các bước:** Định khung quyết định (kiến trúc mới / review / phân tích đánh đổi / ưu tiên đầu tư / viết ADR) -> chọn methodology qua diagnostic routing -> phân tích kiến trúc hiện tại qua MCP code analysis (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> tổng hợp ý kiến stakeholder (chỉ khi đủ cross-cutting để biện minh chi phí) -> tạo recommendation với assumption, tradeoff, risk và bước validation rõ ràng -> bàn giao cho `/plan` khi cần triển khai.
 
@@ -361,34 +304,23 @@ Nút judge là judge được chỉ định qua prompt như mô tả ở Phase 2
 
 **Mô tả:** Khởi tạo project đầy đủ. Phân tích codebase hiện có, tạo AGENTS.md, ARCHITECTURE.md và knowledge base `docs/` có cấu trúc.
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "deepinit" |
-| Tiếng Hàn | "프로젝트 초기화" |
-| Tiếng Nhật | "プロジェクト初期化" |
-| Tiếng Trung | "项目初始化" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/deepinit`. Hook từ khóa không mở workflow này từ một câu.
 
-**Các bước:** Chuẩn bị -> phân tích codebase (loại project, kiến trúc, rule ngầm, domain, boundary) -> tạo ARCHITECTURE.md (domain map, dưới 200 dòng) -> tạo knowledge base `docs/` (design-docs/, plans/, generated/, product-specs/, references/, domain docs) -> tạo AGENTS.md gốc (~100 dòng, mục lục) -> tạo các file AGENTS.md theo boundary (package monorepo, mỗi file dưới 50 dòng) -> cập nhật harness hiện có (nếu chạy lại) -> xác minh (không dead link, đúng giới hạn dòng).
+**Các bước:** Chuẩn bị -> phân tích codebase (loại project, kiến trúc, rule ngầm, domain, boundary) -> tạo ARCHITECTURE.md (domain map, dưới 200 dòng) -> tạo knowledge base `docs/` (decisions/, plans/, generated/, product-specs/, references/, domain docs) -> tạo AGENTS.md gốc (~100 dòng, mục lục) -> tạo các file AGENTS.md theo boundary (package monorepo, mỗi file dưới 50 dòng) -> cập nhật harness hiện có (nếu chạy lại) -> xác minh (không dead link, đúng giới hạn dòng).
 
-**Đầu ra:** AGENTS.md, ARCHITECTURE.md, docs/design-docs/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md và tài liệu theo domain được phát hiện.
+**Đầu ra:** AGENTS.md, ARCHITECTURE.md, docs/decisions/, docs/plans/, docs/PLANS.md, docs/QUALITY-SCORE.md, docs/CODE-REVIEW.md và tài liệu theo domain được phát hiện.
 
 ---
 
 ### /review
 
-**Mô tả:** Pipeline QA review đầy đủ. Audit bảo mật (OWASP Top 10), phân tích hiệu suất, kiểm tra accessibility (WCAG 2.1 AA) và review chất lượng mã.
+**Mô tả:** Pipeline QA review đầy đủ. Audit bảo mật (OWASP Top 10), phân tích hiệu suất, kiểm tra accessibility (WCAG 2.2 AA) và review chất lượng mã.
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "code review", "security audit", "security review" |
-| Tiếng Anh | "review" |
-| Tiếng Hàn | "리뷰", "코드 검토", "보안 검토" |
-| Tiếng Nhật | "レビュー", "コードレビュー", "セキュリティ監査" |
-| Tiếng Trung | "审查", "代码审查", "安全审计" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/review`. Hook từ khóa không mở workflow này từ một câu.
 
-**Các bước:** Xác định phạm vi review -> check bảo mật tự động (npm audit, bandit) -> review bảo mật thủ công (OWASP Top 10) -> phân tích hiệu suất -> review accessibility (WCAG 2.1 AA) -> review chất lượng mã -> tạo QA report.
+**Các bước:** Xác định phạm vi review -> check bảo mật tự động (`npm audit`, `bandit` hoặc công cụ tương đương của stack) -> review bảo mật thủ công (OWASP Top 10) -> phân tích hiệu suất -> review accessibility (WCAG 2.2 AA) -> review chất lượng mã -> tạo QA report.
+
+**Phạm vi:** Phạm vi lấy từ yêu cầu: các file cụ thể, một feature branch, một PR hoặc toàn bộ project. PR hoặc branch được diff với base branch của nó. Khi không nêu phạm vi, workflow review các thay đổi chưa commit và thay đổi trên branch hiện tại, đồng thời nêu rõ giả định đó; nó chỉ hỏi khi không có gì để xác định phạm vi.
 
 **Vòng lặp sửa-xác minh tùy chọn** (với `--fix`): Sau QA report, spawn agent lĩnh vực để sửa vấn đề CRITICAL/HIGH, chạy lại QA và lặp tối đa 3 lần.
 
@@ -398,9 +330,9 @@ Nút judge là judge được chỉ định qua prompt như mô tả ở Phase 2
 
 ### /security
 
-**Mô tả:** Chạy skill `oma-security` cho mã nguồn, skill của agent, thành phần MCP hoặc ứng dụng web đã triển khai. Workflow chọn engine phù hợp, ghi lại phạm vi đã kiểm tra và bằng chứng, xác minh phát hiện rồi áp dụng cổng kiểm tra CI đã cấu hình.
+**Mô tả:** Chạy skill `oma-security` cho mã nguồn, skill của agent hoặc thành phần MCP. Workflow chọn engine phù hợp, ghi lại phạm vi đã kiểm tra và bằng chứng, xác minh phát hiện rồi áp dụng cổng kiểm tra CI đã cấu hình. Pentest trên một bản triển khai web thử nghiệm có phạm vi xác định chỉ chạy khi có yêu cầu ARTEX tường minh, trên một nền tảng ARTEX do bạn cung cấp và đã được rà soát.
 
-**Điểm vào:** `/security`. Yêu cầu chạy Deepsec, các scanner của Cisco hoặc pentest bằng ARTEX cũng được định tuyến tới đây.
+**Điểm vào:** `/security`. Hook từ khóa không mở workflow này từ một câu. Bên trong workflow, Deepsec và các scanner của Cisco được chọn theo mục tiêu và ý định. Một lần quét repository chỉ chọn mã nguồn; quét skill, MCP và runtime không được thêm vào theo ngụ ý.
 
 **Mục tiêu và engine:**
 
@@ -409,7 +341,9 @@ Nút judge là judge được chỉ định qua prompt như mô tả ở Phase 2
 | Mã nguồn | Mặc định là Vercel Deepsec; Cisco AI Deep SAST khi được yêu cầu |
 | Gói skill của agent | Cisco Skill Scanner |
 | Thành phần hoặc máy chủ MCP | Cisco MCP Scanner |
-| Ứng dụng web đã triển khai trong môi trường kiểm thử | ARTEX, trong phạm vi mục tiêu và thực thi đã được cho phép |
+| Bản triển khai web thử nghiệm (pentest runtime) | Mặc định không có. ARTEX chỉ khi được yêu cầu tường minh, trên nền tảng ARTEX do người dùng cung cấp và đã được rà soát, trong phạm vi mục tiêu và thực thi đã được cho phép |
+
+Kiểm thử runtime không có engine đi kèm: skill không cài đặt, build hay triển khai nền tảng ARTEX. Nếu thiếu yêu cầu ARTEX tường minh, một bản triển khai web thử nghiệm cụ thể và một nền tảng đã được rà soát, workflow nêu rõ điều kiện tiên quyết còn thiếu, ghi giai đoạn runtime là `skipped` và tiếp tục với các thao tác đã chọn khác.
 
 Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh độc lập và tái hiện trong sandbox cục bộ. Phương pháp này không bổ sung scanner và không chứng minh độ chính xác phát hiện cao hơn.
 
@@ -417,7 +351,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 1. Đọc `.agents/skills/oma-security/SKILL.md` và chỉ các tài liệu cần thiết cho mục tiêu và ý định.
 2. Xác định mục tiêu (`source`, `skill`, `mcp` hoặc `web_runtime`) và ý định (`setup`, `scan`, `diff`, `pentest`, `triage`, `validate`, `ci` hoặc `troubleshoot`). Kiểm tra phiên bản engine được chọn, giao diện hiện có, thông tin xác thực và ngân sách thực thi.
-3. Chạy engine được chọn trong phạm vi đã thống nhất. Tái sử dụng trạng thái Deepsec hiện có khi phù hợp. Với ARTEX, gắn lần chạy với phiên bản đã kiểm tra và cố định, bản triển khai cô lập, tài khoản, danh sách mục tiêu được phép và ngân sách. ARTEX sử dụng UI/API đã được xác minh của bản chụp đã kiểm tra hoặc tác vụ thủ công/bên ngoài; tự động hóa CI cần adapter đã được xác minh và bản ghi thực thi tác vụ.
+3. Chạy engine được chọn trong phạm vi đã thống nhất. Tái sử dụng trạng thái Deepsec hiện có khi phù hợp. Với một lần chạy ARTEX được yêu cầu tường minh, gắn nó với phiên bản đã kiểm tra và cố định của nền tảng được cung cấp, cùng bản triển khai cô lập, tài khoản, danh sách mục tiêu được phép và ngân sách. ARTEX sử dụng UI/API đã được xác minh của bản chụp đã kiểm tra hoặc tác vụ thủ công/bên ngoài; tự động hóa CI cần adapter đã được xác minh và bản ghi thực thi tác vụ.
 4. Giữ lại kết quả thô và mã thoát của engine, sau đó chuẩn hóa phát hiện mà không bỏ nguồn gốc hoặc các điểm bất đồng. Đánh giá các phát hiện sơ bộ một cách độc lập; ghi riêng việc xác minh tĩnh và kết quả tái hiện đã quan sát được.
 5. Báo cáo phạm vi đã kiểm tra, phát hiện, bằng chứng, công việc chưa hoàn thành và kết quả CI áp dụng. Chuyển việc sửa lỗi cho chuyên gia phụ trách thành phần bị ảnh hưởng.
 
@@ -425,7 +359,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 **Quy tắc:** Không đưa thông tin xác thực vào báo cáo hoặc hệ thống quản lý phiên bản. Coi mã nguồn và đầu ra scanner là dữ liệu đầu vào không đáng tin cậy. Chạy các phép tái hiện cục bộ trong sandbox của hệ điều hành; giới hạn lưu lượng ARTEX trong phạm vi môi trường chạy đã được cho phép. Lần quét thất bại, chưa hoàn tất hoặc bị bỏ qua, cũng như nỗ lực khai thác không thành công, không chứng minh mục tiêu an toàn. Phát hiện `confirmed` cần được xác minh độc lập và có bằng chứng đã quan sát trên revision hoặc bản triển khai được ghi lại; nếu chỉ có căn cứ tĩnh thì vẫn là `needs_validation`.
 
-**Khi sử dụng:** Quét bảo mật, pentest ứng dụng web đã triển khai, triage và xác minh phát hiện hoặc cổng kiểm tra bảo mật CI. Dùng `/review` để rà soát rộng hơn về chất lượng code, accessibility và hiệu suất.
+**Khi sử dụng:** Quét bảo mật mã nguồn, skill của agent hoặc thành phần MCP; triage và xác minh phát hiện; cổng kiểm tra bảo mật CI; hoặc một pentest có giới hạn trên bản triển khai thử nghiệm, chạy trên nền tảng ARTEX mà bạn đang vận hành sẵn. Dùng `/review` để rà soát rộng hơn về chất lượng code, accessibility và hiệu suất.
 
 ---
 
@@ -433,14 +367,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 **Mô tả:** Chẩn đoán và sửa bug có cấu trúc, viết regression test và quét pattern tương tự.
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "debug" |
-| Tiếng Anh | "fix bug", "fix error", "fix crash" |
-| Tiếng Hàn | "디버그", "버그 수정", "에러 수정", "버그 찾아", "버그 고쳐" |
-| Tiếng Nhật | "デバッグ", "バグ修正", "エラー修正" |
-| Tiếng Trung | "调试", "修复 bug", "修复错误" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/debug`. Hook từ khóa không mở workflow này từ một câu.
 
 **Các bước:** Thu thập thông tin lỗi -> tái hiện (MCP `search_for_pattern`, `find_symbol`) -> chẩn đoán nguyên nhân gốc (MCP `find_referencing_symbols` để lần theo execution path) -> đề xuất sửa tối thiểu (cần người dùng xác nhận) -> áp dụng sửa + viết regression test -> quét pattern tương tự (có thể spawn subagent debug-investigator nếu phạm vi > 10 file) -> ghi bug vào memory.
 
@@ -450,20 +377,20 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 ### /design
 
-**Mô tả:** Workflow thiết kế 7 phase tạo DESIGN.md với token, pattern component và rule accessibility.
+**Mô tả:** Xác định phạm vi của một task thiết kế, chọn hướng dẫn thiết kế áp dụng và bàn giao các phát hiện, `DESIGN.md`, định hướng redesign hoặc design token thông qua `oma-design`. Workflow không viết code triển khai; phần triển khai được bàn giao cho `oma-frontend` hoặc `oma-mobile`. Chạy inline (không spawn subagent).
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "design system", "DESIGN.md", "design token" |
-| Tiếng Anh | "design", "landing page", "ui design", "color palette", "typography", "dark theme", "responsive design", "glassmorphism" |
-| Tiếng Hàn | "디자인", "랜딩페이지", "디자인 시스템", "UI 디자인" |
-| Tiếng Nhật | "デザイン", "ランディングページ", "デザインシステム" |
-| Tiếng Trung | "设计", "着陆页", "设计系统" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/design`. Hook từ khóa không mở workflow này từ một câu.
 
-**Các phase:** SETUP (thu thập context, `.design-context.md`) -> EXTRACT (tùy chọn, từ URL tham chiếu/Stitch) -> ENHANCE (bổ sung cho prompt mơ hồ) -> PROPOSE (2-3 hướng design với màu, typography, layout, motion, component) -> GENERATE (DESIGN.md + token CSS/Tailwind/shadcn) -> AUDIT (responsive, WCAG 2.2, heuristic Nielsen, kiểm tra AI slop) -> HANDOFF (lưu và thông báo người dùng).
+**Các bước:**
 
-**Bắt buộc:** Mọi output đều responsive-first (mobile 320-639px, tablet 768px+, desktop 1024px+).
+1. **Tải skill:** Đọc `.agents/skills/oma-design/SKILL.md` và `resources/execution-protocol.md`. Skill sở hữu việc chọn supplier, design contract của project và bằng chứng bàn giao; workflow sắp xếp trình tự các thao tác của skill và không thêm quy tắc trực quan nào của riêng nó.
+2. **Xác lập phạm vi và ngữ cảnh:** Phân loại kết quả được yêu cầu: các phát hiện (một lần audit), tài liệu design system, định hướng redesign hoặc token. Đọc yêu cầu, `DESIGN.md` hiện có, `.design-context.md` khi có, tài liệu thương hiệu, các ngôn ngữ được hỗ trợ và UI bị ảnh hưởng. Với site hoặc ứng dụng hiện có, tải `redesign-protocol.md` và xác lập Preserve hay Overhaul trước khi đề xuất thay đổi. Workflow chỉ hỏi về lựa chọn làm thay đổi đáng kể kết quả mà yêu cầu, các artifact và codebase không trả lời được. `.design-context.md` chỉ được tạo hoặc cập nhật khi một lượt khám phá thực chất đã góp phần vào quyết định.
+3. **Chọn hướng dẫn và thu thập tham chiếu:** Chọn một supplier cho thao tác thông qua `external-design-skills.md` (Interface Design, Taste hoặc Impeccable). Task chỉ về tài liệu hoặc token contract được xử lý tại chỗ. Các đầu vào tùy chọn chỉ được tải khi task cần đến: vendor seed được yêu cầu (`getdesign-fetcher.md`), thao tác Stitch được yêu cầu (`stitch-integration.md`), hình ảnh và placeholder (`asset-strategy.md`), hoặc bề mặt xây quanh một bảng dữ liệu hay grid (`data-grid.md`). Integration không khả dụng được báo cáo là một giới hạn về bằng chứng, không bị âm thầm thay thế.
+4. **Quyết định định hướng:** Áp dụng hướng dẫn đã chọn vào bằng chứng của project. Các định hướng thay thế chỉ được trình bày khi một lựa chọn chưa giải quyết ảnh hưởng đáng kể đến kết quả; định hướng và quyền đã có là đủ khi chúng trả lời được lựa chọn đó.
+5. **Tạo artifact:** Với design system, tạo hoặc cập nhật `DESIGN.md` theo `design-md-spec.md`, giữ đủ chín section, kể cả Section 9 (Agent Prompt Guide). Token tuân theo `design-tokens.md` và ánh xạ các vai trò ngữ nghĩa vào hệ thống token và định dạng theme hiện có của project. Một lần audit trả về các phát hiện kèm vị trí đã kiểm tra, bằng chứng, tác động và khuyến nghị, và không sửa gì.
+6. **Xác minh và bàn giao:** Chạy các check áp dụng trong `checklist.md` và nêu rõ những gì đã được kiểm tra. Báo cáo các artifact đã bàn giao, route đã chọn và xuất xứ của nó, kết quả xác minh và các giới hạn còn lại, rồi bàn giao phần triển khai cho `oma-frontend` (web) hoặc `oma-mobile` (native).
+
+**Ràng buộc:** Mọi định hướng đều nằm trong thương hiệu của project, độ phủ font CJK ở nơi các ngôn ngữ đó được hỗ trợ, stack triển khai hiện có, hành vi responsive từ viewport nhỏ nhất được hỗ trợ, và WCAG AA trừ khi project đặt mục tiêu chặt hơn. Các check cần một bản triển khai đã render được nêu rõ nhưng không chạy đối với công việc chỉ có tài liệu.
 
 ---
 
@@ -476,22 +403,6 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 **Các bước:** Phân tích thay đổi (git status, git diff) -> tách theo tính năng (nếu > 5 file thuộc scope/type khác nhau) -> xác định type (feat/fix/refactor/docs/test/chore/style/perf) -> xác định scope (module thay đổi) -> viết mô tả (thể mệnh lệnh, < 72 ký tự) -> commit ngay (không hỏi xác nhận).
 
 **Quy tắc:** Không bao giờ dùng `git add -A`. Không bao giờ commit secret. Dùng HEREDOC cho message nhiều dòng. Chỉ thêm trailer co-author khi cấu hình `scm.co_author` có hiệu lực bật tính năng này và cung cấp đủ cả hai giá trị.
-
----
-
-### /tools
-
-**Mô tả:** Quản lý khả năng hiển thị và hạn chế của MCP tool.
-
-**Từ khóa trigger:** Không có (bị loại khỏi phát hiện tự động).
-
-**Tính năng:** Hiển thị trạng thái MCP tool hiện tại, bật/tắt nhóm tool (memory, code-analysis, code-edit, file-ops), thay đổi vĩnh viễn hoặc tạm thời (`--temp`), phân tích ngôn ngữ tự nhiên ("memory tools only", "disable code edit").
-
-**Nhóm tool:**
-- memory: read_memory, write_memory, edit_memory, list_memories, delete_memory
-- code-analysis: get_symbols_overview, find_symbol, find_referencing_symbols, search_for_pattern
-- code-edit: replace_symbol_body, insert_after_symbol, insert_before_symbol, rename_symbol
-- file-ops: list_dir, find_file
 
 ---
 
@@ -513,7 +424,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 **Mô tả:** Phát hiện drift tài liệu và đồng bộ qua `oma-docs`. Chế độ verify tìm broken ref trong toàn bộ Markdown của repo (glob mặc định `**/*.md`); chế độ sync đề xuất patch theo từng tài liệu cho các tài liệu bị ảnh hưởng bởi một git diff. Chạy inline (không spawn subagent); mọi vendor đều gọi trực tiếp `oma docs`.
 
-**Từ khóa trigger:** Universal: "oma-docs", "docs verify", "docs sync". English: "verify docs", "check docs", "docs drift", "broken doc links", "stale docs", "sync docs", "patch docs". Korean: "문서 검증", "문서 드리프트", "문서 동기화". Japanese: "ドキュメント検証", "ドキュメント同期". Chinese: "文档校验", "文档同步".
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/docs`. Hook từ khóa không mở workflow này từ một câu.
 
 **Các bước:** Xác định chế độ (mặc định `verify`; `sync` khi prompt nhắc đến sync hoặc cung cấp một git diff range) -> preflight (`command -v oma`; với sync, xác nhận diff dùng được, nếu không thì dùng `HEAD~1..HEAD`) -> Verify: `oma docs verify --json` (exit `0` là sạch, `1` là có broken ref) hoặc Sync: `oma docs sync --json` theo range -> tổng hợp phát hiện theo host-LLM contract (verify: nhóm theo CRITICAL/HIGH/MEDIUM/LOW kèm cách sửa cụ thể; sync: soạn patch unified-diff tối thiểu) -> trình bày từng patch sync một cách tương tác (`[y] apply [n] skip [d] show diff [s] show full proposal`; không bao giờ tự apply) -> khi apply, tạo lại index qua `oma docs verify --json` -> báo cáo chế độ, số lượng theo loại và trỏ tới `docs/generated/doc-refs.json` / `url-drift.json`.
 
@@ -530,7 +441,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 **Mô tả:** Tóm tắt công việc theo ngày hoặc giai đoạn qua `oma-recap`. Xác định ngày hoặc khoảng thời gian từ ngôn ngữ tự nhiên, gọi `oma recap --json` trên lịch sử của nhiều AI tool (Grok, Claude, Codex, Qwen, Cursor, Antigravity), giao việc phân tích chủ đề và định dạng Markdown cho skill, rồi báo cáo TL;DR cùng path đã lưu. Chạy inline (không spawn subagent); mọi vendor đều gọi trực tiếp `oma recap`.
 
-**Từ khóa trigger:** Universal: "recap". Korean: "리캡". Japanese: "リキャップ".
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/recap`. Hook từ khóa không mở workflow này từ một câu.
 
 **Các bước:** Xác định chế độ và khoảng thời gian (mặc định `daily` với hôm nay; `period` khi các cụm như "this week" / "지난 7일" được quy về `--window Nd`) -> chỉ trích bộ lọc `--tool` khi người dùng nêu rõ tên tool (`grok, claude, codex, qwen, cursor, antigravity`) -> preflight (`command -v oma`) -> chạy `oma recap --json` (daily: `--date YYYY-MM-DD` hoặc bỏ qua; period: `--window 7d` / `30d`) -> tổng hợp và lưu theo contract của skill (ngưỡng chủ đề 15 phút, template theo ngày hoặc nhiều ngày) -> báo cáo TL;DR 3 gạch đầu dòng và path đã lưu.
 
@@ -545,12 +456,12 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 ### /stack-set
 
-**Mô tả:** Tự phát hiện tech stack của project và tạo tham chiếu theo ngôn ngữ cho skill lĩnh vực được xác định (backend hoặc mobile). Phát hiện stack mobile (Swift/iOS qua `Package.swift`/`.xcodeproj`, Flutter qua `pubspec.yaml`, React Native qua `package.json` + react-native) và định tuyến tới `oma-mobile`; ngược lại định tuyến tới `oma-backend`. Trong monorepo có cả hai, workflow hỏi bạn muốn cấu hình cái nào.
+**Mô tả:** Tự phát hiện tech stack của project và tạo tham chiếu theo ngôn ngữ cho skill lĩnh vực được xác định. Manifest backend được định tuyến tới `oma-backend`; stack mobile (Swift/iOS qua `Package.swift`/`.xcodeproj`, Kotlin/Android qua `settings.gradle.kts`, Flutter qua `pubspec.yaml`, React Native qua `package.json` + react-native) được định tuyến tới `oma-mobile`; manifest frontend (Angular, Next.js, React, Vue, Svelte) được định tuyến tới `oma-frontend`. Khi phát hiện nhiều hơn một lĩnh vực và yêu cầu không nêu tên lĩnh vực nào, workflow hỏi bạn muốn cấu hình cái nào.
 
 **Từ khóa trigger:** Không có (bị loại khỏi phát hiện tự động).
 
 <!-- oma-docs:ignore-start -->
-**Các bước:** Phát hiện (quét manifest: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj, Package.swift, *.xcodeproj, pubspec.yaml) -> xác nhận (hiển thị stack phát hiện được, lấy xác nhận của người dùng) -> tạo (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` với 8 pattern bắt buộc, `stack/api-template.*`) -> xác minh.
+**Các bước:** Phát hiện (quét manifest: pyproject.toml, package.json, Cargo.toml, pom.xml, go.mod, mix.exs, Gemfile, *.csproj, Package.swift, *.xcodeproj, pubspec.yaml) -> xác nhận (hiển thị stack phát hiện được, lấy xác nhận của người dùng) -> tạo (`stack/stack.yaml`, `stack/tech-stack.md`, `stack/snippets.md` với 8 pattern bắt buộc, và với backend là `stack/api-template.*`; stack mobile giữ snippet API service hoặc repository trong `stack/snippets.md`) -> xác minh.
 <!-- oma-docs:ignore-end -->
 
 **Đầu ra:** Các file trong thư mục `stack/` của skill lĩnh vực được xác định (ví dụ `.agents/skills/oma-backend/stack/` hoặc `.agents/skills/oma-mobile/stack/`). Không sửa SKILL.md hoặc `resources/`.
@@ -561,21 +472,14 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 **Mô tả:** Điều khiển skill `oma-video` từ đầu đến cuối: brief → script → narration → visuals → captions → render-spec → compositor HyperFrames được quản lý (hoặc MoneyPrinterTurbo). Workflow tạo một run directory có thể tái lập và chỉ xuất `.mp4` thật sau khi kiểm tra compositor và ffprobe đều pass. Cấu hình provider không bắt buộc key đối với các fallback asset được hỗ trợ; lỗi compositor hoặc toolchain vẫn là một run thất bại. Chạy inline (không spawn subagent).
 
-**Từ khóa trigger:**
-| Ngôn ngữ | Từ khóa |
-|----------|----------|
-| Phổ quát | "/video", "oma-video", "hyperframes", "shorts", "reels", "screencast" |
-| Tiếng Anh | "generate video", "create a video", "make a video", "short-form video", "explainer video", "demo video", "walkthrough video", "video from readme", "video from code" |
-| Tiếng Hàn | "영상 만들어", "영상 생성", "비디오 만들어", "숏폼 만들어", "쇼츠 영상", "릴스 영상", "데모 영상", "설명 영상" |
-| Tiếng Nhật | "動画を生成", "動画を作成", "ショート動画", "解説動画", "デモ動画" |
-| Tiếng Trung | "生成视频", "制作视频", "短视频", "讲解视频", "演示视频" |
+**Từ khóa trigger:** Không có. Hãy khởi động bằng `/video`. Hook từ khóa không mở workflow này từ một câu.
 
 **Các bước:**
-1. **Xác định brief và mode:** Chọn `shorts` (9:16), `explainer` (16:9) hoặc `demo` (screen/web capture); áp dụng mặc định của mode, có thể ghi đè bằng flag.
+1. **Xác định brief và mode:** Chọn `shorts` (9:16), `explainer` (16:9) hoặc `demo` (bản ghi màn hình do người quay, cung cấp qua `--capture`); áp dụng mặc định của mode, có thể ghi đè bằng flag.
 2. **Soạn script:** Tạo scene + narration (dùng LLM khi có key, nếu không thì dùng outline xác định từ brief).
-3. **Tổng hợp asset:** Narration qua `oma-voice`, visuals qua `oma-image`/`oma-slide`/stock, căn caption không cần key, hoặc web capture bằng browser có giám sát cho `demo --source web`. Mỗi provider đều lùi về một fallback xác định.
+3. **Tổng hợp asset:** Narration qua `oma-voice`, visuals mặc định qua `oma-image`, căn caption không cần key, và với `demo` là bản ghi của người quay đã được nạp vào. Frame `oma-slide` chỉ được dùng cho scene có `visual.ref` trỏ tới một thư mục deck có sẵn; visual stock (Pexels) và AIGC (Pixelle) được dùng với `--visual stock` hoặc `--visual aigc` khi key của chúng đã được đặt. `--source web --url` chỉ thêm ngữ cảnh URL; CLI không mở hay ghi hình browser. Mỗi provider đều lùi về một fallback xác định.
 4. **Dựng render-spec:** Ghi `render-spec.json` (ranh giới tính xác định) cùng asset vào run directory.
-5. **Render:** Spawn project HyperFrames được quản lý (hoặc MoneyPrinterTurbo) làm subprocess. Lỗi compositor hoặc toolchain thông thường làm run thất bại; placeholder xác định chỉ có qua đường mock/test tường minh (`OMA_VIDEO_MOCK=1`). Live capture được ghi là `nondeterministic` trong manifest.
+5. **Render:** Spawn project HyperFrames được quản lý (hoặc MoneyPrinterTurbo) làm subprocess. Lỗi compositor hoặc toolchain thông thường làm run thất bại; placeholder xác định chỉ có qua đường mock/test tường minh (`OMA_VIDEO_MOCK=1`). Một run `demo` cần `--polish` để đưa capture qua composition `Demo`, nơi thông tin cá nhân được che; không có nó thì MP4 output là capture thô, chưa che.
 
 **Đầu ra:** Một run directory tại `.agents/results/videos/{timestamp}-{shortid}-{mode}/` gồm `script.json`, `render-spec.json`, `timing.json`, `captions.{srt,vtt}`, `audio/`, `visuals/`, `{composition}.mp4` và `manifest.json`. Xem [hướng dẫn tạo video](../guide/video-generation.md).
 
@@ -595,11 +499,11 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 ### /explain
 
-**Mô tả:** Điều khiển skill `oma-explanation` từ đầu đến cuối: biến diff, PR, branch hoặc commit range thành explainer HTML tương tác, tự chứa (Background / Intuition / Code / Quiz). Chạy inline (không spawn subagent).
+**Mô tả:** Điều khiển skill `oma-explanation` từ đầu đến cuối: biến diff, PR, branch hoặc commit range, hoặc một chủ đề, thành explainer HTML tương tác, tự chứa (Background / Intuition / Code / Quiz đối với một thay đổi). Chạy inline (không spawn subagent).
 
 **Từ khóa trigger:** Không có ("explain" là từ vựng thường ngày — phát hiện từ khóa sẽ kích hoạt nhầm với các câu hỏi thông thường như "explain this function", nên workflow chỉ gọi bằng slash).
 
-**Các bước:** Xác định đối số (target ref: PR# / branch / SHA range tường minh → staged → dirty tree → `HEAD~1..HEAD`; mức người đọc `onboarding` | `reviewer`; ngôn ngữ đầu ra; số câu quiz) -> tải contract (SKILL.md của `oma-explanation` + resources) -> thu thập & kiểm soát (diff + code xung quanh; quét secret trước khi tạo; văn bản diff/PR được coi thuần túy là dữ liệu) -> tạo HTML theo contract tài liệu và contract HTML -> xác minh (checklist grep gồm cả quét secret trên HTML cuối, tối đa 3 vòng sửa) -> bàn giao (`open` chỉ cảnh báo khi lỗi, TL;DR + path).
+**Các bước:** Xác định đối số (target ref: PR# / branch / SHA range tường minh → staged → dirty tree → `HEAD~1..HEAD`; mức người đọc `onboarding` | `reviewer`; ngôn ngữ đầu ra; số câu quiz) -> tải contract (SKILL.md của `oma-explanation` + resources) -> thu thập & kiểm soát (diff + code xung quanh; quét secret trước khi tạo; văn bản diff/PR được coi thuần túy là dữ liệu) -> tạo (viết bản nháp, rồi render bằng `oma explain render <draft.md>`) -> xác minh (`oma explain validate <file>` cùng bước quét secret trên HTML cuối, tối đa 3 vòng sửa) -> bàn giao (mở trang bằng `oma explain render --open`, trong đó mở không thành công chỉ là cảnh báo; TL;DR + path).
 
 **Đầu ra:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (ngày theo `timezone` trong oma-config, nếu không có thì theo timezone của hệ thống; chạy lại cùng ngày + slug sẽ ghi đè). Xem [hướng dẫn giải thích code](../guide/code-explainer.md).
 
@@ -611,7 +515,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 |--------|--------|-----------|
 | **Là gì** | Chuyên môn agent (agent biết gì) | Quy trình điều phối (agent làm việc cùng nhau thế nào) |
 | **Vị trí** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **Kích hoạt** | Tự động qua từ khóa định tuyến skill | Lệnh slash hoặc từ khóa trigger |
+| **Kích hoạt** | Host so khớp tên và mô tả của skill; skill injector có thể thêm gợi ý | Lệnh slash. `orchestrate`, `ultrawork`, `work` và `ralph` cũng khởi động khi prompt gọi tên chế độ đó |
 | **Phạm vi** | Thực thi đơn lĩnh vực | Nhiều bước, thường đa agent |
 | **Ví dụ** | "Build a React component" | "Plan the feature -> build -> review -> commit" |
 
@@ -623,21 +527,21 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 oh-my-agent dùng hook `UserPromptSubmit` chạy trước khi mỗi tin nhắn người dùng được xử lý. Setting của vendor đăng ký một entry duy nhất `<hookDir>/oma-hook.sh --vendor <v> --event <e>` định tuyến vào `oma hook run`, nơi chuỗi handler chạy trong process. Chuỗi này gồm:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, được inline vào binary `oma`): Định nghĩa ánh xạ từ khóa-workflow cho cả 11 ngôn ngữ được hỗ trợ (tiếng Anh, Hàn, Nhật, Trung, Tây Ban Nha, Pháp, Đức, Bồ Đào Nha, Nga, Hà Lan, Ba Lan).
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, được inline vào binary `oma`): Bảng `workflows` chỉ định tuyến theo từ khóa cho `orchestrate`, `ultrawork`, `work` và `ralph`, và chỉ theo tên tường minh của từng chế độ. Gợi ý từ khóa của skill nằm trong cùng file và không thay đổi.
 
-2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): Logic TypeScript quét đầu vào người dùng so với từ khóa trigger của mọi ngôn ngữ và đưa ngữ cảnh kích hoạt workflow vào.
+2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): Logic TypeScript quét đầu vào người dùng so với các tên tường minh đó và đưa ngữ cảnh kích hoạt workflow vào.
 
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): Áp dụng thực thi workflow liên tục bằng cách kiểm tra file trạng thái đang hoạt động và đưa lại ngữ cảnh workflow.
 
 ### Luồng phát hiện {#detection-flow}
 
-1. Người dùng nhập đầu vào ngôn ngữ tự nhiên
-2. Hook kiểm tra xem có lệnh `/command` tường minh hay không (nếu có, bỏ qua phát hiện để tránh trùng lặp)
-3. Hook làm sạch đầu vào (loại bỏ code block, chuỗi trích dẫn, các khối system-echo đã dán) rồi quét so với `.agents/hooks/core/triggers.json`, gồm cả danh sách keyword (cụm từ literal) và `patterns` (regex thô). Một lớp bảo vệ tăng cường ngăn việc kích hoạt lại nếu cùng một workflow đã trigger từ 2 lần trở lên trong 60 giây gần nhất.
+1. Người dùng nhập prompt
+2. Hook kiểm tra xem prompt có bắt đầu bằng một `/command` hay không (nếu có, bỏ qua việc đưa từ khóa vào; chính lệnh đó tải workflow). Slash command của workflow liên tục vẫn ghi file trạng thái của chế độ đó
+3. Hook làm sạch đầu vào (loại bỏ code block, chuỗi trích dẫn, các khối system-echo đã dán) rồi quét các danh sách keyword của `workflows` trong `.agents/hooks/core/triggers.json`. Các danh sách đó chỉ chứa tên tường minh của `orchestrate`, `ultrawork`, `work` và `ralph`. Một lớp bảo vệ tăng cường ngăn việc kích hoạt lại nếu cùng một workflow đã trigger từ 2 lần trở lên trong 60 giây gần nhất.
 4. Nếu tìm thấy khớp, kiểm tra xem đầu vào có khớp các mẫu thông tin hay không
 5. Nếu mang tính thông tin (ví dụ: "what is orchestrate?"), lọc ra (không workflow nào được kích hoạt)
-6. Nếu mang tính hành động, đưa `[OMA WORKFLOW: {workflow-name}]` vào ngữ cảnh. Khi nhiều workflow cùng khớp, lời gọi tường minh thắng, sau đó đến từ khóa dài nhất.
-7. Với workflow liên tục, chỉ lời gọi tường minh (`explicit` trong `triggers.json`) mới ghi file trạng thái chế độ liên tục; một match bằng ngôn ngữ tự nhiên được đưa vào dưới dạng gợi ý, và prompt kết thúc bằng câu hỏi (`?` ở dòng đầu hoặc dòng cuối) hoàn toàn không kích hoạt nó
+6. Nếu tên tường minh khớp, đưa `[OMA WORKFLOW: {workflow-name}]` vào và yêu cầu agent khởi động workflow đó ngay. Khi nhiều tên tường minh cùng khớp, từ khóa dài nhất thắng, sau đó đến thứ tự khai báo
+7. Chính lần khớp tường minh đó ghi file trạng thái chế độ liên tục. Gọi tên chế độ trong một câu hỏi ngắn vẫn khởi động nó (`ultrawork로 해줄래?`). Một câu hỏi về chế độ đó (`What is ultrawork?`) thì không
 8. Agent đọc tag được đưa vào và tải file workflow tương ứng từ `.agents/workflows/`
 
 ### Quy ước section ngôn ngữ {#language-section-convention}
@@ -652,23 +556,22 @@ oh-my-agent dùng hook `UserPromptSubmit` chạy trước khi mỗi tin nhắn n
 
 Mọi section đều luôn được tải: người dùng viết prompt bằng ngôn ngữ họ nghĩ, và cài đặt `language` trong `.agents/oma-config.yaml` chỉ điều khiển ngôn ngữ phản hồi. Một keyword viết bằng một ngôn ngữ chỉ có thể khớp với prompt chứa đúng chữ viết đó, nên việc gộp mọi section không thể kích hoạt nhầm trên các prompt không liên quan.
 
-Ranh giới từ chỉ phụ thuộc vào chính keyword, không bao giờ phụ thuộc vào `language`: keyword ASCII chỉ khớp nguyên từ (nên "work" không khớp "network", và "review" không khớp "preview"), còn keyword chứa văn bản không phải ASCII khớp như chuỗi con vì trợ từ và biến tố CJK gắn trực tiếp vào từ ("리뷰해줘").
+Ranh giới từ chỉ phụ thuộc vào chính keyword, không bao giờ phụ thuộc vào `language`: keyword ASCII chỉ khớp nguyên từ (nên "work" không khớp "network", và "ulw" không khớp một định danh dài hơn), còn keyword chứa văn bản không phải ASCII khớp như chuỗi con vì trợ từ CJK gắn trực tiếp vào từ ("랄프로").
 
 ### Trường pattern (regex thô) {#pattern-field-raw-regex}
 
-Ngoài `keywords` literal, mỗi workflow có thể khai báo `patterns`, là các chuỗi regex thô được biên dịch với cờ `iu`. Pattern cho phép khớp intent đa token mà nếu không sẽ cần danh sách keyword tổ hợp.
+Detector vẫn có thể biên dịch trường `patterns` của workflow: các chuỗi regex thô với cờ `iu`, dành cho intent đa token mà danh sách keyword không diễn đạt được. Bảng `workflows` đi kèm không khai báo `patterns`. Mọi tên tường minh cũng có mặt trong `keywords`, vì một lần khớp chỉ được tính là tường minh khi văn bản keyword đã khớp nằm trong danh sách `explicit` của workflow đó.
 
 ```jsonc
 {
   "workflows": {
     "orchestrate": {
       "persistent": true,
-      // Subset of `keywords` that activates persistent mode (persistent workflows only)
-      "explicit": ["orchestrate", ...],
-      "keywords": { "*": ["orchestrate"], "en": ["do everything", ...] },
-      "patterns": {
-        "*": ["\\b(build|create|make)\\s+(?:me\\s+)?(?:an?)\\s+...\\b"],
-        "ko": ["(앱|API|...)\\s*(?:을|를)?\\s*(?:만들어\\s*(?:주세요|줘)?|...)"]
+      "explicit": ["orchestrate", "オーケストレート", "orquestar"],
+      "keywords": {
+        "*": ["orchestrate"],
+        "ja": ["オーケストレート"],
+        "es": ["orquestar"]
       }
     }
   }
@@ -691,18 +594,13 @@ Section `informationalPatterns` của `.agents/hooks/core/triggers.json` định
 | `ja` | "とは", "って何", "どうやって", "説明して" |
 | `zh` | "是什么", "什么是", "怎么", "解释" |
 
-Nếu đầu vào khớp cả trigger workflow và mẫu thông tin, mẫu thông tin được ưu tiên và không workflow nào được kích hoạt. Đây là cơ chế chặn các prompt như:
-- `"How do you build a TODO app?"`: `how do` trong `*` chặn regex intent của orchestrate
-- `"orchestrate 트리거 해주면 되나요?"`: `트리거` trong `ko` chặn keyword orchestrate
+Nếu đầu vào khớp cả một tên chế độ tường minh và mẫu thông tin, mẫu thông tin được ưu tiên và không workflow nào được kích hoạt. Đây là cơ chế chặn các prompt như:
+- `"what is orchestrate?"`: `what is` trong `*` chặn keyword `orchestrate`
+- `"orchestrate 트리거 해주면 되나요?"`: `트리거` trong `ko` chặn keyword `orchestrate`
 
-### Workflow bị loại trừ {#excluded-workflows}
+### Workflow mà hook từ khóa không mở {#workflows-the-keyword-hook-does-not-open}
 
-Các workflow sau không được kích hoạt bằng keyword và phải được gọi bằng `/command` tường minh. `/tools` và `/stack-set` nằm trong `excludedWorkflows` (cố ý loại khỏi phát hiện từ khóa); `/convert` đơn giản là không có từ khóa trigger (skill `oma-pdf` và `oma-hwp` có cơ chế phát hiện từ khóa riêng); `/schedule` là workflow gọi bằng slash (job theo thời gian `oma schedule <action>`); `/explain` không có từ khóa trigger vì "explain" là từ vựng thường ngày và phát hiện từ khóa sẽ liên tục kích hoạt nhầm:
-- `/tools`
-- `/stack-set`
-- `/convert`
-- `/schedule`
-- `/explain`
+Mọi workflow ngoài `orchestrate`, `ultrawork`, `work` và `ralph` đều khởi động từ slash command của nó. File quy trình vẫn nằm trong `.agents/workflows/`. `excludedWorkflows` nêu tên `stack-set`, `schedule` và `convert`, nên một bộ từ khóa không thể định tuyến ba workflow đó ngay cả khi được thêm vào sau này. `/explain` vẫn chỉ gọi bằng slash vì "explain" là từ vựng thường ngày. Gợi ý từ khóa của skill trong cùng file là phần riêng biệt và vẫn đưa ngữ cảnh skill vào.
 
 ---
 

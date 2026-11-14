@@ -91,7 +91,7 @@ Les dashboards lisent le répertoire `.agents/state/memories/`. Les agents et le
 | `orchestrator-session.md` | Étape 2 de `/orchestrate` | ID de session, heure de début, statut (RUNNING/COMPLETED/FAILED), version du workflow |
 | `session-{workflow}.md` | `/work`, `/ultrawork` | Métadonnées de session, progression des phases, résumé de la demande utilisateur |
 | `task-board.md` | Workflows d'orchestration | Tableau Markdown avec les affectations, statuts et tâches des agents |
-| `progress-{agent}.md` | Chaque agent lancé | Numéro du tour en cours, travail de l'agent, résultats intermédiaires |
+| `progress-{agent}-{task}-{run}-{session}.md` | Chaque agent lancé | Entrées `## Turn N` ajoutées à la suite : ce que l'agent a fait, statut courant, fichiers modifiés |
 | `result-{agent}.md` | Chaque agent terminé | Statut final (COMPLETED/FAILED), fichiers modifiés, problèmes rencontrés, livrables |
 | `debug-{id}.md` | Workflow `/debug` | Diagnostic du bug, cause racine, correction appliquée, emplacement du test de régression |
 | `experiment-ledger-{sessionId}.md` | Expériences réelles | Preuves comparables du baseline et du candidat, vérifications requises et décisions |
@@ -107,7 +107,7 @@ Le dashboard combine plusieurs stratégies pour extraire les informations :
 
 3. **Découverte des agents :** s'il n'existe pas de tableau de tâches, recherche dans tous les fichiers `.md` les motifs `**Agent**: {name}`, les lignes `Agent: {name}` ou les noms de fichiers contenant `_agent` ou `-agent`.
 
-4. **Comptage des tours :** pour chaque agent découvert, lit les fichiers `progress-{agent}.md` et extrait le numéro du tour à partir des motifs `turn: N`.
+4. **Comptage des tours :** pour chaque agent découvert, prend le fichier le plus récent dont le nom commence par `progress-{agent}` et y lit la dernière ligne `Turn N` (ou `turn: N`).
 
 5. **Flux d'activité :** liste les 5 fichiers `.md` modifiés le plus récemment, puis extrait la dernière ligne pertinente (titre, ligne de statut ou élément d'action) comme message d'activité. Le dashboard web expose également la vue récapitulative à `/recap`.
 
@@ -128,14 +128,14 @@ Le tableau des agents affiche chaque agent détecté avec :
 
 - **Nom de l'agent :** identifiant du domaine (backend, frontend, mobile, qa, debug, pm) ;
 - **Statut :** état courant avec indicateur visuel (running/completed/failed/blocked/pending) ;
-- **Tour :** numéro du tour courant de l'agent (nombre d'itérations terminées), extrait des fichiers de progression ;
+- **Tour :** numéro de la dernière entrée de progression de l'agent, extrait des fichiers de progression ; il compte les entrées, pas les tours du modèle ;
 - **Tâche :** brève description du travail en cours, tronquée pour tenir dans l'espace disponible.
 
 ### Progression des agents
 
-La progression est suivie par les fichiers `progress-{agent}.md`. Chaque fichier est mis à jour par l'agent pendant son travail. Le dashboard y recherche :
+La progression est suivie par les fichiers `progress-{agent}-*.md`. Chaque agent ajoute une entrée à un point d'étape significatif (une étape terminée, un blocage, un changement d'approche). Le dashboard y recherche :
 
-- le numéro du tour (qui augmente au fil de la progression) ;
+- le numéro du tour (le numéro de la dernière entrée) ;
 - l'action courante (ce que l'agent fait maintenant) ;
 - les résultats intermédiaires (achèvements partiels).
 

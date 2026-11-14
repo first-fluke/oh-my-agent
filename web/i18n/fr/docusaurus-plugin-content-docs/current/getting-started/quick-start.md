@@ -71,7 +71,7 @@ Use the discovered `oma-docs` skill to check one existing link in this project's
 
 L’hôte doit identifier la compétence sélectionnée, examiner une cible et indiquer soit une modification ciblée du lien, soit que le lien est déjà valide. Incluez la sortie de la commande et son code de sortie pour tout contrôle effectivement exécuté.
 
-Lorsque le hook de mots-clés est activé pour l’hôte sélectionné, il peut activer un workflow correspondant. Le routage des compétences est effectué par l’hôte ou le workflow sélectionné : une invite arbitraire adressée à l’hôte ne garantit donc ni hook, ni compétence précise, ni `CHARTER_CHECK`. Le contrat d’exécution doit tout de même examiner les conventions du dépôt, limiter la modification au périmètre demandé et en rendre compte avec sa vérification. Les fichiers exacts et la commande dépendent du projet.
+Une simple invite ne démarre aucun workflow ; lorsque le hook de prompt est activé, il ajoute une indication de compétence à titre consultatif. Le routage des compétences est effectué par l’hôte ou le workflow sélectionné : une invite arbitraire adressée à l’hôte ne garantit donc ni hook, ni compétence précise. Le contrat d’exécution doit tout de même examiner les conventions du dépôt, limiter la modification au périmètre demandé et en rendre compte avec sa vérification. Les fichiers exacts et la commande dépendent du projet.
 
 Pour une tâche qui traverse les frontières API et interface utilisateur, sélectionnez explicitement `/work` ou `/orchestrate`. Pour un seul domaine, poursuivez avec [Exécution d’une compétence unique](../guide/single-skill.md). Le [Guide d’utilisation](../guide/usage.md) contient des exemples plus longs.
 

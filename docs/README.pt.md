@@ -23,7 +23,7 @@ Depois execute `oma doctor` e digite `/plan add user accounts with a settings pa
 | | O que oferece | Experimente |
 |---|---|---|
 | **12 papéis especialistas** | PM, arquiteto, engenheiros de backend, frontend, mobile, banco de dados e infra, revisor de QA, depurador, refatorador, curador de docs, pesquisador ([conheça o time](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **21 workflows** | Slash commands de `/brainstorm` e `/plan` até `/review`, `/debug` e `/scm`. A maioria também começa a partir de um pedido em linguagem natural (bancos de palavras-chave em até 11 idiomas) | "review this PR" |
+| **20 workflows** | Slash commands de `/brainstorm` e `/plan` até `/review`, `/debug` e `/scm`. Os quatro modos multiagente também começam quando um pedido em linguagem natural os chama pelo nome | "ultrawork: add rate limiting" |
 | **33 skills** | Know-how de domínio que só é carregado quando uma tarefa precisa: UI, APIs, schemas, Terraform, CI, segurança, git, observabilidade | carrega sozinha, por exemplo "add a Terraform S3 bucket" |
 | **Arquivos que você pode abrir** | Planos, design docs, contratos de API, ADRs, notas de bug, resultados por agente, evidências de segurança, explicadores HTML, recaps | `ls .agents/results` |
 | **Verificações de workflows** | Em workflows de longa duração, seu próprio script `test`, `lint` ou `typecheck` precisa passar antes que o agente possa parar. `oma ralph verify` confere se uma execução do `/ralph` deixou os arquivos de plano, QA e refactor | `/ultrawork …`, depois `oma goal set --gate test` |
@@ -112,8 +112,6 @@ Dos presets nomeados, só o `All` inclui coordination, orchestration, docs, secu
    ```text
    /plan add user accounts with a settings page
    ```
-
-   Ou simplesmente escreva "plan user accounts with a settings page": em runtimes com prompt hook, a palavra-chave inicia o mesmo workflow.
 4. **Confira o que você recebeu.** O `/plan` roda na sessão atual. Para trabalhos que envolvem várias áreas, como este, ele grava `.agents/results/plan-<session-id>.json` e um tracker em `docs/plans/work/<NNN>-<name>.md`. Um pedido pequeno, de uma única área, recebe uma recomendação direta em vez de um arquivo de plano.
 
 Com esses passos, você terá um plano inicial. Para continuar, use `/work` ou `/orchestrate` com esse plano.
@@ -125,11 +123,11 @@ O seu próprio agente lidera o time. No `/work`, no `/orchestrate` e no `/ultraw
 
 | Seu especialista | Carrega | Chame com | Deixa para trás |
 |---|---|---|---|
-| **Product manager** (`pm-planner`) | oma-pm | `/plan`, ou "plan the payment feature" | Um JSON de plano e um tracker em `docs/plans/work/` para trabalhos médios e complexos (pedidos simples recebem uma recomendação direta) |
+| **Product manager** (`pm-planner`) | oma-pm | `/plan` | Um JSON de plano e um tracker em `docs/plans/work/` para trabalhos médios e complexos (pedidos simples recebem uma recomendação direta) |
 | **Arquiteto** (`architecture-reviewer`) | oma-architecture | `/architecture` | Um ADR ou uma recomendação em `.agents/results/architecture/` |
 | **Engenheiros de backend, frontend, mobile, banco de dados e infra** | oma-backend, oma-frontend + oma-design, oma-mobile, oma-db, oma-tf-infra | `/work`, `/orchestrate` | Código, testes e um arquivo `result-<agent>` por tarefa |
-| **Revisor de QA** (`qa-reviewer`) | oma-qa | `/review`, ou "review this PR" | Achados classificados de CRITICAL a LOW, cada um com file:line e código de correção |
-| **Depurador** (`debug-investigator`) | oma-debug | `/debug`, ou "fix this bug" | Uma correção mínima, um teste de regressão e uma nota de bug em `.agents/results/bugs/` quando fizer sentido |
+| **Revisor de QA** (`qa-reviewer`) | oma-qa | `/review` | Achados classificados de CRITICAL a LOW, cada um com file:line e código de correção |
+| **Depurador** (`debug-investigator`) | oma-debug | `/debug` | Uma correção mínima, um teste de regressão e uma nota de bug em `.agents/results/bugs/` quando fizer sentido |
 
 <details>
 <summary>Os outros três papéis, e as skills sem papel</summary>
@@ -138,7 +136,7 @@ O seu próprio agente lidera o time. No `/work`, no `/orchestrate` e no `/ultraw
 |---|---|---|---|
 | **Refatorador** (`refactor-engineer`) | oma-refactor | a fase REFINE do `/ultrawork` | Commits `refactor:` que preservam o comportamento e um relatório `result-refactor-<session>.md` |
 | **Curador de docs** (`docs-curator`) | oma-docs | `/docs`, ou "verify docs" | `docs/generated/doc-refs.json` e os patches de documentação que você aprovar |
-| **Pesquisador** (`research-explorer`) | oma-search, oma-market, oma-scholar | um pedido de pesquisa | Fontes citadas com rótulos de confiabilidade; briefings de mercado em `.agents/results/market/` |
+| **Pesquisador** (`research-explorer`) | oma-search, oma-market, oma-scholar | um pedido de pesquisa | Fontes citadas com a procedência de cada uma; briefings de mercado em `.agents/results/market/` |
 
 O engenheiro de infra (`tf-infra-engineer`) é instruído a perguntar antes de qualquer `apply` ou `destroy` destrutivo ou em produção. As demais skills (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, conteúdo e mídia) não têm um papel dedicado. O seu agente as carrega por conta própria e, para a maioria delas, o skill injector sugere a skill certa a partir do seu prompt.
 
@@ -148,7 +146,7 @@ O engenheiro de infra (`tf-infra-engineer`) é instruído a perguntar antes de q
 ## Como o time trabalha junto
 
 ```text
- THINK   /brainstorm ......................... docs/plans/designs/<NNN>-<feature>.md
+ THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
  BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
@@ -169,14 +167,14 @@ Cada etapa passa um arquivo para a seguinte. O `/brainstorm` salva um design que
 | "Não pare até estar realmente pronto" | `/ralph` | Repete o `/ultrawork` com um juiz de contexto novo disparado separadamente até que todos os critérios passem; para com um relatório parcial quando há critérios bloqueados ou depois de 5 iterações |
 | O time em um agendamento | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Um log em Markdown por execução em `~/.oma/schedule/runs/<id>/` |
 
-Os slash commands são opcionais. Em runtimes com prompt hook, pedidos em linguagem natural (bancos de palavras-chave em até 11 idiomas) podem iniciar a maioria dos workflows: "review this PR" inicia o `/review`. Descrever um app inteiro ("Build a TODO app with user authentication") sugere o `/orchestrate`, e o seu agente decide se vai executá-lo. Palavras-chave dentro de blocos de código são ignoradas.
+Um slash command inicia um workflow. Um pedido em linguagem natural não inicia, mas, em runtimes com prompt hook, ele ainda recebe uma dica de skill: bancos de palavras-chave em até 11 idiomas são comparados com o prompt e apontam para o seu agente as skills correspondentes ("run a security audit" traz a `oma-qa`). A dica é apenas uma sugestão, e palavras-chave dentro de blocos de código são ignoradas.
 
-`/orchestrate`, `/work`, `/ultrawork` e `/ralph` são **persistentes** quando você os invoca pelo nome, como slash command ou em texto simples ("ultrawork: add rate limiting"). A partir daí, o agente é mandado de volta ao trabalho quando tenta parar antes da hora (até 5 vezes ou 2 horas), até você dizer **"workflow done"**. Um pedido que só corresponde de forma aproximada apenas os sugere.
+`/orchestrate`, `/work`, `/ultrawork` e `/ralph` são **persistentes** quando você os invoca pelo nome, como slash command ou em texto simples ("ultrawork: add rate limiting"). A partir daí, o agente é mandado de volta ao trabalho quando tenta parar antes da hora (até 5 vezes ou 2 horas), até você dizer **"workflow done"**. Esses quatro são os únicos workflows que uma frase em linguagem natural pode iniciar, e só pelo nome.
 
 O [benchmark](../benchmarks/README.md) usou um prompt, Claude Code com cinco configurações de complementos incluindo a versão base, `claude-opus-4-6` e uma build por configuração. O oma marcou 80,6 contra 70,7 do Claude Code sem complementos. O custo foi de US$ 4,04 contra US$ 2,37 (1,7 vez mais); o tempo foi 1,8 vez maior.
 
 <details>
-<summary>Todos os 21 workflows</summary>
+<summary>Todos os 20 workflows</summary>
 
 | Comando | O que faz |
 |---------|--------------|
@@ -185,7 +183,7 @@ O [benchmark](../benchmarks/README.md) usou um prompt, Claude Code com cinco con
 | `/convert` | Converte PDF/HWP para Markdown, ou transcodifica imagens, vídeo e áudio com ffmpeg |
 | `/debug` | Reproduz um bug, corrige a causa raiz, escreve um teste de regressão e procura padrões semelhantes |
 | `/deepinit` | Mapeia uma base de código existente em AGENTS.md, ARCHITECTURE.md e uma base de conhecimento em docs/ |
-| `/design` | Monta um design system, DESIGN.md e tokens com checagens de acessibilidade |
+| `/design` | Define o escopo de uma tarefa de design e entrega achados, DESIGN.md ou tokens por meio da oma-design |
 | `/docs` | Encontra referências quebradas na documentação e propõe patches para os docs que um diff afetou |
 | `/explain` | Transforma um diff, PR, branch ou tema em um explicador HTML interativo e autônomo |
 | `/orchestrate` | Roda agentes em paralelo, coordena-os por estado em arquivo e verifica o resultado (persistente) |
@@ -197,12 +195,11 @@ O [benchmark](../benchmarks/README.md) usou um prompt, Claude Code com cinco con
 | `/scm` | Cuida de branches, merges, conflitos, worktrees e Conventional Commits |
 | `/security` | Varre código-fonte, skills de agentes e componentes MCP, valida os achados e configura gates de CI |
 | `/stack-set` | Detecta sua stack e gera referências específicas dela para as skills de domínio |
-| `/tools` | Lista, habilita e desabilita ferramentas MCP em linguagem natural |
 | `/ultrawork` | Cinco fases (PLAN, IMPL, VERIFY, REFINE, SHIP), cada revisão em uma sessão de revisor nova (persistente) |
 | `/video` | Transforma um briefing em um MP4 finalizado por um pipeline que funciona mesmo sem chaves |
 | `/work` | Coordena vários agentes em um projeto multidomínio com planejamento de PM e revisão de QA (persistente) |
 
-`oma verify triggers` avalia a precisão da detecção com um corpus rotulado de 212 prompts em inglês e coreano. O CI falha se false-fire passar de 10% ou missed-fire passar de 20%. Na última medição, os valores foram **0% de missed-fire e 5,3% de false-fire**. Referência completa: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
+`oma verify triggers` avalia a precisão da detecção com um corpus rotulado de 212 prompts em inglês e coreano. O CI falha se false-fire passar de 10% ou missed-fire passar de 20%. Na última medição, os valores foram **0% de missed-fire e 0% de false-fire**. Referência completa: [Workflows](https://first-fluke.github.io/oh-my-agent/docs/core-concepts/workflows/).
 
 </details>
 
@@ -244,10 +241,10 @@ Depois, `oma state list` encontra a sessão e `oma state get <oma-sid>` (o ID qu
 
 | Comando | O que faz | Grava |
 |---|---|---|
-| `/brainstorm` | Faz uma pergunta de esclarecimento por vez e propõe 2-3 abordagens que funcionam de maneiras diferentes, depois passa o bastão para o `/plan`. Não escreve código | `docs/plans/designs/<NNN>-<feature>.md` |
+| `/brainstorm` | Faz uma pergunta de esclarecimento por vez e propõe 2-3 abordagens que funcionam de maneiras diferentes, depois passa o bastão para o `/plan`. Não escreve código | `docs/decisions/<NNN>-<feature>.md` |
 | `/plan` | Classifica o trabalho como simples, médio ou complexo; para trabalho médio e complexo, divide-o em tarefas, cada uma com um agente, dependências, critérios de aceitação e um comando de checagem, e define contratos de API quando o trabalho cruza uma fronteira | `.agents/results/plan-<sid>.json`, `docs/plans/work/<NNN>-<name>.md`, contratos em `.agents/results/api-contracts/` quando necessário |
 | `/architecture` | Lê primeiro as decisões anteriores, compara pelo menos 2 opções e marca como superseded os ADRs substituídos | Um ADR ou uma recomendação em `.agents/results/architecture/` |
-| `/design` | Propõe 2-3 direções, depois grava o `DESIGN.md` com tokens e audita o layout responsivo e a acessibilidade | `DESIGN.md`, tokens CSS/Tailwind/shadcn |
+| `/design` | Estabelece o escopo e o contexto, seleciona as diretrizes de design para a tarefa e então entrega achados de auditoria, o `DESIGN.md` ou tokens mapeados para o sistema de tokens que o projeto já tem | Achados, `DESIGN.md`, design tokens |
 
 </details>
 
@@ -274,7 +271,7 @@ O `/stack-set` lê seus manifests e grava referências específicas da stack par
 | Comando ou skill | O que faz | Grava |
 |---|---|---|
 | `/review` | Uma auditoria de dependências, depois OWASP Top 10, performance, WCAG 2.2 AA e qualidade de código. Cada achado vem com file:line e código de correção | O relatório no chat mais um registro em memória; nenhum arquivo de relatório |
-| `/security` | Varre seu código-fonte, skills de agentes e servidores MCP (Deepsec, Cisco Skill and MCP Scanner) e, se houver um deploy de teste com escopo definido, roda pen tests do ARTEX. O workflow exige que um motor que não conseguiu rodar seja reportado como falho, não como limpo | `.agents/results/security/<run-id>/` |
+| `/security` | Varre seu código-fonte, skills de agentes e servidores MCP (Deepsec, Cisco Skill and MCP Scanner) e valida os achados. Pen tests rodam só a pedido explícito, contra uma plataforma de execução que você fornece e já revisou. O workflow exige que um motor que não conseguiu rodar seja reportado como falho, não como limpo | `.agents/results/security/<run-id>/` |
 | `/debug` | Reproduz a falha, corrige a causa raiz com uma mudança mínima, adiciona um teste de regressão e procura o mesmo padrão em outros lugares | A correção e o teste; uma nota de bug em `.agents/results/bugs/` quando fizer sentido |
 | oma-refactor | Muda a estrutura sem mudar o comportamento: primeiro testes de caracterização, depois commits apenas de refactor | `.agents/results/refactor/` |
 | `/scm` | Conventional Commits divididos por mudança lógica; branches, merges, rebases e worktrees | Commits e branches |
@@ -299,7 +296,7 @@ O `/stack-set` lê seus manifests e grava referências específicas da stack par
 
 | Skill | O que faz | Grava |
 |---|---|---|
-| oma-search | Busca em docs, na web e em código, com um rótulo de confiabilidade em cada fonte | Resultados com fontes citadas |
+| oma-search | Busca em docs, na web e em código, indicando o que foi lido e o que foi só citado em trechos | Resultados com fontes citadas |
 | oma-market | Dores, tendências e concorrentes a partir de sinais de comunidade, estruturados com SWOT, as 5 Forças de Porter e PESTEL | `.agents/results/market/<topic>-<date>.md` |
 | oma-scholar | Busca de artigos que lê um arquivo compacto de afirmações (formato Knows, cerca de 700 tokens) em vez do PDF completo (cerca de 10K tokens) | `<paper>.knows.yaml` |
 | oma-academic-writing | Redige e audita prosa acadêmica com base em uma rubrica | Seu arquivo |
@@ -326,7 +323,7 @@ Esses pipelines avisam quando falta uma fonte ou uma chave de vendor, em vez de 
 
 | Hook | O que faz | Como desligar / limite |
 |---|---|---|
-| Início por palavra-chave | Inicia o workflow correspondente a partir de um pedido em linguagem natural | Perguntas, texto colado e blocos de código são ignorados |
+| Início por palavra-chave | Inicia `/orchestrate`, `/work`, `/ultrawork` ou `/ralph` quando um pedido em linguagem natural o chama pelo nome | Perguntas, texto colado e blocos de código são ignorados |
 | Skill injector | Aponta para o seu agente as skills certas para o prompt | Pausado enquanto um workflow persistente está ativo |
 | Stop gate | Manda um workflow persistente de volta ao trabalho; com `oma goal set --gate test`, a parada é liberada quando esse script sai com código 0 em até 25 s | Diga "workflow done"; ele também libera depois de 5 bloqueios ou 2 horas |
 | Refactor guard | Na parada, sinaliza para o `refactor-engineer` os arquivos editados com mais de 500 linhas | Opt-in: `refactor_guard.enabled` |
@@ -363,7 +360,7 @@ Esses pipelines avisam quando falta uma fonte ou uma chave de vendor, em vez de 
 
 Serena fornece navegação de código e diagnósticos baseados em LSP, incluindo retorno sobre edições nativas quando houver suporte. A seleção do provedor é independente do runtime do agente; os recursos variam conforme o provedor e o host.
 
-Os agentes se coordenam por arquivos simples em `.agents/state/`, sem nenhum serviço externo. O `/tools` liga ou desliga ferramentas MCP em linguagem natural. Detalhes: [Provedores de Capacidade](./capability-providers.md).
+Os agentes se coordenam por arquivos simples em `.agents/state/`, sem nenhum serviço externo. Detalhes: [Provedores de Capacidade](./capability-providers.md).
 
 </details>
 
@@ -415,8 +412,8 @@ Os agentes se coordenam por arquivos simples em `.agents/state/`, sem nenhum ser
 | **oma-refactor** | Refatora sem mudar o comportamento, com seleção de hotspots, testes de caracterização e commits só de refactor |
 | **oma-scholar** | Busca literatura acadêmica e gera sidecars de artigos Knows com afirmações, evidências e revisão por pares |
 | **oma-scm** | Gerencia branches, merges, worktrees e Conventional Commits |
-| **oma-search** | Roteia cada consulta para a melhor fonte e pontua o quanto você pode confiar no resultado |
-| **oma-security** | Varre código-fonte, skills de agentes e componentes MCP; testa aplicações web implantadas e valida achados |
+| **oma-search** | Roteia cada consulta para a melhor fonte e informa de onde veio cada resultado e se ele foi de fato lido |
+| **oma-security** | Varre código-fonte, skills de agentes e componentes MCP e valida achados; pen tests rodam só em uma plataforma fornecida e revisada pelo usuário |
 | **oma-skill-creation** | Escreve e audita novas skills do OMA |
 | **oma-slide** | Gera decks de apresentação HTML e exporta para PDF/PNG/PPTX |
 | **oma-tf-infra** | Provisiona infraestrutura multi-cloud com Terraform |
@@ -567,7 +564,7 @@ Com exceção do juiz baseado em prompt, as checagens mecânicas usam códigos d
 | **Gate de artefatos** | `oma ralph verify --json` procura os registros de fase, o JSON do plano e os arquivos de resultado de um **agente de QA distinto** e de um **agente de refactor distinto**, cada um vinculado a execuções de agente registradas. | [`ralph.md`](../.agents/workflows/ralph.md) |
 | **Juiz baseado em prompt** | Não é mecânico: o prompt do `/ralph` instrui o orquestrador a disparar um juiz de contexto novo que reverifica **cada** critério a cada iteração. Nada confere se o disparo aconteceu. | [`judge-protocol.md`](../.agents/workflows/ralph/resources/judge-protocol.md) |
 | **Event log** | Em uma sessão do OMA, gates aprovados, gates reprovados e decisões acrescentam, cada um, uma linha JSON ao `events.jsonl` da sessão. | [`state-core.ts`](../.agents/hooks/core/state-core.ts) · [`event-spec.md`](../.agents/skills/_shared/runtime/event-spec.md) |
-| **Checagens por agente** | `oma verify agent <type>` roda Scope Check, Charter Preflight, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs e TDD Evidence, além de checagens por tipo, como TypeScript, Any Types, SQL Injection e testes. | `oma verify agent --help` |
+| **Checagens por agente** | `oma verify agent <type>` roda Scope Check, Hardcoded Secrets, TODO/FIXME Comments, Declared outputs e TDD Evidence, além de checagens por tipo, como TypeScript, Any Types, SQL Injection e testes. | `oma verify agent --help` |
 
 > O Stop hook registra os eventos de gate na sessão do OMA aberta quando o workflow persistente começou. A gravação de eventos é best-effort. Se essa sessão não pôde ser criada (o stderr mostra `[oma] L1 session activation failed`), um gate que falha continua bloqueando a parada, mas nenhuma linha `gate.failed` é gravada. Antes de confiar no rastro, ou de mostrá-lo numa demo, confira se `oma state list` mostra uma sessão ativa; `oma state get <sid>` então mostra os eventos dela.
 

@@ -298,7 +298,7 @@ oma link opencode --global
 
 ### 기존 설치 다시 구성하기 {#setup-workflow}
 
-`/setup` 워크플로우는 없습니다. 설치된 프로젝트를 바꾸려면 `oma install`을 다시 실행하거나, 브라우저 MCP 서버만 바꿀 때는 `oma update mcp`를 사용하거나, 에이전트 세션 안에서 `/tools`를 실행해 MCP 도구를 켜거나 끕니다. 에이전트별 모델 해석은 `oma doctor --profile`로 확인합니다. 에이전트별 모델 고정은 `.agents/oma-config.yaml`의 `agents:` 아래에 있습니다([에이전트별 모델](../guide/per-agent-models.md)).
+`/setup` 워크플로우는 없습니다. 설치된 프로젝트를 바꾸려면 `oma install`을 다시 실행하거나, `oma update mcp`로 브라우저 MCP 서버를 선택합니다. 에이전트별 모델 해석은 `oma doctor --profile`로 확인합니다. 에이전트별 모델 고정은 `.agents/oma-config.yaml`의 `agents:` 아래에 있습니다([에이전트별 모델](../guide/per-agent-models.md)).
 
 ---
 
@@ -1118,7 +1118,6 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 
 **공통 검사 (모든 에이전트 타입):**
 - **범위 검사**: `.agents/results/plan-{sessionId}.json`의 태스크 범위를 읽고, `git diff`로 변경된 파일을 정의된 범위 패턴과 비교합니다. 에이전트에 할당된 범위 외의 파일이 수정되면 실패합니다.
-- **Charter Preflight**: 선택한 결과 보고서에 올바르게 채워진 `CHARTER_CHECK:` 블록이 있는지, 미입력 플레이스홀더가 없는지 확인합니다.
 - **TDD 증거**: 해당하는 각 태스크의 보고서에 정확한 태스크 ID와 비어 있지 않은 `red:`, `green:` 항목이 모두 있어야 합니다. 다른 세션이나 재시도 보고서로 선택한 보고서를 대신할 수 없습니다.
 - **하드코딩된 시크릿**: `.py`, `.ts`, `.tsx`, `.js`, `.dart` 파일에서 `password = "..."`, `api_key = "..."` 같은 패턴을 스캔합니다 (테스트/예제 파일은 제외).
 - **TODO/FIXME 주석**: `TODO`, `FIXME`, `HACK`, `XXX` 주석 수를 집계합니다 (발견 시 경고).
@@ -1604,18 +1603,18 @@ oma image doctor --output json
 
 ```text
 oma video generate "three ways to reduce build times" --mode shorts --dry-run --output json
-oma video generate "product walkthrough" --mode demo --capture ./capture.mp4 --output json
+oma video generate "product walkthrough" --mode demo --polish --capture ./capture.mp4 --output json
 oma video doctor --output json
 oma video provider list --output json
 oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate`는 `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, `--capture-stop duration:<seconds>|selector:<css>`를 받습니다. 브라우저 캡처에는 `--source web --url <url>`을 사용하며, 기본값은 `--source file`입니다. `--output-dir`는 실행 루트를 선택하고, `--allow-external-output`은 `$PWD` 밖의 경로를 허용하며, `--max-usd`는 비용 상한을 지정하고, `-y, --yes`는 비용 확인을 건너뛰고, `--seed`는 계획 입력을 안정화하고, `--timeout`은 비주얼·음악 프로바이더 호출마다 제한 시간을 두고, `--script`는 에이전트가 작성한 `script.json`을 주입하고, `--no-brief-in-manifest`는 텍스트 대신 brief 해시를 저장합니다. `--dry-run`은 계획 뒤 중지합니다. `--output text|json`은 CLI 봉투 형식을 정합니다.
+`generate`는 `--mode shorts|explainer|demo`, `--aspect`, `--locale`, `--captions`, `--visual`, `--voice`, `--music`, `--duration`, `--compositor hyperframes|mpt`, `--capture`, `--source file|web`, `--url`, `--device`, `--ready-selector`, `--show-cursor`, `--polish`, `--capture-timeout`, `--capture-stop duration:<seconds>|selector:<css>`를 받습니다. 데모는 `--capture`로 전달한 녹화본을 사용합니다. 기본값은 `--source file`이며, `--source web --url <url>`은 URL을 컨텍스트로 추가할 뿐입니다(CLI는 브라우저를 열거나 녹화하지 않습니다). `--polish`는 캡처를 `Demo` 컴포지션에 통과시키며, 개인정보는 이 컴포지션에서 마스킹됩니다. `--polish`가 없으면 출력 MP4는 마스킹되지 않은 원본 캡처입니다. `--visual stock`과 `--visual aigc`는 키가 설정되어 있을 때 Pexels와 Pixelle 프로바이더를 선택하며, 슬라이드 비주얼은 스크립트의 `visual.ref`가 기존 덱 디렉토리를 가리켜야 합니다. `--output-dir`는 실행 루트를 선택하고, `--allow-external-output`은 `$PWD` 밖의 경로를 허용하며, `--max-usd`는 비용 상한을 지정하고, `-y, --yes`는 비용 확인을 건너뛰고, `--seed`는 계획 입력을 안정화하고, `--timeout`은 비주얼·음악 프로바이더 호출마다 제한 시간을 두고, `--script`는 에이전트가 작성한 `script.json`을 주입하고, `--no-brief-in-manifest`는 텍스트 대신 brief 해시를 저장합니다. `--dry-run`은 계획 뒤 중지합니다. `--output text|json`은 CLI 봉투 형식을 정합니다.
 
 `doctor`는 캐시된 HyperFrames/MPT 도구 체인을 검사하며 `--install`, `--upgrade`, `--install-mpt`, `--install-strudel`을 받습니다. `provider list`는 프로바이더 가용성과 키 상태를 보고합니다. `compose`는 실행 컴포지션을 만들거나 새로 고치고 작성 계약을 보고하며, `render`는 lint와 렌더링을 실행하고 출력을 검사합니다. compositor, 컴포지션, 도구 체인 의존성이 없으면 오류입니다. 테스트 전용 `OMA_VIDEO_MOCK=1` 경로만 placeholder 모드이며, 일반 실행은 텍스트나 아주 작은 파일을 MP4로 대신하지 않습니다.
 
-성공한 JSON 출력에는 `runDir`, `manifestPath`, `scriptPath`, `renderSpecPath`가 포함됩니다. 매니페스트에는 선택된 프로바이더, 입력, 생성된 자산이 기록됩니다. `compose` 뒤에는 생성된 `AUTHORING.md`에 따라 컴포지션을 작성하고 `render`를 다시 실행합니다. 프로바이더 키가 없으면 `oma video doctor`를 실행하고, 캡처가 실패하면 URL, selector, device, timeout을 확인하며, 렌더링이 실패하면 컴포지션 진단을 해결한 뒤 재시도합니다.
+성공한 JSON 출력에는 `runDir`, `manifestPath`, `scriptPath`, `renderSpecPath`가 포함됩니다. 매니페스트에는 선택된 프로바이더, 입력, 생성된 자산이 기록됩니다. `compose` 뒤에는 생성된 `AUTHORING.md`에 따라 컴포지션을 작성하고 `render`를 다시 실행합니다. 프로바이더 키가 없으면 `oma video doctor`를 실행하고, 데모 실행이 녹화 안내를 출력하고 멈추면 `--capture`로 녹화본을 전달하며, 렌더링이 실패하면 컴포지션 진단을 해결한 뒤 재시도합니다.
 
 ### star
 

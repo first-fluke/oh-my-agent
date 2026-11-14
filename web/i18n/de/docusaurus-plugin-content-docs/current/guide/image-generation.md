@@ -259,7 +259,7 @@ Was genau an den Anbieter gesendet wurde, sehen Sie im Feld `prompt` in `manifes
 
 ## Konfiguration
 
-- **Projektkonfiguration:** der Abschnitt `image:` in `.agents/oma-config.yaml`. Die veraltete `config/image-config.yaml` wird nicht mehr gelesen.
+- **Projektkonfiguration:** der Abschnitt `image:` in `.agents/oma-config.yaml`. Die mitgelieferten Standardwerte stecken in der CLI; tragen Sie daher nur die Schlüssel ein, die Sie ändern.
 - **Umgebungsvariablen:**
   - `OMA_IMAGE_DEFAULT_VENDOR`: überschreibt den konfigurierten Standard-Vendor (`auto`). Das Flag `--vendor` selbst ist standardmäßig `auto`; übergeben Sie `--vendor` daher pro Befehl, wenn Sie einen bestimmten Vendor benötigen.
   - `OMA_IMAGE_DEFAULT_OUT`: überschreibt das Standard-Output-Verzeichnis
