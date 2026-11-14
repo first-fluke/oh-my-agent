@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.20.12](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.11...web-v11.20.12) (2026-11-14)
+
+
+### Documentation
+
+* **i18n:** unify glossary terms and remove prose em-dashes ([dee2073](https://github.com/first-fluke/oh-my-agent/commit/dee207315e5152da54d9d95762f90add5f61e6c6))
+
 ## [11.20.11](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.10...web-v11.20.11) (2026-11-14)
 
 
