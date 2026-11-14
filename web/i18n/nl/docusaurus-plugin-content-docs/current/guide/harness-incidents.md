@@ -120,7 +120,7 @@ oma harness feedback --apply --json  # also write edits that pass every gate (im
 
 `feedback` is de feedbacklus voor deployment in één commando: met `--scan-runs` wordt eerst elke niet-vastgelegde mislukte run met een contract vastgelegd (zie hierboven), daarna wordt elk vastgelegd incident zonder fixture gepromoot (met opgestelde rubrics wanneer nodig), worden de getroffen skills gegroepeerd en wordt elk ervan met `--live` één keer geoptimaliseerd tegen zijn uitgebreide suite onder de normale gates (acceptatie met held-in/held-out, bevestigde negative transfer, door de runner beheerde final test). Het rapport onder `.agents/results/feedback/feedback-<ts>.json` noemt de promoties, de overgeslagen incidenten met redenen en de uitkomst van elke skill met de diff, zodat de keten van een waargenomen fout tot een kandidaat-edit één controleerbaar record is. Schakel de [evolutie van de projectharness](./harness-evolution.md) in voor geplande uitvoering met een gedeelde limiet voor modelaanroepen, persistente nieuwe pogingen en skilloverlays voor het project. De momentopname van de staat van de volgende sessie kondigt toegepaste wijzigingen aan.
 
-Runs zonder taakcontract hebben geen vastgelegd verwacht gedrag. `incident scan` vermeldt ze; leg een run vast met een specificatie. `--skeleton` maakt daarvoor een concept.
+Wat een menselijke beslissing blijft: een run zonder taakcontract heeft geen vastgelegd verwacht gedrag, dus `incident scan` vermeldt die en je legt hem alleen vast via een specificatie. `--skeleton` maakt daarvoor een concept.
 
 ## Exporteren en evalueren {#export-and-evaluate}
 

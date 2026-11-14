@@ -13,17 +13,17 @@ description: Gebruiksgids voor OMA met taakselectie vanuit de lezer, voorbeelden
 3. Beschrijf in natuurlijke taal wat je wilt. De host of de geselecteerde workflow routeert de taak naar de relevante skill.
 4. Gebruik voor multi-agentwerk `/work` of `/orchestrate`.
 
-Voor single-domaintaken is geen speciale syntax nodig. Gebruik de [gids voor skill- en workflowselectie](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) om te kiezen tussen één skill, `/work`, `/orchestrate`, `/ultrawork` en `/ralph`. Zie [Snel starten](../getting-started/quick-start.md) voor de setup en [Important Defaults](../getting-started/important-defaults.md) vóór je providers wijzigt.
+Voor single-domaintaken is geen speciale syntax nodig. Gebruik de [gids voor skill- en workflowselectie](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) om te kiezen tussen één skill, `/work`, `/orchestrate`, `/ultrawork` en `/ralph`. Zie [Snel starten](../getting-started/quick-start.md) voor de setup en [Belangrijke standaardinstellingen](../getting-started/important-defaults.md) vóór je providers wijzigt.
 
 ## Kies een gids
 
 | Je taak | Begin met | Gids |
 |-----------|------------|-------|
-| Eén wijziging in één domein | Een gewone prompt (skillroutering) | [Single Skill](./single-skill.md) |
-| Een feature over API, UI, mobile of database | `/work` (stap voor stap) of `/orchestrate` (geautomatiseerd) | [Multi-Agent Projects](./multi-agent-project.md) |
-| Een bug met een foutmelding | `/debug` plus de fout en reproductiestappen | [Bug Fixing](./bug-fixing.md) |
+| Eén wijziging in één domein | Een gewone prompt (skillroutering) | [Eén skill](./single-skill.md) |
+| Een feature over API, UI, mobile of database | `/work` (stap voor stap) of `/orchestrate` (geautomatiseerd) | [Multi-agentprojecten](./multi-agent-project.md) |
+| Een bug met een foutmelding | `/debug` plus de fout en reproductiestappen | [Bugs oplossen](./bug-fixing.md) |
 | Agenten volgen terwijl ze draaien | `oma dashboard terminal` | [Dashboardmonitoring](./dashboard-monitoring.md) |
-| Agentresultaten auditen of hervatten | `oma agent resume SESSION_ID --dry-run` | [Results and Resume](./agent-results-and-resume.md) |
+| Agentresultaten auditen of hervatten | `oma agent resume SESSION_ID --dry-run` | [Resultaten en hervatten](./agent-results-and-resume.md) |
 | OMA-documenten vinden of migreren | `oma docs migrate --dry-run` | [Artefactindeling](./artifact-layout.md) |
 | Er is iets misgegaan | `oma doctor --json` | [Probleemoplossing](./troubleshooting.md) |
 
@@ -137,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Stap 6, scan op vergelijkbare patronen:** MCP `search_for_pattern` zoekt andere `.map()`-calls op mogelijk undefined arrays.
    - Vindt 3 vergelijkbare patronen in `user-list.tsx`, `comment-list.tsx`, `notification-list.tsx`
    - Past hetzelfde fixpatroon proactief toe
-8. **Stap 7, documenteren:** Er wordt een bugrapport in het geheugen geschreven met oorzaak, fix en preventie.
+8. **Stap 7, documenteren:** Er wordt een bugrapport naar `.agents/results/bugs/` geschreven met grondoorzaak, fix en preventie.
 
 ---
 
@@ -196,8 +196,7 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 
 ---
 
-<a id="voorbeeld-6-ultrawork-voor-maximale-kwaliteit"></a>
-## Voorbeeld 6: uitgebreide review met ultrawork {#example-6-ultrawork-for-maximum-quality}
+## Voorbeeld 6: ultrawork voor maximale kwaliteit {#example-6-ultrawork-for-maximum-quality}
 
 **Je typt:**
 ```text
@@ -250,14 +249,14 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 | `/work` | Persistent | Stapsgewijze planning, implementatie en QA over meerdere domeinen binnen de geautoriseerde scope | Features over meerdere domeinen die gecoördineerde levering nodig hebben |
 | `/ultrawork` | Persistent | Kwaliteitsworkflow met 5 fasen, 17 stappen en 12 geïsoleerde reviewcheckpoints | Maximale kwaliteit, productie-kritieke code |
 | `/plan` | Niet-persistent | PM-gestuurde taakdecompositie, API-contracten en bijgehouden planartefacts in `docs/plans/work/` (sequentiële `NNN-name.md`, veld Status voor levenscyclus) | Vóór complex multi-agentwerk; complexe features met bijgehouden voortgang en beslislogs |
-| `/brainstorm` | Niet-persistent | Design-first ideevorming met 2-3 benaderingen | Vóór je een implementatieaanpak vastlegt |
+| `/brainstorm` | Niet-persistent | Verkenning van aanpakken met 2-3 voorstellen en een concept in `docs/decisions/` | Vóór je een implementatieaanpak vastlegt |
 | `/deepinit` | Niet-persistent | Volledige projectinitialisatie (AGENTS.md, ARCHITECTURE.md, docs/) | oh-my-agent in een bestaande codebase instellen |
 | `/review` | Niet-persistent | QA-pipeline: OWASP-security, prestaties, toegankelijkheid en codekwaliteit. De scope komt uit het verzoek en valt standaard terug op de huidige wijzigingen | Vóór code mergen, review vóór deployment |
 | `/security` | Niet-persistent | Applicatiebroncode, agent-skills of MCP-componenten scannen, bevindingen valideren en security gates configureren via `oma-security`. Penetratietests van een afgebakend web-testdeployment draaien alleen tegen een door de gebruiker aangeleverd en beoordeeld runtimeplatform | Vóór een release, of wanneer een wijziging een securityscan of gate nodig heeft |
 | `/debug` | Niet-persistent | Gestructureerd debuggen: reproduceren, diagnosticeren, fixen, regressietest en scan | Bugs en fouten onderzoeken |
 | `/design` | Niet-persistent | Bakent een designtaak af, kiest de toepasselijke designrichtlijnen en levert bevindingen, `DESIGN.md`, een redesignrichting of designtokens op via `oma-design` | Een visueel systeem definiëren of reviewen, UI-redesigns en designaudits |
 | `/scm` | Niet-persistent | SCM-workflow voor Git (branch/merge/conflict/worktree/baseline) plus Conventional Commit-generatie met automatische type-/scopedetectie en featuresplitsing | Na codewijzigingen of bij repository configuration management |
-| `/stack-set` | Niet-persistent | Projecttechstack automatisch detecteren en backend- of mobile-referenties genereren (Swift/Flutter/RN) | Taalspecifieke codeconventies instellen |
+| `/stack-set` | Niet-persistent | Projecttechstack automatisch detecteren en backend-, frontend- of mobile-referenties genereren (Swift/Kotlin/Flutter/RN) | Taalspecifieke codeconventies instellen |
 | `/architecture` | Niet-persistent | Architectuur diagnosticeren, vergelijken en beslisrecords maken | Grenzen reviewen of architectuur kiezen |
 | `/convert` | Niet-persistent | Documentconversie naar de passende skill routeren | HWP/HWPX- of PDF-bronbestanden converteren |
 | `/docs` | Niet-persistent | Documentatie verifiëren en diffgerichte syncvoorstellen maken | Docs tegen de huidige codebase controleren |
@@ -304,9 +303,9 @@ De `all`-preset van de installer volgt de live registry. De tabel groepeert elke
 | Skill | Beste gebruik | Primaire output |
 |-------|------------|---------------|
 | **oma-academic-writing** | Academische tekst opstellen, reviseren en anti-AI-review | Publicatiegerichte tekst en claim/evidence-revisies |
-| **oma-architecture** | Systeemgrenzen, afwegingen, ADR's | Architectuuraanbeveling of beslisrecord |
+| **oma-architecture** | Systeemgrenzen, afwegingen, ADR's | Rapporten in `.agents/results/architecture/`; beslisrecords in `docs/decisions/` |
 | **oma-backend** | API's, auth, serverlogica, migraties | Router/service/repository-wijzigingen en verificatie |
-| **oma-brainstorm** | Ambigue ideeën en benaderingsvergelijking | Ontwerpdocument in `docs/plans/designs/` |
+| **oma-brainstorm** | Ambigue ideeën en benaderingsvergelijking | Beslisconcept in `docs/decisions/` |
 | **oma-coordination** | Gedeelde coördinatieregels voor `/work`, `/orchestrate` en `/ultrawork`; handmatige stapsgewijze coördinatie | Richtlijnen voor planhergebruik, contractafstemming, workspace-eigendom en QA-overdracht |
 | **oma-db** | Schemadesign, ERD, querytuning, capaciteitsplanning | Schemasdocumentatie, migraties en herstelplan |
 | **oma-debug** | Bugreproductie en grondoorzaakanalyse | Minimale fix, regressiebewijs en patroonscan |
@@ -346,7 +345,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Beide commando's bewaken `.agents/state/memories/` onder de huidige directory. Geef `--project-root <path>` mee om een ander project te bewaken, of stel `MEMORIES_DIR` in. De agenttabel heeft vier kolommen:
+Beide commando's bewaken `.agents/state/memories/` op voortgang en `.agents/results/` op `result-*.md`-rapporten onder de huidige directory. Geef `--project-root <path>` mee om een ander project te bewaken. `MEMORIES_DIR` houdt het dashboard op die ene aangepaste map. De agenttabel heeft vier kolommen:
 
 | Kolom | Bron |
 |--------|--------|
@@ -385,7 +384,7 @@ Wanneer je `oma agent spawn` draait, doet de CLI het volgende:
 
 ### Projectgeheugenopslag
 
-Agenten coördineren via duurzame bestanden in `.agents/state/memories/` (oudere projecten vallen terug op het legacy-pad `.serena/memories/`). De orchestrator schrijft rungebonden sessie- en task-boardbestanden. Elke run schrijft `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` en `result-{agentId}-{taskId}-{runId}-{sessionId}.md` wanneer Markdown-output voor voortgang of resultaten aanstaat; gestructureerde receipts en claims in `.agents/state/agent-runs/` zijn leidend voor CLI-spawns. Agenten lezen en schrijven deze bestanden met hun native tools; de toolmapping blijft configureerbaar in `.agents/mcp.json → memoryConfig.tools`.
+Agenten coördineren via duurzame bestanden in `.agents/state/memories/` (oudere projecten vallen terug op het legacy-pad `.serena/memories/`). Deze map bevat sessiesamenvattingen, task boards, voortgang, lessen en experimentrecords. Mensleesbare rapporten `result-{agentId}-{taskId}-{runId}-{sessionId}.md` komen in `.agents/results/`. Gestructureerde receipts en claims onder `.agents/state/agent-runs/` blijven leidend voor CLI-spawns, en bevroren uitvoeringsplannen blijven in `.agents/state/agent-plans/`. Agenten lezen en schrijven deze bestanden met hun native bestandstools; de toolmapping blijft configureerbaar in `.agents/mcp.json → memoryConfig.tools`.
 
 ### Documenten en rapporten
 
@@ -403,7 +402,7 @@ De vlag `-w` bij `agent spawn` isoleert een agent in een specifieke directory. D
 
 ## Tips
 
-1. **Wees specifiek in prompts.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" benoemt de vereiste stack en functionaliteit; "make an app" laat die open.
+1. **Wees specifiek in prompts.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" geeft betere resultaten dan "make an app."
 
 2. **Gebruik werkruimtes voor parallelle agenten.** Geef altijd `-w ./path` mee om conflicten te voorkomen tussen gelijktijdig draaiende agenten.
 
@@ -427,7 +426,7 @@ De vlag `-w` bij `agent spawn` isoleert een agent in een specifieke directory. D
 
 ## Probleemoplossing {#troubleshooting}
 
-Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runresultaten, schedules en hooks.
+Veelvoorkomende problemen staan hieronder. Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runresultaten, schedules en hooks.
 
 | Probleem | Oorzaak | Oplossing |
 |---------|-------|-----|
@@ -448,11 +447,11 @@ Zie [Probleemoplossing](./troubleshooting.md) voor foutmeldingen, mislukte runre
 
 ## Volgende stappen
 
-- Eén wijziging in één domein: [Single Skill](./single-skill.md)
-- Een feature over meerdere domeinen: [Multi-Agent Projects](./multi-agent-project.md)
-- Een bug met een foutmelding: [Bug Fixing](./bug-fixing.md)
+- Eén wijziging in één domein: [Eén skill](./single-skill.md)
+- Een feature over meerdere domeinen: [Multi-agentprojecten](./multi-agent-project.md)
+- Een bug met een foutmelding: [Bugs oplossen](./bug-fixing.md)
 - Een run volgen: [Dashboardmonitoring](./dashboard-monitoring.md)
-- Agentresultaten auditen of hervatten: [Results and Resume](./agent-results-and-resume.md)
+- Agentresultaten auditen of hervatten: [Resultaten en hervatten](./agent-results-and-resume.md)
 - OMA-documenten vinden of migreren: [Artefactindeling](./artifact-layout.md)
 - Er is iets misgegaan: [Probleemoplossing](./troubleshooting.md)
 - Details over projectintegratie: [Integratiegids](./integration.md)

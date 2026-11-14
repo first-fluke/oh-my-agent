@@ -5,7 +5,7 @@ description: Uruchamiaj równolegle wiele ról dispatchu OMA z bieżącą skład
 
 # Wykonywanie równoległe {#parallel-execution}
 
-oh-my-agent może równolegle uruchamiać wyspecjalizowanych agentów. Na przykład agent backendu implementuje API, agent frontendu tworzy UI, a agent mobile buduje ekrany aplikacji; orkiestrator koordynuje ich pracę przez trwały stan uruchomienia i potwierdzenia.
+oh-my-agent uruchamia równolegle wielu wyspecjalizowanych agentów. Na przykład agenci backendu, frontendu i mobile mogą pracować nad osobnymi częściami aplikacji, a orkiestrator koordynuje ich przez trwały stan uruchomienia i potwierdzenia.
 
 ---
 
@@ -166,7 +166,7 @@ Mechanizm uruchamiania zależy od IDE/CLI:
 
 | Dostawca | Sposób uruchamiania agentów | Obsługa wyników |
 |--------|----------------------|-----------------|
-| **Claude Code** | Zadania tego samego dostawcy używają narzędzia Agent z `.claude/agents/{name}.md`; zadania między dostawcami przechodzą do `oma agent spawn`. | Zwrót synchroniczny |
+| **Claude Code** | Zadania tego samego dostawcy używają narzędzia Agent z `.claude/agents/{name}.md`; zadania między dostawcami przechodzą do `oma agent spawn`. | Zwrot synchroniczny |
 | **Codex CLI** | Zadania tego samego dostawcy używają natywnych agentów niestandardowych z `.codex/agents/{name}.toml`; zadania między dostawcami przechodzą do `oma agent spawn`. | Wyjście JSON |
 | **Antigravity CLI/IDE** | `oma agent spawn` przez runtime `agy`; niestandardowi natywni subagenci nie są wymagani | Trwałe potwierdzenie i odpytywanie pliku wyniku |
 | **Cursor** | Używa wygenerowanej integracji Cursor, jeśli jest dostępna; w przeciwnym razie `oma agent spawn` | Odpytywanie pliku wyniku |
@@ -223,7 +223,7 @@ Funkcje:
 
 ### Zalecany układ terminali {#recommended-terminal-layout}
 
-Konfiguracja dla 3 terminali:
+Użyj 3 terminali, aby mieć najlepszą widoczność:
 
 | Terminal | Uruchom | Cel |
 |----------|-----|---------|

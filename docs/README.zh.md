@@ -89,7 +89,7 @@ oma
 
 </details>
 
-设置会保留已保存的响应语言，或从系统检测语言。它会询问要接入哪些 agent 运行时、能力提供方、浏览器 MCP、模型预设和技能预设。**技能预设选 `All`，以覆盖每个工作流都会用到的技能引用**：领域预设会漏掉其中一些技能。提供方是否可用，以及任务验证，仍然是分开的检查。
+设置会保留已保存的响应语言，或从系统检测语言。它会询问要接入哪些 agent 运行时、能力提供商、浏览器 MCP、模型预设和技能预设。**技能预设选 `All`，以覆盖每个工作流都会用到的技能引用**：领域预设会漏掉其中一些技能。提供商是否可用，以及任务验证，仍然是分开的检查。
 
 想要某个领域的技能时，显式选择预设：
 
@@ -97,23 +97,23 @@ oma
 oma install --preset frontend --yes
 ```
 
-这会选中 frontend 预设的八个技能。安装器仍会配置运行时、提供方和共享工作流文件，并保留先前安装的技能。交互式安装器里可以自定义选择。参见[预设取值](../web/docs/getting-started/installation.md#presets)和[工作流依赖](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)。
+这会选中 frontend 预设的八个技能。安装器仍会配置运行时、提供商和共享工作流文件，并保留先前安装的技能。交互式安装器里可以自定义选择。参见[预设取值](../web/docs/getting-started/installation.md#presets)和[工作流依赖](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)。
 
 <details>
 <summary>安装器默认还会做的事</summary>
 
 - 安装 **bun**（必需）。尝试安装 **uv**、**Serena**（`uv tool install`）和 **CUE**（`brew install cue` 或 `winget`），其中任何一个失败都会给出警告并继续。
 - 在交互式设置中预先选中 **Aside** 浏览器 MCP，只有保持选中时才会通过 `curl -fsSL https://releases.aside.com/install.sh | bash` 安装。可以在浏览器 MCP 步骤中取消勾选，或之后用 `oma update mcp` 更换。
-- 使用 **AgentMemory** 作为语义记忆，它会运行 `bun install -g @agentmemory/agentmemory`，并将其注册为登录服务（launchd、systemd 用户单元或 Windows 计划任务）。选择提供方 `none` 或设置 `OMA_NO_AGENTMEMORY=1` 即可跳过。
-- 把技能链接到主目录下的厂商文件夹（Antigravity、Hermes、Kimi）之前会先询问。在 `$HOME` 中不带 `--global` 运行时会请求确认。
-- 不经询问写入项目之外的一些文件：`~/.claude.json`（将项目标记为受信任的 Claude Code 工作区）、`~/.serena/`（OMA 上下文、回答大小下限、项目注册）、`~/.cursor/cli-config.json`（关闭 Cursor 的提交署名）、`~/.grok/config.toml`（遥测）和 `~/.gemini/antigravity-cli/`（HUD），每个文件只在你选择了对应厂商时写入。
-- 在厂商设置中写入**遥测退出选项**（Claude 使用 `DISABLE_TELEMETRY=1`，这也会关闭 Claude Code Remote Control；Gemini、Qwen、Codex 和 Grok 关闭使用统计）。设置 `telemetry: true` 可保留厂商默认值。
+- 使用 **AgentMemory** 作为语义记忆，它会运行 `bun install -g @agentmemory/agentmemory`，并将其注册为登录服务（launchd、systemd 用户单元或 Windows 计划任务）。选择提供商 `none` 或设置 `OMA_NO_AGENTMEMORY=1` 即可跳过。
+- 把技能链接到主目录下的供应商文件夹（Antigravity、Hermes、Kimi）之前会先询问。在 `$HOME` 中不带 `--global` 运行时会请求确认。
+- 不经询问写入项目之外的一些文件：`~/.claude.json`（将项目标记为受信任的 Claude Code 工作区）、`~/.serena/`（OMA 上下文、回答大小下限、项目注册）、`~/.cursor/cli-config.json`（关闭 Cursor 的提交署名）、`~/.grok/config.toml`（遥测）和 `~/.gemini/antigravity-cli/`（HUD），每个文件只在你选择了对应供应商时写入。
+- 在供应商设置中写入**遥测退出选项**（Claude 使用 `DISABLE_TELEMETRY=1`，这也会关闭 Claude Code Remote Control；Gemini、Qwen、Codex 和 Grok 关闭使用统计）。设置 `telemetry: true` 可保留供应商默认值。
 - 在设置缺失时写入 `memory.enableManagedAutoMemory: false`，从而关闭 **Qwen Code 的自动记忆保存**。已经显式设为 `true` 或 `false` 的偏好，以及其他记忆设置，都会保留。
 - 向 `.claude/settings.json` 添加尚未设置的 Claude Code 设置，包括 `skipDangerousModePermissionPrompt: true`、`effortLevel: high`、`cleanupPeriodDays: 180`，以及关闭 auto memory、adaptive thinking、错误报告和内置 git 指令的 env 标志。你已经设置的值会保留。
 - 添加**共同作者 trailer**：Claude Code 的提交署名变为 `Co-Authored-By: First Fluke <our.first.fluke@gmail.com>`，PR 会附上一行 "Generated with oh-my-agent"。设置 `scm.co_author.enabled: false` 可关闭。
 - 在 `.githooks/` 中安装 **commit-msg 守卫**，拒绝不在列表中的 `Co-authored-by` 地址，并在没有其他钩子生效时设置 `git config --local core.hooksPath .githooks`。设置 `scm.co_author.enforce_hook: false` 可退出。
 - `oma update` 会在后台更新 `oma` CLI（用 `auto_update_cli: false` 或 `OMA_SKIP_VERSION_CHECK=1` 停止），并运行 `uv tool upgrade serena-agent --prerelease=allow`（`serena.auto_update: false`）。
-- Serena 处于默认的 `bridge` 模式时，第一个启动共享 Serena 服务器的代理会话会注册一个**清理定时器**，每 5 分钟停止空闲的共享 Serena 服务器（launchd `dev.oma.serena-daemon-gc`、systemd 用户定时器 `oma-serena-daemon-gc.timer` 或 Windows 计划任务 `OMA Serena Daemon GC`）。设置 `serena.mode: stdio` 可跳过共享服务器及其定时器。`oma uninstall` 不会移除该定时器。
+- Serena 处于默认的 `bridge` 模式时，第一个启动共享 Serena 服务器的 agent 会话会注册一个**清理定时器**，每 5 分钟停止空闲的共享 Serena 服务器（launchd `dev.oma.serena-daemon-gc`、systemd 用户定时器 `oma-serena-daemon-gc.timer` 或 Windows 计划任务 `OMA Serena Daemon GC`）。设置 `serena.mode: stdio` 可跳过共享服务器及其定时器。`oma uninstall` 不会移除该定时器。
 - 非交互式运行（`-y`、`OMA_YES=1`、`CI=true`）使用 `All` 技能预设，除非 `--preset` 另选了一个，外加 `model_preset: auto`，并以 Python 作为后端语言。除非 `mcp.devtools_browsers` 已列出某个浏览器，否则不会选择任何浏览器 MCP（也会跳过 Aside 安装脚本）。
 
 </details>
@@ -163,7 +163,7 @@ oma install --preset frontend --yes
 <a id="meet-the-team"></a>
 ## 认识团队
 
-团队由你自己的 agent 带领。在 `/work`、`/orchestrate` 和 `/ultrawork` 中，它会把每项工作交给合适的专家，专家作为独立的 subagent 运行。`/plan`、`/architecture` 和 `/docs` 在你当前的会话中带着对应角色的技能运行；`/review` 和 `/debug` 遇到大范围任务时会请来各自的专家。当某个角色配置在其他厂商的 CLI 上时，`oma agent spawn` 会在那里运行它。
+团队由你自己的 agent 带领。在 `/work`、`/orchestrate` 和 `/ultrawork` 中，它会把每项工作交给合适的专家，专家作为独立的 subagent 运行。`/plan`、`/architecture` 和 `/docs` 在你当前的会话中带着对应角色的技能运行；`/review` 和 `/debug` 遇到大范围任务时会请来各自的专家。当某个角色配置在其他供应商的 CLI 上时，`oma agent spawn` 会在那里运行它。
 
 | 你的专家 | 携带的技能 | 调用方式 | 留下的产出 |
 |---|---|---|---|
@@ -284,10 +284,10 @@ oma install --preset frontend --yes
 
 | 命令或技能 | 作用 | 写入 |
 |---|---|---|
-| `/review` | 先做依赖审计，然后检查 OWASP Top 10、性能、WCAG 2.2 AA 和代码质量。每条发现都带 file:line 和修复代码 | 报告输出在聊天中，外加一条 memory 记录；没有报告文件 |
+| `/review` | 先做依赖审计，然后检查 OWASP Top 10、性能、WCAG 2.2 AA 和代码质量。每条发现都带 file:line 和修复代码 | 报告输出在聊天中，外加一条记忆记录；没有报告文件 |
 | `/security` | 扫描你的源码、agent 技能和 MCP 服务器（Deepsec、Cisco Skill and MCP Scanner），并验证发现。渗透测试仅在明确请求时运行，且只针对由你提供并已审查的运行时平台。工作流要求把未能运行的引擎报告为失败，而不是“干净” | `.agents/results/security/<run-id>/` |
 | `/debug` | 复现故障，用最小改动修复根因，添加回归测试，并在其他地方扫描同样的模式 | 修复和测试；必要时在 `.agents/results/bugs/` 中留下一份 bug 笔记 |
-| oma-refactor | 改变结构而不改变行为：先写表征测试（characterization test），再做只含重构的提交 | `.agents/results/refactor/` |
+| oma-refactor | 改变结构而不改变行为：先写特征测试（characterization test），再做只含重构的提交 | `.agents/results/refactor/` |
 | `/scm` | 按逻辑变更拆分的 Conventional Commits；分支、合并、rebase 和 worktree | 提交和分支 |
 
 </details>
@@ -322,13 +322,13 @@ oma install --preset frontend --yes
 
 | 命令或技能 | 产出 | 写入 |
 |---|---|---|
-| `/video` | 把短视频、讲解视频或演示做成完整的 MP4；需要密钥的提供方都有免密钥的后备方案 | `.agents/results/videos/<run>/`，附带 manifest |
+| `/video` | 把短视频、讲解视频或演示做成完整的 MP4；需要密钥的提供商都有免密钥的后备方案 | `.agents/results/videos/<run>/`，附带 manifest |
 | oma-slide | 1920×1080 的 HTML 演示文稿，可导出为 PDF、PNG 或 PPTX | `.agents/results/slides/<session>/` |
-| oma-image | 通过你已登录的厂商 CLI 生成图像，并排比较 | `.agents/results/images/<run>/` |
+| oma-image | 通过你已登录的供应商 CLI 生成图像，并排比较 | `.agents/results/images/<run>/` |
 | oma-voice | 通过 Voicebox 应用在本地进行文本转语音和转写 | `.agents/results/voice/<run>/` |
 | `/convert` | PDF 或 HWP 转 Markdown；通过 ffmpeg 转换图像、视频和音频 | 与输入文件放在一起 |
 
-这些流水线在缺少来源或厂商密钥时会如实报告，而不是悄悄返回一份缩水的结果。
+这些流水线在缺少来源或供应商密钥时会如实报告，而不是悄悄返回一份缩水的结果。
 
 </details>
 
@@ -344,7 +344,7 @@ oma install --preset frontend --yes
 | 密钥守卫 | 阻止对 `*.env`、`*.pem`、`id_rsa*`、`*.tfstate` 等文件执行 `git add` | 在那一条命令前加上 `OMA_SCM_ALLOW_SECRETS=1` |
 | 代码搜索守卫 | 阻止在项目中使用原生递归搜索，让 agent 改用 Serena 或 Gortex | `providers.code_intelligence_guard: off` |
 | 测试过滤器 | 只保留测试输出中的失败和摘要，从而少花 token | `OMA_TEST_FILTER=0` |
-| 会话记忆 | 当你切换或恢复会话（或在压缩之后）时，重新注入当前会话的近期事件以及 AgentMemory 召回的内容 | 记忆提供方设为 `none` 或设置 `OMA_NO_AGENTMEMORY=1` 会关闭召回；本地事件快照仍会保留 |
+| 会话记忆 | 当你切换或恢复会话（或在压缩之后）时，重新注入当前会话的近期事件以及 AgentMemory 召回的内容 | 记忆提供商设为 `none` 或设置 `OMA_NO_AGENTMEMORY=1` 会关闭召回；本地事件快照仍会保留 |
 
 `oma hook probe` 检查 oma 的 prompt hook 能否接受各运行时的 hook 输入（它不会启动运行时）。每个运行时接入了哪些 hook，见[运行时差异](#host-differences)。
 
@@ -373,9 +373,9 @@ oma install --preset frontend --yes
 | 语义记忆 | AgentMemory | Honcho（实验性）、none |
 | 浏览器 MCP | Aside | Chrome DevTools、Firefox DevTools |
 
-Serena 提供基于 LSP 的代码导航和诊断，并在支持时反馈原生编辑结果。能力提供方的选择独立于 agent 运行时；可用能力因提供方和宿主而异。
+Serena 提供基于 LSP 的代码导航和诊断，并在支持时反馈原生编辑结果。能力提供商的选择独立于 agent 运行时；可用能力因提供商和宿主而异。
 
-agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何外部服务。详情：[能力提供方](./capability-providers.md)。
+agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何外部服务。详情：[能力提供商](./capability-providers.md)。
 
 </details>
 
@@ -406,7 +406,7 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 | **oma-architecture** | 权衡架构取舍、划定模块边界，并提供 ADR/ATAM/CBAM 分析 |
 | **oma-backend** | 用 Python、Node.js 或 Rust 构建 API、认证与数据访问 |
 | **oma-brainstorm** | 在动手构建之前，先和你一起探索想法 |
-| **oma-coordination** | 指导你逐步手动协调 PM、前端、后端、移动端与 QA 代理 |
+| **oma-coordination** | 指导你逐步手动协调 PM、前端、后端、移动端与 QA agent |
 | **oma-db** | 设计 schema、迁移、索引与 vector store |
 | **oma-debug** | 找到根因、修复 bug，并编写回归测试 |
 | **oma-design** | 构建包含 token、无障碍与响应式布局的设计系统 |
@@ -419,19 +419,19 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 | **oma-market** | 从社区信号研究你的市场，并用 SWOT、5F 和 PESTEL 框架梳理 |
 | **oma-mobile** | 用 Flutter、React Native 或原生 Swift 构建移动应用 |
 | **oma-observability** | 统一路由可观测性工作，覆盖指标、日志、追踪、SLO 与事故取证 |
-| **oma-orchestration** | 通过 CLI 并行运行多个代理 |
+| **oma-orchestration** | 通过 CLI 并行运行多个 agent |
 | **oma-pdf** | 将 PDF 文件转换为 Markdown |
 | **oma-pm** | 规划任务、拆解需求并定义 API 契约 |
 | **oma-qa** | 从正确性、OWASP 安全、性能和无障碍角度审查变更 |
 | **oma-recap** | 将你的会话历史整理成按主题划分的工作摘要 |
-| **oma-refactor** | 借助热点定位、特性化测试和纯重构提交，在不改变行为的前提下重构代码 |
+| **oma-refactor** | 借助热点定位、特征测试和纯重构提交，在不改变行为的前提下重构代码 |
 | **oma-scholar** | 检索学术文献，并生成涵盖论点、证据与同行评审的 Knows 论文 sidecar |
 | **oma-scm** | 管理分支、合并、worktree 与 Conventional Commits |
 | **oma-search** | 将每条查询路由到最合适的来源，并报告每条结果的出处以及是否实际读过 |
 | **oma-security** | 扫描源代码、agent 技能和 MCP 组件并验证发现；渗透测试仅在用户提供并已审查的运行时平台上运行 |
 | **oma-skill-creation** | 编写并审核新的 OMA 技能 |
 | **oma-slide** | 生成 HTML 演示文稿，并导出为 PDF/PNG/PPTX |
-| **oma-tf-infra** | 用 Terraform 配置多云基础设施 |
+| **oma-tf-infra** | 用 Terraform 部署多云基础设施 |
 | **oma-translation** | 让译文读起来像母语者亲手所写 |
 | **oma-video** | 通过可免密钥的 HyperFrames 流水线生成短视频、讲解视频和演示视频 |
 | **oma-voice** | 在本地设备上生成配音并转写音频 |
@@ -447,7 +447,7 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 - **DeepSeek Harness：** [OMA for DeepSeek Harness](../integrations/dsh/README.md) 通过 Cordis 插件接入 OMA 检查。需要 `oma` 在你的 `PATH` 中。
 
 <details>
-<summary>运行时标志（安装目标，外加 Amp 和 DeepSeek Harness）</summary>
+<summary>运行时徽标（安装目标，外加 Amp 和 DeepSeek Harness）</summary>
 
 原生 = oma 写入运行时自己的配置文件；适配器 = oma 还会额外添加 hook 或 agent shim。Amp 会自行读取 `.agents/skills/`，不是安装目标。
 
@@ -479,7 +479,7 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 <td align="center">
 <a href="https://github.com/QwenLM/qwen-code"><img src="https://github.com/QwenLM.png?size=120" alt="Qwen Code" width="48" height="48" /></a><br/>
 <strong>Qwen Code</strong><br/>
-<sub>原生派发</sub>
+<sub>原生调度</sub>
 </td>
 <td align="center">
 <a href="https://github.com/deepseek-ai/deepseek-harness"><img src="https://github.com/deepseek-ai.png?size=120" alt="DeepSeek Harness" width="48" height="48" /></a><br/>
@@ -616,7 +616,7 @@ agents:
 - **[基准测试报告](../benchmarks/README.md)**：在同一个 prompt 上与 superpowers、ECC 和 oh-my-claudecode 的对比，含方法、分数、截图与注意事项
 - **[支持的 Agent](./SUPPORTED_AGENTS.md)**：各运行时的支持矩阵
 - **[详细文档](./AGENTS_SPEC.md)**：技术规格和架构
-- **[能力提供方](./capability-providers.md)**：实验性 Gortex 与 Honcho 的配置、路由和限制
+- **[能力提供商](./capability-providers.md)**：实验性 Gortex 与 Honcho 的配置、路由和限制
 - **[Skill 兼容性矩阵](./skills-matrix.md)**：Claude 和 Codex 中原生 skill 的内容、引用和响应契约
 
 > 在 GitHub 上为项目加星：

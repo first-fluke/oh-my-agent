@@ -8,7 +8,7 @@ description: Strukturierter Debugging-Workflow in sieben Schritten mit Schweregr
 
 ## Wann der Debug-Workflow eingesetzt wird
 
-Verwenden Sie `/debug`, wenn Sie einen bestimmten Bug diagnostizieren und beheben möchten. Eine einfache Anfrage wie "find the root cause" lädt den Skill `oma-debug` über den Skill-Hinweis, aber nur der Slash-Befehl startet diesen Workflow. Der Workflow bietet einen strukturierten, reproduzierbaren Ansatz zum Debuggen, der die häufige Falle vermeidet, Symptome statt Ursachen zu beheben.
+Verwenden Sie `/debug`, um einen bestimmten Bug zu diagnostizieren. Eine einfache Anfrage wie "find the root cause" lädt den Skill `oma-debug` über den Skill-Hinweis, aber nur der Slash-Befehl startet diesen Workflow. Der Workflow in sieben Schritten umfasst die Triage nach Schweregrad, eine quellengestützte Diagnose und die Validierung nach der Korrektur.
 
 Der Debug-Workflow unterstützt alle konfigurierten Anbieter. Die Schritte 1-5 werden inline ausgeführt. Schritt 6 (Scan nach ähnlichen Mustern) kann an einen `debug-investigator`-Subagenten delegiert werden, wenn der Scan-Umfang groß ist (10+ Dateien oder domänenübergreifende Fehler); anschließend legt Schritt 7 den Memory-Eintrag an.
 
@@ -50,7 +50,7 @@ Der Schweregrad bestimmt, wie der Bug behandelt wird und wie schnell er behoben 
 
 ### P0 — Kritisch (sofortige Reaktion)
 
-**Definition:** Produktion ist ausgefallen, Daten gehen verloren oder werden beschädigt, eine Sicherheitslücke wird aktiv ausgenutzt.
+**Definition:** Produktion ist ausgefallen, Daten gehen verloren oder werden beschädigt, eine Sicherheitsverletzung ist aktiv.
 
 **Erwartete Reaktion:** Alles stehen und liegen lassen. Dies ist die einzige Aufgabe, bis das Problem gelöst ist.
 
@@ -149,7 +149,7 @@ Der Workflow verfolgt den Fehler vom Fehlerort rückwärts, um die tatsächliche
 | **Veralteter Zustand** | React-State aktualisiert sich nicht, Cache nicht invalidiert, Closure erfasst alten Wert |
 | **Fehlende Validierung** | Benutzereingaben nicht bereinigt, API-Request-Body nicht validiert, Grenzwerte nicht geprüft |
 
-Die entscheidende Disziplin: die **Grundursache** diagnostizieren, nicht das Symptom. Wenn `user.id` undefined ist, lautet die Frage nicht "wie prüfe ich auf undefined?", sondern "warum ist user an dieser Stelle im Ausführungspfad undefined?"
+Diagnostizieren Sie die Grundursache, nicht das Symptom. Wenn `user.id` undefined ist, fragen Sie, warum user an dieser Stelle im Ausführungspfad undefined ist, und nicht, wie Sie sich gegen undefined absichern.
 
 ### Schritt 4: Minimale Korrektur vorschlagen
 
@@ -158,7 +158,7 @@ Der Workflow präsentiert:
 2. Die vorgeschlagene Korrektur (nur das Notwendigste ändernd).
 3. Eine Erklärung, warum diese Korrektur die Grundursache behebt und nicht nur das Symptom.
 
-Der Workflow präsentiert den Vorschlag vor der Bearbeitung. Er wartet auf Bestätigung, wenn die Änderung nicht bereits durch die Anfrage oder den Ausführungsvertrag autorisiert ist; eine bestehende Autorisierung macht eine zweite Rückfrage überflüssig.
+Der Workflow präsentiert den Vorschlag vor der Bearbeitung. Er wartet auf Bestätigung, wenn die Änderung nicht bereits durch die Anfrage oder die Ausführungsrichtlinie autorisiert ist; eine bestehende Autorisierung lässt ihn ohne zweite Rückfrage fortfahren.
 
 **Prinzip der minimalen Korrektur:** So wenige Zeilen wie möglich ändern. Nicht refaktorisieren, keinen Code-Stil verbessern, keine unverwandten Features hinzufügen. Die Korrektur sollte in unter 2 Minuten reviewbar sein.
 
@@ -172,7 +172,7 @@ In diesem Schritt geschehen zwei Dinge:
    - Bestätigt, dass die Korrektur wirkt (der Test muss mit der Korrektur bestehen)
    - Verhindert, dass derselbe Bug bei zukünftigen Änderungen erneut auftritt
 
-Der Regressionstest zeigt, wenn derselbe Bug durch eine spätere Änderung erneut auftritt.
+Der Regressionstest ist die wichtigste Ausgabe des Debug-Workflows. Ohne ihn kann jede spätere Änderung denselben Bug wieder einführen.
 
 ### Schritt 6: Nach ähnlichen Mustern scannen
 
@@ -203,7 +203,7 @@ Der Workflow schreibt eine Memory-Datei mit:
 - Symptom und Grundursache
 - Angewendete Korrektur und geänderte Dateien
 - Regressionstest-Speicherort
-- Im gesamten Codebase gefundene ähnliche Muster
+- Ähnliche Muster, die in der gesamten Codebasis gefunden wurden
 
 ---
 
@@ -309,6 +309,6 @@ Der Debug-Workflow ist abgeschlossen, wenn:
 
 ## Nächste Schritte
 
-- Die Grundursache reicht über Domänen hinweg: [Multi-Agent-Projekte](./multi-agent-project.md)
+- Die Grundursache reicht über Domänen hinweg: [Multi-Agenten-Projekte](./multi-agent-project.md)
 - Den Korrekturlauf aufzeichnen oder fortsetzen: [Ergebnisse und Fortsetzen](./agent-results-and-resume.md)
 - Etwas in OMA selbst ist fehlgeschlagen: [Fehlerbehebung](./troubleshooting.md)

@@ -1181,6 +1181,8 @@ Cuando coinciden varios planes de sesión o recibos de ejecución, la verificaci
 
 **Comprobaciones específicas del agente:**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | Tipo de agente | Comprobaciones adicionales |
 |:-----------|:-----------------|
 | `backend` | Validación de sintaxis, detección de inyección SQL (patrones de SQL sin procesar) y pruebas, todo a partir de los comandos `verify` de `.agents/skills/oma-backend/stack/stack.yaml` (generado por `/stack-set`). Se omiten si ese archivo no existe |
@@ -1189,6 +1191,7 @@ Cuando coinciden varios planes de sesión o recibos de ejecución, la verificaci
 | `qa` | Sin chequeos mecánicos; registra un único chequeo `QA Report` como `PASS` |
 | `debug` | Ejecuta pruebas Python o de frontend según el tipo de proyecto detectado |
 | `pm` | Valida que exista `.agents/results/plan-{sessionId}.json` y que sea JSON válido |
+<!-- oma-docs:ignore-end -->
 
 **Formato de salida:**
 Cada comprobación informa `PASS`, `FAIL`, `WARN` o `SKIP` con un mensaje detallado. El resultado general es `ok: true` solo si no falla ninguna comprobación.

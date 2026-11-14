@@ -6,9 +6,9 @@ description: Guia completo do workflow /explain do oh-my-agent e da skill oma-ex
 
 # Explicador de código
 
-`/explain` transforma uma alteração de código em um documento HTML rico e autocontido que ensina o que mudou e por quê: contexto profundo opcional para iniciantes, uma seção de intuição central com dados de brinquedo, um walkthrough de código ordenado para compreensão e um quiz de cinco perguntas. A saída é um único arquivo `.html` que funciona offline, com diagramas, destaques e um quiz acessível, salvo em `.agents/results/explain/` e validado contra um checklist determinístico antes da entrega.
+`/explain` transforma uma alteração de código em um documento HTML autocontido que explica o que mudou e por quê. A página inclui um contexto que pode ser pulado por quem está começando, uma seção de intuição central com dados de brinquedo, um walkthrough de código ordenado para compreensão e um quiz acessível com cinco perguntas por padrão. O arquivo `.html`, que funciona offline, inclui diagramas e callouts, é salvo em `.agents/results/explain/` e é validado contra um checklist determinístico antes da entrega.
 
-`/explain` funciona somente como slash command: não é ativado automaticamente pela linguagem natural. “explain” é vocabulário cotidiano, por isso é intencionalmente excluído da detecção de palavras-chave (o mesmo precedente de `/convert`). Diga `/explain` explicitamente ou peça a outra skill para produzir um “documento explicativo” como saída delegada.
+O workflow `/explain` não se ativa sozinho a partir de linguagem natural, porque "explain" é vocabulário cotidiano. A detecção de palavras-chave exclui o termo, como faz com `/convert`. Diga `/explain` explicitamente, ou peça a outra skill que produza um "documento explicativo" como saída delegada.
 
 ## Dois modos
 

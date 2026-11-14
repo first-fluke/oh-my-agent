@@ -8,7 +8,7 @@ description: Guia completo para coordenar agentes de vários domínios entre fro
 
 ## Quando usar coordenação multi-agente
 
-Sua funcionalidade abrange vários domínios: API backend, UI frontend, schema de banco de dados, cliente mobile e revisão QA. Os agentes podem trabalhar em paralelo quando não modificarem os arquivos uns dos outros.
+Use a coordenação multiagente quando uma funcionalidade abrange vários domínios, como uma API de backend, uma UI de frontend, um schema de banco de dados, um cliente mobile ou uma revisão de QA, e esses domínios podem avançar em paralelo sem alterar os mesmos arquivos.
 
 A coordenação multi-agente é a escolha certa quando:
 
@@ -237,7 +237,7 @@ Antes que qualquer trabalho multi-agente seja considerado concluído, quatro con
 
 ### 1. As verificações declaradas passam
 
-Cada critério de aceitação tem uma verificação relevante, e as verificações declaradas pelo plano passam. Um build só é incluído quando o portão do projeto exige isso; o contrato de resultado registra os argv e o exit code reais.
+Cada critério de aceitação tem uma verificação relevante, e as verificações declaradas pelo plano passam. Um build só é incluído quando o portão de projeto da tarefa o exige; o contrato de resultado registra os argv e o exit code reais.
 
 ### 2. Os testes passam
 

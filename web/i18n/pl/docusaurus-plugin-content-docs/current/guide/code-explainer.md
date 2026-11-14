@@ -6,7 +6,7 @@ description: Pełny przewodnik po workflow /explain i umiejętności oma-explana
 
 # Objaśnianie kodu
 
-`/explain` zamienia zmianę kodu w samodzielny dokument HTML, który wyjaśnia, co się zmieniło i dlaczego — z pomijalnym, pogłębionym tłem dla początkujących, sekcją intuicji z danymi przykładowymi, uporządkowanym pod kątem zrozumienia omówieniem kodu i quizem z pięcioma pytaniami. Wynikiem jest pojedynczy plik `.html` działający offline, z diagramami, objaśnieniami i dostępnym quizem; zapisuje się go w `.agents/results/explain/` i sprawdza deterministyczną listą kontrolną przed dostarczeniem.
+`/explain` zamienia zmianę kodu w samodzielny dokument HTML, który wyjaśnia, co się zmieniło i dlaczego. Strona zawiera pomijalne tło dla początkujących, sekcję kluczowej intuicji z danymi przykładowymi, omówienie kodu uporządkowane pod kątem zrozumienia oraz dostępny quiz z domyślnie pięcioma pytaniami. Plik `.html` działający offline zawiera diagramy i callouty, jest zapisywany w `.agents/results/explain/` i przed dostarczeniem sprawdzany deterministyczną listą kontrolną.
 
 `/explain` działa wyłącznie jako slash command — nie aktywuje się automatycznie z języka naturalnego. „explain” jest codziennym słowem, dlatego celowo wykluczono je z wykrywania słów kluczowych (tak samo jak `/convert`). Wpisz jawnie `/explain` albo poproś inną umiejętność o utworzenie „dokumentu objaśniającego” jako wyniku delegowanego.
 
@@ -201,7 +201,7 @@ Gdy ustawiono `diagram.explain_sidecar: true` w `oma-config.yaml` albo poprosisz
 | Zbyt duży diff | Automatycznie wyklucz lockfile i pliki generowane, pogrupuj resztę według pliku i wypisz wykluczenia w stopce pochodzenia |
 | Diff zawiera wyłącznie pliki binarne lub generowane | Zatrzymaj się — nie ma czego objaśniać |
 | Brak `gh` CLI albo brak uwierzytelnienia (ref PR-a) | Wskazówki instalacji/uwierzytelnienia oraz alternatywa lokalnego diffu gałęzi |
-| Trwa scalanie/rebase | Zatrzymaj się — workspace jest niestabilny |
+| Trwa scalanie/rebase | Zatrzymaj się — worktree jest niestabilny |
 | Katalog nie jest repozytorium git | Tryb zmiany: zatrzymaj się natychmiast. Tryb tematu działa bez git. |
 | Walidacja nie przechodzi po 3 pętlach naprawczych | Zatrzymaj się i pokaż nieudane elementy |
 | `--open` kończy się błędem w środowisku bez interfejsu | Tylko ostrzeżenie — zgłoszona ścieżka wystarcza |

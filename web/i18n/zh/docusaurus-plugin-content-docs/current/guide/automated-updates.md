@@ -152,7 +152,7 @@ jobs:
 
 ### 示例 3：条件通知 {#example-3-conditional-notification}
 
-更新时发送 Slack 通知。
+有新版本时，更新并发送 Slack 通知。
 
 ```yaml
 name: Update oh-my-agent

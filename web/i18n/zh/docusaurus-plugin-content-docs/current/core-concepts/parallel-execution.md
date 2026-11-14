@@ -5,7 +5,7 @@ description: 使用当前 CLI 语法、任务文件、内联模式、工作区�
 
 # 并行执行
 
-oh-my-agent 可以并行运行多个专业智能体。例如，后端智能体实现 API 时，前端智能体创建 UI，移动端智能体构建应用界面；编排器通过持久化运行状态和回执协调这些工作。
+oh-my-agent 会并行运行多个专业智能体。例如，后端、前端和移动端智能体可以分别处理应用的不同部分，由编排器通过持久化运行状态和回执协调。
 
 ---
 
@@ -169,7 +169,7 @@ agents:
 | **Claude Code** | 同供应商任务使用带有 `.claude/agents/{name}.md` 的 Agent 工具；跨供应商任务回退到 `oma agent spawn`。 | 同步返回 |
 | **Codex CLI** | 同供应商任务使用 `.codex/agents/{name}.toml` 中的原生自定义智能体；跨供应商任务回退到 `oma agent spawn`。 | JSON 输出 |
 | **Antigravity CLI/IDE** | 通过 `agy` 运行时使用 `oma agent spawn`；不要求自定义原生子智能体。 | 持久化回执和结果文件轮询 |
-| **Cursor** | 优先使用可用的生成式 Cursor 集成，否则使用 `oma agent spawn`。 | 轮询结果文件 |
+| **Cursor** | 在可用时使用生成的 Cursor 集成，否则使用 `oma agent spawn`。 | 轮询结果文件 |
 | **OpenCode / pi** | 选中时使用进程内扩展桥；跨供应商工作使用 `oma agent spawn`。 | 轮询结果文件 |
 | **CLI 回退** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | 有证据支持的结果轮询 |
 
@@ -252,7 +252,7 @@ oma agent status <session-id> <agent-id>
 
 会话 ID 决定：
 
-- 智能体读写哪些运行范围内的内存文件（`progress-{agentId}-{taskId}-{runId}-{sessionId}.md`、`result-{agentId}-{taskId}-{runId}-{sessionId}.md`）
+- 智能体读写哪些运行范围内的记忆文件（`progress-{agentId}-{taskId}-{runId}-{sessionId}.md`、`result-{agentId}-{taskId}-{runId}-{sessionId}.md`）
 - 仪表板监控什么
 - 最终报告如何归组结果
 

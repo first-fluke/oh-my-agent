@@ -1,6 +1,6 @@
 # oh-my-agent
 
-**Ponad 400 commitów dziennie.**
+**Wypuszczaj ponad 400 commitów dziennie.**
 
 [![npm version](https://img.shields.io/npm/v/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![npm downloads](https://img.shields.io/npm/dm/oh-my-agent?color=cb3837&logo=npm)](https://www.npmjs.com/package/oh-my-agent) [![GitHub stars](https://img.shields.io/github/stars/first-fluke/oh-my-agent?style=flat&logo=github)](https://github.com/first-fluke/oh-my-agent) [![License](https://img.shields.io/github/license/first-fluke/oh-my-agent)](https://github.com/first-fluke/oh-my-agent/blob/main/LICENSE) [![Last Updated](https://img.shields.io/github/last-commit/first-fluke/oh-my-agent?label=updated&logo=git)](https://github.com/first-fluke/oh-my-agent/commits/main)
 
@@ -67,7 +67,7 @@ Po instalacji uruchom `oma doctor`. [Pierwsze 5 minut](#your-first-5-minutes) za
 
 ## Szczegóły instalacji
 
-Skrypt instaluje [bun](https://bun.sh), jeśli go brakuje, instaluje globalnie polecenie `oma` (`bun install --global oh-my-agent`, pomijane, gdy `oma` jest już w PATH), a następnie uruchamia interaktywną konfigurację. Globalne polecenie ma znaczenie: hooki (wykrywanie słów kluczowych, bramka Stop) i kilka workflowów wywołują `oma`, a gdy hooki go nie znajdą, po cichu nic nie robią. Jeśli pomijasz skrypt, zainstaluj je samodzielnie przez `bun install --global oh-my-agent` (działają też `npm install --global oh-my-agent` i `brew install oh-my-agent`).
+Skrypt instaluje [bun](https://bun.sh), jeśli go brakuje, instaluje globalnie polecenie `oma` (`bun install --global oh-my-agent`, pomijane, gdy `oma` jest już w PATH), a następnie uruchamia interaktywną konfigurację. Hooki (wykrywanie słów kluczowych i bramka Stop) oraz kilka workflowów wywołują globalnie zainstalowane polecenie `oma`. Gdy hooki go nie znajdą, po cichu nic nie robią. Jeśli pomijasz skrypt, zainstaluj je samodzielnie przez `bun install --global oh-my-agent` (działają też `npm install --global oh-my-agent` i `brew install oh-my-agent`).
 
 <details>
 <summary>Windows albo instalacja bez skryptu</summary>

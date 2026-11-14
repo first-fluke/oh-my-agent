@@ -139,7 +139,7 @@ flowchart TD
 | **Refatoração** | oma-refactor | Reestruturação incremental que preserva comportamento, com foco em hotspots, redes de testes de caracterização e commits apenas de refatoração |
 | **Pesquisa de mercado** | oma-market | Pesquisa de pain points, tendências, concorrentes e descoberta a partir de sinais comunitários, com frameworks SWOT/Porter 5F/PESTEL escolhidos automaticamente pela intenção |
 | **Criação de skills** | oma-skill-creation | Criação e validação de skills OMA no formato SSL-lite |
-| **Geração de mídia** | oma-image, oma-slide, oma-video, oma-voice | Geração de imagens por IA, apresentações HTML, vídeos curtos/explicativos/de demonstração e TTS/STT local |
+| **Geração de mídia** | oma-image, oma-slide, oma-video, oma-voice | Geração de imagens por IA, decks de apresentação em HTML e PPTX editável, vídeo curto, explainer e demo, e TTS/STT local |
 
 ---
 
@@ -664,7 +664,7 @@ Estes são padrões do workflow; as configurações de modelo, vendor, paralelis
 
 **Domínio:** Prosa acadêmica em inglês, pronta para publicação: redigir, revisar e auditar ensaios, relatórios, seções de análise, resumos executivos, conclusões e revisões de literatura.
 
-**Quando usar:** Redigir ou revisar relatórios e seções de análise acadêmica, escrever resumos executivos, conclusões ou revisões de literatura, reescrever prosa com aparência de IA em inglês natural, polir um texto para qualidade de topo (HD, A, top-band) e revisar variedade de frases, qualidade verbal, modalização e conformidade anti-IA.
+**Quando usar:** Redigir ou revisar relatórios, ensaios e seções de análise acadêmica, escrever resumos executivos, conclusões ou revisões de literatura, reescrever prosa com aparência de IA em inglês natural, polir um texto para qualidade de topo (HD, A, top-band) e revisar variedade de frases, qualidade verbal, modalização e conformidade anti-IA.
 
 **Quando NÃO usar:** Tradução (use oma-translation), descoberta de fontes, coleta de citações ou busca bibliográfica (use oma-scholar), documentação de código/README/texto de referência de API (use a skill de domínio correspondente), texto informal ou de marketing e escrita acadêmica que não seja em inglês (redija em inglês e depois encaminhe para oma-translation).
 
@@ -790,7 +790,7 @@ Estes são padrões do workflow; as configurações de modelo, vendor, paralelis
 
 **Domínio:** Refatoração que preserva comportamento: reestruturação incremental segura com foco em code smells/SATD/hotspots, redes de testes de caracterização e commits apenas de refatoração.
 
-**Quando usar:** Executar refatoração em arquivos ou módulos específicos (extrair, mover, renomear, decompor, alinhar idioma), refatoração preparatória antes de uma funcionalidade, recuperar um legado/brownfield (descoberta de seams e testes de caracterização), selecionar alvos por hotspot (churn × complexidade) ou auditar se o código está seguro para refatorar agora.
+**Quando usar:** Executar refatoração em arquivos ou módulos específicos (extrair, mover, renomear, decompor, alinhar idioms), refatoração preparatória antes de uma funcionalidade, recuperar um legado/brownfield (descoberta de seams e testes de caracterização), selecionar alvos por hotspot (churn × complexidade) ou auditar se o código está seguro para refatorar agora.
 
 **Quando NÃO usar:** Corrigir um bug reportado ou comportamento que falha (use oma-debug; refatoração não deve mudar comportamento), auditar segurança/performance/acessibilidade (use oma-qa), definir design de sistema/limites de módulos/ADRs (use oma-architecture), projetar schema ou mecânicas de migração de DB (use oma-db), dividir ou preparar commits (use oma-scm) ou otimizar performance como objetivo.
 

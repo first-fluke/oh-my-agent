@@ -5,7 +5,7 @@ description: Leserorientierte Übersicht einer oh-my-agent-Installation mit der 
 
 # Projektstruktur
 
-Nach der Installation von oh-my-agent erhält Ihr Projekt zwei zentrale Verzeichnisbäume: `.agents/` (die einzige Wahrheitsquelle einschließlich des Koordinationsspeichers `.agents/state/memories/`) und Laufzeit-Integrationsschichten wie `.claude/`, `.cursor/` und `.codex/`. Wenn Serena als Anbieter für Code-Intelligence ausgewählt ist, kann zusätzlich das optionale Verzeichnis `.serena/` für Serenas Onboarding-Memories vorhanden sein. Bei der Fehlersuche sind die gemeinsamen Dateien sowie optionale und generierte Pfade relevant.
+Nach der Installation von oh-my-agent erhält Ihr Projekt zwei zentrale Verzeichnisbäume: `.agents/` (die einzige Wahrheitsquelle, einschließlich des Koordinationsspeichers `.agents/state/memories/`) und Laufzeit-Integrationsschichten (z. B. `.claude/`, `.cursor/`, `.codex/`). Wenn Serena der Anbieter für Code-Intelligence ist, kann ein optionales Verzeichnis `.serena/` Serenas Onboarding-Memories enthalten.
 
 ---
 
@@ -261,7 +261,7 @@ your-project/
 
 ## `.agents/`: die zentrale Wahrheitsquelle {#agents-the-source-of-truth}
 
-Für das Verhalten der Agenten ist nur dieses Verzeichnis maßgeblich; alle anderen Verzeichnisse werden daraus abgeleitet.
+Dies ist das Kernverzeichnis. Alles, was Agenten brauchen, liegt hier. Für das Verhalten der Agenten zählt nur dieses Verzeichnis. Alle anderen Verzeichnisse werden daraus abgeleitet.
 
 ### oma-config.cue und oma-config.yaml
 
@@ -273,7 +273,7 @@ Für das Verhalten der Agenten ist nur dieses Verzeichnis maßgeblich; alle ande
 - `model_preset`: Aktiver Schlüssel für ein Modell-Preset (standardmäßig `auto` oder ein festes bzw. benutzerdefiniertes Preset)
 - `providers`: Anbieter für Docs, Web, Code-Intelligence und semantisches Memory
 - `auto_update_cli`: Hintergrundprüfung auf Updates (Standard `true`, mit `false` deaktivierbar)
-- `telemetry`: Anbieter-Telemetrie (Standard `false`)
+- `telemetry`: Opt-in für Anbieter-Telemetrie (Standard `false`)
 - `mcp.devtools_browsers`: Optionale Browserliste; ohne Wert bleiben vorhandene Einträge erhalten
 - `agents`: Optionale Überschreibungen pro Agent (nur `AgentSpec`-Objekte)
 - `models`: Optionale, vom Benutzer definierte Modell-Slugs
@@ -289,7 +289,7 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Ver
 
 - `core/`: Ausführungsrichtlinie, Regeln für Code-Intelligence, Routing, Kontextladen, Prompt-Struktur, Klärungsprotokoll, Kontextbudget, Schwierigkeitsbewertung, Qualitätsprinzipien, Testansatz, Anbietererkennung, Sitzungsmetriken, gemeinsame Checkliste, Lessons Learned und Vorlagen für API-Verträge
 - `runtime/`: Memory-Protokoll, Event-Spezifikation, Ergebnisvertrag und anbieterspezifische Ausführungsprotokolle
-- `conditional/`: Messung des Qualitätsscores, Führung des Experimentprotokolls, Protokoll für Explorationsschleifen und Diagramm-Engine (wird nur bei entsprechender Auslösung geladen)
+- `conditional/`: Messung des Qualitätsscores, Nachverfolgung des Experiment-Ledgers, Protokoll der Explorationsschleife, Diagramm-Engine (nur geladen, wenn ausgelöst)
 
 **`oma-{skill}/`** enthält die Verzeichnisse der einzelnen Skills. Jedes enthält:
 
@@ -321,17 +321,17 @@ Persistente Workflows sind `orchestrate.md`, `work.md`, `ultrawork.md` und `ralp
 
 ### plan-\{sessionId\}.json
 
-Wird vom Workflow `/plan` erzeugt. Die Datei enthält die strukturierte Aufgabenzerlegung mit Agentenzuweisungen, Prioritäten, Abhängigkeiten und Akzeptanzkriterien. `/orchestrate` und `/work` verwenden sie. Der zugehörige menschenlesbare Tracker liegt unter `docs/plans/work/{NNN}-{name}.md` und wird über das Feld `Status` verwaltet. Über `/brainstorm` gewählte Ansätze und Entscheidungen liegen unter `docs/decisions/{NNN}-{name}.md`.
+Wird vom Workflow `/plan` erzeugt. Die Datei enthält die strukturierte Aufgabenzerlegung mit Agentenzuweisungen, Prioritäten, Abhängigkeiten und Akzeptanzkriterien. `/orchestrate` und `/work` verwenden sie. Der zugehörige menschenlesbare Tracker liegt unter `docs/plans/work/{NNN}-{name}.md` (Lebenszyklus über das Feld `Status`). Beibehaltene Ansatzvorschläge und Entscheidungen liegen unter `docs/decisions/{NNN}-{name}.md`.
 
 ### state/
 
-Hier liegen die aktiven Zustandsdateien persistenter Workflows. Diese JSON-Dateien existieren nur, solange ein persistenter Workflow läuft. Wenn Sie sie löschen oder „Workflow abgeschlossen“ sagen, wird der persistente Modus deaktiviert.
+Hier liegen die aktiven Zustandsdateien persistenter Workflows. Diese JSON-Dateien existieren nur, solange ein persistenter Workflow läuft. Wenn Sie sie löschen oder „workflow done“ sagen, wird der Workflow deaktiviert.
 
 Das Unterverzeichnis `state/memories/` ist der kanonische Koordinationsspeicher: Es enthält den Sitzungszustand des Orchestrators, das Aufgabenboard, Fortschritts- und Ergebnisdateien pro Agent, Sitzungsmetriken und Kostentelemetrie. Die Dashboards überwachen diesen Pfad, und die CLI löst ihn zuerst auf; ältere Projekte verwenden ersatzweise den früheren Pfad `.serena/memories/`. Siehe unten [`.agents/state/memories/`: Laufzeitstatus](#agentsstatememories-runtime-state).
 
 ### results/
 
-Ergebnisdateien der Agenten. Abgeschlossene Agenten erstellen sie mit Status (abgeschlossen/fehlgeschlagen), Zusammenfassung, Liste der geänderten Dateien und einer Checkliste der Akzeptanzkriterien. Der Orchestrator liest sie beim Sammeln, und Dashboards verwenden sie zur Überwachung.
+Ergebnisdateien der Agenten. Abgeschlossene Agenten erstellen sie mit Status (completed/failed), Zusammenfassung, geänderten Dateien und einer Checkliste der Akzeptanzkriterien. Der Orchestrator liest sie beim Sammeln, und Dashboards verwenden sie zur Überwachung.
 
 ### mcp.json
 
@@ -507,7 +507,7 @@ Hier schreiben Agenten während Orchestrierungssitzungen ihren Fortschritt. Dies
 | `session-work.md` | Work-Workflow | Sitzungsstatus des Work-Workflows |
 | `session-ultrawork.md` | Ultrawork-Workflow | Sitzungsstatus des Ultrawork-Workflows |
 | `session-ralph-{sessionId}.md` | Ralph-Workflow | Kriterien, Iterationsprotokolle und Judge-Ergebnisse für einen Ralph-Lauf |
-| `session-cost-{sessionId}.md` | System | Kostentelemetrie pro Sitzung |
+| `session-cost-{sessionId}.md` | System | Spawn-Kostentelemetrie pro Sitzung |
 | `archive/metrics-{date}.md` | System | Archivierte Sitzungsmetriken (Aufbewahrung 30 Tage) |
 
 Pfade für Memory-Dateien und Toolnamen können in `.agents/mcp.json` über `memoryConfig` konfiguriert werden.

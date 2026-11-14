@@ -285,7 +285,7 @@ your-project/
 
 **`_shared/`**：所有智能体共用的资源：
 - `core/`：执行策略、代码智能规则、路由、上下文加载、提示结构、澄清协议、上下文预算、难度评估、质量原则、测试方法、供应商检测、会话指标、通用检查清单、经验教训和 API 契约模板
-- `runtime/`：内存协议、事件规范、结果契约以及供应商专用执行协议
+- `runtime/`：记忆协议、事件规范、结果契约以及供应商专用执行协议
 - `conditional/`：质量评分、实验账本、探索循环协议和图表引擎（仅在触发时加载）
 
 **`oma-{skill}/`**：按技能划分的目录。每个目录包含：
@@ -332,7 +332,7 @@ your-project/
 
 MCP 服务器配置，包括：
 - 服务器定义（Serena 等）
-- 内存配置：`memoryConfig.provider`、`memoryConfig.basePath`、`memoryConfig.tools`（读、写、编辑工具名称）
+- 记忆配置：`memoryConfig.provider`、`memoryConfig.basePath`、`memoryConfig.tools`（读、写、编辑工具名称）
 
 ---
 
@@ -479,7 +479,7 @@ echo '{"cwd":"/path/to/project"}' \
 
 ## `.agents/state/memories/`：运行时状态 {#agentsstatememories-runtime-state}
 
-智能体在编排会话期间写入进度的位置。这是规范的协调记忆存储；CLI 会优先解析它，并为迁移前创建的项目回退到传统 `.serena/memories/` 路径。仪表盘会监视此目录，以实时更新。
+智能体在编排会话期间写入进度的位置。这是规范的协调记忆存储；CLI 会优先解析它，并为迁移前创建的项目回退到传统 `.serena/memories/` 路径。会话文件和任务板文件包含会话 ID；进度文件和结果文件包含智能体、任务、运行和会话 ID。仪表盘会监视此目录，以实时更新。
 
 | 文件 | 所有者 | 用途 |
 |------|-------|------|
@@ -496,7 +496,7 @@ echo '{"cwd":"/path/to/project"}' \
 | `session-cost-{sessionId}.md` | 系统 | 每个会话的启动成本遥测 |
 | `archive/metrics-{date}.md` | 系统 | 归档的会话指标（保留 30 天） |
 
-内存文件路径和工具名称可以通过 `.agents/mcp.json` 中的 `memoryConfig` 配置。
+记忆文件路径和工具名称可以通过 `.agents/mcp.json` 中的 `memoryConfig` 配置。
 
 Serena 自己的引导记忆（`code_style.md`、`project_purpose.md` 及类似知识文件）仍位于 `.serena/memories/`，与这些协调产物分开。
 
@@ -548,7 +548,7 @@ oh-my-agent/
 ## 另请参阅 {#see-also}
 
 - [工作流](./workflows.md)：`.agents/workflows/` 下每个文件的作用
-- [并行执行](./parallel-execution.md)：运行范围内存文件如何生成
+- [并行执行](./parallel-execution.md)：运行范围的记忆文件如何生成
 - [全局安装](../guide/global-install.md)：项目模式和全局模式
 - [配置参考](../guide/configuration-reference.md)
 - [oma-config 语义](../guide/oma-config-semantics.md)

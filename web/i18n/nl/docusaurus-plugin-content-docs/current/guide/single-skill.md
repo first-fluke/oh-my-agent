@@ -6,7 +6,7 @@ description: Gedetailleerde gids voor taken binnen één domein in oh-my-agent, 
 
 # Uitvoering met één skill
 
-Uitvoering met één skill is de snelle route: één agent, één domein, één gerichte taak. Er is geen orchestratie-overhead en geen coördinatie tussen meerdere agenten. Een host of geselecteerde workflow kan een prompt in natuurlijke taal naar de skill routeren; het hook-systeem voegt skillhints toe op basis van trefwoorden en het routinggedrag hangt af van de geselecteerde runtime.
+Uitvoering met één skill wijst één gerichte taak in één domein toe aan één agent. Het vermijdt coördinatie tussen meerdere agenten. Een host of geselecteerde workflow kan een prompt in natuurlijke taal naar de skill routeren; het hook-systeem voegt skillhints toe op basis van trefwoorden, en de routering hangt af van de geselecteerde runtime.
 
 ## Snelle route
 

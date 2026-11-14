@@ -139,7 +139,7 @@ flowchart TD
 | **Refactoring** | oma-refactor | Gedragsbehoudende, stapsgewijze herstructurering met hotspotselectie, karakteriseringstests als vangnet en refactor-only commits |
 | **Marktonderzoek** | oma-market | Communitysignalen onderzoeken naar pijnpunten, trends, concurrenten en discovery met intentafhankelijke SWOT/Porter's 5F/PESTEL-frameworks |
 | **Skill-auteurschap** | oma-skill-creation | OMA-skills maken en valideren in SSL-lite-formaat |
-| **Mediageneratie** | oma-image, oma-slide, oma-video, oma-voice | AI-afbeeldingen, HTML-presentaties, korte/uitleg/demo-video's en lokale TTS/STT |
+| **Mediageneratie** | oma-image, oma-slide, oma-video, oma-voice | AI-afbeeldingen, HTML- en bewerkbare PPTX-presentatiedecks, korte/uitleg/demo-video's en lokale TTS/STT |
 
 ---
 
@@ -664,7 +664,7 @@ Dit zijn workflowstandaarden; model-, vendor-, parallellisme- en budgetinstellin
 
 **Domein:** Publicatieklare academische Engelse tekst: essays, rapporten, analysesecties, executive summaries, conclusies en literatuuroverzichten opstellen, reviseren en auditen.
 
-**Wanneer gebruiken:** Academische rapporten, essays of analysesecties opstellen of reviseren, executive summaries, conclusies of literatuuroverzichten schrijven, AI-achtig klinkende tekst herschrijven tot natuurlijk academisch Engels, een concept volgens de rubric reviseren, of tekst beoordelen op zinsvariatie, werkwoordkwaliteit, hedging en anti-AI-naleving.
+**Wanneer gebruiken:** Academische rapporten, essays of analysesecties opstellen of reviseren, executive summaries, conclusies of literatuuroverzichten schrijven, AI-achtig klinkende tekst herschrijven tot natuurlijk academisch Engels, een concept polijsten tot rubric-kwaliteit in de hoogste band (HD, A, top-band), of tekst beoordelen op zinsvariatie, werkwoordkwaliteit, hedging en anti-AI-naleving.
 
 **Wanneer NIET gebruiken:** Vertalen (gebruik oma-translation), bronnen zoeken, citaties verzamelen of literatuur doorzoeken (gebruik oma-scholar), codedocumentatie/README/API-referentietekst (gebruik de relevante domeinskill), informele of marketingtekst, of niet-Engelse academische tekst (schrijf eerst in het Engels en draag daarna over aan oma-translation).
 
@@ -755,7 +755,7 @@ Dit zijn workflowstandaarden; model-, vendor-, parallellisme- en budgetinstellin
 **Kernregels:**
 - Werk de briefing uit: gebruik aangeleverde details en redelijke creatieve standaarden, en vraag alleen wanneer een ontbrekende keuze het resultaat wezenlijk verandert. Een uitgebreide prompt heeft geen aparte goedkeuring nodig wanneer generatie al is geautoriseerd
 - Auth-bewuste dispatch: voer alleen geauthenticeerde vendors uit; met `--vendor all` moet elke gevraagde vendor beschikbaar zijn
-- Kostengate: bevestig runs met een geschatte kosten van ≥ $0.20 (`--yes`/`OMA_IMAGE_YES=1` omzeilt dit); `pollinations` en `antigravity` zijn standaard gratis
+- Kostengate: bevestig runs waarvan de geschatte kosten ≥ $0.20 zijn (`--yes`/`OMA_IMAGE_YES=1` omzeilt dit); `pollinations` en `antigravity` zijn standaard gratis
 - Padveiligheid: output buiten `$PWD` vereist `--allow-external-output`; maximaal `n` = 5
 - Geregistreerde output: elke run schrijft naast de afbeeldingen een `manifest.json` met prompt, vendor/model, inputs en artifactmetadata. Dit legt reproduceerbaarheidsgegevens vast, maar belooft geen pixelidentieke output.
 - Stuur bijgevoegde referentieafbeeldingen automatisch door via `--reference <path>` (codex/antigravity)
@@ -1035,7 +1035,7 @@ Tijdens orchestratiesessies coördineren agenten via gedeelde geheugenbestanden 
 | `orchestrator-session-{sessionId}.md` | Orchestrator | Sessie-ID, status, starttijd en fasebewaking | Alleen-lezen |
 | `task-board-{sessionId}.md` | Orchestrator | Taaktoewijzingen, prioriteiten en statusupdates | Alleen-lezen |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Die run | Voortgang per beurt: acties, gelezen/gewijzigde bestanden en huidige status | Orchestrator leest |
-| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Die run | Einduitvoer: status (voltooid/mislukt), samenvatting, gewijzigde bestanden en acceptatiecriteria-checklist | Orchestrator leest |
+| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Die run | Einduitvoer: status (`completed`/`failed`), samenvatting, gewijzigde bestanden en acceptatiecriteria-checklist | Orchestrator leest |
 | `session-metrics-{sessionId}.md` | Orchestrator | Optioneel sessiebewijs: wezenlijke correcties, herwerk en beoordeelde reviewbevindingen | QA leest |
 | `lessons-{sessionId}.md` | Orchestrator | Op bewijs gebaseerde lessen voor de sessie | Iedereen leest |
 | `experiment-ledger-{sessionId}.md` | Orchestrator/QA | Bewijs voor daadwerkelijke experimenten | Iedereen leest |

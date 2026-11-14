@@ -306,7 +306,7 @@ Dies sind Beispiele für Referenzen, die herangezogen werden, wenn die Aufgabe s
 | Authentifizierung | `snippets.md` + `tech-stack.md` aus der Stack-Referenz |
 | DB-Migration | `snippets.md` aus der Stack-Referenz; Schemadesign geht an oma-db |
 | Performance-Optimierung | `orm-reference.md` und passende vom Skill bereitgestellte Beispiele |
-| Vorhandenen Code modifizieren | projektweiter Code-Intelligence-Provider und relevante Ausführungsressourcen |
+| Vorhandenen Code modifizieren | Code-Intelligence-Provider des Projekts und relevante Ausführungsressourcen |
 
 <!-- oma-docs:ignore-end -->
 
@@ -355,7 +355,7 @@ Wenn der Orchestrator einen Subagenten-Prompt schreibt (`oma-orchestration/resou
 - Beim nativen Dispatch die Pfade dieser Dateien und des zuständigen Skills übergeben, wenn die Laufzeit sie nicht bereitgestellt hat.
 - Einen Abschnitt aus dem Fehler-Playbook erst nach einem beobachteten Fehler hinzufügen und `runtime/memory-protocol.md` nur, wenn der Agent dauerhaften Aufgabenzustand koordiniert oder fortsetzt.
 
-Diese zielgerichtete Zusammenstellung vermeidet unnötige Ressourcen und maximiert den verfügbaren Kontext des Subagenten für die eigentliche Arbeit.
+Der zielgerichtete Prompt hält nicht zugehörige Ressourcen heraus und lässt mehr Kontext für die Aufgabe verfügbar.
 
 ---
 

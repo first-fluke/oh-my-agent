@@ -7,7 +7,7 @@ description: Volledige referentie voor alle 20 oh-my-agent-workflows, met slashc
 
 Workflows zijn processen met meerdere stappen die door slashcommando's worden gestart; de vier persistente modi starten ook wanneer een gewoon verzoek ze bij naam noemt. Ze beschrijven hoe agenten taken uitvoeren, van eenstapstaken tot kwaliteitsworkflows met vijf fasen.
 
-OMA heeft 20 workflows; 4 zijn [persistent](../getting-started/glossary.md#persistent-workflow) en bewaren status tussen beurten.
+Er zijn 20 workflows, waarvan 4 [persistent](../getting-started/glossary.md#persistent-workflow) zijn (ze houden status bij en kunnen niet per ongeluk worden onderbroken).
 
 ## Workflows in één oogopslag
 
@@ -292,7 +292,7 @@ De judge-node is de via de prompt aangestuurde judge uit fase 2: de workflow dra
 
 **Trigger-keywords:** Geen. Start de workflow met `/architecture`. De keyword-hook opent deze workflow niet vanuit een zin.
 
-**Stappen:** Beslissing kaderen (nieuwe architectuur/review/afwegingsanalyse/investeringsprioritering/ADR) -> methode kiezen via diagnostische routering -> huidige architectuur analyseren via MCP-codeanalyse (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> stakeholderinput synthetiseren (alleen als de beslissing transversaal genoeg is) -> aanbeveling met expliciete aannames, afwegingen, risico's en validatiestappen maken -> bij implementatie doorgeven aan `/plan`.
+**Stappen:** Beslissing kaderen (nieuwe architectuur/review/afwegingsanalyse/investeringsprioritering/ADR) -> methode kiezen via diagnostische routering -> huidige architectuur analyseren via MCP-codeanalyse (`get_symbols_overview`, `find_symbol`, `find_referencing_symbols`) -> stakeholderinput synthetiseren (alleen wanneer de beslissing transversaal genoeg is om de kosten te rechtvaardigen) -> aanbeveling met expliciete aannames, afwegingen, risico's en validatiestappen maken -> bij implementatie doorgeven aan `/plan`.
 
 **Regels:** Schrijf in deze workflow GEEN implementatiecode of taakplannen. Geef na de architectuurbeslissing door aan `/plan`. Gebruik MCP-tools overal; vervang ze niet door ruwe file reads of grep.
 

@@ -83,7 +83,7 @@ Use oma-scm to inspect this repository's current branch and working tree. Do not
 
 Vergelijk de gerapporteerde branch en wijzigingen met de werkelijke Git-uitvoer. De agent moet rapporteren welke commando's zijn uitgevoerd en wat hun exitstatussen waren. Deze alleen-lezen taak vereist geen codetest of build.
 
-Een gewone prompt start geen workflow; waar de prompthook is ingeschakeld voegt die een adviserende skillhint toe. Skillrouting gebeurt door de host of de geselecteerde workflow, dus een willekeurige hostprompt garandeert geen hook of een specifieke skill. Het uitvoeringscontract moet nog steeds de repositoryconventies controleren, het gevraagde alleen-lezen bereik respecteren en de waargenomen controles rapporteren. De exacte bestanden en commando's hangen van het project af.
+Een gewone prompt start geen workflow; waar de prompthook is ingeschakeld voegt die een adviserende skillhint toe. Skillrouting gebeurt door de host of de geselecteerde workflow, dus een willekeurige hostprompt garandeert geen hook of een specifieke skill. Het uitvoeringscontract moet nog steeds de repositoryconventies controleren, het gevraagde alleen-lezen bereik respecteren en de waargenomen controles rapporteren. De exacte bestanden en het commando hangen van het project af.
 
 Kies voor een taak die API- en UI-grenzen overschrijdt expliciet `/work` of `/orchestrate`. Ga voor één domein verder met [Eén skill uitvoeren](../guide/single-skill.md). De [Gebruiksgids](../guide/usage.md) bevat langere voorbeelden.
 

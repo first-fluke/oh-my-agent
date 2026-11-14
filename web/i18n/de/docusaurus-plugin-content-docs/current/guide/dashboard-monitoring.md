@@ -58,7 +58,7 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 ```
 
 Das Web-Dashboard zeigt dieselben Informationen wie das Terminal-Dashboard, aber mit einer gestalteten Oberfläche im dunklen Theme mit:
-- Verbindungsstatus-Badge (Verbunden / Getrennt / Verbindung mit automatischer Wiederherstellung)
+- Verbindungsstatus-Badge (Verbunden / Getrennt / Verbindet mit automatischer Wiederverbindung)
 - Sitzungs-ID und Statusleiste
 - Agentenstatus-Tabelle mit animierten Statuspunkten
 - Feed der neuesten Aktivitäten

@@ -92,7 +92,7 @@ API と UI の両方にまたがるタスクでは、`/work` または `/orchest
 
 一時的なスキル読み込みでは、これらのランタイムのデフォルトは設定されません。プロジェクトフック、プロバイダー設定、チームワークフローを使う場合は、[セットアップを選ぶ](./choose-setup.md)のランタイム手順を利用してください。
 
-OMA は初期状態で `model_preset: auto`、コードインテリジェンスに Serena、意味メモリに Agent Memory、Web 検索にネイティブ検索を使い、テレメトリを無効にします。Serena は共有 `bridge` トランスポートを使い、設定しない限り自動更新されます。ブラウザー DevTools MCP はオプトインで、初回の対話式セットアップでは Aside が先に提示されます。動作への影響と上書きキーは[重要なデフォルト](./important-defaults.md)を参照してください。
+OMA は初期状態で `model_preset: auto`、コードインテリジェンスに Serena、セマンティックメモリに Agent Memory、Web 検索にネイティブ検索を使い、テレメトリを無効にします。Serena は共有 `bridge` トランスポートを使い、設定しない限り自動更新されます。ブラウザー DevTools MCP はオプトインで、初回の対話式セットアップでは Aside が先に提示されます。動作への影響と上書きキーは[重要なデフォルト](./important-defaults.md)を参照してください。
 
 管理対象のタスクが停止した場合は、まず `oma agent status <session-id> [agent-id]` を実行し、`.agents/state/agent-runs/` にある受領記録と、注入された申告（claim）のパスを確認します。これらの記録には、実行、タスク、ワークスペース、終了コード、検証状態が含まれます。`.agents/state/memories/` の人間向け `result-*.md` と `progress-*.md` は、存在する場合に追加の文脈を提供します。実行が終了したことを確認してから、失敗した最小のコマンドだけを再実行してください。[永続ワークフロー](./glossary.md#persistent-workflow)は完了するか `workflow done` と指示するまでアクティブです。状態ファイルからの復旧については、[ワークフロー](../core-concepts/workflows.md#persistent-mode-mechanics)を参照してください。
 

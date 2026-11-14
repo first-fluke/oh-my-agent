@@ -8,7 +8,7 @@ description: 协调跨前端、后端、数据库、移动端和 QA 的多个领
 
 ## 何时使用多智能体协调 {#when-to-use-multi-agent-coordination}
 
-你的功能跨越多个领域：后端 API + 前端 UI + 数据库 schema + 移动端客户端 + QA 审查。单个智能体无法处理全部范围，你需要各领域并行推进且互不干扰对方的文件。
+功能跨越多个领域时使用多智能体协调，例如后端 API、前端 UI、数据库 schema、移动端客户端或 QA 审查，并且这些领域可以并行推进，又不修改同一批文件。
 
 多智能体协调适用于以下场景：
 
@@ -23,7 +23,7 @@ description: 协调跨前端、后端、数据库、移动端和 QA 的多个领
 
 ## 完整流程：/plan 到 /review {#the-full-sequence-plan-to-review}
 
-推荐的多智能体工作流遵循严格的四步流水线。
+推荐的多智能体工作流有四个步骤。
 
 ```mermaid
 flowchart LR
@@ -50,7 +50,7 @@ flowchart LR
 3. **定义 API 契约**：设计端点契约（方法、路径、请求/响应 schema、认证和错误响应），保存到 `.agents/results/api-contracts/`（运行产物）；提交时可将持久规范提升到 `docs/plans/contracts/`。
 4. **分解为任务**：将项目分解为可执行任务，每个任务包含分配的智能体、标题、验收标准、优先级层（层 1 最先运行）和依赖关系。
 5. **与用户审查计划**：展示完整计划供确认。没有用户明确批准，工作流不会继续。
-6. **保存计划**：将批准的计划写入 `.agents/results/plan-{sessionId}.json`，并在内存中记录摘要。
+6. **保存计划**：将批准的计划写入 `.agents/results/plan-{sessionId}.json`，并在记忆中记录摘要。
 
 输出的 `.agents/results/plan-{sessionId}.json` 是 `/work` 和 `/orchestrate` 的输入。
 
@@ -76,7 +76,7 @@ flowchart LR
 2. 运行 PM 智能体进行任务分解（创建 `plan-{sessionId}.json`）。
 3. 向用户展示计划供确认。**确认前阻塞。**
 4. 按优先级层启动智能体（先层 1、再层 2，依此类推），同一层的任务并行运行。
-5. 通过内存文件监控智能体进度。
+5. 通过记忆文件监控智能体进度。
 6. 对所有交付物运行 QA 智能体审查（OWASP Top 10、性能、无障碍、代码质量）。
 7. 如果 QA 发现 CRITICAL 或 HIGH 问题，带着 QA 发现重新启动负责的智能体。每个问题最多重复 2 次。如果同一问题持续存在，激活**探索循环**：生成 2 到 3 个替代方案，在独立工作区使用不同假设提示词启动同类型智能体，QA 对每个评分，采用最佳结果。
 
@@ -88,7 +88,7 @@ flowchart LR
 
 1. 加载 `.agents/results/plan-{sessionId}.json`；没有可用计划时，通过 `/plan` 内联创建计划。
 2. 初始化会话，ID 格式为 `session-YYYYMMDD-HHMMSS`。
-3. 为每个任务选择所需的技能参考资料，并在内存目录中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。所选参考资料作为协调者备注记录在其中，启动器不强制执行。
+3. 为每个任务选择所需的技能参考资料，并在记忆目录中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`。所选参考资料作为协调者备注记录在其中，启动器不强制执行。
 4. 按优先级层启动智能体，每个智能体获得任务描述、API 契约、上下文及所选参考资料。
 5. 通过宿主完成通知监控进度，或采用有界退避轮询发生变更的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件。
 6. 验证每个完成的智能体：先做机械自检，然后对 backend、frontend、mobile、qa、debug 和 pm 智能体运行 `verify.sh`（其他类型记录为 `SKIP`），再进行 QA 交叉审查。PASS（退出码 0）继续；FAIL（退出码 1）在共享恢复预算（默认每个任务 3 次尝试，含首次尝试）内携带错误上下文重新启动。重试与探索假设共享同一预算；耗尽后任务会报告为 `partial` 或 `failed`。
@@ -158,7 +158,7 @@ session-YYYYMMDD-HHMMSS
 
 会话 ID 用于：
 
-- 命名内存文件（`orchestrator-session-{sessionId}.md`、`task-board-{sessionId}.md`）
+- 命名记忆文件（`orchestrator-session-{sessionId}.md`、`task-board-{sessionId}.md`）
 - 通过操作系统临时目录（macOS 上为 `$TMPDIR`，Linux 上通常为 `/tmp`，Windows 上为 `%TEMP%`）中的 PID 文件跟踪智能体进程：`subagent-{session-id}-{agent-id}.pid`
 - 关联同一目录中的日志文件：`subagent-{session-id}-{agent-id}.log`
 - 在 `.agents/results/parallel-{timestamp}/` 中分组结果
@@ -375,7 +375,7 @@ QA 智能体的对齐审查（ultrawork 的步骤 6、work 的步骤 6）系统�
 - QA 审查报告零 CRITICAL 和零 HIGH 发现。
 - 跨领域 API 契约对齐已确认。
 - 构建成功且所有测试通过。
-- 最终报告已写入内存并呈现给用户。
+- 最终报告已写入记忆并呈现给用户。
 - 用户给出最终批准（在 `/work` 和 ultrawork 的 SHIP_GATE 中）。
 
 ---

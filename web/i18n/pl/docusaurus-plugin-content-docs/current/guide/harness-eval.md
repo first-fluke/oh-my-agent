@@ -7,7 +7,7 @@ description: Oceniaj kompletną nakładkę harnessu OMA za pomocą sparowanych, 
 # Ewaluacja harnessu
 
 :::tip Jak to się łączy
-[Ewaluacja umiejętności](./skill-eval.md) mierzy, czy jeden `SKILL.md` pomaga, a [optymalizacja umiejętności](./skill-opt.md) edytuje jego treść pod kontrolą bramek held-out. Ewaluacja harnessu (ta strona) porównuje całą nakładkę `.agents/` na zadaniach repozytorium. [Przypadki regresji z incydentów](./harness-incidents.md) zamieniają zaobserwowane porażki w przypadki ewaluacyjne i fixture’y umiejętności. [Ewolucja harnessu projektu](./harness-evolution.md) uruchamia przechwytywanie incydentów i optymalizację umiejętności jako cykl z budżetem, a [zaplanowani agenci](./scheduled-agents.md) to harmonogram systemu operacyjnego, który go wyzwala.
+[Ewaluacja umiejętności](./skill-eval.md) mierzy, czy jeden `SKILL.md` pomaga, a [optymalizacja umiejętności](./skill-opt.md) edytuje jego treść pod kontrolą bramek held-out. Ewaluacja harnessu porównuje całą nakładkę `.agents/` na zadaniach repozytorium. [Przypadki regresji z incydentów](./harness-incidents.md) zamieniają zaobserwowane porażki w przypadki ewaluacyjne i fixture’y umiejętności. [Ewolucja harnessu projektu](./harness-evolution.md) uruchamia przechwytywanie incydentów i optymalizację umiejętności jako cykl z budżetem, a [zaplanowani agenci](./scheduled-agents.md) to harmonogram systemu operacyjnego, który go wyzwala.
 :::
 
 `oma harness eval` mierzy, czy kandydat na harness OMA poprawia działanie ustalonego agenta bez zmiany jego modelu. Polecenie adaptuje wzorzec ewaluacji w czasie testu z pracy [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): pozostaw model docelowy bez zmian, zmień harness i porównaj wyniki dla tych samych zadań.
@@ -41,7 +41,7 @@ Uruchomienie live ocenia każde zadanie jako sparowany eksperyment:
 
 Rzeczywisty projekt nigdy nie jest katalogiem roboczym wariantu. OMA przechwytuje surowy wynik i końcowe artefakty zadania przed wykonaniem kontroli i usunięciem tymczasowych workspace’ów. Własny sandbox procesu wybranego dostawcy pozostaje źródłem prawdy dla dostępu poza katalogiem roboczym.
 
-Diagram pokazuje, jak sparowane warianty prowadzą do decyzji. Akcje offline wchodzą ponownie na etapie parowania, korzystając z zapisanego rekordu.
+Akcje offline ponownie używają zapisanego rekordu i wracają do ewaluacji na etapie parowania.
 
 ```mermaid
 flowchart TD
@@ -354,7 +354,11 @@ Wszystkie zdarzenia jednej ewaluacji mają wspólny `causalityKey`. Gdy zdarzeni
 Każde uruchomienie wariantu zapisuje też w rekordzie `diagnostics` i `trace`:
 
 - `diagnostics`: kod wyjścia, sygnał, flaga przekroczenia limitu czasu i ostatnie 8 KiB stderr wraz ze `stderrStatus` (`captured`, `truncated` albo `unavailable`).
-- `trace`: to, co harness mógł zaobserwować. `output` ma wartość `complete`, `partial` (nieudany proces mimo to wytworzył stdout) albo `unavailable`; `artifacts` mówi, czy końcowa migawka jest kompletna; `changedPaths` wymienia pliki, które wariant dodał, zmodyfikował lub usunął względem przypiętego początkowego workspace’u (maksymalnie 200, z `changedPathsTruncated`); `toolCalls` zawsze ma wartość `unsupported`, ponieważ CLI dostawców nie udostępniają harnessowi obserwacji poszczególnych narzędzi.
+- `trace`: to, co harness mógł zaobserwować. `output` ma wartość `complete`, `partial` (nieudany proces mimo to wytworzył stdout) albo `unavailable`; `artifacts` mówi, czy końcowa migawka jest kompletna; `changedPaths` wymienia pliki, które wariant dodał, zmodyfikował lub usunął względem przypiętego początkowego workspace’u (maksymalnie 200, z `changedPathsTruncated`).
+- `trace.toolCalls`: `captured`, `partial`, `missing` albo `unsupported`. Uruchomienia Claude i Codex mogą wczytać świeży natywny transkrypt powiązany z sesją wariantu i tymczasowym workspace’em. Brakujące logi pozostają `missing`; pozostali dostawcy pozostają `unsupported`.
+- `trace.toolEvidence`: gdy jest dostępne, identyfikatory wywołań narzędzi sesji głównej, nazwy, czasy, flagi błędów oraz skróty SHA-256 i liczby bajtów znormalizowanego tekstu żądania i odpowiedzi. Surowe argumenty i wyniki narzędzi nie są kopiowane do rekordu ewaluacji. Przechwycenie jest ograniczone do 200 wywołań i natywnego transkryptu 16 MiB; znormalizowane szczegóły są ograniczone do 20 000 znaków. Obserwacje przerwane, niedopasowane albo obcięte są oznaczane jako częściowe, a obcięte szczegóły są identyfikowane obok swoich skrótów.
+
+Skróty narzędzi pomagają powiązać niepowodzenia z lokalnymi logami natywnymi. Nie potrafią odtworzyć odpowiedzi narzędzi ani stanu zewnętrznego i nie przechwytują końcowego żądania API dostawcy. Natywne transkrypty subagentów są poza zakresem tego przechwycenia. Istniejące rekordy bez obserwacji narzędzi pozostają czytelne, a odtwarzanie fixture’ów zachowuje własne wymagania dotyczące dowodów.
 
 Nieudany wariant zachowuje więc swój częściowy wynik, końcówkę stderr, status wyjścia i zmiany plików, dzięki czemu ostatni błąd można prześledzić do tego, co wariant zmienił. Brak obserwacji jest zapisywany jako stan; nigdy nie odczytuje się go jako czystego uruchomienia.
 

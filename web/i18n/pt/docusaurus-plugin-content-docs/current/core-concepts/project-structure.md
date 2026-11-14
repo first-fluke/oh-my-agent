@@ -322,7 +322,7 @@ Gerado pelo workflow `/plan`. Contém a decomposição estruturada da tarefa, co
 
 Arquivos de estado de workflows persistentes. Esses arquivos JSON existem somente enquanto um workflow persistente está em execução. Deletá-los (ou dizer “workflow done”) desativa o workflow.
 
-O subdiretório `state/memories/` é o armazenamento canônico do estado de coordenação: estado da sessão do orquestrador, quadro de tarefas, progresso, arquivos de resultado, métricas de sessão e telemetria de custo. É o caminho observado pelos dashboards e resolvido primeiro pela CLI; projetos criados antes da mudança usam o caminho legado `.serena/memories/`. Consulte [.agents/state/memories/: runtime state](#agentsstatememories-runtime-state) abaixo.
+O subdiretório `state/memories/` é o armazenamento canônico do estado de coordenação: estado da sessão do orquestrador, quadro de tarefas, progresso, arquivos de resultado, métricas de sessão e telemetria de custo. É o caminho observado pelos dashboards e resolvido primeiro pela CLI; projetos criados antes da mudança usam o caminho legado `.serena/memories/`. Consulte [.agents/state/memories/: estado em tempo de execução](#agentsstatememories-runtime-state) abaixo.
 
 ### results/
 
@@ -367,7 +367,7 @@ A entrada `statusLine` continua usando um caminho direto de `bun` (caminho de ba
 
 O diretório `hooks/` de um vendor contém **somente os arquivos que algo executa ou lê nesse diretório em runtime**. A cadeia de handlers (detecção de palavras-chave, modo persistente, injeção de skills e outros) é executada em processo dentro do binário `oma` por meio de `oma hook run`; os arquivos de handler `.ts` são agrupados na CLI durante o build e **NÃO** são materializados nos diretórios dos vendors.
 
-**`oma-hook.sh`**: script wrapper gerado por `oma link`/`oma install`/`oma update`. Cada evento de hook do vendor passa por esse arquivo. A ordem de resolução em runtime é: `$OMA_BIN` (override explícito) → `command -v oma` (PATH) → diretórios de instalação conhecidos, como `$HOME/.bun/bin` e `$HOME/.local/share/mise/shims` (agentes iniciados pela GUI herdam um PATH mínimo) → `exit 0` (fail-open, nunca bloqueia o agente). Nada específico da máquina é gravado no script, então o arquivo é idêntico byte a byte para cada desenvolvedor e pode ser versionado com segurança. O script repassa `"$@"` literalmente, para que os argumentos `--vendor`, `--event` e `--matcher` cheguem a `oma hook run` sem alterações. Ele inclui o preâmbulo de autoduplicação que suprime disparos duplos quando uma instalação de projeto e uma global registram o mesmo evento.
+**`oma-hook.sh`**: script wrapper gerado por `oma link`/`oma install`/`oma update`. Cada evento de hook do vendor passa por esse arquivo. A ordem de resolução em runtime é: `$OMA_BIN` (override explícito) → `command -v oma` (PATH) → diretórios de instalação conhecidos, como `$HOME/.bun/bin` e `$HOME/.local/share/mise/shims` (agentes iniciados pela GUI herdam um PATH mínimo) → `exit 0` (fail-open, nunca bloqueia o agente). Nada específico da máquina é gravado no script, então o arquivo é idêntico byte a byte para cada desenvolvedor e pode ser versionado com segurança. O script repassa `"$@"` literalmente, para que os argumentos `--vendor`, `--event` e `--matcher` cheguem a `oma hook run` sem alterações. Ele inclui o preâmbulo de deduplicação que suprime disparos duplos quando uma instalação de projeto e uma global registram o mesmo evento.
 
 **`hud.ts`**: renderiza o indicador `[OMA]` na barra de status, mostrando o nome do modelo, o uso de contexto (codificado por cor: verde/amarelo/vermelho) e o estado do workflow ativo. É registrado diretamente em `statusLine` (não roteado por `oma hook run`) para preservar a latência de renderização do caminho rápido. É materializado apenas para vendors cuja variante registra `statusLine` ou um evento exclusivo do HUD (por exemplo, claude, antigravity e qwen). O arquivo infere o dialeto do vendor a partir do próprio caminho instalado, por isso a cópia por vendor é necessária para o funcionamento.
 
@@ -484,17 +484,17 @@ Definições de subagentes formatadas para a ferramenta Agent do Claude Code, ge
 | Arquivo | Proprietário | Finalidade |
 |---------|-------------|-----------|
 | `orchestrator-session-{sessionId}.md` | Orquestrador | Metadados da sessão: ID, status, hora de início e fase atual |
-| `task-board-{sessionId}.md` | Orquestrador | Atribuições de tarefas: agente, tarefa, prioridade e dependências |
-| `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Essa execução | Atualizações passo a passo: arquivos lidos/modificados e status atual |
-| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Essa execução | Saída passo a passo: status atual, resumo, arquivos alterados e critérios de aceitação |
+| `task-board-{sessionId}.md` | Orquestrador | Atribuições de tarefas: agente, tarefa, prioridade, status e dependências |
+| `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Essa execução | Atualizações turno a turno: ações realizadas, arquivos lidos/modificados e status atual |
+| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Essa execução | Saída final: status de conclusão, resumo, arquivos alterados e critérios de aceitação |
 | `session-metrics.md` | Orquestrador | Correções relevantes e evidências de experimentos |
 | `experiment-ledger-{sessionId}.md` | Orquestrador/QA | Linhas de evidência de experimentos reais |
 | `lessons-{sessionId}.md` | Orquestrador | Lições respaldadas por evidências de experimentos (condicional) |
 | `session-work.md` | Workflow Work | Estado específico da sessão do workflow Work |
-| `session-ultrawork.md` | Workflow Ultrawork | Estado específico da sessão do workflow Ultrawork |
+| `session-ultrawork.md` | Workflow Ultrawork | Acompanhamento de fases específico do Ultrawork |
 | `session-ralph-{sessionId}.md` | Workflow Ralph | Critérios, registros de iteração e resultados do juiz de uma execução do Ralph |
 | `session-cost-{sessionId}.md` | Sistema | Telemetria de custo por sessão |
-| `archive/metrics-{date}.md` | Sistema | Métricas arquivadas (retenção de 30 dias) |
+| `archive/metrics-{date}.md` | Sistema | Métricas de sessão arquivadas (retenção de 30 dias) |
 
 Os caminhos dos arquivos de memória e os nomes das ferramentas são configuráveis em `.agents/mcp.json` por meio de `memoryConfig`.
 

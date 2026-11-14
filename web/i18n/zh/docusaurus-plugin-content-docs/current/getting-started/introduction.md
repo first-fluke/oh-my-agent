@@ -5,7 +5,7 @@ description: 全面介绍 oh-my-agent。这个多智能体编排框架把 AI 编
 
 # 简介
 
-oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架，可将任务路由到 33 个技能包和 13 个规范调度角色。12 个已纳入版本控制的子智能体定义文件提供可复用的实现、审查、规划、调试、文档、研究和基础设施角色。`research-explorer.md` 映射到规范的 `explore` 角色；`orchestrator` 是运行时协调角色，没有单独的定义文件。
+oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架。它不把所有工作都交给同一个 AI 助手，而是把工作路由到 33 个技能包和 13 个规范调度角色。12 个已纳入版本控制的子智能体定义文件提供可复用的实现、审查、规划、调试、文档、研究和基础设施角色。`research-explorer.md` 映射到规范的 `explore` 角色；`orchestrator` 是运行时协调角色，没有单独的定义文件。
 
 只有在主动调用机械检查，或选择包含这些检查的工作流时，OMA 才会运行它们。`oma verify agent <agent-type>` 会运行选定智能体类型的检查；`/ralph` 会加入有产物支撑的验证和[judge](./glossary.md#judge) 循环；启用的供应商 Stop 钩子（即[停止关卡](./glossary.md#stop-gate)）可以在配置的检查运行期间保持工作流打开。仅加载技能并不代表已通过验收，普通提示也不会自动运行每个工作流关卡。请依据工作流的验收标准和生成的文件判断任务是否完成。
 
@@ -13,7 +13,7 @@ oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架，可将�
 
 从[选择设置](./choose-setup.md)开始：在当前智能体里为一项任务加载一个技能，选择带钩子和工作流的运行时技能预设，或安装 Claude Code 插件。临时加载技能会提供说明和支持文件；CLI、项目规则和外部服务依赖仍然是明确的。运行时安装会创建 [SSOT](./glossary.md#ssot)和供应商集成。
 
-第一次任务及其实际检查见[快速开始](./quick-start.md)。`oma doctor` 检查运行时安装；[重要默认值](./important-defaults.md)说明它的提供方和配置。需要协调且所引用的技能已经安装时，再转到 `/work` 或 `/orchestrate`。
+第一次任务及其实际检查见[快速开始](./quick-start.md)。`oma doctor` 检查运行时安装；[重要默认值](./important-defaults.md)说明其中的提供商和配置。需要协调且所引用的技能已经安装时，再转到 `/work` 或 `/orchestrate`。
 
 ---
 
@@ -23,9 +23,9 @@ oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架，可将�
 
 - **上下文稀释**：加载所有领域的知识会浪费上下文窗口
 - **职责不清**：跨领域任务没有为各部分划定明确边界
-- **手动协调**：涉及多个领域的复杂功能需要由主机或用户决定交接方式
+- **手动协调**：涉及多个领域的复杂功能需要由宿主或用户决定交接方式
 
-oh-my-agent 通过专业化解决这些问题：
+OMA 把领域分配给技能，并把任务工作路由给智能体：
 
 1. **每个技能都有主要领域。** 前端技能熟悉 React/Next.js、shadcn/ui、TailwindCSS v4 和 FSD-lite 架构。后端技能熟悉 Repository-Service-Router 模式、参数化查询和 JWT 身份验证。领域在边界处可能重叠，因此应根据任务验收标准判断何时需要第二个技能或协调工作流。
 
@@ -51,8 +51,8 @@ oh-my-agent 通过专业化解决这些问题：
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-brainstorm** | 设计优先的构思 | 探索用户意图，提出 2 至 3 种并分析取舍，在编写代码前生成设计文档。`/brainstorm` 工作流包含 7 个步骤：上下文、问题、方案、设计、盲审、文档（`docs/decisions/`）、过渡到 `/plan`。 |
-| **oma-architecture** | 系统架构专家 | 模块、服务和职责边界，取舍分析，利益相关者综合。方法包括诊断路由、双方案设计比较、ATAM 风格分析、CBAM 风格优先级排序和 ADR 风格决策记录。默认关注成本。 |
+| **oma-brainstorm** | 设计优先的构思 | 探索用户意图，提出 2 至 3 种方案并分析取舍，在编写代码前生成设计文档。`/brainstorm` 工作流包含 7 个步骤：上下文、问题、方案、设计、盲审、文档（`docs/decisions/`）、过渡到 `/plan`。 |
+| **oma-architecture** | 系统架构专家 | 模块、服务和职责边界，取舍分析，利益相关者综合。方法包括诊断路由、双方案设计比较、ATAM 风格的风险分析、CBAM 风格的优先级排序和 ADR 风格的决策记录。默认关注成本。 |
 | **oma-pm** | 产品经理 | 按优先级和依赖关系分解需求。定义 API 契约。输出 `.agents/results/plan-{sessionId}.json`，作为交给编排器的交接物；任务板由编排器创建并负责。支持 ISO 21500 概念、ISO 31000 风险框架和 ISO 38500 治理。 |
 
 ### 实现 {#implementation}
@@ -61,7 +61,7 @@ oh-my-agent 通过专业化解决这些问题：
 |-------|------|----------------------|
 | **oma-frontend** | UI/UX 专家 | React、Next.js、TypeScript、TailwindCSS v4、shadcn/ui、FSD-lite 架构。库：luxon（日期）、ahooks 或 @mantine/hooks（钩子）、es-toolkit（工具）、Jotai/Zustand（客户端状态）、通过 orval 生成的钩子使用 TanStack Query（服务端状态）、@tanstack/react-form + Zod（表单）、better-auth（身份验证）、nuqs（URL 状态）。资源：`execution-protocol.md`、`tech-stack.md`、`tailwind-rules.md`、`snippets.md`、`angular-rules.md`、`error-playbook.md`、`checklist.md`。 |
 | **oma-backend** | API 与服务器专家 | Clean Architecture（Router-Service-Repository-Models）。与框架无关；根据项目清单识别 Python/Node.js/Rust/Go/Java/Elixir/Ruby/.NET。身份验证使用 JWT + Argon2id。随附预设：Python（Litestar，通过 Advanced Alchemy 使用 SQLAlchemy 2（异步）、msgspec 模型、内置 JWT 身份验证）、Node.js（NestJS + Prisma，用 Vitest 测试）和 Rust（Axum + SQLx）；用早期 FastAPI 预设安装的项目继续使用 FastAPI。资源：`execution-protocol.md`、`orm-reference.md`、`checklist.md`、`error-playbook.md`，以及技术栈参考资料（存在 `stack/` 时使用它，否则使用匹配的 `variants/<language>/`）。支持 `/stack-set` 生成特定语言的 `stack/` 参考资料。 |
-| **oma-mobile** | 跨平台移动端 | Flutter、Dart、Riverpod/Bloc 状态管理、带拦截器的 Dio API 调用、GoRouter 导航。整洁架构：domain-data-presentation。Android 使用 Material Design 3，iOS 使用 HIG。目标 60fps。也支持 React Native、原生 Swift iOS（iOS 17+ 上的 SwiftUI + `@Observable`、Apple `swift-openapi-generator` API 客户端、`App/Core/Features/Shared` 项目布局）和原生 Kotlin Android（Jetpack Compose、Hilt、基于 Ktor 的生成式 `*Api` 客户端）。资源：`execution-protocol.md`、`tech-stack.md`、`checklist.md`、`error-playbook.md`；各平台的 `stack.yaml`、`tech-stack.md` 和 `snippets.md`（屏幕、状态、数据层和 API 模式）位于 `variants/<platform>/`。`/stack-set` 已生成 `stack/` 时技能读取它，否则读取匹配的变体。 |
+| **oma-mobile** | 跨平台移动端 | Flutter、Dart、Riverpod/Bloc 状态管理、带拦截器的 Dio API 调用、GoRouter 导航。整洁架构：domain-data-presentation。Android 使用 Material Design 3，iOS 使用 HIG。目标 60fps。也支持 React Native、原生 Swift iOS（iOS 17+ 上的 SwiftUI + `@Observable`、Apple `swift-openapi-generator` API 客户端、`App/Core/Features/Shared` 项目布局）和原生 Kotlin Android（Jetpack Compose、Hilt、基于 Ktor 生成的 `*Api` 客户端）。资源：`execution-protocol.md`、`tech-stack.md`、`checklist.md`、`error-playbook.md`；各平台的 `stack.yaml`、`tech-stack.md` 和 `snippets.md`（屏幕、状态、数据层和 API 模式）位于 `variants/<platform>/`。`/stack-set` 已生成 `stack/` 时技能读取它，否则读取匹配的变体。 |
 | **oma-db** | 数据库架构 | SQL、NoSQL 和向量数据库建模。模式设计（默认 3NF）、规范化、索引、事务、容量规划和备份策略。支持考虑 ISO 27001/27002/22301 的设计。资源：`execution-protocol.md`、`document-templates.md`、`anti-patterns.md`、`vector-db.md`、`migration-playbook.md`、`query-tuning.md`、`iso-controls.md`、`checklist.md`、`error-playbook.md`、`examples.md`。 |
 
 ### 设计 {#design}
@@ -90,7 +90,7 @@ oh-my-agent 通过专业化解决这些问题：
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-translation** | 上下文感知翻译 | 翻译方法分四步：阅读含义与受保护语法、选择语体、用目标语言重构、在适当位置保留作者风格。每种目标语言的配置（`resources/lang/{code}.md`）记录语体和排版规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`style-skills.md`、`lang/{ko,ja,zh,en}.md`。 |
+| **oma-translation** | 上下文感知翻译 | 翻译方法分四步：阅读含义与受保护语法、选择语体、用目标语言重构、在适当位置保留作者风格。每种目标语言的配置档（`resources/lang/{code}.md`）记录语体和排版规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`style-skills.md`、`lang/{ko,ja,zh,en}.md`。 |
 | **oma-orchestration** | 自动化多智能体协调器 | 并行启动 CLI 子智能体，通过持久的会话、任务板、进度和结果文件进行协调，并监控验证循环。默认值：MAX_PARALLEL 为 3，MAX_RECOVERY_ATTEMPTS 为 3（每个任务的重试和探索假设总数，包括首次尝试）；进度轮询使用有界退避，且仅在没有完成通知时进行。为每个任务选择技能参考资料，并将其记录为协调者备注。包含智能体间审查循环和可选的会话证据。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
 | **oma-scm** | 软件配置管理（SCM）与 Git | 处理分支策略、合并/变基/冲突工作流、工作区、基线和发布状态跟踪。还指导使用安全暂存的 Conventional Commit 消息；启用时，共同作者尾注来自有效的 `scm.co_author` 配置。 |
 | **oma-coordination** | 共享协调规则 | 多智能体工作的协调规则：计划复用、契约对齐、工作区归属和 QA 交接。由 `/work`、`/orchestrate` 和 `/ultrawork` 工作流加载，也可用于通过 `oma agent spawn` 进行手动分步协调：复用或创建计划，在独立工作区并行启动同优先级任务，监控按运行划分的进度和结果文件，在前端或移动端工作前对齐 API 与数据契约，最后进行 QA 审查。自动化执行由 `oma-orchestration` 负责。 |

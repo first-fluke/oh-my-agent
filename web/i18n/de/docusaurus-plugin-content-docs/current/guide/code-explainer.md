@@ -6,7 +6,7 @@ description: Vollständige Anleitung für den /explain-Workflow und den Skill om
 
 # Code-Erklärer
 
-`/explain` verwandelt eine Codeänderung in ein ausführliches, eigenständiges HTML-Dokument, das erklärt, was sich geändert hat und warum: ein tiefgehender, überspringbarer Hintergrund für Einsteiger, ein Intuitionsabschnitt mit Beispieldaten, ein nach Verständnis geordneter Rundgang durch den Code und ein Quiz mit fünf Fragen. Die Ausgabe ist eine einzelne offline-fähige `.html`-Datei mit Diagrammen, Hinweisen und einem barrierefreien Quiz. Sie wird unter `.agents/results/explain/` gespeichert und vor der Übergabe anhand einer deterministischen Checkliste geprüft.
+`/explain` verwandelt eine Codeänderung in ein eigenständiges HTML-Dokument, das erklärt, was sich geändert hat und warum. Die Seite enthält einen überspringbaren Hintergrund für Einsteiger, einen Abschnitt zur Kernintuition mit vereinfachten Beispieldaten, einen nach Verständnis geordneten Code-Rundgang und standardmäßig ein barrierefreies Quiz mit fünf Fragen. Die offline-fähige `.html`-Datei enthält Diagramme und Hinweise, wird unter `.agents/results/explain/` gespeichert und vor der Auslieferung anhand einer deterministischen Checkliste geprüft.
 
 `/explain` ist ausschließlich ein Slash-Befehl und wird nicht automatisch aus natürlicher Sprache aktiviert. „explain“ gehört zum Alltagswortschatz und ist deshalb wie `/convert` absichtlich von der Keyword-Erkennung ausgeschlossen. Verwenden Sie ausdrücklich `/explain` oder bitten Sie einen anderen Skill, ein „Explainer-Dokument“ als delegierte Ausgabe zu erzeugen.
 
@@ -97,7 +97,7 @@ Fordern Sie `reviewer` an, indem Sie wie bei `/explain feature-branch for review
 
 ## Inhalt des Dokuments
 
-Dieser Abschnitt beschreibt den Änderungsmodus. Ein Explainer im Änderungsmodus ist eine einzelne lange Scroll-Seite ohne Tabs oder mehrseitige Navigation. Nach dem Inhaltsverzeichnis folgen vier feste Abschnitte in dieser Reihenfolge:
+Im Änderungsmodus ist der Explainer eine einzelne lange Scroll-Seite (ohne Tabs oder mehrseitige Navigation) mit einem Inhaltsverzeichnis und danach vier festen Abschnitten in dieser Reihenfolge:
 
 1. **Hintergrund** — Tier A (tiefer System-/Architekturhintergrund mit dem Hinweis „überspringbar, wenn Sie das System bereits kennen“) und Tier B (enger Kontext für diese konkrete Änderung)
 2. **Intuition** — der Kern der Änderung mit obligatorischen Beispielen aus vereinfachten Daten, verstärkt durch 2–3 wiederverwendete Diagrammfamilien (vereinfachtes UI-Mockup, System-/Datenflussdiagramm mit Beispieldaten, Vorher-/Nachher-Zustand), die ausschließlich als HTML/Inline-SVG und ohne ASCII-Art gerendert werden
@@ -154,7 +154,7 @@ Bei einem Treffer wird die Erzeugung sofort beendet. Nur die maskierten Fundstel
 
 Nach der Erzeugung führt der Workflow `oma explain validate <file>` und den Secret-Scan des fertigen HTML gegen die Ausgabedatei aus. Der Validator ist die maßgebliche Prüfung: keine externen Ressourcen-Ladeverweise, Einhaltung von `pre`/`pre-wrap` in Code-Containern, Vorhandensein des Quiz-Skripts und das Dateinamensformat `{YYYY-MM-DD}-{slug}.html` (Datum in der `timezone` aus oma-config, sonst in der Systemzeitzone). Die grep-Befehle im HTML-Vertrag des Skills sind ergänzende Stichproben, kein Ersatz. Bei einem Fehler korrigiert die Schleife bis zu **3 Iterationen** lang und validiert erneut; anschließend beendet sie sich und zeigt die verbleibenden Fehler an, statt stillschweigend auszuliefern.
 
-Dies ist eine Einschränkung der Version 1: Die Validierung ist dateibasiert und prüft nur das *Vorhandensein* des Quiz-Skripts, nicht dessen vollständige Verhaltenskorrektheit. Verwenden Sie für eine manuelle Prüfung einen Browser (oder den Chrome-DevTools-MCP), wenn Sie das Verhalten des Quiz sicher beurteilen müssen.
+Dies ist eine Einschränkung der Version 1: Die Validierung ist dateibasiert und prüft nur das *Vorhandensein* des Quiz-Skripts, nicht dessen vollständige Verhaltenskorrektheit. Verwenden Sie einen Browser (oder den chrome-devtools MCP), um das Quiz manuell durchzugehen, wenn Vertrauen in das Verhalten wichtig ist.
 
 Sie können ein vorhandenes Artefakt mit dem registrierten CLI-Befehl validieren:
 

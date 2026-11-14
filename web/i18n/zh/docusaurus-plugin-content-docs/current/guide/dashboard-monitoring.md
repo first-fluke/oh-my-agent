@@ -23,12 +23,12 @@ oh-my-agent 提供两个实时仪表盘，用于在多智能体工作流期间�
 oma dashboard terminal
 ```
 
-直接在终端中渲染方框绘制界面。内存文件变化时自动更新。按 `Ctrl+C` 退出。屏幕从上到下分为四个区域：
+直接在终端中渲染方框绘制界面。记忆文件变化时自动更新。按 `Ctrl+C` 退出。屏幕从上到下分为四个区域：
 
 | 区域 | 显示内容 | 来源 |
 |:-------|:------|:-------|
 | 页头 | `OMA Memory Dashboard` 和 `Session: <id> [<status>]` | `orchestrator-session.md`，否则为最新的 `session-*.md`；两者都不存在时显示 `N/A [UNKNOWN]` |
-| 智能体表格 | Agent、Status、Turn 和 Task（前 20 个字符）；为空时显示 `No agents detected yet` | `task-board.md`，否则为在内存文件中发现的智能体 |
+| 智能体表格 | Agent、Status、Turn 和 Task（前 20 个字符）；为空时显示 `No agents detected yet` | `task-board.md`，否则为在记忆文件中发现的智能体 |
 | Latest Activity | 最多五行 `[<name>] <message>`；为空时显示 `No activity yet` | 最近修改的五个 `.md` 文件中最后一行有意义的内容 |
 | 页脚 | `Updated: <time>  \|  Ctrl+C to exit` | 上次重绘的时间 |
 
@@ -187,9 +187,9 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 - 仪表盘正在监视错误的目录。
 
 **操作：**
-1. 验证内存目录：`ls -la .agents/state/memories/`
+1. 验证记忆目录：`ls -la .agents/state/memories/`
 2. 检查工作流是否仍在规划阶段（智能体尚未启动）。
-3. 确保仪表盘监视正确的项目目录：仪表盘从当前工作目录解析内存路径。请在项目根目录运行，或传入 `--project-root /path/to/project`。`oma dashboard web` 会以 `Watching: <path>` 打印所监视的路径。
+3. 确保仪表盘监视正确的项目目录：仪表盘从当前工作目录解析记忆路径。请在项目根目录运行，或传入 `--project-root /path/to/project`。`oma dashboard web` 会以 `Watching: <path>` 打印所监视的路径。
 4. 如果使用自定义路径：`MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard terminal`
 
 ### 信号 4：Web 仪表盘显示 "disconnected" {#signal-4-web-dashboard-shows-disconnected}
@@ -228,7 +228,7 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 1. 所有启动的智能体已达到终态（completed 或 failed-and-handled）。
 2. QA 审查循环已结束，没有阻塞问题。
 3. 会话状态反映最终结果。
-4. 结果已记录在内存中，供未来参考。
+4. 结果已记录在记忆中，供未来参考。
 
 ---
 
@@ -238,7 +238,7 @@ Web 仪表盘显示与终端仪表盘相同的信息，但使用带样式的深�
 
 - **文件监视：** 使用 [chokidar](https://github.com/paulmillr/chokidar)，配置 `awaitWriteFinish`（200ms 稳定阈值、50ms 轮询间隔），避免渲染部分写入的文件。
 - **渲染：** 每次文件变更事件时清除并重新绘制整个终端。使用 `picocolors` 输出 ANSI 颜色，使用 Unicode 方框绘制字符作为边框。
-- **内存目录：** 设置了 `MEMORIES_DIR` 时使用它；否则为 `<project>/.agents/state/memories`，其中 `<project>` 是 `--project-root <path>` 或当前目录。目录不存在时会创建空目录。
+- **记忆目录：** 设置了 `MEMORIES_DIR` 时使用它；否则为 `<project>/.agents/state/memories`，其中 `<project>` 是 `--project-root <path>` 或当前目录。目录不存在时会创建空目录。
 - **优雅关闭：** 捕获 `SIGINT` 和 `SIGTERM`，关闭 chokidar 监视器并干净退出。
 
 ### Web 仪表盘（oma dashboard web） {#web-dashboard-oma-dashboard-web}

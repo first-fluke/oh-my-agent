@@ -355,7 +355,7 @@ Quando o orquestrador escreve um prompt de subagente (`oma-orchestration/resourc
 - No dispatch nativo, passe os caminhos desses arquivos e da skill responsável se o runtime não os tiver fornecido.
 - Acrescente uma seção do error-playbook somente após uma falha observada, e `runtime/memory-protocol.md` somente quando o agente coordena ou retoma estado durável de tarefas.
 
-Essa composição direcionada evita carregar recursos desnecessários e maximiza o contexto disponível do subagente para o trabalho real.
+O prompt direcionado deixa de fora os recursos não relacionados e reserva mais contexto para a tarefa.
 
 ---
 

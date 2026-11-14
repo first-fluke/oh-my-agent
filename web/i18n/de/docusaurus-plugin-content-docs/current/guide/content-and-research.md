@@ -6,7 +6,7 @@ description: Den passenden oh-my-agent-Weg samt Voraussetzungen für PDF- und HW
 
 # Content- und Research-Workflows
 
-Wählen Sie den benötigten Artefakttyp und verwenden Sie den kleinsten Befehls- oder Skill-Einstiegspunkt, der ein prüfbares Ergebnis liefert.
+Wählen Sie nach dem benötigten Artefakt und verwenden Sie dann den kleinsten Befehls- oder Skill-Einstiegspunkt, der ein prüfbares Ergebnis liefert. Nutzen Sie die verlinkte Anleitung, wenn eine Fähigkeit eine eigene Seite hat.
 
 | Bedarf | Einstiegspunkt | Voraussetzungen | Erstes Ergebnis | Anleitung |
 |---|---|---|---|---|
@@ -149,6 +149,18 @@ oma slide export pptx --workspace "$DECK_DIR" --output-file "$DECK_DIR/out/deck.
 
 Verwenden Sie `--slide <file>` für eine Prüfung einer einzelnen Folie und `--report-file <path>` mit JSON-Ausgabe, wenn ein anderer Prozess die Befunde benötigt. `slide import pptx <file>` startet einen Import-Workflow; `slide asset fetch-video <url>` lädt ein Video-Asset; `slide style list|preview|get <slug>` untersucht Styles. Die PPTX-Ausgabe basiert auf Rasterbildern und bietet daher keine editierbaren Text- oder Shape-Ebenen. Validierung und Export benötigen Chrome/Puppeteer; setzen Sie `OMA_CHROME_PATH`, wenn die ausführbare Datei nicht gefunden wird. Wenn die Validierung nach drei automatischen Korrekturschleifen nicht konvergiert, bearbeiten Sie die betroffenen Fragmente anhand der gemeldeten Geometriebefunde.
 
+### Bearbeitbares PowerPoint (Route native-pptx)
+
+Wenn das Ergebnis eine bearbeitbare PowerPoint-Datei sein muss, wechselt `oma-slide` auf die Route `native-pptx`. Dieselbe Route füllt oder bearbeitet eine vorhandene PPTX unter Beibehaltung ihres Designs, macht aus einem PDF, DOCX, XLSX oder einer URL ein Deck, baut eine wiederverwendbare Marken-, Stil-, Layout- oder Deck-Vorlage und erzeugt vertonte PPTX- oder MP4-Ausgaben. Web-, animierte und Canva-Decks bleiben auf der HTML-Route oben.
+
+Die Route führt den Upstream-Skill [ppt-master](https://github.com/hugohe3/ppt-master) (MIT, von Hugo He) aus, ohne ihn zu verändern. `oma-slide` verwendet eine installierte Kopie aus dem Skill-Katalog der Laufzeit, wenn eine vorhanden ist; andernfalls lädt es den Skill für die Sitzung mit:
+
+```bash
+bunx skills use hugohe3/ppt-master@ppt-master
+```
+
+ppt-master schreibt SVG-Seiten und exportiert native DrawingML-Formen, Textfelder, Diagramme und Tabellen, sodass die PPTX im Ordner `exports/` des Projekts unter `.agents/results/slides/<session-id>/` landet. Seine Python-Skripte brauchen die Pakete aus `requirements.txt` des Skills; `oma-slide` fragt, bevor es sie in einer `uv`-virtuellen Umgebung installiert. Lehnen Sie ab, bietet es stattdessen die HTML-Route an. KI-Bilder auf dieser Route werden mit `oma-image` erzeugt, und die eigenen Gates und der Bestätigungsbildschirm von ppt-master entscheiden den Rest des Ablaufs.
+
 ## Agentengespräche zusammenfassen {#recap-agent-conversations}
 
 Verwenden Sie `/recap` (oder bitten Sie den Agenten um einen Recap) für evidenzbasierte Arbeitszusammenfassungen; der Befehl führt `oma recap` aus, um die Historie zu sammeln. Ein Kalenderdatum und ein gleitendes Fenster sind unterschiedliche Eingaben:
@@ -188,9 +200,9 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` gibt Prosa, Writing Notes und eine Claim-Evidence-Map zurück. `revise` gibt Original- und überarbeitete Blöcke mit konkreten Änderungen zurück. `review` gibt PASS/FAIL-Befunde zu Satzstruktur, Verben, Hedging, Spezifität, Anti-AI-Mustern, Absatzklarheit, Rhythmus und Claim-Evidence-Ausrichtung zurück. Der Skill liest für revise/review den bestehenden Entwurf vollständig, schwächt unbelegte Behauptungen ab oder entfernt sie und übergibt nicht englische Ausgaben nach dem englischen Durchgang an `oma-translation`.
 
-Verwenden Sie `oma scholar` zur Quellenentdeckung und Sidecar-Evidenz vor dem Entwurf. Fehlt ein Zitat oder eine Rubrik, markieren Sie die Behauptung als ausstehend oder fragen Sie nach der fehlenden Bedingung; füllen Sie die Lücke nicht mit einer erfundenen Quelle. Als fertiges Artefakt dient die Prosa mit Evidenzkarte oder Audit-Bericht; ein allgemeiner „polierter“ Absatz ohne nachvollziehbare Grundlage genügt nicht.
+Verwenden Sie `oma scholar` zur Quellenentdeckung und Sidecar-Evidenz vor dem Entwurf. Fehlt ein Zitat oder eine Rubrik, markieren Sie die Behauptung als ausstehend oder fragen Sie nach der fehlenden Bedingung; füllen Sie die Lücke nicht mit einer erfundenen Quelle. Geben Sie die Prosa mit ihrer Evidenzkarte oder dem Audit-Bericht zurück, damit Leser die Behauptungen nachvollziehen können.
 
-## Checkliste zur Fehlerbehebung
+## Checkliste zur Wiederherstellung
 
 | Symptom | Nächste Aktion |
 |---|---|

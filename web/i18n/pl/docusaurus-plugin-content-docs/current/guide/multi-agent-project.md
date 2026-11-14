@@ -8,7 +8,7 @@ description: Kompletny przewodnik koordynowania wielu agentów domenowych w obsz
 
 ## Kiedy używać koordynacji wieloagentowej
 
-Funkcja obejmuje wiele domen: backendowe API + frontendowy interfejs użytkownika + schemat bazy danych + klient mobilny + przegląd QA. Jeden agent nie może obsłużyć pełnego zakresu, a domeny muszą rozwijać się równolegle bez nadpisywania swoich plików.
+Używaj koordynacji wieloagentowej, gdy funkcja obejmuje wiele domen, na przykład backendowe API, interfejs frontendowy, schemat bazy danych, klienta mobilnego albo przegląd QA, a te domeny mogą rozwijać się równolegle bez zmieniania tych samych plików.
 
 Koordynacja wieloagentowa jest właściwym wyborem, gdy:
 
@@ -23,7 +23,7 @@ Jeśli zadanie w całości mieści się w jednej domenie, użyj bezpośrednio wy
 
 ## Pełna sekwencja: od /plan do /review
 
-Zalecany workflow wieloagentowy przebiega według ścisłego czteroetapowego potoku.
+Zalecany workflow wieloagentowy ma cztery kroki.
 
 ```mermaid
 flowchart LR
@@ -336,7 +336,7 @@ Traktowanie przeglądu QA jako opcjonalnego. Ustalenia CRITICAL i HIGH oznaczaj�
 
 ### 5. Ręczna koordynacja plików
 
-Ręczne scalanie wyników agentów zamiast przekazania integracji potokowi weryfikacji i QA. Potok sprawdza kontrakty, zakres zmian i ustalenia QA.
+Ręczne scalanie wyników agentów zamiast przekazania integracji potokowi weryfikacji i QA. Zautomatyzowany potok wychwytuje problemy, które umykają ręcznemu przeglądowi.
 
 ### 6. Nadmierna równoległość
 

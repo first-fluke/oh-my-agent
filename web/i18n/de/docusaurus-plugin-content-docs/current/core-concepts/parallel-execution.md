@@ -5,7 +5,7 @@ description: Anleitung zum parallelen Ausführen mehrerer OMA-Dispatch-Rollen mi
 
 # Parallele Ausführung
 
-oh-my-agent kann mehrere spezialisierte Agenten gleichzeitig ausführen. Während der Backend-Agent eine API implementiert, erstellt der Frontend-Agent die Benutzeroberfläche und der Mobile-Agent die App-Screens; der Orchestrator koordiniert sie über dauerhaften Laufzeitstatus und Ausführungsbelege (Receipts).
+oh-my-agent führt mehrere spezialisierte Agenten parallel aus. Zum Beispiel können Backend-, Frontend- und Mobile-Agenten an getrennten Teilen einer Anwendung arbeiten, während der Orchestrator sie über dauerhaften Laufzustand und Receipts koordiniert.
 
 ---
 
@@ -200,7 +200,7 @@ oma dashboard terminal
 
 Zeigt eine Live-Tabelle mit:
 - Sitzungs-ID und Gesamtstatus
-- Pro-Agent-Status (läuft, abgeschlossen, fehlgeschlagen)
+- Pro-Agent-Status (running, completed, failed)
 - Zugzähler
 - Neueste Aktivität aus Fortschrittsdateien
 - Verstrichene Zeit
@@ -238,7 +238,7 @@ Verwenden Sie 3 Terminals für optimale Sichtbarkeit:
 oma agent status <session-id> <agent-id>
 ```
 
-Gibt den aktuellen Status eines bestimmten Agenten zurück: laufend, abgeschlossen oder fehlgeschlagen, zusammen mit Zugzähler und letzter Aktivität.
+Gibt den aktuellen Status eines bestimmten Agenten zurück: running, completed oder failed, zusammen mit Zugzähler und letzter Aktivität.
 
 ---
 

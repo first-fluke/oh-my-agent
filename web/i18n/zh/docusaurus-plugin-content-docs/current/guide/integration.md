@@ -95,7 +95,7 @@ git config --global init.defaultBranch main
 
 ### 8. MCP 配置 {#8-mcp-configuration}
 
-没有单独的 MCP 提示。当 Serena 是代码智能提供方（默认）时，安装和更新会为选中的供应商写入 Serena MCP 条目。项目安装中的条目如下：
+没有单独的 MCP 提示。当 Serena 是代码智能提供商（默认）时，安装和更新会为选中的供应商写入 Serena MCP 条目。项目安装中的条目如下：
 
 ```json
 {
@@ -164,9 +164,9 @@ oma link
 
 在 Qwen Code 中，生成的 Markdown 定义位于 `.qwen/agents/`。通过 Agent 工具的 `subagent_type` 选择 OMA 角色，例如 `backend-engineer`。在 Qwen Code 中使用 `/agents manage` 查看可用的定义。原生智能体与 CLI 启动使用相同的[结果生命周期](./agent-results-and-resume.md)：`oma agent begin`、`oma agent verify` 和 `oma agent finish`。使用 `model_preset: free` 时，请使用 `oma agent spawn`，这样子进程才能获得网关配置。
 
-Qwen Code 与其他供应商使用相同的 `code-intelligence-primer`。与 Claude Code 一样，它在 `SessionStart` 和 `UserPromptSubmit` 上注册共享的 primer：指引每个会话注入一次，并在上下文压缩后再次注入。primer 遵循已配置的提供方（Serena 或 Gortex），包含延迟加载工具的指引，并在提供方不可用或超时时允许回退到原生搜索。Qwen 不会另外添加代码搜索拦截或提供方结果跟踪。
+Qwen Code 与其他供应商使用相同的 `code-intelligence-primer`。与 Claude Code 一样，它在 `SessionStart` 和 `UserPromptSubmit` 上注册共享的 primer：指引每个会话注入一次，并在上下文压缩后再次注入。primer 遵循已配置的提供商（Serena 或 Gortex），包含延迟加载工具的指引，并在提供商不可用或超时时允许回退到原生搜索。Qwen 不会另外添加代码搜索拦截或提供商结果跟踪。
 
-更新 CLI 后，运行 `oma link qwen` 重新生成钩子设置和包装脚本，然后启动新的 Qwen 会话。钩子输出测试验证的是集成契约，并不保证模型会选择哪个工具。
+更新 CLI 后，运行 `oma link qwen` 重新生成钩子设置和包装脚本，然后启动新的 Qwen 会话。Qwen Code 只有在你批准那份确切配置（`~/.qwen/hookApprovals.json`）之后才会运行项目钩子；`oma link` 会为它写入的钩子记录这份批准，因此首次交互会话和 `qwen -p` 都会运行这些钩子。它从不批准 oma 没有写入的钩子，也从不覆盖你在 Qwen 里做出的拒绝。钩子输出测试验证的是集成契约，并不保证模型会选择哪个工具。
 
 ### 步骤 3：配置用户偏好 {#step-3-configure-user-preferences}
 
@@ -182,7 +182,7 @@ EOF
 
 如果复制来的 `.agents/` 中还包含 `oma-config.cue`，其中设置的每个键都会覆盖此 YAML 文件中的同名键。请在 CUE 文件中编辑这些键，或参见[配置加载](./oma-config-semantics.md#precedence-table)。
 
-### 步骤 4：初始化内存目录 {#step-4-initialize-memory-directory}
+### 步骤 4：初始化记忆目录 {#step-4-initialize-memory-directory}
 
 ```bash
 oma memory init
@@ -310,7 +310,7 @@ your-project/
 
 ### 安装后 {#after-installation}
 
-1. **审查创建的内容。** 运行 `git status` 查看所有新文件。安装器只在 `.agents/`、`.claude/` 和可选的 `.github/` 中创建文件。
+1. **审查变更。** 运行 `git status`，检查 SSOT、供应商集成文件，以及任何文档迁移。被忽略的运行时产物还要看迁移摘要。
 2. **检查 `.gitignore`。** 在 git 仓库中，install/update/link 会自动把运行时条目追加到根目录 `.gitignore`（`.antigravitycli/`、`.agents/results/`、`.agents/state/`、`.agents/backup/`、`docs/plans/`），请确认这些条目已写入。多数团队会提交 `.agents/` 和 `.claude/` 来共享设置。唯一需要你自行判断的是 `.serena/`：Serena 通过内部 `.serena/.gitignore` 管理自己的缓存，你可以提交共享项目配置 `.serena/project.yml`，也可以完全忽略该目录：
 
 ```gitignore
@@ -372,11 +372,11 @@ oma dashboard web
 
 ### 1. 旧版迁移 {#1-legacy-migration}
 
-安装器检查旧的 `.agent/` 目录（单数形式），如果找到则迁移到 `.agents/`（复数形式）。这是为从早期版本升级的用户做的一次性迁移。
+安装器检查旧的 `.agent/` 目录（单数形式），如果找到则迁移到 `.agents/`（复数形式）。它还会执行[产物布局迁移](./artifact-layout.md#migrate-an-existing-project)，把决策文档和人类可读的结果报告收拢到一起。更新使用同一套迁移。对已经迁移过的项目再运行一次，项目保持不变。
 
 ### 2. 竞品检测 {#2-competitor-detection}
 
-安装器扫描竞争工具，提议移除以避免冲突。
+交互式安装会检测其他智能体工具，并询问是否卸载。默认保留它们，包括项目本地的 `.omc` 和 `.omx` 目录。移除需要明确确认；`--yes`、`OMA_YES` 和 CI 安装都会保留其他工具。`oma update` 不会提议卸载它们。
 
 ### 3. Tarball 下载 {#3-tarball-download}
 
@@ -387,7 +387,7 @@ oma dashboard web
 `installShared()` 将 `_shared/` 目录复制到 `.agents/skills/_shared/`。包括：
 
 - `core/`：技能路由、上下文加载、提示词结构、质量原则、供应商检测、API 契约。
-- `runtime/`：内存协议、每供应商的执行协议。
+- `runtime/`：记忆协议、每供应商的执行协议。
 - `conditional/`：仅在特定条件满足时加载的资源（质量评分、探索循环）。
 
 ### 5. 工作流安装 {#5-workflow-installation}

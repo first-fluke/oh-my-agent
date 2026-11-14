@@ -8,7 +8,7 @@ description: Vollständige Anleitung zur Koordination mehrerer Domänenagenten �
 
 ## Wann Multi-Agenten-Koordination einsetzen
 
-Das Feature umfasst mehrere Domänen: Backend-API, Frontend-UI, Datenbankschema, Mobile-Client und QA-Review. Agenten können die Arbeit parallel bearbeiten, wenn sie dabei keine Dateien des jeweils anderen ändern.
+Setzen Sie Multi-Agenten-Koordination ein, wenn ein Feature mehrere Domänen umfasst, etwa eine Backend-API, eine Frontend-UI, ein Datenbankschema, einen Mobile-Client oder ein QA-Review, und diese Domänen parallel vorankommen können, ohne dieselben Dateien zu ändern.
 
 Multi-Agenten-Koordination ist die richtige Wahl, wenn:
 
@@ -61,7 +61,7 @@ Es gibt zwei Ausführungspfade:
 | Aspekt | /work | /orchestrate |
 |:-------|:-----------|:-------------|
 | **Interaktion** | Interaktiv — Benutzer bestätigt bei jeder Stufe | Automatisiert — läuft bis zum Abschluss |
-| **PM-Planung** | Eingebaut (Schritt 2 führt PM-Agent aus) | Lädt einen vorhandenen Plan; wenn keiner verwendbar ist, wird inline einer erstellt |
+| **PM-Planung** | Eingebaut (Schritt 2 führt PM-Agent aus) | Lädt einen Plan, wenn einer vorhanden ist; erstellt einen inline, wenn keiner vorhanden ist |
 | **Benutzer-Checkpoint** | Nach Plan-Review (Schritt 3) | Der Inline-Plan durchläuft vor dem Fan-out weiterhin das Review-Gate |
 | **Persistenter Modus** | Ja — kann bis zum Abschluss nicht beendet werden | Ja — kann bis zum Abschluss nicht beendet werden |
 | **Am besten für** | Erstmalige Nutzung, komplexe Projekte mit Aufsichtsbedarf | Wiederholte Läufe, klar definierte Aufgaben |
@@ -146,7 +146,7 @@ Für große Scopes wird an den QA-Agent-Subagenten delegiert. Mit der `--fix`-Op
 
 ---
 
-## Sitzungs-ID-Strategie {#session-id-strategy}
+## Sitzungs-ID-Strategie
 
 Jede Orchestrierungssitzung erhält eine eindeutige Kennung im Format:
 
@@ -332,11 +332,11 @@ Backend- und Frontend-Agenten starten, ohne vorher Verträge zu definieren. Sie 
 
 ### 4. QA-Befunde ignorieren
 
-QA-Review als optional behandeln. CRITICAL- und HIGH-Befunde blockieren den Abschluss, bis sie behoben sind. Der Workflow wiederholt das Review, bis keine Blocker mehr vorliegen.
+QA-Review als optional behandeln. CRITICAL- und HIGH-Befunde stehen für echte Fehler, die in der Produktion auftreten. Der Workflow erzwingt das, indem er so lange wiederholt, bis keine Blocker mehr vorliegen.
 
 ### 5. Manuelle Datei-Koordination
 
-Agentenausgaben manuell zusammenzuführen, statt die Verifikations- und QA-Pipeline für die Integration zu verwenden. Die Pipeline führt die deklarierten Prüfungen und das QA-Review zusammen.
+Agentenausgaben manuell zusammenführen, statt die Verifikations- und QA-Pipeline die Integration übernehmen zu lassen. Die automatisierte Pipeline erkennt Probleme, die eine manuelle Prüfung übersieht.
 
 ### 6. Über-Parallelisierung
 
@@ -344,7 +344,7 @@ Aufgaben der Stufe 2 ausführen, bevor die Aufgaben der Stufe 1 abgeschlossen si
 
 ### 7. Verifikation überspringen
 
-`agent spawn` direkt verwenden, ohne danach den Ergebnisvertrag zu erfassen. Führen Sie die für die Aufgabe deklarierten Prüfungen aus und schließen Sie einen strukturierten Claim ab; siehe [Agentenergebnisse und Fortsetzen](./agent-results-and-resume.md). Der Verifikationsschritt erkennt anschließend fehlgeschlagene Prüfungen und Scope-Abweichungen, bevor Ergebnisse wiederverwendet werden.
+`agent spawn` direkt verwenden, ohne danach den Ergebnisvertrag zu erfassen. Führen Sie die für die Aufgabe festgeschriebenen Prüfungen aus und schließen Sie einen strukturierten Claim ab; siehe [Agentenergebnisse und Fortsetzen](./agent-results-and-resume.md). Der Verifikationsschritt erkennt anschließend fehlgeschlagene Prüfungen und Scope-Abweichungen, bevor Ergebnisse wiederverwendet werden.
 
 ---
 

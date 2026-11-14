@@ -6,7 +6,7 @@ description: Guia detalhado para tarefas de domínio único no oh-my-agent, cobr
 
 # Execução com Skill Única
 
-Uma única skill atende a uma tarefa focada em um domínio, executada por um agente. Esse fluxo evita a sobrecarga de orquestração e coordenação entre agentes. Um host ou workflow selecionado pode encaminhar um prompt em linguagem natural para a skill; o sistema de hooks adiciona dicas de skill a partir de palavras-chave, e o comportamento de roteamento depende do runtime selecionado.
+A execução com uma skill única atribui uma tarefa focada, em um domínio, a um agente. Ela evita a coordenação multiagente. Um host ou workflow selecionado pode encaminhar um prompt em linguagem natural para a skill; o sistema de hooks adiciona dicas de skill a partir de palavras-chave, e o roteamento depende do runtime selecionado.
 
 ## Caminho rápido
 
@@ -53,7 +53,7 @@ Antes de criar o prompt, responda a estas quatro perguntas:
 
 | Elemento | Pergunta | Por que isso importa |
 |----------|----------|----------------------|
-| **Goal** | Qual artefato específico deve ser criado ou alterado? | Evita ambiguidade (por exemplo, "adicionar um botão" em vez de "adicionar um formulário com validação") |
+| **Goal** | Qual artefato específico deve ser criado ou alterado? | Evita ambiguidade (por exemplo, "adicionar um botão" versus "adicionar um formulário com validação") |
 | **Context** | Qual stack, framework e convenções se aplicam? | O agente detecta isso nos arquivos do projeto, mas explicitar é melhor |
 | **Constraints** | Quais regras devem ser seguidas? (estilo, segurança, performance, compatibilidade) | Sem restrições, os agentes usam padrões que podem não corresponder ao seu projeto |
 | **Done When** | Quais critérios de aceitação você verificará? | Dá ao agente um objetivo e a você um checklist de verificação |

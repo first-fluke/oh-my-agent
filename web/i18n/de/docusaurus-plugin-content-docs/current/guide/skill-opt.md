@@ -6,7 +6,7 @@ description: Mit oma skill optimize eine dauerhafte, evidenzbasierte Skill-Weite
 
 # Skill-Optimierung
 
-`oma skill optimize` entwickelt die `SKILL.md` eines Skills weiter, um den von `oma skill eval` gemessenen `utilityLift` zu maximieren. Es trennt rohe Rollout-Evidenz, dauerhaftes domänenspezifisches Wissen und den ausführbaren Skill. Ein Wiki Maintainer bündelt beobachtbare Erfolge und Fehler; ein Proposer verwendet dieses Wissen, um begrenzte Add-/Delete-/Replace-Änderungen auszugeben. Kandidaten müssen den Trainings- oder Validierungs-Nutzwert verbessern, ohne einen der beiden Splits zu verschlechtern, bei vollständigen Messungen von Aufgaben und negativer Übertragung. `--apply` erfordert außerdem einen vollständig gemessenen, vom Runner verwalteten Final-Test ohne Regression und verifizierte Live-Isolation. Bei der Bereitstellung gibt es keine zusätzliche Wiki-Suche zur Laufzeit: Die Ausgabe bleibt eine `SKILL.md`.
+`oma skill optimize` entwickelt die `SKILL.md` eines Skills weiter, um den von `oma skill eval` gemessenen `utilityLift` zu maximieren. Es trennt rohe Rollout-Evidenz, dauerhaftes bereichsbezogenes Wissen und den ausführbaren Skill. Ein Wiki Maintainer bündelt beobachtbare Erfolge und Fehler; ein Proposer verwendet dieses Wissen, um begrenzte Add-/Delete-/Replace-Änderungen auszugeben. Kandidaten müssen den Trainings- oder Validierungs-Nutzwert verbessern, ohne einen der beiden Splits zu verschlechtern, bei vollständigen Messungen von Aufgaben und negativer Übertragung. `--apply` erfordert außerdem einen vollständig gemessenen, vom Runner verwalteten Final-Test ohne Regression und verifizierte Live-Isolation. Bei der Bereitstellung gibt es keine zusätzliche Wiki-Suche zur Laufzeit: Die Ausgabe bleibt eine `SKILL.md`.
 
 Forschungsgrundlage: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C. und Vu, T. (2026). *WikiSkill: Compiling agent experience into persistent knowledge for skill evolution* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2608.27454
 
@@ -32,7 +32,7 @@ Wiedergabe und suite-bezogenes Wissen sind an den vollständigen Aufgaben-/Evalu
 
 ## So funktioniert es
 
-Das Diagramm zeigt einen Optimierungslauf. Eine unvollständige Evaluierung oder ein erschöpftes Budget beendet die Epochenschleife ebenfalls vorzeitig.
+Eine unvollständige Evaluierung oder ein erschöpftes Budget beendet die Epochenschleife ebenfalls vorzeitig.
 
 ```mermaid
 flowchart TD
@@ -59,7 +59,7 @@ Fixtures werden nach Aufgaben-ID sortiert und deterministisch in **Trainings-, z
 Für jede Epoche (bis zu `--max-epochs`, Standard 8):
 
 1. **Aktuell besten `SKILL.md` auf dem TRAIN-Split bewerten** — `oma skill eval` gibt beobachtbare Prompts, Ausgaben und Lift pro Aufgabe zurück. Jede Aufgabe in einem internen Split muss beide bewerteten Arme haben; fehlgeschlagene oder fehlende Vergleiche können den Nenner nicht verkleinern.
-2. **Wiki Maintainer bündelt Evidenz** — bis zu fünf Fehler und drei Erfolge werden zu evidenzverknüpften Mustern. Fehler werden nach Lernwert ausgewählt: zuerst Regressionen, dann die gravierendsten gemeinsamen Fehler; Aufgaben, die beide Arme bereits bestehen, werden ausgelassen, weil sie nichts über die nächste Änderung aussagen. Erfolge werden nach Lift gereiht. Bereichsbezogene Muster und frühere Gate-Ergebnisse werden aus OMAs L1/L2/L3-Speichersystem abgerufen.
+2. **Wiki Maintainer bündelt Evidenz** — bis zu fünf Fehler und drei Erfolge werden zu evidenzverknüpften Mustern. Fehler werden nach Lernwert ausgewählt: zuerst Regressionen, dann die tiefsten gemeinsamen Fehler; Aufgaben, die beide Arme bereits bestehen, werden ausgelassen, weil sie nichts über die nächste Änderung aussagen. Erfolge werden nach Lift gereiht. Bereichsbezogene Muster und frühere Gate-Ergebnisse werden aus OMAs L1/L2/L3-Speichersystem abgerufen.
 3. **Proposer gibt K-Kandidatenänderungen aus** (bis zu `--edits-per-epoch`, Standard 4). Exakte Änderungen aus der dauerhaften Ablehnungshistorie werden übersprungen.
 4. **Für jede Kandidatenänderung:**
    - Änderung auf eine In-Memory-Kopie von `SKILL.md` anwenden.
@@ -205,7 +205,7 @@ Die Live-Evaluierung kann das Isolations-Gate über das geschützte Claude- oder
 
 ### Sehen, was sich weiterentwickelt hat
 
-Die Schleife meldet sich an drei Stellen, die alle aus den Append-only-Lineage-Protokollen gelesen werden und nicht aus bloßen Behauptungen:
+Die Schleife meldet sich an drei Stellen, die alle aus den Append-only-Lineage-Protokollen gelesen werden und nicht aus einem Claim:
 
 - `oma skill promotions --all` gibt pro Änderung einen Satz aus, über alle Skills und das Verfahren hinweg: was bearbeitet wurde (Anker und Ersetzung der akzeptierten Änderung), die Held-in- und Held-out-Lifts davor und danach, ob der Final-Test standgehalten hat und, bei einer Verfahrens-Hochstufung, die gepaarte Gewinndifferenz, ihr Intervall und die Skills, an denen sie gemessen wurde. `--skill <id>` beschränkt die Ausgabe auf einen Skill. Mit dieser Version geschriebene Apply-Einträge enthalten die akzeptierten Änderungen und Trainings-Lifts; ältere Einträge fallen auf Hashes zurück.
 - `oma doctor` zeigt einen Hinweis **Evolution**: angewendete und zurückgerollte Skill-Änderungen, die jüngste Änderung pro Skill, Verfahrens-Hochstufungen und was auf die Rückkopplung wartet (erfasste Incidents ohne Fixture, noch nicht erfasste fehlgeschlagene Läufe), samt dem Befehl, der sie verarbeiten würde.

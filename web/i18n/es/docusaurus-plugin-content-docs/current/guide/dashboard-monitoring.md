@@ -154,13 +154,13 @@ El dashboard detecta que el agente terminó cuando existe este archivo y actuali
 
 **Posibles causas:**
 - El agente está atascado en una operación larga (escaneo de un codebase grande o llamada lenta a una API).
-- El agente se cerró, pero el archivo PID aún existe.
+- El agente falló, pero el archivo PID aún existe.
 - El agente espera una entrada del usuario (no debería ocurrir en modo de aprobación automática).
 
 **Acciones:**
 1. Comprueba el archivo de log del agente. `oma agent spawn` imprime su ruta como `Log: ...`; está en el directorio temporal del sistema: `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"`
 2. Comprueba si el proceso está realmente en ejecución: `oma agent status {session-id} {agent-id}`.
-3. Si el proceso no está en ejecución, pero el estado muestra «running», el agente se cerró. Vuelve a generarlo con el contexto del error.
+3. Si el proceso no está en ejecución, pero el estado muestra «running», el agente falló. Vuelve a generarlo con el contexto del error.
 
 ### Señal 2: el agente aparece como «crashed»
 
@@ -246,7 +246,7 @@ El monitoreo del dashboard termina cuando:
 - **Servidor HTTP:** `createServer` de Node.js sirve la página HTML en `/`, la página de recapitulación en `/recap`, el estado JSON en `/api/state` y los datos de recapitulación en `/api/recap`. El servidor se enlaza a `127.0.0.1`.
 - **WebSocket:** usa la librería `ws`. Una conexión de origen loopback debe incluir el token del proceso en su query string. Al conectarse, el cliente recibe inmediatamente el estado completo. Después, las actualizaciones se envían como mensajes `{ type: "update", event, file, data }`.
 - **Observación de archivos:** usa la misma configuración de chokidar que el dashboard de terminal. Los cambios de archivo activan una función `broadcast()` que construye el estado actual y lo envía a todos los clientes WebSocket conectados.
-- **Desduplicación temporal:** las actualizaciones se desduplican durante 100ms para evitar saturar a los clientes cuando se escriben archivos rápidamente (por ejemplo, cuando varios agentes actualizan el progreso a la vez).
+- **Debounce:** las actualizaciones se agrupan (debounce) a 100ms para no saturar a los clientes durante escrituras rápidas (por ejemplo, cuando varios agentes escriben el progreso a la vez).
 - **Reconexión automática:** el cliente del navegador se reconecta con backoff exponencial (1s inicial, multiplicador 1.5x y máximo de 10s) cuando se interrumpe la conexión WebSocket.
 - **Puerto:** 9847 de forma predeterminada, configurable mediante la variable de entorno `DASHBOARD_PORT`. Las solicitudes API aceptan `X-OMA-Dashboard-Token` o `?token=...`; los tokens ausentes o no válidos devuelven `401`.
 - **Construcción del estado:** la función `buildFullState()` agrega la información de sesión, el task board, el estado de los agentes, los recuentos de turnos y el feed de actividad en un único objeto JSON en cada actualización.

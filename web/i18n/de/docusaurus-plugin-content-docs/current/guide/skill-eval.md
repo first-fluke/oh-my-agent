@@ -6,7 +6,7 @@ description: Aufgaben-Fixtures für oma skill eval erstellen, die Konvention des
 
 # Skill-Nutzwert-Evaluierung
 
-`oma skill eval` misst, ob das Laden eines Skills die Ergebnisse von Agentenaufgaben tatsächlich verbessert. Es beantwortet eine andere Frage als `oma skill audit` (dort geht es um die Redundanz zweier Skills): Es fragt „Hilft dieser Skill?“
+`oma skill eval` vergleicht Aufgabenergebnisse mit und ohne einen Skill. `oma skill audit` prüft, ob zwei Skill-Beschreibungen redundant sind.
 
 Das Design folgt zwei Forschungsergebnissen: WikiSkill (arXiv:2608.27454) trennt rohe Erfahrung, persistentes Wissen und ausführbare Skills und behält dabei zurückgehaltene Gates für die Weiterentwicklung bei; SkillLens (arXiv:2605.23899) zeigt, dass der Nutzwert eines Skills unabhängig von der Eigenständigkeit seiner Beschreibung ist — ein eigenständiger Skill kann nutzlos bleiben, und ein überlappender Skill kann trotzdem helfen.
 
@@ -271,7 +271,7 @@ agents:
     model: anthropic/claude-sonnet-5-5   # task arms, judges, routing probes
 ```
 
-Maintainer und Proposer von `oma skill optimize` lösen die Rolle `opt-agent` auf. Die `agents:`-Map hat keinen Schlüssel `opt` (das Konfigurationsschema lehnt unbekannte Schlüssel ab), daher folgt diese Rolle immer dem aktiven `model_preset` bzw. unter `model_preset: auto` dem `default_cli`. Ohne `agents.eval` verwendet die Rolle `eval` denselben Fallback. Die Hochstufung erfordert `isolation: enforced`, was nur die geschützten Claude- und nativen Codex-Profile bieten (siehe [Skill-Isolierung](#skill-isolation-keeping-the-baseline-honest)).
+Maintainer und Proposer von `oma skill optimize` lösen die Rolle `opt-agent` auf. Die `agents:`-Map hat keinen Schlüssel `opt` (das Konfigurationsschema lehnt unbekannte Schlüssel ab), daher folgt diese Rolle immer dem aktiven `model_preset` oder unter `model_preset: auto` dem `agents.default.cli`. Ohne `agents.eval` verwendet die Rolle `eval` denselben Fallback. Die Hochstufung erfordert `isolation: enforced`, was nur die geschützten Claude- und nativen Codex-Profile bieten (siehe [Skill-Isolierung](#skill-isolation-keeping-the-baseline-honest)).
 
 #### Messung der negativen Übertragung
 
@@ -293,7 +293,7 @@ Ein sauberes Arbeitsverzeichnis verbirgt die projektlokale Skill-Erkennung, doch
 |---|---|
 | `enforced` | Geschütztes Claude mit gültiger Ziel-ID und ohne HOME-Kopie oder natives Codex mit Unterdrückung von Erkennung und Werkzeugen sowie Thread-Prüfungen zur Laufzeit. Ein fehlgeschlagener Laufzeitvertrag bricht den Dispatch ab. |
 | `best-effort` | Eine Laufzeit ohne geschütztes Textprofil, eine ungültige Ziel-ID oder eine HOME-Kopie bei Claude; die Isolation ist nicht verifiziert. |
-| `unavailable` | HOME-basierter Vendor (z. B. **antigravity**, der `~/.gemini/antigravity-cli/skills` liest); ein sauberes CWD kann ihn nicht verbergen. Warnung und geringe Sicherheit. |
+| `unavailable` | HOME-basierter Vendor (z. B. **antigravity**, der `~/.gemini/antigravity-cli/skills` liest); ein sauberes CWD kann ihn nicht verbergen. Es wird eine Warnung ausgegeben, und das Ergebnis wird als wenig verlässlich gekennzeichnet. |
 | n/a | Mock-Modus — kein Live-Dispatch. |
 
 Andere Laufzeitprofile bleiben für die explorative Evaluierung verfügbar, aber Ergebnisse mit `best-effort` und `unavailable` blockieren die Hochstufung bei der Live-Optimierung. Der Evaluations-Vendor folgt der Agentenrolle `eval`. Codex verwendet seinen nativen CLI-Login und das konfigurierte Modell bzw. den konfigurierten Provider über `app-server`; es wechselt nicht stillschweigend zu Claude oder zu einem API-Key-Client. Der geschützte Codex-Vertrag zielt auf CLI 0.154.x unter macOS/Linux mit nativer dateibasierter Credential-Speicherung und einer vorhandenen `auth.json`. Ein privates temporäres Konfigurationsverzeichnis verweist auf die ursprünglichen Konfigurations- und Auth-Dateien und schließt dabei den gemeinsamen Bootstrap-Zustand aus; Credentials werden nicht kopiert, und die native Erneuerung verwendet die ursprüngliche Auth-Datei. Keyring-, Auto- und flüchtige Credential-Speicher werden derzeit nicht unterstützt. Nicht unterstützte Versionen, Speichermodi und Vertragsfehler werden zu Dispatch-Fehlern.
@@ -461,6 +461,6 @@ Diese Meldungen stammen von `oma skill eval` und `oma skill optimize`.
 | `[oma skill eval] dispatch timed out after <N>s.` | Ein Arm- oder Judge-Aufruf hat `OMA_SKILL_EVAL_TIMEOUT_MS` überschritten. | Erhöhen Sie `OMA_SKILL_EVAL_TIMEOUT_MS` für Fixtures, die lange Antworten benötigen. |
 | `Choose either --live or --mock` | Beide Flags wurden übergeben. | Übergeben Sie eines davon. |
 | `[oma skill opt] mock optimization has no recorded proposal source. ...` | `oma skill optimize` lief ohne `--live`. | Fügen Sie `--live` hinzu, oder verwenden Sie `oma skill eval --mock` für Offline-Prüfungen. |
-| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Die Rolle `opt-agent` wird zu einem Vendor ohne geschützten Text-Transport aufgelöst. | Wählen Sie ein `model_preset` (oder bei `model_preset: auto` ein `default_cli`), das zu Claude oder Codex aufgelöst wird. |
+| `[oma skill opt] protected compiler is unavailable for <vendor>: ...` | Die Rolle `opt-agent` wird zu einem Vendor ohne geschützten Text-Transport aufgelöst. | Wählen Sie ein `model_preset` (oder bei `model_preset: auto` ein `agents.default.cli`), das zu Claude oder Codex aufgelöst wird. |
 | `[oma skill opt] WARNING: "<id>" is an oma-owned skill. ...` (nichts geschrieben) | `--apply` für einen `oma-*`-Skill ohne `--yes`. | Behalten Sie den Dry-Run-Diff und reichen Sie ihn upstream ein, oder führen Sie den Befehl mit `--yes` erneut aus. |
 | `[oma skill opt] an active project overlay owns this skill; ...` | Die [Projekt-Harness-Evolution](./harness-evolution.md) hat für diesen Skill ein Overlay installiert. | Führen Sie zuerst `oma skill rollback --skill <id>` aus, oder lassen Sie den Evolutionszyklus die Änderung anwenden. |

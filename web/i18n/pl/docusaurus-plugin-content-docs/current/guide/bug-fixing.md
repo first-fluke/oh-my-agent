@@ -132,7 +132,7 @@ Jeśli komunikat błędu jest już w promptcie, workflow od razu przechodzi do k
 
 Celem jest znalezienie błędu w bazie kodu: dokładnej linii, w której rzucany jest wyjątek, dokładnej funkcji tworzącej zły wynik albo dokładnego warunku powodującego nieoczekiwane zachowanie.
 
-Ten krok zamienia objaw zgłoszony przez użytkownika („strona się wyłącza”) na lokalizację w bazie kodu (`src/api/users.ts:47, deleteUser() throws TypeError`).
+Ten krok zamienia objaw zgłoszony przez użytkownika („strona się wywala”) na lokalizację w bazie kodu (`src/api/users.ts:47, deleteUser() throws TypeError`).
 
 ### Krok 3: zdiagnozuj przyczynę źródłową
 
@@ -172,7 +172,7 @@ W tym kroku dzieją się dwie rzeczy:
    - sprawdza działanie poprawki (z poprawką test musi przejść)
    - zapobiega powrotowi tego samego błędu w przyszłych zmianach
 
-Test regresji pozwala wykryć, czy przyszła zmiana ponownie wprowadzi ten sam błąd.
+Test regresji jest najważniejszym wynikiem workflowu debugowania. Bez niego ten sam błąd może wrócić przy dowolnej przyszłej zmianie.
 
 ### Krok 6: wyszukaj podobne wzorce
 

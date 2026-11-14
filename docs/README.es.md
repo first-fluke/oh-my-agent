@@ -67,7 +67,7 @@ Los **workflows** son lo que escribes (o simplemente dices). Convocan a los **ro
 
 ## Detalles de la instalación
 
-El script instala [bun](https://bun.sh) si falta, instala el comando `oma` de forma global (`bun install --global oh-my-agent`; se omite si `oma` ya está en tu PATH) y luego inicia la configuración interactiva. El comando global importa: los hooks (detección de palabras clave, el Stop gate) y varios workflows llaman a `oma`, y los hooks no hacen nada, sin avisar, cuando no lo encuentran. Si te saltas el script, instálalo tú mismo con `bun install --global oh-my-agent` (`npm install --global oh-my-agent` o `brew install oh-my-agent` también sirven).
+El script instala [bun](https://bun.sh) si falta, instala el comando `oma` de forma global (`bun install --global oh-my-agent`; se omite si `oma` ya está en tu PATH) y luego inicia la configuración interactiva. Los hooks (detección de palabras clave y el Stop gate) y varios workflows llaman al comando `oma` instalado globalmente. Los hooks no hacen nada, sin avisar, cuando no lo encuentran. Si te saltas el script, instálalo tú mismo con `bun install --global oh-my-agent` (`npm install --global oh-my-agent` o `brew install oh-my-agent` también sirven).
 
 <details>
 <summary>Windows, o sin el script de instalación</summary>
@@ -431,7 +431,7 @@ Los agentes se coordinan mediante archivos simples en `.agents/state/`, sin ning
 | **oma-slide** | Genera decks de presentación HTML y los exporta a PDF/PNG/PPTX |
 | **oma-tf-infra** | Aprovisiona infraestructura multi-cloud con Terraform |
 | **oma-translation** | Traduce para que el resultado parezca escrito por un hablante nativo |
-| **oma-video** | Genera videos cortos, explicativos y demos mediante un pipeline de HyperFrames que funciona sin claves |
+| **oma-video** | Genera videos cortos, explicativos y demos mediante un pipeline de HyperFrames en el que las claves son opcionales |
 | **oma-voice** | Genera voiceovers y transcribe audio en el propio dispositivo |
 
 </details>
@@ -582,7 +582,7 @@ No. Consulta [Presets de skills](#install); `All` es la opción segura por defec
 <details>
 <summary><strong>¿Gasta más tokens?</strong></summary>
 
-Normalmente, sí. Las skills solo se cargan cuando una tarea las necesita, pero los workflows multiagente y las revisiones con contexto nuevo gastan más. En el [benchmark de un solo prompt](../benchmarks/README.md), oma costó 1,7 veces lo que Claude Code sin más.
+Normalmente, sí. Las skills solo se cargan cuando una tarea las necesita, pero los workflows multiagente y las revisiones con contexto nuevo gastan más. En el [benchmark de un solo prompt](../benchmarks/README.md), oma costó 1,7 veces lo de Claude Code sin complementos.
 
 </details>
 

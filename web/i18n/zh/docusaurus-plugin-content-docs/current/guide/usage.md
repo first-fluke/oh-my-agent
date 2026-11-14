@@ -137,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **步骤 6：类似模式扫描** MCP `search_for_pattern` 搜索其他可能对 undefined 数组调用 `.map()` 的地方
    - 在 `user-list.tsx`、`comment-list.tsx`、`notification-list.tsx` 中找到 3 个类似模式
    - 主动应用相同的修复模式
-8. **步骤 7：记录** bug 报告写入内存，包含根因、修复和预防措施
+8. **步骤 7：记录** bug 报告写入 `.agents/results/bugs/`，包含根因、修复和预防措施
 
 ---
 
@@ -150,7 +150,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 
 **发生了什么：**
 
-1. **加载技能：** 工作流读取 `oma-design` 技能及其执行协议。该技能负责供应商选择以及项目设计契约。
+1. **加载技能：** 工作流读取 `oma-design` 技能及其执行协议。该技能负责供给方选择以及项目设计契约。
 2. **确立范围与上下文：** 该请求被归类为设计系统文档。工作流读取现有的 `DESIGN.md`、存在的 `.design-context.md`、品牌材料、受支持的语言以及受影响的 UI，并查找现有的 UI 库、主题文件和令牌。对于现有产品，它会先确定“保留（Preserve）”还是“全面重构（Overhaul）”。只有当某个选择会实质性改变结果，且请求与代码库均未给出答案时，它才会提问；该提示已明确说明语言、受众和无障碍目标，因此不会继续追问问卷。
 3. **选择指南并收集参考：** 为该操作选择一个外部设计技能：仪表盘或 SaaS 产品 UI 选择 Interface Design，其他全新 Web 艺术方向选择 Taste，现有 UI 的评审或打磨选择 Impeccable。仅当任务需要时，才加载指定的供应商 seed、Stitch 操作、资产指南或数据网格规则。
 4. **决定方向：** 将所选指南应用于项目证据。仅当未决选择会实质性影响结果时才给出备选方向；复用你已选定的方向。每个方向都符合品牌规范、韩语的 CJK 字体覆盖、现有实现技术栈、从最小支持视口开始的响应式行为以及 WCAG AA 标准。
@@ -320,7 +320,7 @@ oma stats get
 | **oma-market** | 痛点、趋势、竞品和发现研究 | 遵循 LAW 的研究简报及框架 |
 | **oma-mobile** | Flutter、React Native、Swift iOS 与 Kotlin Android 工作 | 移动端界面、状态、平台集成和测试 |
 | **oma-observability** | 追踪、指标、日志、剖析、SLO、事件取证 | 分层可观测性建议或实现指导 |
-| **oma-orchestration** | 自动并行智能体执行 | 协调后的计划、内存更新和结果收集 |
+| **oma-orchestration** | 自动并行智能体执行 | 协调后的计划、记忆更新和结果收集 |
 | **oma-pdf** | PDF 转换和支持 OCR 的提取 | 保持阅读顺序、表格、列表和图像的 Markdown |
 | **oma-pm** | 需求、任务分解、API 契约 | `.agents/results/plan-{sessionId}.json` 和任务板 |
 | **oma-qa** | 安全、性能、无障碍和质量审查 | 带严重性和修复证据的发现报告 |
@@ -328,7 +328,7 @@ oma stats get
 | **oma-refactor** | 保持行为的结构重组 | 带特征测试和质量证据的重构变更 |
 | **oma-scholar** | 学术搜索和论文 sidecar | 经过验证的 `.knows.yaml` sidecar 操作 |
 | **oma-scm** | Git 分支、工作树、基线和提交规范 | SCM 计划或 Conventional Commit 输出 |
-| **oma-search** | 外部文档、Web 来源、远程代码和已知 URL 读取 | 附带路由、提供方、证据与局限说明的引用来源 |
+| **oma-search** | 外部文档、Web 来源、远程代码和已知 URL 读取 | 附带路由、提供商、证据与局限说明的引用来源 |
 | **oma-skill-creation** | 创建和审计 OMA 技能 | SSL-lite 技能文件和 `oma skill audit` 结果 |
 | **oma-slide** | HTML 演示文稿和导出 | 经过验证的打包 HTML、PDF、PNG 或 PPTX |
 | **oma-tf-infra** | Terraform 基础设施、IAM 和策略即代码 | Terraform 模块、计划和控制措施 |
@@ -349,12 +349,12 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 
 | 列 | 来源 |
 |--------|--------|
-| Agent | `task-board.md`，或在内存文件中发现的智能体名称 |
+| Agent | `task-board.md`，或在记忆文件中发现的智能体名称 |
 | Status | 终端符号：● 运行中（绿色）、✓ 已完成（青色）、✗ 失败（红色）、○ 阻塞（黄色）、◌ 等待中（暗色） |
 | Turn | 智能体 `progress-<agent>*.md` 文件中的 `turn: N` |
 | Task | 任务板或智能体文件中的任务文本 |
 
-表格下方，两个仪表盘都会列出最近修改的五个内存文件中的最新活动。布局、数据来源和恢复步骤见[仪表盘监控](./dashboard-monitoring.md)。
+表格下方，两个仪表盘都会列出最近修改的五个记忆文件中的最新活动。布局、数据来源和恢复步骤见[仪表盘监控](./dashboard-monitoring.md)。
 
 ---
 
@@ -382,7 +382,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 5. 在 `.agents/state/agent-runs/` 下记录结构化回执，并注入声明路径
 6. 智能体写入结构化声明，人类可读的进度和结果 Markdown 文件作为补充
 
-### 项目内存存储 {#project-memory-store}
+### 项目记忆存储 {#project-memory-store}
 
 智能体通过 `.agents/state/memories/` 中的持久化文件协调（旧项目回退到旧版 `.serena/memories/` 路径）。该目录保存会话摘要、任务板、进度、经验教训与实验记录。人类可读的 `result-{agentId}-{taskId}-{runId}-{sessionId}.md` 报告存放在 `.agents/results/` 中。`.agents/state/agent-runs/` 下的结构化回执和声明仍是 CLI 启动的权威记录，冻结的执行计划则保存在 `.agents/state/agent-plans/`。智能体使用原生文件工具读写这些文件，工具映射可在 `.agents/mcp.json → memoryConfig.tools` 中配置。
 
@@ -433,7 +433,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | IDE 中未检测到技能 | `.agents/skills/` 缺失或没有 `SKILL.md` 文件 | 运行安装器（`bunx oh-my-agent@latest`），检查 `.claude/skills/` 中的符号链接，然后重启 IDE |
 | 启动时找不到 CLI | 选定的 AI CLI 未安装或不在 `PATH` 中 | 运行 `which <selected-cli>`（例如 `claude`、`codex`、`agy`、`qwen` 或 `kiro-cli`），打开新 shell，或按照安装指南安装 |
 | 智能体生成互相冲突的代码 | 未隔离工作区 | 使用独立工作区：`-w ./apps/api`、`-w ./apps/web` |
-| 仪表盘显示“No agents detected yet” | 智能体尚未写入内存，或仪表盘监视的是另一个目录 | 等待第一个进度文件出现；在项目根目录运行，或传入 `--project-root <path>` |
+| 仪表盘显示“No agents detected yet” | 智能体尚未写入记忆，或仪表盘监视的是另一个目录 | 等待第一个进度文件出现；在项目根目录运行，或传入 `--project-root <path>` |
 | `oma dashboard web` 退出并提示“port 9847 is already in use” | 其他进程占用了该端口 | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA 报告有 50 多个问题 | 大型代码库的首次审查通常如此 | 优先处理 CRITICAL 和 HIGH 严重性问题。将 MEDIUM/LOW 记录到后续迭代。 |
 | 仅提及某个持久化模式的名称却启动了该模式 | 提示在问题或代码块之外提到了 `orchestrate`、`ultrawork`、`work mode` 或 `ralph` | 输入“workflow done”以释放该模式。建议反馈误触发以便持续改进。 |

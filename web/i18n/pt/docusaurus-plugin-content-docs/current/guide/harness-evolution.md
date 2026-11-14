@@ -8,7 +8,7 @@ description: Habilite melhorias de skills agendadas e com orçamento a partir da
 
 O OMA pode coletar evidências das execuções de agente rastreadas e processar falhas em um ciclo de feedback agendado. As alterações automáticas de skills ficam **desativadas até que você as habilite para um projeto**. Cada ciclo tem um orçamento finito de chamadas de modelo, e uma alteração aplicada precisa passar pelos gates de avaliação de skills já existentes.
 
-O caminho automatizado melhora documentos de skill. Alterações no procedimento do otimizador ou do maintainer continuam sendo uma [metaotimização](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate) separada, invocada manualmente.
+O caminho automatizado aplica alterações avaliadas a documentos de skill. Alterações no procedimento do otimizador ou do maintainer exigem a [metaotimização](./skill-opt.md#meta-optimization-the-procedure-as-the-candidate) separada, invocada manualmente.
 
 ## Habilitar um projeto
 

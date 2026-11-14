@@ -1,6 +1,6 @@
 ---
 title: "가이드: 기존 프로젝트 통합"
-sidebar_label: 기존 프로젝트에 통합
+sidebar_label: 기존 프로젝트
 description: 기존 프로젝트에 oh-my-agent을 추가하는 완전 가이드입니다. CLI 경로, 수동 경로, 검증, SSOT 심볼릭 링크 구조, 설치 프로그램의 내부 동작을 다룹니다.
 ---
 

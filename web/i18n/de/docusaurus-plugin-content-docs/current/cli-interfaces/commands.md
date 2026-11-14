@@ -34,7 +34,7 @@ Die kanonischen Namen unten stammen aus `oma describe`. Nur diese durch Leerzeic
 
 ## Aktuelle Befehlsoberfläche {#current-command-surface}
 
-Die Tabelle listet registrierte Befehlsfamilien. Für die genaue Argumentgrammatik nutze das jeweilige `--help` oder `oma describe <path>`; [CLI-Optionen](./options.md) enthält die vollständige Flag-Matrix der Registry.
+Für die genaue Argumentgrammatik nutze das `--help` der jeweiligen Familie oder `oma describe <path>`; [CLI-Optionen](./options.md) listet die Registry-Flags für jeden Befehlspfad auf.
 
 | Familie | Registrierte Pfade |
 |:-------|:-----------------|
@@ -92,16 +92,18 @@ Wenn ein Befehl seine übrigen Argumente an ein anderes Tool delegiert, lässt d
 
 ### install
 
-`oma` ohne Argumente startet den interaktiven Installer. `oma install` ist die explizite Form und akzeptiert Optionen zur Providerauswahl.
+`oma` ohne Argumente startet den interaktiven Laufzeit-Installer. `oma install` ist die explizite Form und akzeptiert ein Skill-Preset sowie Optionen zur Providerauswahl. Für das vorübergehende Laden von Anweisungen für eine Aufgabe siehe [Setup wählen](../getting-started/choose-setup.md).
 
 ```bash
 oma
 oma install
+oma install --preset frontend --yes
 oma install --web-search native --code-intelligence gortex --semantic-memory agentmemory
 ```
 
 | Option | Zulässige Werte |
 |:-------|:----------------|
+| `--preset <name>` | Eines der zehn [benannten Skill-Presets](../getting-started/installation.md#presets), etwa `frontend`, `research` oder `all`. Die individuelle Custom-Auswahl nutzt das interaktive Menü. |
 | `--web-search <provider>` | `native`, `brave` |
 | `--code-intelligence <provider>` | `serena`, `gortex` |
 | `--semantic-memory <provider>` | `agentmemory`, `honcho`, `none` |
@@ -110,15 +112,17 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 
 `--web-search`, `--code-intelligence` und `--semantic-memory` behalten die gespeicherte Providerauswahl bei, wenn sie weggelassen werden. `--honcho-url` und `--honcho-workspace` konfigurieren eine neue Honcho-Verbindung, wenn dieser Provider ausgewählt ist. Das Root-Flag `-y, --yes` überspringt Nachfragen und verwendet Standardwerte; `--global` zielt auf `$OMA_HOME/.agents/` (Standard `~/.oma/.agents/`). Eine Projektinstallation bleibt bei `<cwd>/.agents/`, auch wenn `OMA_HOME` gesetzt ist.
 
+`--preset` hat Vorrang vor der interaktiven Skill-Abfrage und dem unbeaufsichtigten Standard `all`. Unbekannte Namen, leere Werte und `custom` werden vor der Installation abgelehnt. Es wählt Skill-Inhalte aus; es filtert keine gemeinsamen Dateien, Workflow-/Agentendefinitionen, Hooks oder das Provider-Setup und behält andere installierte Skills. [Workflows, die Skills außerhalb eines Presets benötigen](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset), können daher vom ausgewählten Bündel abweichen.
+
 **Funktionsweise:**
 1. Prüft auf ein veraltetes `.agent/`-Verzeichnis und migriert es zu `.agents/`, falls vorhanden.
-2. Erkennt konkurrierende Tools und bietet deren Entfernung an.
-3. Fragt nach dem Projekttyp (All, Fullstack, Frontend, Backend, Mobile, DevOps, Custom).
+2. Erkennt im interaktiven Modus andere Agenten-Tools und fragt, ob sie deinstalliert werden sollen (Standard: behalten). `--yes`, `OMA_YES` und CI-Installationen behalten sie; `oma update` bietet keine Entfernung an.
+3. Verwendet `--preset`, wenn es angegeben ist; sonst fragt es im interaktiven Modus nach einem Skill-Preset oder einer individuellen Custom-Auswahl. Unbeaufsichtigtes Setup verwendet standardmäßig `all`.
 4. Wenn Backend ausgewählt ist, fragt nach der Sprachvariante (Python, Node.js, Rust, Other).
 5. Fragt nach GitHub-Copilot-Symlinks.
 6. Lädt das neueste Tarball aus der Registry herunter.
 7. Installiert gemeinsame Ressourcen, Workflows, Konfigurationen und ausgewählte Skills.
-8. Installiert Vendor-Anpassungen für die ausgewählten Vendoren (projektspezifische Einstellungen; keine stillen Vendor-Schreibvorgänge auf HOME-Ebene).
+8. Installiert Vendor-Anpassungen für die ausgewählten Vendoren. Siehe [Was der Installer standardmäßig außerdem tut](../getting-started/installation.md#what-the-installer-also-does-by-default) für Änderungen auf Projekt- und HOME-Ebene.
 9. Erstellt CLI-Symlinks.
 10. Bietet die empfohlene **globale** Git-Konfiguration zur optionalen Bestätigung an:
     - `rerere.enabled=true` — Wiederverwendung von Merge-Konfliktlösungen in Multi-Agenten-Projekten
@@ -127,11 +131,12 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. Bietet die Konfiguration von MCP an, wo dies zutrifft.
 12. Fragt nach einem GitHub-Stern, wenn `gh` authentifiziert ist.
 
+Die Abschlusszusammenfassung listet die ausgewählten Skills auf und prüft referenzierte Skill-Manifeste anhand der tatsächlich vorhandenen Dateien, einschließlich behaltener Skills und bedingter Zweige. Sie meldet fehlende oder nicht lesbare Workflow-/Agenten-Skill-Referenzen und verweist für diesen Installationsstamm auf den Doctor-Befehl. Das ist eine statische Manifest-Abdeckung; Ressourceninhalte, Tools, Provider und die Ausführung werden nicht geprüft.
+
 **Beispiel:**
 ```bash
 cd /path/to/my-project
-oma
-# Follow the interactive prompts
+oma install --preset frontend
 ```
 
 ### doctor {#doctor}

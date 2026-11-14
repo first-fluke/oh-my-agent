@@ -6,7 +6,7 @@ description: skills CLI를 통해 스킬로 설치되는 upstream mvanhorn/last3
 
 # 시장 조사 {#market-research}
 
-`oma-market`은 Reddit(업보트와 상위 댓글), X, YouTube 자막, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, 웹 등 커뮤니티 소스에서 실제 참여 수치와 함께 “최근 N일 동안 사람들이 X에 대해 실제로 무엇을 말하는가”를 답합니다. 불편 사항, 트렌드, 경쟁사 반응, 발견을 조사할 수 있습니다.
+`oma-market`은 Reddit(업보트와 상위 댓글), X, YouTube 자막, TikTok, Instagram, Hacker News, Polymarket, GitHub, arXiv, Techmeme, Digg, LinkedIn, StockTwits, Bluesky, 웹 등 커뮤니티 소스에서 실제 참여 수치와 함께 "최근 N일 동안 사람들이 X에 대해 실제로 무엇을 말하는가"를 답합니다. 불편 사항, 트렌드, 경쟁사 반응, 발견을 조사할 수 있습니다.
 
 조사는 upstream [**last30days**](https://github.com/mvanhorn/last30days-skill) 엔진(MIT, Python 3.12 이상)에서 실행됩니다. oh-my-agent는 엔진을 포크하지 않습니다. 엔진은 [skills CLI](https://github.com/vercel-labs/skills)를 통해 에이전트 스킬로 설치되며, oh-my-agent는 모든 실행을 게이트하고 그 위에 전략 프레임워크 계층을 추가합니다. 릴리스 주기, 별 수, 프로바이더 범위는 upstream 프로젝트에 속하므로 바뀔 수 있습니다.
 
@@ -106,7 +106,7 @@ flowchart TD
 | 의도 | 엔진 구성 | 프레임워크 |
 |---|---|---|
 | pain | 불만 형태의 주제, `--days 30`, 자료가 부족할 때 `--deep` | SWOT |
-| trend | `--days 7/30/90/180`, “무엇이 뜨는가”에는 `--discover "<domain>"` | SWOT |
+| trend | `--days 7/30/90/180`, "무엇이 뜨는가"에는 `--discover "<domain>"` | SWOT |
 | competitor | `"A vs B"` → upstream 비교 흐름 | SWOT + Porter's 5F |
 | discovery | `--discover`, 이어서 `--drill` 후속 질의 | SWOT + PESTEL |
 

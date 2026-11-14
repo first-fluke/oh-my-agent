@@ -129,7 +129,7 @@ flowchart TD
 ## Nächste Schritte
 
 - [Content- und Recherche-Workflows](./content-and-research.md) — die passende Fähigkeit für andere Recherche- und Dokumentaufgaben wählen
-- [Diagramm-Engine](./diagram-engine.md) — dasselbe Muster mit einer verwalteten aktuellen Version für archify
+- [Diagramm-Engine](./diagram-engine.md) — dasselbe Installationsmuster der skills-CLI für archify
 - [Semantik von oma-config.yaml](./oma-config-semantics.md) — wie der Abschnitt `market:` zusammengeführt wird
 - [CLI-Befehle: market](../cli-interfaces/commands.md#market) — vollständige Optionsliste
 - Upstream: [mvanhorn/last30days-skill](https://github.com/mvanhorn/last30days-skill)

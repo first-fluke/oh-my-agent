@@ -139,7 +139,7 @@ flowchart TD
 | **Refactoring** | oma-refactor | Verhaltenserhaltende, inkrementelle Umstrukturierung mit Hotspot-Fokus, Sicherheitsnetzen aus Charakterisierungstests und reinen Refactor-Commits |
 | **Marktforschung** | oma-market | Schmerzpunkte, Trends, Wettbewerber und Entdeckung aus Community-Signalen mit absichtsabhängig automatisch gewählten SWOT-/Porter-5F-/PESTEL-Rahmen untersuchen |
 | **Skill-Autorenschaft** | oma-skill-creation | OMA-Skills im SSL-lite-Format erstellen und validieren |
-| **Medienerzeugung** | oma-image, oma-slide, oma-video, oma-voice | KI-Bilder, HTML-Präsentationen, Kurz-/Erklär-/Demo-Videos sowie lokale TTS-/STT-Verarbeitung |
+| **Medienerzeugung** | oma-image, oma-slide, oma-video, oma-voice | KI-Bilderzeugung, HTML- und bearbeitbare PPTX-Präsentationsdecks, Kurz-/Erklär-/Demo-Video sowie lokales TTS/STT |
 
 ---
 
@@ -357,7 +357,7 @@ Die Stack-Referenz enthält `stack.yaml` (die strukturierte Deklaration und den 
 - Bei einer bestehenden Website oder App `resources/redesign-protocol.md` folgen und vor einem Vorschlag zwischen Preserve und Overhaul einordnen
 - Bestehende Marke, Inhalte, URLs, Navigation, Formularverträge, Analytics und Rechtstexte innerhalb des autorisierten Umfangs beibehalten
 - Vorhandene Schriftarten beibehalten, sofern geeignet; bei ko/ja/zh Glyphenabdeckung, Fallback, Zeilenumbruch und lesbare Metriken prüfen
-- WCAG AA ist das Standardziel für Barrierefreiheit (oder das strengere Projektziel); Anforderungen an Responsiveness, `prefers-reduced-motion` und Plattform fließen in den gewählten Supplier ein
+- WCAG AA ist das Standardziel für Barrierefreiheit, oder das strengere des Projekts; Anforderungen an Responsiveness, reduced-motion und Plattform gehen in den gewählten Supplier ein
 - Tatsächliche Projekt-Assets und -Aussagen verwenden; Konzepte und Platzhalter kennzeichnen
 - Den bestehenden Implementierungs-Stack beibehalten; CSS, Tailwind, Komponentenbibliothek-Syntax und Abhängigkeiten liegen beim Implementierungs-Spezialisten
 - Reine Review-Vorgänge bleiben schreibgeschützt
@@ -775,7 +775,7 @@ Dies sind Workflow-Standards; Modell-, Vendor-, Parallelitäts- und Budgeteinste
 
 **Kernregeln:**
 - Zuerst detect-trap: die Engine nie ohne Preflight ausführen (`--force` nur nach ausdrücklicher erneuter Bestätigung)
-- Eine Engine, immer aktuell: `oma market resolve` aktualisiert vor der Verwendung die verwaltete Kopie (`~/.cache/oma-market/last30days/<tag>/`); eine veraltete benutzerinstallierte Kopie ist nur ein Fallback, wenn offline nichts gecacht ist
+- Eine Engine, als Skill installiert: `oma market resolve` liest die Installation der Skills-CLI (oder einen Pin); `oma market update` installiert sie, wenn sie fehlt, und aktualisiert sie andernfalls, nachdem der Benutzer zugestimmt hat
 - Die `SKILL.md` der aufgelösten Engine wörtlich befolgen; einzige Ersetzung ist `oma market run <args>` anstelle des rohen Aufrufs `python3 scripts/last30days.py`
 - Niemals nur WebSearch: Keine Engine, kein Python 3.12+ oder ein Exit ungleich null bedeutet stoppen und melden
 - Schlüsselbasierte Quellen nur über den Upstream-Einrichtungsassistenten mit Einwilligung des Benutzers aktivieren; übersprungene Quellen im Footer sichtbar halten
@@ -873,43 +873,49 @@ Dies sind Workflow-Standards; Modell-, Vendor-, Parallelitäts- und Budgeteinste
 
 ### oma-video
 
-**Domäne:** Kurz-, Erklär- und menschengeführte Demo-Videos über die `oma video`-CLI erzeugen; dabei Skript → Narration → Visuals → Untertitel → HyperFrames-Rendering komponieren.
+**Domäne:** Videoerstellung über die CLI `oma video` sowie Analyse und Bearbeitung vorhandener Clips mit lokalen Medienwerkzeugen.
 
-**Einsatzbereich:** Kurzvideos (Shorts/Reels, 9:16) aus einem Thema, Erklärvideos (16:9/9:16) aus README/Code/Daten, Demos und Walkthroughs aus einem Screen-Capture (`--source file`) oder einer überwachten Browseraufnahme einer beliebigen URL (`--source web`) erzeugen sowie einen vorhandenen Lauf deterministisch neu rendern.
+**Einsatzbereich:** Kurzvideos und Erklärvideos erzeugen, Demos aus einer von einem Menschen aufgezeichneten `--capture`-Datei erstellen, einen vorhandenen Lauf erneut rendern, Frames extrahieren, sichtbare Objekte analysieren, Pausen entfernen und synchronisierte Clips zusammenbauen.
 
-**Nicht verwenden bei:** Einzelnes Standbild erzeugen (oma-image verwenden), ein Slide-Deck erzeugen (oma-slide verwenden; Video ruft es intern für Erklärbilder auf), nur Sprach-Audio erzeugen (oma-voice verwenden), nichtlinearem Schnitt eines fertigen MP4 oder Livestreaming (überwachtes Web-Capture ist enthalten).
+**Nicht verwenden bei:** Einem einzelnen Standbild (oma-image), einem Slide-Deck (oma-slide), reiner Audioverarbeitung oder Spracherzeugung und -transkription (oma-voice), gesprochener Übersetzung (oma-translation) oder Livestreaming.
 
 **Kernregeln:**
-- Modus vor dem Aufruf klären oder ableiten; den abgeleiteten Plan zeigen, statt aus einem vagen Brief still zu rendern
-- Provider-Konfiguration ist für unterstützte Asset-Fallbacks optional. Stock- und AIGC-Provider (Pexels, Pixelle) werden nur über `--visual stock` oder `--visual aigc` und ihren Env-Key angesprochen; andernfalls sind die Visuals schlüsselfreie `oma-image`-Standbilder. Ein Compositor-Fehler wird niemals durch ein Fallback-Video ersetzt
-- Ein `oma-slide`-Frame wird nur für eine Szene verwendet, deren `visual.ref` auf ein bestehendes Deck-Verzeichnis verweist; der Provider erzeugt kein Deck, und eine Slide-Szene ohne eines rendert einen Platzhalter
-- Für die Erstellung gelten eine Kostengrenze ab `$0.20` (`--yes`/`OMA_VIDEO_YES=1` für bereits autorisierte kostenpflichtige Läufe) sowie eine Begrenzung auf 180 Sekunden / 40 Szenen; diese Einstellungen stehen unter `video:` in `.agents/oma-config.yaml`
-- Rendereingaben werden in `render-spec.json`, Assets, Seed und eingebettetem Pretendard aufgezeichnet; `OMA_VIDEO_MOCK=1` ist ein Test-Harness für Golden Fixtures, kein Benutzerartefakt
-- Demo ist Human-in-the-Loop: Web-Capture öffnet nur einen sichtbaren Browser und zeichnet auf, während ein Mensch den Ablauf steuert — keine automatisierte Zugangsdatenverarbeitung; `--url` und Tokens werden in Logs/Manifest maskiert
-- Eine Demo benötigt `--polish`, um die Aufnahme durch die `Demo`-Komposition zu leiten, in der personenbezogene Daten maskiert werden. Ohne `--polish` ist die Ausgabe-MP4 die rohe, unmaskierte Aufnahme, die nur ausgeliefert werden darf, wenn die Prüfung auf personenbezogene Daten nichts zu maskieren gefunden hat
+- Arbeit an vorhandenen Clips zuerst an die Referenz zur Medienverarbeitung leiten, bevor Erstellungsmodus oder Provider gewählt werden; diese Vorgänge nutzen installierte Werkzeuge, keinen neuen CLI-Generierungsmodus
+- Die Provider-Konfiguration kommt für unterstützte Asset-Fallbacks ohne Schlüssel aus. Stock- und AIGC-Provider (Pexels, Pixelle) werden nur mit `--visual stock` oder `--visual aigc` und ihrem Env-Key erreicht; andernfalls sind die Visuals schlüsselfreie Standbilder von `oma-image`. Ein Fehler des Compositors wird nie durch ein Fallback-Video ersetzt
+- Ein `oma-slide`-Frame wird nur für eine Szene verwendet, deren `visual.ref` ein vorhandenes Deck-Verzeichnis ist; der Provider erzeugt kein Deck, und eine Slide-Szene ohne eines rendert einen Platzhalter
+- Die Erstellung nutzt die Kostengrenze ab ≥ `$0.20` (`--yes`/`OMA_VIDEO_YES=1` für bereits autorisierte kostenpflichtige Arbeit) und Grenzen von 180 s Dauer / 40 Szenen; diese Einstellungen stehen unter `video:` in `.agents/oma-config.yaml`
+- Rendereingaben werden in `render-spec.json`, Assets, Seed und eingebettetem Pretendard festgehalten; `OMA_VIDEO_MOCK=1` ist ein Test-Harness für Golden Fixtures, kein auslieferbares Benutzerergebnis
+- Die Demo-Aufnahme macht ein Mensch; `--source web --url` liefert Kontext und startet weder eine Aufnahme noch eine automatisierte Anmeldung. URL-Tokens in Logs und im Manifest maskieren
+- Eine Demo braucht `--polish`, damit die Aufnahme durch die Komposition `Demo` läuft, in der personenbezogene Daten maskiert werden. Ohne `--polish` ist die Ausgabe-MP4 die rohe, unmaskierte Aufnahme und nur auslieferbar, nachdem die Prüfung auf personenbezogene Daten nichts zu maskieren gefunden hat
 - Pfadsicherheit (`--allow-external-output` für Ausgabe außerhalb von `$PWD`)
 
-**Workflow:** PREPARE (Modus/Seitenverhältnis/Locale; die abgeleiteten Standardwerte nennen und nur nachfragen, wenn die Antwort das Ergebnis ändert) → ACQUIRE (Providerverfügbarkeit abfragen, Capture-Pfad validieren, Kosten prüfen) → ACT (Skript → Stimme ∥ Visuals ∥ Untertitel → Render-Spezifikation → Render) → VERIFY (Schema, Manifest-Hashes, Exit-Code, MP4) → FINALIZE (Laufverzeichnis + MP4-Pfad + Abdeckungswarnungen).
+**Workflow:** PREPARE (Modus/Seitenverhältnis/Locale; die abgeleiteten Standardwerte nennen und nur fragen, wenn die Antwort das Ergebnis ändert) → ACQUIRE (Provider-Verfügbarkeit prüfen, Capture-Pfad validieren, Kosten prüfen) → ACT (Skript → Stimme ∥ Visuals ∥ Untertitel → render-spec → Render) → VERIFY (Schema, Manifest-Hashes, Exit-Code, mp4) → FINALIZE (Laufverzeichnis + mp4-Pfad + Abdeckungswarnungen).
+
+Vorhandene Clips nutzen die Prüfung von Quellstream und PTS, explizite Kriterien für Frame-Auswahl oder Schnitte und eine gemeinsame Audio-/Video-Schnitt-Timeline. Sprach- und Amplitudendetektoren können voneinander abweichen; strittige Intervalle aus dem angeforderten Inhalt auflösen, statt die Schnitte zu vermehren. Beim Synchronisieren kann das ursprünglich kodierte Bild kopiert und nur dessen Audio ersetzt werden.
 
 ---
 
 ### oma-voice
 
-**Domäne:** Local-first Text-to-Speech und Speech-to-Text über den Voicebox-MCP-Server — vollständig auf dem Gerät, ohne Cloud, API-Schlüssel oder Kosten pro Aufruf.
+**Domäne:** Lokale Spracherzeugung und -transkription über Voicebox sowie Umwandlung vorhandener Audiodateien, Daueranpassung und Lautheitsverarbeitung mit FFmpeg.
 
-**Einsatzbereich:** Kurze Benachrichtigungsaudios für den Abschluss oder Blocker einer Agentenaufgabe erzeugen, Voiceover/Narration/Audio-Assets (mp3 oder wav) erstellen, lokale Audiodateien (mp3, wav, m4a, webm, flac) in Markdown transkribieren oder Sprachprofile durch denselben Text mit verschiedenen Profil-IDs vergleichen.
+**Einsatzbereich:** Kurze Benachrichtigungsaudios für den Abschluss einer Agentenaufgabe oder für Blocker erzeugen, Voiceover, Narration und Audio-Assets (mp3 oder wav) erstellen, lokale Audiodateien (mp3, wav, m4a, webm, flac) nach Markdown transkribieren und Sprachprofile vergleichen, indem derselbe Text mit verschiedenen Profil-IDs erneut ausgeführt wird.
 
-**Nicht verwenden bei:** Cloud-TTS oder hochauflösenden mehrsprachigen Cloud-Stimmen, Echtzeit-Diktat über ein Terminalmikrofon (Voicebox-Hotkey-Diktat verwenden), Hochladen von Cloning-Samples oder Anlegen von Profilen (erfolgt in der Voicebox-Desktop-App) sowie Video-, Musik- oder Sounddesign.
+Auch zum Einpassen vorhandener Sprache in ein angefordertes Zeitfenster, zum Resampling, zur Kanalkonvertierung und für angeforderte Lautheitsprofile. Die Platzierung im Video bleibt bei oma-video.
+
+**Nicht verwenden bei:** Cloud-TTS oder hochauflösenden mehrsprachigen Cloud-Stimmen, Echtzeitdiktat über das Terminalmikrofon (Hotkey-Diktat von Voicebox verwenden), Hochladen von Stimmklon-Samples oder Anlegen von Profilen (in der Desktop-App von Voicebox) sowie Video, Musik oder Sounddesign.
 
 **Kernregeln:**
-- Voicebox erforderlich: Bei Handshake- oder `GET /health`-Fehler einmalig Installations-/Start-Hinweis ausgeben, nicht erneut versuchen oder automatisch neu starten
-- Profil erforderlich: Wenn `voicebox_list_profiles` leer ist, auf die App-Oberfläche verweisen und beenden
-- Längenlimits: TTS maximal 5000 Zeichen pro Aufruf, STT maximal 30 Minuten; v1 teilt nicht automatisch in Blöcke
-- Transparenz bei automatischem Aufruf: Benachrichtigungen nur auslösen, wenn die Aufgabe länger als `auto_notify_after_sec` (Standard 60 s) dauert; Absicht immer in einer Zeile ankündigen
-- Ein ausdrücklich angegebener Ausgabepfad autorisiert dieses Ziel; bei mehrdeutigem Überschreiben unbeteiligter Dateien klären. Ein unterbrochener Aufruf schreibt keine Teilausgabe
-- Bei jeder Erzeugung ein Manifest schreiben; keine Kostengrenze (Voicebox ist kostenlos)
+- Voicebox ist für Erzeugung und Transkription erforderlich; die Verarbeitung vorhandener Audiodateien umgeht die Prüfungen von Health, Profil und Modell
+- Ein Profil ist nur für TTS erforderlich; Transkription und lokale Dateiverarbeitung brauchen keines
+- Längengrenzen: TTS höchstens 5000 Zeichen pro Aufruf, STT höchstens 30 Minuten; v1 teilt nicht automatisch in Blöcke
+- Transparenz bei automatischem Aufruf: Benachrichtigungen nur, wenn die Aufgabe `auto_notify_after_sec` überschreitet (Standard 60 s); die Absicht immer in einer Zeile ankündigen
+- Ein ausdrücklich angeforderter Ausgabepfad autorisiert dieses Ziel; mehrdeutiges Ersetzen unbeteiligter Dateien klären. Ein unterbrochener Aufruf schreibt keine Teilausgabe
+- Persistierte Audioaufnahmen und Transkripte enthalten ein Manifest; die Verarbeitung zeichnet echte Quell- und Operationsdaten auf, ohne erfundene Generierungs-IDs
 
-**Workflow:** PREPARE (Text/Audio/Sprache/Pfad/Profil validieren) → ACQUIRE (bei fehlendem Signal einmal klären) → ACT (MCP `voicebox_speak` oder `voicebox_transcribe`) → VERIFY (Audio/Transkript vorhanden + Manifestfelder) → FINALIZE (`manifest.json` schreiben, Pfad melden).
+**Workflow:** PREPARE (Text/Audio/Sprache/Pfad/Profil validieren) → ACQUIRE (einmal klären, wenn ein Signal fehlt) → ACT (MCP `voicebox_speak` oder `voicebox_transcribe`) → VERIFY (Vorhandensein von Audio/Transkript + Manifestfelder) → FINALIZE (`manifest.json` schreiben, Pfad melden).
+
+Anfragen zu vorhandenen Dateien gehen vor dieser Voicebox-Folge an die lokale Verarbeitung. Das Rohaudio behalten, Tempo- und Lautheitsziele aus der angeforderten Auslieferung ableiten und technische Messungen von der nicht bewerteten Natürlichkeit der Sprache trennen.
 
 ---
 
@@ -1029,7 +1035,7 @@ Während Orchestrierungssitzungen koordinieren sich Agenten über gemeinsame Mem
 | `orchestrator-session-{sessionId}.md` | Orchestrator | Sitzungs-ID, Status, Startzeit, Phasenverfolgung | Nur lesend |
 | `task-board-{sessionId}.md` | Orchestrator | Aufgabenzuweisungen, Prioritäten, Statusaktualisierungen | Nur lesend |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Dieser Lauf | Zugweiser Fortschritt: durchgeführte Aktionen, gelesene/modifizierte Dateien, aktueller Status | Orchestrator liest |
-| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Dieser Lauf | Endergebnis: Status (abgeschlossen/fehlgeschlagen), Zusammenfassung, geänderte Dateien, Akzeptanzkriterien-Checkliste | Orchestrator liest |
+| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Dieser Lauf | Endergebnis: Status (completed/failed), Zusammenfassung, geänderte Dateien, Akzeptanzkriterien-Checkliste | Orchestrator liest |
 | `session-metrics-{sessionId}.md` | Orchestrator | Optionale Sitzungsbelege: wesentliche Korrekturen, Nacharbeit, beurteilte Review-Befunde | QA liest |
 | `lessons-{sessionId}.md` | Orchestrator | Belegte Lessons für die Sitzung | Alle lesen |
 | `experiment-ledger-{sessionId}.md` | Orchestrator/QA | Belege für tatsächliche Experimente | Alle lesen |

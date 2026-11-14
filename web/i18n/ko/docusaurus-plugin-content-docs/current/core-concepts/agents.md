@@ -746,7 +746,7 @@ flowchart TD
 
 ### oma-image
 
-**도메인:** 인증 상태를 인지해 병렬로 디스패치하는 멀티 벤더 AI 이미지 생성(Codex `gpt-image-2`, `agy`를 통한 Antigravity Gemini 계열 “nano-banana” 모델. 정확한 모델은 내부에서 선택, Pollinations flux/zimage).
+**도메인:** 인증 상태를 인지해 병렬로 디스패치하는 멀티 벤더 AI 이미지 생성(Codex `gpt-image-2`, `agy`를 통한 Antigravity Gemini 계열 "nano-banana" 모델. 정확한 모델은 내부에서 선택, Pollinations flux/zimage).
 
 **사용 시기:** 이미지, 비주얼 에셋, 일러스트, 제품 사진, 콘셉트 아트, 목업을 생성할 때, 같은 프롬프트로 여러 이미지 모델의 결과를 비교할 때, 에디터 워크플로우 안에서 프롬프트로 이미지를 만들 때.
 
@@ -775,7 +775,7 @@ flowchart TD
 
 **핵심 규칙:**
 - detect-trap 먼저: 사전 점검 없이 엔진을 절대 실행하지 않음(`--force`는 사용자가 명시적으로 재확인한 경우에만)
-- 엔진 하나, 항상 최신: `oma market resolve`가 사용 전에 관리 사본(`~/.cache/oma-market/last30days/<tag>/`)을 갱신하며, 사용자가 설치한 오래된 사본은 오프라인에서 캐시가 전혀 없을 때만 쓰는 폴백
+- 엔진 하나, 스킬로 설치: `oma market resolve`는 skills CLI로 설치한 사본(또는 pin)을 읽고, `oma market update`는 없을 때 설치하고 있으면 업데이트하며, 그 전에 사용자 동의를 받습니다
 - 해석된 엔진의 `SKILL.md`를 그대로 따름. 유일한 대체는 원시 `python3 scripts/last30days.py` 호출 대신 `oma market run <args>`를 쓰는 것
 - WebSearch만으로 대신하지 않음: 엔진이 없거나, Python 3.12+가 없거나, 0이 아닌 종료 코드가 나오면 중단하고 보고
 - 키가 필요한 소스는 사용자 동의를 받아 업스트림 설정 마법사로만 활성화하며, 건너뛴 소스는 푸터에 계속 표시

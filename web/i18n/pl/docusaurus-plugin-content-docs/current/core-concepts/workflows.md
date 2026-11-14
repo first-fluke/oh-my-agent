@@ -117,7 +117,7 @@ flowchart TD
 
 ### /work {#work}
 
-**Opis:** Koordynacja wielu domen krok po kroku. Najpierw PM tworzy plan, potem agenci wykonują pracę w autoryzowanym zakresie, a następnie QA przegląda i zleca usunięcie problemów.
+**Opis:** Koordynacja wielu domen krok po kroku. Najpierw PM tworzy plan, potem agenci wykonują pracę w autoryzowanym zakresie, a następnie następuje przegląd QA i usunięcie problemów.
 
 **Trwały:** Tak. Plik stanu: `.agents/state/work-state-{sessionId}.json`.
 
@@ -353,7 +353,7 @@ Metodyka audytu Cloudflare służy do niezależnej weryfikacji i odtwarzania pro
 
 1. Odczytaj `.agents/skills/oma-security/SKILL.md` i tylko zasoby potrzebne dla danego celu i intencji.
 2. Określ cel (`source`, `skill`, `mcp` lub `web_runtime`) i intencję (`setup`, `scan`, `diff`, `pentest`, `triage`, `validate`, `ci` lub `troubleshoot`). Sprawdź wersję wybranego silnika, dostępny interfejs, poświadczenia i budżet wykonania.
-3. Uruchom wybrany silnik w uzgodnionym zakresie. W razie potrzeby wykorzystaj istniejący stan Deepsec. Dla wyraźnie zażądanego uruchomienia ARTEX przypisz do niego sprawdzoną, przypiętą wersję dostarczonej platformy, izolowane wdrożenie, konto, listę dozwolonych celów i budżet. ARTEX korzysta ze zweryfikowanego UI/API sprawdzonej migawki albo zadania ręcznego/zewnętrznego; automatyzacja CI wymaga zweryfikowanego adaptera i zapisów wykonania zadania.
+3. Uruchom wybrany silnik w uzgodnionym zakresie. W razie potrzeby wykorzystaj istniejący stan Deepsec. Dla wyraźnie zażądanego uruchomienia ARTEX przypisz do niego sprawdzoną, przypiętą wersję dostarczonej platformy, izolowane wdrożenie, konto, listę dozwolonych celów i budżet. ARTEX korzysta ze zweryfikowanego UI/API sprawdzonej migawki albo zadania ręcznego/zewnętrznego; automatyzacja CI wymaga zweryfikowanego adaptera i potwierdzeń zadań.
 4. Zachowaj surowe wyniki i kody wyjścia silników, a następnie znormalizuj ustalenia bez usuwania ich źródeł ani rozbieżności. Oceń kandydatów niezależnie; zapisz osobno weryfikację statyczną i zaobserwowane odtworzenie problemu.
 5. Zgłoś zakres sprawdzenia, ustalenia, dowody, niedokończone prace i właściwy wynik CI. Skieruj poprawki do specjalisty odpowiedzialnego za dany komponent.
 
@@ -652,7 +652,7 @@ Workflow może także zakończyć się naturalnie, gdy wszystkie kroki zostaną 
 | Funkcja w jednej domenie | Opisz zadanie → odpowiednia umiejętność → implementacja → ukierunkowana weryfikacja |
 | Złożony projekt wielodomenowy | `/work` → PM planuje → przegląd w autoryzowanym zakresie → uruchomienie agentów → przegląd QA → poprawki → raport |
 | Automatyczna implementacja równoległa | `/orchestrate` → załadowanie lub utworzenie planu → rozstrzygnięcie zależności → uruchomienie niezależnych zadań → weryfikacja → raport |
-| Pełny proces weryfikacji przed wydaniem | `/ultrawork` → PLAN (plan + 3 przeglądy) → IMPL → VERIFY (3 przeglądy) → REFINE (2 przeglądy + 3 działania refaktoryzacyjne) → SHIP (4 przeglądy) |
+| Dostarczenie o maksymalnej jakości | `/ultrawork` → PLAN (plan + 3 przeglądy) → IMPL → VERIFY (3 przeglądy) → REFINE (2 przeglądy + 3 działania refaktoryzacyjne) → SHIP (4 przeglądy) |
 | Badanie błędu | `/debug` → reprodukcja → przyczyna źródłowa → minimalna poprawka → test regresji → skan podobnych wzorców |
 | Pipeline od designu do implementacji | `/brainstorm` → dokument designu → `/plan` → podział zadań → `/orchestrate` → implementacja równoległa → `/review` → `/scm` |
 | Konfiguracja nowej bazy kodu | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |

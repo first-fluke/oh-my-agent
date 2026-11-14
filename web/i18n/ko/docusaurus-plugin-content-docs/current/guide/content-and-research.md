@@ -200,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft`는 산문, Writing Notes, Claim-Evidence Map을 반환합니다. `revise`는 원문·수정 블록과 구체적인 변경을 반환합니다. `review`는 문장 구조, 동사, 헤징, 구체성, anti-AI 패턴, 문단 명료성, 리듬, 주장과 증거의 정렬에 대해 PASS/FAIL을 반환합니다. 스킬은 revise/review에서 기존 초안을 처음부터 끝까지 읽고, 뒷받침되지 않는 주장을 약화하거나 제거하며, 영어 단계 뒤 비영어 출력은 `oma-translation`으로 넘깁니다.
 
-초안을 쓰기 전에 소스 발견과 사이드카 증거에는 `oma scholar`를 사용합니다. 인용이나 루브릭이 없으면 주장을 pending으로 표시하거나 필요한 제약을 요청합니다. 빈칸을 가짜 소스로 채우지 않습니다. 유용한 완료 산출물은 추적 가능한 증거 맵 또는 감사 보고서가 포함된 산문이며, 근거 없는 일반적인 “다듬은” 문장이 아닙니다.
+초안을 쓰기 전에 소스 발견과 사이드카 증거에는 `oma scholar`를 사용합니다. 인용이나 루브릭이 없으면 주장을 pending으로 표시하거나 필요한 제약을 요청합니다. 빈칸을 가짜 소스로 채우지 않습니다. 독자가 주장을 추적할 수 있도록 증거 맵 또는 감사 보고서와 함께 산문을 반환합니다.
 
 ## 복구 체크리스트 {#recovery-checklist}
 

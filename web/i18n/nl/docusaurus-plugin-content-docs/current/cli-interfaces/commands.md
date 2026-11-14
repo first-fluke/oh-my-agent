@@ -789,7 +789,7 @@ oma agent review --no-uncommitted
 oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 ```
 
-### Doel instellen {#goal-set}
+### goal set
 
 Koppel een doelcontract aan een actieve persistente workflow (orchestrate, ultrawork, work, ralph). Het contract wordt mechanisch afgedwongen door de Stop-hook van de persistente modus; voltooiing is daardoor geen inschatting van het model.
 

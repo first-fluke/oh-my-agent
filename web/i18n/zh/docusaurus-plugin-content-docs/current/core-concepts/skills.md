@@ -184,8 +184,8 @@ flowchart TD
 | 资源 | 用途 |
 |------|------|
 | **`result-contract.md`** | 智能体结果的运行标识、声明路径和完成契约。注入每个 `oma agent spawn` 提示；原生智能体通过 `oma agent begin`、`oma agent verify` 和 `oma agent finish` 遵循它。 |
-| **`memory-protocol.md`** | CLI 子智能体的内存文件格式和操作。定义使用可配置内存工具（read/write/edit）的 On Start、During Execution 和 On Completion 协议，并包含实验追踪扩展。 |
-| **`event-spec.md`** | 持久的工作流事件契约，追加到 OMA 主目录配置下的 `events.jsonl`，可用 `oma state get` 或 `oma state list` 查看。 |
+| **`memory-protocol.md`** | CLI 子智能体的记忆文件格式和操作。定义使用可配置记忆工具（read/write/edit）的 On Start、During Execution 和 On Completion 协议，并包含实验追踪扩展。 |
+| **`event-spec.md`** | 持久的工作流事件契约，追加到 OMA 主目录中该配置档下的 `events.jsonl`，可用 `oma state get` 或 `oma state list` 查看。 |
 | **`execution-protocols/claude.md`** | Claude Code 专用执行模式。供应商为 claude 时由 `oma agent spawn` 注入。 |
 | **`execution-protocols/antigravity.md`** | Antigravity CLI（`agy`）执行模式。 |
 | **`execution-protocols/codex.md`** | Codex CLI 专用执行模式。 |
@@ -306,7 +306,7 @@ oma agent context backend --difficulty Medium
 | 身份验证 | 栈参考资料中的 `snippets.md` + `tech-stack.md` |
 | 数据库迁移 | 栈参考资料中的 `snippets.md`；模式设计交给 oma-db |
 | 性能优化 | `orm-reference.md` 和技能提供的匹配示例 |
-| 修改现有代码 | 项目代码智能提供程序和相关执行资源 |
+| 修改现有代码 | 项目的代码智能提供商和相关执行资源 |
 
 <!-- oma-docs:ignore-end -->
 

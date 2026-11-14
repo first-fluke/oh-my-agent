@@ -205,7 +205,7 @@ Live evaluatie kan de isolatiegate doorstaan via het beschermde Claude- of het n
 
 ### Zien wat er is geëvolueerd {#seeing-what-evolved}
 
-Promoties verschijnen op drie plaatsen, op basis van de append-only lineage-logboeken:
+De lus kondigt zichzelf op drie plaatsen aan. Alle drie worden gelezen uit de append-only lineage-logboeken, niet uit een claim:
 
 - `oma skill promotions --all` print één zin per wijziging voor elke skill en de procedure: wat is bewerkt (het anchor en de vervanging van de geaccepteerde edit), de held-in- en held-out-lifts ervoor en erna, of de final test standhield en, bij een procedurepromotie, het gepaarde winstverschil, het interval en de skills waarop het is gemeten. `--skill <id>` beperkt tot één skill. Apply-records die door deze versie zijn geschreven, bevatten de geaccepteerde edits en training-lifts; oudere records vallen terug op hashes.
 - `oma doctor` toont een notitie **Evolution**: toegepaste en teruggedraaide skill-edits, de laatste wijziging per skill, procedurepromoties en wat wacht om te worden teruggekoppeld (vastgelegde incidenten zonder fixture, mislukte runs die nog niet zijn vastgelegd), met het commando dat ze zou verwerken.

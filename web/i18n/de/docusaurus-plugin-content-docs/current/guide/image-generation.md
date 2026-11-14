@@ -36,7 +36,7 @@ Der Skill ist CLI-first: Wenn die native CLI eines Vendors rohe Bild-Bytes zurü
 
 | Vendor | Strategie | Modelle | Trigger | Kosten |
 |---|---|---|---|---|
-| `pollinations` | Direktes HTTP | Kostenlos: `flux`, `zimage`. Credit-pflichtig: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` gesetzt (kostenlose Anmeldung unter [enter.pollinations.ai](https://enter.pollinations.ai)) | Kostenlos für `flux` / `zimage` |
+| `pollinations` | Direktes HTTP | Kostenlos: `flux`, `zimage`. Credit-pflichtig: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` gesetzt (kostenlose Anmeldung unter https://enter.pollinations.ai) | Kostenlos für `flux` / `zimage` |
 | `codex` | CLI-first über `codex exec` (ChatGPT OAuth) | `gpt-image-2` | `codex login` (kein API-Key erforderlich) | Wird Ihrem ChatGPT-Plan in Rechnung gestellt |
 | `antigravity` | `agy`-CLI über das Gemini-Code-Assist-Abonnement | Das Modell wird intern von `agy` ausgewählt | `agy` installiert und angemeldet | Keine Kosten pro Bild über Code Assist |
 

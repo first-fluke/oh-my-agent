@@ -93,7 +93,7 @@ sidebar_label: CLI 命令
 
 ### install（安装） {#install}
 
-不带参数运行 `oma` 会启动交互式运行时安装器。`oma install` 是显式形式，接受技能预设以及提供方选择选项。若只为单个任务临时加载指令，请参阅[选择设置](../getting-started/choose-setup.md)。
+不带参数运行 `oma` 会启动交互式运行时安装器。`oma install` 是显式形式，接受技能预设以及提供商选择选项。若只为单个任务临时加载指令，请参阅[选择设置](../getting-started/choose-setup.md)。
 
 ```bash
 oma
@@ -111,9 +111,9 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 | `--honcho-url <url>` | Honcho API 源地址（新连接的默认值：`http://127.0.0.1:8000`） |
 | `--honcho-workspace <id>` | Honcho 工作区 ID（新连接的默认值：`oma`） |
 
-省略 `--web-search`、`--code-intelligence` 和 `--semantic-memory` 时，会沿用已保存的提供方选择。选中 Honcho 提供方时，`--honcho-url` 和 `--honcho-workspace` 用于配置新的 Honcho 连接。根级 `-y, --yes` 标志会跳过提示并使用默认值；`--global` 以 `$OMA_HOME/.agents/`（默认为 `~/.oma/.agents/`）为目标。即使设置了 `OMA_HOME`，项目安装仍位于 `<cwd>/.agents/`。
+省略 `--web-search`、`--code-intelligence` 和 `--semantic-memory` 时，会沿用已保存的提供商选择。选中 Honcho 提供商时，`--honcho-url` 和 `--honcho-workspace` 用于配置新的 Honcho 连接。根级 `-y, --yes` 标志会跳过提示并使用默认值；`--global` 以 `$OMA_HOME/.agents/`（默认为 `~/.oma/.agents/`）为目标。即使设置了 `OMA_HOME`，项目安装仍位于 `<cwd>/.agents/`。
 
-`--preset` 优先于交互式技能提示和无人值守时的 `all` 默认值。未知名称、空值和 `custom` 会在安装前被拒绝。它只选择技能内容，不会过滤共享文件、工作流或智能体定义、钩子或提供方设置，并且会保留其他已安装的技能。因此[工作流依赖](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)可能与所选技能包不同。
+`--preset` 优先于交互式技能提示和无人值守时的 `all` 默认值。未知名称、空值和 `custom` 会在安装前被拒绝。它只选择技能内容，不会过滤共享文件、工作流或智能体定义、钩子或提供商设置，并且会保留其他已安装的技能。因此[工作流依赖](../getting-started/installation.md#workflows-that-need-skills-outside-a-preset)可能与所选技能包不同。
 
 **功能**：
 1. 检查是否存在旧版 `.agent/` 目录，如果找到，则迁移到 `.agents/`。
@@ -132,7 +132,7 @@ oma install --web-search native --code-intelligence gortex --semantic-memory age
 11. 在适用时提供 MCP 配置。
 12. 如果 `gh` 已通过身份验证，询问是否在 GitHub 上为仓库加星。
 
-最终摘要会列出所选技能，并使用实际存在的文件（包括保留的技能和条件分支）检查引用的技能清单。它会报告缺失或不可读的工作流/智能体技能引用，并指向该安装根目录的 `doctor` 命令。这只检查静态清单覆盖情况，不验证资源内容、工具、提供方和实际执行。
+最终摘要会列出所选技能，并使用实际存在的文件（包括保留的技能和条件分支）检查引用的技能清单。它会报告缺失或不可读的工作流/智能体技能引用，并指向该安装根目录的 `doctor` 命令。这只检查静态清单覆盖情况，不验证资源内容、工具、提供商和实际执行。
 
 **示例**：
 ```bash
@@ -163,7 +163,7 @@ oma doctor [--json] [--output <format>] [--profile] [--heal-check <agent-type>]
 - 每个 CLI 的身份验证状态。
 - Claude Code（`~/.claude.json`）和 Codex（`~/.codex/config.toml`）的 MCP 配置。
 - 已安装的技能：有哪些技能及其状态。
-- 内存存储目录：`.agents/state/memories/` 是否存在以及文件数量（较旧的项目会回退到旧版 `.serena/memories/` 路径）。
+- 记忆存储目录：`.agents/state/memories/` 是否存在以及文件数量（较旧的项目会回退到旧版 `.serena/memories/` 路径）。
 - 双重安装标记（项目与全局）及相关警告。
 - 推荐的**全局** Git 配置（JSON 中的 `gitRecommended`）：
   - `rerere.enabled=true`
@@ -321,7 +321,7 @@ oma dashboard terminal [--project-root <path>]
 
 监视 `<project>/.agents/state/memories/`，其中项目由 `--project-root` 指定（默认为当前目录）。不会自动回退到旧版 `.serena/memories/` 路径。用方框绘制字符渲染界面，显示会话状态、智能体表格和活动动态。每次文件变更都会刷新。按 `Ctrl+C` 退出。
 
-可以用 `MEMORIES_DIR` 环境变量覆盖内存目录。
+可以用 `MEMORIES_DIR` 环境变量覆盖记忆目录。
 
 **示例**：
 ```bash
@@ -347,7 +347,7 @@ oma dashboard web [--project-root <path>]
 | 变量 | 默认 | 说明 |
 |:---------|:--------|:-----------|
 | `DASHBOARD_PORT` | `9847` | HTTP/WebSocket 服务器的端口 |
-| `MEMORIES_DIR` | `<project-root>/.agents/state/memories` | 内存目录的路径；优先于 `--project-root` |
+| `MEMORIES_DIR` | `<project-root>/.agents/state/memories` | 记忆目录的路径；优先于 `--project-root` |
 
 **示例**：
 ```bash
@@ -391,7 +391,7 @@ oma stats reset [--json] [--output <format>]
 
 美元估算值并非精确的计费金额。在 `.agents/oma-config.yaml` 中配置 `session.quota_cap`，可在已记录的 token 用量或启动次数达到上限时阻止下一次启动。缺少原生用量时会保留显式估算值，且不会中断正在运行的子进程。参见[会话配额上限](../guide/configuration-reference.md#session-quota-caps)。
 
-指标存储在 `.agents/state/metrics.json` 中；如果存在旧版 `.serena/metrics.json`，也会读取。数据来自 Git 统计和内存文件。
+指标存储在 `.agents/state/metrics.json` 中；如果存在旧版 `.serena/metrics.json`，也会读取。数据来自 Git 统计和记忆文件。
 
 **示例**：
 ```bash
@@ -506,7 +506,7 @@ oma schedule sync
 
 `OMA_HOME` 用于选择全局存储根目录，默认为 `~/.oma`。定义使用其下的 `.agents/`；计划任务使用 `schedule/`；Serena 和 vault 键名索引使用 `state/`。配置档存储使用 `u/`，除非 `OMA_STATE_HOME` 显式指定了其他配置档根目录。
 
-迁移会保留原始内容，跳过完全相同的副本，合并 vault 键名，并报告目标位置冲突或正在使用中的数据。经过验证、由 OMA 拥有的技能目录可以先归档到 `$OMA_HOME/backup/legacy-global-skills/`，然后它们原来的发现路径会变为指向迁移后副本的受管链接。用户技能和外部链接保持不变。迁移不会移动供应商身份验证信息、操作系统钥匙串中的密钥或外部内存数据。全局 install/update 会自动执行此迁移。操作系统任务注册是独立的：如果存在计划任务，请在迁移后运行 `oma schedule sync`。
+迁移会保留原始内容，跳过完全相同的副本，合并 vault 键名，并报告目标位置冲突或正在使用中的数据。经过验证、由 OMA 拥有的技能目录可以先归档到 `$OMA_HOME/backup/legacy-global-skills/`，然后它们原来的发现路径会变为指向迁移后副本的受管链接。用户技能和外部链接保持不变。迁移不会移动供应商身份验证信息、操作系统钥匙串中的密钥或外部记忆数据。全局 install/update 会自动执行此迁移。操作系统任务注册是独立的：如果存在计划任务，请在迁移后运行 `oma schedule sync`。
 
 ### state list（列出状态） {#state-list}
 
@@ -523,7 +523,7 @@ oma state list --all-projects --search migration
 
 ### profile（配置档） {#profile}
 
-管理 `~/.oma/u/<slot>/` 下的本地存储配置档。槽位是非负十进制整数，与模型预设和提供方登录账户相互独立。
+管理 `~/.oma/u/<slot>/` 下的本地存储配置档。槽位是非负十进制整数，与模型预设和提供商登录账户相互独立。
 
 ```bash
 oma profile list --json
@@ -605,7 +605,7 @@ oma agent spawn mobile "Add biometric login" session-20260324-143000
 oma agent spawn backend "Try a Drizzle-based rewrite" session-20260324-143000 --isolation worktree
 ```
 
-**供应商故障转移**：回退候选必须在已安装的 CLI 配置中有对应的供应商条目。每次尝试都使用目标供应商的模型配置，并且同样要经过现有的会话配额检查。`pi` 多提供方代理不在这一初版供应商回退功能的范围内。此功能不会创建额外的提供方凭据或付费 API 路由。
+**供应商故障转移**：回退候选必须在已安装的 CLI 配置中有对应的供应商条目。每次尝试都使用目标供应商的模型配置，并且同样要经过现有的会话配额检查。`pi` 多提供商代理不在这一初版供应商回退功能的范围内。此功能不会创建额外的提供商凭据或付费 API 路由。
 
 启用故障转移后，任务会收到指令，在 `.agents/results/` 下准备本次运行专属的安全交接记录。后继运行会先读取这份记录并检查工作区，再继续完成剩余工作。如果配额耗尽时没有可用的检查点，运行会停止，并留下一条待审查（needs-review）记录。取消、普通任务失败和已完成的运行都不会触发新的尝试。`--read-only` 也不能免除检查点要求。
 
@@ -630,7 +630,7 @@ oma agent status <session-id> [agent-ids...] [--project-root <path>]
 
 | 标志 | 说明 | 默认 |
 |:-----|:-----------|:--------|
-| `--project-root <path>` | 要检查其运行记录、内存和 PID 文件的项目 | 当前目录 |
+| `--project-root <path>` | 要检查其运行记录、记忆和 PID 文件的项目 | 当前目录 |
 
 **状态值**：
 - `running`、`completed`、`partial`、`blocked`、`failed`：该智能体在本会话中最新一条运行记录的状态。如果一条 `running` 记录的运行进程已经不存在，则报告为 `failed`。
@@ -992,11 +992,11 @@ oma schedule sync --prune
 
 ---
 
-## 内存管理 {#memory-management}
+## 记忆管理 {#memory-management}
 
-### memory init（初始化内存） {#memory-init}
+### memory init（初始化记忆） {#memory-init}
 
-初始化协调内存存储架构。
+初始化协调记忆存储架构。
 
 ```text
 oma memory init [--json] [--output <format>] [--force]
@@ -1237,7 +1237,7 @@ echo '{"prompt":"brainstorm","cwd":"'$(pwd)'"}' \
   | oma hook run --vendor antigravity --event PreInvocation
 ```
 
-`oma hook script --vendor <v> --script <name>` 通过 CLI 内存适配器运行一个已安装的钩子处理器。
+`oma hook script --vendor <v> --script <name>` 通过 CLI 记忆适配器运行一个已安装的钩子处理器。
 
 ---
 
@@ -1359,7 +1359,7 @@ oma cleanup --json
 
 ### serena（Serena） {#serena}
 
-回收 Serena 按项目启动的语言服务器所占用的内存。Serena 会为每个打开的项目启动一套 LSP 栈（`tsserver`、`pyright` 等，约 300 MB），并在整个会话期间保持预热；同时打开多个项目时，占用会不断累积。回收器会终止空闲的 LSP 子进程；Serena 会自我修复，在下一次工具调用时重新启动它们（无需重启）。
+回收 Serena 按项目启动的语言服务器所占用的记忆。Serena 会为每个打开的项目启动一套 LSP 栈（`tsserver`、`pyright` 等，约 300 MB），并在整个会话期间保持预热；同时打开多个项目时，占用会不断累积。回收器会终止空闲的 LSP 子进程；Serena 会自我修复，在下一次工具调用时重新启动它们（无需重启）。
 
 ```text
 oma serena reap [--dry-run] [--quiet]
@@ -1375,7 +1375,7 @@ oma serena setup
 | 命令 | 说明 |
 |:--------|:-----------|
 | `serena reap` | 立即回收一次空闲的 LSP。交互式运行总会执行；`--quiet`（计划任务使用的路径）则遵循 `enabled` 选择启用设置。 |
-| `serena reap --dry-run` | 预览回收目标和预计释放的内存，不会终止任何进程。 |
+| `serena reap --dry-run` | 预览回收目标和预计释放的记忆，不会终止任何进程。 |
 | `serena reaper enable` | 安装每 5 分钟运行一次 `serena reap --quiet` 的后台任务（launchd / systemd timer / Windows 任务计划程序）。 |
 | `serena reaper disable` | 移除后台任务。 |
 | `serena daemon gc` | 停止在空闲宽限期内一直没有客户端的共享 Serena 守护进程。`--quiet` 会为周期性清理任务抑制输出。 |
@@ -1456,8 +1456,8 @@ oma search <subcommand> ...
 | `meta <url>` | 提取 OGP / JSON-LD / Schema.org 元数据 |
 | `rss fetch <url>` | 发现并解析 RSS / Atom feed |
 | `rss google <query>` | 为查询构建 Google News RSS URL（`--locale`，默认 `en-US`） |
-| `web <query>` | 使用所选的 Web 提供方搜索（`--provider`、`--limit`、`--timeout`） |
-| `providers` | 列出已注册的提供方，不发起网络请求 |
+| `web <query>` | 使用所选的 Web 提供商搜索（`--provider`、`--limit`、`--timeout`） |
+| `providers` | 列出已注册的提供商，不发起网络请求 |
 | `media <url>` | 通过 `yt-dlp` 提取媒体元数据（支持 1858 个站点） |
 | `archive <url>` | 通过 AMP / archive.today / Wayback 回退抓取 |
 | `trust <domain>` | 解析域名的信任级别和评分 |
@@ -1620,11 +1620,11 @@ oma video compose <runDir> --output json
 oma video render <runDir> --output json
 ```
 
-`generate` 接受 `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout` 和 `--capture-stop duration:<seconds>|selector:<css>`。demo 使用你通过 `--capture` 提供的录制文件；默认为 `--source file`，`--source web --url <url>` 只会把该 URL 作为上下文加入（CLI 不会打开浏览器，也不会录制）。`--polish` 让采集内容经过 `Demo` 组合，个人信息在其中被遮蔽；不加该选项时，输出的 MP4 就是未经遮蔽的原始采集内容。`--visual stock` 和 `--visual aigc` 在设置了相应密钥时选择 Pexels 和 Pixelle 提供方；幻灯片视觉素材需要脚本中的 `visual.ref` 指向已有的演示文稿目录。`--output-dir` 选择运行根目录，`--allow-external-output` 允许使用 `$PWD` 之外的路径，`--max-usd` 设置成本上限，`-y, --yes` 跳过成本确认，`--seed` 稳定规划输入，`--timeout` 限制每次视觉和音乐提供方调用的时长，`--script` 注入由智能体编写的 `script.json`，`--no-brief-in-manifest` 只存储简述的哈希，而不存储原文。`--dry-run` 在规划完成后停止。`--output text|json` 控制 CLI 输出信封。
+`generate` 接受 `--mode shorts|explainer|demo`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor hyperframes|mpt`、`--capture`、`--source file|web`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout` 和 `--capture-stop duration:<seconds>|selector:<css>`。demo 使用你通过 `--capture` 提供的录制文件；默认为 `--source file`，`--source web --url <url>` 只会把该 URL 作为上下文加入（CLI 不会打开浏览器，也不会录制）。`--polish` 让采集内容经过 `Demo` 组合，个人信息在其中被遮蔽；不加该选项时，输出的 MP4 就是未经遮蔽的原始采集内容。`--visual stock` 和 `--visual aigc` 在设置了相应密钥时选择 Pexels 和 Pixelle 提供商；幻灯片视觉素材需要脚本中的 `visual.ref` 指向已有的演示文稿目录。`--output-dir` 选择运行根目录，`--allow-external-output` 允许使用 `$PWD` 之外的路径，`--max-usd` 设置成本上限，`-y, --yes` 跳过成本确认，`--seed` 稳定规划输入，`--timeout` 限制每次视觉和音乐提供商调用的时长，`--script` 注入由智能体编写的 `script.json`，`--no-brief-in-manifest` 只存储简述的哈希，而不存储原文。`--dry-run` 在规划完成后停止。`--output text|json` 控制 CLI 输出信封。
 
-`doctor` 检查缓存的 HyperFrames/MPT 工具链，接受 `--install`、`--upgrade`、`--install-mpt` 和 `--install-strudel`。`provider list` 报告提供方的可用性和密钥状态。`compose` 为运行搭建或刷新组合，并报告编写契约；`render` 对输出执行 lint、渲染和探测。缺少合成器、组合或工具链依赖都会报错。仅供测试使用的 `OMA_VIDEO_MOCK=1` 路径是唯一的占位模式；正常运行绝不会用文本或极小的文件冒充 MP4。
+`doctor` 检查缓存的 HyperFrames/MPT 工具链，接受 `--install`、`--upgrade`、`--install-mpt` 和 `--install-strudel`。`provider list` 报告提供商的可用性和密钥状态。`compose` 为运行搭建或刷新组合，并报告编写契约；`render` 对输出执行 lint、渲染和探测。缺少合成器、组合或工具链依赖都会报错。仅供测试使用的 `OMA_VIDEO_MOCK=1` 路径是唯一的占位模式；正常运行绝不会用文本或极小的文件冒充 MP4。
 
-成功时的 JSON 输出包含 `runDir`、`manifestPath`、`scriptPath` 和 `renderSpecPath`；清单记录所选的提供方、输入和生成的素材。运行 `compose` 后，按照生成的 `AUTHORING.md` 编写组合，然后重新运行 `render`。如果缺少提供方密钥，运行 `oma video doctor`；如果 demo 运行停下并给出录制说明，请通过 `--capture` 提供录制文件；如果渲染失败，先修复组合诊断中报告的问题再重试。
+成功时的 JSON 输出包含 `runDir`、`manifestPath`、`scriptPath` 和 `renderSpecPath`；清单记录所选的提供商、输入和生成的素材。运行 `compose` 后，按照生成的 `AUTHORING.md` 编写组合，然后重新运行 `render`。如果缺少提供商密钥，运行 `oma video doctor`；如果 demo 运行停下并给出录制说明，请通过 `--capture` 提供录制文件；如果渲染失败，先修复组合诊断中报告的问题再重试。
 
 ### star（Star） {#star}
 
@@ -1747,7 +1747,7 @@ oma scholar get "10.48550/arXiv.1706.03762"
 oma scholar lint paper.knows.yaml
 ```
 
-`search` 可以用 `--year-min` 限制 OpenAlex 结果，用 `--always-fallback` 强制使用回退提供方。`get --section` 接受 `statements`、`evidence`、`relations`、`artifacts` 或 `citation`。`lint --lenient` 会把悬空的跨记录引用降级为警告；`--fail-on-warning` 让警告在 CI 中也算失败。CLI 先搜索 Knows，再回退到 OpenAlex 和 Semantic Scholar；它不会向上游提交 sidecar。
+`search` 可以用 `--year-min` 限制 OpenAlex 结果，用 `--always-fallback` 强制使用回退提供商。`get --section` 接受 `statements`、`evidence`、`relations`、`artifacts` 或 `citation`。`lint --lenient` 会把悬空的跨记录引用降级为警告；`--fail-on-warning` 让警告在 CI 中也算失败。CLI 先搜索 Knows，再回退到 OpenAlex 和 Semantic Scholar；它不会向上游提交 sidecar。
 
 ### explain（解释） {#explain}
 
@@ -1781,9 +1781,9 @@ oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html
 
 `diagram resolve` 接受 `--engine auto|archify|mermaid`、`--refresh` 和 `--offline`。`diagram update` 刷新受管的 archify 副本。`diagram archify` 把剩余参数转发给解析出的上游可执行文件，并传回其退出码。Mermaid 仍是 Markdown 中的事实来源；HTML 是派生产物。参见[图表引擎](../guide/diagram-engine.md)。
 
-## 状态、模型与内存检查 {#state-model-and-memory-inspection}
+## 状态、模型与记忆检查 {#state-model-and-memory-inspection}
 
-以下命令族用于查看持久的工作流状态，以及模型和提供方诊断。对清理类操作，优先使用 `--dry-run`；结果要交给其他程序处理时，使用 `--json`。
+以下命令族用于查看持久的工作流状态，以及模型和提供商诊断。对清理类操作，优先使用 `--dry-run`；结果要交给其他程序处理时，使用 `--json`。
 
 ### state（状态） {#state}
 
@@ -1833,7 +1833,7 @@ oma agent resume "$SESSION_ID" --dry-run
 
 `agent context` 加载按图选出的上下文；`begin` 启动一次运行，并打印生成的运行 ID 和声明文件路径；`verify` 接收这个运行 ID，执行固定的检查（`--required`）、用 `--affected` 缩小检查范围，或者运行 `--` 之后的命令并记录其退出码；`finish` 接收运行 ID 和声明文件路径。`agent resume <session-id> --dry-run` 报告已就绪和可复用的任务，`agent resume <session-id> --max-attempts <n>`（默认 `3`）只重试计划允许的任务。`agent verify` 和 `agent resume` 接受 `--project-root <path>`，用于指定其他项目。计划和声明的结构参见[智能体结果与恢复](../guide/agent-results-and-resume.md)。这些命令服务于 OMA 执行契约；普通的用户工作可以改用 `agent spawn`、`agent parallel` 或 `agent review`。
 
-### memory（内存） {#memory}
+### memory（记忆） {#memory}
 
 ```bash
 oma memory status --json
@@ -2219,7 +2219,7 @@ oma version
 |:---------|:-----------|:--------|
 | `OH_MY_AG_OUTPUT_FORMAT` | 设为 `json` 时，默认输出 JSON；显式传入 `--output text` 时以它为准 | 使用共享 `--json` / `--output` 选项的命令 |
 | `DASHBOARD_PORT` | Web 仪表盘的端口 | `dashboard web` |
-| `MEMORIES_DIR` | 覆盖内存目录路径 | `dashboard terminal`、`dashboard web` |
+| `MEMORIES_DIR` | 覆盖记忆目录路径 | `dashboard terminal`、`dashboard web` |
 | `OMA_BRIDGE_URL` | 让 `oma bridge` 连接到调用方自行管理的 Serena 端点，作用与 `url` 参数相同 | `bridge` |
 | `OMA_GATE_TIMEOUT_MS` | 调低由 `oma goal set --gate` 设置的 25 秒停止关卡预算 | 持久化模式的 Stop 钩子 |
 | `OMA_HOOK_DEDUP` | 设置为 `0` 可禁用 `oma hook run` 中的重复投递抑制。 | `hook run` |

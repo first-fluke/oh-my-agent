@@ -5,7 +5,7 @@ description: "Mapa instalacji oh-my-agent przeznaczona dla czytelnika: SSOT w .a
 
 # Struktura projektu {#project-structure}
 
-Po instalacji oh-my-agent projekt zyskuje dwa podstawowe drzewa katalogów: `.agents/` (jedyne źródło prawdy, w tym magazyn koordynacji `.agents/state/memories/`) oraz warstwy integracji runtime'u (np. `.claude/`, `.cursor/`, `.codex/`). Jeśli jako dostawcę inteligencji kodu wybierzesz Serenę, może też istnieć opcjonalny katalog `.serena/` na potrzeby pamięci onboardingu Sereny. Ta strona wyjaśnia wspólne pliki oraz opcjonalne i generowane ścieżki, które mają znaczenie podczas diagnozowania problemów.
+Po instalacji oh-my-agent projekt zyskuje dwa podstawowe drzewa katalogów: `.agents/` (jedyne źródło prawdy, w tym magazyn koordynacji `.agents/state/memories/`) oraz warstwy integracji runtime'u (np. `.claude/`, `.cursor/`, `.codex/`). Jeśli Serena jest dostawcą inteligencji kodu, opcjonalny katalog `.serena/` może zawierać pamięci onboardingu Sereny.
 
 ---
 
@@ -488,7 +488,7 @@ Tu agenci zapisują postęp podczas sesji orkiestracji. To kanoniczny magazyn pa
 | `orchestrator-session-{sessionId}.md` | Orchestrator | Metadane sesji: ID, status, czas rozpoczęcia, bieżąca faza |
 | `task-board-{sessionId}.md` | Orchestrator | Przydziały zadań: agent, zadanie, priorytet, status, zależności |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | To uruchomienie | Aktualizacje tury: podjęte działania, przeczytane/zmodyfikowane pliki, bieżący status |
-| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | To uruchomienie | Końcowy wynik: status ukończenia, podsumowanie, zmienione pliki, checklista |
+| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | To uruchomienie | Końcowy wynik: status ukończenia, podsumowanie, zmienione pliki, kryteria akceptacji |
 | `session-metrics.md` | Orchestrator | Istotne korekty i dowody z eksperymentów |
 | `experiment-ledger-{sessionId}.md` | Orchestrator/QA | Wiersze dowodów dla rzeczywistych eksperymentów |
 | `lessons-{sessionId}.md` | Orchestrator | Wnioski poparte dowodami z eksperymentów (warunkowo) |

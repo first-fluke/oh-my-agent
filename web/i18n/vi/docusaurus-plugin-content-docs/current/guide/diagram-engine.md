@@ -170,7 +170,7 @@ Trường hợp archify không resolve được đã được bao quát trong [b
 
 ---
 
-## Bước tiếp theo {#related}
+## Bước tiếp theo {#next-steps}
 
 - [Code Explainer](./code-explainer.md) — workflow `/explain` và archify sidecar tùy chọn của nó
 - [`/architecture` workflow](../core-concepts/workflows.md#architecture) — ADR và review chứa Mermaid block

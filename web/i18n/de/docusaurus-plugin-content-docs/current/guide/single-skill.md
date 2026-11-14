@@ -6,7 +6,7 @@ description: Detaillierte Anleitung für Einzeldomänen-Aufgaben in oh-my-agent 
 
 # Einzelne Skill-Ausführung
 
-Einzelne Skill-Ausführung ist der schnelle Weg: ein Agent, eine Domäne, eine fokussierte Aufgabe. Es gibt keinen Orchestrierungsaufwand und keine Multi-Agenten-Koordination. Ein Host oder ausgewählter Workflow kann einen natürlichsprachlichen Prompt an den Skill routen; das Hook-System ergänzt anhand von Keywords Skill-Hinweise, und das Routing hängt von der ausgewählten Laufzeit ab.
+Die Ausführung mit einem einzelnen Skill weist einem Agenten eine fokussierte Aufgabe in einer Domäne zu. Sie vermeidet Multi-Agenten-Koordination. Ein Host oder ausgewählter Workflow kann einen natürlichsprachlichen Prompt an den Skill routen; das Hook-System ergänzt anhand von Keywords Skill-Hinweise, und das Routing hängt von der ausgewählten Laufzeit ab.
 
 ## Schnellweg
 

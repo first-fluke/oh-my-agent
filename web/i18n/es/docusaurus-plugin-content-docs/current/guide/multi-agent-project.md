@@ -132,7 +132,7 @@ La **resolución del prompt** permite que el argumento `<prompt>` sea texto inli
 /review
 ```
 
-El flujo de revisión sigue estos pasos:
+El flujo de revisión ejecuta un pipeline de QA completo:
 
 1. **Identificar el alcance**: toma el alcance de la solicitud (archivos concretos, una rama de funcionalidad, un PR o todo el proyecto). Si no se indica un alcance, revisa los cambios actuales sin confirmar y los de la rama y declara esa suposición; solo pregunta cuando no hay nada a partir de lo cual acotar.
 2. **Comprobaciones de seguridad automatizadas**: ejecuta `npm audit`, `bandit` o el equivalente.
@@ -163,7 +163,7 @@ El ID de sesión se usa para:
 - Correlacionar archivos de log en el mismo directorio: `subagent-{session-id}-{agent-id}.log`.
 - Agrupar resultados en `.agents/results/parallel-{timestamp}/`.
 
-El ID de sesión se genera en el Paso 2 de `/orchestrate` y se entrega a todos los agentes generados. Así se pueden rastrear la sesión, los logs y los archivos PID de una misma ejecución.
+El ID de sesión se genera en el Paso 2 de `/orchestrate` y se entrega a todos los agentes generados. Así, todos los agentes, los logs y los archivos PID de una misma ejecución se pueden rastrear hasta una sola sesión.
 
 ---
 
@@ -185,7 +185,7 @@ Cuando se omite `-w` (o se establece en `.`), la CLI detecta el mejor workspace 
 | backend | api, backend, server, service, gateway, core |
 | mobile | mobile, ios, android, native, rn, expo |
 
-4. La coincidencia exacta con el nombre del directorio obtiene 100 puntos, una coincidencia de contenido obtiene 50 y una coincidencia en la ruta obtiene 25.
+4. La coincidencia exacta con el nombre del directorio obtiene 100 puntos, si el nombre contiene la palabra clave obtiene 50 y si la ruta la contiene obtiene 25.
 5. Gana el directorio con la puntuación más alta.
 
 ### Candidatos de respaldo
@@ -225,7 +225,7 @@ Los contratos API son el mecanismo de sincronización entre agentes. La regla de
 
 4. **Las violaciones de contrato se detectan durante el monitoreo.** El Paso 5 de `/work` usa el proveedor configurado de inteligencia de código para verificar la alineación del contrato API entre agentes. La búsqueda nativa solo se usa para rutas fuera del proyecto o rutas ignoradas.
 
-5. **La revisión QA comprueba el cumplimiento del contrato.** La revisión de alineación del agente QA (Paso 6 de ultrawork y Paso 6 de work) compara explícitamente la implementación con el plan, incluidos los contratos API.
+5. **La revisión QA comprueba el cumplimiento del contrato.** La revisión de alineación del agente QA (Paso 6 de ultrawork) compara explícitamente la implementación con el plan, incluidos los contratos API.
 
 Sin contratos, un agente de backend podría devolver `{ "user_id": 1 }` mientras el agente de frontend consume `{ "userId": 1 }`. La regla de contratos primero evita este tipo de bug de integración.
 
@@ -332,11 +332,11 @@ Generar agentes de backend y frontend sin definir primero los contratos hace que
 
 ### 4. Ignorar los hallazgos de QA
 
-Tratar la revisión QA como opcional. Los hallazgos CRITICAL y HIGH son bloqueadores, y el flujo repite la revisión hasta resolverlos.
+Tratar la revisión QA como opcional. Los hallazgos CRITICAL y HIGH representan bugs reales que aparecerán en producción. El flujo lo impone repitiendo el ciclo hasta que no queden bloqueadores.
 
 ### 5. Coordinación manual de archivos
 
-Intentar fusionar manualmente los resultados en lugar de usar el pipeline de verificación y QA para integrar el trabajo. Este pipeline ejecuta las comprobaciones declaradas y la revisión de QA.
+Intentar fusionar manualmente las salidas de los agentes en lugar de dejar que el pipeline de verificación y QA gestione la integración. El pipeline automatizado detecta problemas que una revisión manual no ve.
 
 ### 6. Paralelización excesiva
 

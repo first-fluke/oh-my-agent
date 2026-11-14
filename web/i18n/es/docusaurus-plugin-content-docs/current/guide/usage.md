@@ -83,7 +83,7 @@ Build a TODO app with user authentication, task CRUD, and a mobile companion app
      - Nivel 3: revisión QA.
    - Guarda el resultado en `.agents/results/plan-{sessionId}.json`.
 
-4. **Paso 2, revisar el plan:** El agente presenta el plan y continúa dentro de la autorización existente; solo pregunta por una decisión relevante o una autorización nueva.
+4. **Paso 2, revisar el plan:** El agente presenta el plan y continúa dentro de la autorización existente; solo pregunta cuando falta una decisión relevante o hace falta una autorización nueva.
 
 5. **Paso 3, generar agentes por nivel de prioridad:**
    ```bash
@@ -137,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Paso 6, buscar patrones similares:** MCP `search_for_pattern` busca otras llamadas `.map()` sobre arrays potencialmente undefined.
    - Encuentra 3 patrones similares en `user-list.tsx`, `comment-list.tsx` y `notification-list.tsx`.
    - Aplica de forma proactiva el mismo patrón de corrección.
-8. **Paso 7, documentar:** El informe del bug se escribe en la memoria con causa raíz, corrección y prevención.
+8. **Paso 7, documentar:** El informe del bug se escribe en `.agents/results/bugs/` con la causa raíz, la corrección y la prevención.
 
 ---
 
@@ -249,7 +249,7 @@ Las tareas entre proveedores y `model_preset: free` usan `oma agent spawn`. El d
 | `/work` | Persistente | Planificación, implementación y QA multidominio paso a paso dentro del alcance autorizado | Funcionalidades que cruzan dominios y requieren entrega coordinada |
 | `/ultrawork` | Persistente | Flujo de calidad en 5 fases y 17 pasos con 12 checkpoints de revisión aislados | Entregas de máxima calidad y código crítico para producción |
 | `/plan` | No persistente | Desglose dirigido por PM, contratos de API y artefactos de plan rastreados en `docs/plans/work/` (secuenciales `NNN-name.md`, campo Status para el ciclo de vida) | Antes de trabajo multiagente complejo; funcionalidades complejas con progreso y decisiones registradas |
-| `/brainstorm` | No persistente | Ideación orientada al diseño con 2-3 propuestas de enfoque | Antes de comprometerse con un enfoque de implementación |
+| `/brainstorm` | No persistente | Exploración de enfoques con 2-3 propuestas y un borrador en `docs/decisions/` | Antes de comprometerse con un enfoque de implementación |
 | `/deepinit` | No persistente | Inicialización completa del proyecto (AGENTS.md, ARCHITECTURE.md, docs/) | Configurar oh-my-agent en un código existente |
 | `/review` | No persistente | Pipeline QA: seguridad OWASP, rendimiento, accesibilidad y calidad de código. El alcance procede de la solicitud y, por defecto, son los cambios actuales | Antes de fusionar código o del despliegue |
 | `/security` | No persistente | Escanear código fuente de la aplicación, habilidades de agentes o componentes MCP, validar hallazgos y configurar gates de seguridad mediante `oma-security`. Las pruebas de penetración de un despliegue web de prueba acotado solo se ejecutan contra una plataforma de runtime aportada por el usuario y revisada | Antes de un release o cuando un cambio necesita un escaneo o gate de seguridad |
@@ -303,7 +303,7 @@ El preset `all` del instalador sigue el registro activo. La tabla agrupa cada ha
 | Habilidad | Ideal para | Salida principal |
 |-----------|------------|------------------|
 | **oma-academic-writing** | Redacción, revisión y auditoría académica anti-IA | Prosa orientada a publicación y revisión de afirmaciones/evidencia |
-| **oma-architecture** | Límites de sistema, compromisos y ADR | Recomendación arquitectónica o registro de decisión |
+| **oma-architecture** | Límites de sistema, compromisos y ADR | Informes en `.agents/results/architecture/`; registros de decisión en `docs/decisions/` |
 | **oma-backend** | APIs, auth, lógica de servidor y migraciones | Cambios y verificación de router/service/repository |
 | **oma-brainstorm** | Ideas ambiguas y comparación de enfoques | Borrador de decisión en `docs/decisions/` |
 | **oma-coordination** | Reglas de coordinación compartidas para `/work`, `/orchestrate` y `/ultrawork`; coordinación manual paso a paso | Guía de reutilización del plan, alineación de contratos, propiedad de workspaces y handoff a QA |
@@ -345,12 +345,12 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Ambos comandos observan `.agents/state/memories/` bajo el directorio actual. Pasa `--project-root <path>` para observar otro proyecto, o define `MEMORIES_DIR`. La tabla de agentes tiene cuatro columnas:
+Ambos comandos observan `.agents/state/memories/` para el progreso y `.agents/results/` para los informes `result-*.md`, bajo el directorio actual. Pasa `--project-root <path>` para observar otro proyecto. Definir `MEMORIES_DIR` mantiene el dashboard en ese único directorio personalizado. La tabla de agentes tiene cuatro columnas:
 
 | Columna | Origen |
 |---------|--------|
 | Agent | `task-board.md`, o los nombres de agentes descubiertos en los archivos de memoria |
-| Status | Símbolos de terminal: ● en ejecución (verde), ✓ completado (cian), ✗ fallido (rojo), ○ bloqueado (amarillo), ◌ pendiente (atenuado) |
+| Status | Símbolos de terminal: ● running (verde), ✓ completed (cian), ✗ failed (rojo), ○ blocked (amarillo), ◌ pending (atenuado) |
 | Turn | `turn: N` en el archivo `progress-<agent>*.md` del agente |
 | Task | Texto de la tarea del task board o del archivo del agente |
 
@@ -390,7 +390,7 @@ Los agentes se coordinan mediante archivos persistentes en `.agents/state/memori
 
 Usa `docs/decisions/` para las propuestas de enfoque y los ADR, con un campo `Status` como `draft`, `accepted` o `superseded`. El diseño de UI va en `DESIGN.md`. Los planes de trabajo permanecen en `docs/plans/work/` y los contratos de API adoptados, en `docs/plans/contracts/`.
 
-Los informes de ejecución y los borradores de contratos van en `.agents/results/`. Cuando un documento pasa a ser una referencia mantenida del proyecto, muévelo al directorio `docs/` correspondiente y deja un enlace en su ubicación anterior. Consulta [Estructura de artefactos](./artifact-layout.md) para ver la estructura completa y los comandos de migración.
+Los informes de ejecución y los borradores de contratos van en `.agents/results/`. Cuando un documento pasa a ser una referencia mantenida del proyecto, muévelo al directorio `docs/` correspondiente y deja un enlace en su ubicación anterior. Consulta [Disposición de artefactos](./artifact-layout.md) para ver la disposición completa y los comandos de migración.
 
 ### Workspaces
 
@@ -452,7 +452,7 @@ A continuación se muestran los problemas comunes. Para mensajes de error, fallo
 - Un bug con un mensaje de error: [Corrección de bugs](./bug-fixing.md)
 - Observar una ejecución: [Monitoreo del dashboard](./dashboard-monitoring.md)
 - Auditar o reanudar resultados de agentes: [Resultados y reanudación](./agent-results-and-resume.md)
-- Buscar o migrar documentos de OMA: [Estructura de artefactos](./artifact-layout.md)
+- Buscar o migrar documentos de OMA: [Disposición de artefactos](./artifact-layout.md)
 - Algo falló: [Solución de problemas](./troubleshooting.md)
 - Detalles de integración del proyecto: [Guía de integración](./integration.md)
 - Términos usados en estas guías: [Glosario](../getting-started/glossary.md)

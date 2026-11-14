@@ -1,6 +1,6 @@
 ---
 title: 智能体
-description: OMA 技能目录（由 SKILL.md 生成）、调度角色、智能体定义及其原生投影、各技能规则、授权与澄清、范围规则、工作区策略、编排审查循环和运行时内存的参考。
+description: OMA 技能目录（由 SKILL.md 生成）、调度角色、智能体定义及其原生投影、各技能规则、授权与澄清、范围规则、工作区策略、编排审查循环和运行时记忆的参考。
 ---
 
 # 智能体
@@ -121,7 +121,7 @@ flowchart TD
 | **规划** | oma-pm | 需求分解、任务拆分、API 契约、优先级分配 |
 | **实现** | oma-frontend、oma-backend、oma-mobile、oma-db | 在各自领域编写代码 |
 | **设计** | oma-design | 设计系统、DESIGN.md、令牌、排版、色彩、动效、无障碍 |
-| **基础设施** | oma-tf-infra | 多云 Terraform 配置、IAM、成本优化、策略即代码 |
+| **基础设施** | oma-tf-infra | 多云 Terraform 部署、IAM、成本优化、策略即代码 |
 | **DevOps** | oma-dev-workflow | mise 任务运行器、CI/CD、迁移、发布协调、单体仓库自动化 |
 | **可观测性** | oma-observability | 可观测性管道、可追溯性路由、MELT+P 信号（metrics/logs/traces/profiles/cost/audit/privacy）、SLO 管理、事件取证、传输层调优 |
 | **质量** | oma-qa | 安全审计（OWASP）、性能、无障碍（WCAG）、代码质量审查 |
@@ -129,7 +129,7 @@ flowchart TD
 | **本地化** | oma-translation | 保留语气、语域和领域术语的上下文感知翻译 |
 | **协调** | oma-orchestration、oma-coordination | 自动化多智能体编排；共享协调规则和手动逐步协调 |
 | **Git** | oma-scm | Conventional Commits 生成、按功能拆分提交 |
-| **搜索与检索** | oma-search | 面向外部来源并附带引用的搜索路由（Context7 文档、网络提供程序、`gh`/`glab` 远程代码、已知 URL 抓取） |
+| **搜索与检索** | oma-search | 面向外部来源并附带引用的搜索路由（Context7 文档、网络提供商、`gh`/`glab` 远程代码、已知 URL 抓取） |
 | **回顾** | oma-recap | 跨工具对话历史分析与主题化工作摘要 |
 | **文档处理** | oma-hwp、oma-pdf | 将 HWP/HWPX/HWPML 和 PDF 转为 Markdown，供 LLM/RAG 摄取 |
 | **文档** | oma-docs | 文档维护：损坏引用、受 diff 影响的文档、翻译漂移，以及译文文档 lint |
@@ -201,7 +201,7 @@ flowchart TD
 - 任务必须可由单个智能体完成
 - 输出 JSON 计划，作为交给编排器的交接物；任务看板由编排器创建并负责
 
-**输出：** `.agents/results/plan-{sessionId}.json`，使用数字优先级层级（`1` = 独立，层级越低越先运行），以及配置的内存存储中运行范围的报告 `result-{agentId}-{taskId}-{runId}-{sessionId}.md`。
+**输出：** `.agents/results/plan-{sessionId}.json`，使用数字优先级层级（`1` = 独立，层级越低越先运行），以及配置的记忆存储中运行范围的报告 `result-{agentId}-{taskId}-{runId}-{sessionId}.md`。
 
 ---
 
@@ -324,7 +324,7 @@ flowchart TD
 - 记录所有三个模式层：外部、概念、内部
 - 完整性是核心：实体、域、引用、业务规则
 - 并发永远不是隐式的：定义事务边界和隔离级别
-- 向量数据库是检索基础设施，不是数据源头
+- 向量数据库是检索基础设施，不是事实来源
 - 不要将向量搜索当作词法搜索的直接替代品
 
 **必需交付物：** 外部模式摘要、概念模式、内部模式、数据标准表、术语表、容量估算、备份/恢复策略。向量/RAG：嵌入版本策略、分块策略、混合检索策略。
@@ -594,13 +594,13 @@ flowchart TD
 - 显式的 `--docs`、`--code` 或 `--web` 决定路由；否则由技能选择一条主路由，仅在选择不明确时才使用 `resources/intent-rules.md`
 - 只有剩余的证据缺口需要时才增加另一条路由；该技能默认不会扇出到多条路由
 - `--strict` 要求使用合适的一手或官方来源，且支持内容已经过检查；`--wide` 纳入范围更广的结果并说明其局限；`--gitlab` 选择 GitLab 作为代码托管方
-- 结果带有来源 URL 或文件引用、路由、实际使用的提供程序、来源类型、内容读取状态、支持证据和重要的局限
+- 结果带有来源 URL 或文件引用、路由、实际使用的提供商、来源类型、内容读取状态、支持证据和重要的局限
 - 搜索摘要和摘录只是有限的证据；未读过的来源会被标明
-- 不编造信任分：提供程序名称或域标签并不能验证某一条具体主张。`oma search trust <domain>` 是可选的域诊断，需要解读来源出处时适用 `resources/source-provenance.md`
-- 网络提供程序不可用、未认证或被限流时会如实报告；明确选定的提供程序不会被悄悄换成原生搜索
+- 不编造信任分：提供商名称或域标签并不能验证某一条具体主张。`oma search trust <domain>` 是可选的域诊断，需要解读来源出处时适用 `resources/source-provenance.md`
+- 网络提供商不可用、未认证或被限流时会如实报告；明确选定的提供商不会被悄悄换成原生搜索
 - 搜索没有候选 URL 时，在原有约束内细化查询或报告无结果；URL 抓取不能替代缺失的搜索结果
 - 没有来源满足 `--strict` 时，报告这一缺口；范围更广的结果集不能满足严格请求
-- 不会自动安装任何东西：提供程序、浏览器或依赖都不会
+- 不会自动安装任何东西：提供商、浏览器或依赖都不会
 
 ---
 
@@ -817,7 +817,7 @@ flowchart TD
 **模式：** Generate、Validate、Review、Analyze、Compare、Remote（搜索或获取）。
 
 **核心规则：**
-- 目标规范是 v0.9.0 / `paper@1` 配置；由宿主 LLM 生成 sidecar（绝不调用外部 LLM SDK）
+- 目标规范是 v0.9.0 / `paper@1` 配置档；由宿主 LLM 生成 sidecar（绝不调用外部 LLM SDK）
 - 防止编造：若源文未显示 DOI、期刊或年份，则完全省略该键；永远不要写 `doi: TODO` 或猜测
 - 字段形态严格遵循 `resources/sidecar-spec.md`：字段名、单个 `provenance.actor` 对象、封闭枚举、不加引号的数字，以及带前缀的 kebab-case ID
 - 本地生成规则和 lint 跟随的是生产兼容性，而非完整的 v0.9 规范 schema；导入或 lint 第三方记录时，差异由 `resources/canonical-delta.md` 说明
@@ -899,7 +899,7 @@ flowchart TD
 
 **领域：** 通过 Voicebox 在本地生成和转录语音，并用 FFmpeg 对现有音频做转换、时长适配和响度处理。
 
-**何时使用：** 生成智能体任务完成或阻塞时的短通知音频，制作旁白或音频素材（mp3 或 wav），将本地音频文件（mp3、wav、m4a、webm、flac）转录为 Markdown，对不同 profile id 重新运行相同文本以比较语音配置。
+**何时使用：** 生成智能体任务完成或阻塞时的短通知音频，制作旁白或音频素材（mp3 或 wav），将本地音频文件（mp3、wav、m4a、webm、flac）转录为 Markdown，对不同 profile id 重新运行相同文本以比较语音配置档。
 
 也可用于将现有语音适配到所请求的时间窗口、重采样、声道转换，以及按要求的响度配置处理。视频中的放置仍由 oma-video 负责。
 
@@ -984,7 +984,7 @@ oma agent spawn qa prompts/review.md session-01 --task-id task-5 --read-only
 运行多智能体工作流（`/orchestrate` 或 `/work`）时：
 
 1. **PM 智能体**将请求分解为带数字优先级层级（`1` = 无依赖；层级越低越先运行）、依赖关系和验收标准的任务。有效的现有计划会被复用
-2. **初始化会话**：生成会话 ID，为每个任务选择参考资料，并在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`
+2. **初始化会话**：生成会话 ID，为每个任务选择参考资料，并在配置的记忆存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`
 3. **第 1 层任务**并行启动（最多 MAX_PARALLEL 个并发智能体）
 4. **监控进度**：编排器优先使用宿主的完成通知；对于没有完成通知的 `oma agent spawn` 运行，由一个协调者以有界退避轮询发生变化的运行范围 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件。Claude Code 原生子智能体同步返回
 5. **后续层级**在其依赖完成后启动
@@ -1026,9 +1026,9 @@ flowchart TD
 
 ---
 
-## 运行时状态（项目内存存储） {#runtime-state-project-memory-store}
+## 运行时状态（项目记忆存储） {#runtime-state-project-memory-store}
 
-在编排会话期间，智能体通过 `.agents/state/memories/` 中的共享内存文件协调（较旧的项目会回退到旧版 `.serena/memories/` 路径）。要更改路径或工具名称，请在 `.agents/mcp.json` 中修改 `memoryConfig`，而不是仓库根目录的 `.mcp.json`，后者是 Claude Code 的 MCP 服务器列表：
+在编排会话期间，智能体通过 `.agents/state/memories/` 中的共享记忆文件协调（较旧的项目会回退到旧版 `.serena/memories/` 路径）。要更改路径或工具名称，请在 `.agents/mcp.json` 中修改 `memoryConfig`，而不是仓库根目录的 `.mcp.json`，后者是 Claude Code 的 MCP 服务器列表：
 
 | 文件 | 所有者 | 用途 | 其他 |
 |------|-------|------|------|
@@ -1040,7 +1040,7 @@ flowchart TD
 | `lessons-{sessionId}.md` | 编排器 | 该会话中有证据支持的经验教训 | 全部读取 |
 | `experiment-ledger-{sessionId}.md` | 编排器/QA | 实际实验的证据 | 全部读取 |
 
-内存工具可配置。默认情况下，智能体使用原生文件工具（`Read`、`Write`、`Edit`）直接读写这些协调文件，也可以在 `.agents/mcp.json` 中配置自定义工具和自定义基础路径：
+记忆工具可配置。默认情况下，智能体使用原生文件工具（`Read`、`Write`、`Edit`）直接读写这些协调文件，也可以在 `.agents/mcp.json` 中配置自定义工具和自定义基础路径：
 
 ```json
 {
@@ -1056,7 +1056,7 @@ flowchart TD
 }
 ```
 
-仪表盘（`oma dashboard terminal` 和 `oma dashboard web`）会监视这些内存文件，用于实时监控。
+仪表盘（`oma dashboard terminal` 和 `oma dashboard web`）会监视这些记忆文件，用于实时监控。
 
 ---
 

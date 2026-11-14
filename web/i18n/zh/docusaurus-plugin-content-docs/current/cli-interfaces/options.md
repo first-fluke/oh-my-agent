@@ -172,9 +172,9 @@ oma describe | jq -r '.. | objects | select(.supportsJsonOutput? == true) | .pat
 oma install [--preset <name>] [--web-search <provider>] [--code-intelligence <provider>] [--semantic-memory <provider>] [--honcho-url <url>] [--honcho-workspace <id>]
 ```
 
-`--preset` 从十种[具名技能预设](../getting-started/installation.md#presets)中选择一种，并覆盖交互式技能提示和无人值守时的 `all` 默认值。未知名称、空值和 `custom` 会在安装前失败；逐项选择使用交互式 Custom 菜单。预设在选择技能的同时，保留运行时的共享文件、工作流和智能体定义、钩子、提供方以及已保留的技能。单个技能的临时指令加载见[选择设置](../getting-started/choose-setup.md)。
+`--preset` 从十种[具名技能预设](../getting-started/installation.md#presets)中选择一种，并覆盖交互式技能提示和无人值守时的 `all` 默认值。未知名称、空值和 `custom` 会在安装前失败；逐项选择使用交互式 Custom 菜单。预设在选择技能的同时，保留运行时的共享文件、工作流和智能体定义、钩子、提供商以及已保留的技能。单个技能的临时指令加载见[选择设置](../getting-started/choose-setup.md)。
 
-交互式安装器会将所选的提供方设置写入 `.agents/oma-config.yaml`。若存在 `.agents/oma-config.cue`，它的优先级高于该文件，因此 CUE 配置中尚未包含的选择会写入被 gitignore 忽略的本地覆盖层 `.agents/oma-config.local.yaml`；浏览器 DevTools 选择和 `oma memory keys` 的 vault 引用也遵循同一规则，CLI 供应商选择和 `oma model propose --write` 则在没有 `oma-config.yaml` 时遵循该规则。提供方标志用于选择网页搜索、代码智能和语义内存集成；选中 Honcho 提供方时，`--honcho-url` 和 `--honcho-workspace` 用于配置 Honcho 内存服务。安装流程请求确认时，根级 `-y, --yes` 标志生效。
+交互式安装器会将所选的提供商设置写入 `.agents/oma-config.yaml`。若存在 `.agents/oma-config.cue`，它的优先级高于该文件，因此 CUE 配置中尚未包含的选择会写入被 gitignore 忽略的本地覆盖层 `.agents/oma-config.local.yaml`；浏览器 DevTools 选择和 `oma memory keys` 的 vault 引用也遵循同一规则，CLI 供应商选择和 `oma model propose --write` 则在没有 `oma-config.yaml` 时遵循该规则。提供商标志用于选择网页搜索、代码智能和语义记忆集成；选中 Honcho 提供商时，`--honcho-url` 和 `--honcho-workspace` 用于配置 Honcho 记忆服务。安装流程请求确认时，根级 `-y, --yes` 标志生效。
 
 ### doctor（诊断） {#doctor}
 
@@ -463,9 +463,9 @@ oma video provider list [--output <format>]
 
 `video generate` 接受以下规划和采集控制选项：`--mode`、`--aspect`、`--locale`、`--captions`、`--visual`、`--voice`、`--music`、`--duration`、`--compositor`、`--capture`、`--source`、`--url`、`--device`、`--ready-selector`、`--show-cursor`、`--polish`、`--capture-timeout` 和 `--capture-stop`。它还接受 `--output-dir`、`--allow-external-output`、`--max-usd`、`--seed`、`--timeout`、`--script`、`--dry-run`、`--yes`、`--output` 和 `--no-brief-in-manifest`。demo 使用通过 `--capture` 提供的录制文件；默认来源为 `file`，`--source web --url <url>` 只会把该 URL 作为上下文加入。`--polish` 让采集内容经过 `Demo` 组合，个人信息在其中被遮蔽；不加该选项时，输出的 MP4 就是原始采集内容。正常渲染需要已编写的组合和可用的合成器；占位内容仅限 `OMA_VIDEO_MOCK=1` 测试路径使用。
 
-`video doctor` 报告或配置 HyperFrames/MPT/Strudel 工具链。`compose` 准备本次运行的组合契约，`render` 负责 lint、渲染和输出探测。`provider list` 报告提供方和密钥状态。运行清单和恢复步骤请参阅[视频生成](../guide/video-generation.md)。
+`video doctor` 报告或安装 HyperFrames/MPT/Strudel 工具链。`compose` 准备本次运行的组合契约，`render` 负责 lint、渲染和输出探测。`provider list` 报告提供商和密钥状态。运行清单和恢复步骤请参阅[视频生成](../guide/video-generation.md)。
 
-### memory init（初始化内存） {#memory-init}
+### memory init（初始化记忆） {#memory-init}
 
 ```text
 oma memory init [--json] [--output <format>] [--force]
@@ -503,10 +503,10 @@ oma verify triggers [--corpus <path>] [--max-false-fire <pct>] [--max-missed-fir
 |:-----|:--------|
 | `0` | 成功 |
 | `1` | 一般错误 |
-| `2` | 被拦截，或提供方出于安全原因拒绝 |
+| `2` | 被拦截，或提供商出于安全原因拒绝 |
 | `3` | 未找到 |
 | `4` | 输入无效 |
-| `5` | 需要身份验证，或未安装提供方二进制 |
+| `5` | 需要身份验证，或未安装提供商二进制 |
 | `6` | 超时 |
 
 **命令专属：**

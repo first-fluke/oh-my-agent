@@ -5,7 +5,7 @@ description: Meerdere OMA-dispatchrollen parallel uitvoeren met de actuele CLI-s
 
 # Parallelle uitvoering
 
-Met oh-my-agent kun je meerdere gespecialiseerde agenten tegelijk uitvoeren. Terwijl de backend-agent een API implementeert, maakt de frontend-agent de UI en bouwt de mobile-agent appschermen; de orchestrator coördineert ze via duurzame runstate en receipts.
+oh-my-agent voert meerdere gespecialiseerde agenten parallel uit. Backend-, frontend- en mobile-agenten kunnen bijvoorbeeld aan afzonderlijke delen van een applicatie werken, terwijl de orchestrator ze coördineert via duurzame runstate en receipts.
 
 ---
 
@@ -95,7 +95,7 @@ oma agent spawn qa "Review all implementations for security and accessibility" s
 
 ## oma agent parallel: inline parallelle modus {#agentparallel-inline-parallel-mode}
 
-Voor een kortere syntax die het beheer van backgroundprocessen automatisch afhandelt:
+Voor een overzichtelijkere syntax die het beheer van backgroundprocessen automatisch afhandelt:
 
 ### Syntax
 
@@ -171,7 +171,7 @@ De spawnmechaniek verschilt per IDE/CLI:
 | **Antigravity CLI/IDE** | `oma agent spawn` via de `agy`-runtime; native custom subagenten zijn niet vereist | Duurzame receipt en poll van resultaatbestand |
 | **Cursor** | Gebruikt waar beschikbaar de gegenereerde Cursor-integratie; anders `oma agent spawn` | Poll van resultaatbestand |
 | **OpenCode / pi** | Gebruikt de in-process extension bridge wanneer geselecteerd; cross-vendor werk gebruikt `oma agent spawn` | Poll van resultaatbestand |
-| **CLI-fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Evidence-backed result poll |
+| **CLI-fallback** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Poll van een op bewijs gebaseerd resultaat |
 
 Binnen Claude Code gebruikt de workflow direct de `Agent`-tool:
 
@@ -293,7 +293,7 @@ Sessie-ID's bepalen:
 
 3. **Sla de planstap niet over.** Agenten spawnen zonder plan leidt tot misalignment, bijvoorbeeld wanneer frontend en backend verschillende API-vormen bouwen.
 
-4. **Negeer mislukte agenten niet.** Het werk van een mislukte agent is onvolledig. Controleer de gestructureerde claim of het rungebonden resultaatbestand, herstel de reden en spawn opnieuw.
+4. **Negeer mislukte agenten niet.** Het werk van een mislukte agent is onvolledig. Controleer de gestructureerde claim of het rungebonden resultaatbestand op de faalreden, pas de prompt aan en spawn opnieuw.
 
 5. **Meng sessie-ID's voor gerelateerd werk niet.** Backend- en frontendagenten voor dezelfde feature moeten één sessie-ID delen zodat de orchestrator kan coördineren.
 

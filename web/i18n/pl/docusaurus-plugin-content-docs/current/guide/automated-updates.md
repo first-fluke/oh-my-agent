@@ -39,7 +39,7 @@ jobs:
       - uses: first-fluke/oma-update-action@v1
 ```
 
-Ta konfiguracja tworzy pull request z nową wersją, gdy zainstalowany komponent się zmieni i akcja zakończy się z `updated=true`. Gdy nie ma zmian plików, kończy się z `updated=false` i bez PR.
+To minimalna konfiguracja. Gdy zmieni się zainstalowany komponent, akcja powinna zakończyć się z `updated=true`, wyjściem wersji i pull requestem. Gdy żaden plik się nie zmieni, kończy się z `updated=false` i bez PR.
 
 ---
 
@@ -72,7 +72,7 @@ Ta konfiguracja tworzy pull request z nową wersją, gdy zainstalowany komponent
 
 ### Przykład 1: domyślny tryb PR
 
-Ten przykład tworzy PR w każdy poniedziałek, gdy są dostępne aktualizacje.
+Najczęstsza konfiguracja. Tworzy PR w każdy poniedziałek, gdy dostępne są aktualizacje.
 
 ```yaml
 name: Update oh-my-agent
@@ -191,7 +191,7 @@ jobs:
         run: echo "Already up to date, no notification needed."
 ```
 
-Warunkuj dalsze kroki wyrażeniem `steps.update.outputs.updated == 'true'`, aby uruchamiały się tylko po wykryciu aktualizacji. Dzięki temu uruchomienia bez zmian nie generują zbędnych powiadomień.
+**Kluczowy wzorzec:** użyj `steps.update.outputs.updated == 'true'`, aby warunkowo uruchamiać dalsze kroki tylko wtedy, gdy faktycznie nastąpiła aktualizacja. Zapobiega to szumowi z uruchomień bez zmian.
 
 ### Przykład 4: tryb force z własnymi etykietami
 
@@ -225,9 +225,7 @@ jobs:
 
 ---
 
-<a id="jak-to-działa-pod-spodem"></a>
-
-## Implementacja akcji
+## Jak to działa pod spodem
 
 Akcja jest [akcją złożoną](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) zdefiniowaną w `action/action.yml`. Najpierw sprawdza, czy `mode` ma wartość `pr` albo `commit`, następnie wykonuje poniższe kroki i kończy pull requestem albo bezpośrednim commitem:
 

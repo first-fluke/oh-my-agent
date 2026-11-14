@@ -139,7 +139,7 @@ flowchart TD
 | **Refaktoryzacja** | oma-refactor | Stopniowa restrukturyzacja zachowująca działanie, kierowanie hotspotami, testy charakterystyki jako siatka bezpieczeństwa, commity tylko refaktoryzacyjne |
 | **Badania rynku** | oma-market | Badanie bólu, trendów, konkurencji i odkrywania sygnałów społecznościowych z frameworkami SWOT/5F Portera/PESTEL dobieranymi do intencji |
 | **Tworzenie umiejętności** | oma-skill-creation | Tworzenie i walidowanie umiejętności OMA w formacie SSL-lite |
-| **Generowanie mediów** | oma-image, oma-slide, oma-video, oma-voice | Generowanie obrazów AI, prezentacje HTML, krótkie/objaśniające/demonstracyjne wideo oraz lokalne TTS/STT |
+| **Generowanie mediów** | oma-image, oma-slide, oma-video, oma-voice | Generowanie obrazów AI, prezentacje HTML i edytowalne talie PPTX, wideo short-form/explainer/demo oraz lokalne TTS/STT |
 
 ---
 
@@ -746,7 +746,7 @@ To domyślne ustawienia workflowu; ustawienia modelu, dostawcy, równoległości
 
 ### oma-image
 
-**Domena:** Wielodostawcowe generowanie obrazów AI z dispatchem uwzględniającym uwierzytelnianie (Codex `gpt-image-2`, modele rodziny Antigravity Gemini „nano-banana” przez `agy` z dokładnym modelem wybieranym wewnętrznie, Pollinations flux/zimage).
+**Domena:** Wielodostawcowe generowanie obrazów AI z równoległym dispatchem uwzględniającym uwierzytelnianie (Codex `gpt-image-2`, modele rodziny Antigravity Gemini „nano-banana” przez `agy` z dokładnym modelem wybieranym wewnętrznie, Pollinations flux/zimage).
 
 **Kiedy używać:** Generowanie obrazów, zasobów wizualnych, ilustracji, zdjęć produktu, concept artu lub makiet; porównywanie wyników wielu modeli obrazu dla tego samego promptu; generowanie obrazów z promptów w workflowach edytora.
 
@@ -989,7 +989,7 @@ Podczas workflowu wieloagentowego (`/orchestrate` lub `/work`):
 4. **Monitorowanie postępu:** orkiestrator preferuje powiadomienia hosta o ukończeniu; przy uruchomieniach `oma agent spawn` bez takich powiadomień jeden koordynator odczytuje zmienione, przypisane do uruchomień pliki `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` z ograniczonym backoffem. Natywni subagenci Claude Code zwracają wynik synchronicznie
 5. **Kolejne poziomy** uruchamiają się po ukończeniu ich zależności
 6. **Pętla przeglądu** działa dla każdego ukończonego agenta (zobacz niżej)
-7. **Zebranie wyników** z plików wyników przypisanych do uruchomień i ustrukturyzowanych twierdzeń
+7. **Zebranie wyników** z plików wyników przypisanych do uruchomień i ustrukturyzowanych zgłoszeń
 8. **Raport końcowy** z podsumowaniem sesji, zmienionymi plikami i pozostałymi problemami
 
 ### Pętla przeglądu agent-agent {#agent-to-agent-review-loop}

@@ -129,7 +129,7 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 | 에이전트 | 역할 | 핵심 기능 |
 |-------|------|-----------------|
-| **oma-market** | 커뮤니티 신호 인텔리전스 | 업스트림 `last30days` 엔진(실제 추천 수와 댓글이 포함된 Reddit, X, YouTube 자막, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, 웹 등)을 `oma market run`으로 실행합니다. oma는 엔진을 **항상 최신 릴리스**로 유지하고(`~/.cache/oma-market/`), 모든 실행을 `detect-trap`으로 게이팅하며, 의도를 분류하고(pain / trend / competitor / discovery), SWOT / Porter's 5F / PESTEL 섹션을 덧붙입니다. 결과는 LAW를 준수하는 브리프 하나를 `.agents/results/market/{slug}-{YYYYMMDD}.md`에 내보냅니다. |
+| **oma-market** | 커뮤니티 신호 인텔리전스 | 업스트림 `last30days` 엔진(실제 추천 수와 댓글이 포함된 Reddit, X, YouTube 자막, TikTok, HN, Polymarket, GitHub, arXiv, Techmeme, Bluesky, 웹 등)을 `oma market run`으로 실행합니다. 엔진은 skills CLI 설치본(`oma market update`)이며, oma는 모든 실행을 `detect-trap`으로 게이팅하고, 의도를 분류하며(pain / trend / competitor / discovery), SWOT / Porter's 5F / PESTEL 섹션을 덧붙입니다. LAW를 준수하는 브리프 하나를 `.agents/results/market/{slug}-{YYYYMMDD}.md`에 내보냅니다. |
 
 ### 미디어 및 콘텐츠 생성
 
@@ -142,7 +142,7 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 ---
 
-## 점진적 로딩 모델
+## 점진적 공개 모델
 
 oh-my-agent은 컨텍스트 윈도우 소진을 방지하기 위해 2계층 스킬 아키텍처를 사용합니다:
 

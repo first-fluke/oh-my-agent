@@ -108,7 +108,7 @@ oma video render <runDir> --output json    # lint → render with the cached Hyp
 ```yaml
 video:
   hyperframes:
-    check_interval_min: 60    # 0 = check on every compose
+    check_interval_min: 60    # toolchain only; 0 = check on every compose
 ```
 
 ---

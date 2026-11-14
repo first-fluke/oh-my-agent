@@ -37,7 +37,7 @@ flowchart TD
   finish -->|"non-zero exit, failed or stale receipt, changed contract"| failed(["failed"])
 ```
 
-Claim cũng có thể báo trực tiếp `partial` hoặc `failed`. Finish không bao giờ nâng cấp claim: nó hạ cấp claim `completed` khi bằng chứng không đứng vững, và exit code khác không khiến mọi run thành `failed`.
+Claim cũng có thể báo trực tiếp `partial` hoặc `failed`. Finish không bao giờ nâng cấp claim: nó hạ cấp claim `completed` khi bằng chứng không đứng vững, và exit code khác 0 khiến mọi run thành `failed`.
 
 ## Bắt đầu native run {#start-a-native-run}
 
@@ -111,7 +111,7 @@ oma agent verify RUN_ID -- git diff --check
 
 Chỉ dùng exact-command form cho check thuộc contract của task; nếu không, giữ plan với `required_checks` và dùng `--required` để receipt chứng minh acceptance criteria đã khai báo.
 
-Dùng `--affected PATH...` chỉ khi graph có test selection đầy đủ cho các path đó. Check chạy tuần tự theo run. Exit code khác không hoặc workspace thay đổi trong check sẽ làm receipt không hợp lệ.
+Dùng `--affected PATH...` chỉ khi graph có test selection đầy đủ cho các path đó. Check chạy tuần tự theo run. Exit code khác 0 hoặc workspace thay đổi trong check sẽ làm receipt không hợp lệ.
 
 ## Ghi claim và kết thúc {#write-and-finish-the-claim}
 

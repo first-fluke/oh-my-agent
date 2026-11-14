@@ -7,10 +7,10 @@ description: Ein vollständiges OMA-Harness-Overlay mit gepaarten, isolierten Re
 # Harness-Evaluierung
 
 :::tip Wie diese Bausteine zusammenspielen
-Die [Skill-Evaluierung](./skill-eval.md) misst, ob eine einzelne `SKILL.md` hilft, und die [Skill-Optimierung](./skill-opt.md) bearbeitet diesen Text unter Held-out-Gates. Die Harness-Evaluierung (diese Seite) vergleicht ein ganzes `.agents/`-Overlay an Repository-Aufgaben. [Incident-Regressionsfälle](./harness-incidents.md) verwandeln beobachtete Fehler in Evaluierungsfälle und Skill-Fixtures. Die [Projekt-Harness-Evolution](./harness-evolution.md) führt Incident-Erfassung und Skill-Optimierung als budgetierten Zyklus aus, und [geplante Agenten](./scheduled-agents.md) sind der OS-Scheduler, der diesen Zyklus auslöst.
+Die [Skill-Evaluierung](./skill-eval.md) misst, ob eine einzelne `SKILL.md` hilft, und die [Skill-Optimierung](./skill-opt.md) bearbeitet diesen Text unter Held-out-Gates. Die Harness-Evaluierung vergleicht ein ganzes `.agents/`-Overlay an Repository-Aufgaben. [Incident-Regressionsfälle](./harness-incidents.md) verwandeln beobachtete Fehler in Evaluierungsfälle und Skill-Fixtures. Die [Projekt-Harness-Evolution](./harness-evolution.md) führt Incident-Erfassung und Skill-Optimierung als budgetierten Zyklus aus, und [geplante Agenten](./scheduled-agents.md) sind der OS-Scheduler, der diesen Zyklus auslöst.
 :::
 
-`oma harness eval` misst, ob ein Kandidaten-Harness von OMA einen festen Zielagenten verbessert, ohne dessen Modell zu ändern. Das Verfahren übernimmt das Evaluierungsmuster aus [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307): Zielmodell festhalten, Harness ändern und Ergebnisse bei denselben Aufgaben vergleichen.
+`oma harness eval` misst, ob ein Kandidaten-Harness von OMA einen festen Zielagenten verbessert, ohne dessen Modell zu ändern. Es passt das Test-Time-Evaluierungsmuster aus [AI4AI at Test-Time: Strong-to-Weak Capability Transfer via Harnesses](https://arxiv.org/abs/2608.12307) an: Zielmodell festhalten, Harness ändern und Ergebnisse bei denselben Aufgaben vergleichen.
 
 Dieser Befehl evaluiert eine größere Einheit als `oma skill eval`:
 
@@ -19,7 +19,7 @@ Dieser Befehl evaluiert eine größere Einheit als `oma skill eval`:
 | `oma skill eval` | Ein `SKILL.md`-Text | Agentenausgabe |
 | `oma harness eval` | Ein abgegrenztes `.agents/`-Overlay | Dateien und Ausgabe in einem Repository-Workspace |
 
-Verwenden Sie Skill-Evaluation, um die Frage „Hilft dieser Skill?“ zu beantworten. Verwenden Sie Harness-Evaluation für die Frage „Macht diese Kombination aus Skills, Workflows, Regeln und Agentenanweisungen den festen Agenten zuverlässiger beim Erledigen von Repository-Aufgaben?“
+Verwenden Sie die Skill-Evaluierung, um die Frage „Hilft dieser Skill?“ zu beantworten. Verwenden Sie die Harness-Evaluierung für die Frage „Macht diese Kombination aus Skills, Workflows, Regeln und Agentenanweisungen den festen Agenten zuverlässiger beim Erledigen von Repository-Aufgaben?“
 
 **Vor dem ersten Lauf:**
 
@@ -41,7 +41,7 @@ Ein Live-Lauf evaluiert jede Aufgabe als gepaartes Experiment:
 
 Das echte Projekt wird nie als Arbeitsverzeichnis eines Arms verwendet. OMA erfasst die rohe Ausgabe und die finalen Aufgabenartefakte vor den Prüfungen und vor der Bereinigung der temporären Workspaces. Die Sandbox des Prozesses des ausgewählten Vendors bleibt für Zugriffe außerhalb des Arbeitsverzeichnisses maßgeblich.
 
-Das Diagramm zeigt, wie gepaarte Arme zu einer Entscheidung gelangen. Offline-Aktionen steigen aus einer gespeicherten Aufzeichnung beim Paarungsschritt wieder ein.
+Offline-Aktionen verwenden eine gespeicherte Aufzeichnung erneut und steigen bei der Evaluierung am Paarungsschritt wieder ein.
 
 ```mermaid
 flowchart TD
@@ -354,7 +354,11 @@ Alle Ereignisse einer Evaluierung teilen sich einen `causalityKey`. Kann ein Ere
 Jeder Arm-Lauf speichert außerdem `diagnostics` und `trace` in der Aufzeichnung:
 
 - `diagnostics`: Exit-Code, Signal, Timeout-Flag und die letzten 8 KiB von stderr mit `stderrStatus` (`captured`, `truncated` oder `unavailable`).
-- `trace`: was der Harness beobachten konnte. `output` ist `complete`, `partial` (ein fehlgeschlagener Prozess hat dennoch stdout erzeugt) oder `unavailable`; `artifacts` gibt an, ob der finale Snapshot vollständig ist; `changedPaths` listet Dateien auf, die der Arm relativ zum gepinnten Anfangs-Workspace hinzugefügt, geändert oder entfernt hat (auf 200 begrenzt, mit `changedPathsTruncated`); `toolCalls` ist immer `unsupported`, weil Vendor-CLIs dem Harness keine Beobachtungen pro Werkzeug zur Verfügung stellen.
+- `trace`: was der Harness beobachten konnte. `output` ist `complete`, `partial` (ein fehlgeschlagener Prozess hat dennoch stdout erzeugt) oder `unavailable`; `artifacts` gibt an, ob der finale Snapshot vollständig ist; `changedPaths` listet Dateien auf, die der Arm relativ zum gepinnten Anfangs-Workspace hinzugefügt, geändert oder entfernt hat (auf 200 begrenzt, mit `changedPathsTruncated`).
+- `trace.toolCalls`: `captured`, `partial`, `missing` oder `unsupported`. Läufe mit Claude und Codex können ein frisches natives Transkript laden, das an die Sitzung und den temporären Workspace des Arms gebunden ist. Fehlende Logs bleiben `missing`; andere Vendoren bleiben `unsupported`.
+- `trace.toolEvidence`: sofern verfügbar, IDs, Namen, Zeitangaben und Fehlerflags der Werkzeugaufrufe der Root-Sitzung sowie SHA-256-Hashes und Bytezahlen des normalisierten Anfrage- und Antworttexts. Rohe Werkzeugargumente und Ergebnisse werden nicht in die Evaluierungsaufzeichnung kopiert. Die Erfassung ist auf 200 Aufrufe und ein natives Transkript von 16 MiB begrenzt; normalisierte Details sind auf 20.000 Zeichen begrenzt. Unterbrochene, nicht zugeordnete oder abgeschnittene Beobachtungen werden als partiell markiert, und abgeschnittene Details werden neben ihren Hashes ausgewiesen.
+
+Werkzeug-Hashes helfen, Fehler mit lokalen nativen Logs in Beziehung zu setzen. Sie können Werkzeugantworten oder externen Zustand nicht wiedergeben und erfassen die finale Provider-API-Anfrage nicht. Native Subagenten-Transkripte liegen außerhalb dieses Erfassungsumfangs. Vorhandene Aufzeichnungen ohne Werkzeugbeobachtungen bleiben lesbar, und die Fixture-Wiedergabe behält ihre eigenen Beleganforderungen.
 
 Ein fehlgeschlagener Arm behält daher seine Teilausgabe, das Ende von stderr, den Exit-Status und die Dateiänderungen, sodass sich der letzte Fehler auf das zurückführen lässt, was der Arm geändert hat. Fehlende Beobachtung wird als Zustand aufgezeichnet; sie wird nie als sauberer Lauf gelesen.
 
@@ -372,7 +376,7 @@ OMA meldet außerdem:
 - regressierte Aufgaben: Baseline bestanden, Kandidat fehlgeschlagen;
 - Coverage: mindestens fünf gepaarte, bewertbare Aufgaben in der gewählten Partition sind erforderlich.
 
-Die Score-Entscheidung lautet `pass`, wenn der Lift mindestens 5 Prozentpunkte beträgt und keine Regressionen vorliegen. Jede Regression und jeder negative Lift lässt den Kandidaten scheitern. Ein nichtnegativer Lift unter 5 Punkten gibt eine Warnung aus; weniger als fünf gepaarte Aufgaben erzeugen die Entscheidung `insufficient`. Fügen Sie `--require-coverage` hinzu, damit unzureichende Coverage in CI mit Exit-Code ungleich null endet. Ein Score ist kein Beleg, wenn ein Arm fehlt, ein Record-Hash veraltet ist oder eine deterministische Prüfung unvollständig ist. Live-Dispatch-Fehler und Evaluator-Integritätsfehler erzwingen eine fehlschlagende Entscheidung; sie können nicht als erfolgreicher Lift zählen. Neubewertung und Fixture-Wiedergabe lassen Arme mit unzureichenden Belegen aus den bewertbaren Paaren heraus und melden die Entscheidung `insufficient`, statt fehlende Belege als Regression des Kandidaten zu behandeln.
+Die Score-Entscheidung lautet `pass`, wenn der Lift mindestens 5 Prozentpunkte beträgt und keine Regressionen vorliegen. Jede Regression oder ein negativer Lift lässt den Kandidaten scheitern. Ein nichtnegativer Lift unter 5 Punkten gibt eine Warnung aus; weniger als fünf gepaarte Aufgaben erzeugen die Entscheidung `insufficient`. Fügen Sie `--require-coverage` hinzu, damit unzureichende Coverage in CI mit Exit-Code ungleich null endet. Ein Score ist kein Beleg, wenn ein Arm fehlt, ein Record-Hash veraltet ist oder eine deterministische Prüfung unvollständig ist. Live-Dispatch-Fehler und Evaluator-Integritätsfehler erzwingen eine fehlschlagende Entscheidung; sie können nicht als erfolgreicher Lift zählen. Neubewertung und Fixture-Wiedergabe lassen Arme mit unzureichenden Belegen aus den bewertbaren Paaren heraus und melden die Entscheidung `insufficient`, statt fehlende Belege als Regression des Kandidaten zu behandeln.
 
 Ein bestandener Score begründet keine Eignung zur Hochstufung. Berichte enthalten die Partition, den Evaluator-Hash, `promotionReady: false` und ausdrückliche Blocker. Legacy- und Validierungsläufe haben keine Final-Test-Belege. Aktuelle Dispatch-Pfade attestieren keine Eingrenzung des Dateisystemzugriffs, sodass selbst ein Final-Test-Lauf weder eine geschützte finale Evaluierung beanspruchen noch eine Hochstufung autorisieren kann. Dieses Feld bleibt false, bis ein Ausführungs-Provider diese Grenze belegen kann.
 

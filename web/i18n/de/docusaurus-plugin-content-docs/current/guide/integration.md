@@ -166,7 +166,7 @@ Für Qwen Code liegen die erzeugten Markdown-Definitionen in `.qwen/agents/`. W�
 
 Qwen Code verwendet denselben `code-intelligence-primer` wie die anderen Vendoren. Wie Claude Code registriert es den gemeinsamen Primer bei `SessionStart` und `UserPromptSubmit`: Die Hinweise werden einmal pro Sitzung und nach einer Kompaktierung erneut eingefügt. Der Primer folgt dem konfigurierten Provider (Serena oder Gortex), enthält Hinweise zu zurückgestellten Tools (Deferred Tools) und erlaubt den nativen Fallback, wenn der Provider nicht verfügbar ist oder eine Zeitüberschreitung auftritt. Qwen fügt keine eigene Blockierung der Codesuche und keine Nachverfolgung von Provider-Ergebnissen hinzu.
 
-Führen Sie nach einem Update der CLI `oma link qwen` aus, um die Hook-Einstellungen und den Wrapper neu zu erzeugen, und starten Sie danach eine neue Qwen-Sitzung. Tests der Hook-Ausgabe prüfen den Integrationsvertrag; sie garantieren nicht, welches Tool ein Modell auswählt.
+Führen Sie nach einem Update der CLI `oma link qwen` aus, um die Hook-Einstellungen und den Wrapper neu zu erzeugen, und starten Sie danach eine neue Qwen-Sitzung. Qwen Code führt Projekt-Hooks erst aus, nachdem Sie genau diese Konfiguration genehmigt haben (`~/.qwen/hookApprovals.json`); `oma link` zeichnet diese Genehmigung für die Hooks auf, die es geschrieben hat, sodass weder die erste interaktive Sitzung noch `qwen -p` sie zurückhält. Es genehmigt nie Hooks, die oma nicht geschrieben hat, und überschreibt nie eine Ablehnung, die Sie in Qwen vorgenommen haben. Tests der Hook-Ausgabe prüfen den Integrationsvertrag; sie garantieren nicht, welches Tool ein Modell auswählt.
 
 ### Schritt 3: Benutzereinstellungen konfigurieren
 
@@ -310,7 +310,7 @@ Wenn `oma update` `.agents/` aktualisiert, übernimmt jede darauf verweisende ID
 
 ### Nach der Installation
 
-1. **Prüfen, was erstellt wurde.** Führen Sie `git status` aus, um alle neuen Dateien zu sehen. Der Installer erstellt Dateien nur in `.agents/`, `.claude/` und optional `.github/`.
+1. **Prüfen, was sich geändert hat.** Führen Sie `git status` aus, um die SSOT, die Vendor-Integrationsdateien und jede Dokumentmigration zu prüfen. Prüfen Sie bei ignorierten Laufzeit-Artefakten auch die Migrationszusammenfassung.
 2. **`.gitignore` prüfen.** In einem Git-Repository hängen `install`, `update` und `link` die Laufzeiteinträge (`.antigravitycli/`, `.agents/results/`, `.agents/state/`, `.agents/backup/`, `docs/plans/`) automatisch an die `.gitignore` im Projektstamm an. Prüfen Sie, ob sie vorhanden sind. Die meisten Teams committen `.agents/` und `.claude/`, um das Setup zu teilen. Bei `.serena/` können Sie selbst entscheiden: Serena verwaltet seinen Cache über eine interne `.serena/.gitignore`, daher können Sie entweder `.serena/project.yml` (gemeinsame Projektkonfiguration) committen oder das Verzeichnis vollständig ignorieren:
 
 ```gitignore
@@ -372,15 +372,15 @@ Wenn Sie `oma` (den Installationsbefehl) ausführen, geschieht genau Folgendes:
 
 ### 1. Legacy-Migration
 
-Der Installer prüft auf das alte `.agent/`-Verzeichnis (Singular) und migriert es, falls vorhanden, zu `.agents/` (Plural). Dies ist eine einmalige Migration für Benutzer, die von früheren Versionen aktualisieren.
+Der Installer prüft auf das alte `.agent/`-Verzeichnis (Singular) und migriert es, falls vorhanden, zu `.agents/` (Plural). Er wendet außerdem die [Migration des Artefakt-Layouts](./artifact-layout.md#migrate-an-existing-project) an, die Entscheidungsdokumente und menschenlesbare Ergebnisberichte zusammenführt. Update verwendet dieselbe Migration. Ein erneuter Lauf lässt ein bereits migriertes Projekt unverändert.
 
 ### 2. Erkennung konkurrierender Tools
 
-Der Installer scannt nach konkurrierenden Tools und bietet an, sie zu entfernen, um Konflikte zu vermeiden.
+Die interaktive Installation erkennt andere Agenten-Tools und fragt, ob sie deinstalliert werden sollen. Standard ist, sie zu behalten, einschließlich der projektlokalen Verzeichnisse `.omc` und `.omx`. Das Entfernen erfordert eine ausdrückliche Bestätigung; `--yes`, `OMA_YES` und CI-Installationen behalten andere Tools. `oma update` bietet ihre Deinstallation nicht an.
 
 ### 3. Tarball-Download
 
-Der Installer lädt das neueste Release-Tarball aus den oh-my-agent-GitHub-Releases herunter. Dieses Tarball enthält das vollständige `.agents/`-Verzeichnis mit allen Skills, gemeinsamen Ressourcen, Workflows, Konfigurationen und Agenten-Definitionen.
+Der Installer lädt das neueste Release-Tarball aus den oh-my-agent-GitHub-Releases herunter. Dieser Tarball enthält das vollständige `.agents/`-Verzeichnis mit allen Skills, gemeinsamen Ressourcen, Workflows, Konfigurationen und Agenten-Definitionen.
 
 ### 4. Installation gemeinsamer Ressourcen
 
@@ -430,7 +430,7 @@ Vendor-native Agenten-Dateien werden von `oma link`, `oma install` oder `oma upd
 
 ### 11. Empfohlene Git-Konfiguration und MCP
 
-Wie oben im CLI-Weg beschrieben, konfigurieren `install` und `update` die empfohlenen **globalen** Git-Einstellungen (`rerere.enabled`, `init.defaultBranch`) nach interaktiver Zustimmung optional und können MCP-Einstellungen konfigurieren, sofern dies möglich ist.
+Wie oben im CLI-Weg beschrieben, konfigurieren `install` und `update` die empfohlenen **globalen** Git-Einstellungen (`rerere.enabled`, `init.defaultBranch`) nach interaktiver Zustimmung optional und können MCP-Einstellungen konfigurieren, wo dies zutrifft.
 
 ---
 

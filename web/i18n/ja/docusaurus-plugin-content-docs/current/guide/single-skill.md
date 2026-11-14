@@ -4,7 +4,7 @@ sidebar_label: 単一スキル
 description: oh-my-agentで単一ドメインのタスクを実行するための詳細ガイドです。使用するタイミング、プリフライトチェックリスト、説明付きのプロンプトテンプレート、フロントエンド・バックエンド・モバイル・データベースの実例、想定される実行フロー、品質ゲートチェックリスト、エスカレーションシグナルを扱います。
 ---
 
-# ガイド：単一スキル実行
+# 単一スキル実行
 
 単一スキル実行では、1つのエージェントが1つのドメインの1つのタスクを担当します。複数エージェント間の調整はありません。ホストまたは選択したワークフローが自然言語のプロンプトをスキルへルーティングする場合があります。フックシステムはキーワードからスキルヒントを追加し、ルーティングは選択したランタイムによって決まります。
 
@@ -183,7 +183,7 @@ Add tests for: profile save, logout flow, offline state.
 2. **難易度評価：** Medium（設定画面、状態管理、オフライン処理）。
 3. **ロードされるリソース：**
    - `execution-protocol.md`
-   - `variants/flutter/snippets.md`（画面テンプレート、Riverpodプロバイダー、データ層のパターン）、または`/stack-set`で生成済みの場合は`stack/snippets.md`
+   - `variants/flutter/snippets.md`（画面、Riverpodプロバイダー、データ層のパターン）、または`/stack-set`で生成済みの場合は`stack/snippets.md`
    - `variants/flutter/tech-stack.md`
 <!-- oma-docs:ignore-start -->
 4. **実装：**

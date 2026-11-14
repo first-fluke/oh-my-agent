@@ -26,7 +26,7 @@ Execute `oma verify agent <agent-type> --workspace <path>` quando quiser as veri
 
 ## O dispatch continua visível {#dispatch-remains-visible}
 
-`oma doctor --profile` mostra o vendor e o modelo resolvidos para cada papel de dispatch. `oma agent spawn <agent-id> <prompt> <session-id>` é o caminho explícito da CLI quando um papel não é tratada pelo host atual. As regras de resolução do modelo e o comportamento específico de cada provider estão documentados em [Padrões importantes](./important-defaults.md) e [Modelos por agente](../guide/per-agent-models.md).
+`oma doctor --profile` mostra o vendor e o modelo resolvidos para cada papel de dispatch. `oma agent spawn <agent-id> <prompt> <session-id>` é o caminho explícito da CLI quando um papel não é tratado pelo host atual. As regras de resolução do modelo e o comportamento específico de cada provider estão documentados em [Padrões importantes](./important-defaults.md) e [Modelos por agente](../guide/per-agent-models.md).
 
 Os hooks podem ativar um workflow somente quando a integração do host correspondente está habilitada. O host faz o roteamento nativo de skills, enquanto o roteamento de workflows segue o workflow ou hook selecionado; um prompt comum não garante que uma skill ou um portão específico seja executado.
 

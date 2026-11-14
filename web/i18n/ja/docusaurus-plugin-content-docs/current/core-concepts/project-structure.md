@@ -276,13 +276,13 @@ your-project/
 - `mcp.devtools_browsers`: 任意のブラウザーリスト。未設定なら既存の項目を保持します。
 - `agents`: エージェントごとの任意のオーバーライド（オブジェクト型の `AgentSpec` のみ）
 - `models`: 任意のユーザー定義モデルスラッグ
-- `custom_presets`: `extends:` を持つ任意のユーザー定義プリセット
+- `custom_presets`: 任意のユーザー定義プリセット。`extends:` も任意です。
 
 この一覧はよく使うキーだけを示しています。サポートされるキー、その型、デフォルト値は[設定リファレンス](../guide/configuration-reference.md)を、`.cue`、`.yaml`、ローカルのオーバーレイファイルがどう組み合わさるかは [oma-config のセマンティクス](../guide/oma-config-semantics.md)を参照してください。
 
 ### skills/
 
-現在のカタログには、`_shared` リソースを含めて33個のスキルディレクトリがあります。`all` プリセットはこのライブツリーから生成されます。
+現在のカタログには 33 個のスキルディレクトリがあり、それに加えて `_shared` リソースがあります。`all` プリセットはこのライブツリーから生成されます。
 
 **`_shared/`** は全エージェントが使うリソースです。
 - `core/`: 実行ポリシー、コードインテリジェンスのルール、ルーティング、コンテキスト読み込み、プロンプト構造、明確化プロトコル、コンテキスト予算、難易度評価、品質原則、テストのアプローチ、ベンダー検出、セッション指標、共通チェックリスト、学び、API コントラクトテンプレート
@@ -491,12 +491,12 @@ Claude Code の Agent tool 用に整形されたサブエージェント定義�
 | `experiment-ledger-{sessionId}.md` | オーケストレーター／QA | 実際の実験の証拠記録 |
 | `lessons-{sessionId}.md` | オーケストレーター | 実験の証拠に裏づけられた教訓（条件付き） |
 | `session-work.md` | Work ワークフロー | Work ワークフローのセッション状態 |
-| `session-ultrawork.md` | Ultrawork ワークフロー | Ultrawork ワークフローのセッション状態 |
+| `session-ultrawork.md` | Ultrawork ワークフロー | Ultrawork 固有のフェーズ追跡 |
 | `session-ralph-{sessionId}.md` | Ralph ワークフロー | 1 回の Ralph 実行の基準、イテレーション記録、judge の結果 |
 | `session-cost-{sessionId}.md` | システム | セッションごとのコストテレメトリー |
 | `archive/metrics-{date}.md` | システム | アーカイブしたセッション指標（30日保持） |
 
-メモリファイルのパスとツール名は、`memoryConfig.provider`、`memoryConfig.basePath`、`memoryConfig.tools` を含む `.agents/mcp.json` の `memoryConfig` で設定できます。
+メモリファイルのパスとツール名は、`.agents/mcp.json` の `memoryConfig` で設定できます。
 
 Serena 自身のオンボーディングメモリ（`code_style.md`、`project_purpose.md` など）は `.serena/memories/` に残り、これらの調整用成果物とは別です。
 

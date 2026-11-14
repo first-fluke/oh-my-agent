@@ -352,6 +352,7 @@ oma install --preset frontend --yes
 <summary><strong>병렬 에이전트, 세션, 대시보드</strong></summary>
 
 - `oma agent spawn <role> "<task>" <sid>`는 Antigravity, Claude Code, Codex, Cursor, Grok, Kimi Code, Kiro, OpenCode, pi, Qwen Code에서 역할을 실행하며 `--isolation worktree`와 `--fallback-vendors`를 지원합니다. `oma agent parallel`은 여러 역할을 한꺼번에 실행합니다. 이 10개 디스패치 대상은 설치 프로그램이 연동하는 14개 중 일부입니다.
+- 실행 전에 `--read-only`를 붙이면 벤더 제한을 요구합니다. Codex는 읽기 전용 샌드박스를 쓰고, Claude는 plan mode를 쓰며, Pi는 `edit`, `write`, `bash`, `powershell`을 제외합니다. 다른 CLI에는 명시적인 `read_only_flag`가 있어야 합니다. 플래그가 없거나 비어 있거나 충돌이 알려져 있으면 디스패치가 멈춥니다. 사용자 정의 플래그는 사용하는 CLI나 래퍼에서 지원을 선언합니다. Pi가 제외하는 도구는 임의의 확장이나 MCP 도구까지 막지는 않습니다. OMA는 운영체제 샌드박스를 더하지 않습니다.
 - `oma state list --all-projects`와 `oma state get <sid>`: 세션과 기록된 모든 이벤트.
 - `oma dashboard terminal` / `oma dashboard web`: 실시간 에이전트 상태(웹 대시보드는 `127.0.0.1`에서만 수신). [대시보드 가이드](../web/docs/guide/dashboard-monitoring.md).
 - `oma stats get`(생산성 지표), `oma retro`(git 회고), `oma recap --window 7d`(여러 AI 도구에서 한 일).
@@ -594,7 +595,7 @@ agents:
 <details>
 <summary><strong>업데이트나 제거는 어떻게 하나요?</strong></summary>
 
-`oma update`는 설정은 그대로 두고 스킬, 워크플로우, hook을 새로 고칩니다(`--with-new-skills`는 이번 릴리스에서 새로 나온 스킬을 추가하고, `oma update mcp`는 브라우저 MCP를 다시 고릅니다). `oma uninstall --dry-run`은 무엇이 제거될지 보여 주고, `oma uninstall`은 실제로 제거하되 `oma-config.yaml`, `mcp.json`, 직접 작성한 스킬은 남겨 둡니다. 다른 해결 방법: [Troubleshooting](https://first-fluke.github.io/oh-my-agent/docs/guide/troubleshooting/).
+`oma update`는 설정은 그대로 두고 스킬, 워크플로우, hook을 새로 고칩니다(`--with-new-skills`는 이번 릴리스에서 새로 나온 스킬을 추가하고, `oma update mcp`는 브라우저 MCP를 다시 고릅니다). `oma uninstall --dry-run`은 무엇이 제거될지 보여 주고, `oma uninstall`은 실제로 제거하되 `oma-config.yaml`, `mcp.json`, 직접 작성한 스킬은 남겨 둡니다. 다른 해결 방법: [문제 해결](https://first-fluke.github.io/oh-my-agent/docs/guide/troubleshooting/).
 
 </details>
 

@@ -6,7 +6,7 @@ description: "Guia completo da geração de imagens do oh-my-agent, com dispatch
 
 # Geração de imagens
 
-`oma-image` é o roteador multi-vendor de imagens do oh-my-agent. Ele gera imagens a partir de prompts em linguagem natural, encaminha a solicitação para a CLI do vendor em que você está autenticado e grava um manifesto ao lado da saída com as entradas e decisões do provider necessárias para auditar ou repetir uma execução. A saída de um provider em produção ainda pode variar.
+`oma-image` é o roteador multi-vendor de imagens do oh-my-agent. Ele gera imagens a partir de prompts em linguagem natural, encaminha a solicitação para a CLI do vendor em que você está autenticado e grava um manifesto ao lado da saída com as entradas e decisões do provider necessárias para auditar ou repetir uma execução. A saída ao vivo do provider ainda pode variar.
 
 A skill é ativada por frases como "generate an image", "create an image", "make a picture", "draw me …" ou "image of …", pelo nome de um vendor (`gpt-image`, `nano-banana`, `pollinations`) ou quando outra skill precisa de uma imagem como efeito colateral (hero shot, thumbnail, foto de produto).
 
@@ -36,7 +36,7 @@ A skill prioriza a CLI: quando a CLI nativa de um vendor consegue devolver bytes
 
 | Vendor | Estratégia | Modelos | Gatilho | Custo |
 |---|---|---|---|---|
-| `pollinations` | HTTP direto | Gratuitos: `flux`, `zimage`. Com créditos: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` definido (cadastro gratuito em [https://enter.pollinations.ai](https://enter.pollinations.ai)) | Gratuito para `flux` / `zimage` |
+| `pollinations` | HTTP direto | Gratuitos: `flux`, `zimage`. Com créditos: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` definido (cadastro gratuito em https://enter.pollinations.ai) | Gratuito para `flux` / `zimage` |
 | `codex` | Primeiro pela CLI via `codex exec` (OAuth do ChatGPT) | `gpt-image-2` | `codex login` (não exige chave de API) | Cobrado no seu plano do ChatGPT |
 | `antigravity` | CLI `agy` usando a assinatura do Gemini Code Assist | O modelo é escolhido internamente por `agy` | `agy` instalado e conectado | Sem cobrança por imagem pelo Code Assist |
 
@@ -228,7 +228,7 @@ Por padrão, cada execução grava em uma pasta com timestamp e sufixo de hash e
     └── manifest.json
 ```
 
-`manifest.json` registra o vendor, o modelo, o prompt (ou seu SHA-256), o tamanho, a qualidade e o custo, para que a solicitação possa ser auditada e repetida. Ele não força pixels idênticos de um provider ativo.
+`manifest.json` registra o vendor, o modelo, o prompt (ou seu SHA-256), o tamanho, a qualidade e o custo, para que a solicitação possa ser auditada e repetida. Ele não força pixels idênticos de um provider ao vivo.
 
 ---
 

@@ -44,7 +44,7 @@ Os casos comuns são um `config.toml` que ele não consegue analisar, um projeto
 
 ## Processos Codex que o oh-my-agent cria
 
-Quando o oh-my-agent cria um subprocesso Codex (por exemplo, `oma agent spawn`), ele também passa `--dangerously-bypass-hook-trust`. Essa flag executa hooks habilitados sem a verificação de hash. Ela não remove a confiança do projeto. A flag vale somente para processos que o oh-my-agent inicia e nunca é gravada na sua configuração.
+Quando o oh-my-agent cria um subprocesso Codex (por exemplo, `oma agent spawn`), ele também passa `--dangerously-bypass-hook-trust`. Essa flag executa hooks habilitados sem a verificação de hash. Ela não dispensa a confiança do projeto. A flag vale somente para processos que o oh-my-agent inicia e nunca é gravada na sua configuração.
 
 ---
 

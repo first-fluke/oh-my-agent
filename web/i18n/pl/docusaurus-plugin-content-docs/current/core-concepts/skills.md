@@ -5,7 +5,7 @@ description: "Jak OMA wybiera i progresywnie ładuje umiejętności: anatomia SK
 
 # Umiejętności {#skills}
 
-[Umiejętności](../getting-started/glossary.md#skill) to uporządkowane pakiety wiedzy, które dostarczają roli dispatchu wskazówek z jej domeny. Zawierają protokoły wykonywania, referencje stosu technologicznego, szablony kodu, podręczniki błędów, checklisty jakości i przykłady, jeśli dana umiejętność je udostępnia. Architektura dzieli ładowanie na dwie warstwy, aby ograniczyć kontekst do wybranej umiejętności i wymaganych plików. Listę zainstalowanych umiejętności znajdziesz w [katalogu umiejętności](./agents.md#skill-catalog).
+[Umiejętności](../getting-started/glossary.md#skill) to uporządkowane pakiety wiedzy, które dają roli dispatchu wskazówki z jej domeny. Zawierają protokoły wykonywania, referencje stosu technologicznego, szablony kodu, podręczniki błędów, checklisty jakości i przykłady tam, gdzie umiejętność je dostarcza, ułożone w dwuwarstwowej architekturze zaprojektowanej pod oszczędność tokenów. Listę zainstalowanych umiejętności znajdziesz w [katalogu umiejętności](./agents.md#skill-catalog).
 
 ---
 

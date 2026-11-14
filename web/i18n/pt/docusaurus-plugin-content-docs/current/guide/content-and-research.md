@@ -26,7 +26,7 @@ Escolha pelo artefato de que precisa e use o menor comando ou ponto de entrada d
 | Traduzir ou revisar prosa localizada | Skill `oma-translation` | nenhum | Texto no idioma-alvo ou revisão apoiada por evidências | [abaixo](#translate-or-review-localized-content) |
 | Redigir ou auditar prosa acadêmica | Skill `oma-academic-writing` | nenhum | Rascunho, revisão ou relatório de conformidade com um Claim-Evidence Map | [abaixo](#draft-or-audit-academic-writing) |
 
-Os nomes de comandos `oma` nesta página são comandos públicos registrados. `uvx`, `bunx` e `bun` são ferramentas externas de conversão documentadas por suas skills responsáveis. As demais [skills](../getting-started/glossary.md#skill) são pontos de entrada em linguagem natural ou slash commands; não existe um comando autônomo `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ou `oma academic-writing`.
+Os comandos `oma` nomeados abaixo são comandos públicos registrados. `uvx`, `bunx` e `bun` são ferramentas externas de conversão documentadas por suas skills responsáveis. As demais [skills](../getting-started/glossary.md#skill) são pontos de entrada em linguagem natural ou slash commands; não existe um comando autônomo `oma pdf`, `oma hwp`, `oma voice`, `oma translation` ou `oma academic-writing`.
 
 ## Extrair conteúdo de PDF {#extract-pdf-content}
 

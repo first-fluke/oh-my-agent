@@ -5,7 +5,7 @@ description: "Execute vários papéis de dispatch do OMA em paralelo com a sinta
 
 # Execução Paralela
 
-O oh-my-agent permite executar vários agentes especializados simultaneamente. Enquanto o agente backend implementa uma API, o agente frontend cria a interface e o agente mobile constrói telas do app, o orquestrador os coordena por meio de estado de execução durável e recibos.
+O oh-my-agent executa vários agentes especializados em paralelo. Por exemplo, os agentes de backend, frontend e mobile podem trabalhar em partes distintas de uma aplicação, enquanto o orquestrador os coordena por meio de estado de execução durável e recibos.
 
 ---
 
@@ -283,7 +283,7 @@ Os IDs de sessão determinam:
 
 6. **Itere recriando agentes.** Se a saída de um agente precisar de refinamento, recrie-o com a tarefa original e o contexto da correção. Não inicie uma sessão nova.
 
-7. **Comece com `/work` se estiver em dúvida.** O workflow orienta você passo a passo, com confirmação do usuário em cada portão.
+7. **Comece com `/work` se estiver em dúvida.** O workflow `/work` guia você pelo processo, passo a passo, com confirmação do usuário em cada portão.
 
 ### Não faça
 

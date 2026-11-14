@@ -16,7 +16,7 @@ description: OMA 全部 20 个工作流的完整参考，涵盖斜杠命令、�
 | [`/orchestrate`](#orchestrate) | 基于计划自动并行执行智能体，并运行验证循环 | 是 |
 | [`/work`](#work) | 逐步协调多个领域：规划、实现、QA、修复 | 是 |
 | [`/ultrawork`](#ultrawork) | 包含 12 个隔离审查步骤的 5 阶段质量工作流 | 是 |
-| [`/ralph`](#ralph) | 反复执行 ultrawork，直到可用程序验证的标准通过 | 是 |
+| [`/ralph`](#ralph) | 反复执行 ultrawork，直到机械可验证的标准通过 | 是 |
 | [`/plan`](#plan) | PM 任务分解，包含依赖关系和 API 契约 | 否 |
 | [`/brainstorm`](#brainstorm) | 规划前以设计为先的创意探索 | 否 |
 | [`/architecture`](#architecture) | 架构决策、评审和 ADR | 否 |
@@ -46,7 +46,7 @@ description: OMA 全部 20 个工作流的完整参考，涵盖斜杠命令、�
 | 多个领域，需要逐步规划、实现和 QA | `/work` | 协调 API 变更及其 Web 和移动端客户端的修改 |
 | 自动分派独立任务，并行执行 | `/orchestrate` | 解决依赖关系后并行实现后端和前端任务 |
 | 明确要求完整的质量流程 | `/ultrawork` | 完整执行规划、实现、验证、改进和发布就绪审查 |
-| 明确要求反复执行，直到可用程序验证的标准通过 | `/ralph` | 在循环安全措施允许的范围内，反复实现并由 judge 验证，直到指定的回归检查通过 |
+| 明确要求反复执行，直到机械可验证的标准通过 | `/ralph` | 在循环安全措施允许的范围内，反复实现并由 judge 验证，直到指定的回归检查通过 |
 
 `/orchestrate` 会先加载可用计划，或通过 `/plan` 创建计划，再启动智能体。你无需先运行 `/plan`。因此，是否已有计划并不是 `/work` 和 `/orchestrate` 的区别；应根据所需的协调方式选择。两者都能并行执行独立任务。
 
@@ -78,9 +78,9 @@ description: OMA 全部 20 个工作流的完整参考，涵盖斜杠命令、�
 “do everything”、“전부 해줘”或“build me an app”这样的句子不会启动此工作流。
 
 **步骤：**
-1. **步骤 0，准备**：读取协调技能、上下文加载指南和内存协议。检测供应商。
+1. **步骤 0，准备**：读取协调技能、上下文加载指南和记忆协议。检测供应商。
 2. **步骤 1，加载或创建计划**：先检查 `.agents/results/plan-{sessionId}.json`，再检查最新的 `plan-*.json`。如果没有计划，或计划尚不可执行（任务缺少智能体、优先级层、依赖关系或验收标准），则在当前流程中内联委派 `/plan` 创建计划，并沿用同一会话 ID。展示计划并沿用已有授权；只有缺少关键决策或需要新增授权时，才在委派前询问。
-3. **步骤 2，初始化会话**：加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`）。为每个任务选择所需的技能参考资料，方法是将任务与已安装技能的意图签名进行匹配；有一个可信匹配的技能就足够。在配置的内存存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`，并在其中记录每个任务选定的参考资料和选择原因。这些是协调者备注；启动器不会强制执行它们。
+3. **步骤 2，初始化会话**：加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`）。为每个任务选择所需的技能参考资料，方法是将任务与已安装技能的意图签名进行匹配；有一个可信匹配的技能就足够。在配置的记忆存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`，并在其中记录每个任务选定的参考资料和选择原因。这些是协调者备注；启动器不会强制执行它们。
 4. **步骤 3，启动智能体**：按优先级层依次处理（从最低层开始：先第 1 层，再第 2 层，依此类推），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。每个智能体会收到自己的任务、API 契约，以及为它选定的参考资料及其加载条件。绝不超过 MAX_PARALLEL（默认 3）。
 5. **步骤 4，监控**：用 `oma agent status` 检查进程健康状况。优先使用宿主的完成通知；否则以有界退避轮询运行范围内发生变化的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件，读取结构化回执，并更新任务板。留意完成、失败和崩溃。
 6. **步骤 5，验证**：对每个完成的智能体，先运行机械自检（lint、类型检查、测试、diff 范围；最多 3 轮），再运行 `verify.sh {agent-type} {workspace}`（支持 backend、frontend、mobile、qa、debug 和 pm；其他智能体类型记录 `SKIP`），然后进行 QA 交叉审查。验证失败时，带上错误上下文重新启动。反复失败时，可以考虑尝试其他假设，但首次尝试、每次重试和每个假设共用同一份恢复总预算（`max_attempts`，默认 3 次，含首次尝试）。如果预算不足以支撑一轮对比，则保留未解决的证据。
@@ -109,7 +109,7 @@ flowchart TD
 ```
 
 **读取文件：**`.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、运行范围内的进度和结果文件，以及结构化运行回执。
-**写入文件**：配置内存存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
+**写入文件**：配置的记忆存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
 
 **何时使用**：需要最大并行度和自动化协调的大型项目。
 
@@ -129,7 +129,7 @@ flowchart TD
 单独的“work”不是触发词，它只是普通词汇（“Does this work on Windows?”）。“step by step”及其各语言译法也不会启动此工作流。
 
 **步骤：**
-1. **步骤 0：准备** 读取技能、上下文加载、内存协议。记录会话开始。
+1. **步骤 0：准备** 读取技能、上下文加载、记忆协议。记录会话开始。
 2. **步骤 1：分析需求** 识别涉及的领域。如果是单一领域，建议直接使用智能体。
 3. **步骤 2：PM 智能体规划** PM 分解需求，定义 API 契约，创建优先级任务分解，保存到 `.agents/results/plan-{sessionId}.json`。
 4. **步骤 3：审查计划** 展示计划，并在已有授权范围内继续执行。只有缺少关键决策或需要新增授权时才询问。
@@ -224,7 +224,7 @@ flowchart TD
 单独的续接用语（“keep going”、“carry on”、“계속해”、“続けて”、“продолжай”等）和表示做到完成的说法（“don't stop”、“끝까지 해”）都不会启动此工作流。
 
 **阶段：**
-1. **Phase 0：INIT** 加载前置条件（context-loading、内存协议、judge 协议）。定义并记录可用程序验证的完成标准，例如测试断言、不生成产物的类型检查、退出码或文件是否存在。只有明确要求时才纳入构建检查。展示标准，并在授权范围内继续执行。以 `max_iterations: 5` 初始化会话。
+1. **Phase 0：INIT** 加载前置条件（context-loading、记忆协议、judge 协议）。定义并记录机械可验证的完成标准，例如测试断言、不生成产物的类型检查、退出码或文件是否存在。只有明确要求时才纳入构建检查。展示标准，并在授权范围内继续执行。以 `max_iterations: 5` 初始化会话。
 2. **Phase 1：EXEC** 在 Ralph 的会话 ID 下，将 ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）作为一次迭代执行。随后运行产物关卡 `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`。如果关卡失败，本次迭代视为未执行：Ralph 记录违规，修复工作，然后重新运行关卡。
 3. **Phase 2：JUDGE** judge 将每个完成标准与项目实际状态核对（运行已授权的检查，并验证文件是否存在）。工作流提示会要求编排器将 judge 作为单独的智能体启动，使用全新上下文，并只向其说明完成标准；但没有任何机制能确认它确实已被启动。无法启动子智能体的运行时会被告知在流程内直接评判，并记录 `ralph.judge-inline-fallback`。记录证据和标准状态，包括 PASS、FAIL、REGRESSED 或 BLOCKED。
 4. **决策关卡：** 若所有标准 PASS → 报告全部完成。若只剩 PASS 和 BLOCKED → 报告部分完成。若存在 FAIL 或 REGRESSED → 在安全措施允许的范围内，将失败上下文带入下一次迭代。
@@ -252,9 +252,9 @@ judge 节点就是 Phase 2 所述、通过提示驱动的 judge：工作流要�
 **与 /ultrawork 的主要区别：** Ultrawork 执行 5 阶段流程，阶段关卡失败时会重试。Ralph 将 ultrawork 包装在重试循环中，由提示驱动的 judge 依据项目证据重新验证每个标准。循环结束时会给出全部完成报告、针对受阻工作的部分完成报告，或安全措施报告。
 
 **读取文件：** `.agents/workflows/ralph/resources/judge-protocol.md`，以及所有 ultrawork 文件。
-**写入文件：** `session-ralph-{sessionId}.md`（内存）、迭代日志、最终报告。
+**写入文件：** `session-ralph-{sessionId}.md`（记忆）、迭代日志、最终报告。
 
-**何时使用：** 明确需要反复执行，并由 judge 依据可用程序检查的完成标准重新验证时。仅有测试要求并不需要 Ralph；选择时应考虑每次迭代都包含完整的 ultrawork 流程，以及循环本身的安全措施。
+**何时使用：** 明确需要反复执行，并由 judge 依据机械可验证的完成标准重新验证时。仅有测试要求并不需要 Ralph；选择时应考虑每次迭代都包含完整的 ultrawork 流程，以及循环本身的安全措施。
 
 ---
 
@@ -268,7 +268,7 @@ judge 节点就是 Phase 2 所述、通过提示驱动的 judge：工作流要�
 
 **步骤**：收集需求 -> 使用 MCP 代码分析评估技术可行性 -> 评估复杂度（Simple、Medium、Complex）-> 在跨边界时定义 API 契约 -> 分解任务 -> 与用户审查 -> 保存计划工件（Medium/Complex 时同时保存机器可读 JSON 和人类可读的 Markdown 跟踪文件）。
 
-**输出：**`.agents/results/plan-{sessionId}.json`、内存写入，以及 Medium/Complex 任务的 `docs/plans/work/{NNN}-{name}.md`，其中包含任务表、决策日志和进度备注。Markdown 标题中的 `Status` 字段记录生命周期（`Active` -> `Completed`），计划不会在目录间移动。通过 `/brainstorm` 选定的方案保存到 `docs/decisions/{NNN}-{name}.md`。
+**输出：**`.agents/results/plan-{sessionId}.json`、记忆写入，以及 Medium/Complex 任务的 `docs/plans/work/{NNN}-{name}.md`，其中包含任务表、决策日志和进度备注。Markdown 标题中的 `Status` 字段记录生命周期（`Active` -> `Completed`），计划不会在目录间移动。通过 `/brainstorm` 选定的方案保存到 `docs/decisions/{NNN}-{name}.md`。
 
 **执行方式**：内联执行（不启动子智能体）。由 `/orchestrate` 或 `/work` 消费，后者会在执行期间更新任务和状态字段。
 
@@ -306,7 +306,7 @@ judge 节点就是 Phase 2 所述、通过提示驱动的 judge：工作流要�
 
 **触发关键词：** 无。请用 `/deepinit` 启动。关键词钩子不会从一句话打开此工作流。
 
-**步骤：** 准备 -> 分析代码库（项目类型、架构、隐含规则、领域、边界）-> 生成 ARCHITECTURE.md（领域地图，不超过 200 行）-> 生成 `docs/` 知识库（decisions/、plans/、generated/、product-specs/、references/、领域文档）-> 生成根 AGENTS.md（约 100 行，目录）-> 生成边界 AGENTS.md 文件（monorepo 包，每个不超过 50 行）-> 更新现有框架（如果重新运行）-> 验证（无死链接，行数限制）。
+**步骤：** 准备 -> 分析代码库（项目类型、架构、隐含规则、领域、边界）-> 生成 ARCHITECTURE.md（领域地图，不超过 200 行）-> 生成 `docs/` 知识库（decisions/、plans/、generated/、product-specs/、references/、领域文档）-> 生成根 AGENTS.md（约 100 行，目录）-> 生成边界 AGENTS.md 文件（monorepo 包，每个不超过 50 行）-> 更新现有 harness（如果重新运行）-> 验证（无死链接，行数限制）。
 
 **输出：** AGENTS.md、ARCHITECTURE.md、docs/decisions/、docs/plans/、docs/PLANS.md、docs/QUALITY-SCORE.md、docs/CODE-REVIEW.md 以及发现的领域特定文档。
 
@@ -369,7 +369,7 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 **触发关键词：** 无。请用 `/debug` 启动。关键词钩子不会从一句话打开此工作流。
 
-**步骤：** 收集错误信息 -> 复现（MCP `search_for_pattern`、`find_symbol`）-> 诊断根因（MCP `find_referencing_symbols` 追踪执行路径）-> 提出最小修复方案（需用户确认）-> 应用修复 + 编写回归测试 -> 扫描类似模式（范围超过 10 个文件时可能启动 debug-investigator 子智能体）-> 在内存中记录 bug。
+**步骤：** 收集错误信息 -> 复现（MCP `search_for_pattern`、`find_symbol`）-> 诊断根因（MCP `find_referencing_symbols` 追踪执行路径）-> 提出最小修复方案（需用户确认）-> 应用修复 + 编写回归测试 -> 扫描类似模式（范围超过 10 个文件时可能启动 debug-investigator 子智能体）-> 在记忆中记录 bug。
 
 **子智能体启动条件：** 错误跨越多个领域、扫描范围超过 10 个文件、或需要深层依赖追踪。
 
@@ -618,7 +618,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 └── ralph-state-{sessionId}.json
 ```
 
-`{sessionId}` 是宿主会话 ID，因此并发会话不会共用同一个文件。文件记录工作流名称、会话 ID、激活时间和强化次数；执行 `oma goal set` 后还会记录目标契约。阶段进度保存在 `session-ultrawork.md` 等内存文件中，不在这里。
+`{sessionId}` 是宿主会话 ID，因此并发会话不会共用同一个文件。文件记录工作流名称、会话 ID、激活时间和强化次数；执行 `oma goal set` 后还会记录目标契约。阶段进度保存在 `session-ultrawork.md` 等记忆文件中，不在这里。
 
 ### 强化 {#reinforcement}
 
@@ -663,7 +663,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 ## 另请参阅 {#see-also}
 
 - [并行执行](./parallel-execution.md)：`oma agent spawn`、`oma agent parallel` 和监控
-- [项目结构](./project-structure.md)：工作流状态和内存文件的存放位置
+- [项目结构](./project-structure.md)：工作流状态和记忆文件的存放位置
 - [`oma goal set`](../cli-interfaces/commands.md#goal-set)：持久化工作流的停止关卡和预算
 - [多智能体项目指南](../guide/multi-agent-project.md)
 - [故障排除](../guide/troubleshooting.md)

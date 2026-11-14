@@ -294,7 +294,7 @@ Los IDs de sesión determinan:
 
 3. **No omitas la planificación.** Generar agentes sin un plan provoca desalineación: por ejemplo, frontend puede implementar una forma de API distinta de la de backend.
 
-4. **No ignores agentes fallidos.** Su trabajo está incompleto. Revisa su claim estructurado, que declara el resultado de la ejecución, o su archivo de resultados de ámbito de ejecución, corrige el prompt y vuelve a generarlo.
+4. **No ignores agentes fallidos.** El trabajo de un agente fallido está incompleto. Revisa su claim estructurado o el archivo de resultados del ámbito de la ejecución para ver el motivo del fallo, corrige el prompt y vuelve a generarlo.
 
 5. **No mezcles IDs de sesión para trabajo relacionado.** Si backend y frontend trabajan en la misma funcionalidad, deben compartir un ID de sesión para que el orquestador pueda coordinarlos.
 
