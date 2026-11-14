@@ -100,9 +100,13 @@ Dashboardy odczytują katalog `.agents/state/memories/`. Agenci i workflowy wype
 Dashboard korzysta z kilku strategii wydobywania informacji:
 
 1. **Wykrywanie sesji:** Najpierw szuka `orchestrator-session.md`, a następnie przechodzi do najnowszego zmodyfikowanego pliku `session-*.md`. Status rozpoznaje po słowach kluczowych: `RUNNING`, `IN PROGRESS`, `COMPLETED`, `DONE`, `FAILED`, `ERROR`.
+
 2. **Parsowanie task boardu:** Odczytuje `task-board.md` jako tabelę Markdown. Wydobywa nazwę agenta, status i opis zadania z kolumn.
+
 3. **Wykrywanie agentów:** Jeśli nie ma task boardu, wyszukuje agentów we wszystkich plikach `.md` na podstawie wzorców `**Agent**: {name}`, wierszy `Agent: {name}` albo nazw plików zawierających `_agent` lub `-agent`.
+
 4. **Liczenie tur:** Dla każdego wykrytego agenta wybiera najnowszy plik, którego nazwa zaczyna się od `progress-{agent}`, i odczytuje z niego ostatni wiersz `Turn N` (albo `turn: N`).
+
 5. **Strumień aktywności:** Wypisuje 5 ostatnio zmodyfikowanych plików `.md`, wydobywa ostatnią znaczącą linię (nagłówki, wiersze statusu, zadania) jako komunikat aktywności. Dashboard webowy udostępnia też widok podsumowania pod `/recap`.
 
 ---

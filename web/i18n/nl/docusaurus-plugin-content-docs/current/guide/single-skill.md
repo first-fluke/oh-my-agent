@@ -29,7 +29,6 @@ Gebruik dit wanneer je taak aan AL deze criteria voldoet:
 - **Geen coördinatie**: andere agenten hoeven niet voor of na deze taak te draaien.
 
 **Voorbeelden van taken met één skill:**
-
 - Eén UI-component bouwen
 - Eén API-endpoint toevoegen
 - Eén bug in één laag oplossen
@@ -39,7 +38,6 @@ Gebruik dit wanneer je taak aan AL deze criteria voldoet:
 - Eén gedeelte van een designsysteem maken
 
 **Schakel over naar multi-agent** (`/work` of `/orchestrate`) wanneer:
-
 - UI-werk een nieuw API-contract nodig heeft (frontend + backend)
 - Eén fix doorwerkt naar meerdere lagen (debug + implementatieagents)
 - De feature frontend, backend en database omvat
@@ -61,7 +59,6 @@ Beantwoord deze vier vragen voordat je de prompt schrijft:
 | **Done When** | Welke acceptatiecriteria ga je controleren? | Geeft de agent een doel en jou een verificatiechecklist. |
 
 Als een element in je prompt ontbreekt, zal de agent:
-
 - **LOW uncertainty:** standaardinstellingen toepassen en aannames opsommen
 - **MEDIUM uncertainty:** 2–3 opties presenteren en doorgaan met de waarschijnlijkste
 - **HIGH uncertainty:** blokkeren en vragen stellen (er wordt geen code geschreven)

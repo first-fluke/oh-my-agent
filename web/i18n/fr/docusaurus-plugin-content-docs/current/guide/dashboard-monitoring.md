@@ -33,7 +33,6 @@ Cette commande affiche une interface à cadres directement dans le terminal. Ell
 | Pied de page | `Updated: <time>  \|  Ctrl+C to exit` | Heure du dernier rafraîchissement |
 
 **Symboles de statut :**
-
 - `●` (vert) : en cours ;
 - `✓` (cyan) : terminé ;
 - `✗` (rouge) : échec ;
@@ -59,7 +58,6 @@ MEMORIES_DIR=/path/to/.agents/state/memories oma dashboard web
 ```
 
 Le dashboard web affiche les mêmes informations que le dashboard terminal, dans une interface sombre stylisée qui comprend :
-
 - un badge d'état de connexion (Connected / Disconnected / Connecting avec reconnexion automatique) ;
 - l'identifiant et la barre d'état de la session ;
 - un tableau de statut des agents avec des points animés ;
@@ -118,14 +116,12 @@ Le dashboard combine plusieurs stratégies pour extraire les informations :
 ### Statut de la session
 
 La partie supérieure affiche :
-
 - **ID de session :** extrait des fichiers de session (format : `session-YYYYMMDD-HHMMSS`) ;
 - **Statut :** code couleur : vert pour RUNNING, cyan pour COMPLETED, rouge pour FAILED et jaune pour UNKNOWN.
 
 ### Tableau des tâches
 
 Le tableau des agents affiche chaque agent détecté avec :
-
 - **Nom de l'agent :** identifiant du domaine (backend, frontend, mobile, qa, debug, pm) ;
 - **Statut :** état courant avec indicateur visuel (running/completed/failed/blocked/pending) ;
 - **Tour :** numéro de la dernière entrée de progression de l'agent, extrait des fichiers de progression ; il compte les entrées, pas les tours du modèle ;
@@ -134,7 +130,6 @@ Le tableau des agents affiche chaque agent détecté avec :
 ### Progression des agents
 
 La progression est suivie par les fichiers `progress-{agent}-*.md`. Chaque agent ajoute une entrée à un point d'étape significatif (une étape terminée, un blocage, un changement d'approche). Le dashboard y recherche :
-
 - le numéro du tour (le numéro de la dernière entrée) ;
 - l'action courante (ce que l'agent fait maintenant) ;
 - les résultats intermédiaires (achèvements partiels).
@@ -142,7 +137,6 @@ La progression est suivie par les fichiers `progress-{agent}-*.md`. Chaque agent
 ### Résultats
 
 Lorsqu'un agent termine, il écrit `result-{agent}.md` avec :
-
 - le statut final (COMPLETED ou FAILED) ;
 - la liste des fichiers modifiés ;
 - les problèmes rencontrés ;
@@ -159,13 +153,11 @@ Le dashboard détecte la fin grâce à la présence de ce fichier et met à jour
 **Symptôme :** le dashboard affiche un agent en cours, mais le numéro de tour n'a pas changé depuis plusieurs minutes.
 
 **Causes possibles :**
-
 - l'agent est bloqué sur une opération longue (analyse d'un dépôt volumineux ou appel API lent) ;
 - l'agent a planté, mais le fichier PID existe encore ;
 - l'agent attend une entrée utilisateur (cela ne devrait pas arriver en mode d'approbation automatique).
 
 **Actions :**
-
 1. Consultez le fichier de log de l'agent. `oma agent spawn` affiche son chemin sous la forme `Log: ...` ; il se trouve dans le répertoire temporaire du système : `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"`
 2. Vérifiez que le processus est réellement actif : `oma agent status {session-id} {agent-id}`
 3. Si le processus ne tourne plus alors que le statut indique « running », l'agent a planté. Relancez-le avec le contexte de l'erreur.
@@ -175,13 +167,11 @@ Le dashboard détecte la fin grâce à la présence de ce fichier et met à jour
 **Symptôme :** `oma agent status` renvoie `crashed` pour un agent.
 
 **Causes possibles :**
-
 - le processus du fournisseur CLI s'est arrêté de manière inattendue (mémoire insuffisante, quota API dépassé, délai réseau) ;
 - le répertoire de workspace a été supprimé ou ses permissions ont changé ;
 - le CLI du fournisseur n'est pas installé ou n'est pas authentifié.
 
 **Actions :**
-
 1. Consultez le fichier de log pour les détails : `cat "${TMPDIR:-/tmp}/subagent-{session-id}-{agent-id}.log"` (le chemin `Log:` affiché par `oma agent spawn`)
 2. Vérifiez l'installation du CLI : `oma doctor`
 3. Vérifiez l'authentification : `oma auth status`
@@ -192,13 +182,11 @@ Le dashboard détecte la fin grâce à la présence de ce fichier et met à jour
 **Symptôme :** le dashboard fonctionne, mais aucun agent n'est affiché.
 
 **Causes possibles :**
-
 - le workflow n'a pas encore atteint l'étape de lancement des agents ;
 - le répertoire `.agents/state/memories/` est vide ;
 - le dashboard surveille le mauvais répertoire.
 
 **Actions :**
-
 1. Vérifiez le répertoire mémoire : `ls -la .agents/state/memories/`
 2. Vérifiez si le workflow est toujours dans la phase de planification (les agents ne sont pas encore lancés).
 3. Vérifiez que le dashboard surveille le bon répertoire du projet : il résout le chemin mémoire depuis le répertoire courant. Lancez-le depuis la racine du projet ou passez `--project-root /path/to/project`. `oma dashboard web` affiche le chemin surveillé sous la forme `Watching: <path>`.
@@ -209,12 +197,10 @@ Le dashboard détecte la fin grâce à la présence de ce fichier et met à jour
 **Symptôme :** le badge de connexion du dashboard web affiche « Disconnected » en rouge.
 
 **Causes possibles :**
-
 - le processus `oma dashboard web` a été arrêté ;
 - le processus `oma dashboard web` a été redémarré, et l'onglet ouvert conserve le jeton du processus précédent.
 
 **Actions :**
-
 1. Vérifiez que le processus du dashboard tourne : `ps aux | grep dashboard`
 2. Si vous avez redémarré le dashboard, rechargez la page pour qu'elle récupère le nouveau jeton.
 3. Si le processus s'est arrêté, relancez `oma dashboard web`, puis rechargez la page.
@@ -239,7 +225,6 @@ Avant de considérer une session multi-agents comme terminée, vérifiez dans le
 ## Critères de complétion
 
 La surveillance du dashboard est terminée lorsque :
-
 1. tous les agents lancés ont atteint un état terminal (terminé ou échoué puis pris en charge) ;
 2. le cycle de revue QA est terminé sans problème bloquant ;
 3. le statut de session reflète le résultat final ;

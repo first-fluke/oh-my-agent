@@ -1,7 +1,7 @@
 ---
 title: "Guide : exécution d'une compétence unique"
 sidebar_label: Compétence unique
-description: Guide détaillé des tâches limitées à un seul domaine dans oh-my-agent.
+description: Guide détaillé des tâches limitées à un seul domaine dans oh-my-agent, couvrant quand l'utiliser, la liste de vérification avant lancement, le modèle de prompt avec explication, des exemples réels pour les tâches frontend, backend, mobile et de base de données, le déroulement attendu, la liste de contrôle du quality gate et les signaux d'escalade.
 ---
 
 # Exécution d'une compétence unique
@@ -29,7 +29,6 @@ Utilisez cette approche si votre tâche satisfait **tous** les critères suivant
 - **Aucune coordination** : aucun autre agent ne doit intervenir avant ou après.
 
 **Exemples de tâches pour une compétence unique :**
-
 - Construire un composant UI
 - Ajouter un endpoint d'API
 - Corriger un bug dans une couche
@@ -39,7 +38,6 @@ Utilisez cette approche si votre tâche satisfait **tous** les critères suivant
 - Créer une section d'un design system
 
 **Passez au multi-agent** (`/work` ou `/orchestrate`) lorsque :
-
 - le travail UI nécessite un nouveau contrat d'API (frontend + backend) ;
 - une correction se propage entre plusieurs couches (agents de débogage et d'implémentation) ;
 - la fonctionnalité couvre le frontend, le backend et la base de données ;
@@ -61,7 +59,6 @@ Avant de rédiger le prompt, répondez à ces quatre questions :
 | **Terminé quand** | Quels critères d'acceptation allez-vous vérifier ? | Donne une cible à l'agent et une liste de vérification à l'auteur de la demande. |
 
 Si un élément manque dans votre prompt, l'agent va :
-
 - **Incertitude faible** : appliquer des valeurs par défaut et lister ses hypothèses ;
 - **Incertitude moyenne** : présenter 2 ou 3 options et avancer avec la plus probable ;
 - **Incertitude élevée** : bloquer et poser des questions (il n'écrira pas de code).

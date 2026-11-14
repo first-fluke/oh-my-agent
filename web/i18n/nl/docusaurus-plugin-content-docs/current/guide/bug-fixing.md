@@ -55,7 +55,6 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 **Verwachting:** Laat alles vallen. Dit is de enige taak totdat het probleem is opgelost.
 
 **Voorbeelden:**
-
 - Het authenticatiesysteem wordt omzeild; alle gebruikers hebben toegang tot admin-endpoints.
 - Een databasemigratie heeft de userstabel beschadigd; accounts zijn ontoegankelijk.
 - Betalingen worden dubbel afgeschreven.
@@ -70,7 +69,6 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 **Verwachting:** Los het probleem binnen de huidige werksessie op. Start geen nieuwe features totdat het is opgelost.
 
 **Voorbeelden:**
-
 - Zoeken geeft geen resultaten voor query's met speciale tekens.
 - Uploaden mislukt voor bestanden groter dan 5 MB (de limiet hoort 50 MB te zijn).
 - De mobileapp crasht bij het opstarten op Android 14-apparaten.
@@ -85,7 +83,6 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 **Verwachting:** Plan dit voor de huidige sprint. Los het op vóór de volgende release.
 
 **Voorbeelden:**
-
 - Tabelsortering is hoofdlettergevoelig ("apple" komt na "Zebra").
 - Dark mode gebruikt onleesbare tekst in het instellingenpaneel.
 - De responstijd van het `/users`-endpoint is 8 seconden (deze hoort minder dan 1 seconde te zijn).
@@ -100,7 +97,6 @@ De ernst bepaalt hoe de bug wordt behandeld en hoe snel deze moet worden opgelos
 **Verwachting:** Zet het op de backlog. Los het op wanneer het uitkomt of bundel het met verwante wijzigingen.
 
 **Voorbeelden:**
-
 - De tooltip bevat een typefout: "Delet" in plaats van "Delete".
 - Een consolewaarschuwing over een verouderde React-lifecyclemethode.
 - De footer is 2 pixels verkeerd uitgelijnd bij viewportbreedtes tussen 768 en 800 px.
@@ -123,7 +119,6 @@ flowchart LR
 ### Stap 1: foutinformatie verzamelen
 
 De workflow vraagt de gebruiker om de volgende informatie, of ontvangt die al:
-
 - Foutmelding en stacktrace
 - Stappen om te reproduceren
 - Verwacht gedrag tegenover werkelijk gedrag
@@ -159,7 +154,6 @@ Diagnosticeer de hoofdoorzaak, niet het symptoom. Als `user.id` undefined is, vr
 ### Stap 4: een minimale fix voorstellen
 
 De workflow presenteert:
-
 1. De vastgestelde hoofdoorzaak (met bewijs uit de codetrace).
 2. De voorgestelde fix (alleen wat nodig is aanpassen).
 3. Een uitleg waarom dit de hoofdoorzaak oplost en niet alleen het symptoom.
@@ -189,7 +183,6 @@ Na de fix scant de workflow de hele codebase op hetzelfde patroon dat de bug ver
 Als de bug bijvoorbeeld ontstond door toegang tot `user.organization.id` zonder te controleren of `organization` null is, zoekt de scan naar alle andere gevallen waarin `organization.id` zonder null-check wordt gebruikt.
 
 **Criteria voor subagentdelegatie:** De workflow start een `debug-investigator`-subagent wanneer:
-
 - De fout meerdere domeinen raakt (bijvoorbeeld frontend én backend).
 - De scan op vergelijkbare patronen 10+ bestanden omvat.
 - Diepe dependency-tracing nodig is voor een volledige diagnose.
@@ -207,7 +200,6 @@ Alle kwetsbare locaties die overeenkomen worden gerapporteerd. Bevestigde gevall
 ### Stap 7: de bug documenteren
 
 De workflow schrijft een memorybestand met:
-
 - Symptoom en hoofdoorzaak
 - Toegepaste fix en gewijzigde bestanden
 - Locatie van de regressietest
@@ -275,7 +267,6 @@ De fout in de frontend wordt veroorzaakt door een backendwijziging die op zijn b
 ### Signaal 3: ontbrekende reproductieomgeving
 
 De bug treedt alleen in productie op en kan lokaal niet worden gereproduceerd. Signalen zijn:
-
 - Omgevingsspecifieke configuratieverschillen.
 - Raceconditions die alleen onder productielast zichtbaar worden.
 - Ander gedrag van externe services tussen staging en productie.

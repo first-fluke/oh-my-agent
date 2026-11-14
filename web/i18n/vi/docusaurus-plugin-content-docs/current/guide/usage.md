@@ -403,14 +403,23 @@ Flag `-w` của `agent spawn` cô lập agent trong thư mục cụ thể. Đi�
 ## Mẹo
 
 1. **Viết prompt cụ thể.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" cho kết quả tốt hơn "make an app."
+
 2. **Dùng workspace cho agent song song.** Luôn truyền `-w ./path` để ngăn xung đột file giữa các agent chạy đồng thời.
+
 3. **Khóa API contract trước khi spawn agent triển khai.** Chạy `/plan` trước để frontend và backend thống nhất hình dạng endpoint.
+
 4. **Giám sát tích cực.** Mở dashboard terminal để phát hiện agent thất bại sớm thay vì chờ mọi agent hoàn tất.
+
 5. **Lặp bằng spawn lại.** Nếu output agent chưa đúng, spawn lại với task gốc và ngữ cảnh sửa. Không bắt đầu lại từ đầu.
+
 6. **Chọn điều phối theo task.** Bắt đầu bằng skill đơn cho một domain; dùng [hướng dẫn chọn](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) khi task cần phối hợp hoặc workflow chất lượng tường minh.
+
 7. **Dùng `/brainstorm` trước `/plan` cho ý tưởng mơ hồ.** Brainstorm làm rõ ý định và hướng trước khi PM agent phân tách task.
+
 8. **Chạy `/deepinit` trên codebase mới.** Nó tạo AGENTS.md và ARCHITECTURE.md giúp mọi agent hiểu cấu trúc project.
+
 9. **Cấu hình `model_preset`.** Bắt đầu với `auto`, chọn preset cố định như `claude`, `antigravity`, `codex`, `qwen`, `cursor`, `kiro` hoặc `mixed`, hay dùng `free` với gateway local. Thêm override `agents:` để điều chỉnh chi tiết. Xem [Cấu hình model theo từng agent](./per-agent-models.md).
+
 10. **Dùng `/ultrawork` khi bạn muốn toàn bộ quy trình review của nó.** Workflow 5 giai đoạn chạy 12 bước review cô lập; chỉ tải skill không chạy các kiểm tra đó.
 
 ---

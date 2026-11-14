@@ -137,6 +137,7 @@ Die Abschlusszusammenfassung listet die ausgewählten Skills auf und prüft refe
 ```bash
 cd /path/to/my-project
 oma install --preset frontend
+# Confirm the remaining runtime and provider choices
 ```
 
 ### doctor {#doctor}
@@ -381,12 +382,13 @@ oma stats reset [--json] [--output <format>]
 - Zeitstempel der letzten Aktualisierung
 
 **Kosten-Telemetrie** (über alle Dateien `session-cost-*.md` unter `.agents/state/memories/` aggregiert):
-- Gesamtzahl der Eingabetokens (Näherung über Promptzeichen, noch keine Ausgabetokens)
-- Anzahl der Starts
-- Geschätzte USD anhand einer konservativen Rate für Eingabetokens pro Vendor (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
+- Erfasste Tokens, wobei tatsächliche native Nutzung von Schätzungen anhand der Promptlänge unterschieden wird
+- Gesamtzahl der Starts
+- Reservierte Starts und Läufe mit teilweiser Abdeckung der nativen Nutzung
+- Geschätzte USD anhand einer Ratentabelle pro Vendor; diese Schätzung ist von den tatsächlichen Token-Zahlen getrennt
 - Aufschlüsselung pro Vendor (Tokens · Starts · USD)
 
-Die Schätzung ist eine Untergrenze und kein abrechnungsgenauer Betrag. Konfiguriere `session.quota_cap` in `.agents/oma-config.yaml`, um beim Start harte Budgets durchzusetzen; siehe die Seite Why oh-my-agent unter Erste Schritte für das qualitätsorientierte Arsenal, zu dem diese Limits gehören.
+Die USD-Schätzung ist kein abrechnungsgenauer Betrag. Konfiguriere `session.quota_cap` in `.agents/oma-config.yaml`, um den nächsten Start zu blockieren, sobald die erfasste Token-Nutzung oder die Anzahl der Starts ein Limit erreicht. Fehlende native Nutzung behält eine explizite Schätzung bei, und laufende Kindprozesse werden nicht unterbrochen. Siehe [Session-Quota-Limits](../guide/configuration-reference.md#session-quota-caps).
 
 Metriken werden in `.agents/state/metrics.json` gespeichert; eine veraltete `.serena/metrics.json` wird gelesen, wenn sie vorhanden ist. Die Daten werden aus Git-Statistiken und Memory-Dateien erfasst.
 

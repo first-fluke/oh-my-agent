@@ -266,7 +266,6 @@ Dies ist das Kernverzeichnis. Alles, was Agenten brauchen, liegt hier. Für das 
 ### oma-config.cue und oma-config.yaml
 
 **`oma-config.yaml`** ist die zentrale Konfigurationsdatei mit:
-
 - `language`: Sprachcode für Antworten (en, ko, ja, zh, es, fr, de, pt, ru, nl, pl)
 - `date_format`: Format der Zeitstempel (`ISO`, `US` oder `EU`; Standard `ISO`)
 - `timezone`: IANA-Zeitzonenkennung; wenn der Wert fehlt, wird die Systemzeitzone verwendet
@@ -286,13 +285,11 @@ Diese Liste deckt die gebräuchlichsten Schlüssel ab. Die unterstützten Schlü
 Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Verzeichnisse zusätzlich zu den gemeinsamen `_shared`-Ressourcen; das Preset `all` wird aus diesem aktuellen Baum abgeleitet.
 
 **`_shared/`** enthält Ressourcen für alle Agenten:
-
 - `core/`: Ausführungsrichtlinie, Regeln für Code-Intelligence, Routing, Kontextladen, Prompt-Struktur, Klärungsprotokoll, Kontextbudget, Schwierigkeitsbewertung, Qualitätsprinzipien, Testansatz, Anbietererkennung, Sitzungsmetriken, gemeinsame Checkliste, Lessons Learned und Vorlagen für API-Verträge
 - `runtime/`: Memory-Protokoll, Event-Spezifikation, Ergebnisvertrag und anbieterspezifische Ausführungsprotokolle
 - `conditional/`: Messung des Qualitätsscores, Nachverfolgung des Experiment-Ledgers, Protokoll der Explorationsschleife, Diagramm-Engine (nur geladen, wenn ausgelöst)
 
 **`oma-{skill}/`** enthält die Verzeichnisse der einzelnen Skills. Jedes enthält:
-
 - `SKILL.md`: Ebene 1, die beim Routing des Skills geladen wird; Identität, Routing und Kernregeln
 - `resources/`: Ebene 2, bedarfsgesteuert; Ausführungsprotokolle, Beispiele, Checklisten, Fehler-Playbooks, Tech-Stacks, Snippets und Vorlagen
 - Einige Skills haben zusätzliche Unterverzeichnisse: `stack/` (die bei der Installation gewählte Backend-Variante oder von `/stack-set` generierte Referenzen), `variants/` (die mitgelieferten Stack-Referenzen; ein ohne gewählte Variante installierter Skill behält sein `variants/`-Verzeichnis und liest die passende Variante) sowie skill-spezifische Skripte und Konfigurationen
@@ -300,7 +297,6 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Ver
 ### workflows/
 
 20 Markdown-Dateien definieren das Verhalten der Slash-Befehle. Jede Datei enthält:
-
 - YAML-Frontmatter mit `description`
 - Abschnitt mit Pflichtregeln (Antwortsprache, Reihenfolge der Schritte, Anforderungen an MCP-Tools)
 - Anweisungen für die Anbietererkennung
@@ -312,7 +308,6 @@ Persistente Workflows sind `orchestrate.md`, `work.md`, `ultrawork.md` und `ralp
 ### agents/
 
 12 Definitionsdateien für Subagenten werden verwendet, wenn Agenten über das Agent-Tool von Claude Code oder über die CLI gestartet werden; hinzu kommen anbieterspezifische Einstellungen in `variants/`. Jede Datei definiert:
-
 - Frontmatter: `name`, `description` und `skills` (der zu ladende Skill)
 - Verweis auf das Ausführungsprotokoll (Ergebnisvertrag und laufbezogene Ergebnisdatei)
 - Architekturzusammenfassung
@@ -336,7 +331,6 @@ Ergebnisdateien der Agenten. Abgeschlossene Agenten erstellen sie mit Status (co
 ### mcp.json
 
 MCP-Server-Konfiguration einschließlich:
-
 - Serverdefinitionen (Serena und weitere)
 - Speicherkonfiguration: `memoryConfig.provider`, `memoryConfig.basePath` und `memoryConfig.tools` (Namen der Lese-, Schreib- und Bearbeitungswerkzeuge)
 
@@ -385,7 +379,6 @@ Das `hooks/`-Verzeichnis eines Anbieters enthält **nur die Dateien, die aus die
 Die Handlerquellen sind unter `.agents/hooks/core/` die SSOT und laufen prozessintern über `oma hook run`:
 
 **`keyword-detector.ts`** ist ein reiner Handler (`run(input, ctx): HandlerResult | null`) für die Schlüsselworterkennung. Die Logik:
-
 1. Bereinigt die Eingabe (entfernt Codeblöcke, zitierte Zeichenketten und eingefügte System-Echo-Blöcke)
 2. Durchsucht die bereinigte Eingabe nach Trigger-`keywords` (wörtlich) und `patterns` (reguläre Ausdrücke)
 3. Prüft in einem Fenster von 60 Zeichen um jeden Treffer auf Informationsmuster
@@ -399,13 +392,11 @@ Die Handlerquellen sind unter `.agents/hooks/core/` die SSOT und laufen prozessi
 **`code-intelligence-guard.ts`** ist ein reiner Handler (`run()`) für `PreToolUse`, der die Regel „Code Search“ mechanisch durchsetzt. Solange `providers.code_intelligence` zu `serena` (oder `gortex`) aufgelöst wird und `providers.code_intelligence_guard` nicht `off` ist, blockiert er die nativen Suchwerkzeuge (`Grep`, `Glob` in Claude Code) sowie Shell-Befehle, deren führendes Binary eine rekursive Codesuche ist (`rg`, `ag`, `ack`, `fd`, `grep -r`, `find -name`/`-path`, `git grep`); der Blockierungsgrund nennt das stattdessen zu verwendende Provider-Tool (`search_for_pattern`, `find_file`, `find_symbol`). Nicht rekursives `grep` (Pipe-Filter, einzelne Dateien), `find` ohne Namensprädikat und Lesezugriffe bleiben immer unberührt. Er wird für Claude, Codex, Cursor, Grok, Kimi, Kiro und Qwen unmittelbar nach `scm-guard` registriert; der Installer bildet die Vereinigung der Matcher der Kette, sodass der `PreToolUse`-Eintrag von Claude zu `Bash|Grep|Glob` wird. Ein Shell-Befehl, der `OMA_CI_ALLOW_NATIVE=1` enthält, umgeht den Guard weiterhin, aber nur als Operator-Notausgang für Suchen in Ressourcen außerhalb des Projekts oder in ignorierten Pfaden, die der Guard nicht erkannt hat. Der Blockierungsgrund nennt dieses Präfix nicht, und es ist kein Ausweichweg für Projektquellcode.
 
 **`triggers.json`** ist die Zuordnung von Schlüsselwörtern zu Workflows. Sie wird beim Build statisch in das `oma`-Binary eingebettet (Quelle: `.agents/hooks/core/triggers.json`). Sie definiert:
-
 - `workflows`: Map von Workflownamen auf `{ persistent: boolean, keywords: { language: [...] }, patterns?: { language: [...] }, explicit?: [...] }`. `keywords` sind wörtliche Phrasen; `patterns` sind rohe Regex-Zeichenketten (mit den Flags `iu` kompiliert). `explicit` (nur persistente Workflows) listet die Schlüsselwörter auf, die als expliziter Aufruf gelten — nur diese aktivieren den persistenten Modus; jeder andere Treffer wird als Vorschlag eingefügt
 - `informationalPatterns`: Phrasen, die Fragen kennzeichnen und aus der automatischen Erkennung herausgefiltert werden
 - `excludedWorkflows`: Workflows, die einen expliziten Aufruf über `/command` verlangen
 
 Für die Sprachabschnitte in `keywords`, `patterns` und `informationalPatterns` gilt:
-
 - `*`: Universal/Englisch
 - `en`: funktional gleichwertig mit `*`
 - `ko`/`ja`/`zh`/usw.: sprachspezifische Formulierungen
@@ -552,7 +543,6 @@ oh-my-agent/
 Im Quell-Repository dürfen `.agents/`-Dateien geändert werden; dies ist die SSOT-Ausnahme für das Quell-Repository selbst. Die `.agents/`-Regeln, die Änderungen an diesem Verzeichnis untersagen, gelten für Consumer-Projekte, nicht für das oh-my-agent-Repository.
 
 Entwicklungsbefehle (vom Repository-Stammverzeichnis aus):
-
 - `bun run test`: CLI-Tests (vitest)
 - `bun run lint`: CLI- und Web-Workspaces linten
 - `bun run build`: CLI-Build

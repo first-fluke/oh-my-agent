@@ -8,7 +8,7 @@ description: Workflow de débogage structuré en sept étapes avec triage par s�
 
 ## Quand utiliser le workflow de débogage
 
-Utilisez `/debug` lorsque vous avez un bug précis à diagnostiquer et à corriger. Une simple demande comme « find the root cause » charge la compétence `oma-debug` via l’indication de compétence, mais seule la commande slash démarre ce workflow. Le workflow fournit des étapes reproductibles pour identifier la cause racine et corriger le bug.
+Utilisez `/debug` pour diagnostiquer un bug précis. Une simple demande comme « find the root cause » charge la compétence `oma-debug` via l’indication de compétence, mais seule la commande slash démarre ce workflow. Le workflow en sept étapes inclut le triage par sévérité, le diagnostic étayé par le code source et la validation après correction.
 
 Le workflow de débogage prend en charge tous les fournisseurs configurés. Les étapes 1 à 5 s'exécutent en ligne. L'étape 6 (recherche de motifs similaires) peut déléguer à un sous-agent `debug-investigator` lorsque le périmètre est large (au moins 10 fichiers ou une erreur multi-domaines), puis l'étape 7 enregistre le résultat en mémoire.
 
@@ -55,7 +55,6 @@ La sévérité détermine la manière dont le bug est traité et la rapidité de
 **Réponse attendue :** arrêtez tout. Cette tâche est la seule à traiter jusqu'à sa résolution.
 
 **Exemples :**
-
 - Le système d'authentification est contourné ; tous les utilisateurs peuvent accéder aux endpoints administrateur.
 - Une migration de base de données a corrompu la table des utilisateurs ; les comptes sont inaccessibles.
 - Le traitement des paiements facture deux fois les clients.
@@ -70,7 +69,6 @@ La sévérité détermine la manière dont le bug est traité et la rapidité de
 **Réponse attendue :** corrigez dans la session de travail en cours. Ne commencez pas de nouvelle fonctionnalité avant la résolution.
 
 **Exemples :**
-
 - La recherche ne renvoie aucun résultat pour les requêtes contenant des caractères spéciaux.
 - L'envoi de fichiers échoue au-delà de 5 Mo (la limite devrait être de 50 Mo).
 - L'application mobile plante au démarrage sur les appareils Android 14.
@@ -85,7 +83,6 @@ La sévérité détermine la manière dont le bug est traité et la rapidité de
 **Réponse attendue :** planifiez la correction dans le sprint en cours. Corrigez avant la prochaine version.
 
 **Exemples :**
-
 - Le tri d'un tableau est sensible à la casse (« apple » est placé après « Zebra »).
 - Le mode sombre rend le texte illisible dans le panneau des réglages.
 - Le temps de réponse de l'endpoint /users est de 8 secondes (il devrait être inférieur à 1 s).
@@ -100,7 +97,6 @@ La sévérité détermine la manière dont le bug est traité et la rapidité de
 **Réponse attendue :** ajoutez le problème au backlog. Corrigez quand vous avez le temps ou regroupez-le avec des modifications liées.
 
 **Exemples :**
-
 - Le texte d'une infobulle contient une faute : « Delet » au lieu de « Delete ».
 - Avertissement de console à propos d'une méthode de cycle de vie React obsolète.
 - L'alignement du pied de page est décalé de 2 pixels pour des fenêtres de 768 à 800 px.
@@ -123,7 +119,6 @@ flowchart LR
 ### Étape 1 : recueillir les informations sur l'erreur
 
 Le workflow demande (ou reçoit de l'utilisateur) :
-
 - le message d'erreur et la trace de pile ;
 - les étapes pour reproduire ;
 - le comportement attendu et le comportement réel ;
@@ -159,7 +154,6 @@ Diagnostiquez la cause racine, pas le symptôme. Si `user.id` est indéfini, dem
 ### Étape 4 : proposer une correction minimale
 
 Le workflow présente :
-
 1. la cause racine identifiée (avec les éléments du chemin de code qui l'étayent) ;
 2. la correction proposée (en ne changeant que le nécessaire) ;
 3. l'explication de la façon dont la correction résout la cause racine, et pas seulement le symptôme.
@@ -178,7 +172,7 @@ Deux actions ont lieu pendant cette étape :
    - vérifie que la correction fonctionne (le test doit réussir avec la correction) ;
    - empêche la réapparition du même bug lors de futures modifications.
 
-Le test de régression montre si une modification ultérieure réintroduit le même bug.
+Le test de régression est le résultat le plus important du workflow de débogage. Sans lui, le même bug peut être réintroduit par toute modification ultérieure.
 
 ### Étape 6 : rechercher des motifs similaires
 
@@ -189,7 +183,6 @@ Après l'application de la correction, le workflow recherche dans tout le dépô
 Par exemple, si le bug vient d'un accès à `user.organization.id` sans vérifier si `organization` est null, la recherche examine toutes les autres occurrences d'accès à `organization.id` sans vérification null.
 
 **Critères de délégation à un sous-agent :** le workflow lance un sous-agent `debug-investigator` lorsque :
-
 - l'erreur couvre plusieurs domaines (par exemple le frontend et le backend) ;
 - le périmètre de recherche du motif similaire couvre au moins 10 fichiers ;
 - un traçage approfondi des dépendances est nécessaire pour diagnostiquer complètement le problème.
@@ -207,7 +200,6 @@ Tous les emplacements vulnérables similaires sont signalés. Les occurrences co
 ### Étape 7 : documenter le bug
 
 Le workflow écrit un fichier mémoire avec :
-
 - le symptôme et la cause racine ;
 - la correction appliquée et les fichiers modifiés ;
 - l'emplacement du test de régression ;
@@ -275,7 +267,6 @@ L'erreur du frontend est causée par une modification backend elle-même causée
 ### Signal 3 : environnement de reproduction absent
 
 Le bug ne se produit qu'en production et vous ne pouvez pas le reproduire localement. Signaux possibles :
-
 - différences de configuration propres à l'environnement ;
 - conditions de concurrence qui n'apparaissent que sous la charge de production ;
 - comportement d'un service tiers différent entre la préproduction et la production.

@@ -100,9 +100,13 @@ Os dashboards leem o diretório `.agents/state/memories/`. Durante a execução,
 O dashboard usa várias estratégias para extrair informações:
 
 1. **Detecção da sessão:** procura primeiro `orchestrator-session.md` e, na falta dele, usa o arquivo `session-*.md` modificado mais recentemente. Analisa o status a partir das palavras-chave `RUNNING`, `IN PROGRESS`, `COMPLETED`, `DONE`, `FAILED` e `ERROR`.
+
 2. **Análise do quadro de tarefas:** lê `task-board.md` como uma tabela Markdown. Extrai das colunas o nome do agente, o status e a descrição da tarefa.
+
 3. **Descoberta de agentes:** se não houver quadro de tarefas, procura em todos os arquivos `.md` os padrões `**Agent**: {name}`, linhas `Agent: {name}` ou nomes de arquivo que contenham `_agent` ou `-agent`.
+
 4. **Contagem de turnos:** para cada agente descoberto, pega o arquivo mais recente cujo nome começa com `progress-{agent}` e lê a última linha `Turn N` (ou `turn: N`) dele.
+
 5. **Feed de atividade:** lista os 5 arquivos `.md` modificados mais recentemente e extrai a última linha significativa (cabeçalhos, linhas de status e itens de ação) como mensagem da atividade. O dashboard web também disponibiliza a visualização de recap em `/recap`.
 
 ---
