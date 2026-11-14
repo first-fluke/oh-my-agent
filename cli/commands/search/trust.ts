@@ -3,7 +3,7 @@ import { httpFetch } from "./http.js";
 /**
  * Trust scoring — hybrid of static registry + heuristics + Tranco ranking.
  * This module is the single source of truth for domain trust scores;
- * `oma-search` resources/trust-registry.md documents it. Tranco provides a
+ * `oma-search` resources/source-provenance.md documents how agents use it. Tranco provides a
  * popularity prior for unknown domains, capped below the verified threshold.
  */
 

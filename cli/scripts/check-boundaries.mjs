@@ -23,8 +23,8 @@ const ALLOWED_SHARED = new Set(["migrations"]);
 //     link flow; link.ts is the single owner of symlink reconciliation.
 //   memory -> recap : `oma memory import` reuses recap's vendor conversation
 //     parsers (registry + parser side-effect imports).
-//   market -> search : market MUST route fetches through oma-search per
-//     .claude/rules/market.md ("Reuse oma-search") — apiKeywordSearch and
+//   market -> search : market routes its fetches through oma-search's
+//     primitives instead of a second HTTP path — apiKeywordSearch and
 //     FetchContext are that contract.
 //   harness -> skills : the harness runner reuses the skill evaluator's
 //     dispatch envelope and judge, and the deployment-feedback loop turns

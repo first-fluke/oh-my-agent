@@ -11,7 +11,7 @@
  *
  * Cap source precedence:
  *   1. .agents/oma-config.yaml               — canonical user config (wins)
- *   2. .agents/config/defaults.yaml          — OMA-shipped SSOT fallback
+ *   2. .agents/config/defaults.yaml          — legacy file from installs that predate built-in presets
  * under top-level `session.quota_cap` key.
  */
 
@@ -150,7 +150,7 @@ function normalizeQuotaCap(raw: RawQuotaCap): QuotaCap {
  * Precedence (first match wins):
  *   1. .agents/oma-config.cue                — CUE user config (highest priority)
  *   2. .agents/oma-config.yaml               — canonical YAML user config
- *   3. .agents/config/defaults.yaml          — OMA-shipped SSOT fallback
+ *   3. .agents/config/defaults.yaml          — legacy file from installs that predate built-in presets
  *
  * Returns null if no cap is configured.
  */

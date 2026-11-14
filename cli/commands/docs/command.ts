@@ -345,7 +345,7 @@ export function registerDocsCommands(program: Command): void {
         }
         console.log();
         console.log(
-          "Pass each pair to `oma-translation` in diff-sync mode (see SKILL.md § Diff-Sync Mode).",
+          "Pass each pair to `oma-translation` in diff-sync mode (see SKILL.md § Batch and diff-sync work).",
         );
       }),
     );
@@ -355,7 +355,7 @@ export function registerDocsCommands(program: Command): void {
     .description(
       "Lint translated docs for content-level anti-patterns (em-dashes in " +
         "CJK targets, etc.). Complements `oma docs i18n` (structural drift) " +
-        "with style/anti-pattern checks per oma-translation SKILL.md § Stage 4. " +
+        "with style/anti-pattern checks per the oma-translation language profiles. " +
         "The CLI never auto-fixes — it only reports issues for the host LLM " +
         "to restructure.",
     )
@@ -413,7 +413,7 @@ export function registerDocsCommands(program: Command): void {
         }
         console.log();
         console.log(
-          "Pass each issue to `oma-translation` for restructuring (see SKILL.md § Stage 4-A em-dash rule).",
+          "Pass each issue to `oma-translation` for restructuring (see the em-dash rule in its language profile).",
         );
       }),
     );

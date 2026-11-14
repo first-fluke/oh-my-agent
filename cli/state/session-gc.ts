@@ -36,7 +36,7 @@ type RawConfigFile = { memory?: { gc?: RawGcConfig } };
 /**
  * Load `memory.gc` defaults from config files. Precedence (first match wins):
  *   1. .agents/oma-config.yaml          — canonical user config
- *   2. .agents/config/defaults.yaml     — OMA-shipped SSOT fallback
+ *   2. .agents/config/defaults.yaml     — legacy file from older installs
  * Same lookup as `loadQuotaCap`. Returns {} when nothing is configured.
  */
 export function loadMemoryGcConfig(

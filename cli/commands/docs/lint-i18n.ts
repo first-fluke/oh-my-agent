@@ -6,7 +6,7 @@
  *
  * Currently checks:
  * - cjk-em-dash: em-dash (—) usage in CJK targets (ko/ja/zh) outside code
- *   blocks. Per oma-translation/SKILL.md § Stage 4-A, em-dashes in CJK should
+ *   blocks. Per the oma-translation language profiles, em-dashes in CJK should
  *   be structurally restructured into separate clauses, parentheses, or
  *   coordinated noun phrases — never used as direct substitution from English.
  * - wrong-language: file lives under web/i18n/<lang>/... but the detected

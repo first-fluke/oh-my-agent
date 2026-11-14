@@ -4,7 +4,7 @@
  * Verifies that the cap resolver honors both candidate paths with the
  * correct precedence:
  *   1. .agents/oma-config.yaml                (canonical, wins)
- *   2. .agents/config/defaults.yaml           (shipped SSOT fallback)
+ *   2. .agents/config/defaults.yaml           (legacy fallback)
  *
  * Uses real tmpdir + process.chdir rather than the mocked fs in
  * session-cost.test.ts so the true findFileUp / readFileSync path is exercised.

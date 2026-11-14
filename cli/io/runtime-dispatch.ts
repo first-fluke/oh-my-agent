@@ -191,7 +191,7 @@ export function planDispatch(
 
   const runtimeVendor = detectRuntimeVendor(env);
 
-  // Resolve per-agent plan from oma-config.yaml + defaults.yaml.
+  // Resolve per-agent plan from oma-config and the built-in presets.
   // Falls back to legacy VendorConfig path on ConfigError (missing config) so
   // existing installs without oma-config.yaml continue to work unchanged.
   let plan: AgentPlan | null = null;
