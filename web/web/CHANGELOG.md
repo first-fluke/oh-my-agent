@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.20.9](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.8...web-v11.20.9) (2026-11-14)
+
+
+### Documentation
+
+* **i18n:** resync more translated pages ([0f564bd](https://github.com/first-fluke/oh-my-agent/commit/0f564bd04f80c78328c811ea79c126e83de1e3a4))
+
 ## [11.20.8](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.7...web-v11.20.8) (2026-11-14)
 
 
