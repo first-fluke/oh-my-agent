@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.20.11](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.10...web-v11.20.11) (2026-11-14)
+
+
+### Documentation
+
+* **i18n:** close the remaining structural gaps in translated pages ([1f58b99](https://github.com/first-fluke/oh-my-agent/commit/1f58b99d18829a677fd5e6c43154928b5990c596))
+
 ## [11.20.10](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.9...web-v11.20.10) (2026-11-14)
 
 
