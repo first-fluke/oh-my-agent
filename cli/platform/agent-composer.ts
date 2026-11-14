@@ -18,7 +18,6 @@ import {
   OMA_SERENA_FIXED_TOOLS,
 } from "../vendors/serena.js";
 import { normalizeAgentId, type OmaConfig } from "./agent-config.js";
-import type { Difficulty } from "./context-loader.js";
 import { bindDefinitionPaths } from "./definition-paths.js";
 import { safeGetInstallMode } from "./install-context.js";
 import { assertContainedRelPath } from "./path-containment.js";
@@ -154,39 +153,6 @@ function serializeTomlMultiline(value: string): string {
 
 function _serializeTomlArray(values: string[]): string {
   return `[${values.map((value) => serializeTomlString(value)).join(", ")}]`;
-}
-
-// =============================================================================
-// CHARTER_CHECK stripping
-// =============================================================================
-
-const CHARTER_CHECK_BEGIN = "<!-- CHARTER_CHECK_BEGIN -->";
-const CHARTER_CHECK_END = "<!-- CHARTER_CHECK_END -->";
-
-/**
- * Remove the CHARTER_CHECK block (and its sentinel markers) from an agent body.
- *
- * The block is delimited by HTML comment markers inserted surgically in
- * `.agents/agents/*.md` source files.  When the agent is Simple, the ~90-token
- * Charter Preflight scaffold is unnecessary and can be stripped to save tokens.
- *
- * If either marker is absent the body is returned unchanged (graceful fallback).
- * The function is pure — it does not mutate the input string.
- */
-export function stripCharterCheck(body: string): string {
-  const beginIdx = body.indexOf(CHARTER_CHECK_BEGIN);
-  const endIdx = body.indexOf(CHARTER_CHECK_END);
-
-  if (beginIdx === -1 || endIdx === -1 || endIdx < beginIdx) {
-    // Markers not found or malformed — return unchanged (safe fallback)
-    return body;
-  }
-
-  const afterEnd = endIdx + CHARTER_CHECK_END.length;
-  // Trim a single trailing newline left by the removed block so the surrounding
-  // sections remain cleanly separated.
-  const tail = body.slice(afterEnd).replace(/^\n/, "");
-  return body.slice(0, beginIdx) + tail;
 }
 
 function formatAgentBody(body: string, protocolPath: string): string {
@@ -332,7 +298,6 @@ function buildMarkdownAgentFile(
   variant: AgentVariant,
   config: AgentConfig,
   vendor: string,
-  difficulty?: Difficulty,
   definitionsRoot = ".agents",
   codeIntelligenceServer?: string,
 ): { fileName: string; content: string } {
@@ -425,12 +390,7 @@ function buildMarkdownAgentFile(
     fm.mode = "subagent";
   }
 
-  // T16: strip CHARTER_CHECK block for Simple tasks to save ~200 tokens per spawn.
-  // Default (difficulty undefined or Medium/Complex) preserves the block.
-  const effectiveBody = bindDefinitionPaths(
-    difficulty === "Simple" ? stripCharterCheck(body) : body,
-    definitionsRoot,
-  );
+  const effectiveBody = bindDefinitionPaths(body, definitionsRoot);
   const protocolPath = variant.protocolPath?.replace(
     /^\.agents\//,
     `${definitionsRoot}/`,
@@ -687,7 +647,6 @@ export function renderVendorAgentFiles(
             resolved,
             config,
             vendor,
-            undefined,
             definitionsRoot,
           );
     return { agentKey: definition.agentKey, ...output };
@@ -854,7 +813,6 @@ export function installVendorAgents(
             variant,
             config,
             vendor,
-            undefined,
             definitionsRoot,
             codeIntelligenceServer,
           );

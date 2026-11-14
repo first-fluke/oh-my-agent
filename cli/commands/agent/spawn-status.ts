@@ -84,9 +84,9 @@ import {
 } from "./failover.js";
 
 // ---------------------------------------------------------------------------
-// T12 + T16: Difficulty classification hints
+// T12: Difficulty classification hints
 // All fields are optional — callers that don't provide hints get Medium
-// difficulty by default (no CHARTER_CHECK strip, no resource stripping).
+// difficulty by default.
 // ---------------------------------------------------------------------------
 
 export interface TaskHints {
@@ -101,9 +101,6 @@ export interface TaskHints {
  * Returns "Medium" when hints are absent (backwards-compatible default).
  *
  * T12 integration: classifyDifficulty drives context bundle selection.
- * T16 integration: "Simple" difficulty strips the CHARTER_CHECK block in
- *   buildMarkdownAgentFile (agent-composer.ts) at install time — the same
- *   difficulty value should be forwarded there via installVendorAgents callers.
  */
 export function classifySpawnDifficulty(
   taskDescription: string,
@@ -287,9 +284,7 @@ export async function spawnAgent(
     const initialTaskPrompt = originalTaskPrompt ?? rawPromptContent;
 
     // T12: Classify difficulty from the task description + optional hints.
-    // The resulting difficulty value can be forwarded to buildMarkdownAgentFile
-    // via installVendorAgents callers at install time (same classifySpawnDifficulty
-    // export), enabling T16's CHARTER_CHECK strip for Simple tasks.
+    // The value selects the context bundle for this spawn.
     const difficulty = classifySpawnDifficulty(rawPromptContent, taskHints);
     console.log(color.dim(`  Difficulty: ${difficulty}`));
 
