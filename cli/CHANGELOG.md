@@ -1,5 +1,17 @@
 # Changelog
 
+## [20.43.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.4...cli-v20.43.5) (2026-11-14)
+
+
+### Bug Fixes
+
+* **docs:** ignore placeholder table cells in the i18n em-dash lint ([18236af](https://github.com/first-fluke/oh-my-agent/commit/18236af877b30395b50a125f0f10bbdb48455d30))
+
+
+### Documentation
+
+* **i18n:** unify glossary terms and remove prose em-dashes ([dee2073](https://github.com/first-fluke/oh-my-agent/commit/dee207315e5152da54d9d95762f90add5f61e6c6))
+
 ## [20.43.4](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.3...cli-v20.43.4) (2026-11-14)
 
 
