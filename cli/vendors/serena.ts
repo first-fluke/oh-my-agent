@@ -137,6 +137,20 @@ export const OMA_SERENA_FIXED_TOOLS = [
   "initial_instructions",
 ] as const;
 
+/**
+ * The symbol-aware edit tools among {@link OMA_SERENA_FIXED_TOOLS}. Roles that
+ * hold no native write tool (reviewers) get these withheld so a tool wildcard
+ * for the server does not hand them an edit path.
+ */
+export const OMA_SERENA_EDIT_TOOLS = [
+  "replace_symbol_body",
+  "insert_after_symbol",
+  "insert_before_symbol",
+  "rename_symbol",
+  "safe_delete_symbol",
+  "replace_in_files",
+] as const;
+
 const OMA_SERENA_LEGACY_CONTEXT_SET = new Set<string>(
   OMA_SERENA_BASE_CONTEXTS.map((context) => `oma-${context}`),
 );

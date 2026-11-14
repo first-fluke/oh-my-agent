@@ -11,7 +11,12 @@ import {
   parseFrontmatter,
   serializeFrontmatter,
 } from "../utils/frontmatter.js";
+import { loadProviders } from "../utils/providers.js";
 import { atomicWriteFileSync } from "../utils/safe-write.js";
+import {
+  OMA_SERENA_EDIT_TOOLS,
+  OMA_SERENA_FIXED_TOOLS,
+} from "../vendors/serena.js";
 import { normalizeAgentId, type OmaConfig } from "./agent-config.js";
 import type { Difficulty } from "./context-loader.js";
 import { bindDefinitionPaths } from "./definition-paths.js";
@@ -208,6 +213,120 @@ function readAbstractAgentDefinitions(
     });
 }
 
+interface CodeIntelligenceGrant {
+  /** Entries appended to the role's tool allowlist. */
+  tools: string[];
+  /** Frontmatter the host needs to expose the server or deny its tools. */
+  frontmatter: Record<string, unknown>;
+}
+
+interface CodeIntelligenceHost {
+  /** Native tool ids that write files. A role listing none is a reviewer. */
+  writeTools: readonly string[];
+  /**
+   * `withheld` holds the provider tools a reviewer must not get. It is empty
+   * for a role that can write and for a provider without a known edit list.
+   */
+  grant(server: string, withheld: readonly string[]): CodeIntelligenceGrant;
+}
+
+/**
+ * Hosts whose agent `tools` field is an allowlist that hides MCP tools. The
+ * code-intelligence guard denies native project search in subagents as well as
+ * in the main session, so a role whose allowlist omits the provider can
+ * neither search natively nor reach the provider.
+ *
+ * Hosts that keep MCP tools under an allowlist (Grok keeps `search_tool` and
+ * `use_tool`) or that emit no allowlist are absent on purpose.
+ */
+const CODE_INTELLIGENCE_HOSTS: Record<string, CodeIntelligenceHost> = {
+  // Claude Code: `mcp__<server>__*` is the whole-server entry, and
+  // `disallowedTools` removes tools from the specified list.
+  claude: {
+    writeTools: ["Write", "Edit"],
+    grant: (server, withheld) => ({
+      tools: [`mcp__${server}__*`],
+      frontmatter:
+        withheld.length > 0
+          ? {
+              // A list, not a comma-joined scalar: the serializer folds long
+              // scalars across lines, and one tool per line stays unambiguous.
+              disallowedTools: withheld.map(
+                (tool) => `mcp__${server}__${tool}`,
+              ),
+            }
+          : {},
+    }),
+  },
+  // Kiro: `@<server>` selects every tool of one MCP server, `includeMcpJson`
+  // gives a custom agent the servers from the mcp.json files, and an `mcp`
+  // permission rule matches `<server>/<tool>` with deny winning in any scope.
+  kiro: {
+    writeTools: ["write"],
+    grant: (server, withheld) => ({
+      tools: [`@${server}`],
+      frontmatter: {
+        includeMcpJson: true,
+        ...(withheld.length > 0
+          ? {
+              permissions: {
+                rules: [
+                  {
+                    capability: "mcp",
+                    match: withheld.map((tool) => `${server}/${tool}`),
+                    effect: "deny",
+                  },
+                ],
+              },
+            }
+          : {}),
+      },
+    }),
+  },
+  // Command Code: MCP tools are listed one by one as `mcp__<server>__<tool>`;
+  // the only wildcard is `"*"`, which grants every tool. Only Serena's tool
+  // names are known here, so another provider keeps the native list.
+  commandcode: {
+    writeTools: ["write_file", "edit_file"],
+    grant: (server, withheld) => ({
+      tools:
+        server === "serena"
+          ? OMA_SERENA_FIXED_TOOLS.filter(
+              (tool) => !withheld.includes(tool),
+            ).map((tool) => `mcp__${server}__${tool}`)
+          : [],
+      frontmatter: {},
+    }),
+  },
+};
+
+/**
+ * The allowlist entries and frontmatter that let a role reach the configured
+ * code-intelligence provider. A role without a native write tool is a
+ * reviewer: it gets the provider's read tools but not the symbol-aware edit
+ * tools.
+ */
+function codeIntelligenceGrant(
+  vendor: string,
+  tools: readonly string[],
+  server: string | undefined,
+): CodeIntelligenceGrant {
+  const host = Object.hasOwn(CODE_INTELLIGENCE_HOSTS, vendor)
+    ? CODE_INTELLIGENCE_HOSTS[vendor]
+    : undefined;
+  if (!host || !server || tools.length === 0)
+    return { tools: [], frontmatter: {} };
+  const readOnly = !tools.some((tool) => host.writeTools.includes(tool));
+  const grant = host.grant(
+    server,
+    readOnly && server === "serena" ? OMA_SERENA_EDIT_TOOLS : [],
+  );
+  return {
+    tools: grant.tools.filter((tool) => !tools.includes(tool)),
+    frontmatter: grant.frontmatter,
+  };
+}
+
 function buildMarkdownAgentFile(
   definition: AbstractAgentDefinition,
   variant: AgentVariant,
@@ -215,6 +334,7 @@ function buildMarkdownAgentFile(
   vendor: string,
   difficulty?: Difficulty,
   definitionsRoot = ".agents",
+  codeIntelligenceServer?: string,
 ): { fileName: string; content: string } {
   const { agentKey, entry, frontmatter, body } = definition;
   const mapping = TOOL_MAPPING[vendor] || {};
@@ -230,9 +350,15 @@ function buildMarkdownAgentFile(
         .map((tool) => tool.trim())
         .filter(Boolean);
 
-  const resolvedTools = toolsList.map(
+  const nativeTools = toolsList.map(
     (tool: string) => mapping[tool.toLowerCase()] || tool,
   );
+  const providerGrant = codeIntelligenceGrant(
+    vendor,
+    nativeTools,
+    codeIntelligenceServer,
+  );
+  const resolvedTools = [...nativeTools, ...providerGrant.tools];
   const finalTools = Array.isArray(variant.toolsDefault)
     ? resolvedTools
     : resolvedTools.join(", ");
@@ -267,6 +393,7 @@ function buildMarkdownAgentFile(
         : resolvedModel,
   };
 
+  Object.assign(fm, providerGrant.frontmatter);
   if (variant.maxTurnsDefault || config.maxTurns || frontmatter.maxTurns) {
     fm[getMaxTurnsField(vendor)] =
       config.maxTurns || frontmatter.maxTurns || variant.maxTurnsDefault;
@@ -400,6 +527,7 @@ const ALLOWED_FIELDS: Record<string, readonly string[]> = {
     "name",
     "description",
     "tools",
+    "disallowedTools",
     "model",
     "maxTurns",
     "skills",
@@ -653,6 +781,20 @@ export function installVendorAgents(
     // Invalid config is reported by dispatch/doctor; retain native defaults here.
   }
 
+  // The provider choice lives in the same config root as the model preset.
+  // An invalid choice is reported by provider sync and doctor; without one the
+  // roles keep their native tool list.
+  let codeIntelligenceServer: string | undefined;
+  if (Object.hasOwn(CODE_INTELLIGENCE_HOSTS, vendor)) {
+    try {
+      codeIntelligenceServer = loadProviders(
+        safeGetInstallMode() === "global" ? sourceDir : targetDir,
+      ).code_intelligence;
+    } catch {
+      codeIntelligenceServer = undefined;
+    }
+  }
+
   let written = 0;
   for (const definition of readAbstractAgentDefinitions(sourceDir)) {
     const config: AgentConfig = {
@@ -714,6 +856,7 @@ export function installVendorAgents(
             vendor,
             undefined,
             definitionsRoot,
+            codeIntelligenceServer,
           );
 
     atomicWriteFileSync(join(destDir, output.fileName), output.content);

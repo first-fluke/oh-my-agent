@@ -17,7 +17,7 @@
     },
     "vendor": {
       "type": "string",
-      "description": "The target CLI vendor name (e.g., claude, codex, gemini)"
+      "description": "The target CLI vendor name (e.g., claude, codex, kiro)"
     },
     "destDir": {
       "type": "string",

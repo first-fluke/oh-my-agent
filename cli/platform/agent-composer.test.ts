@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { parseFrontmatter } from "../utils/frontmatter.js";
 import {
   installVendorAgents,
   sanitizeFrontmatterForVendor,
@@ -480,6 +481,285 @@ describe("installVendorAgents — protocolPath validation", () => {
     } finally {
       warn.mockRestore();
     }
+  });
+});
+
+// Regression: Claude Code's `tools` allowlist excludes MCP tools, and the
+// code-intelligence guard blocks native search in subagents too. A role whose
+// allowlist omitted the provider's server could not search project code at all.
+describe("installVendorAgents — Claude code-intelligence tools", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots) {
+      rmSync(root, { recursive: true, force: true });
+    }
+    tempRoots.length = 0;
+  });
+
+  function makeTargetDir(config?: string): string {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-claude-agent-dst-"));
+    tempRoots.push(targetDir);
+    if (config) {
+      mkdirSync(join(targetDir, ".agents"), { recursive: true });
+      writeFileSync(join(targetDir, ".agents", "oma-config.yaml"), config);
+    }
+    return targetDir;
+  }
+
+  function agentFrontmatter(
+    targetDir: string,
+    vendorDir: string,
+    name: string,
+  ) {
+    const content = readFileSync(
+      join(targetDir, vendorDir, "agents", `${name}.md`),
+      "utf-8",
+    );
+    return parseFrontmatter(content).frontmatter;
+  }
+
+  const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+
+  it("lists the provider server in every role's tool allowlist", () => {
+    const targetDir = makeTargetDir();
+    expect(installVendorAgents(sourceDir, targetDir, "claude")).toBeGreaterThan(
+      0,
+    );
+
+    const backend = agentFrontmatter(targetDir, ".claude", "backend-engineer");
+    const tools = String(backend.tools);
+    expect(tools).toContain("Edit");
+    expect(tools).toContain("mcp__serena__*");
+    // A role that can already edit keeps the provider's symbol-aware edits.
+    expect(backend.disallowedTools).toBeUndefined();
+  });
+
+  it("withholds the provider's edit tools from a review-only role", () => {
+    const targetDir = makeTargetDir();
+    installVendorAgents(sourceDir, targetDir, "claude");
+
+    const qa = agentFrontmatter(targetDir, ".claude", "qa-reviewer");
+    const tools = String(qa.tools);
+    expect(tools).not.toMatch(/\b(Write|Edit)\b/);
+    expect(tools).toContain("mcp__serena__*");
+    expect(qa.disallowedTools).toEqual([
+      "mcp__serena__replace_symbol_body",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__insert_before_symbol",
+      "mcp__serena__rename_symbol",
+      "mcp__serena__safe_delete_symbol",
+      "mcp__serena__replace_in_files",
+    ]);
+  });
+
+  it("follows the configured provider", () => {
+    const targetDir = makeTargetDir(
+      "language: en\nproviders:\n  code_intelligence: gortex\n",
+    );
+    installVendorAgents(sourceDir, targetDir, "claude");
+
+    const qa = agentFrontmatter(targetDir, ".claude", "qa-reviewer");
+    const tools = String(qa.tools);
+    expect(tools).toContain("mcp__gortex__*");
+    expect(tools).not.toContain("mcp__serena__*");
+  });
+
+  // Grok keeps its MCP meta-tools (`search_tool`, `use_tool`) under a `tools`
+  // allowlist, so its roles need no provider entry.
+  it("leaves a host that keeps MCP tools under an allowlist untouched", () => {
+    const targetDir = makeTargetDir();
+    installVendorAgents(sourceDir, targetDir, "grok");
+
+    const backend = agentFrontmatter(targetDir, ".grok", "backend-engineer");
+    expect(backend.tools).toBe(
+      "run_terminal_cmd, read_file, search_replace, list_dir, grep",
+    );
+    expect(backend.disallowedTools).toBeUndefined();
+  });
+});
+
+// Regression: Kiro and Command Code also read an agent's `tools` as an
+// allowlist that hides MCP tools, each with its own way to name them.
+describe("installVendorAgents — code-intelligence tools on other allowlist hosts", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots) {
+      rmSync(root, { recursive: true, force: true });
+    }
+    tempRoots.length = 0;
+  });
+
+  function makeTargetDir(config?: string): string {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-host-agent-dst-"));
+    tempRoots.push(targetDir);
+    if (config) {
+      mkdirSync(join(targetDir, ".agents"), { recursive: true });
+      writeFileSync(join(targetDir, ".agents", "oma-config.yaml"), config);
+    }
+    return targetDir;
+  }
+
+  function agentFrontmatter(
+    targetDir: string,
+    vendorDir: string,
+    name: string,
+  ) {
+    const content = readFileSync(
+      join(targetDir, vendorDir, "agents", `${name}.md`),
+      "utf-8",
+    );
+    return parseFrontmatter(content).frontmatter;
+  }
+
+  const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+  const otherProvider =
+    "language: en\nproviders:\n  code_intelligence: gortex\n";
+  const serenaEditTools = [
+    "replace_symbol_body",
+    "insert_after_symbol",
+    "insert_before_symbol",
+    "rename_symbol",
+    "safe_delete_symbol",
+    "replace_in_files",
+  ];
+
+  it("selects the provider server in every Kiro role and loads mcp.json", () => {
+    const targetDir = makeTargetDir();
+    expect(installVendorAgents(sourceDir, targetDir, "kiro")).toBeGreaterThan(
+      0,
+    );
+
+    const backend = agentFrontmatter(targetDir, ".kiro", "backend-engineer");
+    expect(backend.tools).toContain("write");
+    expect(backend.tools).toContain("@serena");
+    expect(backend.includeMcpJson).toBe(true);
+    // A role that can already write keeps the provider's symbol-aware edits.
+    expect(backend.permissions).toBeUndefined();
+  });
+
+  it("denies the provider's edit tools to a review-only Kiro role", () => {
+    const targetDir = makeTargetDir();
+    installVendorAgents(sourceDir, targetDir, "kiro");
+
+    const qa = agentFrontmatter(targetDir, ".kiro", "qa-reviewer");
+    expect(qa.tools).not.toContain("write");
+    expect(qa.tools).toContain("@serena");
+    expect(qa.includeMcpJson).toBe(true);
+    expect(qa.permissions).toEqual({
+      rules: [
+        {
+          capability: "mcp",
+          match: serenaEditTools.map((tool) => `serena/${tool}`),
+          effect: "deny",
+        },
+      ],
+    });
+  });
+
+  it("follows the configured provider on Kiro", () => {
+    const targetDir = makeTargetDir(otherProvider);
+    installVendorAgents(sourceDir, targetDir, "kiro");
+
+    const qa = agentFrontmatter(targetDir, ".kiro", "qa-reviewer");
+    expect(qa.tools).toContain("@gortex");
+    expect(qa.tools).not.toContain("@serena");
+    // Only Serena's edit tools are known, so nothing is denied.
+    expect(qa.permissions).toBeUndefined();
+  });
+
+  it("lists each provider tool by its raw name on Command Code", () => {
+    const targetDir = makeTargetDir();
+    expect(
+      installVendorAgents(sourceDir, targetDir, "commandcode"),
+    ).toBeGreaterThan(0);
+
+    const backend = agentFrontmatter(
+      targetDir,
+      ".commandcode",
+      "backend-engineer",
+    );
+    const tools = backend.tools as string[];
+    expect(tools.slice(0, 6)).toEqual([
+      "read_file",
+      "write_file",
+      "edit_file",
+      "shell_command",
+      "grep",
+      "glob",
+    ]);
+    expect(tools).toContain("mcp__serena__find_symbol");
+    expect(tools).toContain("mcp__serena__search_for_pattern");
+    for (const tool of serenaEditTools) {
+      expect(tools).toContain(`mcp__serena__${tool}`);
+    }
+    // Command Code documents no per-server wildcard.
+    expect(tools.some((tool) => tool.includes("*"))).toBe(false);
+  });
+
+  it("lists only the provider's read tools for a review-only Command Code role", () => {
+    const targetDir = makeTargetDir();
+    installVendorAgents(sourceDir, targetDir, "commandcode");
+
+    const qa = agentFrontmatter(targetDir, ".commandcode", "qa-reviewer");
+    const tools = qa.tools as string[];
+    expect(tools).not.toContain("write_file");
+    expect(tools).not.toContain("edit_file");
+    expect(tools).toContain("mcp__serena__find_symbol");
+    expect(tools).toContain("mcp__serena__find_referencing_symbols");
+    for (const tool of serenaEditTools) {
+      expect(tools).not.toContain(`mcp__serena__${tool}`);
+    }
+    expect(qa.disallowedTools).toBeUndefined();
+  });
+
+  it("keeps the native Command Code list for a provider without known tool names", () => {
+    const targetDir = makeTargetDir(otherProvider);
+    installVendorAgents(sourceDir, targetDir, "commandcode");
+
+    const qa = agentFrontmatter(targetDir, ".commandcode", "qa-reviewer");
+    expect(qa.tools).toEqual(["read_file", "grep", "glob", "shell_command"]);
+  });
+});
+
+// Regression: the research role searches and fetches the web, so a host whose
+// variant sets a tool allowlist must list that host's web tools for it.
+describe("installVendorAgents — research role web tools", () => {
+  const tempRoots: string[] = [];
+
+  afterEach(() => {
+    for (const root of tempRoots) {
+      rmSync(root, { recursive: true, force: true });
+    }
+    tempRoots.length = 0;
+  });
+
+  const sourceDir = fileURLToPath(new URL("../..", import.meta.url));
+
+  function researchTools(vendor: string): string[] {
+    const targetDir = mkdtempSync(join(tmpdir(), "oma-research-agent-dst-"));
+    tempRoots.push(targetDir);
+    installVendorAgents(sourceDir, targetDir, vendor);
+    const content = readFileSync(
+      join(targetDir, `.${vendor}`, "agents", "research-explorer.md"),
+      "utf-8",
+    );
+    const { tools } = parseFrontmatter(content).frontmatter;
+    return Array.isArray(tools)
+      ? tools.map(String)
+      : String(tools)
+          .split(",")
+          .map((tool) => tool.trim());
+  }
+
+  it.each<[string, string[]]>([
+    ["claude", ["WebSearch", "WebFetch"]],
+    ["commandcode", ["web_search", "web_fetch"]],
+    ["grok", ["web_search", "web_fetch"]],
+    ["kiro", ["web"]],
+  ])("grants %s its web tools", (vendor, webTools) => {
+    expect(researchTools(vendor)).toEqual(expect.arrayContaining(webTools));
   });
 });
 

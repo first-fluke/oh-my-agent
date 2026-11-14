@@ -28,7 +28,8 @@ Follow the shared execution policy for authorization and clarification. State ma
 Each task must include:
 - `agent`: assigned domain agent
 - `title`: what to do
-- `acceptance_criteria`: testable conditions
+- `acceptance_criteria`: testable conditions; for an executable acceptance gate, `{id, description}` objects
+- `required_checks` (executable gates): unique `{id, criteria, command, cwd}` objects that cover every criterion with an exact argv and a project-relative cwd — see `.agents/skills/_shared/runtime/result-contract.md`
 - `priority`: execution tier — 1 = independent (runs first), 2 = depends on tier 1, etc. (lower runs first)
 - `dependencies`: task IDs that must complete first
 - `scope`: directory prefixes this task's agent may modify (used to detect boundary violations in parallel runs)

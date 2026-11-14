@@ -4,23 +4,63 @@
   "destDir": ".commandcode/agents",
   "modelDefault": "inherit",
   "maxTurnsDefault": 100,
-  "toolsDefault": "Read, Write, Edit, Bash, Grep, Glob",
+  "toolsDefault": [
+    "read_file",
+    "write_file",
+    "edit_file",
+    "shell_command",
+    "grep",
+    "glob"
+  ],
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/commandcode.md",
   "agents": {
     "architecture-reviewer": {
-      "tools": "Read, Write, Edit, Bash, Grep, Glob"
+      "tools": [
+        "read_file",
+        "write_file",
+        "edit_file",
+        "shell_command",
+        "grep",
+        "glob"
+      ]
     },
     "tf-infra-engineer": {
-      "tools": "Read, Write, Edit, Bash, Grep, Glob"
+      "tools": [
+        "read_file",
+        "write_file",
+        "edit_file",
+        "shell_command",
+        "grep",
+        "glob"
+      ]
     },
     "pm-planner": {
-      "tools": "Read, Write, Grep, Glob, Bash"
+      "tools": ["read_file", "write_file", "grep", "glob", "shell_command"]
     },
     "qa-reviewer": {
-      "tools": "Read, Grep, Glob, Bash"
+      "tools": ["read_file", "grep", "glob", "shell_command"]
     },
     "docs-curator": {
-      "tools": "Read, Write, Edit, Bash, Grep, Glob"
+      "tools": [
+        "read_file",
+        "write_file",
+        "edit_file",
+        "shell_command",
+        "grep",
+        "glob"
+      ]
+    },
+    "research-explorer": {
+      "tools": [
+        "read_file",
+        "write_file",
+        "edit_file",
+        "shell_command",
+        "grep",
+        "glob",
+        "web_search",
+        "web_fetch"
+      ]
     }
   }
 }
