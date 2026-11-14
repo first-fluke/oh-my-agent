@@ -1,6 +1,6 @@
 {
   "name": "oma",
-  "version": "20.43.4",
+  "version": "20.43.5",
   "description": "Portable, vendor-agnostic agent harness for project-specific skills, workflows, and agent teams aligned with your codebase, conventions, and engineering standards.",
   "keywords": [
     "multi-agent",
