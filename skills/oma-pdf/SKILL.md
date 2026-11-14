@@ -26,7 +26,8 @@ Convert PDF files into structured Markdown or another requested extraction forma
 - Generating or creating PDFs -> use document-generation tools
 - Editing existing PDFs -> out of scope
 - Reading an already-text file -> use direct file reading
-- Processing HWP, HWPX, DOCX, XLSX, or slide decks -> use the matching document skill
+- Processing HWP, HWPX, or HWPML -> use `oma-hwp`
+- Processing DOCX, XLSX, or slide decks -> out of scope
 
 ### Expected inputs
 - `input_path`: PDF file or folder path

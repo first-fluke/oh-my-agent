@@ -31,7 +31,7 @@
     "architecture-reviewer": {
       "effort": "high",
       "extra": {
-        "sandbox_mode": "read-only"
+        "sandbox_mode": "workspace-write"
       }
     },
     "tf-infra-engineer": {
@@ -46,13 +46,18 @@
     },
     "pm-planner": {
       "extra": {
-        "sandbox_mode": "read-only"
+        "sandbox_mode": "workspace-write"
       }
     },
     "qa-reviewer": {
       "effort": "high",
       "extra": {
         "sandbox_mode": "read-only"
+      }
+    },
+    "refactor-engineer": {
+      "extra": {
+        "sandbox_mode": "workspace-write"
       }
     },
     "docs-curator": {

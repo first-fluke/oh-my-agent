@@ -20,13 +20,13 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ResourcesService } from './resources.service';
 import { CreateResourceDto, CreateResourceSchema } from './dto/create-resource.dto';
-import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { UpdateResourceDto, UpdateResourceSchema } from './dto/update-resource.dto';
-import { User } from '@prisma/client';
+import { User } from '../../generated/prisma/client';
 
 @Controller('api/resources')
 @UseGuards(JwtAuthGuard)
@@ -104,16 +104,16 @@ export type PaginationDto = z.infer<typeof PaginationSchema>;
 
 // NestJS pipe for Zod validation
 import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
-import { ZodSchema } from 'zod';
+import { z, ZodType } from 'zod';
 
 @Injectable()
 export class ZodValidationPipe implements PipeTransform {
-  constructor(private readonly schema: ZodSchema) {}
+  constructor(private readonly schema: ZodType) {}
 
   transform(value: unknown) {
     const result = this.schema.safeParse(value);
     if (!result.success) {
-      throw new BadRequestException(result.error.flatten());
+      throw new BadRequestException(z.flattenError(result.error));
     }
     return result.data;
   }
@@ -128,12 +128,13 @@ export class ZodValidationPipe implements PipeTransform {
 // schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs" // CommonJS project; use "esm" in an ES module project
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql" // the connection URL lives in prisma.config.ts
 }
 
 model User {
@@ -163,6 +164,17 @@ model Resource {
 }
 ```
 
+```typescript
+// prisma.config.ts
+import 'dotenv/config';
+import { defineConfig } from 'prisma/config';
+
+export default defineConfig({
+  schema: 'prisma/schema.prisma',
+  datasource: { url: process.env.DATABASE_URL! },
+});
+```
+
 ---
 
 ## 4. NestJS Module with DI
@@ -172,7 +184,7 @@ import { Module } from '@nestjs/common';
 import { ResourcesController } from './resources.controller';
 import { ResourcesService } from './resources.service';
 import { ResourcesRepository } from './resources.repository';
-import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],
@@ -195,13 +207,20 @@ export class PrismaModule {}
 
 // prisma/prisma.service.ts
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../generated/prisma/client';
 
 @Injectable()
 export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  constructor() {
+    super({
+      adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+    });
+  }
+
   async onModuleInit() {
     await this.$connect();
   }
@@ -219,8 +238,8 @@ export class PrismaService
 ```typescript
 // resources.repository.ts
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, Resource } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma, Resource } from '../../generated/prisma/client';
 
 @Injectable()
 export class ResourcesRepository {
@@ -261,10 +280,11 @@ export class ResourcesRepository {
 }
 
 // resources.service.ts
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { AppError } from '../../common/errors/app-error';
 import { ResourcesRepository } from './resources.repository';
 import { CreateResourceDto, UpdateResourceDto } from './dto/resource.dto';
-import { Resource } from '@prisma/client';
+import { Resource } from '../../generated/prisma/client';
 
 @Injectable()
 export class ResourcesService {
@@ -276,8 +296,9 @@ export class ResourcesService {
 
   async findOne(id: string, userId: string): Promise<Resource> {
     const resource = await this.resourcesRepo.findOne(id, userId);
-    if (!resource) throw new NotFoundException(`Resource ${id} not found`);
-    if (resource.userId !== userId) throw new ForbiddenException('Access denied');
+    // Domain errors only; AppErrorFilter maps them to HTTP (see api-template.ts)
+    if (!resource) throw new AppError('not_found', `Resource ${id} not found`);
+    if (resource.userId !== userId) throw new AppError('forbidden', 'Access denied');
     return resource;
   }
 
@@ -303,8 +324,8 @@ export class ResourcesService {
 
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Resource } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Resource } from '../../generated/prisma/client';
 
 export interface PaginatedResult<T> {
   items: T[];
@@ -399,9 +420,10 @@ ALTER TABLE "resources"
 
 ```typescript
 // resources.e2e-spec.ts
+// vitest.config.ts must build test files with SWC (`unplugin-swc`), as in the NestJS SWC recipe
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -417,7 +439,6 @@ describe('Resources (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
     await app.init();
 
     prisma = app.get(PrismaService);

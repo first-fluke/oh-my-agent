@@ -41,9 +41,11 @@ oma docs sync
 oma docs sync HEAD~5..HEAD
 oma docs sync main..feature-branch
 
-# The CLI emits the candidate-doc list; the host LLM drafts patches and
-# resolves any new authorization per doc ([y] apply / [n] skip / [d] diff / [s] full proposal).
-# Sync regenerates docs/generated/doc-refs.json after applying any patches.
+# The CLI emits the candidate-doc list and applies nothing; the host LLM drafts
+# patches and applies them within existing authorization.
+# `sync` refreshes a missing or stale reference index before listing candidates.
+# After a patch batch, run `oma docs verify` once to regenerate
+# docs/generated/doc-refs.json.
 ```
 
 **i18n mode** detects structural drift between English source docs (`web/docs`) and translations (`web/i18n/{lang}/...`); report-only, never edits translations:
@@ -73,4 +75,11 @@ oma docs lint --json --locales ko,ja
 # Hook command emitted by /scm, /work, /ultrawork
 oma docs verify --json
 # Hook policy: warn-only in v1; non-zero exit does NOT block workflow completion
+```
+
+**migrate** is not a maintenance mode. It moves engineering decisions and result reports into their canonical directories and updates references; run it only when the user asks for that layout migration, previewing first:
+
+```bash
+oma docs migrate --dry-run
+oma docs migrate --json
 ```

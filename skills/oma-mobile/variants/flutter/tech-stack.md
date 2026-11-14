@@ -4,12 +4,12 @@ Starter reference for the selected platform. Preserve existing project choices. 
 
 ## Framework + State Management
 
-- **Language**: Dart 3.10+
-- **UI Framework**: Flutter 3.44+
-- **UI Toolkit**: Material Design 3 (Android) + iOS HIG adaptations via `CupertinoAdaptiveTheme` or `Platform.isIOS` guards
+- **Language**: Dart 3.13+
+- **UI Framework**: Flutter 3.47+
+- **UI Toolkit**: Material Design 3 (Android) + iOS HIG adaptations via the SDK's `.adaptive` constructors or `Platform.isIOS` guards
 - **State Management**: Riverpod 3.x with `@riverpod` code generation (`AsyncNotifier`, `Notifier`, `StreamNotifier`)
 - **Concurrency**: Dart async/await, `Stream`, `StreamController`, structured cancellation via `ref.onDispose`
-- **Minimum SDK**: Flutter 3.44 / Dart 3.10 / Android API 24 / iOS 16
+- **Minimum SDK**: Flutter 3.47 / Dart 3.13 / Android API 24 / iOS 16
 
 Riverpod 3.x with `@riverpod` codegen replaces manual `StateNotifierProvider` and hand-written provider constants. The code generator emits typed, cancellation-safe notifier subclasses at build time (`AsyncNotifier` for `Future` builds, `StreamNotifier` for `Stream` builds). Riverpod 3 drops the generated `FooRef` typedefs — provider and notifier build signatures take the unified `Ref` type. Provider state is disposed automatically when the last listener is removed; side-effectful providers use `ref.onDispose` to cancel in-flight requests.
 
@@ -90,7 +90,7 @@ See `snippets.md §3` for the canonical offline-first repository and `snippets.m
 
 Mock the `Repository` **interface** (abstract class), not the concrete implementation or Dio. `mocktail` stubs are preferred over hand-written fakes for brevity, but both are acceptable. Never mock Drift internals — test the real Drift DB in-memory (`NativeDatabase.memory()`) for repository-layer tests.
 
-Run tests with `flutter test` (unit + widget) and `flutter test integration_test/` (integration). Maestro `.yaml` flow files live in `maestro/` at the project root; see `snippets.md §11` for a runnable launch → add → assert flow.
+Test commands: `flutter test` (unit + widget) and `flutter test integration_test/` (integration); run them only when the user or the active workflow asks for a test run. Maestro `.yaml` flow files live in `maestro/` at the project root; see `snippets.md §8` for a runnable launch → add → assert flow.
 
 ## Project Layout
 
@@ -105,7 +105,7 @@ my_app/
     main.dart                             # runApp entry; ProviderScope at root
     core/
       di/
-        providers.dart                    # App-wide singleton providers (Dio, DB, SecureStorage)
+        providers.dart                    # App-wide singleton providers (Dio, DAOs, data sources, repositories)
       network/
         dio_client.dart                   # Dio factory + AuthInterceptor + RetryInterceptor (all in one file; see §5)
       database/
@@ -157,7 +157,7 @@ my_app/
 ## Architecture Pattern
 
 ```
-todos_screen.dart  (ConsumerWidget)
+todos_screen.dart  (ConsumerStatefulWidget)
   |  ref.watch(todosProvider)
   v
 todosProvider  (@riverpod StreamNotifier<List<Todo>>)

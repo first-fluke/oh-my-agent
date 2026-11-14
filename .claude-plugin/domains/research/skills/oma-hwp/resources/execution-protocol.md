@@ -89,7 +89,7 @@ bun "{skill_resources}/flatten-tables.ts" "{output_path}"
 1. Read the generated Markdown file
 2. Verify structure:
    - Headings preserved (`#`, `##`, etc.)
-   - Tables rendered (GFM pipe syntax, or HTML `<table>` fallback for merged cells)
+   - Tables rendered as GFM pipe syntax; after Step 2.5 only nested tables and tables without a `<th>` heading row remain HTML `<table>`
    - Lists maintained (bullets, numbered)
    - Images referenced (relative paths or inline)
    - Footnotes linked via `[^id]`
@@ -113,7 +113,7 @@ Tell the user:
 | `지원하지 않는 파일 형식` / `unsupported file format` | Confirm extension matches actual content; check magic bytes |
 | `암호화된 문서` / `encrypted document` | Ask user for password; current kordoc CLI may not accept it inline (document as limitation) |
 | Empty Markdown output | Likely a scanned-image-only HWP; suggest OCR pipeline (out of this skill's scope) |
-| Broken / missing tables | Complex merged-cell tables fall back to HTML `<table>`; accept as best-effort |
+| Broken / missing tables | After Step 2.5, merged-cell tables are GFM pipe tables with the merges flattened; nested tables and tables without a `<th>` heading row stay HTML `<table>`. Accept as best-effort and report it |
 | kordoc crash or stack trace | Ensure `@latest` is passed (bunx cache can be stale); if persistent, capture fixture and file issue upstream at https://github.com/chrisryugj/kordoc/issues |
 | Slow conversion on large files | Use `-p` to narrow the page range; process sections separately |
 
@@ -121,25 +121,3 @@ Tell the user:
 
 - **Default**: `bunx kordoc@latest` (always latest). Gets upstream fixes automatically. `@latest` is required because a bare `bunx kordoc` can reuse a stale cached version indefinitely.
 - **Reproducibility**: pin with `bunx kordoc@4.7.3 ...` or similar. Record the pinned version under `hwp.version` in `.agents/oma-config.yaml` (`channel: pinned`, `pinned: "4.7.3"`). Do not edit `config/hwp-config.yaml` — `oma update` overwrites it.
-
-## Scope Reminder
-
-If the user hands you a `.pdf` / `.xlsx` / `.docx` with this skill activated, **do not proceed**. Redirect:
-
-- `.pdf` → switch to `oma-pdf`
-- `.xlsx` / `.docx` → ask the user to run `bunx kordoc@latest <file>` directly; this skill does not advertise those formats
-
-Likewise, document **authoring / editing** requests are out of this skill's scope even though kordoc supports them. Point the user at the subcommand directly:
-
-| Request | kordoc subcommand |
-|---------|-------------------|
-| Generate HWPX from Markdown | `bunx kordoc@latest generate <md> -o <hwpx>` |
-| Fill form blanks | `bunx kordoc@latest fill <template> -f 'k=v,...' -o <out>` |
-| Place stamp/signature image | `bunx kordoc@latest seal <file> --image <png> --anchor "(인)" -o <out>` |
-| Apply edited Markdown back to original | `bunx kordoc@latest patch <original> <edited-md> -o <out>` |
-| Mask personal data (주민번호 etc.) | `bunx kordoc@latest redact <files...>` |
-| Check official-document notation | `bunx kordoc@latest lint <file>` |
-| Validate HWPX structure | `bunx kordoc@latest validate <file>` |
-| Layout-preserving SVG render | `bunx kordoc@latest render <file> -o <svg>` |
-
-kordoc technically supports all of the above, but routing keeps skill scopes clean.

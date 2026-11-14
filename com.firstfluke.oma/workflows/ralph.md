@@ -99,7 +99,7 @@ Run the deterministic verifier from the repo root:
 oma ralph verify --json --session-id {sessionId} --newer-than {iteration_start_iso}
 ```
 
-- `--session` scopes the plan artifact to this iteration's session id; `--newer-than` (this iteration's EXEC start time, ISO-8601) excludes stale artifacts from earlier iterations. Supply both for repeated iterations; missing identity cannot prove an iteration.
+- `--session-id` scopes the plan artifact to this iteration's session id; `--newer-than` (this iteration's EXEC start time, ISO-8601) excludes stale artifacts from earlier iterations. Supply both for repeated iterations; missing identity cannot prove an iteration.
 - The command checks the artifact table below, prints a structured result (`ok`, `checks`, `missing`, `remediation`), and exits non-zero on failure. On failure it also appends a `gate.failed` L1 event automatically.
 - **The JSON verdict IS the gate result.** Do NOT substitute your own narration for it, and do NOT proceed on a non-zero exit.
 - If the CLI is unavailable, report the gate as unverified. File existence cannot substitute for execution evidence. Resolve `{memBase}` from `memoryConfig.basePath` (default `.agents/state/memories`).

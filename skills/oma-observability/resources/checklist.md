@@ -1,6 +1,6 @@
 # oma-observability Checklist
 
-> Consolidated verification checklist. Run before shipping observability changes to production.
+> Consolidated verification checklist. Check the items that apply before shipping observability changes to production; report items that were not verified.
 > Each item: action; criterion; priority.
 > Source files live under `resources/` from the skill root.
 
@@ -14,9 +14,9 @@
 
 ## Section 1: Setup validation (pre-commit / pre-merge)
 
-- [ ] Pin OTel spec version and semconv version in `standards.md` header; must match deployed SDK version (P0)
+- [ ] Record the deployed OTel SDK and Collector versions; confirm the attribute names in use match the semconv those SDKs emit and the current registry (`standards.md §1`) (P0)
 - [ ] Define `service.name`, `service.namespace`, `service.version` on every instrumented service OTel Resource; all three attributes present and non-empty (P0)
-- [ ] Define `deployment.environment`, `cloud.provider`, `cloud.region`, `cloud.availability_zone` on every OTel Resource; required for region-dimension pivot in incident forensics (P0)
+- [ ] Define `deployment.environment.name`, `cloud.provider`, `cloud.region`, `cloud.availability_zone` on every OTel Resource; required for region-dimension pivot in incident forensics (P0)
 - [ ] Define `host.id`, `k8s.pod.name`, `k8s.node.name`, `k8s.cluster.name`, `container.id` on every Kubernetes workload Resource; required for server-dimension pivot (P0)
 - [ ] Configure W3C Trace Context (`traceparent`) as default propagator; every outbound HTTP/gRPC call must forward the header; confirm by checking `trace_id` consistency across service log streams (P0)
 - [ ] Verify W3C Baggage carries only allowed keys; `tenant.id`, feature flag state, deployment SHA, region hint are allowed; user email, session tokens, and credentials are prohibited per `standards.md §W3C Baggage` (P0)
@@ -50,7 +50,7 @@
 ## Section 3: Production operations
 
 - [ ] Scrape OTel Collector self-metrics (`otelcol_*`) from a separate Prometheus instance or second Collector; Collector failures must not destroy their own observability (P0)
-- [ ] Check pipeline health per hop/exporter and implement completed synthetic backend-delivery probes where end-to-end verification is required; set policy-aware thresholds and monitor probe job freshness (`meta-observability.md §A6`) (P0)
+- [ ] Check pipeline health per hop/exporter and implement completed synthetic backend-delivery probes where end-to-end verification is required; set policy-aware thresholds and monitor probe job freshness (`meta-observability.md` A5) (P0)
 - [ ] Alert on exporter send failures above 1%; `rate(otelcol_exporter_send_failed_spans[5m]) / rate(otelcol_exporter_sent_spans[5m]) > 0.01` for 5 minutes (P0)
 - [ ] Alert on `otelcol_receiver_refused_spans > 0` sustained for 2 minutes; indicates queue full or parse failures (P0)
 - [ ] Alert on Collector heap usage exceeding 75% of container memory limit; `otelcol_process_runtime_heap_alloc_bytes > 0.75 * container_limit` (P0)
@@ -60,14 +60,14 @@
 - [ ] Configure tail_sampling policy with 100% error + 100% high-latency + 5-10% probabilistic baseline; gateway Collector only; `decision_wait: 30s` to buffer all spans (P1)
 - [ ] Apply exporter retry configuration; `initial_interval: 5s`, `max_interval: 30s`, `max_elapsed_time: 300s`, `queue_size: 1000` to handle transient backend unavailability without infinite queue growth (P1)
 - [ ] Scrape Fluent Bit self-metrics at `:2020/api/v1/metrics/prometheus`; monitor `fluentbit_output_errors_total` alongside `otelcol_*` for unified pipeline health view (P1)
-- [ ] Publish a meta-observability Grafana dashboard; must include pipeline delivery ratio panels, receiver accepted vs refused, exporter sent vs failed, queue depth, heap usage, clock drift heatmap, and top cardinality metrics table (P1)
+- [ ] Publish a meta-observability Grafana dashboard; must include the synthetic-probe delivery panel (`meta-observability.md` A5), receiver accepted vs refused, exporter sent vs failed, exporter queue size vs capacity, heap usage, clock drift heatmap, and top cardinality metrics table (P1)
 - [ ] Enforce retention policy per signal; metrics: 15d full-res / 90d 5m / 2y 1h; operational logs: 7d / 30d / 90d; sampled traces: 30d; profiles: 14d (P1)
 
 ---
 
 ## Section 4: Incident forensics readiness
 
-- [ ] Verify all MRA resource attributes are present on every signal before production; `service.name`, `service.namespace`, `service.version`, `deployment.environment`, `cloud.*`, `host.id`, `k8s.*`, `container.id` (P0)
+- [ ] Verify all MRA resource attributes are present on every signal before production; `service.name`, `service.namespace`, `service.version`, `deployment.environment.name`, `cloud.*`, `host.id`, `k8s.*`, `container.id` (P0)
 - [ ] Confirm `trace_id` appears on every structured log record; log-trace join is impossible without it; set via OTel SDK current span context (P0)
 - [ ] Confirm `span_id` appears on every structured log record alongside `trace_id`; required for sub-trace log correlation (P0)
 - [ ] Inject `request_id` at the API gateway; propagate as `x-request-id` header; log on every record; expose to end user for support tickets (P1)
@@ -75,7 +75,7 @@
 - [ ] Confirm the 6-dimension narrowing flow can execute in under 15 minutes; run a tabletop drill: symptom capture → trace_id acquisition → region → server → service → layer → code → cross-signal validation (P1)
 - [ ] Validate vendor query patterns are documented for all backends in use; Honeycomb, Datadog, Grafana Tempo, Jaeger, Sentry, Elastic query syntax must be accessible during an incident (P1)
 - [ ] Test log-trace join by `trace_id` across at least two services in the production environment; the join must return matching records within the same request's span (P1)
-- [ ] Confirm release marker log events include `service.name`, `service.version`, `deployment.environment`, and deployment SHA; without markers, Step 5 release correlation in the forensics playbook is blind (P0)
+- [ ] Confirm release marker log events include `service.name`, `service.version`, `deployment.environment.name`, and deployment SHA; without markers, Step 5 release correlation in the forensics playbook is blind (P0)
 
 ---
 
@@ -98,13 +98,13 @@
 ## Section 6: SLO & Release gate
 
 - [ ] Define SLO with error budget policy for every user-facing service; SLO target, SLA target (SLA < SLO), 28-day rolling window, and burn-rate alert thresholds (P1)
-- [ ] Implement multi-window burn-rate alerts; fast burn: 2% budget in 1 hour; slow burn: 5% budget in 6 hours; both required to avoid alert fatigue and missed slow leaks (P1)
+- [ ] Implement multi-window burn-rate alerts; fast burn: 14.4× over 1 hour (about 2.14% of a 28-day budget); slow burn: 6× over 6 hours (about 5.36%); thresholds and math in `boundaries/slo.md`; both required to avoid alert fatigue and missed slow leaks (P1)
 - [ ] Store SLO definitions in OpenSLO YAML in git; treated as code; PR review required for any SLO target change (P1)
 - [ ] Select SLI source from stable signals; mesh RED metrics or L7 application metrics preferred; log-based SLI is acceptable only as a fallback for un-instrumented services (P1)
 - [ ] Configure canary analysis (Flagger or Argo Rollouts) to use SLI metrics as promotion gates; success rate threshold and latency p99 threshold both required (P1)
 - [ ] Add memory saturation metric as a custom Flagger analysis gate; OOMKilled pods may not fail the success rate threshold before crashing; `container_memory_working_set_bytes` gate prevents silent OOM canary progression (P1)
 - [ ] Emit `service.version` on all metrics, logs, and spans at deploy time; required for before/after comparison in canary analysis and in Step 3c of incident forensics (P0)
-- [ ] Emit a structured release marker event at every deployment; must carry `service.name`, `service.version`, `deployment.environment`, deployment strategy, and deployment SHA (P0)
+- [ ] Emit a structured release marker event at every deployment; must carry `service.name`, `service.version`, `deployment.environment.name`, deployment strategy, and deployment SHA (P0)
 - [ ] Record SLO burn-rate threshold crossings as immutable audit events; provides compliance evidence for availability breach; cross-ref `signals/audit.md` (P1)
 - [ ] Define rollback criteria and document the rollback procedure; include metric recovery verification steps in the runbook (P1)
 
@@ -112,12 +112,12 @@
 
 ## Section 7: Recovery
 
-- [ ] Document Collector queue backpressure remediation runbook; steps: identify via `otelcol_processor_queued_retry_send_queue_length`, scale gateway Collector replicas, check vendor rate limits (P1)
+- [ ] Document Collector queue backpressure remediation runbook; steps: identify via `otelcol_exporter_queue_size` against `otelcol_exporter_queue_capacity`, scale gateway Collector replicas, check vendor rate limits (P1)
 - [ ] Document clock drift remediation procedure; `chronyc makestep` for immediate re-sync; escalation to PTP for sub-millisecond requirements; check NTP source reachability if drift persists (P1)
 - [ ] Document cardinality bomb mitigation procedure; identify offending metric with `topk(10, count({__name__!=""}) by (__name__))`, add `filter` processor to drop offending label, or `transform` processor to remove the label value (P1)
 - [ ] Document Collector OOM recovery path; verify `memory_limiter` is configured; if OOM still reached, increase container memory limit or reduce `limit_percentage`; never disable `memory_limiter` (P1)
 - [ ] Document vendor fallback plan for observability backend outage; identify secondary backend or local Collector buffering strategy; `sending_queue` with `queue_size` provides short-term buffering (P2)
 - [ ] Document PII incident response procedure; GDPR Art. 33 breach notification to supervisory authority within 72 hours; identify affected telemetry stores, scope the affected data subjects, and engage DPO (P0)
-- [ ] Document audit log retention violation response; verify S3/GCS Object Lock policy; confirm `retention_period` in log backend matches 7y; restore from backup if records were prematurely deleted (P0)
+- [ ] Document audit log retention violation response; verify the lock and lifecycle policy against the approved per-class schedule (`signals/audit.md`); restore from backup if records were deleted before their approved period; remove records kept past it (P0)
 - [ ] Test Flagger auto-rollback by injecting a synthetic error rate above the failure threshold in a staging environment; verify rollback completes before the `progressDeadlineSeconds` expires (P2)
 - [ ] Validate that `memory_limiter` refused spans alert fires before Collector OOM; run a controlled load test; confirm `otelcol_processor_memory_limiter_refused_spans > 0` alert fires and data loss stops short of crash (P2)

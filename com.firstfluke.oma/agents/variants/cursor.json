@@ -4,7 +4,7 @@
   "destDir": ".cursor/agents",
   "modelDefault": "inherit",
   "toolsDefault": [],
-  "protocolPath": ".agents/skills/_shared/core/quality-principles.md",
+  "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/cursor.md",
   "agents": {
     "backend-engineer": {
       "extra": {
@@ -18,25 +18,17 @@
     },
     "db-engineer": {
       "extra": {
-        "readonly": true
+        "is_background": true
       }
     },
-    "architecture-reviewer": {
-      "extra": {
-        "readonly": true
-      }
-    },
+    "architecture-reviewer": {},
     "debug-investigator": {},
     "mobile-engineer": {
       "extra": {
         "is_background": true
       }
     },
-    "pm-planner": {
-      "extra": {
-        "readonly": true
-      }
-    },
+    "pm-planner": {},
     "qa-reviewer": {
       "extra": {
         "readonly": true,
@@ -51,6 +43,16 @@
     "docs-curator": {
       "extra": {
         "is_background": true
+      }
+    },
+    "refactor-engineer": {
+      "extra": {
+        "is_background": true
+      }
+    },
+    "research-explorer": {
+      "extra": {
+        "readonly": true
       }
     }
   }

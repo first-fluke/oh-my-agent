@@ -119,8 +119,8 @@ Rule: more than about 12 characters of pre-nominal modifier → restructure.
 - **Enumeration comma**: `、` between list items inside a sentence, `，` between
   clauses. These are not interchangeable.
 - **Quotes**: `“”` and `‘’` for `zh-CN`, `「」` and `『』` for `zh-TW` / `zh-HK`.
-  This is the one target where curly quotes are correct; the shared curly-quote
-  check must not strip them.
+  This is the one target where curly quotes are correct; do not normalize them
+  to straight quotes.
 - **Brackets**: fullwidth `（）` around Chinese content, halfwidth `()` around
   ASCII-only content.
 - **Em dash**: Chinese uses `——` (double-width, two ems) for a genuine break,
@@ -282,4 +282,4 @@ Good: 用户体验重要
 - [ ] Fullwidth punctuation; `、` vs `，` used correctly; `……` not `...` (`ZH-7`)
 - [ ] Quote style matches the variant; curly quotes preserved for `zh-CN`
 - [ ] No English `—` carried through (`ZH-7`)
-- [ ] `被` used only for adverse or agentless outcomes (shared `20`)
+- [ ] `被` used only for adverse or agentless outcomes (`passive voice`)

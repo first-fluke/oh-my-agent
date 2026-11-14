@@ -15,11 +15,13 @@ source: variant
 verify:
   detect: Package.swift
   syntax:
-    cmd: "swift build"
-    skip_if_missing: swift
+    # Non-emitting lint pass. `swift build` compiles the package and must not
+    # be the default; /stack-set swaps in the project's own check.
+    cmd: "swiftlint lint --quiet"
+    skip_if_missing: swiftlint
   tests:
     cmd: "swift test"
     # Substring match must cover both XCTest ("Test Suite 'All tests' passed")
-    # and Swift Testing ("Test run with N tests passed") summaries.
+    # and Swift Testing ("Test run with ... passed after ...") summaries.
     pass_signal: "passed"
     skip_if_missing: swift

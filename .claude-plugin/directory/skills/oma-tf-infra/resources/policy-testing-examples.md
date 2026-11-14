@@ -1,6 +1,7 @@
 # Policy and Testing Examples
 
-OPA policies, Sentinel rules, and infrastructure testing patterns.
+OPA policies, Sentinel rules, and infrastructure testing patterns. Action and
+tool versions in the CI sample are pins to update deliberately, not floating tags.
 
 ## OPA (Open Policy Agent)
 
@@ -94,18 +95,25 @@ from the exact provider/plan version before enabling a Sentinel gate.
 ### Restrict Instance Types
 ```hcl
 # restrict_instance_types.sentinel
-import "tfplan"
+import "tfplan/v2" as tfplan
 
 allowed_types = ["t3.micro", "t3.small", "t3.medium"]
 
+ec2_instances = filter tfplan.resource_changes as _, rc {
+  rc.type is "aws_instance" and
+    rc.mode is "managed" and
+    (rc.change.actions contains "create" or rc.change.actions contains "update")
+}
+
 main = rule {
-  all tfplan.resources.aws_instance as _, instances {
-    all instances as _, instance {
-      instance.applied.instance_type in allowed_types
-    }
+  all ec2_instances as _, instance {
+    instance.change.after.instance_type in allowed_types
   }
 }
 ```
+
+An unknown (computed) `instance_type` is absent from `change.after`; decide
+explicitly whether the rule fails or defers on it.
 
 ## Native `terraform test` (Terraform >= 1.6)
 
@@ -202,37 +210,6 @@ func TestDatabaseModule(t *testing.T) {
 }
 ```
 
-## Kitchen-Terraform (Ruby)
-
-### VPC Controls
-```ruby
-# controls/vpc.rb
-control 'vpc-exists' do
-  describe aws_vpc('vpc-12345678') do
-    it { should exist }
-    its('cidr_block') { should eq '10.0.0.0/16' }
-  end
-end
-
-control 'subnets-exist' do
-  describe aws_subnets do
-    its('subnet_ids.count') { should be >= 2 }
-  end
-end
-```
-
-### Security Group Controls
-```ruby
-# controls/security_group.rb
-control 'no-ssh-from-internet' do
-  aws_security_groups.group_ids.each do |sg_id|
-    describe aws_security_group(sg_id) do
-      it { should_not allow_in(port: 22, ipv4_range: '0.0.0.0/0') }
-    end
-  end
-end
-```
-
 ## CI/CD Integration
 
 ### GitHub Actions Workflow
@@ -262,11 +239,11 @@ jobs:
       - name: Run TFLint
         uses: terraform-linters/setup-tflint@v4
         with:
-          tflint_version: latest
+          tflint_version: v0.52.0 # pin a release; `latest` drifts
       - run: tflint --init && tflint
         
       - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
           framework: terraform
@@ -285,48 +262,4 @@ jobs:
           terraform show -json tfplan > tfplan.json
           opa test policies/ --verbose
           opa eval --fail-defined --data policies/ --input tfplan.json "data.terraform.guardrails.deny[_]"
-```
-
-### Validation Script
-```bash
-#!/bin/bash
-# validate.sh
-
-set -e
-
-echo "Running Terraform validation..."
-
-# Format check
-echo "  → Checking format..."
-terraform fmt -check -recursive
-
-# Initialize
-echo "  → Initializing..."
-terraform init -backend=false
-
-# Validate
-echo "  → Validating..."
-terraform validate
-
-# Security scan with Checkov
-echo "  → Running Checkov..."
-checkov -d . --framework terraform --quiet
-
-# Lint with TFLint
-echo "  → Running TFLint..."
-tflint --init
-tflint
-
-# Plan and OPA check (if policies exist)
-if [ -d "policies" ]; then
-  echo "  → Running OPA policy checks..."
-  # Requires explicitly configured backend/auth for this project.
-  terraform init -reconfigure
-  terraform plan -out=tfplan
-  terraform show -json tfplan > tfplan.json
-  opa test policies/
-  opa eval --fail-defined --data policies/ --input tfplan.json "data.terraform.guardrails.deny[_]"
-fi
-
-echo "All validation passed!"
 ```

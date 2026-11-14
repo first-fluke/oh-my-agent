@@ -1,6 +1,6 @@
 # Mobile Agent - Self-Verification Checklist
 
-Run through every item before submitting your work.
+Check the items that apply to the target platform and the change before submitting your work.
 
 ## Architecture
 - [ ] Clean Architecture layers: domain -> data -> presentation (App/Core/Features/Shared on Swift; `app/{ui,data,di}` + `api-client` on Kotlin)
@@ -12,12 +12,12 @@ Run through every item before submitting your work.
 - [ ] Material Design 3 for Android
 - [ ] iOS Human Interface Guidelines followed
 - [ ] Platform-specific code guarded (Flutter: `Platform.isIOS`/`Platform.isAndroid`; RN: `Platform.OS`)
-- [ ] Tested on supported target platforms (iOS only for native Swift; Android only for native Kotlin)
+- [ ] Supported target platforms covered (iOS only for native Swift; Android only for native Kotlin)
 - [ ] Dark mode supported
 
 ## Performance
 - [ ] 60fps scrolling (no jank)
-- [ ] Controllers disposed in `dispose()` method
+- [ ] Resources released: Flutter controllers in `dispose()`; RN effect cleanups; Swift structured `.task {}` cancellation; Kotlin work in `viewModelScope`
 - [ ] No memory leaks (listeners, subscriptions cleaned up)
 - [ ] Images cached and sized appropriately
 - [ ] Cold start < 2s
@@ -30,25 +30,25 @@ Run through every item before submitting your work.
 - [ ] Tokens/secrets in secure storage (flutter_secure_storage / Keychain / react-native-keychain / Android Keystore-backed storage) — never plain prefs or MMKV
 
 ## Testing
-- [ ] Unit tests for domain logic and providers
-- [ ] Widget tests for key screens
-- [ ] E2E tests with Maestro for critical user flows
+- [ ] Unit tests for domain logic and the state layer (providers / hooks / view models)
+- [ ] Screen-level tests for key screens (Flutter widget tests, RNTL, Compose UI tests)
+- [ ] E2E coverage for critical user flows: Maestro (Flutter / RN / Kotlin) or XCUITest (Swift native)
 - [ ] Edge cases: empty lists, error states, offline mode
-- [ ] Applicable tests pass on supported target platforms
+- [ ] Relevant checks selected; run only when the user or the active workflow requires it, otherwise the result lists what was not verified
 
 ## React Native
-> Applies when `package.json` declares a `react-native` dependency. Skip for Flutter/Swift native.
+> Applies when `package.json` declares a `react-native` dependency. Skip for Flutter and native Swift/Kotlin.
 - [ ] Server state via TanStack Query hooks (query key factory shared between queries and mutations); screens never import axios directly
 - [ ] Explicit `staleTime`/`gcTime` on queries; `gcTime` >= persister `maxAge` so the MMKV-persisted cache survives restarts
 - [ ] Every mutation invalidates affected query keys (list AND detail); optimistic updates roll back on error and never fabricate cache entries
 - [ ] `onlineManager` wired to NetInfo so offline pause/resume works
 - [ ] Client state (auth/UI) in Zustand stores under `src/store/`; tokens hydrated from `react-native-keychain`, held in memory — never plain MMKV
 - [ ] Typed React Navigation v7 routes (`RootStackParamList`); no `any` in navigation props
-- [ ] `npx tsc --noEmit` and `npx jest --ci` pass
+- [ ] Type and test checks are `npx tsc --noEmit` and `npx jest --ci` — run only when the user or the active workflow requires it; otherwise report them as not verified
 - [ ] Maestro flow updated for critical user flows (`e2e/`)
 
 ## Swift Native (iOS)
-> Applies when the project is Swift native (`Package.swift` / `.xcodeproj` present). Skip for Flutter/RN.
+> Applies when the project is Swift native (`Package.swift` / `.xcodeproj` present). Skip for Flutter/RN/Kotlin.
 - [ ] `App/Core/Features/Shared` layout respected (App = entry/DI, Core = networking/generated client, Features = view+`@Observable` VM slices, Shared = reusable UI/util)
 - [ ] API access goes through the generated `Client` from `swift-openapi-generator` — no hand-rolled `URLRequest`/`JSONDecoder` for spec-covered endpoints
 <!-- oma-docs:ignore-start -->

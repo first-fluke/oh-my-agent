@@ -98,7 +98,7 @@ Do not add "kindly", "please be informed", "as per", or "do the needful".
 最適化を実施する       → optimize       (not "implement optimization")
 ```
 
-### EN-8. Typography
+### EN-7. Typography
 
 - **Quotes**: straight `"` and `'` in code-adjacent docs and Markdown source.
   Curly quotes only when the publishing pipeline requires them.
@@ -120,4 +120,4 @@ Do not add "kindly", "please be informed", "as per", or "do the needful".
 - [ ] No run-on carried over from a multi-clause CJK sentence (`EN-4`)
 - [ ] No politeness padding, "kindly", or "do the needful" (`EN-5`)
 - [ ] Nominalizations unpacked into verbs (`EN-6`)
-- [ ] Heading case, serial comma, date format, and spelling variety match siblings (`EN-8`)
+- [ ] Heading case, serial comma, date format, and spelling variety match siblings (`EN-7`)

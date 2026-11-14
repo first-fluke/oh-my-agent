@@ -1,11 +1,7 @@
 ---
-otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.43.0 (2026-07)"
 specs:
   - "W3C Baggage: Recommendation 2022-12-22"
   - "GDPR: Regulation (EU) 2016/679; KR PIPA: amended 2023"
-notes:
-  - "OpenCost: CNCF Incubating (advanced 2024-10-31)"
 ---
 
 # Multi-Tenant Observability
@@ -31,7 +27,7 @@ Multi-tenant observability covers the collection, routing, isolation, attributio
 
 ## 2. OTel Attribute Conventions for Tenant
 
-OpenTelemetry Semantic Conventions do not include a stable `tenant.*` group as of semconv 1.43.0. The attributes below are **custom application-defined** attributes. Follow the naming convention from `../standards.md §3` and prefix with the domain noun to avoid collisions with future OTel semconv additions.
+OpenTelemetry Semantic Conventions do not include a stable `tenant.*` group; confirm against the current registry. The attributes below are **custom application-defined** attributes. Follow the semconv naming style (see `../standards.md`) and prefix with the domain noun to avoid collisions with future OTel semconv additions.
 
 | Attribute | Type | Example | Status |
 |-----------|------|---------|--------|
@@ -75,7 +71,7 @@ Service B (reads baggage → sets span attribute tenant.id)
 
 **Trust-boundary warning:** W3C Baggage is visible to every service in the propagation chain, including third-party or external services. The W3C Baggage specification (https://www.w3.org/TR/baggage/) explicitly notes that baggage values cross trust boundaries. Carrying `tenant.id` to external egress endpoints leaks customer account existence information.
 
-Rule: strip or validate `tenant.*` baggage entries at the egress gateway before forwarding to any external third-party endpoint. Internal propagation only. Cross-ref `../signals/privacy.md §Common PII in Telemetry` for baggage PII rules.
+Rule: strip or validate `tenant.*` baggage entries at the egress gateway before forwarding to any external third-party endpoint. Internal propagation only. Cross-ref `cross-application.md §4` for baggage trust-boundary rules and `../signals/privacy.md` for PII classification.
 
 ---
 
@@ -126,7 +122,7 @@ Cross-ref `../meta-observability.md §Retention Matrix` for the full retention p
 
 Tenant-level cost attribution enables chargeback (billing tenants for their resource consumption) and showback (internal reporting without billing).
 
-**Kubernetes workload labeling:** maintain a verified mapping from workload labels to tenants. Aggregate cost through the OpenCost Allocation API using that mapping and an explicit window. The default `/metrics` endpoint does not automatically create `opencost_workload_cost_total` or a per-tenant cumulative cost counter; implement and document such a counter separately if needed. See `../signals/cost.md §5`.
+**Kubernetes workload labeling:** maintain a verified mapping from workload labels to tenants. Aggregate cost through the OpenCost Allocation API using that mapping and an explicit window. The default `/metrics` endpoint does not automatically create `opencost_workload_cost_total` or a per-tenant cumulative cost counter; implement and document such a counter separately if needed. See `../signals/cost.md` (unit economics).
 
 ```yaml
 # Kubernetes Pod template label (applied via Helm values or admission webhook)
@@ -140,7 +136,7 @@ metadata:
 
 **Cardinality constraint:** `tenant.id` used as a metric label must be capped at the top-N active tenant count (100–1,000 tenants is safe for most TSDBs). Beyond this threshold, bucket overflow tenants under an `"other"` label to prevent metric series explosion. Cross-ref `../meta-observability.md §Cardinality Guardrails`.
 
-Cross-ref `../signals/cost.md §4 Cost Attribution by Dimension` for FinOps unit economics (per-tenant PromQL formulas, OpenCost architecture, and FOCUS spec).
+Cross-ref `../signals/cost.md` for cost attribution by dimension and FinOps unit economics (per-tenant PromQL formulas and OpenCost architecture).
 
 ---
 
@@ -172,7 +168,7 @@ and <https://www.law.go.kr/LSW/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=10
 
 **Source-of-truth rule (critical)**: `tenant.region` MUST be resolved from an internal, server-side authoritative source; tenant registry service, organization metadata table, or IdP claim stamped at session start. It MUST NOT be trusted from client-supplied input (HTTP header, baggage, query string, or JWT claim the client itself controls). A misconfigured or malicious tenant could otherwise self-declare a non-EU/KR region and bypass residency routing. Enforce at the ingress gateway: reject requests where a client-declared `tenant.region` disagrees with the registry lookup keyed on `tenant.id`. In practice, strip any inbound `tenant.region` attribute and re-attach the registry-sourced value before the Collector pipeline accepts the span/log.
 
-Cross-ref `../transport/collector-topology.md §7 Federated / Multi-Cluster` for the multi-region edge topology diagram. Cross-ref `../signals/privacy.md §2 Regulatory Drivers` for GDPR and PIPA penalty context and `../signals/privacy.md §Cross-border transfer` for PII-specific cross-border rules.
+Cross-ref `../transport/collector-topology.md §7 Federated / Multi-Cluster` for the multi-region edge topology diagram. Cross-ref `../signals/privacy.md` for GDPR and PIPA regulatory context and PII-specific cross-border transfer rules.
 
 ---
 
@@ -224,7 +220,7 @@ Cross-ref `../signals/audit.md` for audit event schema for offboarding erasure e
 
 **RBAC rule:** a tenant admin identity claim must be mapped to a Grafana or backend role that scopes data access strictly to that tenant's `tenant.id`. Cross-org or cross-tenant data leakage via dashboard query is a compliance violation.
 
-Cross-ref `../signals/privacy.md §Backend RBAC` for Grafana RBAC configuration patterns and OPA policy rules for query-level tenant isolation.
+Cross-ref `../signals/privacy.md` (backend access control) for role-scoped access to observability data.
 
 ---
 
@@ -245,34 +241,6 @@ Apply rate limits at the first collector tier (agent or edge). A tenant exceedin
 
 ---
 
-## 12. Matrix Cells: Multi-Tenant Row
-
-Quick navigation for multi-tenant boundary cells in `../matrix.md`:
-
-| Layer | Signal | Status | Artifact |
-|-------|--------|--------|----------|
-| L3-network | metrics | PASS | VPC flow logs per tenant; egress bytes attributed by source CIDR mapped to `tenant.id` |
-| L7-application | traces | PASS | W3C Baggage carries `tenant.id`; all spans tagged at ingress |
-| L7-application | cost | PASS | OpenCost workload attribution via `tenant.id` pod label; per-tenant PromQL aggregation |
-| L7-application | privacy | PASS | Per-tenant PII redaction rules; per-tenant residency routing |
-| L7-application | audit | PASS | Per-tenant audit trail; erasure events on offboarding |
-
----
-
-## 13. Anti-Patterns
-
-The following are candidates for `../anti-patterns.md §Multi-Tenant`:
-
-| Anti-Pattern | Impact | Correction |
-|-------------|--------|------------|
-| `tenant.id` as metric label without top-N cap | Cardinality explosion in TSDB; ingestor OOM; query timeouts for all tenants | Enforce top-N cap (100–1,000); bucket overflow as `"other"`; cross-ref `../meta-observability.md §Cardinality Guardrails` |
-| `tenant.id` in W3C Baggage crossing trust boundaries | Tenant account existence leaks to third-party services; GDPR personal data transfer without legal basis | Strip `tenant.*` baggage at egress gateway before forwarding to any external endpoint |
-| Shared backend for regulated tiers (Tier 1 for compliance tenants) | Co-mingled data violates data processing agreements; one breach affects all tenants | Upgrade regulated tenants to Tier 3 or 4; apply isolation tier based on contractual obligation, not cost convenience |
-| Cross-border export without checking data, transfer basis, safeguards, or contract | Unauthorized personal-data transfer or residency-contract breach | Verify applicable GDPR/PIPA transfer grounds and destination; enforce stricter local-residency contracts using server-side policy |
-| No policy-based offboarding process | Eligible personal data persists or required evidence is erased prematurely | Inventory record classes; delete eligible data and retain legally required evidence under restricted access and approved expiry |
-
----
-
 ## Cross-References
 
 | Topic | File |
@@ -284,7 +252,7 @@ The following are candidates for `../anti-patterns.md §Multi-Tenant`:
 | Multi-cluster and regional collector topology | `../transport/collector-topology.md §7` |
 | Retention matrix for all seven signals | `../meta-observability.md §Retention Matrix` |
 | Cardinality guardrails and top-N cap | `../meta-observability.md §Cardinality Guardrails` |
-| Dashboard RBAC and query-level tenant isolation | `../signals/privacy.md §Backend RBAC` |
+| Role-scoped access to observability data | `../signals/privacy.md` |
 | Audit event schema for offboarding erasure | `../signals/audit.md` |
 | Observability-as-code provisioning for tenant onboarding | `../observability-as-code.md` |
-| Full 112-cell coverage matrix | `../matrix.md` |
+| Coverage matrix (multi-tenant rows) | `../matrix.md` |

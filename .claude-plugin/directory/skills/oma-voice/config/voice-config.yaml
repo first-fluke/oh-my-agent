@@ -1,5 +1,5 @@
 # oma-voice configuration
-# Design reference: docs/plans/designs/012-oma-voice.md
+# Design reference: docs/decisions/012-oma-voice.md
 #
 # NOT the place to put your settings: `oma update` overwrites this file. Put
 # overrides under `voice:` in .agents/oma-config.yaml, which is preserved —

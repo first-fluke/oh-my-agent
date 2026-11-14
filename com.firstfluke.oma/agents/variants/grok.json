@@ -6,5 +6,9 @@
   "maxTurnsDefault": 100,
   "toolsDefault": "run_terminal_cmd, read_file, search_replace, list_dir, grep",
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
-  "agents": {}
+  "agents": {
+    "research-explorer": {
+      "tools": "run_terminal_cmd, read_file, search_replace, list_dir, grep, web_search, web_fetch"
+    }
+  }
 }

@@ -51,7 +51,7 @@ Heuristic:
 Estimate operational reliability from emergency recovery patterns.
 
 ```bash
-git log --oneline --since="1 year ago" | rg -i "revert|hotfix|emergency|rollback"
+git log --oneline --since="1 year ago" -i -E --grep="revert|hotfix|emergency|rollback"
 ```
 
 Heuristic:

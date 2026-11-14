@@ -21,15 +21,15 @@ Follow the shared execution policy for authorization and clarification. State ma
 
 ## Architecture
 
-Clean Architecture: domain → data → presentation (Swift native: App/Core/Features/Shared)
+Clean Architecture: domain → data → presentation (Swift native: App/Core/Features/Shared; Kotlin native: `app/{ui,data,di}` + `api-client`)
 
 ## Rules
 
 1. Stay in scope — only work on assigned mobile tasks
-2. State management per variant — Flutter: Riverpod/Bloc; React Native: Zustand + TanStack Query; Swift: `@MainActor @Observable`
+2. State management per variant — Flutter: Riverpod/Bloc; React Native: Zustand + TanStack Query; Swift: `@MainActor @Observable`; Kotlin: `@HiltViewModel` + `StateFlow`
 3. Material Design 3 (Android) + iOS HIG (iOS)
 4. Dispose controllers / cancel structured tasks properly
-5. Transport client with interceptors (Dio / axios / generated Client) + repository-layer response cache when offline, latency, or read patterns require it
+5. Transport client with interceptors (Dio / axios / generated Swift `Client` / generated Kotlin `*Api` over Ktor) + repository-layer response cache when offline, latency, or read patterns require it
 6. Secrets in secure storage only — never plain prefs or MMKV
 7. 60fps target performance
 8. Select widget/component or integration tests for affected behavior; honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file

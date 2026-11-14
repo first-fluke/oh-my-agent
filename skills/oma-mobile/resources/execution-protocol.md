@@ -7,6 +7,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Read the task requirements carefully
 - Identify target platform: check for `Package.swift` (Swift iOS), `settings.gradle.kts` + `com.android.application` plugin (Kotlin Android), `pubspec.yaml` (Flutter), or `package.json` + `react-native` dep (React Native)
 <!-- oma-docs:ignore-start -->
+- Resolve the stack reference: when this skill has a `stack/` directory (written by `/stack-set`), use `stack/stack.yaml`, `stack/tech-stack.md`, and `stack/snippets.md`; otherwise use the detected platform's `variants/<platform>/` files
 - **If Swift (Package.swift detected)**: identify which `Features/` modules are affected; check for `Core/Networking/openapi.yaml`
 <!-- oma-docs:ignore-end -->
 - **If Kotlin Android**: identify which `ui/<feature>` slices are affected; read the `openApiGenerate {}` block in `app/build.gradle.kts` for the spec path and generated packages; find the Hilt module that constructs the generated `*Api` (Ktor engine lives there, not in repositories)
@@ -32,11 +33,16 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   3. Presentation: providers/hooks/view models, screens, widgets, composables
   4. Navigation: GoRouter routes / typed React Navigation routes / router-owned NavigationStack / `@Serializable` Navigation Compose routes
   5. Tests: unit + widget/component tests
-- Use the platform's template as reference: `resources/screen-template.dart` (Flutter), `resources/screen-template.swift` (Swift), `resources/screen-template.tsx` (React Native); Kotlin uses `variants/kotlin-android/snippets.md` §5–§6 (view model + screen)
+<!-- oma-docs:ignore-start -->
+- Use the platform's snippets as the screen reference (`variants/<platform>/snippets.md`): Flutter §4 + §6 (notifier + screen), Swift §3–§4 (view model + view), React Native §5–§6 (hooks + screen), Kotlin §5–§6 (view model + screen). When `stack/snippets.md` exists, use its equivalent sections instead
+<!-- oma-docs:ignore-end -->
 - Follow Clean Architecture layers strictly
 
 ## Step 4: Verify
 - Check applicable items in `resources/checklist.md`
+<!-- oma-docs:ignore-start -->
+- Select the relevant checks (the `verify:` commands in `stack/stack.yaml` when present, otherwise the variant's); run them only when the user or the active workflow requires it, and report what was not verified
+<!-- oma-docs:ignore-end -->
 - Use `../references/_shared/core/common-checklist.md` only for cross-domain verification
 - For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../references/_shared/core/test-approach.md`
 - Verify supported target platforms; native Swift iOS does not require Android checks and native Kotlin Android does not require iOS checks. Respect the build policy when selecting tests (Gradle test tasks compile Kotlin).

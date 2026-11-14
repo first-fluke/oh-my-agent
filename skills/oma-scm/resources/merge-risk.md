@@ -1,8 +1,7 @@
 # Large Merge Risk Triage
 
 Trigger this step when merge scope is large by change footprint, not PR count.
-Read thresholds from `.agents/oma-config.yaml` `large_merge_thresholds.*` first.
-If config values are missing, use these defaults:
+A merge is large when any of these holds:
 - combined changed files >= 150
 - combined additions+deletions >= 3000 lines
 - touching >= 3 high-churn/hotspot paths
@@ -58,7 +57,7 @@ For large-scope merges, propose merge order as:
 **Precedence:** an explicit, unambiguous user instruction overrides this gate (same as `oma-scm` SKILL.md Guardrails) — if the user already told you exactly what to do, state what you are doing and proceed without re-confirming. The single exception that always warrants a heads-up is likely-secret material. The gate below applies when the risky condition was NOT explicitly requested by the user.
 
 Stop and ask user confirmation if any of these are true:
-- merge conflicts are already present
+- merge conflicts are present in release-critical paths or in paths with no clear owner (resolve ordinary conflicts per the SKILL.md recovery table)
 - history rewrite is required (`--force`, `reset --hard`, destructive restore/clean)
 - required checks, required reviews, or CODEOWNERS conditions are not satisfied
 - protected/main branch policy could be violated

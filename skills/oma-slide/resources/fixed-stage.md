@@ -145,24 +145,35 @@ Use the CSS class protocol defined in `viewport-base.css`:
 
 `deck-stage.js` manages these classes automatically. Slide authors do not need to set them.
 
-## 6. Validator Contract — data-om-validate
+## 6. Validator Contract
 
-`deck-stage.js` automatically annotates each `.slide` with:
+`oma slide validate` (puppeteer-core) renders each slide file and:
+
+1. Takes every `.slide` inside `.deck-stage` as a 1920×1080 frame. Without that structure it
+   falls back to `<body>` as one frame, so keep the canonical DOM from §3.
+2. Runs every check on every frame: `no_overflowing_text`, `no_overlapping_text`, and
+   `slide_sized_text` are critical; `remote_asset_ref` is a warning.
+3. Reports findings as `{ code, message, slide, selector?, rect? }`.
+
+A text element is any element with its own non-empty text node. The checks cannot be switched
+off per slide or per element: text that extends past the frame is reported even when it is
+decorative or clipped by an ancestor's `overflow: hidden`. Keep such text inside the frame, or
+use an image instead of live text.
+
+`deck-stage.js` adds two labels to each `.slide` at runtime, and the scaffold writes the second
+one into the starter slide:
 
 ```html
 data-screen-label="Slide N / M"
 data-om-validate="no_overflowing_text,no_overlapping_text,slide_sized_text"
 ```
 
-`oma slide validate` (puppeteer-core) reads these attributes to:
+They name the slide and the gate's critical checks. The validator does not read them, so leave
+them as written; adding, editing, or removing one changes nothing about what is checked.
 
-1. Locate each slide in the rendered DOM.
-2. Know which checks to run (overflow / overlap / size checks).
-3. Report findings as `{ code, message, slide, selector?, rect? }`.
-
-**Do not remove or override `data-om-validate`** in authored slide HTML. If a slide intentionally
-clips text (e.g., a decorative element), annotate the clipping element with `data-om-no-check`
-to suppress false-positive overflow findings.
+`remote_asset_ref` fires on every `http(s)` reference, which includes the font CDN `<link>`s
+this skill requires (§7 and the presets' Google Fonts links). Those warnings are expected and
+never fail the gate; any other remote reference should move into `./assets/`.
 
 ## 7. CJK Content → Pretendard Required
 

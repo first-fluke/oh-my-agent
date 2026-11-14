@@ -10,61 +10,15 @@ Use this file when the user wants standards-based planning, enterprise delivery 
 
 Do not turn these into ceremony for simple tasks. Use them when they improve clarity, accountability, or delivery confidence.
 
-## 1. ISO 21500 for PM Work
+## What Each Lens Adds to a Plan
 
-Use ISO 21500 thinking to strengthen:
+| Lens | Use it to strengthen | Plan output |
+|---|---|---|
+| ISO 21500 | Scope, stakeholders, dependency mapping, sequencing, roles | Explicit scope and exclusions; owner per task; milestone or phase structure; deliverables with acceptance criteria |
+| ISO 31000 | Risk identification, impact/likelihood, treatment, residual risk | Top risks list; mitigation and contingency tasks; release blockers separated from monitored risks; escalation decision points |
+| ISO 38500 (apply lightly) | Decision ownership, approval boundaries, accountability, oversight | Decision owner; who must be informed; what needs explicit sign-off; where governance review is needed |
 
-- scope definition
-- stakeholder identification
-- dependency mapping
-- schedule and sequencing
-- roles and responsibilities
-- deliverable clarity
-
-Practical PM outputs:
-
-- explicit scope and exclusions
-- task decomposition with dependencies
-- owner assignment
-- milestone or phase structure
-- acceptance criteria and deliverables
-
-## 2. ISO 31000 for Risk-Aware Planning
-
-Use ISO 31000 thinking to improve:
-
-- risk identification
-- impact/likelihood discussion
-- prioritization
-- treatment / mitigation planning
-- residual risk visibility
-
-Practical PM outputs:
-
-- top risks list
-- mitigation tasks
-- contingency tasks
-- release blockers vs monitored risks
-- decision points for escalation
-
-## 3. ISO 38500 for Governance
-
-Use ISO 38500 lightly for:
-
-- decision ownership
-- approval boundaries
-- accountability
-- oversight expectations
-- alignment between business intent and technical execution
-
-Practical PM outputs:
-
-- approver or decision owner
-- who must be informed
-- what needs explicit sign-off
-- where governance review is needed
-
-## 4. When to Apply
+## When to Apply
 
 Apply these standards when:
 
@@ -79,7 +33,7 @@ Avoid overusing them when:
 - the task is a small feature or bug
 - standards language would slow delivery without adding control
 
-## 5. Output Pattern
+## Output Pattern
 
 When relevant, add a short section like:
 
@@ -102,7 +56,7 @@ When relevant, add a short section like:
 - Governance checkpoints:
 ```
 
-## 6. Guardrails
+## Guardrails
 
 - Keep recommendations actionable, not ceremonial
 - Do not claim formal compliance

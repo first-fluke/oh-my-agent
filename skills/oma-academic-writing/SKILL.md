@@ -10,7 +10,7 @@ description: Draft and revise academic prose against a rubric, evidence, and
 ## Scheduling
 
 ### Goal
-Produce, revise, and audit publication-grade academic English prose so that every output simultaneously satisfies the Sentence Structure Protocol, Verb Protocol, Hedging Protocol, and Anti-AI Compliance Checklist, with every claim mapped to verifiable evidence.
+Produce, revise, and audit publication-grade academic English prose: clear sentence structure, accurate verbs, hedging matched to evidence, no unresolved prose-audit finding, and every claim mapped to verifiable evidence.
 
 ### Intent signature
 - "draft this abstract / essay / report / executive summary / conclusion / literature review"
@@ -32,7 +32,6 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 ### When NOT to use
 - Translation tasks → use `oma-translation`
 - Source discovery, citation gathering, or scholarly literature search → use `oma-scholar`
-- Rubric / assignment-spec parsing and task decomposition → use `oma-pm`
 - Code documentation, README, or API reference text → use the relevant domain skill (`oma-frontend`, `oma-backend`, `oma-mobile`, `oma-db`, etc.)
 - Informal communication, chat, or marketing copy → no skill needed
 - Non-English academic writing → call `oma-translation` for the target language after drafting in English
@@ -51,8 +50,8 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 
 ### Dependencies
 - `references/_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`: common diagnostics and academic constraints; load together for prose audits
-- `resources/sentence-structure-reference.md`: four sentence types, contextual rhythm guidance, common errors
-- `resources/academic-verb-tiers.md`: meaning- and evidence-based verb guidance
+- `resources/sentence-structure-reference.md`: contextual rhythm guidance, sentence openers, paragraph cohesion model
+- `resources/academic-verb-guide.md`: meaning- and evidence-based verb guidance
 - `resources/hedging-guide.md`: calibrated certainty expressions matched to evidence strength
 - `references/_shared/core/context-loading.md`: task-relevant resource loading
 - `references/_shared/core/quality-principles.md`: shared quality bar
@@ -62,7 +61,6 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 - Rubric constraints: quote supplied assignment requirements before applying them; draft-only revision/review can proceed without inventing a rubric
 - Citation gap branch: when a claim lacks evidence, weaken or remove rather than fabricate; optionally hand off to `oma-scholar`
 - Language branch: non-English target hands off to `oma-translation` after the English pass
-- Iterative AUDIT: every fix loops back through the anti-AI checklist before emit
 
 ## Structural Flow
 
@@ -71,14 +69,13 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 2. If assignment constraints were supplied, quote their exact text before applying them. Without a rubric, revise/review the draft using the requested register and evidence; do not invent assignment rules.
 3. If revising or reviewing, read the existing draft in full first; if drafting, confirm available source data and citations.
 4. Index `resources/` and identify any claims that need a more precise verb or hedge.
-5. Apply the literal-first principle before any drafting: prefer direct statement over metaphor and flourish. When a literal phrase is available, use it.
 
 ### Scenes
 1. **PREPARE**: load rubric, existing draft, source data; record quoted constraints and note claims whose verbs or hedges need attention.
-2. **ACQUIRE**: read `resources/sentence-structure-reference.md`, `academic-verb-tiers.md`, and `hedging-guide.md` only for the patterns relevant to the current section.
+2. **ACQUIRE**: read `resources/sentence-structure-reference.md`, `academic-verb-guide.md`, and `hedging-guide.md` only for the patterns relevant to the current section.
 3. **ACT**: write or revise prose with sentence variety, accurate verb choice, evidence-matched hedging, clear paragraphing, and direct statements. Keep a common verb when it is the clearest accurate choice.
 4. **VERIFY**: apply the shared prose diagnostics and academic checklist; use reverse outlining and the Claim-Evidence Map to identify unsupported claims. In review mode, report findings without rewriting the draft.
-5. **FINALIZE**: read-aloud test, cohesion check, specificity audit, word-count verification, paragraph-length variation, rhythm check; emit per the mode's output format.
+5. **FINALIZE**: cohesion check, specificity audit, word-count verification, paragraph-length variation, rhythm check; emit per the mode's output format.
 
 ### Transitions
 - If a rubric line is ambiguous → quote it back to the user and ask for interpretation; do not infer combined rules.
@@ -99,8 +96,8 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 | Repeated paragraph structure hinders progression | Reorganize the affected argument without inserting a paragraph solely to vary length |
 
 ### Exit
-- Success: every protocol PASSes, the Claim-Evidence Map has no unsupported entries, word count complies, and the mode-specific output format is fully populated.
-- Partial success: emit prose with explicit `needs evidence` / `pending citation` markers and report which protocol items remain at risk; flag handoff candidates.
+- Success: the prose audit leaves no unresolved supported finding, the Claim-Evidence Map has no unsupported entries, word count complies, and the mode-specific output format is fully populated.
+- Partial success: emit prose with explicit `needs evidence` / `pending citation` markers and report which audit items remain at risk; flag handoff candidates.
 - Failure: report a material blocker such as required source data being unavailable or contradictory supplied constraints. The absence of an optional rubric alone does not block draft-only revision/review.
 
 ## Logical Operations
@@ -110,26 +107,24 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 |--------|---------------|----------|
 | Read rubric / constraint and quote literal text | `READ` | Rubric file or assignment brief |
 | Read existing draft (revise/review modes) | `READ` | Draft file or inline text |
-| Index resources for the current section | `READ` | `resources/{anti-ai-checklist,sentence-structure-reference,academic-verb-tiers,hedging-guide}.md` |
+| Index resources for the current section | `READ` | `resources/{anti-ai-checklist,sentence-structure-reference,academic-verb-guide,hedging-guide}.md` |
 | Select sentence mix and evidence-appropriate wording | `SELECT` | Sentence-structure and verb guidance |
 | Plan paragraph as Topic-Support-Conclude | `INFER` | Outline notes |
-| Draft / revise prose under all four protocols | `WRITE` | Generated prose |
+| Draft / revise prose per the sentence, verb, and hedging guidance | `WRITE` | Generated prose |
 | Audit prose against anti-AI checklist | `VALIDATE` | `resources/anti-ai-checklist.md` |
 | Reverse outline + build Claim-Evidence Map | `VALIDATE` | Mapping table |
 | Weaken or remove unsupported claims | `WRITE` | Revised claim line |
 | Compare original vs revised (revise mode) | `COMPARE` | Diff block |
 | Hand off non-English target | `NOTIFY` | `oma-translation` |
 | Hand off citation gap | `NOTIFY` | `oma-scholar` |
-| Hand off ambiguous rubric / spec | `NOTIFY` | `oma-pm` |
 | Emit per mode output format | `WRITE` | Final artifact |
 | Report compliance status | `NOTIFY` | PASS/FAIL summary or Writing Notes block |
 
 ### Tools and instruments
 - `Read` / `Edit` / `Write` for draft and rubric files
-- `resources/anti-ai-checklist.md`, `sentence-structure-reference.md`, `academic-verb-tiers.md`, `hedging-guide.md`
-- Topic-Support-Conclude paragraph template (inline)
-- Claim-Evidence Map (inline 3-column table: Claim / Evidence / Status)
-- Output-format blocks per mode (Draft / Revision / Review)
+- `resources/anti-ai-checklist.md`, `sentence-structure-reference.md`, `academic-verb-guide.md`, `hedging-guide.md`
+- Topic-Support-Conclude paragraph model: the paragraph cohesion model in `resources/sentence-structure-reference.md`
+- Claim-Evidence Map: a three-column table (Claim / Evidence / Status) with one row per major claim
 
 ### Canonical workflow path
 1. **READ** the draft and any supplied rubric; quote actual assignment constraints and pin their requirements. If no rubric is supplied, use the requested revision/review scope without inventing constraints.
@@ -137,7 +132,7 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 3. **DRAFT** prose with sentence variety, clear verb choice, hedging, and Topic-Support-Conclude structure.
 4. **AUDIT** with `references/_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`. Fix supported defects in draft/revise mode; in review mode, quote the passage, identify the defect, and recommend a local fix without a full rewrite or AI-authorship estimate.
 5. **REVERSE-OUTLINE** the section and build the Claim-Evidence Map; weaken or remove any unsupported claim.
-6. **POLISH** with read-aloud, cohesion, specificity, word-count, rhythm, and paragraph-length-variation checks; emit in the mode's output format.
+6. **POLISH** with cohesion, specificity, word-count, rhythm, and paragraph-length-variation checks; emit in the mode's output format.
 
 ### Resource scope
 | Scope | Resource target |
@@ -163,19 +158,18 @@ Produce, revise, and audit publication-grade academic English prose so that ever
 3. Never combine distinct rules to invent a new constraint; apply rules exactly as written.
 4. Choose verbs for their exact meaning and support. Keep common verbs when they are accurate and natural; replace a vague verb only when the new wording states a relevant distinction without inflating the claim.
 5. Review repeated structure and sentence length in context. Change rhythm where it improves clarity or emphasis; do not force sentence-type quotas or rewrite clear prose merely to vary it.
-6. Match hedge strength to evidence strength per `hedging-guide.md`; never use absolute claim words (`definitely`, `clearly`, `obviously`) outside mathematical facts; never first-person `I think` / `I believe`.
+6. Match hedge strength to evidence strength per `hedging-guide.md`, including its limits on intensifiers and first-person opinion markers.
 7. Apply common prose diagnostics with the academic checklist's evidence and register exceptions. Vocabulary counts trigger contextual review, not automatic replacement of precise terms.
-8. Em dashes ≤ 1 per paragraph; semicolons ≤ 2 per 1000 words; sentence-case headers; no didactic disclaimers (`It is important to note`) or summary phrases (`In summary`, `Overall`).
+8. Apply the punctuation and heading limits in `resources/anti-ai-checklist.md`; no didactic disclaimers (`It is important to note`) or summary phrases (`In summary`, `Overall`).
 9. Every claim must map to evidence in the Claim-Evidence Map; weaken or remove unsupported claims rather than emit them.
-10. Read aloud before emit; if a sentence does not flow naturally, restructure it.
-11. Apply the shared mannered-prose guidance with the academic checklist's literal-statement requirement.
+10. Apply the shared mannered-prose guidance with the academic checklist's literal-statement requirement.
 
 ## References
 - Research abstract guidance: `resources/abstract-guide.md` (load when drafting, revising, or reviewing an abstract)
 - Common prose diagnostics: `references/_shared/core/anti-ai-prose.md` (load with the academic checklist for prose audits)
-- Academic audit constraints: `resources/anti-ai-checklist.md`
-- Sentence-structure reference: `resources/sentence-structure-reference.md`
-- Academic verb tiers: `resources/academic-verb-tiers.md`
-- Hedging guide: `resources/hedging-guide.md`
+- Academic audit constraints: `resources/anti-ai-checklist.md` (load with the common diagnostics for prose audits)
+- Sentence-structure reference: `resources/sentence-structure-reference.md` (load when rhythm, openers, or paragraph structure need review)
+- Academic verb guidance: `resources/academic-verb-guide.md` (load when a verb is vague or overstates its evidence)
+- Hedging guide: `resources/hedging-guide.md` (load when certainty is material to a claim)
 - Shared context loading: `references/_shared/core/context-loading.md`
 - Shared quality principles: `references/_shared/core/quality-principles.md`

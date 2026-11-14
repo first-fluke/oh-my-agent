@@ -2,12 +2,24 @@
 
 ## Step 0: Validate Input
 
-1. Read the `pdf:` section of `.agents/oma-config.yaml` first; use `config/pdf-config.yaml` only for unset keys (image output, struct tree, OCR languages, hybrid port, overwrite behavior). Explicit user options override both.
+1. Read the `pdf:` section of `.agents/oma-config.yaml` first; use `config/pdf-config.yaml` only for unset keys. Explicit user options override both. Each key maps to the commands below as follows:
+
+   | Config key | Applied as |
+   |------------|------------|
+   | `format` | `--format <value>` |
+   | `image_output` | `--image-output off\|embedded\|external` |
+   | `image_format` | `--image-format png\|jpeg` |
+   | `use_struct_tree: true` | `--use-struct-tree` |
+   | `ocr.enabled: true` | convert through the hybrid OCR path from the start; `false` uses it only when Step 1 finds no readable text layer |
+   | `ocr.languages` | hybrid server `--ocr-lang <value>` |
+   | `ocr.hybrid_port` | hybrid server `--port <port>`; when it is not 5002, also pass `--hybrid-url http://localhost:<port>` to the converting client |
+   | `output.default_location` | the `{output_dir}` used when the user names none (item 4) |
+   | `output.overwrite` | confirmation before replacing an existing file (item 6) |
 2. Confirm the PDF file path exists
 3. Check file size (`wc -c` or `ls -lh`); warn if >100MB
 4. Determine output location:
    - If user specified output path → use it
-   - If not specified → use the same directory as the input PDF
+   - If not specified → follow `output.default_location`: `same_dir` is the input PDF's directory, `cwd` is the current working directory
 5. Determine output filename: `{input_name}.md` (same base name, `.md` extension)
 6. If the output file already exists and config `output.overwrite` is `false`, confirm with the user before overwriting
 
@@ -78,7 +90,7 @@ uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_di
 # First run downloads a large OCR stack (torch, easyocr, docling); warn the user before starting.
 uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid --port 5002 --force-ocr --ocr-lang "{languages}"
 
-# Convert
+# Convert (add --hybrid-url http://localhost:<port> when the server is not on 5002)
 uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full "{input_path}" --format markdown --output-dir "{output_dir}"
 ```
 

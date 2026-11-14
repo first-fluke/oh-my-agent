@@ -47,9 +47,10 @@ stderr verbatim; do not synthesize from nothing.
 ## Step 5 — Synthesize (LLM)
 
 Follow the upstream OUTPUT CONTRACT (badge first line, Ranked Evidence
-Clusters, LAWs, engine footer). Then append the framework sections for the
-intent (`frameworks/*.md`), citing only clusters that appear in the engine
-output. Comparison intent uses the upstream COMPARISON template.
+Clusters, LAWs, engine footer). Then place the framework sections for the
+intent (`frameworks/*.md`) between the engine body and the engine footer,
+citing only clusters that appear in the engine output. Comparison intent uses
+the upstream COMPARISON template.
 
 ## Step 6 — Write, self-check, and deliver (LLM)
 

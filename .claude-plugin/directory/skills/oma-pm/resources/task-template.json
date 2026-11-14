@@ -1,8 +1,8 @@
 {
   "project_name": "",
   "description": "",
-  "session_id": "{YYYYMMDD}-{HHMMSS}",
-  "lineage_id": "{YYYYMMDD}-{HHMMSS}",
+  "session_id": "{injected session ID}",
+  "lineage_id": "{stable lineage ID; defaults to the session ID}",
   "max_attempts": 3,
   "created": "",
   "tech_stack": {

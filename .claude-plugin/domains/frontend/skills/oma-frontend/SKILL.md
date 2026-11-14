@@ -37,18 +37,18 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 ### Expected outputs
 - Frontend code changes in pages, components, hooks, styles, tests, or wrappers
 - UI that respects project tokens, i18n, server/client boundaries, and accessibility expectations
-- Verification results from relevant lint, typecheck, tests, or browser checks
+- Verification performed, and any relevant lint, typecheck, test, or browser check that was not run
 
 ### Dependencies
 - React, Next.js, TypeScript, TailwindCSS v4, and `shadcn/ui` — or Angular + signals + RxJS in Angular projects (`resources/angular-rules.md`)
-- Project sources of truth such as `packages/design-tokens`, `packages/i18n`, and shared utilities
-- `resources/execution-protocol.md`, `resources/checklist.md`, snippets, and Tailwind rules
+- Project sources of truth for design tokens, i18n strings, and shared utilities
+- `resources/execution-protocol.md`, `resources/checklist.md`, and the stack references listed under Stack Reference, each loaded on its trigger
 - Conditional visual implementation routes and shared interaction-quality guidance; load only for the affected capability.
 
 ### Control-flow features
 - Branches by server/client component boundary, responsive state, component library availability, and i18n/token requirements
 - Reads and writes frontend codebase files
-- May call shadcn registry tools or local verification commands
+- May call the shadcn CLI (or shadcn registry MCP tools when connected); runs verification commands only when the user or the active workflow requires them
 
 ## Structural Flow
 
@@ -61,8 +61,8 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 1. **PREPARE**: Load relevant project conventions, UI requirements, and acceptance criteria.
 2. **ACQUIRE**: Inspect existing components, tokens, i18n keys, APIs, and shadcn availability.
 3. **ACT**: Implement UI, state, styles, validation, and integration.
-4. **VERIFY**: Run checklist, automated checks, and browser/responsive validation when applicable.
-5. **FINALIZE**: Summarize changed UI behavior and verification.
+4. **VERIFY**: Check the applicable checklist items and select the relevant automated and browser/responsive checks; run them only when the user or the active workflow requires it.
+5. **FINALIZE**: Summarize changed UI behavior, what was verified, and what was not.
 
 ### Transitions
 - If a strict shadcn primitive exists, use or wrap it before creating generic markup.
@@ -74,11 +74,11 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 
 ### Failure and recovery
 - If design tokens or i18n sources are missing, state assumptions and follow existing local patterns.
-- If verification fails, fix before handoff or report the blocker.
+- If a check that was run fails, fix before handoff or report the blocker.
 - If required shadcn registry access fails, use existing local components or document fallback.
 
 ### Exit
-- Success: UI works across target responsive states and passes relevant checks.
+- Success: UI works across target responsive states, required checks pass, and checks not run are reported.
 - Partial success: missing assets, backend contracts, or verification gaps are explicit.
 
 ## Logical Operations
@@ -90,7 +90,7 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 | Select component and state approach | `SELECT` | Server/client and shadcn workflow |
 | Implement UI code | `WRITE` | TSX, CSS, hooks, wrappers |
 | Validate form/data contracts | `VALIDATE` | Zod/forms/API schemas |
-| Call shadcn or verification tools | `CALL_TOOL` | Registry, lint, typecheck, tests |
+| Call shadcn or required verification tools | `CALL_TOOL` | shadcn CLI/registry; checks the user or workflow requires |
 | Compare responsive states | `COMPARE` | Desktop/mobile behavior |
 | Report result | `NOTIFY` | Final summary |
 
@@ -98,7 +98,7 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 - React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui
 - `ahooks` or `@mantine/hooks`, `es-toolkit`, `nuqs`, TanStack Query, Jotai/Zustand, TanStack React Form, `zod`
 - Angular (standalone + signals), RxJS + `rxjs/testing` (`TestScheduler` marble tests) in Angular projects
-- Lint, typecheck, tests, and browser inspection when applicable
+- Lint, typecheck, tests, and browser inspection when the user or the active workflow requires them
 
 ### Canonical workflow path
 Use the configured code-intelligence provider to locate files and inspect symbols
@@ -106,19 +106,18 @@ or content. For Serena, use `find_file`, `search_for_pattern`,
 `get_symbols_overview`, and `find_symbol`. Native search is limited to the
 provider exclusions and non-code paths permitted by the project's search policy.
 
-
 For a specialized visual capability, use `resources/specialized-visual-implementation.md`.
 For affected motion, touch, component feedback, or interaction performance, use
 `../_shared/ui-interaction-quality.md`. Ordinary UI work does not preload these paths.
 
-Then run the project's frontend verification commands, typically lint, typecheck, tests, and browser/responsive checks when the UI changes.
+Then select the project's relevant frontend checks (typically lint, typecheck, tests, and browser/responsive checks when the UI changes). Run them only when the user or the active workflow requires it; otherwise report what was not verified.
 
 ### Resource scope
 | Scope | Resource target |
 |-------|-----------------|
 | `CODEBASE` | Frontend routes, components, styles, hooks, tests |
 | `LOCAL_FS` | Design tokens, i18n files, resource references |
-| `PROCESS` | Build, lint, typecheck, test, browser commands |
+| `PROCESS` | Lint, typecheck, test, and browser commands when required; builds only on explicit user request |
 | `NETWORK` | Backend APIs or registry tools when required |
 
 ### Preconditions
@@ -132,15 +131,14 @@ Then run the project's frontend verification commands, typically lint, typecheck
 
 ### Guardrails
 Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.
-1. Follow the existing React, Next.js, TypeScript, and FSD-lite architecture in the target project.
-2. Use `shadcn/ui` primitives and wrappers for UI work; treat `components/ui/*` as read-only.
-3. Keep server/client boundaries explicit: Server Components for static/layout work, Client Components for interaction and hooks.
-4. Use project sources of truth for design tokens, i18n strings, and shared utilities before adding local alternatives.
-5. Run the execution checklist before handoff and include relevant verification results.
-6. **Self-describing file names**: every new file follows the File Naming convention in `../../rules/frontend.md` §Naming Conventions — domain + role readable from the basename alone (`order-summary-card.tsx`, `use-order-polling.ts`, `cart.atoms.ts`). Grab-bag names (`utils.ts`, `helpers.ts`, `misc.ts`) and version suffixes (`*-v2`, `*-final`) are banned.
-7. **Request proxy convention**: when the target project uses Next.js 16+ with `proxy.ts`, preserve that convention. Check the installed framework version and routing before recommending a file rename. Diagnose wiring from code and tests.
-8. Use the project's Link prefetch policy; adjust specific routes only when measured behavior or the task requires it.
-9. **Angular projects follow `resources/angular-rules.md`**: standalone components + `OnPush` + signals-first, `inject()` DI, lazy routes, new control flow. **Any non-trivial RxJS pipeline MUST ship with a marble test (`TestScheduler` from `rxjs/testing`)** — a stream without a marble test fails review. React/Next.js-specific rules (shadcn workflow, `proxy.ts`, Libraries table below) do not apply in Angular projects.
+
+`../../rules/frontend.md` is the source for the React/Next.js core rules (component reuse, design fidelity, rendering strategy, accessibility, request proxy convention, prop drilling, auth boundary, animation library, framework version), the FSD-lite architecture, and naming. The guardrails below add what it does not state.
+1. Treat `components/ui/*` as read-only; customize through wrappers or `cva` composition.
+2. Use project sources of truth for design tokens, i18n strings, and shared utilities before adding local alternatives.
+3. Check the applicable checklist items before handoff and report what was verified and what was not.
+4. **Self-describing file names**: every new file follows the File Naming convention in `../../rules/frontend.md` §Naming Conventions — domain + role readable from the basename alone (`order-summary-card.tsx`, `use-order-polling.ts`, `cart.atoms.ts`). Grab-bag names (`utils.ts`, `helpers.ts`, `misc.ts`) and version suffixes (`*-v2`, `*-final`) are banned.
+5. Use the project's Link prefetch policy; adjust specific routes only when measured behavior or the task requires it.
+6. **Angular projects follow `resources/angular-rules.md`**: standalone components + `OnPush` + signals-first, `inject()` DI, lazy routes, new control flow. **Any non-trivial RxJS pipeline MUST ship with a marble test (`TestScheduler` from `rxjs/testing`)** — a stream without a marble test fails review. React/Next.js-specific rules (shadcn workflow, `proxy.ts`, Libraries table below) do not apply in Angular projects.
 
 ### Libraries
 
@@ -148,7 +146,7 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
 
 | Category | Library |
 |----------|---------|
-| Framework | New-project default: `next@16+` (App Router) + `react@19+`; preserve existing project versions |
+| Framework | New-project default: `next@16+` (App Router) + `react@19+` |
 | Date | `luxon` |
 | Styling | `TailwindCSS v4` + `shadcn/ui` (Base UI engine; see `resources/tech-stack.md`) |
 | Hooks | `ahooks` (default) or `@mantine/hooks` (standalone, SSR-safe; no Mantine UI required); pre-made hooks preferred; pick one per project, don't mix |
@@ -158,8 +156,8 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
 | State (Server) | `TanStack Query`; default is `orval`-generated hooks from the OpenAPI spec (`client: react-query`); hand-write hooks only for spec-less endpoints (see `resources/tech-stack.md` §Server State) |
 | State (Client) | `Jotai` or `Zustand` (intent-based, no default; minimize use — see `resources/tech-stack.md`) |
 | Forms | `@tanstack/react-form` (v1+; pass zod schemas directly via Standard Schema; do not add the v0-only `@tanstack/zod-form-adapter` to v1 projects) + `zod` (v4) |
-| Auth | `better-auth`; client code imports only the client SDK, never server libraries or database adapters |
-| Animation | New-project default: `motion` with imports from `motion/react`; preserve an existing animation library for scoped edits |
+| Auth | `better-auth` (client SDK only in client code) |
+| Animation | New-project default: `motion` with imports from `motion/react` |
 
 ### Shadcn Workflow
 
@@ -167,9 +165,11 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
   reasoned fallback for existing Radix codebases only; no big-bang migration. Details in
   `resources/tech-stack.md` §shadcn/ui Primitive Engine.
 
-1. Search: `shadcn_search_items_in_registries`
-2. Review: `shadcn_get_item_examples_from_registries`
-3. Install: `shadcn_get_add_command_for_items`
+1. Search: `npx shadcn@latest search <@registry> -q "<query>"`
+2. Review: `npx shadcn@latest view <item>` (registry source) or `npx shadcn@latest docs <component>` (docs and examples)
+3. Install: `npx shadcn@latest add <item>`; preview with `--dry-run` or `--diff` before overwriting
+
+When a shadcn MCP server is connected, its registry search, example, and add-command tools cover the same three steps; discover the actual tool names before calling them.
 
 ### Server vs Client Components
 
@@ -187,26 +187,21 @@ React/Next.js projects only — Angular projects use the Angular-native equivale
 
 ### Sources of Truth
 
-- **DESIGN.md** (project root): visual system source of truth; read Section 9 (Agent Prompt Guide) verbatim for component prompts when present
-- **Design Tokens**: `packages/design-tokens` (OKLCH); never hardcode colors
-- **i18n strings**: `packages/i18n`; never hardcode UI text
+- **DESIGN.md** (project root): visual system source of truth when present
+- **Design Tokens**: the project's token source (`packages/design-tokens` or equivalent); never hardcode colors
+- **i18n strings**: the project's i18n source (`packages/i18n` or equivalent); never hardcode UI text
 - **Custom utilities**: check `es-toolkit` first; if implementing custom logic, use the project or task coverage target and risk-relevant tests
-
-### Designer Collaboration
-
-- **Sync**: Map code variables to Figma layer names
-- **UX**: Ensure key actions are visible "Above the Fold"
 
 ### Stack Reference
 
-Project stack conventions live in dedicated files. **Read these before coding**; they are not optional appendix material.
+Project stack conventions live in dedicated files. Load a file when its trigger applies.
 
-| File | Owns |
+| File | Load when |
 |---|---|
-| `resources/tech-stack.md` | Framework versions, Next.js 16 `proxy.ts` + React Compiler conventions, Server Actions vs TanStack Query mutation policy, optional provider examples |
-| `resources/tailwind-rules.md` | Design tokens, focus states, Tailwind v4 `@theme` syntax |
-| `resources/snippets.md` | React 19 hook patterns, TanStack Query/Form, a11y card |
-| `resources/angular-rules.md` | Angular standalone/OnPush/signals conventions, RxJS marble-test policy (MANDATORY for streams) |
+| `resources/tech-stack.md` | Choosing or checking framework versions, the shadcn primitive engine, Next.js 16 `proxy.ts` or React Compiler conventions, mutation ownership (Server Actions vs TanStack Query), the client-state library, or the browser-verification MCP selection |
+| `resources/tailwind-rules.md` | Writing or reviewing Tailwind classes, design tokens, focus states, or Tailwind v4 `@theme` config |
+| `resources/snippets.md` | A starting pattern is needed: Next.js canonicals, accessible card, React 19 hooks, TanStack Query/Form, i18n |
+| `resources/angular-rules.md` | The target project is Angular (standalone/OnPush/signals conventions, RxJS marble-test policy) |
 
 To extend: add `resources/<name>.md` and append a row above.
 
@@ -216,12 +211,12 @@ To extend: add `resources/<name>.md` and append a row above.
 - Interaction quality: `../_shared/ui-interaction-quality.md` (motion, feedback, touch, interruption, or performance changes)
 - Local code tools: `../_shared/core/code-intelligence.md` (code search/navigation)
 
-- Project frontend rules (MUST load before review/implementation): `../../rules/frontend.md`
+- Project frontend rules: `../../rules/frontend.md` (implementing or reviewing React/Next.js code: core rules, FSD-lite architecture, naming)
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
-- Checklist (run before handoff): `resources/checklist.md`
+- Checklist (applicable items before handoff): `resources/checklist.md`
 - Error recovery: `resources/error-playbook.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Clarification: `../_shared/core/clarification-protocol.md`
 - Context budget: `../_shared/core/context-budget.md`
 - Lessons learned: `../_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
-- Observability handoff: `../oma-observability/SKILL.md` §Integrations — Core Web Vitals, SSR→client trace propagation, INP profiling
+- Observability handoff: `../oma-observability/SKILL.md` §Integrations — Core Web Vitals targets and browser-to-backend trace correlation

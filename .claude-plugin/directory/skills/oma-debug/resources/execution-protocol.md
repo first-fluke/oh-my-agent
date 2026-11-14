@@ -16,7 +16,6 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - Race condition?
   - Missing validation?
   - Wrong assumption about data shape?
-- Check `resources/common-patterns.md` for known patterns
 
 Before fixing a confirmed cause in an active OMA debug workflow, record `debug.root-cause` with the actual causal mechanism, selected remedy, bug/reproduction revision as `instanceId`, and reproduction/trace evidence. Verify the same instance using the command pair in `.agents/workflows/debug.md`; a matching subject from an older diagnosis is insufficient.
 
@@ -34,7 +33,7 @@ Before fixing a confirmed cause in an active OMA debug workflow, record `debug.r
 - Check applicable items in `resources/checklist.md`
 - Save bug report to `.agents/results/bugs/` using `resources/bug-report-template.md` (full template for Complex/CRITICAL/HIGH; condensed form in `resources/debugging-checklist.md` §Documentation Template for Simple/Medium)
 - Include: root cause, fix, prevention advice
-- Verify no regressions in related functionality
+- Review related functionality for regressions. Run broader suites only when the user or the active workflow requires it; otherwise report them as not run
 
 ## On Error
 See `resources/error-playbook.md` for recovery steps.

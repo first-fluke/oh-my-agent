@@ -105,4 +105,3 @@ Parse findings and completion separately before applying [ci.md](ci.md).
 Upstream triage is another static LLM judgment; its TP/verdict/evidence strings do not supply independent observed reproduction.
 The [triager](https://github.com/cisco-open/ai-deep-sast/blob/main/triager.py) cannot replace the fresh verifier in `validation.md`.
 Import native candidates with origin and severity intact, then apply the common evidence contract.
-Missing sandbox, fixtures, or observed proof keeps candidates `needs_validation`; a static TP label cannot make them `confirmed`.

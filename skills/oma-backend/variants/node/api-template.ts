@@ -11,7 +11,50 @@
  *     resources.repository.ts   <- Prisma data access
  *     dto/resource.dto.ts       <- Zod schemas + inferred types
  *     resources.module.ts       <- DI wiring
+ *   src/common/
+ *     errors/app-error.ts       <- domain error type
+ *     filters/app-error.filter.ts <- maps domain errors to HTTP responses
  */
+
+// ---------------------------------------------------------------------------
+// common/errors/app-error.ts  (services throw this, never HTTP exceptions)
+// ---------------------------------------------------------------------------
+
+export type AppErrorCode = 'not_found' | 'forbidden' | 'conflict';
+
+export class AppError extends Error {
+  constructor(
+    readonly code: AppErrorCode,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// common/filters/app-error.filter.ts
+// Register once in AppModule: { provide: APP_FILTER, useClass: AppErrorFilter }
+// ---------------------------------------------------------------------------
+
+import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
+import type { Response } from 'express';
+
+const STATUS_BY_CODE: Record<AppErrorCode, number> = {
+  not_found: 404,
+  forbidden: 403,
+  conflict: 409,
+};
+
+@Catch(AppError)
+export class AppErrorFilter implements ExceptionFilter {
+  catch(error: AppError, host: ArgumentsHost): void {
+    host
+      .switchToHttp()
+      .getResponse<Response>()
+      .status(STATUS_BY_CODE[error.code])
+      .json({ code: error.code, message: error.message });
+  }
+}
 
 // ---------------------------------------------------------------------------
 // dto/resource.dto.ts
@@ -44,7 +87,7 @@ export type ResourceQueryDto = z.infer<typeof ResourceQuerySchema>;
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma, Resource } from '@prisma/client';
+import { Prisma, Resource } from '../../generated/prisma/client';
 
 export interface PaginatedResult<T> {
   items: T[];
@@ -73,7 +116,7 @@ export class ResourcesRepository {
       }),
     };
 
-    // Single round-trip with $transaction
+    // Page and count in one transaction
     const [items, total] = await this.prisma.$transaction([
       this.prisma.resource.findMany({
         where,
@@ -130,12 +173,6 @@ export class ResourcesRepository {
 // resources.service.ts
 // ---------------------------------------------------------------------------
 
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
-
 @Injectable()
 export class ResourcesService {
   constructor(private readonly resourcesRepo: ResourcesRepository) {}
@@ -150,11 +187,11 @@ export class ResourcesService {
   async findOne(id: string, userId: string): Promise<Resource> {
     const resource = await this.resourcesRepo.findOne(id, userId);
     if (!resource) {
-      throw new NotFoundException(`Resource ${id} not found`);
+      throw new AppError('not_found', `Resource ${id} not found`);
     }
     // Guard against cross-user access (belt-and-suspenders; repo already filters)
     if (resource.userId !== userId) {
-      throw new ForbiddenException('Access denied');
+      throw new AppError('forbidden', 'Access denied');
     }
     return resource;
   }
@@ -168,7 +205,7 @@ export class ResourcesService {
     dto: UpdateResourceDto,
     userId: string,
   ): Promise<Resource> {
-    await this.findOne(id, userId); // ownership check raises 404/403 as needed
+    await this.findOne(id, userId); // ownership check throws not_found/forbidden
     return this.resourcesRepo.update(id, dto);
   }
 
@@ -183,7 +220,7 @@ export class ResourcesService {
 // ---------------------------------------------------------------------------
 
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { User } from '../../generated/prisma/client';
 
 export const CurrentUser = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): User => {
@@ -297,17 +334,17 @@ export class ResourcesModule {}
 // ---------------------------------------------------------------------------
 
 import { PipeTransform, BadRequestException } from '@nestjs/common';
-import { ZodSchema } from 'zod';
+import { z, ZodType } from 'zod';
 
 export class ZodValidationPipe implements PipeTransform {
-  constructor(private readonly schema: ZodSchema) {}
+  constructor(private readonly schema: ZodType) {}
 
   transform(value: unknown): unknown {
     const result = this.schema.safeParse(value);
     if (!result.success) {
       throw new BadRequestException({
         message: 'Validation failed',
-        errors: result.error.flatten(),
+        errors: z.flattenError(result.error),
       });
     }
     return result.data;

@@ -82,7 +82,7 @@ Convert Korean HWP-family documents into readable Markdown or structured JSON wh
 | Unsupported or mismatched format | Check extension and magic bytes, then route or stop |
 | Encrypted or DRM-locked document | Report limitation and request an accessible copy when needed |
 | Empty Markdown output | Treat as possible scanned-image content and recommend OCR outside this skill |
-| Complex merged tables | Accept flattened Markdown or HTML fallback as best effort |
+| Complex merged tables | The post-process flattens merged cells into GFM pipe tables; nested tables and tables without a `<th>` heading row stay HTML. Accept as best effort and report it |
 | Stale kordoc cache | Use `bunx kordoc@latest` or configured pinned version |
 | `Cannot find module "turndown"` from `flatten-tables.ts` | Run `bun install` in this skill's `resources/` directory (its `node_modules` is gitignored and absent on fresh clones) |
 
@@ -154,9 +154,9 @@ bunx kordoc@latest "{input_pattern}" -d "{output_dir}"
 |--------|-----------|-------|
 | HWP 5.x binary | `.hwp` | Full support (incl. DRM-locked via kordoc's rhwp-algorithm port) |
 | HWPX | `.hwpx` | Full support incl. nested tables, merged cells |
-| HWPML | `.hwp` (XML variant) | Auto-detected by signature |
+| HWPML | `.hwpml` (or an XML-variant `.hwp`) | Auto-detected by signature |
 
-> kordoc also parses PDF / XLSX / DOCX and offers document-authoring subcommands (`generate`, `fill`, `seal`, `patch`, `redact`, `lint`, `validate`, `render`). All of those are intentionally outside this skill's scope; see "When NOT to use". Conversion-quality flags (`--dedupe-headers`, `--keep-empty-cols`, `--inline-images`) and the `chunks` format are documented in `resources/execution-protocol.md`.
+> Conversion-quality flags (`--dedupe-headers`, `--keep-empty-cols`, `--inline-images`) and the `chunks` format are documented in `resources/execution-protocol.md`.
 
 ## References
 - Execution protocol: `resources/execution-protocol.md`

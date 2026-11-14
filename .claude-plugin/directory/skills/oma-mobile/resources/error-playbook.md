@@ -3,93 +3,31 @@
 When you encounter a failure, find the matching scenario and follow the recovery steps.
 Use the relevant recovery steps. If required information or authority is missing, pause the dependent action and continue independent work.
 
----
-
-## Dart Analysis Error
-
-**Symptoms**: `flutter analyze` errors, type mismatch, null safety issues
-
-1. Read the error: file, line, expected type vs actual
-2. Null safety issue: add `?` for nullable, `!` only if you're certain it's non-null
-3. Type mismatch: check the model class to see if it matches the API response
-4. Missing override: add `@override` annotation
-5. **NEVER do this**: `// ignore:` comments to suppress analysis warnings
+Build policy for every scenario below: commands that compile, bundle, or reinstall native code (`flutter build`, `swift build`, Gradle tasks, `pod install`, app rebuilds) run only when the user explicitly asked for a build. Otherwise apply the fix, use non-build checks, and report the command and the verification limit.
 
 ---
 
-## Build Failure
+## Flutter: Analysis, Build, or Test Failure
 
-**Symptoms**: `flutter build` fails, Gradle/Xcode errors
+**Symptoms**: `flutter analyze` errors, Gradle/Xcode errors from a Flutter build, `flutter test` assertion failures
 
-1. **Gradle (Android)**:
-   - `Could not resolve`: dependency version conflict → check `pubspec.yaml`
-   - `minSdkVersion`: update `android/app/build.gradle` minimum SDK
-2. **Xcode (iOS)**:
-   - `Pod install` failure: note in result; may need `pod repo update`
-   - Minimum deployment target: check `ios/Podfile`
-3. Clean and retry: `flutter clean && flutter pub get`
-4. If persists: note in result with full error; may be an environment issue
+1. Read the error: file, line, expected vs actual type or value.
+2. Type mismatch on a model: compare the model class with the API response; log the raw `response.data` before changing the model.
+3. Gradle `Could not resolve`: dependency version conflict in `pubspec.yaml`. `minSdkVersion` / deployment-target errors: fix `android/app/build.gradle` or `ios/Podfile`.
+4. Widget test: `pumpAndSettle()` for async work; wrap the widget in `ProviderScope` and override the repository provider instead of mocking Dio or Drift.
+5. Generated code out of date (`*.g.dart`, `*.freezed.dart` missing or stale): the fix is `dart run build_runner build`. It is source generation, not an app build: run it when the task changed annotated sources, otherwise report it as the remaining step.
+6. **NEVER**: `// ignore:` comments to suppress analysis warnings.
 
 ---
 
-## Test Failure
+## Flutter: State Not Updating / Leaks
 
-**Symptoms**: `flutter test` FAILED, widget test assertion errors
+**Symptoms**: UI not updating, stale state, provider errors, memory growing over time
 
-1. Read the error: which test, which widget, expected vs actual
-2. Widget test: check if `pumpAndSettle()` is needed (async operations)
-3. Provider not found: wrap test widget with `ProviderScope` (Riverpod)
-4. Mock missing: ensure all dependencies are mocked
-5. Re-run specific test: `flutter test test/path/to_test.dart`
-6. **After 3 failures**: Try a different approach
-
----
-
-## State Management Issue
-
-**Symptoms**: UI not updating, stale state, provider errors
-
-1. **Riverpod**: Check provider type (`StateNotifierProvider` vs `FutureProvider` vs `AsyncNotifierProvider`)
-2. Is the widget watching correctly? (`ref.watch` not `ref.read` for UI)
-3. Is the state being mutated instead of replaced? (create new state object)
-4. Add debug print in provider to trace state changes
-5. Check: is `dispose` being called prematurely?
-
----
-
-## Platform-Specific Crash
-
-**Symptoms**: Works on one platform, crashes on another
-
-1. Check for `Platform.isIOS` / `Platform.isAndroid` guards
-2. Check permissions: camera, location, storage (different per platform)
-3. Check native plugin compatibility; some plugins don't support both platforms
-4. If plugin issue: note in result with platform and version info
-5. Test on emulator for the failing platform
-
----
-
-## Memory Leak
-
-**Symptoms**: App slows down over time, `flutter run` shows increasing memory
-
-1. Check: are all controllers disposed? (`TextEditingController`, `AnimationController`)
-2. Check: are streams closed? (`StreamSubscription.cancel()`)
-3. Check: are listeners removed? (`removeListener` in `dispose`)
-4. Check: are `Timer` / `Timer.periodic` cancelled?
-5. Use `DevTools` memory tab to identify leak source
-
----
-
-## API Integration Error
-
-**Symptoms**: Dio errors, `DioException`, wrong response parsing
-
-1. **Connection refused**: backend running? correct URL/port?
-2. **401**: auth interceptor sending token? token expired?
-3. **Parse error**: `response.data` shape doesn't match model → log raw response
-4. **Timeout**: increase Dio timeout or check network conditions
-5. If backend issue: document expected contract in result
+1. Provider kind: with `@riverpod` codegen use `Notifier` / `AsyncNotifier` / `StreamNotifier`; the generated provider name drops the `Notifier` suffix (`TodosNotifier` → `todosProvider`).
+2. `ref.watch` in `build`, `ref.read` in callbacks; replace state objects instead of mutating them.
+3. Controllers (`TextEditingController`, `AnimationController`, `ScrollController`), `StreamSubscription`s, listeners, and `Timer`s are released in `dispose()`; provider-owned work is cancelled in `ref.onDispose`.
+4. Platform-only crash: check `Platform.isIOS` / `Platform.isAndroid` guards, per-platform permissions, and plugin platform support; record the platform and plugin version in the result.
 
 ---
 
@@ -112,8 +50,9 @@ Use the relevant recovery steps. If required information or authority is missing
 1. Read the error: file, line, expected vs actual type
 2. Navigation typing: screens must use the typed props from `RootStackParamList` — never `any`
 3. Matcher not found (`toBeOnTheScreen` etc.): matchers are built into `@testing-library/react-native` ≥12.4 — remove any `@testing-library/jest-native` residue from jest setup
-4. Query hook tests: wrap in a fresh `QueryClientProvider` per test (`retry: false`); async UI needs `await screen.findBy...`, not `getBy...`
-5. **NEVER**: `@ts-ignore` / `as any` to silence type errors
+4. RNTL v14: `render`, `fireEvent`, `renderHook`, and `act` are async — `await` each call, or assertions run before updates flush
+5. Query hook tests: wrap in a fresh `QueryClientProvider` per test (`retry: false`) and seed the auth store's `accountId` / `sessionVersion` — account-scoped queries stay disabled without them; async UI needs `await screen.findBy...`, not `getBy...`
+6. **NEVER**: `@ts-ignore` / `as any` to silence type errors
 
 ---
 
@@ -129,13 +68,7 @@ Use the relevant recovery steps. If required information or authority is missing
 
 ---
 
-## Rate Limit / Quota / Memory Fallback
-
-Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md` §"Rate Limit / Quota Error (LLM runtime)" and the configured code-intelligence or memory fallback guidance.
-
----
-
-## Swift: `swift build` Fails — Missing or Invalid OpenAPI Document
+## Swift: Build Fails — Missing or Invalid OpenAPI Document
 
 **Symptoms**: Build error from the `swift-openapi-generator` plugin such as `error: openapi.yaml not found` or YAML parse error; the build fails before any Swift file is compiled.
 
@@ -144,7 +77,7 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
 <!-- oma-docs:ignore-end -->
 2. If the file is absent: re-sync it from the backend (`curl -o Sources/Core/Networking/openapi.yaml https://<backend>/api-docs/openapi.yaml` or copy from the CI artifact). The iOS project is a **consumer** of the spec; never edit `openapi.yaml` directly.
 3. If the file is present but the error is a parse error: validate the YAML (`python3 -c "import yaml, sys; yaml.safe_load(open(sys.argv[1]))" Sources/Core/Networking/openapi.yaml`); fix the upstream spec and re-sync.
-4. After syncing, `swift build` will regenerate `Client`, `Operations`, and `Components` automatically — no manual code-gen step needed.
+4. After syncing, the next build regenerates `Client`, `Operations`, and `Components` automatically — no manual code-gen step needed.
 5. **NEVER**: commit a placeholder or empty `openapi.yaml` just to silence the build; it will produce an incomplete `Client` and cause compile errors downstream.
 
 ---
@@ -158,8 +91,7 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
    - The target's dependencies must include `OpenAPIRuntime` and `OpenAPIURLSession`.
 2. Confirm `openapi-generator-config.yaml` exists **in the same directory** as `openapi.yaml` (`Core/Networking/`). Without this file the plugin silently skips generation.
 3. Check that both config files are inside the target's declared source directory (the directory that contains the `.target` in `Package.swift`). Files outside the source root are invisible to the build plugin.
-4. Run `swift package clean && swift build` to force a full regeneration.
-5. If Xcode is used: Product → Clean Build Folder, then build again. Derived data caching sometimes hides generation failures.
+4. A full regeneration needs a clean build (`swift package clean && swift build`, or Product → Clean Build Folder in Xcode — derived data caching sometimes hides generation failures). Run it only when the user asked for a build; otherwise report it as the remaining step.
 
 ---
 
@@ -168,12 +100,12 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
 **Symptoms**: Compile error such as `expression pattern of type 'Operations.CreateTodo.Output.conflict' cannot match values of type '...'`; a response case (e.g., `.conflict`, `.created`, `.unprocessableContent`) referenced in the Swift code does not exist on the generated `Output` enum.
 
 1. The root cause is that the OpenAPI spec does not declare that HTTP status code for the operation. The generator only emits cases for status codes listed in the spec.
-2. Do NOT add the case manually to the generated file — it will be overwritten on the next `swift build`.
+2. Do NOT add the case manually to the generated file — it will be overwritten on the next build.
 3. Ask the backend team to add the missing status code to the spec (e.g., add `409: description: Conflict` under the operation's `responses:`).
 <!-- oma-docs:ignore-start -->
 4. Re-sync `Core/Networking/openapi.yaml` once the spec is updated.
 <!-- oma-docs:ignore-end -->
-5. Run `swift build` to regenerate; the new response case will appear and the compile error will resolve.
+5. The next build regenerates the client; the new response case appears and the compile error resolves.
 6. Update the Swift `switch` in the service layer to handle the new case explicitly.
 
 ---
@@ -191,8 +123,31 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
 
 ---
 
+## Kotlin: Generated Client or Gradle Configuration Failure
+
+**Symptoms**: `Unresolved reference: TodosApi` / `…generated.model`, a `SerializationException` on the first decimal field, a Gradle error about the `org.jetbrains.kotlin.android` plugin
+
+1. **Generated symbols unresolved**: the sources come from `openApiGenerate` into `build/generated/openapi`. Check that `preBuild` depends on `openApiGenerate`, that `:api-client` adds the generated `srcDir`, and that `inputSpec` points at the committed spec. Never commit or hand-edit generated sources.
+2. **Constructor parameter mismatch on a generated `*Api`** (`baseUrl`, `httpClientEngine`, `httpClientConfig`): the names follow the pinned generator version — read `build/generated/openapi/.../infrastructure/ApiClient.kt` and adapt the Hilt module, not the generated file.
+3. **`SerializationException` for `BigDecimal`**: the shared `Json` codec is missing the contextual `BigDecimal` serializer, or DI and tests use different `Json` instances (see `variants/kotlin-android/snippets.md` §2).
+4. **`org.jetbrains.kotlin.android` rejected**: AGP 9 compiles Kotlin itself; remove the plugin from the module and the root build file instead of downgrading AGP.
+5. A non-2xx response is not an exception with `expectSuccess = false`: check `HttpResponse.success` / `status` in the repository's unwrapping helper before assuming a transport failure.
+
+---
+
+## Rate Limit / Quota Error (LLM runtime)
+
+**Symptoms**: `429`, `RESOURCE_EXHAUSTED`, `rate limit exceeded` (any vendor runtime: Claude, Codex, etc.)
+
+1. Identify the source. An expected rate-limit response from the application under review is a test result, not an agent-provider quota failure.
+2. For provider quota exhaustion, stop affected provider calls and record the unavailable checks; continue independent authorized work when possible.
+3. Preserve injected session/task/run IDs and the claim path. Save progress/results under the configured memory base using the task/run-scoped names in `../../_shared/runtime/memory-protocol.md`.
+4. Use a valid claim status (`partial`, `blocked`, or `failed`) with the actual cause and unresolved work per `../../_shared/runtime/result-contract.md`; do not invent a `quota_exceeded` status.
+
+---
+
 ## General Principles
 
 - **After 3 failures**: If same approach fails 3 times, must try a different method
-- **Blocked**: If no progress after 5 turns, save current state, `Status: blocked`
+- **Blocked**: when progress depends on a missing fact, credential, device, or authority, save the current state and report `blocked` with what is needed
 - **Out of scope**: Backend/frontend issues; only record in result

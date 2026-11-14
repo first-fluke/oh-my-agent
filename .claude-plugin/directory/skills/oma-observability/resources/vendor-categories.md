@@ -1,45 +1,8 @@
----
-notes:
-  - "Example vendor lists are snapshots: verify via landscape.cncf.io before production selection"
----
-
 # Observability Vendor Categories
 
-> as of 2026-Q2. No scheduled review is promised (see `SKILL.md` §Versioning & Deprecation); verify live status at https://landscape.cncf.io when load-bearing.
+> Example vendor rows are snapshots, not a registry. Verify project and vendor status at <https://landscape.cncf.io> before a selection depends on it.
 
-## Preamble: Why Categories, Not a Registry
-
-This file is a **category taxonomy with timestamped example vendors**. It is not a vendor registry.
-
-**Why this distinction matters:**
-
-1. **Vendor names rot.** Examples from this codebase's own lifetime:
-   - Keptn: archived by CNCF, 2025-09
-   - Fluentd remains CNCF Graduated; the 2025-10 migration guide is not a deprecation announcement
-   - Pyroscope: was CNCF Sandbox; acquired by Grafana 2023; CNCF Sandbox status is uncertain post-acquisition (verify at landscape.cncf.io before citing)
-
-2. **Categories are stable.** "OSS full-stack", "SIEM", and "profiling specialist" have been coherent for years. The vendors filling them change.
-
-3. **No duplication with vendor-owned skills.** The following published skills already describe themselves authoritatively:
-   - `getsentry/sentry-sdk-setup`: Sentry SDK instrumentation
-   - `honeycombio/agent-skill`: Honeycomb OTel setup (8+ published skills)
-   - `Dash0 otel-instrumentation`: Dash0 OTel
-   - `Microsoft Azure Monitor exporters`: Azure-specific exporters
-   - `Datadog Labs dd-apm`: Datadog APM
-   Duplicating their content here creates drift, not value.
-
-4. **CNCF landscape is the authoritative live registry.** `landscape.cncf.io` tracks CNCF project status (Graduated / Incubating / Sandbox / Archived), vendor landscape, and category membership in real time. This file complements it with decision guidance; it does not copy or compete with it.
-
-## Timestamp Discipline
-
-All example vendor lists in this file are marked `as of 2026-Q2`.
-
-**Review triggers** (no scheduled cadence; see `SKILL.md` §Versioning & Deprecation): CNCF project status changes, acquisitions, deprecations, or new CNCF Graduated/Incubating entrants in covered categories.
-
-When reviewing:
-- Check CNCF project status changes at landscape.cncf.io
-- Check acquisition or archival announcements
-- Update the `as of YYYY-QX` markers on any changed sections
+This file is a **category taxonomy with example vendors**. Categories ("OSS full-stack", "SIEM", "profiling specialist") stay coherent for years; the vendors filling them change through acquisitions, archivals, and CNCF status moves. Use the category to frame the decision and the delegation target to get current setup detail; do not copy vendor documentation into this skill.
 
 ---
 
@@ -49,7 +12,7 @@ When reviewing:
 
 **Traits:** Self-hostable, covers metrics + logs + traces in one coherent stack, often includes UI, storage, and agents. No per-seat licensing. Operational burden is on the team.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | Metrics | Logs | Traces | Profiles | UI | Notes |
 |--------|---------|------|--------|----------|----|-------|
@@ -64,7 +27,7 @@ When reviewing:
 - Want OTel-native with no legacy shim → SigNoz
 - Cost-sensitive storage + small team → OpenObserve or SigNoz
 
-**Delegation target:** For Grafana stack setup, invoke `oma-search --docs "Grafana LGTM+ OTel Collector setup"`. For Elastic, use Elastic documentation directly. No single vendor-owned skill covers the full OSS stack; delegate to `oma-search` unless a specific component skill is installed.
+**Delegation target:** For Grafana stack setup, use `/oma-search --docs "Grafana LGTM+ OTel Collector setup"`. For Elastic, use Elastic documentation directly. No single vendor-owned skill covers the full OSS stack; delegate to `oma-search` unless a specific component skill is installed.
 
 ---
 
@@ -72,7 +35,7 @@ When reviewing:
 
 **Traits:** Managed SaaS; covers metrics, logs, traces, and often RUM/synthetics/profiling in one product. Per-host or per-ingestion pricing. Reduced operational burden; vendor lock-in risk.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | Metrics | Logs | Traces | Profiles | RUM | Notes |
 |--------|---------|------|--------|----------|-----|-------|
@@ -89,7 +52,7 @@ When reviewing:
 - Error tracking + release correlation primary need → Sentry
 - Prefer OSS tools managed → Grafana Cloud
 
-**Delegation target:** `Datadog Labs dd-apm`, `getsentry/sentry-sdk-setup`. For New Relic / Dynatrace: `oma-search --docs "{vendor} OTel integration setup"`.
+**Delegation target:** a vendor-owned skill when installed (see How to Delegate); otherwise `/oma-search --docs "{vendor} OTel integration setup"`.
 
 ---
 
@@ -97,7 +60,7 @@ When reviewing:
 
 **Traits:** Purpose-built for high-cardinality event-based observability. Avoids pre-aggregation. Enables arbitrary dimension slicing at query time. Dynamic sampling to control cost.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | Approach | Key features | Notes |
 |--------|----------|-------------|-------|
@@ -108,30 +71,28 @@ When reviewing:
 - Need to slice by any arbitrary field post-hoc → Honeycomb
 - Metrics + high-cardinality in one product → pair Honeycomb with a TSDB (category i)
 
-**Delegation target:** `honeycombio/agent-skill` (8+ published skills for OTel setup, sampling config, and BubbleUp usage).
+**Delegation target:** the Honeycomb skills from `honeycombio/agent-skill` when installed; otherwise `/oma-search --docs "Honeycomb OTel setup"`.
 
 ---
 
 ### (d) Profiling Specialist
 
-**Traits:** Continuous profiling (CPU, memory, goroutine, heap). Always-on, low-overhead. pprof or OTel profiling (OTEP 0239, currently alpha) as wire format. MELT+P fifth pillar.
+**Traits:** Continuous profiling (CPU, memory, goroutine, heap). Always-on, low-overhead. pprof or OTel profiling (OTEP 0239, Development) as wire format. MELT+P fifth pillar.
 
-**Note on Pyroscope:** Originally CNCF Sandbox. Acquired by Grafana Labs in 2023. CNCF Sandbox status is uncertain post-acquisition; verify at landscape.cncf.io before citing CNCF affiliation.
+**Example vendors**:
 
-**Example vendors** (as of 2026-Q2):
-
-| Vendor | CNCF status | Backend | Notes |
+| Vendor | Governance | Backend | Notes |
 |--------|------------|---------|-------|
-| Parca | CNCF Sandbox | ClickHouse / S3 | OTEP 0239-aligned; open-source |
-| Grafana Pyroscope | See note above | Object storage | Integrated into Grafana LGTM+; formerly CNCF Sandbox |
-| Polar Signals Cloud | Commercial | Polar Signals | Enterprise managed Parca |
+| Parca | Open source (Polar Signals); not a CNCF project | FrostDB (embedded columnar, Parquet-based) | eBPF agent; pprof-compatible |
+| Grafana Pyroscope | Open source (Grafana Labs); not a CNCF project | Object storage | Integrated into Grafana LGTM+ |
+| Polar Signals Cloud | Commercial | Managed | Managed Parca |
 
 **How to choose:**
 - Full OSS control → Parca
 - Already on Grafana LGTM+ → Grafana Pyroscope (co-located storage)
 - Managed + enterprise support → Polar Signals Cloud
 
-**Delegation target:** `oma-search --docs "Parca OTel profiling setup"` or `oma-search --docs "Grafana Pyroscope integration"`.
+**Delegation target:** `/oma-search --docs "Parca OTel profiling setup"` or `/oma-search --docs "Grafana Pyroscope integration"`.
 
 ---
 
@@ -139,7 +100,7 @@ When reviewing:
 
 **Traits:** Security information and event management. Compliance-grade log retention, correlation rules, threat detection, alerting. Often WORM / immutable storage. Targets SOC2 / ISO 27001 audit requirements.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | Log ingest | Threat detection | Compliance | Notes |
 |--------|-----------|-----------------|-----------|-------|
@@ -154,15 +115,15 @@ When reviewing:
 - Cloud-native, no on-prem requirement → Sumo Logic
 - Already on Datadog, want unified → Datadog Cloud SIEM
 
-**Delegation target:** `oma-search --docs "{vendor} SIEM log pipeline setup"`. For audit-specific requirements see `signals/audit.md` in this skill.
+**Delegation target:** `/oma-search --docs "{vendor} SIEM log pipeline setup"`. For audit-specific requirements see `signals/audit.md` in this skill.
 
 ---
 
 ### (f) FinOps / Cost Observability
 
-**Traits:** Kubernetes / cloud cost visibility, unit economics, per-tenant / per-namespace attribution. Cost is a first-class observability signal (D4 in design), not a boundary attribute. Distinct from APM cost-of-ownership analysis.
+**Traits:** Kubernetes / cloud cost visibility, unit economics, per-tenant / per-namespace attribution. Cost is a first-class observability signal, not a boundary attribute. Distinct from APM cost-of-ownership analysis.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | CNCF status | K8s cost | Cloud cost | Notes |
 |--------|------------|---------|-----------|-------|
@@ -175,7 +136,7 @@ When reviewing:
 - Multi-cluster + enterprise reporting → Kubecost
 - Cloud bill decomposed by product team → CloudZero
 
-**Delegation target:** `oma-search --docs "OpenCost Prometheus integration"`. For cost signal context see `signals/cost.md` in this skill.
+**Delegation target:** `/oma-search --docs "OpenCost Prometheus integration"`. For cost signal context see `signals/cost.md` in this skill.
 
 ---
 
@@ -183,13 +144,13 @@ When reviewing:
 
 **Traits:** Controlled rollout of features to subsets of users or traffic. Release observability; correlate flag states with error rates and latency. GitOps-integrated progressive delivery.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | CNCF status | Flag eval | Progressive delivery | Notes |
 |--------|------------|---------|---------------------|-------|
-| OpenFeature | CNCF Incubating (2023-11-21) | Yes (SDK standard) | No | Standardizes flag SDK; vendor-agnostic |
-| Flagger | CNCF Graduated | No | Yes (canary/A-B/blue-green) | Prometheus/Datadog metric gating |
-| Argo Rollouts | N/A (Argo project) | No | Yes (canary/blue-green) | Kubernetes CRD; integrates with analysis templates |
+| OpenFeature | CNCF Incubating | Yes (SDK standard) | No | Standardizes flag SDK; vendor-agnostic |
+| Flagger | CNCF Graduated (Flux project) | No | Yes (canary/A-B/blue-green) | Prometheus/Datadog metric gating |
+| Argo Rollouts | CNCF Graduated (Argo project) | No | Yes (canary/blue-green) | Kubernetes CRD; integrates with analysis templates |
 | LaunchDarkly | Commercial | Yes | Partial | Mature commercial flag platform |
 | Unleash | OSS + Commercial | Yes | No | Self-hostable flag platform |
 
@@ -197,24 +158,24 @@ When reviewing:
 - Standardize flag SDK across vendors → OpenFeature (pair with LaunchDarkly or Unleash as backend)
 - Automated canary promotion with metric gates → Flagger or Argo Rollouts
 - Per-tenant progressive rollout (feature flags) → LaunchDarkly or Unleash
-- GitOps-native canary on Kubernetes → Flagger (CNCF Graduated, Flux / Helm native)
+- GitOps-native canary on Kubernetes → Flagger (Flux / Helm native)
 
-**Delegation target:** `oma-search --docs "OpenFeature SDK {runtime} setup"` or `oma-search --docs "Flagger canary analysis Prometheus"`. For release boundary observability see `boundaries/release.md` in this skill.
+**Delegation target:** `/oma-search --docs "OpenFeature SDK {runtime} setup"` or `/oma-search --docs "Flagger canary analysis Prometheus"`. For release boundary observability see `boundaries/release.md` in this skill.
 
 ---
 
 ### (h) Log Pipeline / Collection
 
-**Traits:** High-throughput log and event collection, transformation, routing, and forwarding. Runs as DaemonSet agents (preferred) or standalone pipeline. OTel Collector is the 2026 standard for new deployments.
+**Traits:** High-throughput log and event collection, transformation, routing, and forwarding. Runs as DaemonSet agents (preferred) or standalone pipeline. OTel Collector is the default for new OTel-native deployments.
 
-**Fluentd note:** CNCF lists Fluentd as Graduated. Choose migration from workload requirements, resource use, and plugin support, not a deprecation claim. The CNCF 2025-10-01 migration guide states that Fluentd and Fluent Bit configuration syntax differs substantially; validate converted plugins/routes before cutover. Sources: <https://www.cncf.io/projects/fluentd/> and <https://www.cncf.io/blog/2025/10/01/fluentd-to-fluent-bit-a-migration-guide/>.
+**Fluentd note:** CNCF lists Fluentd as Graduated. Choose migration from workload requirements, resource use, and plugin support, not a deprecation claim. The CNCF Fluentd-to-Fluent Bit migration guide states that Fluentd and Fluent Bit configuration syntax differs substantially; validate converted plugins/routes before cutover. Sources: <https://www.cncf.io/projects/fluentd/> and <https://www.cncf.io/blog/2025/10/01/fluentd-to-fluent-bit-a-migration-guide/>.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | CNCF status | Protocol support | Transform | Notes |
 |--------|------------|----------------|---------|-------|
-| Fluent Bit | CNCF Graduated | Multiple | Lua / built-in | Preferred Fluentd replacement; C, low memory |
-| OpenTelemetry Collector | CNCF Incubating | OTLP + many | processors | OTel-native; recommended for new deployments |
+| Fluent Bit | CNCF Graduated (Fluentd project) | Multiple | Lua / built-in | C, low memory; not config-compatible with Fluentd |
+| OpenTelemetry Collector | CNCF Graduated | OTLP + many | processors | OTel-native; recommended for new deployments |
 | Vector (Datadog OSS) | Non-CNCF | Multiple | VRL | Rust; high throughput; Datadog-backed |
 | Cribl Stream | Commercial | Multiple | Yes | Enterprise routing + data shaping |
 
@@ -224,7 +185,7 @@ When reviewing:
 - High-throughput with Rust reliability → Vector
 - Enterprise data routing with UI + compliance → Cribl Stream
 
-**Delegation target:** `oma-search --docs "Fluent Bit Kubernetes DaemonSet setup"` or `oma-search --docs "OTel Collector configuration {backend}"`. For collector topology guidance see `transport/collector-topology.md` in this skill.
+**Delegation target:** `/oma-search --docs "Fluent Bit Kubernetes DaemonSet setup"` or `/oma-search --docs "OTel Collector configuration {backend}"`. For collector topology guidance see `transport/collector-topology.md` in this skill.
 
 ---
 
@@ -232,12 +193,12 @@ When reviewing:
 
 **Traits:** Purpose-built for metrics storage at scale. Prometheus-compatible query (PromQL). Long-term retention beyond Prometheus 15-day default. HA + multi-tenancy for production.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | CNCF status | Multi-tenant | Object storage | Notes |
 |--------|------------|------------|---------------|-------|
 | Prometheus | CNCF Graduated | No (single-tenant) | No | Standard scrape source; 15d retention default |
-| Thanos | CNCF Incubating (2020-08-19) | Yes | Yes (S3/GCS/Azure) | Sidecar or receive mode; global query view |
+| Thanos | CNCF Incubating | Yes | Yes (S3/GCS/Azure) | Sidecar or receive mode; global query view |
 | Cortex | CNCF Incubating | Yes | Yes | Horizontally scalable; more complex ops |
 | Grafana Mimir | Non-CNCF (Grafana OSS) | Yes | Yes | Evolved from Cortex; simpler ops |
 | VictoriaMetrics | Non-CNCF (OSS + Commercial) | Cluster edition | Yes | High compression; low resource usage |
@@ -250,7 +211,7 @@ When reviewing:
 - Resource-constrained or high compression priority → VictoriaMetrics
 - Time-series with SQL query surface needed → InfluxDB IOx
 
-**Delegation target:** `oma-search --docs "Thanos sidecar Prometheus setup"` or `oma-search --docs "Grafana Mimir distributed mode"`.
+**Delegation target:** `/oma-search --docs "Thanos sidecar Prometheus setup"` or `/oma-search --docs "Grafana Mimir distributed mode"`.
 
 ---
 
@@ -258,13 +219,13 @@ When reviewing:
 
 **Traits:** Symbolication of native crash stacks. Crash-free rate (CFR) tracking. Release-correlated crash trends. ANR (Application Not Responding) detection. Mobile session replay context.
 
-**Example vendors** (as of 2026-Q2):
+**Example vendors**:
 
 | Vendor | iOS | Android | Web | Notes |
 |--------|-----|---------|-----|-------|
 | Firebase Crashlytics | Yes | Yes | No | Free; Google ecosystem; dSYM auto-upload |
 | Sentry | Yes | Yes | Yes | Cross-platform; OTel trace correlation |
-| Bugsnag | Yes | Yes | Yes | Strong breadcrumb API; Smartisan noise reduction |
+| SmartBear Insight Hub (Bugsnag) | Yes | Yes | Yes | Strong breadcrumb API; error grouping and noise reduction |
 | Embrace | Yes | Yes | No | Mobile-first; session replay; network body capture |
 | Datadog Error Tracking | Yes | Yes | Yes | Unified with Datadog APM |
 
@@ -273,9 +234,9 @@ When reviewing:
 - Cross-platform (mobile + web + backend) correlation → Sentry
 - Mobile session replay + user journey → Embrace
 - Already on Datadog APM → Datadog Error Tracking
-- Need noise reduction + grouping quality → Bugsnag
+- Need noise reduction + grouping quality → SmartBear Insight Hub
 
-**Delegation target:** `getsentry/sentry-sdk-setup` for Sentry. For others: `oma-search --docs "{vendor} iOS/Android crash reporting setup"`. For crash analytics context see `layers/L7-application/crash-analytics.md` in this skill.
+**Delegation target:** the Sentry `sentry-sdk-setup` skill when installed. For others: `/oma-search --docs "{vendor} iOS/Android crash reporting setup"`. For crash analytics context see `layers/L7-application/crash-analytics.md` in this skill.
 
 ---
 
@@ -285,14 +246,14 @@ When reviewing:
 |------------|-------------------|-------|
 | Setup full-stack OSS monitoring | (a) OSS Full-Stack, (h) Log Pipeline, (i) TSDB, (d) Profiling | Start with (a); (h)+(i)+(d) fill gaps |
 | Setup commercial managed APM | (b) Commercial SaaS Unified APM | Select vendor by criteria in (b) |
-| Migrate off Fluentd | (h) Log Pipeline | Fluent Bit preferred (CNCF 2025-10 guide); OTel Collector for OTel-native |
+| Migrate off Fluentd | (h) Log Pipeline | Compare Fluent Bit and OTel Collector against plugin and route requirements; neither is a drop-in replacement |
 | High-cardinality trace investigation | (c) High-Cardinality Specialist | Honeycomb + dynamic sampling |
 | FinOps cost attribution program | (f) FinOps / Cost Observability | OpenCost + `signals/cost.md` |
 | Per-tenant progressive rollout | (g) Feature Flags / Progressive Delivery | OpenFeature SDK + Flagger or Argo Rollouts |
 | Mobile crash rate SLO | (j) Crash Analytics | Pair with (b) or (a) for backend traces |
 | Long-term metric retention | (i) TSDB | Thanos or Mimir on top of Prometheus |
 | Continuous profiling (MELT+P) | (d) Profiling Specialist | Parca (OSS) or Pyroscope (Grafana) |
-| SIEM / SOC2 audit log compliance | (e) SIEM / Enterprise Logs | See `signals/audit.md` for WORM requirements |
+| SIEM / SOC2 audit log compliance | (e) SIEM / Enterprise Logs | See `signals/audit.md` for integrity and retention requirements |
 
 ---
 
@@ -300,53 +261,27 @@ When reviewing:
 
 ### When a vendor-specific skill is installed
 
-Invoke the skill directly:
+Invoke the vendor's skill directly instead of reproducing its guidance. Check which skills the current host has installed; vendor skill names and contents change, so confirm before delegating. Published examples:
 
-| Skill | Coverage |
-|-------|---------|
-| `getsentry/sentry-sdk-setup` | Sentry SDK instrumentation, error tracking, release tracking |
-| `honeycombio/agent-skill` | Honeycomb OTel setup, BubbleUp, dynamic sampling (8+ published skills) |
-| `Dash0 otel-instrumentation` | Dash0 OTel generic instrumentation |
-| `Microsoft Azure Monitor exporters` | Azure-specific OTel exporters and Monitor integration |
-| `Datadog Labs dd-apm` | Datadog APM, log correlation, distributed tracing |
+| Skill | Source | Coverage |
+|-------|--------|----------|
+| `sentry-sdk-setup` | `getsentry/sentry-for-ai` | Routes to Sentry's per-platform SDK setup skills |
+| Honeycomb skills | `honeycombio/agent-skill` | OTel instrumentation, query patterns, SLOs and triggers, production investigation |
 
 ### When no vendor-specific skill is installed
 
-Route to search with vendor + observability context:
+Route to the `oma-search` skill with vendor + observability context (a skill route, not a shell command):
 
-```
-oma-search --docs "{vendor} observability setup"
-oma-search --docs "{vendor} OTel integration {runtime}"
-oma-search --docs "{vendor} {signal} configuration"
-```
+- `/oma-search --docs "{vendor} observability setup"`
+- `/oma-search --docs "{vendor} OTel integration {runtime}"`
+- `/oma-search --docs "{vendor} {signal} configuration"`
 
 Examples:
-- `oma-search --docs "Grafana Mimir Prometheus remote_write setup"`
-- `oma-search --docs "OpenCost Kubernetes namespace cost attribution"`
-- `oma-search --docs "Fluent Bit Kubernetes DaemonSet migration from Fluentd"`
-- `oma-search --docs "Parca continuous profiling Go gRPC"`
+- `/oma-search --docs "Grafana Mimir Prometheus remote_write setup"`
+- `/oma-search --docs "OpenCost Kubernetes namespace cost attribution"`
+- `/oma-search --docs "Fluent Bit Kubernetes DaemonSet migration from Fluentd"`
+- `/oma-search --docs "Parca continuous profiling Go gRPC"`
 
 ### CNCF landscape as canonical vendor source
 
-For questions about current CNCF project status, vendor landscape membership, or whether a project is still maintained:
-
-```
-oma-search --docs "site:landscape.cncf.io {category or vendor}"
-```
-
-Or navigate directly to https://landscape.cncf.io; it is the authoritative live registry. This file does not attempt to replicate it.
-
----
-
-## Footer
-
-**Timestamp:** as of 2026-Q2
-
-**Review triggers** (no scheduled cadence): CNCF project status changes, acquisitions, deprecations, or new CNCF Graduated/Incubating entrants in covered categories.
-
-**Authoritative live source:** https://landscape.cncf.io
-
-**Known pending verifications (as of 2026-Q2):**
-- Pyroscope CNCF status post-Grafana acquisition (2023): check landscape.cncf.io before citing CNCF affiliation
-- Thanos: Incubating since 2020-08-19; <https://www.cncf.io/projects/thanos/> (checked 2026-10-04)
-- OpenFeature: Incubating since 2023-11-21; <https://www.cncf.io/projects/openfeature/> (checked 2026-10-04)
+For current CNCF project status or whether a project is still maintained, check <https://landscape.cncf.io> directly or through `/oma-search --docs "site:landscape.cncf.io {category or vendor}"`.

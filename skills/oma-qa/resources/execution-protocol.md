@@ -22,18 +22,22 @@ When applicable, map findings and gaps to:
 - **ISO/IEC 25010** quality characteristics
 - **ISO/IEC 29119** test planning, design, traceability, and exit criteria
 
-Use `resources/checklist.md` (renamed qa-checklist) as the comprehensive review guide.
+Use `resources/checklist.md` as the review guide; check the items that apply to the scope.
 
 ## Step 2.5: Runtime Verification
 
 Static code review misses entire categories of bugs: display-only features,
 stubbed functionality, broken user flows, and edge cases that only surface
-at runtime. This step requires interacting with the running application.
+at runtime. This step interacts with a running application.
 
 ### When to Execute
-- Web app with UI: ALWAYS for Medium/Complex tasks
-- API-only: ALWAYS (curl/httpie verification)
-- Simple tasks (single file, no UI): SKIP
+Run only applicable, authorized runtime checks on an available target. A static
+document/configuration review does not require starting or building an app.
+
+- Web app with UI, Medium/Complex change: browser verification of the changed flows
+- API-only change: HTTP verification (curl/httpie) of the changed endpoints
+- Simple tasks (single file, no UI): skip
+- No available target, or starting one is outside the request: record the runtime checks as verification gaps
 
 ### Execution by App Type
 
@@ -43,7 +47,7 @@ Browser verification uses the installed MCPs selected in `mcp.devtools_browsers`
 
 Run the following checks with a selected, available server. Prefer a separate test context when supported. The tool calls below are Chrome DevTools MCP examples only; for Aside and Firefox DevTools MCP, discover and use their supported equivalents. Record missing capabilities instead of silently changing servers.
 
-1. Start the application (`bun run dev`, `uv run manage.py runserver`, etc.)
+1. Use the running target, or start the dev server when that is within the request (`bun run dev`, `uv run manage.py runserver`, etc.). Do not build.
 2. Open the app in an **isolated browser context** to avoid contaminating the user's session:
    ```
    new_page(url: "http://localhost:PORT", isolatedContext: "qa-test")
@@ -90,7 +94,7 @@ Run the following checks with a selected, available server. Prefer a separate te
    - Check redirects, auth flows, and error pages
 
 #### API Endpoints
-1. Start the server
+1. Use the running server, or start it when that is within the request
 2. Execute acceptance criteria as actual HTTP requests:
    ```bash
    # Example: verify auth flow end-to-end

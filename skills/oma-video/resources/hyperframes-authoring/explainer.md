@@ -6,5 +6,5 @@ Composition id `Explainer`. 1920×1080 default; honour the spec's dimensions.
 - **On-screen text**: lower-left title band for 16:9 (bottom `safeArea.bottomPct%`, left `safeArea.leftPct%`, 48px, weight 700, dark 55% band, 12px radius); for 9:16 use the Shorts top placement.
 - **Captions** (`lower-third` default): left-aligned, 40px, band `rgba(0,0,0,.55)`, `padding: 12px 20px`, radius 12, within the safe area.
 - **Transitions**: hard cut at every scene boundary. Use a 12-frame cross-fade only when the user asked for a dissolve; an agent-authored `transitionOut` alone does not justify one.
-- **Ken Burns** only when `kenBurns: true` (diagrams usually false).
+- Stills and diagrams stay static: the render spec writes `kenBurns: false` for every scene.
 - Audio as in shorts.md.

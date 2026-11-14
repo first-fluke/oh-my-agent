@@ -1,9 +1,4 @@
----
-otel_spec: "1.x (stable API/SDK)"
----
-
-# Sampling Recipes: Tail-Based, Cost-Aware, and Tenant-Aware
-
+# Sampling Recipes: Tail-Based, Attribute-Threshold, and Tenant-Aware
 
 ---
 
@@ -28,7 +23,7 @@ The production-standard recipe retains high-signal traces at 100% while keeping 
 **Positive retention policies** (default positive decisions combine as OR; ordering is not first-match priority. An `and` policy requires its subconditions to match):
 
 1. **100% error retention**: any trace with an error span is always kept
-2. **100% cost/latency threshold retention**: traces meeting the configured per-span cost or trace-duration threshold are kept
+2. **100% threshold retention**: traces meeting the configured trace-duration threshold, or carrying a span annotated for retention (Section 3), are kept
 3. **5-10% baseline**: probabilistic sampling also evaluates traces; it adds baseline retention alongside the other policies
 
 This requires the `tail_sampling` processor running in the **gateway tier only**, combined with a `loadbalancing` exporter upstream to ensure trace completeness via consistent hash by `trace_id`. See `collector-topology.md` Section 6.
@@ -52,12 +47,12 @@ processors:
         latency:
           threshold_ms: 2000    # trace duration: earliest span start to latest span end
 
-      # Policy 3: Always keep high-cost LLM traces (see Section 3)
-      - name: keep-high-cost
+      # Policy 3: Always keep traces annotated for retention (see Section 3)
+      - name: keep-annotated
         type: string_attribute
         string_attribute:
           key: sampling.keep_reason
-          values: ["high_cost"]
+          values: ["high_value"]
 
       # Policy 4: Baseline probabilistic sampling alongside the positive policies
       - name: baseline-sample
@@ -68,56 +63,34 @@ processors:
 
 > For these positive policies, any keep decision retains the trace (OR), regardless of policy order. `and` combines its own subconditions. Drop/inverted policies and optional early-decision behavior have additional semantics; verify them against the pinned processor README before use.
 
+Place `memory_limiter` first in the gateway pipeline and size `num_traces` from `expected_new_traces_per_sec × decision_wait` (Section 5).
+
 ---
 
-## 3. Cost-Aware Sampling (LLM / FinOps Context)
+## 3. Attribute-Threshold Retention
 
-LLM workloads (OpenAI, Anthropic, Bedrock, Vertex AI) attach cost attributes to spans. These should be treated as first-class sampling dimensions.
+Keep a trace when an individual span carries a numeric attribute above a threshold; for example a custom, team-defined `app.order.total_usd`. This is a per-span test, not a trace-level sum: two spans at 600 do not satisfy a 1000 threshold together. Trace-level cumulative values require a separately implemented and verified aggregation that supplies the total before the sampling decision.
 
-**Relevant span attributes** (token attributes follow GenAI semantic conventions; USD cost attributes below are custom, team-defined):
-- `gen_ai.usage.input_tokens`: prompt token count
-- `gen_ai.usage.output_tokens`: completion token count
-- `llm.request.cost_usd`: custom per-span estimated cost, if implemented by the team
-- `gen_ai.cost.total_usd`: custom cost for the operation/span; define its scope explicitly
-
-**Strategy shown below**: retain a trace when any individual span carries cost above $0.50. This is not cumulative trace cost: two $0.30 spans will not qualify. Trace-level cumulative cost requires a separately implemented and verified aggregation that supplies the final total before the sampling decision.
-
-The native `numeric_attribute` policy supports span-attribute bounds (`min_value`/`max_value`). The transform below normalizes two custom cost keys into one keep-reason attribute. Use it for that normalization; native numeric comparison is also available:
+The native `numeric_attribute` policy supports span-attribute bounds (`min_value`/`max_value`) and is sufficient for a single key. Use a `transform` annotation when several keys or conditions must normalize into one keep-reason attribute that Policy 3 in Section 2 retains:
 
 ```yaml
 processors:
-  transform/cost_annotation:
+  transform/keep_annotation:
     trace_statements:
       - context: span
         statements:
-          # If this span cost exceeds the threshold, annotate it for trace retention
-          - set(attributes["sampling.keep_reason"], "high_cost")
-              where attributes["llm.request.cost_usd"] > 0.50
-          - set(attributes["sampling.keep_reason"], "high_cost")
-              where attributes["gen_ai.cost.total_usd"] > 0.50
-
-  tail_sampling:
-    decision_wait: 30s
-    policies:
-      - name: keep-high-cost
-        type: string_attribute
-        string_attribute:
-          key: sampling.keep_reason
-          values: ["high_cost"]
-      - name: keep-errors
-        type: status_code
-        status_code:
-          status_codes: [ERROR]
-      - name: baseline
-        type: probabilistic
-        probabilistic:
-          sampling_percentage: 8
+          - set(attributes["sampling.keep_reason"], "high_value")
+              where attributes["app.order.total_usd"] > 1000
+          - set(attributes["sampling.keep_reason"], "high_value")
+              where attributes["app.batch.row_count"] > 1000000
 
 service:
   pipelines:
     traces:
-      processors: [transform/cost_annotation, tail_sampling]
+      processors: [memory_limiter, transform/keep_annotation, tail_sampling]
 ```
+
+The annotation must run before `tail_sampling` in the same gateway pipeline. Confirm the attribute is numeric at the source; a string-typed value does not satisfy the comparison.
 
 ---
 
@@ -137,7 +110,7 @@ Different customer tiers have different observability value. Enterprise customer
 
 The `routing_connector` routes telemetry to different pipelines based on attribute values, allowing different `tail_sampling` configurations per tenant tier.
 
-> Alpha stability warning: `routing_connector` is in **alpha** as of 2025. The API and behavior may change in minor releases. Verify the pinned connector version before using it. If stability requirements preclude it, use separately configured collector/exporter pipelines or dedicated collectors for isolation. Option B changes retention in a shared pipeline only; it does not replace routing.
+> Stability warning: confirm the connector's current stability level in its README before use; a component below stable may change API and behavior in minor releases. Verify the pinned connector version before using it. If stability requirements preclude it, use separately configured collector/exporter pipelines or dedicated collectors for isolation. Option B changes retention in a shared pipeline only; it does not replace routing.
 
 ```yaml
 connectors:
@@ -221,65 +194,7 @@ processors:
 
 ---
 
-## 5. Complete Example: Four-Policy `tail_sampling`
-
-This processor/pipeline excerpt combines positive error, trace-duration, per-span cost, and baseline policies. Configure receivers/exporters, traceID-aware upstream routing, bounded memory, and attribute types for the pinned Collector before deployment:
-
-```yaml
-processors:
-  memory_limiter:
-    check_interval: 1s
-    limit_mib: 1500
-    spike_limit_mib: 400
-
-  transform/cost_annotation:
-    trace_statements:
-      - context: span
-        statements:
-          - set(attributes["sampling.keep_reason"], "high_cost")
-              where attributes["llm.request.cost_usd"] > 0.50
-
-  tail_sampling:
-    decision_wait: 30s
-    num_traces: 200000
-    expected_new_traces_per_sec: 2000
-    policies:
-      # Policy 1: 100% error traces
-      - name: policy-errors
-        type: status_code
-        status_code:
-          status_codes: [ERROR]
-
-      # Policy 2: 100% high-latency traces (>2s earliest-start to latest-end)
-      - name: policy-latency
-        type: latency
-        latency:
-          threshold_ms: 2000
-
-      # Policy 3: 100% traces with an individual LLM span costing >$0.50
-      - name: policy-high-cost
-        type: string_attribute
-        string_attribute:
-          key: sampling.keep_reason
-          values: ["high_cost"]
-
-      # Policy 4: 8% baseline probabilistic sampling
-      - name: policy-baseline
-        type: probabilistic
-        probabilistic:
-          sampling_percentage: 8
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [memory_limiter, transform/cost_annotation, tail_sampling]
-      exporters: [otlp/backend]
-```
-
----
-
-## 6. Pitfalls
+## 5. Pitfalls
 
 | Pitfall | Description | Mitigation |
 |---------|-------------|-----------|
@@ -287,8 +202,11 @@ service:
 | Tail sampling memory exhaustion | Buffer holds all in-flight spans per trace for `decision_wait` duration; high RPS + long wait = large heap | Set `num_traces` based on `expected_new_traces_per_sec * decision_wait`; always include `memory_limiter` |
 | Decision wait too short | Spans from slow downstream services arrive after decision is made; those spans are dropped | Set `decision_wait` to exceed your p99 inter-service latency; typically 30-60s |
 | Sample-rate mismatch between gateway tiers | Tier-1 and Tier-2 each apply independent sampling; effective rate is multiplied (e.g., 50% × 20% = 10%) | Assign sampling responsibility to one tier only; the other tier passes all traffic through |
-| `routing_connector` in production (alpha) | Alpha components may break on minor version upgrades of collector-contrib | Verify connector stability for the pinned version; use separate collector/exporter pipelines for isolation if necessary. `tail_sampling` `and` changes retention, not routing |
+| `routing_connector` used without a stability check | Components below stable may break on minor version upgrades of collector-contrib | Verify connector stability for the pinned version; use separate collector/exporter pipelines for isolation if necessary. `tail_sampling` `and` changes retention, not routing |
 | Missing `loadbalancing` exporter before tail sampler | Spans for the same trace land on different gateway replicas; sampler on each replica sees an incomplete trace and makes wrong decisions | Always deploy `loadbalancing` exporter (routing_key: traceID) in the tier upstream of `tail_sampling` |
+
+---
+
 
 ## References
 

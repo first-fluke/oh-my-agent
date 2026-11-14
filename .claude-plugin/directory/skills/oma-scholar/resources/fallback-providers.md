@@ -37,52 +37,8 @@ search "query"
 
 `--always-fallback` includes every tier regardless of earlier hits.
 
-## CLI Reference (`oma scholar`)
-
-### Search both sources
-
-```bash
-oma scholar search "vision language action"
-```
-
-Returns JSON with:
-- `primary`: which source returned hits
-- `fallback`: which source was used as fallback (if any)
-- `results`: unified list with `source: "knows.academy" | "openalex"` per item
-
-### Get a specific record
-
-```bash
-# knows.academy sidecar
-oma scholar get "knows:generated/reconvla/1.0.0"
-
-# Partial fetch (saves up to 93% tokens)
-oma scholar get --section statements "knows:generated/reconvla/1.0.0"
-
-# OpenAlex by DOI
-oma scholar get "10.48550/arXiv.1706.03762"
-
-# OpenAlex by W-id
-oma scholar get "W2147144213"
-
-# Semantic Scholar: TL;DR + citation/influential-citation counts
-oma scholar get "arXiv:1706.03762"
-oma scholar get "CorpusId:13756489"
-```
-
-When `oma scholar get` is asked for a `knows:...` id and the platform is
-unreachable, the command extracts the slug from the record_id and searches
-OpenAlex for the same paper, returning metadata with a `fallback: "openalex"`
-marker. The user can then run **Mode 1 Generate** from the abstract.
-
-### Resolve a title across all sources
-
-```bash
-oma scholar resolve "Attention Is All You Need"
-```
-
-Returns the best match from each source (knows.academy, OpenAlex, Semantic
-Scholar) side-by-side, plus a recommendation.
+Commands, accepted id forms, the `search` output fields, and the `get`
+fallback marker are in SKILL.md Quick Reference.
 
 ## When Fallback is Needed
 
@@ -130,7 +86,7 @@ dedicated 1 req/sec).
 
 ## Trust Considerations
 
-- **knows.academy sidecars are AI-generated**: all have `provenance.origin: machine`. Verified `lint_passed: true` is platform-internal; our local `oma scholar lint` finds dangling refs in ~47% (use `--lenient` when consuming)
+- **knows.academy sidecars are AI-generated**: all have `provenance.origin: machine`. Verified `lint_passed: true` is platform-internal; our local `oma scholar lint` still finds dangling refs in some of them (use `--lenient` when consuming)
 - **OpenAlex metadata is curated**: generally reliable for title/authors/DOI/year, but venue and abstract can be missing for older works
 - **Reconstructed abstracts** from OpenAlex's inverted index are exact (no paraphrasing), but punctuation/formatting may be lossy
 - **Semantic Scholar TL;DRs are AI-generated** (Ai2's TLDR model): good `summary` seeds for Mode 1 Generate, but verify against the abstract before citing; citation counts differ from OpenAlex's (different corpora)

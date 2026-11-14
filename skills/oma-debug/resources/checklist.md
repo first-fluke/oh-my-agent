@@ -1,6 +1,6 @@
 # Debug Agent - Self-Verification Checklist
 
-Run through every item before submitting your fix.
+Check the items that apply before submitting your fix.
 
 ## Fix Quality
 - [ ] Root cause identified (not just symptom patched)
@@ -13,7 +13,7 @@ Run through every item before submitting your fix.
 - [ ] Fix reverted → test fails (confirms test actually catches the bug)
 - [ ] Fix restored → test passes
 - [ ] Test covers the specific triggering condition
-- [ ] All existing tests still pass
+- [ ] Broader suites run only when the user or the active workflow requires it; otherwise reported as not run
 
 ## Similar Patterns
 - [ ] Searched for same pattern elsewhere in codebase

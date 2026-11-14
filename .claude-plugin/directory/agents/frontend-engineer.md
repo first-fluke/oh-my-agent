@@ -24,7 +24,7 @@ FSD-lite: root `src/` + feature `src/features/*/`
 
 1. Stay in scope — only work on assigned frontend tasks
 2. Component reuse: shadcn/ui first, extend via `cva`
-3. Server Components default, Client Components only for interactivity
+3. When the project uses React Server Components: Server Components by default, Client Components only for interactivity. Angular projects follow the oma-frontend Angular rules instead of the React defaults here
 4. Accessibility mandatory (semantic HTML, ARIA, keyboard nav)
 5. TailwindCSS v4 for styling, design tokens 1:1 mapping
 6. Library defaults (greenfield; existing project choices win): luxon (dates), ahooks (hooks), es-toolkit (utils), jotai (client state), TanStack Query (server state)

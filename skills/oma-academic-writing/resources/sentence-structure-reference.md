@@ -1,62 +1,12 @@
 # Sentence structure reference for academic English
 
-## Four sentence types
+## Sentence types
 
-### 1. Simple sentence
-
-One independent clause in a subject-verb pattern.
-
-**Use for:** High-impact statements, clear assertions, topic sentences.
-
-**Examples:**
-
-- The Australian government introduced an official carbon tax on 1 July 2012.
-- This dataset contains 120 years of match records.
-- Performance declined sharply after the 2018 rule changes.
-
-**Guidance:** Use when a direct assertion is clearest; no paragraph quota.
-
-### 2. Compound sentence
-
-Two independent clauses connected by a coordinating conjunction (FANBOYS: for, and, nor, but, or, yet, so).
-
-**Use for:** Balanced comparisons, contrasts, cause-effect pairs.
-
-**Examples:**
-
-- The Australian government introduced an official carbon tax on 1 July 2012, but this was met with opposition from the general public.
-- Match duration increased by 15%, and spectator attendance declined in parallel.
-- Nadal dominated the clay court, yet Djokovic maintained superiority on hard surfaces.
-
-**Guidance:** Use when the relationship between clauses matters; no paragraph quota.
-
-### 3. Complex sentence
-
-One independent clause + one dependent clause (introduced by a subordinating conjunction: as, because, although, when, while, if, since, after, before, unless, until, whereas).
-
-**Use for:** Causal reasoning, conditional statements, temporal ordering (the backbone of academic analysis).
-
-**Examples:**
-
-- As the Australian government recognized the necessity to significantly reduce greenhouse gas emissions, it introduced an official carbon tax on 1 July 2012.
-- Although the dataset spans 121 seasons, only matches after 1968 include detailed set-level data.
-- Because five-set matches impose greater physical demands, average rally length decreases in the fourth and fifth sets.
-
-**Guidance:** Use to state an actual causal, conditional, or temporal relationship; no paragraph quota.
-
-### 4. Compound-complex sentence
-
-Two or more independent clauses + one or more dependent clauses.
-
-**Use for:** Sophisticated synthesis, multi-factor analysis, nuanced arguments.
-
-**Examples:**
-
-- As the Australian government recognized the necessity to significantly reduce greenhouse gas emissions, it introduced an official carbon tax on 1 July 2012, but this was met with opposition from the general public.
-- While set durations vary considerably between Grand Slam events, the median match length has increased by 12 minutes since 2000, and this trend correlates with advances in racket technology.
-- Because the 1905–1968 era lacked professional circuits, participation remained limited to amateur players; however, match records from this period still provide valuable longitudinal data.
-
-**Guidance:** Use only when combining the clauses makes the argument clearer; no paragraph quota.
+Simple, compound, complex, and compound-complex sentences are all available.
+Choose the type that states the actual relationship: a simple sentence for a
+direct assertion, subordination for a real causal, conditional, or temporal
+link, coordination for a balanced comparison or contrast. There is no paragraph
+quota for any type.
 
 ## Variation rules
 
@@ -83,31 +33,10 @@ Two or more independent clauses + one or more dependent clauses.
 
 **Diagnostic:** Review repeated openers for clarity and emphasis; keep deliberate repetition when it serves the argument.
 
-## Common errors to prevent
+## Clear meaning
 
-### Sentence fragments
-
-A sentence missing subject, verb, or complete thought.
-
-| Error Type | Bad | Fixed |
-|-----------|-----|-------|
-| Missing subject | "Becoming extinct because of rising sea temperatures." | "Phytoplankton may face extinction because of rising sea temperatures." |
-| Missing verb | "Significantly, one particular form of Western Australian finch." | "Significantly, one particular form of Western Australian finch has decreased in numbers." |
-| Incomplete thought | "In a recent article about loss of habitat due to climate change." | "In a recent article about loss of habitat due to climate change, Australian animals were identified as particularly vulnerable." |
-
-**Watch out for:** Sentences beginning with so, as, because, who, which, that, since these are often incomplete.
-
-### Run-on sentences
-
-Two independent clauses joined without proper punctuation or conjunction.
-
-| Bad | Fixed (conjunction) | Fixed (separate) |
-|-----|-------|---------|
-| "Poverty and famine are indicators of climate change these issues are not being addressed." | "Poverty and famine are indicators of climate change, **but** these issues are not being addressed." | "Poverty and famine are indicators of climate change. These issues are not being addressed." |
-
-### Lack of clear meaning
-
-Every sentence must be fully understandable when read in isolation. If a sentence requires mental gymnastics to parse, rewrite it more simply.
+Every sentence must be complete and understandable when read in isolation. If a
+sentence requires mental gymnastics to parse, rewrite it more simply.
 
 ## Paragraph cohesion model
 
@@ -131,21 +60,6 @@ Every sentence must be fully understandable when read in isolation. If a sentenc
 
 **Improvements:** Varied openers (subject-first, dependent clause, transitional phrase), mixed simple/complex/compound structures, varied sentence lengths, logical flow from claim → evidence → argument → recommendation, accurate verbs, and no unnecessary inflated vocabulary.
 
-## Quick reference: conjunction inventory
-
-### Coordinating (FANBOYS): for compound sentences
-
-for, and, nor, but, or, yet, so
-
-### Subordinating: for complex sentences
-
-**Cause/reason:** because, since, as, given that, owing to the fact that
-**Contrast:** although, though, even though, whereas, while
-**Condition:** if, unless, provided that, on condition that
-**Time:** when, whenever, after, before, until, since, while, as soon as
-**Purpose:** so that, in order that
-**Result:** so ... that, such ... that
-
-### Transitional phrases (non-AI): for sentence openers
+## Transitional phrases for sentence openers
 
 By contrast, More specifically, In parallel, To this end, From a different perspective, On closer examination, Upon further analysis, In quantitative terms, At the aggregate level, Within this framework, Across all conditions

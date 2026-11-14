@@ -4,21 +4,7 @@ Use this file for DB review, schema/query critique, remediation, or changes invo
 
 ## 1. ISO 27001 / 27002 / 22301-Oriented Suggestions
 
-When any of the following are weak or absent, recommend improvements explicitly:
-
-- access control and least privilege
-- encryption in transit and at rest
-- audit logging for privileged or sensitive data changes
-- backup, restore drill, and retention evidence
-- data classification and PII handling
-- schema change management and migration traceability
-- secure credential handling
-- deletion and archive controls for cold data
-- privileged access review and segregation of duties
-- secure configuration baselines and hardening guidance
-- business continuity planning assumptions for critical databases
-- recovery objectives such as RTO / RPO and restore evidence
-- failover, redundancy, and backup dependency visibility
+When access control, encryption, audit logging, change traceability, backup/restore evidence, data classification, or continuity planning (RTO/RPO, failover) is weak or absent, recommend improvements explicitly using `iso-controls.md`.
 
 ## 2. Logical Design
 
@@ -145,33 +131,4 @@ For an accepted transition, use `resources/migration-playbook.md` §Moving Busin
 
 ## 6. Vector Retrieval / RAG
 
-- **Treating vector DB as a drop-in search replacement**
-  - Smell: lexical search removed entirely after adding embeddings
-  - Fix: default to hybrid retrieval; combine keyword/BM25, metadata filters, ANN, and reranking
-- **Embedding everything without a versioning strategy**
-  - Smell: multiple models/dimensions/chunk rules with no metadata or migration plan
-  - Fix: version embeddings like schema, store model/config metadata, and support rolling re-embedding
-- **Ignoring chunking strategy**
-  - Smell: fixed-size chunks and naive splitting regardless of document structure
-  - Fix: use document-aware chunking, overlap, and hierarchical structure where needed
-- **Blind ANN defaults**
-  - Smell: HNSW/IVF/PQ defaults used without recall-latency benchmarking
-  - Fix: benchmark real workloads and tune ANN parameters deliberately
-- **Assuming metadata filtering scales for free**
-  - Smell: high-cardinality filters piled onto vector search with no partition strategy
-  - Fix: design pre-segmentation, partitioned indexes, or tenant-specific collections where justified
-- **Unplanned real-time writes**
-  - Smell: continuous inserts degrade recall and latency over time
-  - Fix: design buffers, compaction, tiered indexing, and ingestion/search separation
-- **Storing raw documents in vector DB**
-  - Smell: vector DB becomes source of truth for full documents
-  - Fix: keep canonical docs in object store or primary DB and store references in vector DB
-- **No retrieval observability**
-  - Smell: only infra metrics exist; no recall or semantic drift monitoring
-  - Fix: add golden queries, offline evaluation, drift tracking, and token-waste monitoring
-- **Over-trusting similarity scores**
-  - Smell: one cosine threshold is treated as universally meaningful
-  - Fix: calibrate per domain/model and use reranking for precision-sensitive cases
-- **Believing vector DB equals RAG architecture**
-  - Smell: only index layer is optimized while chunking, orchestration, and feedback loop are ignored
-  - Fix: treat retrieval as a pipeline, not a single database decision
+Review vector and RAG designs against `vector-db.md`: its Core Position, Best Practices, and Review Questions own these anti-patterns.

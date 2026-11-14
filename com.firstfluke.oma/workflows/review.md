@@ -20,14 +20,14 @@ The detected vendor determines how the QA agent is spawned (Step 7).
 
 ### L1 Decision Events
 
-Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
 ## Step 1: Identify Review Scope
 
-Ask the user what to review: specific files, a feature branch, or the entire project.
-If a PR or branch is provided, diff against the base branch to scope the review.
+Take the scope from the request: specific files, a feature branch, a PR, or the entire project. If a PR or branch is provided, diff against the base branch to scope the review.
+With no scope given, review the current uncommitted and branch changes and state that assumption; ask only when there is nothing to scope from.
 
 ---
 
@@ -106,14 +106,11 @@ oma state verify --workflow review --checkpoint severity-classification --instan
 
 For large review scopes, delegate Steps 2-7 to a QA agent instead of running inline.
 
-### If Claude Code
-Use the Agent tool to spawn subagent:
-- `Agent(subagent_type="qa-reviewer", prompt="Review the following files for security, performance, accessibility, and code quality issues: [file list]. Follow .agents/skills/oma-qa/SKILL.md for review standards. Report findings as: CRITICAL / HIGH / MEDIUM / LOW with file:line, description, and remediation code.", run_in_background=true)`
+Dispatch by the Dispatch Rule in `.agents/skills/_shared/core/vendor-detection.md`.
 
-### If Codex CLI
-Request parallel subagent execution with the review scope and standards.
+- **Native**: one `qa-reviewer` with the prompt "Review the following files for security, performance, accessibility, and code quality issues: [file list]. Follow .agents/skills/oma-qa/SKILL.md for review standards. Report findings as: CRITICAL / HIGH / MEDIUM / LOW with file:line, description, and remediation code."
+- **CLI fallback**:
 
-### If Antigravity or CLI Fallback
 ```bash
 oma agent spawn qa-agent review-prompt.md {sessionId} --task-id {qa_review_task.id} -w {workspace}
 ```
@@ -126,23 +123,16 @@ oma agent spawn qa-agent review-prompt.md {sessionId} --task-id {qa_review_task.
 
 When user wants fixes too, execute review then fix then re-review loop:
 
-1. Spawn QA agent (per vendor method above) to get issue list.
-2. If CRITICAL/HIGH issues exist:
-   - Spawn domain agent to fix issues:
+1. Spawn QA agent (per the delegation method above) to get issue list.
+2. If CRITICAL/HIGH issues exist, spawn the owning domain agents to fix them:
+   - **Native**: one call per domain role (`backend-engineer`, `frontend-engineer`, …) with "Fix these issues: [issues + fix instructions]".
+   - **CLI fallback**:
 
-### If Claude Code
-     - `Agent(subagent_type="backend-engineer", prompt="Fix these issues: [issues + fix instructions]", run_in_background=true)`
-     - `Agent(subagent_type="frontend-engineer", prompt="Fix these issues: [issues + fix instructions]", run_in_background=true)`
-
-### If Codex CLI
-     Request parallel subagent execution with the issues and fix instructions.
-
-### If Antigravity or CLI Fallback
      ```bash
      oma agent spawn backend backend-fix-prompt.md {sessionId} --task-id {backend_fix_task.id} -w ./backend &
      oma agent spawn frontend frontend-fix-prompt.md {sessionId} --task-id {frontend_fix_task.id} -w ./frontend &
      wait
      ```
 
-3. Re-spawn QA agent (per vendor method above) to re-review fixed code.
+3. Re-spawn QA agent (per the delegation method above) to re-review fixed code.
 4. Repeat up to 3 times until no CRITICAL/HIGH issues remain.

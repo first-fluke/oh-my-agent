@@ -71,10 +71,6 @@ runtime when commitlint was not requested.
 // commitlint.config.cjs — keep an existing project config when present.
 module.exports = {
   extends: ['@commitlint/config-conventional'],
-  rules: {
-    'type-enum': [2, 'always', ['feat', 'fix', 'perf', 'build', 'revert', 'docs',
-                              'style', 'refactor', 'test', 'chore', 'ci', 'infra']],
-  },
 };
 ```
 

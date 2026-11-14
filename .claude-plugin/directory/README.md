@@ -18,7 +18,7 @@ This plugin adds 33 skills and 12 specialist agents. Claude loads a skill only w
 - **pm-planner** PM requirements analysis, task decomposition, API contract definition agent
 - **qa-reviewer** OWASP security, performance, accessibility, code quality review agent
 - **refactor-engineer** Behavior-preserving refactoring specialist. Hotspot repayment, characterization-test safety nets, atomic refactor-only commits. Never changes observable behavior.
-- **research-explorer** Cross-source research specialist. Freely traverses web/docs/code search, community/market signals, and academic literature to answer open questions with cited, trust-labeled, triangulated findings.
+- **research-explorer** Cross-source research specialist. Freely traverses web/docs/code search, community/market signals, and academic literature to answer open questions with cited, provenance-labeled, triangulated findings.
 - **tf-infra-engineer** Terraform infrastructure implementation and review. Use for cloud provisioning, IAM/OIDC, networking, and terraform plan review.
 
 ## Skills
@@ -27,7 +27,7 @@ This plugin adds 33 skills and 12 specialist agents. Claude loads a skill only w
 - **oma-architecture** Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs.
 - **oma-backend** Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db.
 - **oma-brainstorm** Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration.
-- **oma-coordination** Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step.
+- **oma-coordination** Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination.
 - **oma-db** Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend.
 - **oma-debug** Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests.
 - **oma-design** Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions.
@@ -49,7 +49,7 @@ This plugin adds 33 skills and 12 specialist agents. Claude loads a skill only w
 - **oma-scholar** Search academic literature and generate, validate, or compare Knows paper sidecars. Use for claim/evidence analysis and literature synthesis.
 - **oma-scm** Manage Git branches, merges, conflicts, commits, and release baselines. Use for repository history and change-management operations.
 - **oma-search** Find external documentation, web sources, or remote code with citations. Local code navigation uses the configured code tools.
-- **oma-security** Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation.
+- **oma-security** Scan application source, agent skills, and MCP components, validate findings, and configure scan gates. Penetration tests of a scoped web test deployment run only on a user-supplied, reviewed runtime platform. Use oma-qa for broad quality reviews and domain skills for remediation.
 - **oma-skill-creation** Create or revise OMA skills and their references. Use for skill routing, execution contracts, conditional loading, and authoring validation.
 - **oma-slide** Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery.
 - **oma-tf-infra** Create or review Terraform infrastructure and plans. Use for cloud resources, IAM, networking, state management, and infrastructure changes.

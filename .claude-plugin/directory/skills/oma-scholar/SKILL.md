@@ -46,7 +46,7 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 ### Dependencies
 - `oma scholar` CLI subcommands
 - knows.academy public API; OpenAlex and Semantic Scholar fallbacks
-- `resources/sidecar-spec.md`, API endpoints, OpenAlex setup, upstream cache, checklist, and execution protocol
+- `resources/sidecar-spec.md`, API endpoints, OpenAlex setup, canonical delta, checklist, and execution protocol
 
 ### Control-flow features
 - Branches by mode, source availability, Knows/OpenAlex coverage, strict vs lenient validation, and fetched section
@@ -130,21 +130,14 @@ oma scholar lint "<paper.knows.yaml>"
 1. **Local generation targets v0.9.0 production compatibility / `paper@1`** (review sidecars use `review@1`). This is narrower than complete canonical schema conformance; see `resources/sidecar-spec.md`.
 2. **Host LLM generates sidecars**: never shell out to `anthropic` SDK or external LLM CLI; this skill runs inside an agent
 3. **Anti-fabrication**: if DOI/venue/year is not visible in source, **omit the key entirely**; never write `doi: TODO` or guess
-4. **Top-level metadata**: `title`, `authors`, `venue`, `year` live at the top level (no `metadata` wrapper)
-5. **Field names are exact**: `statement_type`, `evidence_type`, `predicate`, `artifact_type` (not `type`/`claim`)
-6. **Provenance has SINGLE actor**: `provenance.actor` is one object, NOT a `provenance.actors` array
-7. **Confidence is an object**: `{claim_strength: ..., extraction_fidelity: ...}`, both from `high|medium|low`
-8. **Coverage is an object**: `coverage.statements` (4-value enum) + `coverage.evidence` (3-value enum)
-9. **Closed enums**: actor `tool|person|org` (never `ai`/`llm`/`model`); artifact role `subject|supporting|cited`; predicates in present tense
-10. **Numbers unquoted**: `value: 22`, never `value: '22'`
-11. **Relation coverage**: review the local ratio/orphan warnings; add only source-supported, type-appropriate relations. Claims with evidence use `supported_by`; definitions and open questions can remain source-anchored. A ratio of 1.5 is diagnostic, not a graph-padding quota.
-12. **ID format**: descriptive kebab-case with prefix: `stmt:privacy-budget-tradeoff`, `ev:cifar10-accuracy-table`, `art:paper`
-13. **Validate before sharing**: run `oma scholar lint` after Generate and Review; cross-record refs (`record_id#local_id`) in review sidecars are recognized and not flagged as dangling
-14. **Remote API has no auth**: `https://knows.academy/api/proxy/*` is public; do not invent auth headers
-15. **Partial fetch param is `section` (singular)**: fixed enum `statements|evidence|relations|artifacts|citation`
-16. **Fallback API keys are optional**: `OPENALEX_API_KEY` (metadata enrichment) and `S2_API_KEY` (Semantic Scholar dedicated rate limit) both improve throughput but the cascade degrades gracefully without them
-17. **Sidecar content stays English**: schema fields, IDs, statement text follow upstream convention; user-facing responses follow `oma-config.yaml` `language`
-18. **Contract scope**: local generation rules and lint track production compatibility, not the complete canonical v0.9 schema. Preserve canonical imported shapes and report local-lint incompatibilities. Do not claim full schema compliance or add `$schema` without validation against that exact schema; see `resources/upstream-spec-cache.md`.
+4. **Field shapes are exact**: top-level metadata, field names, closed enums, the single `provenance.actor` object, the `confidence` and `coverage` objects, unquoted numbers, and descriptive prefixed kebab-case IDs all follow `resources/sidecar-spec.md`. Copy its names and values; do not improvise variants.
+5. **Relation coverage**: review the local ratio/orphan warnings; add only source-supported, type-appropriate relations. Claims with evidence use `supported_by`; definitions and open questions can remain source-anchored. A ratio of 1.5 is diagnostic, not a graph-padding quota.
+6. **Validate before sharing**: run `oma scholar lint` after Generate and Review; cross-record refs (`record_id#local_id`) in review sidecars are recognized and not flagged as dangling
+7. **Remote API has no auth**: `https://knows.academy/api/proxy/*` is public; do not invent auth headers
+8. **Partial fetch param is `section` (singular)**: fixed enum `statements|evidence|relations|artifacts|citation`
+9. **Fallback API keys are optional**: `OPENALEX_API_KEY` (metadata enrichment) and `S2_API_KEY` (Semantic Scholar dedicated rate limit) both improve throughput but the cascade degrades gracefully without them
+10. **Sidecar content stays English**: schema fields, IDs, statement text follow upstream convention; user-facing responses follow `oma-config.yaml` `language`
+11. **Contract scope**: local generation rules and lint track production compatibility, not the complete canonical v0.9 schema. Preserve canonical imported shapes and report local-lint incompatibilities. Do not claim full schema compliance or add `$schema` without validation against that exact schema; see `resources/canonical-delta.md`.
 
 ### Modes
 
@@ -165,21 +158,9 @@ the skill automatically falls back to **OpenAlex** for metadata and abstract,
 then to **Semantic Scholar** (AI TL;DR, citation + influential-citation
 counts) when OpenAlex also has nothing. See `resources/fallback-providers.md`.
 
-Use the `oma scholar` CLI subcommands:
-
-```bash
-# Hybrid search: knows first, OpenAlex fallback
-oma scholar search "vision language action"
-
-# Cross-source resolve: figures out which source has the right paper
-oma scholar resolve "Attention Is All You Need"
-
-# Get by id (knows record_id, OpenAlex W-id, DOI, arXiv:<id>, CorpusId:<n>)
-oma scholar get "10.48550/arXiv.1706.03762"
-```
-
 When OpenAlex returns the answer (knows.academy lacks the paper), use the
 returned abstract as input to **Mode 1 Generate** to produce a local sidecar.
+Commands are in Quick Reference below.
 
 ### Quick Reference
 
@@ -188,6 +169,10 @@ returned abstract as input to **Mode 1 Generate** to produce a local sidecar.
 oma scholar search "diffusion super resolution"
 oma scholar search --year-min 2024 "vision language action"
 ```
+
+`search` returns JSON with `primary` (always `knows.academy`), `fallback`
+(`openalex`, `semanticscholar`, or `null`), and `results`, each tagged with its
+`source`. `--always-fallback` queries every tier regardless of earlier hits.
 
 #### Find one specific paper
 ```bash
@@ -205,9 +190,11 @@ oma scholar get --section statements "knows:generated/reconvla/1.0.0"
 
 # By DOI or OpenAlex W-id (works regardless of knows.academy availability)
 oma scholar get "10.48550/arXiv.1706.03762"
+oma scholar get "W2147144213"
 
 # Semantic Scholar: AI TL;DR + citation/influential-citation counts
 oma scholar get "arXiv:1706.03762"
+oma scholar get "CorpusId:13756489"
 ```
 
 When knows.academy is unreachable, `get knows:...` automatically falls back
@@ -227,10 +214,9 @@ oma scholar lint --lenient remote.knows.yaml
 oma scholar lint --fail-on-warning paper.knows.yaml
 ```
 
-About **47% of knows.academy-served sidecars contain at least one dangling
-cross-reference** (typo in `subject_ref`/`object_ref`, measured across 15
-production samples). Use `--lenient` when consuming third-party records so
-these surface as warnings rather than blocking errors.
+knows.academy-served sidecars can contain dangling cross-references (a typo
+in `subject_ref`/`object_ref`). Use `--lenient` when consuming third-party
+records so these surface as warnings rather than blocking errors.
 
 #### Raw API (when CLI is unavailable)
 ```bash
@@ -242,7 +228,7 @@ curl -s "https://knows.academy/api/proxy/jobs/stats"   # platform health
 
 ### Configuration
 
-Project-specific settings: `config/scholar-config.yaml`. One key is user-tunable and lives elsewhere — read `scholar.base_url` from `.agents/oma-config.yaml` first and fall back to `api.base_url` in the skill config. Everything else there (endpoint paths, timeouts, id prefixes, lint rules) is protocol shape, not preference.
+The `oma scholar` CLI always uses `https://knows.academy` and reads no config file. One key exists for raw HTTP use only: when calling the API without the CLI against a self-hosted Knows instance, take the host from `scholar.base_url` in `.agents/oma-config.yaml`, falling back to `api.base_url` in `config/scholar-config.yaml`.
 
 ### Troubleshooting
 
@@ -265,11 +251,12 @@ Project-specific settings: `config/scholar-config.yaml`. One key is user-tunable
 ## References
 
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
-- Sidecar spec rules: `resources/sidecar-spec.md`
-- API endpoints: `resources/api-endpoints.md`
-- OpenAlex setup: `resources/setup-openalex.md`
-- Upstream spec snapshot: `resources/upstream-spec-cache.md`
-- Post-generation checklist: `resources/checklist.md`
+- Sidecar spec rules (Generate, Review, or fixing lint findings): `resources/sidecar-spec.md`
+- Canonical vs local delta (importing or linting a third-party record, a shape local lint rejects, or any canonical-conformance statement): `resources/canonical-delta.md`
+- API endpoints (raw HTTP without the CLI): `resources/api-endpoints.md`
+- Provider cascade and trust notes (a paper missing from knows.academy): `resources/fallback-providers.md`
+- OpenAlex setup (OpenAlex 403/429 or the user asks for a key): `resources/setup-openalex.md`
+- Post-generation checklist (after Generate or Review): `resources/checklist.md`
 - CLI subcommands: `oma scholar search|resolve|get|lint` (implementation under `cli/commands/scholar/`)
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`

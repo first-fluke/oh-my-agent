@@ -26,6 +26,7 @@ Review and verify software quality with priority on security, performance, acces
 ### When NOT to use
 - Initial implementation -> let specialists build first
 - Writing new features -> use domain agents
+- Scanner-driven scans, penetration tests, finding validation, or security CI gates -> use `oma-security`
 
 ### Expected inputs
 - Diff, codebase area, PR, feature branch, build output, test results, or quality concern
@@ -94,13 +95,13 @@ Review and verify software quality with priority on security, performance, acces
 - ISO quality guide and checklist
 
 ### Canonical command path
-```bash
-npm audit
-bandit -r .
-lighthouse <url>
+```text
+1. Detect the stack and the project's existing audit, lint, test, and coverage commands.
+2. Select the checks that match the review scope and stack: dependency audit (e.g. `npm audit`), static security analysis (e.g. `bandit -r .`), runtime/performance audit (e.g. `lighthouse <url>`).
+3. Run the selected tools against an available target; review statically where a tool or target is unavailable.
 ```
 
-Run only the tools that match the detected stack and available target. Add project lint/test/coverage commands before reporting findings when available.
+Select only the tools that match the detected stack and available target. Run project lint/test/coverage commands when the review request or the active workflow requires that evidence; otherwise report them as not run.
 
 ### Resource scope
 | Scope | Resource target |
@@ -120,7 +121,7 @@ Run only the tools that match the detected stack and available target. Add proje
 - Does not write broad implementation changes unless explicitly requested.
 
 ### Guardrails
-1. Review in priority order: Security > Performance > Accessibility > Code Quality
+1. Review in priority order: Security > Performance > Accessibility > Code Quality. Security findings from this skill are code-review findings rated with the severity rubric below; scanner candidates, exploit proof, and `confirmed`/`needs_validation` dispositions belong to `oma-security`
 2. Every finding must include file:line, description, and fix
 3. Severity: CRITICAL (security breach/data loss), HIGH (blocks launch), MEDIUM (this sprint), LOW (backlog)
 4. Run the automated tools that apply to the project and review scope; do not require unrelated stack tools
@@ -130,12 +131,12 @@ Run only the tools that match the detected stack and available target. Add proje
 
 ## References
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
-- ISO quality guide: `resources/iso-quality.md`
-- QA checklist: `resources/checklist.md`
-- Error recovery: `resources/error-playbook.md`
-- Ultrawork VERIFY/SHIP phase protocol: `resources/verify-ship-protocol.md` (used when this skill runs inside the ultrawork workflow)
+- ISO quality guide: `resources/iso-quality.md` (standards-based review requested)
+- QA checklist: `resources/checklist.md` (check the items that apply to the review scope)
+- Error recovery: `resources/error-playbook.md` (a tool, source access, or quota failure during review)
+- Ultrawork VERIFY/SHIP gates and review guides: `.agents/workflows/ultrawork/resources/phase-gates.md`, `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (when this skill runs inside the ultrawork workflow, which owns those gates)
 - Context loading: `references/_shared/core/context-loading.md`
 - Context budget: `references/_shared/core/context-budget.md`
-- Runtime lessons: `references/_shared/core/session-metrics.md`
+- Session evidence: `references/_shared/core/session-metrics.md` (requested retrospective, or a correction or review finding worth preserving)
 - Code intelligence: `references/_shared/core/code-intelligence.md`
-- Observability handoff: `../oma-observability/SKILL.md` §Integrations — canary RUM (Core Web Vitals), backend perf spans
+- Observability handoff: `../oma-observability/SKILL.md` §Integrations — Core Web Vitals targets, backend performance span evidence

@@ -12,7 +12,7 @@
 
 ## Semantic Color Tokens
 
-Map all colors to design tokens in `packages/design-tokens`. Never use raw colors like `bg-white` or `text-gray-900`.
+Map all colors to design tokens in the project's token source (`packages/design-tokens` or equivalent). Never use raw colors like `bg-white` or `text-gray-900`.
 
 ```tsx
 // Good
@@ -52,8 +52,10 @@ import { cn } from "@/lib/utils";
 Every interactive element needs a visible focus state:
 
 ```tsx
-className="focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+className="focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 ```
+
+In Tailwind v4, `outline-hidden` hides the default outline but keeps it visible in forced-colors mode; `outline-none` sets `outline-style: none` and removes it there too. Tailwind v3 projects keep `outline-none`, which has the v4 `outline-hidden` behavior.
 
 Screen-reader-only text: `<span className="sr-only">...</span>`.
 

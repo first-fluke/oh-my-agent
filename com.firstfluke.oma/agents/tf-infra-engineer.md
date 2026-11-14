@@ -18,7 +18,7 @@ Follow the shared execution policy for authorization and clarification. State ma
 ## Rules
 
 1. Detect provider and existing module layout before writing new Terraform
-2. Run `terraform fmt`, `terraform validate`, and `terraform plan` before reporting complete when Terraform is present
+2. Format and validate changed configuration (`terraform fmt`, `terraform validate`) when Terraform is available; run `terraform plan` before any apply, or when plan verification is requested and backend credentials are available — otherwise report it as not run
 3. Use remote state, version pinning, and least-privilege IAM by default
 4. Prefer OIDC/workload identity over long-lived static credentials
 5. Do not hardcode secrets in `.tf` files or examples

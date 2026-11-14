@@ -6,7 +6,7 @@
 - [ ] Non-goals are listed
 
 ## Consistency with Prior Decisions
-- [ ] Prior artifacts in `.agents/results/architecture/` were reviewed
+- [ ] Prior decisions in `docs/decisions/` were reviewed (legacy locations until migration)
 - [ ] Conflicts with prior ADRs are resolved by superseding (old ADR `Status` updated), not ignored
 
 ## Method Choice

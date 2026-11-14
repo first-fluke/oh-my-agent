@@ -4,12 +4,12 @@ Starter reference for the selected platform. Preserve existing project choices. 
 
 ## Framework: SwiftUI + Observation
 
-- **Language**: Swift 6.0+ floor, strict-concurrency clean (current stable is Swift 6.3, July 2026)
+- **Language**: Swift 6.0+ floor, strict-concurrency clean (`swift-tools-version: 6.0` or later, so the Swift 6 language mode is on)
 - **UI Framework**: SwiftUI
 - **State Management**: Observation framework (`@Observable`, iOS 17+)
 - **Concurrency**: Swift async/await + structured concurrency (`Task`, `TaskGroup`, `AsyncStream`)
 - **Minimum Deployment**: iOS 17.0
-- **Tooling**: Xcode 16+ floor (current stable is Xcode 26, July 2026), Swift Package Manager (SwiftPM)
+- **Tooling**: Xcode 16+ floor, Swift Package Manager (SwiftPM)
 
 `@Observable` replaces `ObservableObject`/`@Published` for SwiftUI view models. The macro synthesizes observation tracking at compile time with zero boilerplate and no Combine dependency.
 
@@ -35,7 +35,7 @@ per-project `stack/stack.yaml` (seeded by `/stack-set`) pins which mode the repo
 | Mode | Mechanics | Trade-off |
 |------|-----------|-----------|
 | **Build plugin** (Apple-recommended default) | Generator runs during the build; output is ephemeral (not committed). Declared in `Package.swift` `plugins:` for SwiftPM targets, **and works in Xcode app targets too** — Xcode requires "trust & enable" for the plugin (Xcode Cloud needs a post-clone script to bypass fingerprint validation). Spec vendored at `Core/Networking/openapi.yaml`. | Zero commit noise, always in sync; but extra Xcode/CI setup, generated diffs invisible in review, regen on every clean build. |
-| **Committed (command plugin / CLI)** | Apple's documented fallback "if the build plugin cannot be used". Run `swift package generate-code-from-openapi` (or a task: `mise` / `make` / script) → write `Core/Networking/Generated/` → **commit** it; the build sees plain checked-in source. | Generated code is reviewable and CI is simpler; but a human must remember to regenerate + commit on spec changes. |
+| **Committed (command plugin / CLI)** | Apple's documented alternative for repositories that must check generated code in. Run `swift package plugin generate-code-from-openapi --target <Target>` (or a task: `mise` / `make` / script) → it writes `GeneratedSources/` in that target's source directory → **commit** it; the build sees plain checked-in source. | Generated code is reviewable and CI is simpler; but a human must remember to regenerate + commit on spec changes. |
 <!-- oma-docs:ignore-end -->
 
 ### Where the API contract comes from
@@ -83,7 +83,7 @@ See `snippets.md` §10 for the canonical `ResponseCache` actor and cached `TodoS
 ## Local Storage
 
 - **hyperoslo/Cache** — hybrid memory+disk cache for **API response memoization** at the Repository layer (see above). Transient, server-owned data only.
-- **SwiftData** (iOS 17+) — Swift-native ORM built on Core Data; preferred for **durable, user-owned** structured persistence (system of record). See `snippets.md` §11 for a compact `@Model` + `ModelContainer` + repository-fetch example.
+- **SwiftData** (iOS 17+) — Swift-native ORM built on Core Data; preferred for **durable, user-owned** structured persistence (system of record). Model with `@Model`, own one `ModelContainer`, and read/write through a repository so features never touch a `ModelContext` directly.
 - **UserDefaults / `@AppStorage`** — lightweight key-value preferences.
 - **Keychain** (`Security` framework) — tokens and credentials.
 
@@ -95,13 +95,13 @@ See `snippets.md` §10 for the canonical `ResponseCache` actor and cached `TodoS
 | UI / snapshot | XCUITest |
 | Mocking | Protocol-based; no third-party mock lib required |
 
-Run tests with `swift test` (SwiftPM projects) or via Xcode's test runner. Target pass signal for CI: `Test Suite 'All tests' passed`.
+Test command: `swift test` (SwiftPM projects) or Xcode's test runner. `swift test` builds the package, so run it only when the user or the active workflow has asked for a test run or build. CI pass signal: `Test Suite 'All tests' passed` (XCTest) or `Test run with … passed after …` (Swift Testing).
 
 ## Project Layout: App / Core / Features / Shared
 
 This is **not a Swift-specific standard** — it is the idiomatic Swift expression of
 the same *feature-first* principle the Frontend Agent applies (`../../../../rules/frontend.md`
-§Architecture). Apple's own SwiftUI samples and the 2025+ community consensus both say
+§Architecture). Apple's own SwiftUI samples and community consensus both say
 **group by feature, not by type** (no flat `Views/` `Models/` `ViewModels/`). The shared
 rules across platforms are: feature slices own their UI + state, **no cross-feature
 imports** (unidirectional), and self-describing file names. Only the folder *vocabulary*
@@ -116,13 +116,13 @@ differs from frontend FSD — do **not** import FSD layer names (`entities/`, `w
 ├── App/                         # app shell: composition root + routing (not a feature)
 ├── Core/                        # feature-agnostic domain + infrastructure
 │   ├── Models/                  #   pure domain models
-│   ├── Networking/              #   API client · Mock · Generated/ (openapi-generator output; never hand-edit)
+│   ├── Networking/              #   API client · Mock · openapi.yaml + generator config (generated code is never hand-edited)
 │   ├── Cache/                   #   ResponseCache actor over hyperoslo/Cache (read-through, stale-while-revalidate)
 │   └── Services/                #   Repository/Store layer (DI, @Observable stores)
 │
 ├── Features/<Feature>/          # vertical slice: owns its View + ViewModel
 │   ├── <Feature>View.swift      #   nest a sub-slice folder when a screen grows complex
-│   └── <Feature>ViewModel.swift #   @MainActor @Observable, dependencies via init(client:)
+│   └── <Feature>ViewModel.swift #   @MainActor @Observable, dependencies via init(service:)
 │
 └── Shared/                      # stateless, reusable UI + extensions (zero feature knowledge)
     ├── Components/
@@ -139,8 +139,8 @@ App ──→ assembles (Features, Core, Shared)
 
 **Scaling beyond folders.** The Swift-idiomatic graduation path for a growing codebase is
 **Swift Package Manager modules** — promote `Core` and stable `Features/<Feature>` slices to
-local SwiftPM packages for build-time isolation and enforced boundaries. This is the 2026
-modular-iOS convention; reach for it before inventing deeper folder hierarchies.
+local SwiftPM packages for build-time isolation and enforced boundaries. Reach for it
+before inventing deeper folder hierarchies.
 
 ## Naming Conventions
 
@@ -166,8 +166,8 @@ Path-based `NavigationStack(path:)` with typed routes registered via
 per-screen one.
 
 Apps that hide the nav bar for custom headers (`.toolbar(.hidden, for: .navigationBar)`)
-lose the system edge swipe-back, because UIKit ties `interactivePopGestureRecognizer`
-to the system back button and re-disables it on every nav-bar-hidden transition.
+lose the system edge swipe-back on every nav-bar-hidden transition (observed
+behaviour; Apple does not document it).
 Restore it at the **route-registration layer** with a `swipeBackDestination`
 wrapper (see `snippets.md` §9) so every pushed route keeps the gesture and tab
 roots are excluded for free. Never restore it ad-hoc per `View` body — that drifts

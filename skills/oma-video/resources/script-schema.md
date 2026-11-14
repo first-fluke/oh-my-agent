@@ -27,9 +27,9 @@ required** — omitting it is the most common authoring failure.
 | `narration` | string | ✅ | may be `""` for a silent scene; keep ≤ ~8 words/segment for clean caption cues |
 | `onScreenText` | string[] | — | overlay lines; defaults to `[]` |
 | `visual` | object | ✅ | see below |
-| `visual.kind` | `still` \| `clip` \| `mixed` \| `slide` \| `capture` | ✅ | `still` (oma-image), `slide` (oma-slide, explainer), `capture` (demo footage), `clip`/`mixed` (stock/AIGC) |
+| `visual.kind` | `still` \| `clip` \| `mixed` \| `slide` \| `capture` | ✅ | `still` (oma-image), `slide` (oma-slide, explainer), `capture` (demo footage), `clip`/`mixed` (stock/AIGC). Descriptive only: the provider is chosen by `--visual` and the mode, not by this field |
 | `visual.prompt` | string | — | English image prompt forwarded to oma-image (see `prompt-tips.md`) |
-| `visual.ref` | string | — | reference to an existing asset (e.g. capture segment) |
+| `visual.ref` | string | — | reference to an existing asset. For a `slide` visual it is required: the path of an existing oma-slide deck directory (absolute, or relative to the directory `oma video generate` runs in), whose first exported frame becomes the scene visual. Without it the oma-slide provider writes a placeholder |
 | `visual.source` | string | — | provenance marker (e.g. `agent-authored`) |
 | `transition` | string | — | transition-out hint |
 
@@ -76,6 +76,6 @@ required** — omitting it is the most common authoring failure.
 - [ ] `schemaVersion: "1.0"` present (required literal).
 - [ ] `aspect` is concrete (`9:16` / `16:9` / `1:1`) — never `auto`.
 - [ ] Scene count ≤ 40, total `durationSec` ≤ 180.
-- [ ] Every scene has a `visual.kind` from the enum; `still` scenes carry an English `visual.prompt`.
+- [ ] Every scene has a `visual.kind` from the enum; `still` scenes carry an English `visual.prompt`; `slide` scenes carry a `visual.ref` to an existing deck directory.
 - [ ] `music` is set (use `"none"` unless the user asked for a bed).
 - [ ] Validate cheaply before rendering: pass the file via `--script` with `--dry-run` first.

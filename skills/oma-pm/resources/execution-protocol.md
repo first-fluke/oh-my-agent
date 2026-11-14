@@ -33,9 +33,9 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Preserve canonical `dependencies` task IDs and a self-contained `task` prompt for replay. `retry_policy` defaults to `manual`; use `safe` only when repetition cannot duplicate external effects.
 - Optional `inputs` declares a complete set of concrete source, test, configuration and dependency inputs for reusable evidence. Omit it for whole-tree verification. `scope` remains the allowed edit boundary and is not an evidence-input list.
 - `agent`: one of the orchestrator-dispatchable domains — `backend`, `frontend`, `mobile`, `db`, `qa`, `debug`, `pm`, `architecture`, `refactor`, `tf-infra`, `docs` (see the agent mapping table in `.agents/workflows/orchestrate.md`)
-- `scope`: array of directory prefixes this agent is allowed to modify (e.g., `["src/api/", "migrations/"]`). Used by `verify` to detect cross-agent boundary violations in parallel execution.
+- `scope`: array of directory prefixes this agent is allowed to modify (e.g., `["src/api/", "migrations/"]`). `oma verify agent` checks changed files against it for `backend`, `frontend`, `mobile`, `qa`, `debug`, and `pm` tasks; for the other agents it is the stated edit boundary that review checks by reading the diff.
 - **Test approach (opt-in, per task)**: set `test_approach` where a test strategy matters
-  - `tdd`: deterministic, high-risk behavior (validation, authorization, state transitions, calculations, error handling). Implementation agent must record RED→GREEN evidence (see `TDD_EVIDENCE` block below).
+  - `tdd`: deterministic, high-risk behavior (validation, authorization, state transitions, calculations, error handling). Implementation agent must record RED→GREEN evidence (see the `TDD_EVIDENCE` block format in `../references/_shared/core/test-approach.md`).
   - `test_after`: automated tests required, but a useful isolated RED state is impractical
   - `not_applicable`: automated tests inappropriate — **must** fill `test_approach_rationale` and `alternative_verification` (documented manual/alternative check)
   - Do **not** mark `tdd` for: documentation, pure styling, generated code, IaC plans, behavior-preserving refactors (refactor tasks keep their characterization-test safety net), or inherently nondeterministic integrations
@@ -51,12 +51,12 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 
 ## Step 4: Validate Plan
 - Check: Can each task be done independently given its dependencies?
-- Check: Are acceptance criteria measurable and testable?
+- Check: Are acceptance criteria measurable and testable, each with a stable ID covered by a `required_checks` entry (exact argv and cwd)?
+- Check: Are dependencies, replay prompts, and retry policy explicit, and does any narrowed `inputs` set cover all behavioral dependencies?
 - Check: Is `test_approach` valid where set (`tdd|test_after|not_applicable`), with rationale + alternative verification for every `not_applicable`? (`oma verify agent pm` enforces this contract)
 - Check: Is security considered from the start (not deferred)?
 - Check: Are affected API boundaries settled by an existing or updated contract before dependent frontend/mobile work?
 - Check: Are major risks, owners, and approval points explicit when needed?
-- Output task-board.md format for orchestrator compatibility
 
 ## On Error
 See `resources/error-playbook.md` for recovery steps.

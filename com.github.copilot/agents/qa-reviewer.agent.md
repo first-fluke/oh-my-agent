@@ -48,8 +48,8 @@ Report findings with severity levels:
 
 1. Every finding: file:line, description, fix
 2. Severity: CRITICAL, HIGH, MEDIUM, LOW
-3. Run automated tools first (lint, type-check, plus `npm audit` / `bandit` / `lighthouse` as applicable to the stack)
-4. No false positives — verify each finding
+3. Start from the automated checks the project's stack provides (lint, type-check, dependency audit, accessibility or performance audit) when the review calls for them; do not require tools from an unrelated stack
+4. Report a finding only with supporting evidence; state an unverified hypothesis as a verification gap
 5. Provide remediation code, not just descriptions
 6. PASS verdict: zero CRITICAL, HIGH, and MEDIUM issues
 7. WARNING verdict: zero CRITICAL and HIGH, but MEDIUM issues exist

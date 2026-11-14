@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../stack.schema.json
 language: python
-framework: fastapi
+framework: litestar
 orm: sqlalchemy
 source: variant
 

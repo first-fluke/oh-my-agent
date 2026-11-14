@@ -1,9 +1,10 @@
 # Recap Output Format Templates
 
 Markdown templates for the recap files written to `.agents/results/recap/`.
-Response language follows the user's prompt language first, then the `language` setting in `.agents/oma-config.yaml`, then English.
 
-## Daily format (1d or specific date)
+## Daily format (specific date, or a window under 3 days)
+
+For a 2-day window, repeat the dated theme blocks once per calendar day under one TL;DR and Overview.
 
 ```markdown
 ## {date} Recap
@@ -36,7 +37,7 @@ tool ratios or technical details.
 - Notable tool-switching patterns
 ```
 
-## Multi-day format (3d, 7d, 2w, 30d)
+## Multi-day format (3 days or longer)
 
 For any multi-day window, use a **project-driven structure** like a sprint report.
 Focus on what was accomplished per project, not day-by-day chronology.

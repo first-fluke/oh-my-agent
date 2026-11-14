@@ -1,12 +1,3 @@
----
-otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.43.0 (2026-07); no stable WAF-specific semconv group; custom `waf.*` attributes used below"
-tools:
-  - "ModSecurity v3 (libmodsecurity3): mature; OWASP CRS 4.x"
-  - "Coraza v3.x: OWASP-led, Go-native; Envoy/Caddy/HAProxy integrations"
-  - "AWS WAF v2; Cloudflare WAF; Akamai App & API Protector; Imperva; F5 NGINX App Protect"
----
-
 # WAF Rule Observability
 
 ## 1. Scope
@@ -15,15 +6,15 @@ This file covers Web Application Firewall (WAF) rule observability: rule hit rat
 
 **In scope:** rule hit and block telemetry, OWASP CRS paranoia level effects, edge-tier latency attribution, false-positive (FP) and false-negative (FN) tracking, WAF rule release markers, cascading 4xx storms caused by FP surges, WAF-to-application trace correlation, bypass-attempt audit, multi-tenant rule attribution.
 
-**Out of scope:** WAF rule authoring strategy (use OWASP CRS docs and vendor playbooks); DDoS mitigation orchestration (use vendor anti-DDoS such as Cloudflare Magic Transit, AWS Shield Advanced); TLS-inspection content analysis (see SKILL.md OOS table for Wireshark / Cloudflare Radar); bot management product evaluation (vendor-specific).
+**Out of scope:** WAF rule authoring strategy (use OWASP CRS docs and vendor playbooks); DDoS mitigation orchestration (use vendor anti-DDoS such as Cloudflare Magic Transit, AWS Shield Advanced); TLS-inspection content analysis (see SKILL.md When NOT to use); bot management product evaluation (vendor-specific).
 
 Cross-references:
-- L3 firewall and security-group rule visibility: `../L3-network.md §3 VPC flow logs §6.4 Security Observability`
-- L4 UDP/QUIC firewall fallback: `../L4-transport.md §7.4 Firewall and Enterprise Deployment`
+- L3 firewall and security-group rule visibility: `../L3-network.md` §3 Cloud VPC Flow Logs
+- L4 UDP/QUIC firewall fallback: `../L4-transport.md` §7.4 Firewall and Enterprise Deployment Considerations
 - Mesh ingress + Envoy + Coraza WAF integration: `../mesh.md`
-- SIEM/enterprise log routing of WAF events: `../../vendor-categories.md §(e) SIEM / Enterprise Logs`
+- SIEM/enterprise log routing of WAF events: `../../vendor-categories.md` category (e) SIEM / Enterprise Logs
 - WAF block as audit signal: `../../signals/audit.md`
-- IP in WAF logs as PII: `../../signals/privacy.md §IP addresses`
+- IP in WAF logs as PII: `../../signals/privacy.md` (IP-address handling rules)
 
 ---
 
@@ -64,7 +55,7 @@ Every WAF rule evaluation emitted as a span event or structured log record MUST 
 | `service.version` | semconv (stable) | Application-side release pivot |
 | `tenant.id` | W3C Baggage | Per-tenant WAF rule scoping in multi-tenant SaaS |
 
-Note on stability: there is no OTel `waf.*` semconv group as of 2026-Q2 (semconv 1.43.0). The attribute names above are this skill's convention; they share the dot-namespace style with stable groups. If `waf.*` is later standardized, treat the above as a migration source.
+Note on stability: OTel defines no `waf.*` semconv group; confirm in the semconv registry. The attribute names above are this skill's convention; they share the dot-namespace style with stable groups. If `waf.*` is later standardized, treat the above as a migration source.
 
 ---
 
@@ -108,7 +99,7 @@ When a WAF rule update over-blocks legitimate traffic, every affected request re
 
 ### Forensics path
 
-This is a Step-5-first scenario (release correlation before service pivot). See `../../incident-forensics.md §3` for the standard 6-dimension flow; for WAF FP storms invert it:
+This is a release-correlation-first scenario (release correlation before service pivot). See the six-dimension narrowing flow in `../../incident-forensics.md` for the standard order; for WAF FP storms invert it:
 
 1. Check `waf.rule.set.version` change in the incident window.
 2. Group `waf_action_total{action="block"}` by `waf.rule.id`; identify the rule whose block count grew.
@@ -119,7 +110,7 @@ This is a Step-5-first scenario (release correlation before service pivot). See 
 
 ### Recovery time budget
 
-Per the incident-forensics playbook's 15-minute SLA, WAF FP rollback should complete inside the same window. Maintain a pre-approved "rule-to-detect-mode" runbook so the on-call does not need a security review to flip a rule's action during an active incident.
+Per the incident-forensics playbook's 15-minute time budget, WAF FP rollback should complete inside the same window. Maintain a pre-approved "rule-to-detect-mode" runbook so the on-call does not need a security review to flip a rule's action during an active incident.
 
 ---
 
@@ -146,7 +137,7 @@ Alert when this counter is non-zero for more than 60 s. The dependency outage ma
 
 ## 7. Vendor Telemetry Surfaces
 
-Routing index only. Vendor-specific configuration (YAML, plan tiers, query syntax, pricing) is owned by each vendor's authoritative docs; this table delegates to them via `../../vendor-categories.md §(e) SIEM / Enterprise Logs`.
+Routing index only. Vendor-specific configuration (YAML, plan tiers, query syntax, pricing) is owned by each vendor's authoritative docs; this table delegates to them via `../../vendor-categories.md` category (e) SIEM / Enterprise Logs.
 
 | Vendor | Log surface | Trace header to map | Docs |
 |--------|------------|---------------------|------|
@@ -174,9 +165,9 @@ WAF events carry security significance and must be retained per the audit signal
 | Authenticated bypass attempts (rule match + valid session) | Approved purpose/legal schedule | Access control and tamper protection; WORM if required |
 | Rule-set version change events | Approved change-evidence schedule | Tamper protection; tied to release-marker stream |
 
-Cross-ref `../../signals/audit.md §retention matrix` for the unified retention policy.
+Cross-ref the evidence-specific retention policy in `../../signals/audit.md`.
 
-`client.address` (source IP) appears in every WAF record and is PII under GDPR Article 4(1) and PIPA. Apply pipeline-stage redaction per `../../signals/privacy.md §IP addresses` before the records reach long-term storage. Block records retain enough fidelity for forensics (e.g., `/24` prefix preserved, last octet hashed) without retaining identifiable IP after the operational window expires.
+`client.address` (source IP) appears in every WAF record and is PII under GDPR Article 4(1) and PIPA. Apply pipeline-stage redaction per the IP-address handling rules in `../../signals/privacy.md` before the records reach long-term storage. Block records retain enough fidelity for forensics (e.g., `/24` prefix preserved, last octet hashed) without retaining identifiable IP after the operational window expires.
 
 ---
 
@@ -184,54 +175,23 @@ Cross-ref `../../signals/audit.md §retention matrix` for the unified retention 
 
 In multi-tenant SaaS, different tenants may have different threat profiles or contractual WAF policies. Per-tenant rule attribution requires:
 
-1. `tenant.id` propagated to the edge via baggage (`../../boundaries/cross-application.md §Baggage at trust boundaries`).
+1. `tenant.id` propagated to the edge via baggage (baggage trust-boundary rule in `../../boundaries/cross-application.md`).
 2. WAF rules scoped by tenant (vendor support varies: Cloudflare Custom Rules + tenant header match; AWS WAF rule groups per CloudFront distribution per tenant; Coraza per-route rule lists).
 3. Telemetry tagged with `tenant.id` so a tenant-specific FP surge does not contaminate the global rate.
 
-Anti-pattern: a global rule set with no tenant scoping forces every customer onto the strictest profile, which inflates global FP rate and obscures tenant-specific tuning needs. See `../../boundaries/multi-tenant.md §isolation tiers`.
+Anti-pattern: a global rule set with no tenant scoping forces every customer onto the strictest profile, which inflates global FP rate and obscures tenant-specific tuning needs. See the four-tier isolation strategy in `../../boundaries/multi-tenant.md`.
 
 ---
 
-## 10. Matrix Coverage Contribution
-
-This file contributes to existing L7-application matrix cells. It does not add new cells (the matrix taxonomy is fixed at 112 cells per `../../matrix.md §6`).
-
-| Matrix cell | Contribution |
-|-------------|--------------|
-| L7 × cross-application × logs | WAF block log records carry `trace_id` for log-trace join into the application call chain |
-| L7 × cross-application × audit | WAF block stream as compliance audit feed; cross-application security boundary |
-| L7 × multi-tenant × audit | Per-tenant WAF rule effectiveness and bypass-attempt evidence |
-| L7 × release × metrics | `waf.rule.set.version` as release marker; ruleset rollouts visible in pre/post comparison |
-| L7 × release × logs | Ruleset version change events as structured deployment records |
-| L7 × {all boundaries} × privacy | `client.address` masking and selective retention per audit class |
-
----
-
-## 11. Anti-Patterns (Section F: Security & Compliance Candidates)
-
-Candidates added to `../../anti-patterns.md §F`:
-
-| ID | Anti-pattern | Impact | Remedy |
-|----|--------------|--------|--------|
-| F.6 | WAF rule hit/block rate unmonitored | Cascading 4xx storms from rule updates discovered by customer complaints, not by on-call | Emit `waf_action_total{action,rule_id,rule_set_version}`; alert on block rate step change > 3σ vs 24h baseline |
-| F.7 | WAF rule-set deploy without release marker | Cannot align block-rate surge with rule update; rollback decision is guesswork | Emit a structured deployment event with `waf.rule.set.version` on every ruleset rollout; treat same as `service.version` |
-| F.8 | WAF fail-closed without dependency-health signal | Third-party reputation API outage silently blocks all traffic; no on-call signal | Emit `waf_dependency_failure_total` per external dependency; alert when non-zero for > 60s; document fail-open/closed policy per rule |
-| F.9 | WAF logs detached from application trace context | Block at edge invisible inside application trace; on-call cannot determine "did this user even reach us?" | Configure WAF to propagate `traceparent` even on blocks; map vendor headers (`cf-ray`, `X-Amzn-Trace-Id`) to baggage at the edge |
-| F.10 | WAF rules in `block` mode without prior `log`-mode soak | New rule promoted to block on day 0; FP rate unknown; high risk of mass-block incident | Mandatory minimum 24h `log`-mode soak per new rule with FP rate verified < target ratio before promotion to `block` |
-
-These follow the existing `### F.{n}` format in `../../anti-patterns.md`.
-
----
-
-## 12. References
+## 10. References
 
 Internal cross-references:
 - `../../standards.md`: stable semconv tiers (`http.*`, `client.*`, `service.*`) used as anchors for the `waf.*` extension
-- `../../matrix.md`: 112-cell coverage map; this file contributes to L7-application cells without adding new ones
+- `../../matrix.md`: coverage map (L7-application rows)
 - `../../incident-forensics.md`: 6-dim narrowing flow; WAF FP storms invert the order (release marker first)
-- `../../anti-patterns.md`: Section F candidates F.6–F.10
-- `../../vendor-categories.md §(e) SIEM / Enterprise Logs`: WAF event routing as audit records
-- `../../signals/audit.md`: WAF block retention and WORM rules
+- `../../anti-patterns.md`: §F Security & Compliance (WAF entries)
+- `../../vendor-categories.md` category (e) SIEM / Enterprise Logs: WAF event routing as audit records
+- `../../signals/audit.md`: WAF block retention and integrity rules
 - `../../signals/privacy.md`: IP-address masking pipeline for `client.address`
 - `../../signals/logs.md`: structured logging contract; WAF records inherit it
 - `../../boundaries/cross-application.md`: header mapping (`cf-ray`, `X-Amzn-Trace-Id`) to W3C baggage

@@ -74,15 +74,15 @@ Rules:
 
 1. Choose principles that **connect to the T1 contradiction** — no random lists.
 2. For each chosen principle, write **one concrete seed sentence** (not only the principle name).
-3. Produce at least four seeds (a principle may contribute more than one seed), then compress to **2–3 approaches**.
+3. A principle may contribute more than one seed. Compress the seeds into the mechanistically distinct approaches they support; do not add an approach to reach a count.
 
 ### T4 — Compress into normal Step 3 approaches
 
 Map seeds into the standard approach briefs (see workflow Step 3 presentation rules).
 
-- Keep **tactical** vs **structural** labels.
-- Default recommendation remains **structural** (engineering-first).
-- Pure knob-turning (only interval/TTL/debounce/log-level) is not a full approach unless the problem is throwaway scope; prefer absorbing it into a structural option or marking non-recommended.
+- Keep the **tactical** vs **structural** scope labels when useful; a label is not a quality ranking.
+- Recommend by the stated goal, effort, reversibility, and risk, as the workflow's approach rules require.
+- Pure knob-turning (only interval/TTL/debounce/log-level) does not resolve the contradiction on its own. Present it as an approach only when it meets the goal within the actual constraints, and say what tradeoff it leaves in place.
 - Optional one-line appendix for the design doc:
 
 ```markdown
@@ -113,5 +113,5 @@ Keep the appendix ≤15 lines.
 **Contradiction:** fresher metrics vs DB load/cost  
 **IFR:** readers see near-real-time metrics without per-user DB polling  
 **Seeds:** taking out (read path leaves DB), preliminary (pre-aggregate), periodic (shared worker snapshot), intermediary (read model)  
-**Approaches:** (A) event → aggregator → read model; (B) shared poller + short cache + invalidation; (C) tighter poll only — non-recommended tactical  
-**Recommend:** A
+**Approaches:** (A) event → aggregator → read model; (B) shared poller + short cache + invalidation; (C) tighter poll only, which leaves the load tradeoff in place  
+**Recommend:** A when DB load is the binding constraint; B when the deadline or reversibility matters more

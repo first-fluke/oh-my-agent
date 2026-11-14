@@ -4,7 +4,7 @@ Consult this guide for a requested retrospective, a substantive correction, or a
 
 ## Record observations, not penalty scores
 
-Do not assign points to questions, corrections, or review judgments. The former Clarification Debt (CD) and Evaluator Accuracy (EA) weights and thresholds are retired; they were prompt instructions, not CLI-computed metrics. Necessary clarification is not a failure, a user changing scope is not an agent error, and a disputed QA finding is not an established false positive.
+Do not assign points to questions, corrections, or review judgments. Necessary clarification is not a failure, a user changing scope is not an agent error, and a disputed QA finding is not an established false positive.
 
 When useful, record an event with session/task/run identity, an evidence path, observed impact, cause if known, and the action taken. Reuse the existing result or progress artifact. For a separate session summary, use the configured coordination store's `session-metrics-{sessionId}.md` (default `.agents/state/memories/`). Distinguish:
 
@@ -27,7 +27,7 @@ For repeated failures, a consequential incident, or a user-requested retrospecti
 ## Measurements and tooling
 
 - Prefer observed task outcomes, relevant check results, retries, elapsed time, and recorded usage over inferred scores. State the measurement source and limits; progress updates are not a reliable turn counter, and checkpoint counts are not reset counts.
-- `oma stats` reports the CLI's productivity and recorded usage/cost summaries. It does not parse this Markdown into CD or EA scores. Cost estimates are not billing receipts.
+- `oma stats` reports the CLI's productivity and recorded usage/cost summaries. It does not turn this Markdown into scores. Cost estimates are not billing receipts.
 - `oma retro` groups recorded `gate.failed`, `blocker.raised`, and `decision.missing` events into harness suggestions. Those suggestions still need causal review; they do not automatically modify prompts.
 - If the active workflow uses quality measurement or experiments, link the actual artifacts from `../conditional/quality-score.md` and `../conditional/experiment-ledger.md`. Do not fabricate missing measurements or mix them with conversational event counts.
 - For model or prompt comparisons, use `../../oma-skill-creation/resources/prompt-evaluation.md`. Compare equivalent tasks and report correctness, interruptions, latency, and measured cost separately.

@@ -6,7 +6,7 @@ The release boundary is the **temporal boundary between versions of a service**;
 where new code enters production and either stabilizes or is rolled back.
 
 Covers: progressive delivery strategies, Flagger canary analysis, Argo Rollouts, OpenFeature
-feature flags, GitOps engine reconcile observability, and Kubernetes operator reconcile metrics.
+feature flags, and GitOps engine reconcile observability.
 
 Out of scope: SLI/SLO definitions and error budget math (see `slo.md`); dashboard layout
 and code (see `../observability-as-code.md`); post-incident timelines (see `../incident-forensics.md`).
@@ -98,7 +98,7 @@ spec:
     }[{{ interval }}])) * 100
 ```
 
-Cross-ref `slo.md §3` for the full SLI PromQL patterns used as the canary threshold source.
+Cross-ref `slo.md §4` for the SLI PromQL patterns used as the canary threshold source.
 
 ---
 
@@ -160,13 +160,13 @@ spec:
 
 ---
 
-## 5. Feature Flags via OpenFeature (CNCF Incubating, 2023-11-21)
+## 5. Feature Flags via OpenFeature
 
-Source: <https://openfeature.dev> | CNCF graduation: <https://www.cncf.io/projects/openfeature/>
+Source: <https://openfeature.dev> | CNCF project page (current maturity): <https://www.cncf.io/projects/openfeature/>
 
-OpenFeature defines a vendor-agnostic SDK specification for feature flag evaluation via the
-**OFREP** (OpenFeature Remote Evaluation Protocol). The SDK core is provider-agnostic;
-teams swap providers without changing application code.
+OpenFeature defines a vendor-agnostic SDK specification for feature flag evaluation, plus
+**OFREP** (OpenFeature Remote Evaluation Protocol) for remote evaluation. The SDK core is
+provider-agnostic; teams swap providers without changing application code.
 
 **Supported providers:** LaunchDarkly, Flagsmith, GrowthBook, Unleash, ConfigCat, Harness FF.
 
@@ -186,25 +186,27 @@ application layer while Flagger controls infrastructure-level traffic weight.
 
 ## 6. Observing Feature Flag Evaluations
 
-OTel semantic conventions: `feature_flag.*` (Release Candidate as of semconv 1.43.0).
+OTel semantic conventions: the `feature_flag.evaluation` event and its `feature_flag.*`
+attributes are Release Candidate. Confirm the tier in the semconv registry before relying on
+it under `--strict`.
 
-Key span attributes emitted on each flag evaluation:
+Key attributes emitted on each flag evaluation:
 
 ```
-feature_flag.key          = "checkout-v2-enabled"
-feature_flag.variant      = "on"
-feature_flag.provider_name = "flagsmith"
+feature_flag.key            = "checkout-v2-enabled"
+feature_flag.result.variant = "on"
+feature_flag.provider.name  = "flagsmith"
 ```
 
-Example span attributes (JSON log-compatible):
+Example evaluation record (JSON log-compatible):
 
 ```json
 {
   "name": "feature_flag.evaluation",
   "attributes": {
     "feature_flag.key": "checkout-v2-enabled",
-    "feature_flag.variant": "on",
-    "feature_flag.provider_name": "flagsmith",
+    "feature_flag.result.variant": "on",
+    "feature_flag.provider.name": "flagsmith",
     "user.id": "usr_abc123",
     "tenant.id": "org_enterprise"
   }
@@ -218,8 +220,6 @@ Example span attributes (JSON log-compatible):
 | `feature_flag_evaluation_total` | `flag`, `variant`, `tenant` | Variant distribution |
 | Error rate delta per variant | `flag`, `variant` | A/B regression detection |
 | Latency p99 delta per variant | `flag`, `variant` | Performance regression |
-
-Dashboards cross-ref `../observability-as-code.md` for the flag evaluation panel template.
 
 ---
 
@@ -247,46 +247,25 @@ argocd_app_info{sync_status="OutOfSync"} == 1
 
 Source: <https://fluxcd.io>; Flagger ships as part of the Flux ecosystem.
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `gotk_reconcile_duration_seconds` | Histogram | Per-controller reconcile latency |
-| `gotk_reconcile_condition` | Gauge | `ready` or `stalled` per resource |
+| Metric | Source | Description |
+|--------|--------|-------------|
+| `gotk_reconcile_duration_seconds` | Flux controllers `/metrics` | Per-controller reconcile latency histogram (`kind`, `name`, `namespace`) |
+| `gotk_resource_info` | kube-state-metrics custom-resource-state config | One series per Flux resource; `ready` and `suspended` labels mirror the resource status |
 
-Stalled resource alert:
+Resource readiness is not exported by the controllers themselves; it requires the
+kube-state-metrics custom-resource-state configuration from the Flux monitoring docs
+(<https://fluxcd.io/flux/monitoring/metrics/>). Label names come from that configuration, so
+confirm them against the installed config before alerting.
+
+Not-ready resource alert:
 
 ```promql
-gotk_reconcile_condition{type="Ready",status="False"} == 1
+gotk_resource_info{ready="False"} == 1
 ```
-
-Cross-ref `../signals/metrics.md` for Prometheus scrape config snippets for both engines.
 
 ---
 
-## 8. Kubernetes Operator Reconcile Observability
-
-Every operator built on `controller-runtime` exposes `/metrics` automatically.
-
-**Built-in metrics:**
-
-| Metric | Type | Description |
-|--------|------|-------------|
-| `controller_runtime_reconcile_total` | Counter | Reconcile attempts by result |
-| `controller_runtime_reconcile_errors_total` | Counter | Failed reconcile loops |
-| `controller_runtime_reconcile_time_seconds` | Histogram | Reconcile loop duration |
-
-Monitor CRD readiness via `.status.conditions[]`:
-
-```promql
-# Alert on reconcile error spike
-rate(controller_runtime_reconcile_errors_total[5m]) > 0.1
-```
-
-Custom CRDs must emit reconcile metrics. Pattern: wrap reconcile logic in `ObservedGeneration`
-guard and expose a `status.conditions` entry per managed resource.
-
----
-
-## 9. Release Markers in Telemetry
+## 8. Release Markers in Telemetry
 
 - `service.version` (OTel Stable): set on every span, metric data point, and log record
   via the OTel Resource at SDK initialization. Never patch per-signal.
@@ -297,7 +276,7 @@ guard and expose a `status.conditions` entry per managed resource.
   "event.name": "deployment",
   "service.name": "checkout",
   "service.version": "2.4.1",
-  "deployment.environment": "production",
+  "deployment.environment.name": "production",
   "timestamp": "2026-04-21T10:00:00Z"
 }
 ```
@@ -308,7 +287,7 @@ guard and expose a `status.conditions` entry per managed resource.
 
 ---
 
-## 10. Canary Analysis Metric Suite
+## 9. Canary Analysis Metric Suite
 
 | Signal | Source | Gate |
 |--------|--------|------|
@@ -320,7 +299,7 @@ guard and expose a `status.conditions` entry per managed resource.
 
 ---
 
-## 11. Rollback and Hotfix Pipeline
+## 10. Rollback and Hotfix Pipeline
 
 | Trigger | Mechanism | Action |
 |---------|-----------|--------|
@@ -335,38 +314,13 @@ Cross-ref `../signals/audit.md` for the required audit log fields.
 
 ---
 
-## 12. Matrix.md Cells (release row)
-
-| Layer | Signal | Status | Detail |
-|-------|--------|--------|--------|
-| L7 × release | metrics | PASS | Canary SLI delta; error rate and latency per version |
-| L7 × release | logs | PASS | Deployment events with `service.version` |
-| L7 × release | traces | PASS | `service.version` tagging on every span |
-| L7 × release | profiles | PARTIAL | Regression comparison v(new) vs v(prev); tooling-dependent |
-| L7 × release | cost | PARTIAL | Cost delta per variant requires OpenCost label propagation |
-| mesh × release | metrics | PARTIAL | Canary routing rules observable via Envoy stats if mesh present |
-
----
-
-## 13. Anti-Patterns (candidates for `../anti-patterns.md §Section E Release & Deployment`)
-
-| Anti-pattern | Problem | Fix |
-|-------------|---------|-----|
-| No release markers in telemetry | Cannot correlate deploys to incidents | Set `service.version` on OTel Resource; emit deployment event |
-| Canary analysis without SLI metric | Promotion is blind; regressions ship silently | Add MetricTemplate/AnalysisTemplate referencing PromQL SLI |
-| Feature flag evaluation not observed | Variant effect invisible; A/B regression undetected | Emit `feature_flag.*` span attributes on every evaluation |
-| GitOps drift unalerted | Ghost state; cluster diverges from git manifest silently | Alert on `argocd_app_info{sync_status="OutOfSync"}` or `gotk_reconcile_condition{status="False"}` |
-| Rollback without post-mortem audit trail | No learning loop; same failure repeats | Record rollback event in audit log; cross-ref `../signals/audit.md` |
-
----
-
 ## References
 
 - Flagger: <https://flagger.app>
 - Argo Rollouts: <https://argoproj.github.io/rollouts>
 - OpenFeature: <https://openfeature.dev>
-- CNCF OpenFeature incubating announcement: <https://cncf.io/blog/2023/12/>
+- OpenFeature CNCF project page: <https://www.cncf.io/projects/openfeature/>
 - Flux (includes Flagger): <https://fluxcd.io>
+- Flux monitoring metrics: <https://fluxcd.io/flux/monitoring/metrics/>
 - Argo CD: <https://argo-cd.readthedocs.io>
 - OTel feature_flag semconv: <https://opentelemetry.io/docs/specs/semconv/feature-flags/>
-- controller-runtime metrics: <https://book.kubebuilder.io/reference/metrics>

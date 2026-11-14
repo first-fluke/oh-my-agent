@@ -53,14 +53,14 @@ Created by the orchestrator at session start. Updated throughout execution.
 ## Agents
 | Agent ID | CLI | PID | Status | Task |
 |----------|-----|-----|--------|------|
-| backend  | gemini | 12345 | running | task-1 |
-| frontend | gemini | 12346 | completed | task-2 |
+| backend  | codex  | 12345 | running | task-1 |
+| frontend | codex  | 12346 | completed | task-2 |
 | mobile   | claude | 12347 | running | task-3 |
 
 ## Configuration
 - MAX_PARALLEL: 3
-- MAX_RETRIES: 2
-- POLL_INTERVAL: 30s
+- MAX_RECOVERY_ATTEMPTS: 3
+- POLL_INTERVAL: bounded backoff
 
 ## Summary (filled on completion)
 - Total Tasks: X
@@ -86,7 +86,7 @@ confidently matched skill is sufficient.
 
 ### task-1
 - **Agent**: backend
-- **CLI**: gemini
+- **CLI**: codex
 - **Title**: JWT authentication API
 - **Status**: pending | in_progress | completed | failed | blocked
 - **Priority**: 1
@@ -97,12 +97,12 @@ confidently matched skill is sufficient.
 - **Acceptance Criteria**:
   - POST /api/auth/register with email + password
   - POST /api/auth/login returns access + refresh tokens
-  - Password hashing with bcrypt
+  - Password hashing with Argon2id
   - Rate limiting on auth endpoints
 
 ### task-2
 - **Agent**: frontend
-- **CLI**: gemini
+- **CLI**: codex
 - **Title**: Login and registration UI
 - **Status**: pending
 - **Priority**: 1
@@ -118,7 +118,7 @@ confidently matched skill is sufficient.
 
 ### task-3
 - **Agent**: qa
-- **CLI**: gemini
+- **CLI**: codex
 - **Title**: Security and performance review
 - **Status**: blocked
 - **Priority**: 2

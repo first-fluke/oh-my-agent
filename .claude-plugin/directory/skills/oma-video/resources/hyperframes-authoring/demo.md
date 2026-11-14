@@ -2,7 +2,9 @@
 
 Composition id `Demo`. The human-recorded capture arrives as
 `background.type: "video"` (full-frame, `<video>`, `objectFit: cover`);
-scenes are overlays on top of it.
+scenes are overlays on top of it. This composition exists only for a
+`--polish` run; without `--polish`, `oma video generate` copies the raw
+capture to the output MP4 and nothing here is applied.
 
 - **Opening**: start on the capture. Add an intro card only when the user asks for one: solid brand color, centered title 72px weight 800, hard cut in and out.
 - **Callout scenes**: box the exact text or button the narration points to with a thin accent outline. `onScreenText` appears as a lower-third pill (bottom `safeArea.bottomPct%`, 40px, weight 700, band `rgba(0,0,0,.6)`) only when it adds something the narration does not say.
@@ -26,6 +28,8 @@ bookmarks.
   is visible (`data-start` / `data-duration`). Do not rely on blur or
   pixelation for text.
 - Record each masked region and interval for the delivery report. The source
-  capture stays unmasked in the run directory; never deliver it.
+  capture stays unmasked in the run directory; never deliver it. The MP4 of a
+  run without `--polish` is that same unmasked capture: deliver it only after
+  this check found nothing to mask, otherwise re-run with `--polish`.
 - If frames cannot be inspected (no vision tool, no frame extraction), stop
   and report that the capture is unchecked instead of rendering it.

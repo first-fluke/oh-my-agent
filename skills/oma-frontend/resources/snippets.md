@@ -8,11 +8,13 @@ Copy-paste ready patterns. Use these as starting points, adapt to the specific t
 
 ```tsx
 // Internal nav: <Link>, never <a href="/...">
-// prefetch={false} is the DEFAULT — viewport prefetching eats container CPU/RAM.
 import Link from "next/link";
-<Link href="/gallery" prefetch={false} className="...">View gallery</Link>
+<Link href="/gallery" className="...">View gallery</Link>
 
-// Opt back in only for a few high-intent targets, and say why:
+// Prefetch follows the project's policy. Where the project turns viewport
+// prefetching off (it costs container CPU/RAM), pass prefetch={false} and
+// comment each link that opts back in:
+<Link href="/gallery" prefetch={false} className="...">View gallery</Link>
 // primary funnel CTA — prefetch is intentional
 <Link href="/checkout" className="...">Checkout</Link>
 
@@ -56,7 +58,7 @@ export function Card({ title, description, onClick }: CardProps) {
         "rounded-lg border bg-card p-4 text-left shadow-sm transition-colors",
         "hover:bg-accent",
         // visible focus indicator (WCAG 2.4.7 Focus Visible, 2.4.11 Focus Not Obscured)
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       )}
     >
       {/* Visible text inside the button is the accessible name —
@@ -97,7 +99,7 @@ const [id] = useState(() => crypto.randomUUID());
 
 // Pass the ref OBJECT (not its current value) to children that need an instance.
 //   The child reads .current inside its own effect or event handler, never in render.
-function Selectable({ targetRef }: { targetRef: React.RefObject<THREE.Object3D> }) {
+function Selectable({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
   // ...
 }
 
@@ -291,64 +293,3 @@ Invariants:
 - **No string concatenation for sentences**: word order differs per language; use
   interpolation with named params.
 - **Plurals via the library's plural rules** (`count`-style params), not `count === 1 ? ... : ...`.
-
----
-
-## Loading / Error / Empty States
-
-```tsx
-interface AsyncStateProps<T> {
-  data: T | undefined;
-  isLoading: boolean;
-  error: Error | null;
-  empty: React.ReactNode;
-  children: (data: T) => React.ReactNode;
-}
-
-export function AsyncState<T>({ data, isLoading, error, empty, children }: AsyncStateProps<T>) {
-  if (isLoading) return <div className="flex justify-center p-8"><Spinner /></div>;
-  if (error) return <ErrorCard message={error.message} />;
-  if (!data || (Array.isArray(data) && data.length === 0)) return <>{empty}</>;
-  return <>{children(data)}</>;
-}
-```
-
----
-
-## Responsive Grid Layout
-
-```tsx
-export function StatsGrid({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {children}
-    </div>
-  );
-}
-```
-
----
-
-## Vitest Component Test
-
-```tsx
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
-import { Card } from "./Card";
-
-describe("Card", () => {
-  it("renders title and description", () => {
-    render(<Card title="Test" description="Desc" />);
-    expect(screen.getByText("Test")).toBeInTheDocument();
-    expect(screen.getByText("Desc")).toBeInTheDocument();
-  });
-
-  it("calls onClick when clicked", async () => {
-    const onClick = vi.fn();
-    render(<Card title="Test" onClick={onClick} />);
-    await userEvent.click(screen.getByText("Test"));
-    expect(onClick).toHaveBeenCalledOnce();
-  });
-});
-```

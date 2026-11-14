@@ -1,8 +1,3 @@
----
-otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.43.0 (2026-07)"
----
-
 # Incident Forensics Playbook
 
 ## 1. Purpose
@@ -12,9 +7,9 @@ otel_semconv: "1.43.0 (2026-07)"
 The 6-dimension narrowing flow ties every signal file together through one executable playbook. No signal exists in isolation; correlation across signals is what separates diagnosis from guesswork.
 
 **In scope**: any incident surfaced by an alert, a user report, or an anomaly detected in metrics, traces, or logs.  
-**Out of scope**: incident response workflow (on-call rotation, escalation, postmortem tooling); use PagerDuty, OpsGenie, or Grafana OnCall for those.
+**Out of scope**: incident response workflow (on-call rotation, escalation, postmortem tooling); use PagerDuty, Jira Service Management, or Grafana Cloud IRM for those.
 
-Cross-skill entry point: `oma-debug` invokes this playbook on failure, pulling traces and logs by `request_id`.
+Cross-skill entry point: `oma-debug` hands production-failure evidence to this playbook, pulling traces and logs by `trace_id` (resolved from `request_id` when that is all the reporter has).
 
 ---
 
@@ -33,7 +28,7 @@ These attributes identify the workload that emitted the signal. They must be set
 | `service.name` | `service.*` | Stable | `payment-service` |
 | `service.namespace` | `service.*` | Stable | `checkout` |
 | `service.version` | `service.*` | Stable | `v2.4.1` |
-| `deployment.environment` | `deployment.*` | Stable | `prod` |
+| `deployment.environment.name` | `deployment.*` | Stable | `prod` |
 | `cloud.provider` | `cloud.*` | Stable | `aws` |
 | `cloud.region` | `cloud.*` | Stable | `ap-northeast-2` |
 | `cloud.availability_zone` | `cloud.*` | Stable | `ap-northeast-2a` |
@@ -75,11 +70,11 @@ Every structured log record MUST carry these correlation keys. Without `trace_id
 | `request_id` | `x-request-id` header (injected at API gateway) | `req_7Kp2mNxQr` |
 | `tenant.id` | W3C Baggage propagation (if multi-tenant) | `tnt_A9cBx3` |
 
-`tenant.id` is required only for multi-tenant services. Propagate via W3C Baggage per `resources/standards.md §W3C Baggage`. Do NOT carry user email or session tokens in baggage; see anti-patterns below.
+`tenant.id` is required only for multi-tenant services. Propagate via W3C Baggage per `resources/standards.md §W3C Baggage`. Do NOT carry user email or session tokens in baggage (`resources/anti-patterns.md` §A).
 
 ### 2.4 Propagation requirement
 
-W3C `traceparent` MUST propagate through every outbound HTTP and gRPC call. Stripping it silently is anti-pattern #1 in `resources/anti-patterns.md`. Verify propagation at every service boundary by checking that `trace_id` is consistent across services in a single request's log stream.
+W3C `traceparent` MUST propagate through every outbound HTTP and gRPC call. Stripping it silently is catalogued in `resources/anti-patterns.md` §F. Verify propagation at every service boundary by checking that `trace_id` is consistent across services in a single request's log stream.
 
 ---
 
@@ -108,7 +103,7 @@ If no `trace_id` was provided in Step 1, acquire one from metrics via exemplar:
 1. Open the alerting metric (e.g., `http_server_request_duration_seconds` p99 or `http_requests_total` error rate) for the incident time window.
 2. Locate a data point near the spike peak. Most modern metric backends (Grafana Mimir, Prometheus with exemplars, Datadog APM metrics) attach a trace exemplar to high-value data points.
 3. Click the exemplar → copy the `trace_id`.
-4. If the backend does not expose exemplars, filter error logs by `deployment.environment = prod` and the time window, then extract `trace_id` from the first matching log record.
+4. If the backend does not expose exemplars, filter error logs by `deployment.environment.name = prod` and the time window, then extract `trace_id` from the first matching log record.
 
 ### Step 3: Narrow by dimension (coarse to fine)
 
@@ -146,7 +141,7 @@ Classify the failing span's network layer using `span.kind` and span name patter
 | `SERVER` or `CLIENT` with HTTP attributes | L7 application | code.function.name |
 | `CLIENT` with `db.*` attributes | L7 DB call | traces.md DB patterns |
 | `INTERNAL` with `messaging.*` | L7 messaging | check DLQ |
-| eBPF-sourced span (Beyla/Pixie) | L4 transport | TCP retransmit metrics |
+| eBPF-sourced span (OBI/Beyla, Pixie) | L4 transport | TCP retransmit metrics |
 | Envoy/Istio proxy span | mesh | layers/mesh.md |
 
 For L3/L4 root causes (PMTUD black hole, TCP retransmit storm), the L7 error manifests as a connection timeout. The trace will show a CLIENT span with no child spans and a `server.address` pointing to the downstream. Pivot to L3/L4 metrics from there.
@@ -172,7 +167,7 @@ With the failing span identified, validate the hypothesis across all available s
 | logs | Filter by `trace_id` across all services. Look for WARNING or ERROR logs from downstream services within ±5 seconds of the failing span's start time. | `signals/logs.md` |
 | profiles | If available (Parca/Pyroscope): pull the CPU flame graph for the pod in the incident window. Look for unexpectedly hot functions or heap growth. | `signals/profiles.md` |
 
-All four signals should converge on the same root cause. If they diverge, re-examine the time window alignment (NTP drift is a common cause; see anti-patterns below).
+All four signals should converge on the same root cause. If they diverge, re-examine the time window alignment (NTP drift is a common cause; see `resources/meta-observability.md` Section B).
 
 ### Step 5: Release correlation
 
@@ -184,7 +179,7 @@ Compare the incident start time to recent deployments of the suspected `service.
 | ≤ 2 hours before incident | Medium; check changelog for risky changes |
 | ≤ 24 hours before incident | Low; consider, but rule out other causes first |
 
-Release markers must be present as structured log events or metric annotations carrying `service.version`, `deployment.environment`, and the deployment SHA (propagated via `oma-scm`). Without release markers, this step is blind; see anti-patterns below.
+Release markers must be present as structured log events or metric annotations carrying `service.version`, `deployment.environment.name`, and the deployment SHA (propagated via `oma-scm`). Without release markers, this step is blind (`resources/anti-patterns.md` §E).
 
 ### Step 6: Recover or rollback
 
@@ -211,23 +206,6 @@ Given a `trace_id` of `4bf92f3577b34da6a3ce929d0e0e4736`, the equivalent query i
 | SigNoz / OSS OTel | UI filter | trace_id filter field in Traces explorer |
 | Elastic APM | Kibana | `trace.id: "4bf92f3577b34da6a3ce929d0e0e4736"` in Discover or APM |
 
-```
-# Honeycomb query builder (BubbleUp / Trace view)
-trace:4bf92f3577b34da6a3ce929d0e0e4736
-
-# Datadog logs query (also works in APM trace search)
-@trace_id:4bf92f3577b34da6a3ce929d0e0e4736
-
-# Grafana Tempo — TraceQL
-{ trace:id = "4bf92f3577b34da6a3ce929d0e0e4736" }
-
-# Jaeger HTTP API (replace <host> with your Jaeger query host)
-curl http://<host>:16686/api/traces/4bf92f3577b34da6a3ce929d0e0e4736
-
-# Elastic (KQL in Discover or APM)
-trace.id: "4bf92f3577b34da6a3ce929d0e0e4736"
-```
-
 For metric-to-trace pivot via exemplars (Step 2):
 
 ```
@@ -235,7 +213,7 @@ For metric-to-trace pivot via exemplars (Step 2):
 histogram_quantile(0.99,
   sum by (le, service_name) (
     rate(http_server_request_duration_seconds_bucket{
-      deployment_environment="prod",
+      deployment_environment_name="prod",
       cloud_region="ap-northeast-2"
     }[5m])
   )
@@ -262,7 +240,7 @@ Alert fires: `http_requests_total{status=~"5..", service_name="payment-service",
 3. **Region pivot**: filter spans by `cloud.region = ap-northeast-2`. Spans from `ap-southeast-1` are healthy. Blast radius: single region.
 4. **Server pivot**: error spans distributed across 3 of 6 pods, all on `k8s.node.name = ip-10-0-2-11.ec2.internal`. Potential node-level issue; note but continue to service pivot first.
 5. **Service pivot**: earliest ERROR span is `service.name = payment-service`, `service.version = v2.4.1`. Downstream span to `redis-cache` shows CLIENT timeout with no response.
-6. **Layer pivot**: `span.kind = CLIENT`, `db.system = redis`. Layer: L7 DB call. No L3/L4 trace artifacts; this is an application-layer Redis client timeout.
+6. **Layer pivot**: `span.kind = CLIENT`, `db.system.name = redis`. Layer: L7 DB call. No L3/L4 trace artifacts; this is an application-layer Redis client timeout.
 7. **Code pivot**: `exception.type = TimeoutException`, `exception.message = "Redis pool exhausted after 5000ms"`, `code.function.name = processPayment`, `code.file.path = src/payments/processor.ts`, `code.line.number = 287`.
 8. **Cross-signal validation**:
    - metrics: Redis connection pool saturation metric (`redis_pool_active_connections / redis_pool_max_connections`) at 100% from 14:21 UTC.
@@ -281,7 +259,7 @@ Alert fires: p99 latency SLO burn-rate for `api-gateway` crosses 2x threshold. R
 3. **Region pivot**: `cloud.region = us-east-1` (this tenant's home region). Spans from other regions not affected. Blast radius: single region, single tenant.
 4. **Server pivot**: error spans distributed evenly across all pods. Not a node-level issue.
 5. **Service pivot**: latency spike originates in `service.name = tenant-config-service`, `service.version = v1.8.0` (unchanged for 2 weeks; not a release issue).
-6. **Layer pivot**: `span.kind = CLIENT` with `db.system = postgresql`. Layer: L7 DB call.
+6. **Layer pivot**: `span.kind = CLIENT` with `db.system.name = postgresql`. Layer: L7 DB call.
 7. **Code pivot**: no ERROR status; latency only. `span.duration = 812ms`. Span name: `SELECT tenant_config`. No exception attributes because the query succeeds, just slowly.
 8. **Cross-signal validation**:
    - metrics: `db_client_operation_duration_seconds` p99 for `tenant-config-service` at 800ms. Other services normal.
@@ -311,38 +289,3 @@ Alert fires: pod restart storm on `rendering-service` pods. `k8s.pod.name` shows
 8. **Action**: restore the known-good `v3.0.9` image through the GitOps/Helm controller that owns the Flagger target, using the approved controller-specific recovery procedure. `kubectl argo rollouts undo` operates on Argo Rollout resources and does not roll back a Flagger-managed Deployment. Verify Flagger status, actual pod image versions, and OOM/restart metrics after reconciliation. Hotfix: add LRU eviction to the template cache with a justified size limit, then add memory saturation as a custom Flagger analysis gate.
 
 Reference: `boundaries/release.md` for Flagger/Argo canary analysis configuration; `signals/profiles.md` for Pyroscope heap diff workflow; `layers/L7-application/crash-analytics.md` for mobile/native crash-specific forensics.
-
----
-
-## 6. Integration Points
-
-This file does not operate in isolation. The following skill files provide the detailed implementation guidance for each step of the narrowing flow.
-
-| Step / Concern | Cross-reference |
-|---|---|
-| Per-tenant pivot (Scenario B, `tenant.id` baggage) | `boundaries/multi-tenant.md`; 4-tier isolation and per-tenant collector routing |
-| Mesh trace continuity (mesh span injection, zero-code) | `layers/mesh.md`; Envoy span propagation, baggage scrubbing at ingress |
-| Flamegraph acquisition (Scenario B profiles, Scenario C heap diff) | `signals/profiles.md`; Parca/Pyroscope per-tenant labeling, Pyroscope diff view |
-| Canary/rollback gates (Scenario C Flagger analysis) | `boundaries/release.md`; Flagger + Argo Rollouts custom metric gates, GitOps |
-| Mobile/native crash OOM forensics | `layers/L7-application/crash-analytics.md`; CFR, symbolication, crash-linked release tracking |
-| Release marker injection | `boundaries/release.md`; deployment SHA → `service.version` + marker event via `oma-scm` |
-| Semconv stability for MRA attributes | `resources/standards.md §3`; stability tier table |
-| Full signal-layer-boundary coverage | `resources/matrix.md`; 112-cell coverage map |
-
----
-
-## 7. Anti-patterns
-
-Violating these patterns makes the narrowing flow impossible or misleading. Full list lives in `resources/anti-patterns.md`.
-
-| Anti-pattern | Consequence | Dimension blocked |
-|---|---|---|
-| Missing `trace_id` in structured logs | Log-trace join impossible; Step 4 cross-signal validation fails | All |
-| `request_id` not injected at API gateway | User-support correlation impossible; Step 1 has no starting point | All |
-| No release markers in log/metric stream | Step 5 release correlation is blind; rollback decision is guesswork | Service / release |
-| NTP drift unmonitored on nodes | Waterfall chart timestamps are wrong; parent-before-child ordering unreliable; Step 3 pivots mislead | Layer / Code |
-| PII in W3C Baggage across trust boundaries | `tenant.id` is acceptable; user email or session token in baggage is a GDPR/PIPA violation that becomes evidence in incident investigation records | All (compliance risk) |
-| `user.id` or `user.email` as a metric label | High-cardinality metric explosion + PII in metric storage; cardinality guardrails in `resources/meta-observability.md` | Service |
-| Canary Flagger analysis missing memory saturation gate | OOMKilled pods do not fail the success rate threshold; auto-rollback never triggers (Scenario C) | Service / infra |
-
-Normative anti-patterns reference: `resources/anti-patterns.md §Section Z` (items 17, 18 directly referenced above).

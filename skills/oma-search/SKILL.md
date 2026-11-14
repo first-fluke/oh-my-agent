@@ -87,8 +87,8 @@ verify an individual claim.
    when the remaining evidence gap needs it; do not fan out by default.
 3. Read the relevant content needed to support the answer. Retain URLs and
    inspection status, deduplicate results, and apply source/version constraints.
-   Use `resources/trust-registry.md` for provenance rules or an explicitly needed
-   optional domain diagnostic; no numeric lookup is required for ordinary results.
+   Use `resources/source-provenance.md` when provenance needs interpretation or
+   a domain diagnostic is requested.
 4. Rank by relevance and source suitability for the question. Return the requested
    answer or sources with evidence, the actual route/provider and material limits.
 
@@ -101,7 +101,7 @@ oma search fetch <url>
 oma search trust <domain>
 ```
 Use `api`, `rss`, `meta`, `media`, `archive` or `doctor` only when the selected
-operation needs that primitive. `trust` remains an optional domain diagnostic.
+operation needs that primitive. `trust` is an optional domain diagnostic.
 
 ### Guardrails
 - Preserve explicit route, provider, source, host, version and date constraints.
@@ -109,8 +109,8 @@ operation needs that primitive. `trust` remains an optional domain diagnostic.
 - Treat search snippets and excerpts as limited evidence; identify unread sources.
 - Do not manufacture trust scores or promote Context7/GitHub results to claim-level
   verification based on their provider or hosting domain.
-- Do not repeat successful routes, search local project files via the web, install
-  a provider or track a repository automatically.
+- Do not search local project files via the web, and do not install a provider,
+  browser or dependency automatically.
 
 ### Resource scope and effects
 Search may contact external services and spawn configured provider or code-host
@@ -121,8 +121,6 @@ skill definitions. Local source navigation belongs to the configured code tools.
 ## References
 - Route selection: `resources/intent-rules.md` (unclear external request)
 - Execution: `resources/execution-protocol.md` (selected route only)
-- Provenance and optional domain diagnostics: `resources/trust-registry.md` (source/evidence interpretation)
+- Provenance and optional domain diagnostics: `resources/source-provenance.md` (source/evidence interpretation)
 - Recovery: `resources/error-playbook.md` (route failure)
-- Result checks: `resources/checklist.md` (applicable source and evidence checks)
-- Examples: `resources/examples.md` (unfamiliar input or boundary)
 - Local-code handoff: `references/_shared/core/code-intelligence.md` (local requests)

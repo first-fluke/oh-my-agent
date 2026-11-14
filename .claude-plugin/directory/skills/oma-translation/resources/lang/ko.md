@@ -143,7 +143,7 @@ or verb. It changes the meaning.
 Keep expressions that are already established idiom in the field and would sound
 stilted if flattened (`병목`, `롤백`, `핫픽스`).
 
-### KO-8. Korean translation-ese constructions
+### KO-7. Korean translation-ese constructions
 
 | Pattern | Bad | Good |
 |---|---|---|
@@ -160,7 +160,7 @@ stilted if flattened (`병목`, `롤백`, `핫픽스`).
 Korean marks plurality with quantifiers and context. Use `들` only when the
 plural reading would otherwise be lost.
 
-### KO-9. Typography and spacing
+### KO-8. Typography and spacing
 
 - **Inline code + particle**: no space between a backtick span and the particle
   that follows. `` `prompt` 로 `` → `` `prompt`로 ``.
@@ -176,13 +176,13 @@ plural reading would otherwise be lost.
 - **Middle dot**: `·` for tight coordination in headings (`설치·설정`), commas in
   body text.
 
-### KO-10. Loanword orthography (외래어 표기법)
+### KO-9. Loanword orthography (외래어 표기법)
 
 Use the standard form. Frequent misspellings in machine output:
 
 ```
 컨텐츠 → 콘텐츠      메세지 → 메시지      데이타 → 데이터
-윈도우즈 → 윈도우    타겟 → 타깃          레퍼런스 → 레퍼런스 (ok)
+윈도우즈 → 윈도      타겟 → 타깃
 쉐이더 → 셰이더      플래폼 → 플랫폼      비지니스 → 비즈니스
 어플리케이션 → 애플리케이션              스케쥴 → 스케줄
 ```
@@ -190,7 +190,7 @@ Use the standard form. Frequent misspellings in machine output:
 When the project's existing translations consistently use a non-standard form,
 follow the project and note the conflict once.
 
-### KO-11. Numbers, dates, units
+### KO-10. Numbers, dates, units
 
 - Dates: `2026년 8월 20일` in prose, `2026-08-20` in tables and logs.
 - Ranges: `3~5개` in prose, `3-5` inside code or config values.
@@ -198,7 +198,7 @@ follow the project and note the conflict once.
   uses a comparable scale word.
 - Percent: `40%` with no space.
 
-### KO-12. Subagent and multi-hop Korean
+### KO-11. Subagent and multi-hop Korean
 
 When Korean text will be consumed by another agent rather than by a person
 (subagent prompts, intermediate result files, handoff summaries), apply `KO-1`
@@ -221,8 +221,8 @@ Check source-to-Korean grammar and project conventions before delivery.
 - [ ] No body sentence ending in a noun, adverbial, or connective (`KO-3`)
 - [ ] No bare Sino-Korean or loanword noun standing in for a verb (`KO-4`, `KO-5`)
 - [ ] No invented figurative vocabulary where the source was plain (`KO-6`)
-- [ ] No 이중 피동, `~에 대한`, `~에 있어서`, `~들` forcing (`KO-8`)
-- [ ] No space between inline code and its particle; no space in `5개` (`KO-9`)
-- [ ] No `—`, no curly quotes (`KO-9`)
-- [ ] Loanwords follow 외래어 표기법 or the project's established forms (`KO-10`)
-- [ ] Korean handed to another agent passes `KO-1`–`KO-3` (`KO-12`)
+- [ ] No 이중 피동, `~에 대한`, `~에 있어서`, `~들` forcing (`KO-7`)
+- [ ] No space between inline code and its particle; no space in `5개` (`KO-8`)
+- [ ] No `—`, no curly quotes (`KO-8`)
+- [ ] Loanwords follow 외래어 표기법 or the project's established forms (`KO-9`)
+- [ ] Korean handed to another agent passes `KO-1`–`KO-3` (`KO-11`)

@@ -35,11 +35,11 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 
 ## Step 0: Preparation (DO NOT SKIP)
 
-1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
+1. Read `.agents/skills/oma-coordination/SKILL.md` and apply its Guardrails.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
-4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
-5. Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`; the rest of that file is the event schema reference.
+5. Emit required L1 decisions by calling `oma state emit` directly, as documented in the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`.
 
 ---
 
@@ -87,8 +87,8 @@ Stop and report only when the plan cannot be produced: the user declines to plan
    ```
 
 3. Session ID: reuse the id generated in Step 1b when the plan was created in this run; otherwise generate one now (format: `session-YYYYMMDD-HHMMSS`).
-4. **Domain gate**: for each planned task, classify it into `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`, and derive `exposed_skill_set` (skills whose name is in `domain_tags`). If fewer than 2 skills match confidently, fall back to the full installed set and mark `exposure_fallback: true`. See `.agents/skills/oma-orchestration/SKILL.md` (PHASE 1.5) for the full rules.
-5. Create `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the memory base. Record `Exposed Skills` and `Exposure Fallback` per task.
+4. **Task references**: for each planned task, classify it into `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`, and select the references the task needs. One confidently matched skill is sufficient; expand the set only when classification is uncertain or a dependency requires another domain. See `.agents/skills/oma-orchestration/SKILL.md` (PHASE 1.5) for the full rules.
+5. Create `orchestrator-session-{sessionId}.md` and `task-board-{sessionId}.md` in the memory base. Record `Selected References` and `Selection Reason` per task; these are coordinator notes, not launcher-enforced exposure fields.
 6. Set session status to RUNNING.
 
 ---
@@ -99,58 +99,21 @@ Use the loaded plan and record task ownership, dependency tiers, and run identit
 
 For each priority tier (lowest first: tier 1, then tier 2, etc.):
 
-- Each agent gets: task description, API contracts, relevant context from `_shared/core/context-loading.md`, and only its task's `exposed_skill_set` as the available specialist list (see `.agents/skills/oma-orchestration/resources/subagent-prompt-template.md` `{EXPOSED_SKILL_SET}`).
+- Each agent gets: task description, API contracts, relevant context from `_shared/core/context-loading.md`, and its task's selected references with their load conditions (see `.agents/skills/oma-orchestration/resources/subagent-prompt-template.md`, `Task references`).
 - Update `task-board-{sessionId}.md` with agent status.
-- If a failed task's review history indicates a specialist outside its `exposed_skill_set` was needed, re-classify the task and re-dispatch with the expanded set instead of retrying against the original narrow set.
+- If a failed task's review history shows a needed domain reference was missing, update the task's reference selection without changing its frozen acceptance contract, and re-dispatch with it instead of retrying against the original selection.
 
 ### Per-Agent Dispatch
 
-For each planned agent, first resolve the target vendor from `.agents/oma-config.yaml`.
+Dispatch each planned agent by the Dispatch Rule in `.agents/skills/_shared/core/vendor-detection.md`: the runtime's native role subagent when the agent's target vendor is the current runtime and that native path is verified, otherwise `oma agent spawn` for that agent only. On OpenCode and Kilo Code, a same-session task always uses the native `task` tool.
 
-- If `target_vendor === current_runtime_vendor` and that runtime has a verified native role-subagent path, use the native vendor variant agent definition.
-- Otherwise, use `oma agent spawn` for that agent only.
+- **Native**: one call per agent, using the role names in that file.
+- **CLI fallback**: `oma agent spawn {agent_id} {prompt_file} {session_id} --task-id {task.id} -w {workspace}`
 
-### If Claude Code and target vendor is Claude
-
-Spawn agents via **Agent tool** using `.claude/agents/{agent}.md` definitions.
-
-- **Multiple Agent tool calls in same message** = true parallel execution
-- Agent mapping:
-
-| Domain | Subagent File |
-|:------|:---------------|
-| backend | `.claude/agents/backend-engineer.md` |
-| frontend | `.claude/agents/frontend-engineer.md` |
-| mobile | `.claude/agents/mobile-engineer.md` |
-| db | `.claude/agents/db-engineer.md` |
-| qa | `.claude/agents/qa-reviewer.md` |
-| debug | `.claude/agents/debug-investigator.md` |
-| refactor | `.claude/agents/refactor-engineer.md` |
-| pm | `.claude/agents/pm-planner.md` |
-| architecture | `.claude/agents/architecture-reviewer.md` |
-| tf-infra | `.claude/agents/tf-infra-engineer.md` |
-| docs | `.claude/agents/docs-curator.md` |
+On either path:
 
 - Include API contracts from `.agents/results/api-contracts/` (run artifacts) or `docs/plans/contracts/` (durable specs) if they exist
 - Load only task-relevant context (check codebase structure around affected domains)
-
-### If OpenCode and target vendor is OpenCode
-
-Spawn same-session subagents with the native `task` tool and `subagent_type: {agent-id}`. Do not use `oma agent spawn` for same-session OpenCode tasks; that external fallback does not appear as a native child task in the active UI/TUI.
-
-### If Kilo Code and target vendor is Kilo
-
-Same as OpenCode: spawn same-session subagents (`.kilo/agents/{agent}.md`) with the native `task` tool and `subagent_type: {agent-id}`. Do not use `oma agent spawn` for same-session Kilo tasks.
-
-### If Codex CLI and target vendor is Codex
-
-Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
-Pass each agent its task description, API contracts, and relevant context.
-If native dispatch is not verified in the current runtime, fall back to `oma agent spawn {agent_id} {prompt_file} {session_id} --task-id {task.id} -w {workspace}`.
-
-### If target vendor differs from current runtime, or native dispatch is unavailable
-
-Spawn agents using `oma agent spawn {agent_id} {prompt_file} {session_id} --task-id {task.id} -w {workspace}` only (custom subagents not available).
 
 ---
 
@@ -169,7 +132,7 @@ Use observed failures, missing artifacts, and unmet acceptance criteria to diagn
 
 If useful context is lost or progress remains stalled, save completed work, remaining criteria, verification, and artifact paths before resuming or re-dispatching. Preserve partial results and avoid duplicating a live attempt. Follow `.agents/skills/_shared/core/context-budget.md` and the existing retry/cost limits.
 
-> **Claude Code note**: agents dispatched with `run_in_background=true` report via background completion notifications, not synchronous return values — wait for each notification before proceeding (foreground Agent calls return inline). Check status, files changed, and issues in each agent's result; `oma agent:status` and `progress-*` polling remain the monitoring path for CLI-fallback spawns.
+> **Claude Code note**: agents dispatched with `run_in_background=true` report via background completion notifications, not synchronous return values — wait for each notification before proceeding (foreground Agent calls return inline). Check status, files changed, and issues in each agent's result; `oma agent status` and `progress-*` polling remain the monitoring path for CLI-fallback spawns.
 
 ---
 

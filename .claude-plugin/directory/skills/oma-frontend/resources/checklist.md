@@ -1,6 +1,6 @@
 # Frontend Agent - Self-Verification Checklist
 
-Run through every item before submitting your work.
+Check the items that apply to the change before handoff. An item that names a command or tool is a check to select: run it only when the user or the active workflow requires it, and otherwise report it as not verified.
 
 ## Next.js 16 Conventions
 - [ ] Request-proxy/auth-gate file is named `proxy.ts` (NOT `middleware.ts`) and exports `proxy` (NOT `middleware`)
@@ -8,16 +8,16 @@ Run through every item before submitting your work.
 - [ ] Do NOT flag `src/proxy.ts` as dead code or recommend renaming to `middleware.ts`; `proxy.ts` is the canonical Next.js 16+ convention
 <!-- oma-docs:ignore-end -->
 - [ ] Config flags use the `Proxy` form (e.g. `skipProxyUrlNormalize`), not the legacy `Middleware` form
-- [ ] Every `<Link>` passes `prefetch={false}`; any prefetching link is a deliberate high-intent target with an inline reason
+- [ ] `<Link>` prefetch follows the project's policy; a link that deviates from it carries an inline reason
 
 ## TypeScript
 - [ ] Strict mode, no `any` types
 - [ ] Explicit interfaces for all component props
-- [ ] No TypeScript errors (run the project's configured `typecheck` command; preserve framework checks and the selected TypeScript 7/native-preview executable)
+- [ ] No TypeScript errors (the check is the project's configured `typecheck` command; preserve framework checks and the selected TypeScript 7/native-preview executable)
 
 ## Styling
 - [ ] Tailwind CSS only (no inline styles, no CSS modules)
-- [ ] Responsive at 320px, 768px, 1024px, 1440px
+- [ ] Responsive at the task's target breakpoints (default set in `../../../rules/frontend.md` §Performance: 320px, 768px, 1024px, 1440px)
 - [ ] Dark mode supported (if project uses it)
 - [ ] No hardcoded colors (use Tailwind theme tokens)
 
@@ -51,18 +51,12 @@ required functional, responsive, and accessibility checks still apply.
 - [ ] Reload-after-save round-trips state for any save action surfaced in the UI
 
 ## React 19 hook patterns (catch what eslint catches)
-React 19 + recent `eslint-plugin-react-hooks` flag these as hard errors. They aren't style nits; they break runtime behavior. Avoid them at write-time, not "fix later".
+React 19 + recent `eslint-plugin-react-hooks` flag these as hard errors that break runtime behavior. Patterns and replacements: `snippets.md` §React 19 hook patterns.
 
-- [ ] **Don't put `setState` synchronously inside `useEffect`** (`react-hooks/set-state-in-effect`). Cascading renders trash performance and, in graphics contexts, can exhaust GPU resources. Replace with: derive in render (`const count = items.length`), lazy `useState` initializer (`useState(() => computeOnce())`), move the update into the event handler that triggered it, or `useSyncExternalStore` for external subscriptions.
-- [ ] **Don't read `ref.current` during render** (`react-hooks/refs`). Refs are null on first render and don't trigger re-renders when they attach, so any JSX gated on `ref.current` is wrong. Read refs only inside event handlers or effects. When a child component needs an instance, pass the ref object itself (or use a callback ref); let the child read `.current` from inside its own effect/handler.
-- [ ] **`useEffect` deps complete and stable.** List every referenced reactive value. Wrap object/array literals in `useMemo` so the dep identity doesn't change every render.
-- [ ] **No prop-mirroring via effect.** `useEffect(() => setX(derive(props)))` is always a bug; compute `x` in the render body or memoize.
-
-## react-three-fiber specifics
-- [ ] Heavy components (`Canvas`, drei helpers, anything that touches `window`/WebGL) load via `next/dynamic` with `ssr: false`.
-- [ ] Effects, helpers, and post-process passes mount unconditionally on the relevant state; don't gate them on `ref.current` truthiness in JSX.
-- [ ] Background and lighting work without remote assets when the project doesn't ship a CDN HDR. Solid `<color attach="background">` or local textures beat a `<Environment preset>` that depends on network.
-- [ ] Shadow map sizes scale to the number of lights; default to 1024 unless the scene needs more. Multiple 2048-shadowed lights drain GPU memory on integrated graphics.
+- [ ] No synchronous `setState` inside `useEffect` (`react-hooks/set-state-in-effect`): derive in render, use a lazy `useState` initializer, move the update into the triggering event handler, or use `useSyncExternalStore` for external subscriptions.
+- [ ] No `ref.current` read during render (`react-hooks/refs`): read refs only inside event handlers or effects; pass the ref object (or a callback ref) to a child that needs the instance.
+- [ ] `useEffect` deps complete and stable: list every referenced reactive value; memoize object/array literals so dep identity does not change every render.
+- [ ] No prop-mirroring via effect: `useEffect(() => setX(derive(props)))` is always a bug; compute `x` in the render body or memoize.
 
 ## Performance
 - [ ] No unnecessary re-renders (check with React DevTools Profiler)

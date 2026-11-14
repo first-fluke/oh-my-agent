@@ -2,7 +2,8 @@
 
 Load this file with `../references/_shared/core/anti-ai-prose.md` and the target
 `lang/{code}.md` when reviewing prose in a language without a selected external
-style skill. English and Korean use `style-skills.md` instead. Common pattern
+style skill. English and Korean use `style-skills.md` instead and come here
+only through its unavailable-skill fallback. Common pattern
 definitions live in the shared resource; this file owns fidelity exceptions and
 translation-specific rules for the remaining language routes.
 
@@ -39,9 +40,10 @@ Patterns where the target text mimics source-language (typically English) gramma
 instead of following native structure.
 
 The categories below are shared. **Every example and every fix is
-language-specific**, so the working version of each rule lives in
-`lang/{code}.md` under "Localizations of shared rules". A profile may also
-declare that a category does not apply to its language.
+language-specific**, so the working version of each rule lives in the target
+profile: under "Localizations of shared rules" in `lang/ja.md` and
+`lang/zh.md`, and in the numbered language-only rules of the other profiles.
+A profile may also declare that a category does not apply to its language.
 
 ### Unnecessary Connectives
 

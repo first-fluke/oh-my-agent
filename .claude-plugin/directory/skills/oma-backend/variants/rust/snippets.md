@@ -40,14 +40,11 @@ pub async fn get_resource(
     user: AuthUser,
     Path(resource_id): Path<Uuid>,
 ) -> Result<Json<ResourceResponse>, AppError> {
+    // The service owns the ownership check and returns NotFound/Forbidden.
     let resource = state
         .resource_service
-        .get_by_id(&state.db, resource_id)
+        .get_for_user(&state.db, resource_id, user.id)
         .await?;
-
-    if resource.user_id != user.id {
-        return Err(AppError::Forbidden);
-    }
 
     Ok(Json(resource))
 }

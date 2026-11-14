@@ -9,4 +9,4 @@
 | Engine prints setup-wizard prompts | first run, no `~/.config/last30days/.env` | follow upstream Step 0 in chat; never answer consent questions on the user's behalf |
 | Engine non-zero exit | source/network/auth failure | report stderr verbatim; check `oma market run "<topic>" --diagnose` |
 | Sources listed as skipped in footer | keys / cookies absent | keep the list visible; suggest the upstream setup wizard for those sources |
-| Output has `Sources:` block, `—`, `##` in body | LAW violation during synthesis | fix per upstream LAWs and `output-laws.md` self-check before writing |
+| Output has `Sources:` block, `—`, `##` in body | LAW violation during synthesis | fix the written brief per upstream LAWs and re-run the `output-laws.md` self-check before delivery |

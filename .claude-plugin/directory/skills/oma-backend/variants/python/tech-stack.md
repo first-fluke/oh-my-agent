@@ -1,45 +1,45 @@
-# Backend Agent - Tech Stack Reference
+# Backend Agent - Tech Stack Reference (Python)
 
-## Python (Preferred)
-- **Framework**: FastAPI 0.110+
-- **ORM**: SQLAlchemy 2.0 (async)
-- **Validation**: Pydantic v2
+## Primary Stack
+- **Language**: Python 3.11+ (type hints on all signatures)
+- **Framework**: Litestar 2.25+, using the explicit parameter markers (`JSONBody`, `FromPath`, `FromQuery`, `NamedDependency`)
+- **ORM**: SQLAlchemy 2.0 (async) through Advanced Alchemy 1.10+ (`litestar[sqlalchemy]`): `SQLAlchemyPlugin` for the engine and request-scoped session, `SQLAlchemyAsyncRepositoryService` with an inner `SQLAlchemyAsyncRepository` for services and data access, `UUIDv7AuditBase` models
+- **Validation**: msgspec `Struct`s with `Annotated[..., msgspec.Meta(...)]` constraints (Litestar uses msgspec internally, so no extra is needed); Litestar DTOs only where the wire shape must differ from the model
+- **IDs**: UUIDv7 primary keys (`uuid-utils`)
 - **Database**: PostgreSQL 16+, Redis 7+
-- **Auth**: python-jose (JWT), passlib[argon2] (Argon2id; bcrypt verify for legacy hashes)
-- **Testing**: pytest, httpx (async test client)
-- **Migrations**: Alembic
+- **Auth**: `litestar.security.jwt.JWTAuth` (`litestar[jwt]`), `pwdlib[argon2]` (Argon2id; add the `bcrypt` extra to verify legacy hashes)
+- **Testing**: pytest, `litestar.testing.AsyncTestClient` (built on httpx)
+- **Migrations**: Alembic, run through the `litestar database` CLI that the Advanced Alchemy plugin registers
 
-## Node.js (Alternative)
-- **Framework**: Express.js, NestJS, Hono
-- **ORM**: Prisma, Drizzle
-- **Validation**: Zod
-- **Auth**: jsonwebtoken, argon2 (node-argon2)
-- **Testing**: Jest, Supertest
+## Ecosystem Defaults
+Use these when the project needs one and has no established choice.
+
+| Need | Default |
+|------|---------|
+| ASGI server | Granian (uvicorn acceptable) |
+| Background jobs | SAQ via `litestar-saq` |
+| Logging | structlog via Litestar's structlog plugin |
+| Stores/cache | Litestar stores with Redis |
 
 ## Architecture
-
 ```
-backend/
-  domain/           # Business logic (pure Python, no framework deps)
-  application/      # Use cases, services
-  infrastructure/   # Database, cache, external APIs
-  presentation/     # API endpoints, middleware
+app/
+  controllers/      # Litestar controllers (thin, delegate to services)
+  services/         # Advanced Alchemy services: business logic, authorization, inner repository
+  models/           # SQLAlchemy models on Advanced Alchemy bases
+  schemas/          # msgspec request/response Structs
+  core/             # Config, database plugin config, auth, error types
+  main.py           # Litestar app wiring (plugins, auth, exception handlers)
+migrations/         # Alembic revisions
 ```
 
 ## Security Requirements
-- Password hashing: Argon2id (bcrypt cost 10-12 acceptable for legacy compatibility)
+- Password hashing: Argon2id via `pwdlib` (bcrypt cost 10-12 acceptable for legacy compatibility)
 - JWT: 15min access tokens, 7 day refresh tokens
 - Rate limiting on auth endpoints
-- Input validation with Pydantic/Zod
-- Parameterized queries (never string interpolation)
+- Input validation with msgspec Structs on `JSONBody` and constrained parameter markers
+- Parameterized queries via SQLAlchemy (never string interpolation)
 
-## ORM Guidance
-- Cross-ORM operational rules and official vendor references: `resources/orm-reference.md`
-- Primary references covered there: Prisma, SQLAlchemy, TypeORM, Sequelize, Hibernate
-
-## Optional Serena examples
-
-These examples apply only when Serena is the configured provider and its tools are available. Otherwise use the project-selected provider or native search under the shared code-intelligence contract.
-- `find_symbol("create_todo")`: Locate existing function
-- `get_symbols_overview("app/api")`: List all endpoints
-- `find_referencing_symbols("User")`: Find all usages of a model
+## Linter/Formatter
+- **Ruff**: lint + format
+- **mypy** (or pyright): static type checking

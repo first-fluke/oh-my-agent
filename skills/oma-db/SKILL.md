@@ -185,8 +185,8 @@ verification outcome; omit unaffected documents.
 
 ## References
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
-- Self-check (run before handoff): `resources/checklist.md`
-- Examples: `resources/examples.md`
+- Self-check (check the sections relevant to the task before handoff): `resources/checklist.md`
+- Examples: `resources/examples.md` (worked outputs for full design, RAG retrieval, live-table remediation, and DB business-logic requests)
 - Deliverable templates: `resources/document-templates.md`
 - Anti-pattern review guide: `resources/anti-patterns.md` (schema/query review or affected business logic in DB objects and ORM hooks)
 - Live migration playbook: `resources/migration-playbook.md` (live schema/data changes or moving existing DB business logic into the application)
@@ -198,4 +198,4 @@ verification outcome; omit unaffected documents.
 - Clarification: `references/_shared/core/clarification-protocol.md`
 - Context budget: `references/_shared/core/context-budget.md`
 - Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
-- Observability handoff: `../oma-observability/SKILL.md` §Integrations — DB span conventions (N+1, lock-wait, pool), cardinality budgets
+- Observability handoff: `../oma-observability/SKILL.md` §Integrations — DB span conventions (N+1, connection pool), cardinality budgets

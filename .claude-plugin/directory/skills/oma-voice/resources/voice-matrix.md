@@ -37,13 +37,6 @@ Voicebox bundles seven engines. All run locally; the user picks one when creatin
 - **Bottom-tier hardware**: LuxTTS or Kokoro stay snappy without a GPU.
 - **Long-form narration (over 5 minutes total in chunks)**: prefer TADA or Chatterbox Turbo for sustained expression; reserve Kokoro for short bursts.
 
-## Profile selection heuristic
-
-1. If the user passes an explicit `profile` argument, use it.
-2. Else use `notification_profile` (notify mode) or `asset_profile` (asset mode) from `voice-config.yaml`.
-3. Else use the first available profile from `voicebox_list_profiles` whose engine matches the detected language pick in the table above.
-4. Else exit with a setup hint pointing the user to the Voicebox app Profiles tab.
-
 ## Caveats
 
 - Engine names above are the ones Voicebox surfaces in its UI. If voicebox renames an engine, the skill defers to whatever REST `GET /models/status` returns (model status is not exposed as an MCP tool).

@@ -17,9 +17,9 @@ with `audio-processing.md` and needs no backend.
 3. `auto` probes Voicebox `GET /health` first and VoiceStudio `GET /health`
    second; the first healthy one wins. An explicit backend probes only itself
    and never falls through.
-4. With no healthy backend, print the Voicebox hint from `execution-protocol.md`
-   plus "or open the VoiceStudio app", and exit with code 5. Do not launch,
-   install or update either app.
+4. With no healthy backend, give the Voicebox hint from `execution-protocol.md`
+   plus "or open the VoiceStudio app", then stop and report `blocked`. Do not
+   launch, install or update either app.
 
 ## Route to the upstream skill
 

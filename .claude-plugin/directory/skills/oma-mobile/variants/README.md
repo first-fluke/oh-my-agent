@@ -6,40 +6,47 @@ is represented here, each as a self-contained variant.
 
 | Variant | `stack.yaml` `language` | Files |
 |---------|------------------------|-------|
-| `swift-ios/` | `swift` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.swift` |
-| `kotlin-android/` | `kotlin` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.kt` |
-| `flutter/` | `flutter` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.dart` |
-| `react-native/` | `react-native` | `stack.yaml`, `tech-stack.md`, `snippets.md`, `api-template.ts` |
+| `swift-ios/` | `swift` | `stack.yaml`, `tech-stack.md`, `snippets.md` |
+| `kotlin-android/` | `kotlin` | `stack.yaml`, `tech-stack.md`, `snippets.md` |
+| `flutter/` | `flutter` | `stack.yaml`, `tech-stack.md`, `snippets.md` |
+| `react-native/` | `react-native` | `stack.yaml`, `tech-stack.md`, `snippets.md` |
 
 ## Layout contract
 
 Each `variants/{platform}/` directory contains:
 
-- **`stack.yaml`** — the stack SSOT, validated against `stack.schema.json`.
-  Declares `language`, `framework`, `state`, `navigation`, `http_client`,
-  `local_storage`, `response_cache`, `structure`, `source`, and a `verify:`
-  block consumed by `oma verify agent mobile`.
+<!-- oma-docs:ignore-start -->
+- **`stack.yaml`** — the variant's stack manifest, validated against
+  `stack.schema.json`. Declares `language`, `framework`, `state`, `navigation`,
+  `http_client`, `local_storage`, `response_cache`, `structure`, `source`, and a
+  `verify:` block. It is the seed for `/stack-set`; `oma verify agent mobile`
+  reads the project manifest at `../stack/stack.yaml`, not this file.
+<!-- oma-docs:ignore-end -->
 - **`tech-stack.md`** — human-readable narrative reference (`stack.yaml` wins on
   conflict).
-- **`snippets.md`** — copy-paste-ready, numbered code patterns.
-- **`api-template.{swift,kt,dart,ts}`** — the canonical data/repository template,
-  including the repository-layer response cache when required.
+- **`snippets.md`** — numbered code patterns, including the data/repository
+  layer and the repository-layer response cache when required.
 
-`stack.schema.json` is the shared schema for all variants.
+<!-- oma-docs:ignore-start -->
+`stack.schema.json` is the shared schema for all variants and for the generated
+`stack/stack.yaml`.
+<!-- oma-docs:ignore-end -->
 
 ## resources/ is shared meta only
 
 The sibling `resources/` directory holds **only** cross-platform, protocol, and
 meta documents shared by every variant: `execution-protocol.md`,
-`checklist.md`, `error-playbook.md`, `tech-stack.md` (the variant index +
-cross-platform guidance), and the screen templates. Platform-specific stack
-narrative and snippets belong in the variant, not in `resources/`.
+`checklist.md`, `error-playbook.md`, and `tech-stack.md` (the variant index +
+cross-platform guidance). Platform-specific stack narrative and snippets belong
+in the variant, not in `resources/`.
 
 ## Stack selection
 
-A project's stack is detected from its manifest (`Package.swift`, `settings.gradle.kts`
-+ `com.android.application`, `pubspec.yaml`, `package.json` + `react-native`) or
-chosen via `/stack-set`, which seeds a
-project-specific `stack/` from the matching variant baseline (adapt, never
-blind-copy). The variant `stack.yaml` is the default; any field may be overridden
-per project.
+<!-- oma-docs:ignore-start -->
+Use the project's `../stack/` directory when it exists: `/stack-set` writes it
+from the detected codebase, seeded from the matching variant (adapt, never
+blind-copy). Otherwise detect the platform from the project manifest
+(`Package.swift`, `settings.gradle.kts` + `com.android.application`,
+`pubspec.yaml`, `package.json` + `react-native`) and read the matching
+`variants/{platform}/` directly.
+<!-- oma-docs:ignore-end -->

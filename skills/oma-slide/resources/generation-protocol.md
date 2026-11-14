@@ -42,8 +42,7 @@ Call direction is one-way: **skill calls CLI. CLI never calls skill.**
 2. Resolve the output directory before any scaffold/import:
    - Default: `.agents/results/slides/<session-id>/`
    - Prefer the active OMA workflow/session id exposed by the runtime.
-   - If no runtime session id is available, use `.agents/results/.current-session`.
-   - If neither exists, create a timestamped id such as `session-YYYYMMDD-HHmmss`.
+   - If no runtime session id is available, create a timestamped id such as `session-YYYYMMDD-HHmmss`.
    - Store the deck title in `meta.json.title`; do not use the title as the directory name.
 
 3. For `import-pptx`: run `oma slide import pptx <file> --workspace <deck-dir>`, skip Phase 1, and continue at Phase 2
@@ -194,8 +193,8 @@ Key rules (full spec in `resources/fixed-stage.md`):
 - Safe zones: left/right margin ≥ 80 px, top/bottom ≥ 60 px.
 - Body text ≥ 28 px; headings 64–120 px.
 - All spacing on the 8-px grid.
-- `data-om-validate="no_overflowing_text,no_overlapping_text,slide_sized_text"` on **every** `<section class="slide">`.
-- Do NOT remove or override `data-om-validate`. Use `data-om-no-check` only on intentionally decorative/clipped elements.
+- Keep every `<section class="slide">` inside `.deck-stage`: the validator measures each one as a 1920×1080 frame and runs all checks on it. No attribute switches a check off, so decorative or clipped text is checked like any other text.
+- Leave the `data-om-validate` marker as written; it labels the slide with the gate's check names and has no effect on what is checked.
 
 ### 3c. CJK Content Check
 
@@ -205,7 +204,7 @@ Before writing any slide with Korean, Japanese, or Chinese characters: inject th
 
 - **New imagery needed:** invoke the `oma-image` skill. Reference the result as `./assets/<file>`. Never call image generation APIs directly.
 - **Missing image API key:** insert `<img src="./assets/placeholder.png" alt="…" />` and add `<!-- TODO(oma-deferred): generate image via oma-image when key is provisioned -->`.
-- **No remote URLs** in `<img src>`, `<video src>`, `<link href>`, or inline `url()` (except CDN font links in `<head>` and `deck-stage.js`/`viewport-base.css` references).
+- **No remote URLs** in `<img src>`, `<video src>`, `<link href>`, or inline `url()` (except CDN font links in `<head>`). The validator reports every remote reference, the font links included, as a non-critical `remote_asset_ref` warning (Phase 4b).
 
 ### 3e. Update meta.json
 
@@ -249,19 +248,20 @@ The CLI renders each slide at 1920×1080 with puppeteer-core (awaits `document.f
 
 ### 4b. Interpret Findings
 
-The JSON output includes: `{ generatedAt, frame, summary, slides:[{ file, status, issues:[{ code, message, slide, selector?, rect? }] }] }`.
+The JSON output includes: `{ generatedAt, frame, summary, slides:[{ file, status, issues:[{ code, message, slide, selector?, rect? }] }] }`. `summary` counts `criticalIssues` and `warnings` separately; a slide's `status` is `fail` and the command exits non-zero only on a critical issue.
 
-Failure codes and typical fixes:
+Issue codes and typical fixes:
 
-| Code | Meaning | Fix |
-|---|---|---|
-| `no_overflowing_text` | Text overflows the slide boundary | Reduce font size, truncate, split to a new slide, or add `overflow: hidden` to a container |
-| `no_overlapping_text` | Two text elements overlap | Adjust `top/left` positions; increase z-index separation |
-| `slide_sized_text` | Text is too small to read at 1920×1080 | Raise font size to ≥ 28 px per doctrine (the validator hard-fails only below 18 px) |
+| Code | Severity | Meaning | Fix |
+|---|---|---|---|
+| `no_overflowing_text` | critical | A text element's box extends past the 1920×1080 frame | Reduce font size, truncate, split to a new slide, or move the element inside the frame; clipping it with an ancestor's `overflow: hidden` does not clear the finding |
+| `no_overlapping_text` | critical | Two text elements overlap | Adjust `top/left` positions so the boxes no longer intersect |
+| `slide_sized_text` | critical | Text is too small to read at 1920×1080 | Raise font size to ≥ 28 px per doctrine (the validator hard-fails only below 18 px) |
+| `remote_asset_ref` | warning | An `http(s)` URL in `src`, `srcset`, `<link href>`, `<script src>`, `<iframe src>`, or CSS `url()` | Expected for the font CDN links this skill mandates (Pretendard, a preset's Google Fonts link, their `preconnect`): leave those. Move any other remote asset into `./assets/` |
 
 ### 4c. Auto-Fix Rewrite
 
-For each reported slide: rewrite the affected `slide-NN.html` to resolve all listed issues. Preserve the visual design intent — shrink content rather than destroy layout.
+For each failing slide: rewrite the affected `slide-NN.html` to resolve every critical issue and every `remote_asset_ref` that is not a font link. Preserve the visual design intent — shrink content rather than destroy layout.
 
 Re-run `oma slide validate --workspace <deck-dir> --output json` after each fix.
 
@@ -355,41 +355,13 @@ The current PPTX output is raster-backed; text remains non-editable after import
 
 ---
 
-## Quick Reference: CLI Commands
-
-```bash
-DECK_DIR=".agents/results/slides/<session-id>"
-oma slide create --output-dir "$DECK_DIR" [--force]          # scaffold workdir (--force: overwrite non-empty dir)
-oma slide validate --workspace "$DECK_DIR" --output json # geometric gate
-oma slide validate --workspace "$DECK_DIR" --slide slide-04.html  # single-slide gate (enhance-mode targeted loop)
-oma slide validate --workspace "$DECK_DIR" --output json --report-file report.json  # write JSON report to out/
-oma slide preview --workspace "$DECK_DIR"                 # build viewer.html
-oma slide bundle --workspace "$DECK_DIR" [--output-file <file>] [--inline-fonts]  # --inline-fonts: embed CDN @font-face CSS
-oma slide export pdf   --workspace "$DECK_DIR" [--output-file <file>] [--mode capture|print]
-oma slide export png   --workspace "$DECK_DIR" [--output-dir <dir>] [--resolution 720p|1080p|1440p|2160p|4k]
-oma slide export pptx  --workspace "$DECK_DIR" [--output-file <file>]   # experimental
-oma slide import pptx <file.pptx> --workspace "$DECK_DIR"
-oma slide asset fetch-video <url> --workspace "$DECK_DIR" [--output-name <name>]
-oma slide style list                              # browse style index
-oma slide style preview <slug>                    # preview a preset in the terminal
-oma slide style get <slug> [--refresh]            # fetch bold template design.md (--refresh: skip cache)
-oma slide edit  --workspace "$DECK_DIR" [--port <n>]     # bbox visual editor (default: auto-probe from 3737)
-oma slide doctor                                   # check deps (chrome, puppeteer-core; optional: yt-dlp, pptxgenjs)
-```
-
-Env-var overrides: `OMA_CHROME_PATH` (Chrome binary for validate/export), `OMA_YTDLP` (yt-dlp binary for fetch-video), `OMA_HOME` (root for canonical stage assets).
-
-Exit codes: `0 ok · 4 invalid-input · 1 error` (timeouts surface as `1`).
-
----
-
 ## Mode Summary Table
 
 | Phase | Mode: new | Mode: import-pptx | Mode: import-canva | Mode: enhance |
 |---|---|---|---|---|
 | 0 Detect | detect + scaffold | run `oma slide import pptx` | probe Canva MCP + `export-design` → `oma slide import pptx` | detect existing workdir |
-| 1 Discover | AskUserQuestion + asset eval | (skipped) | (skipped) | (skipped) |
-| 2 Style | 3 previews → user picks | user picks style | user picks style | may reuse existing style |
+| 1 Discover | resolve missing choices + asset eval | (skipped) | (skipped) | (skipped) |
+| 2 Style | supplied style or preset; 3 previews only for an open direction | supplied style or preset; previews only for an open direction | supplied style or preset; previews only for an open direction | may reuse existing style |
 | 3 Generate | write all slides | overlay style on extracted fragments | overlay style on extracted fragments | rewrite targeted slides |
 | 4 Validate | full validate loop | full validate loop | full validate loop | targeted validate loop |
 | 5 Review | viewer + optional edit | viewer + optional edit | viewer + optional edit | viewer + optional edit |

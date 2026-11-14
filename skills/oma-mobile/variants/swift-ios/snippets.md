@@ -8,7 +8,7 @@ Always use the generated `Client` — never hand-roll `URLRequest`/`JSONDecoder`
 ## 1. Package.swift with OpenAPI Build Plugin
 
 ```swift
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -30,10 +30,15 @@ let package = Package(
             url: "https://github.com/apple/swift-openapi-urlsession",
             from: "1.0.2"
         ),
+        // HTTPRequest / HTTPResponse types used by ClientMiddleware (§5)
+        .package(
+            url: "https://github.com/apple/swift-http-types",
+            from: "1.0.2"
+        ),
         // Repository-layer response cache (hybrid memory + disk)
         .package(
             url: "https://github.com/hyperoslo/Cache",
-            from: "7.4.0"
+            exact: "7.4.0"   // exact pin — see §10 on the `fileManager:` initializer
         ),
     ],
     targets: [
@@ -42,6 +47,7 @@ let package = Package(
             dependencies: [
                 .product(name: "OpenAPIRuntime",  package: "swift-openapi-runtime"),
                 .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
+                .product(name: "HTTPTypes",        package: "swift-http-types"),
                 .product(name: "Cache",            package: "Cache"),
             ],
             // The generator discovers openapi.yaml + openapi-generator-config.yaml
@@ -247,7 +253,7 @@ import OpenAPIURLSession
 public final class APIClient {
     public let client: Client
 
-    public init(serverURL: URL, tokenProvider: @escaping () -> String?) {
+    public init(serverURL: URL, tokenProvider: @escaping @Sendable () -> String?) {
         let transport = URLSessionTransport()
         let authMiddleware = BearerAuthMiddleware(tokenProvider: tokenProvider)
         // The generated Client initialiser is non-throwing — no `try` needed.
@@ -263,14 +269,16 @@ public final class APIClient {
 // Core/Networking/BearerAuthMiddleware.swift
 // ---------------------------------------------------------------------------
 
+import Foundation
 import OpenAPIRuntime
 import HTTPTypes
 
 /// Injects a bearer token into every outgoing request.
+/// `ClientMiddleware` is `Sendable`, so the stored closure must be `@Sendable`.
 public struct BearerAuthMiddleware: ClientMiddleware {
-    private let tokenProvider: () -> String?
+    private let tokenProvider: @Sendable () -> String?
 
-    public init(tokenProvider: @escaping () -> String?) {
+    public init(tokenProvider: @escaping @Sendable () -> String?) {
         self.tokenProvider = tokenProvider
     }
 
@@ -353,58 +361,6 @@ struct MyApp: App {
 }
 
 // ---------------------------------------------------------------------------
-// Core/Security/KeychainTokenStore.swift
-// ---------------------------------------------------------------------------
-import Foundation
-import Security
-
-/// Minimal Keychain-backed token store — no third-party dependency.
-/// Secrets (access tokens, refresh tokens) belong in the Keychain, never in
-/// `UserDefaults`, which is an unencrypted plist readable from a device backup.
-struct KeychainTokenStore {
-    let service: String   // e.g. Bundle.main.bundleIdentifier ?? "MyApp"
-
-    /// Read a stored token, or nil if absent.
-    func token(account: String = "accessToken") -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var result: AnyObject?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data else { return nil }
-        return String(data: data, encoding: .utf8)
-    }
-
-    /// Insert or overwrite a token (delete-then-add keeps it idempotent).
-    func setToken(_ value: String, account: String = "accessToken") {
-        let base: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-        ]
-        SecItemDelete(base as CFDictionary)
-        var add = base
-        add[kSecValueData as String] = Data(value.utf8)
-        add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
-        SecItemAdd(add as CFDictionary, nil)
-    }
-
-    /// Remove a stored token (e.g. on sign-out).
-    func deleteToken(account: String = "accessToken") {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-}
-
-// ---------------------------------------------------------------------------
 // App/AppDependencies.swift
 // ---------------------------------------------------------------------------
 import Foundation
@@ -420,7 +376,8 @@ final class AppDependencies {
         )
         let serverURL = URL(string: ProcessInfo.processInfo.environment["API_BASE_URL"]
                            ?? "https://api.example.com")!
-        // Secrets come from the Keychain — never UserDefaults (see tech-stack.md).
+        // `KeychainTokenStore` is the project's Keychain wrapper (Security framework,
+        // `kSecClassGenericPassword`). Secrets never go in UserDefaults (see tech-stack.md).
         let tokens = KeychainTokenStore(service: Bundle.main.bundleIdentifier ?? "MyApp")
         let apiClient = APIClient(serverURL: serverURL, tokenProvider: {
             tokens.token()
@@ -570,11 +527,12 @@ final class TodosViewModelTests: XCTestCase {
 
 ## 9. Navigation: interactive swipe-back on nav-bar-hidden routes
 
-**Root cause.** `NavigationStack` is backed by UIKit's `UINavigationController`, and
-the edge swipe-back is its `interactivePopGestureRecognizer`. UIKit ties that
-recognizer to the system back button, so any screen that hides the nav bar
+**Observed behaviour.** A screen that hides the nav bar
 (`.toolbar(.hidden, for: .navigationBar)` — common with custom headers) loses the
-swipe gesture, and UIKit re-disables it every time such a screen becomes top.
+edge swipe-back, and loses it again every time such a screen becomes top. Apple
+documents `UINavigationController.interactivePopGestureRecognizer` as the recognizer
+behind that gesture, but not this interaction with a hidden bar, so treat the
+workaround below as implementation-dependent and check it on each new iOS release.
 
 **Standard.** Swipe-back restoration is a navigation-layer concern, so restore it
 once at the **route-registration layer** (`navigationDestination`), not per screen.
@@ -698,19 +656,19 @@ import Cache
 
 /// Actor wrapper over hyperoslo/Cache. One instance per cached value type and account namespace.
 /// Owns a non-Sendable `Storage`, so all access is actor-isolated → Swift 6 clean.
-actor ResponseCache<Value: Codable & Sendable> {
+public actor ResponseCache<Value: Codable & Sendable> {
     private let storage: Storage<String, Value>
 
     /// - Parameters:
     ///   - name: disk namespace. Include a stable, non-secret account/tenant identifier.
     ///   - memoryExpiry: in-memory TTL — fast path, lost on app relaunch.
     ///   - diskExpiry: on-disk TTL — survives relaunch. Never use `.never`.
-    init(
+    public init(
         name: String,
         memoryExpiry: Expiry = .seconds(120),
         diskExpiry: Expiry = .seconds(60 * 60)
     ) throws {
-        // `fileManager:` is REQUIRED on the 7.4.0 release tag (last release, 2024-08).
+        // `fileManager:` is REQUIRED on the 7.4.0 release tag.
         // The README shows the master signature where it defaults to `.default`, but
         // that default is unreleased — pass it explicitly and pin the exact version.
         self.storage = try Storage<String, Value>(
@@ -722,17 +680,17 @@ actor ResponseCache<Value: Codable & Sendable> {
     }
 
     /// Non-expired cached value, or nil on miss/expiry. Read errors degrade to nil.
-    func value(forKey key: String) -> Value? {
+    public func value(forKey key: String) -> Value? {
         try? storage.object(forKey: key)
     }
 
-    func store(_ value: Value, forKey key: String) {
+    public func store(_ value: Value, forKey key: String) {
         try? storage.setObject(value, forKey: key)
     }
 
     /// Drop affected keys after a write so the next read repopulates.
-    func invalidate(_ key: String) { try? storage.removeObject(forKey: key) }
-    func invalidateAll() { try? storage.removeAll() }
+    public func invalidate(_ key: String) { try? storage.removeObject(forKey: key) }
+    public func invalidateAll() { try? storage.removeAll() }
 }
 ```
 
@@ -747,6 +705,26 @@ public protocol TodoProviding: Sendable {
     func createTodo(title: String) async throws -> Components.Schemas.Todo
     func toggleTodo(id: String) async throws -> Components.Schemas.Todo
     func deleteTodo(id: String) async throws
+}
+```
+
+```swift
+// Core/Networking/TodoServiceError.swift
+import Foundation
+
+/// Typed errors surfaced by `TodoService`.
+public enum TodoServiceError: Error, LocalizedError {
+    case notFound
+    case conflict
+    case undocumented(statusCode: Int)
+
+    public var errorDescription: String? {
+        switch self {
+        case .notFound:          return "The requested todo was not found."
+        case .conflict:          return "A todo with that title already exists."
+        case .undocumented(let code): return "Unexpected server response: HTTP \(code)."
+        }
+    }
 }
 ```
 
@@ -881,6 +859,31 @@ public actor TodoService: TodoProviding {
             throw TodoServiceError.undocumented(statusCode: statusCode)
         }
     }
+
+    public func toggleTodo(id: String) async throws -> Components.Schemas.Todo {
+        let response = try await client.toggleTodo(.init(path: .init(id: id)))
+        switch response {
+        case .ok(let ok):
+            await cache?.invalidate(listKey)
+            return try ok.body.json
+        case .notFound:
+            throw TodoServiceError.notFound
+        case .undocumented(let statusCode, _):
+            throw TodoServiceError.undocumented(statusCode: statusCode)
+        }
+    }
+
+    public func deleteTodo(id: String) async throws {
+        let response = try await client.deleteTodo(.init(path: .init(id: id)))
+        switch response {
+        case .noContent:
+            await cache?.invalidate(listKey)
+        case .notFound:
+            throw TodoServiceError.notFound
+        case .undocumented(let statusCode, _):
+            throw TodoServiceError.undocumented(statusCode: statusCode)
+        }
+    }
 }
 ```
 
@@ -897,132 +900,3 @@ before publishing the next account's service. Rebuild the API client with the ne
 > key on account/tenant + `operationID` + params; explicit memory/disk TTLs (never `.never`);
 > invalidate affected keys after every write and purge/cancel on account switch or logout. Durable user-owned data → SwiftData;
 > secrets → Keychain. `hyperoslo/Cache` is never a system of record.
-
----
-
-## 11. Durable storage: SwiftData (system of record)
-
-`hyperoslo/Cache` (§10) memoizes transient server-owned responses. **Durable,
-user-owned** data (drafts, offline records) lives in **SwiftData** — the Swift-native
-ORM on Core Data. Model with `@Model`, own one `ModelContainer`, and read/write
-through a repository so features never touch a `ModelContext` directly.
-
-```swift
-// Core/Models/Draft.swift
-import SwiftData
-
-/// A user-owned draft persisted across launches. `@Model` makes the class a
-/// SwiftData entity (schema inferred from stored properties).
-@Model
-final class Draft {
-    @Attribute(.unique) var id: UUID
-    var title: String
-    var body: String
-    var updatedAt: Date
-
-    init(id: UUID = UUID(), title: String, body: String, updatedAt: Date = .now) {
-        self.id = id
-        self.title = title
-        self.body = body
-        self.updatedAt = updatedAt
-    }
-}
-```
-
-```swift
-// Core/Services/DraftRepository.swift
-import Foundation
-import SwiftData
-
-/// Repository over SwiftData. Owns a `ModelContext` bound to the app's container;
-/// `@MainActor` because the default context is main-actor bound.
-@MainActor
-final class DraftRepository {
-    private let context: ModelContext
-
-    init(container: ModelContainer) {
-        self.context = container.mainContext
-    }
-
-    /// Fetch newest-first, optionally filtered by a title substring.
-    func drafts(matching query: String = "") throws -> [Draft] {
-        let predicate = query.isEmpty ? nil : #Predicate<Draft> {
-            $0.title.localizedStandardContains(query)
-        }
-        let descriptor = FetchDescriptor<Draft>(
-            predicate: predicate,
-            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
-        )
-        return try context.fetch(descriptor)
-    }
-
-    func upsert(_ draft: Draft) throws {
-        context.insert(draft)          // insert is idempotent on the unique id
-        try context.save()
-    }
-
-    func delete(_ draft: Draft) throws {
-        context.delete(draft)
-        try context.save()
-    }
-}
-```
-
-```swift
-// App/MyApp.swift — build one ModelContainer for the whole app.
-import SwiftUI
-import SwiftData
-
-@main
-struct MyApp: App {
-    // One container per app; SwiftUI injects it into the environment.
-    let container: ModelContainer = {
-        do { return try ModelContainer(for: Draft.self) }
-        catch { fatalError("Failed to create ModelContainer: \(error)") }
-    }()
-
-    var body: some Scene {
-        WindowGroup { RootView() }
-            .modelContainer(container)
-    }
-}
-```
-
----
-
-## 12. UI testing: XCUITest
-
-Unit tests (§8) cover view models against protocol mocks. **XCUITest** drives the
-real app through the accessibility layer for critical user flows — launch, interact,
-assert on-screen. Give interactive views stable `.accessibilityIdentifier`s so the
-queries don't depend on visible copy.
-
-```swift
-// UITests/TodosFlowUITests.swift
-import XCTest
-
-final class TodosFlowUITests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-        continueAfterFailure = false     // stop at the first failed assertion
-    }
-
-    func testTodosScreen_loadsAndShowsList() {
-        let app = XCUIApplication()
-        // Pass a launch argument the app reads to serve deterministic fixtures.
-        app.launchArguments += ["-uiTestMode"]
-        app.launch()
-
-        // Wait for the navigation title to appear (async load).
-        let title = app.navigationBars["Todos"]
-        XCTAssertTrue(title.waitForExistence(timeout: 5))
-
-        // Tap the first row and assert navigation happened.
-        let firstCell = app.cells.element(boundBy: 0)
-        XCTAssertTrue(firstCell.waitForExistence(timeout: 5))
-        firstCell.tap()
-
-        XCTAssertTrue(app.staticTexts["todoDetailTitle"].waitForExistence(timeout: 5))
-    }
-}
-```

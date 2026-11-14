@@ -41,7 +41,6 @@ Workflows that translate user-facing content should respect this setting via the
 | Natural language responses | Yes | User-facing explanations and descriptions |
 | Error messages (user-facing) | Yes | Authentication failure messages |
 | Status updates / progress reports | Yes | "Phase 2 complete, starting Phase 3" |
-| Charter Preflight output | Yes | Descriptive text localized, keywords stay in English |
 | Result files (result-*.md) | Yes | User-readable text |
 
 ## What Stays in English

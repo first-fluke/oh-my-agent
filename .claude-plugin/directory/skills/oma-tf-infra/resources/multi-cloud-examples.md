@@ -29,17 +29,11 @@ resource "aws_ecs_service" "api" {
 
 ### OIDC for GitHub Actions
 ```hcl
-# Since 2023-07 AWS validates GitHub's OIDC IdP via its trusted root CA library,
-# so the thumbprint is ignored — but the AWS provider still requires the field.
-# Fetch it dynamically instead of hardcoding a value that goes stale.
-data "tls_certificate" "github" {
-  url = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
-}
-
+# `thumbprint_list` is optional: AWS validates GitHub's OIDC IdP against its
+# trusted root CA library.
 resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.github.certificates[0].sha1_fingerprint]
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
 }
 
 resource "aws_iam_role" "github_actions" {
@@ -145,6 +139,13 @@ resource "azurerm_container_app" "api" {
   resource_group_name          = azurerm_resource_group.main.name
   revision_mode                = "Single"
 
+  # Key Vault reference: the secret value never appears in HCL or state.
+  secret {
+    name                = "database-url"
+    key_vault_secret_id = azurerm_key_vault_secret.database_url.versionless_id
+    identity            = azurerm_user_assigned_identity.api.id
+  }
+
   template {
     min_replicas = var.api_min_instances
     max_replicas = var.api_max_instances
@@ -156,8 +157,8 @@ resource "azurerm_container_app" "api" {
       memory = "2Gi"
 
       env {
-        name  = "DATABASE_URL"
-        value = "postgresql://..."
+        name        = "DATABASE_URL"
+        secret_name = "database-url"
       }
     }
   }
@@ -195,11 +196,14 @@ resource "oci_container_instances_container_instance" "api" {
   display_name   = "${local.prefix}-api"
   
   containers {
-    image_url = "${oci_artifacts_container_repository.api.repository_url}:${var.image_tag}"
+    image_url = "ocir.${var.region}.oci.oraclecloud.com/${oci_artifacts_container_repository.api.namespace}/${oci_artifacts_container_repository.api.display_name}:${var.image_tag}"
     display_name = "api"
     
+    # Non-secret configuration only: these values are stored in state and
+    # readable on the instance. The workload fetches the credential from OCI
+    # Vault at startup through its resource principal.
     environment_variables = {
-      "DATABASE_URL" = "postgresql://..."
+      "DATABASE_SECRET_OCID" = oci_vault_secret.db_password.id
     }
   }
 }

@@ -2,7 +2,7 @@
 
 ## Step -1: Clarify / Infer Mode (agent-side, before `oma video generate`)
 
-Run the **Clarification Protocol** in `SKILL.md` before shelling out. Infer the
+Apply **Decide and confirm** in `SKILL.md` before shelling out. Infer the
 mode from keywords (shorts/reels/쇼츠/릴스 -> shorts; README/code/data/explain/설명
 -> explainer; demo/walkthrough/capture/데모 -> demo) and show the user the inferred
 plan when the brief is a one-liner.
@@ -10,7 +10,7 @@ plan when the brief is a one-liner.
 ## Step 0: Parse Request
 
 1. Extract the brief and flags from the invocation.
-2. Resolve defaults from shipped code defaults -> the `video:` section of `.agents/oma-config.yaml` -> env vars -> CLI flags (lowest to highest precedence). `config/video-config.yaml` is not consulted.
+2. Resolve defaults from shipped code defaults -> the `video:` section of `.agents/oma-config.yaml` -> env vars -> CLI flags (lowest to highest precedence).
 3. Validate:
    - `mode` ∈ {`shorts`, `explainer`, `demo`}.
    - `aspect` ∈ {`9:16`, `16:9`, `1:1`, `auto`} (`auto` snaps to the mode default: shorts -> 9:16, explainer/demo -> 16:9).
@@ -24,15 +24,15 @@ plan when the brief is a one-liner.
 ## Step 0.5: Mode Routing
 
 - **shorts** (9:16): synthetic from the topic. Default visual = static oma-image stills.
-- **explainer** (16:9 / 9:16): from README / code / data. Default visual = oma-slide frames + oma-image diagrams.
-- **demo** (16:9): from a screen capture. If no `--capture` and Cap is unavailable -> emit the **guided capture protocol** (Step 4b) and stop.
+- **explainer** (16:9 / 9:16): from README / code / data. With `--visual auto` the chain starts at oma-slide, which uses a frame only for a scene whose `visual.ref` is an existing deck directory and writes a placeholder for every other scene. Pass `--visual generate` when the scenes should be oma-image stills or diagrams (visual chain in `vendor-matrix.md`).
+- **demo** (16:9): from a screen capture. If no `--capture` and Cap is unavailable -> emit the **guided capture protocol** (Step 4b) and stop. With `--polish` the capture becomes the background of the HyperFrames `Demo` composition; without it the raw, unmasked capture is copied to the output MP4 and no composition runs.
 
 ## Step 1: Provider Availability + Selection
 
 1. Call `available()` on every registered provider in parallel (`oma video provider list`).
-2. For each capability, walk `providers.<capability>.order`:
-   - The first available provider wins.
-   - Paid providers (`pexels`, `pixelle`) are skipped unless their env key is present (`enabled` gate).
+2. For each capability, walk its order. The visual order comes from `--visual` and the mode (`vendor-matrix.md`); the other capabilities use `providers.<capability>.order`:
+   - The first available provider wins. A provider that returns a placeholder has still won; the chain advances only on an unavailable provider or a thrown error.
+   - `pexels` and `pixelle` are unavailable unless their env key is present.
    - On chain exhaustion for a required capability -> exit 5 naming the capability.
 3. Log `using: <provider>` per capability to stderr before generation.
 
@@ -42,11 +42,6 @@ plan when the brief is a one-liner.
 2. If `--dry-run`: emit `script.json` / `render-spec.json` / `manifest.json`, skip rendering, exit 0.
 3. Before a non-dry run whose estimate reaches the guardrail or whose paid-provider choice requires authorization, reuse existing authorization for that provider, amount, and scope. Resolve only missing authorization. In an active OMA video workflow, emit `video.cost-confirmation` with the current script/provider-plan `instanceId`, actual paid/limited/fallback/declined action, rationale, and planning-manifest evidence; verify with `--instance` before the provider action (workflow Step 4 owns the command template).
 4. The CLI throws a cost-guardrail error and exits 1 when the cumulative provider estimate reaches the threshold without `--yes`; it does not collect a workflow decision through an interactive prompt. Planning may hit the same guard: retain the error/manifest estimate or rerun with `--dry-run --yes` to finish planning without paid generation or rendering. Keep `--dry-run` on that planning rerun. On a non-dry run, pass `--yes` / `OMA_VIDEO_YES=1` only when the paid action is already authorized. A declined path may be replaced by an authorized key-free plan and re-planned. A new provider or increased estimate must fit current authorization before paid work resumes.
-
-## Step 3: Cancellation Setup
-
-1. Install `SIGINT` / `SIGTERM` handlers that call `AbortController.abort()`.
-2. Thread the signal into every provider call and into the render subprocess.
 
 ## Step 4: Pipeline (asset bus)
 
@@ -61,7 +56,7 @@ all assets ─► render-spec.json ─► [Compositor: HyperFrames] ─► <mode
 
 1. **Script**: AgentScriptProvider writes `script.json` (start of the determinism boundary).
 2. **Voice**: oma-voice synthesizes narration on the `voice.backend` speech backend (Voicebox, or VoiceStudio; `auto` tries Voicebox first) -> a **single** `audio/narration-01.wav` (all scene lines joined into one track; per-line offsets live in `timing.json`). Fallback: estimated timing (no wav).
-3. **Visuals**: walk the visual chain. oma-image stills (key-free default) / oma-slide frames (explainer) / Pexels (key) / Pixelle (key). Aspect -> 16-multiple size; HyperFrames crops to the exact frame.
+3. **Visuals**: walk the visual chain per scene (`vendor-matrix.md`): oma-image stills (key-free default), an oma-slide frame for a scene whose `visual.ref` names a deck directory, Pexels with `--visual stock`, Pixelle with `--visual aigc`. Aspect -> 16-multiple size; HyperFrames crops to the exact frame.
 4. **Captions**: oma-captions builds `captions.srt` + `captions.vtt` from `timing.json`. For a non-source locale, translate via oma-translation (key-free); absent -> warn + keep source.
 5. **render-spec**: compose `render-spec.json` (the deterministic compute boundary) from the assets + seed.
 6. **Render**: the compositor consumes `render-spec.json`.
@@ -104,8 +99,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
   - `not-found` (profile/asset) -> 3
   - `schema-validation` / invalid input -> 4
   - `provider-unavailable` / `auth-required` -> 5
-  - `timeout` -> 6
-  - otherwise -> 1
+  - otherwise -> 1 (a timed-out render or subprocess lands here with its diagnostic)
 
 ## On Error
 
@@ -114,9 +108,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
 | No provider for a required capability | Exit 5, print `Run: oma video doctor` |
 | HyperFrames or MPT toolchain not bootstrapped | Exit 1 + `oma video doctor` remediation; retain render-spec and authored composition for recovery |
 | No speech backend reachable (Voicebox / VoiceStudio) | Fall back to estimated timing; still emit captions (whisper.cpp hop deferred: `TODO(oma-deferred): whisper-cpp`) |
-| Pexels / Pixelle key absent | Skip provider; fall through to oma-image stills; annotate coverage in `warnings` |
+| `--visual stock` / `--visual aigc` with the key absent | Skip provider; fall through to oma-image stills; annotate coverage in `warnings` |
 | `demo` with no capture + no Cap | Guided protocol (Step 4b); stop without rendering |
 | `--capture` outside `$PWD` or wrong format | Exit 4 with the path/format problem |
 | Cost over guardrail, declined | Exit 1 |
-| Timeout | Exit 6, manifest records `after_ms` |
-| Cancelled (Ctrl+C) | Exit 130 (signal); no manifest if abort was pre-write |

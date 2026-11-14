@@ -1,378 +1,284 @@
 """
-API Endpoint Template for Backend Agent
+API Endpoint Template for Backend Agent (Python / Litestar)
 
-This template demonstrates best practices for FastAPI endpoints.
+Demonstrates the Controller -> Service -> Repository pattern
+using Litestar, Advanced Alchemy (SQLAlchemy 2.0 async), and msgspec.
+
+File layout (split into real modules in production):
+  app/core/database.py           <- SQLAlchemy plugin config
+  app/core/errors.py             <- AppError types + exception handler
+  app/models/resource.py         <- SQLAlchemy model (Advanced Alchemy base)
+  app/schemas/resource.py        <- msgspec request/response Structs
+  app/services/resource.py       <- service (business logic) + inner repository
+  app/controllers/resource.py    <- controller (HTTP concerns only)
+  app/main.py                    <- application wiring
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Annotated, List
+import os
+from collections.abc import Sequence
+from datetime import UTC, datetime
+from typing import Annotated, Any
 from uuid import UUID
 
-from app.database import get_db
-from app.auth import get_current_user
-from app.models import User, Resource
-from app.schemas import ResourceCreate, ResourceUpdate, ResourceResponse
-from app.services import ResourceService
+import msgspec
+from advanced_alchemy.base import UUIDv7AuditBase
+from advanced_alchemy.extensions.litestar import (
+    AsyncSessionConfig,
+    SQLAlchemyAsyncConfig,
+    SQLAlchemyPlugin,
+    providers,
+)
+from advanced_alchemy.filters import FilterTypes
+from advanced_alchemy.repository import SQLAlchemyAsyncRepository
+from advanced_alchemy.service import (
+    OffsetPagination,
+    SQLAlchemyAsyncRepositoryService,
+    schema_dump,
+)
+from litestar import Controller, Litestar, Request, Response, delete, get, patch, post
+from litestar.di import NamedDependency
+from litestar.params import FromPath, JSONBody, SkipValidation
+from litestar.security.jwt import Token
+from litestar.status_codes import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_500_INTERNAL_SERVER_ERROR,
+)
+from sqlalchemy import DateTime, ForeignKey, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
-# Type aliases for cleaner code
-DatabaseDep = Annotated[AsyncSession, Depends(get_db)]
-UserDep = Annotated[User, Depends(get_current_user)]
+from app.core.auth import jwt_auth  # JWTAuth instance, see snippets.md
+from app.models.user import User
 
-# Router setup
-router = APIRouter(
-    prefix="/api/resources",
-    tags=["resources"],
-    responses={404: {"description": "Not found"}},
+# ---------------------------------------------------------------------------
+# app/core/database.py: SQLAlchemy plugin config
+# ---------------------------------------------------------------------------
+
+alchemy_config = SQLAlchemyAsyncConfig(
+    connection_string=os.environ["DATABASE_URL"],  # fails at startup when unset
+    session_config=AsyncSessionConfig(expire_on_commit=False),
+    # One request is one unit of work: commit on a 2xx response, roll back otherwise
+    before_send_handler="autocommit",
 )
 
+# ---------------------------------------------------------------------------
+# app/core/errors.py: centralized error types
+# Services raise these; controllers never build HTTP errors by hand.
+# ---------------------------------------------------------------------------
 
-# List endpoint with pagination and filtering
-@router.get(
-    "/",
-    response_model=List[ResourceResponse],
-    summary="List resources",
-    description="Retrieve a paginated list of resources with optional filtering"
-)
-async def list_resources(
-    db: DatabaseDep,
-    current_user: UserDep,
-    skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=1000, description="Max records to return"),
-    search: str | None = Query(None, description="Search query"),
-    status: str | None = Query(None, description="Filter by status"),
-):
-    """
-    List resources with pagination.
 
-    - **skip**: Offset for pagination
-    - **limit**: Maximum number of records
-    - **search**: Optional search term
-    - **status**: Optional status filter
-    """
-    service = ResourceService(db)
-    resources = await service.list_resources(
-        user_id=current_user.id,
-        skip=skip,
-        limit=limit,
-        search=search,
-        status=status,
+class AppError(Exception):
+    status_code = HTTP_500_INTERNAL_SERVER_ERROR
+    code = "internal_error"
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+class BadRequestError(AppError):
+    status_code = HTTP_400_BAD_REQUEST
+    code = "bad_request"
+
+
+class UnauthorizedError(AppError):
+    status_code = HTTP_401_UNAUTHORIZED
+    code = "unauthorized"
+
+
+class ForbiddenError(AppError):
+    status_code = HTTP_403_FORBIDDEN
+    code = "forbidden"
+
+
+class NotFoundError(AppError):
+    status_code = HTTP_404_NOT_FOUND
+    code = "not_found"
+
+
+def app_error_handler(_request: Request[Any, Any, Any], exc: AppError) -> Response[dict[str, str]]:
+    return Response(
+        {"code": exc.code, "message": exc.message},
+        status_code=exc.status_code,
     )
-    return resources
 
 
-# Get single resource
-@router.get(
-    "/{resource_id}",
-    response_model=ResourceResponse,
-    summary="Get resource",
-    responses={
-        200: {"description": "Resource found"},
-        404: {"description": "Resource not found"},
-        403: {"description": "Access denied"}
-    }
-)
-async def get_resource(
-    resource_id: UUID,
-    db: DatabaseDep,
-    current_user: UserDep,
-):
-    """
-    Get a specific resource by ID.
-
-    Raises:
-        404: Resource not found
-        403: User doesn't own this resource
-    """
-    service = ResourceService(db)
-    resource = await service.get_resource(resource_id)
-
-    if not resource:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resource {resource_id} not found"
-        )
-
-    # Authorization check
-    if resource.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
-        )
-
-    return resource
+# ---------------------------------------------------------------------------
+# app/models/resource.py: SQLAlchemy model
+# UUIDv7AuditBase supplies `id`, `created_at`, and `updated_at` (timezone-aware UTC).
+# ---------------------------------------------------------------------------
 
 
-# Create resource
-@router.post(
-    "/",
-    response_model=ResourceResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Create resource",
-)
-async def create_resource(
-    resource_data: ResourceCreate,
-    db: DatabaseDep,
-    current_user: UserDep,
-):
-    """
-    Create a new resource.
+class Resource(UUIDv7AuditBase):
+    __tablename__ = "resources"
 
-    - **name**: Resource name (required)
-    - **description**: Optional description
-    - **status**: Initial status (default: active)
-    """
-    service = ResourceService(db)
-
-    try:
-        resource = await service.create_resource(
-            user_id=current_user.id,
-            data=resource_data
-        )
-        return resource
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+    title: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str | None] = mapped_column(Text)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), index=True)
+    # Soft delete: stamped on delete, and every read filters on it
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
-# Update resource
-@router.patch(
-    "/{resource_id}",
-    response_model=ResourceResponse,
-    summary="Update resource",
-)
-async def update_resource(
-    resource_id: UUID,
-    resource_data: ResourceUpdate,
-    db: DatabaseDep,
-    current_user: UserDep,
-):
-    """
-    Update an existing resource (partial update).
+# ---------------------------------------------------------------------------
+# app/schemas/resource.py: request/response Structs
+# ---------------------------------------------------------------------------
 
-    Only provided fields will be updated.
-    """
-    service = ResourceService(db)
-    resource = await service.get_resource(resource_id)
-
-    if not resource:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resource {resource_id} not found"
-        )
-
-    if resource.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
-        )
-
-    try:
-        updated_resource = await service.update_resource(resource, resource_data)
-        return updated_resource
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+Title = Annotated[str, msgspec.Meta(min_length=1, max_length=200)]
+Description = Annotated[str, msgspec.Meta(max_length=1000)]
 
 
-# Delete resource
-@router.delete(
-    "/{resource_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete resource",
-)
-async def delete_resource(
-    resource_id: UUID,
-    db: DatabaseDep,
-    current_user: UserDep,
-    hard: bool = Query(False, description="Perform hard delete instead of soft delete"),
-):
-    """
-    Delete a resource.
-
-    - **hard=false**: Soft delete (default) - sets deleted_at timestamp
-    - **hard=true**: Hard delete - permanently removes from database
-    """
-    service = ResourceService(db)
-    resource = await service.get_resource(resource_id)
-
-    if not resource:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Resource {resource_id} not found"
-        )
-
-    if resource.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
-        )
-
-    await service.delete_resource(resource, hard=hard)
-    # 204 No Content - no response body
+class ResourceCreate(msgspec.Struct):
+    title: Title
+    description: Description | None = None
 
 
-# Bulk operations example
-@router.post(
-    "/bulk",
-    response_model=List[ResourceResponse],
-    status_code=status.HTTP_201_CREATED,
-    summary="Bulk create resources",
-)
-async def bulk_create_resources(
-    resources_data: List[ResourceCreate],
-    db: DatabaseDep,
-    current_user: UserDep,
-):
-    """
-    Create multiple resources in one request.
-
-    Useful for batch imports.
-    """
-    if len(resources_data) > 100:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Maximum 100 resources per bulk operation"
-        )
-
-    service = ResourceService(db)
-    try:
-        return await service.bulk_create_resources(
-            user_id=current_user.id,
-            resources_data=resources_data,
-        )
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+class ResourceUpdate(msgspec.Struct, omit_defaults=True):
+    # UNSET separates "field omitted" from "field set to null"
+    title: Title | msgspec.UnsetType = msgspec.UNSET
+    description: Description | None | msgspec.UnsetType = msgspec.UNSET
 
 
-# Repository and service templates (separate files in app/repositories and app/services)
-"""
-from datetime import datetime, timezone
-from typing import Sequence
-from uuid import UUID
-
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models import Resource
-from app.schemas import ResourceCreate, ResourceUpdate
+class ResourceResponse(msgspec.Struct):
+    id: UUID
+    title: str
+    description: str | None
+    user_id: UUID
+    created_at: datetime
+    updated_at: datetime
 
 
-class ResourceRepository:
-    def __init__(self, db: AsyncSession):
-        self.db = db
+# ---------------------------------------------------------------------------
+# app/services/resource.py: business logic and authorization
+# The inner repository owns data access; writes are flushed and the
+# request-scoped session commits them (see database.py).
+# ---------------------------------------------------------------------------
+
+
+class ResourceService(SQLAlchemyAsyncRepositoryService[Resource]):
+    class Repo(SQLAlchemyAsyncRepository[Resource]):
+        model_type = Resource
+
+    repository_type = Repo
 
     async def list_for_user(
-        self,
-        user_id: UUID,
-        skip: int = 0,
-        limit: int = 100,
-        search: str | None = None,
-        status: str | None = None,
-    ) -> Sequence[Resource]:
-        statement = select(Resource).where(
-            Resource.user_id == user_id,
-            Resource.deleted_at.is_(None),
+        self, user_id: UUID, *filters: FilterTypes
+    ) -> tuple[Sequence[Resource], int]:
+        return await self.get_many_and_count(
+            *filters, Resource.user_id == user_id, Resource.deleted_at.is_(None)
         )
-        if search:
-            statement = statement.where(Resource.name.ilike(f"%{search}%"))
-        if status:
-            statement = statement.where(Resource.status == status)
-        result = await self.db.execute(statement.offset(skip).limit(limit))
-        return result.scalars().all()
 
-    async def get(self, resource_id: UUID) -> Resource | None:
-        statement = select(Resource).where(
-            Resource.id == resource_id,
-            Resource.deleted_at.is_(None),
+    async def get_for_user(self, resource_id: UUID, user_id: UUID) -> Resource:
+        resource = await self.get_one_or_none(
+            Resource.deleted_at.is_(None), id=resource_id
         )
-        result = await self.db.execute(statement)
-        return result.scalar_one_or_none()
+        if resource is None:
+            raise NotFoundError(f"Resource {resource_id} not found")
+        if resource.user_id != user_id:
+            raise ForbiddenError("Access denied")
+        return resource
 
-    def add(self, resource: Resource) -> None:
-        self.db.add(resource)
+    async def create_for_user(self, user_id: UUID, data: ResourceCreate) -> Resource:
+        return await self.create({**schema_dump(data), "user_id": user_id})
 
-    async def delete(self, resource: Resource) -> None:
-        await self.db.delete(resource)
+    async def update_for_user(
+        self, resource_id: UUID, user_id: UUID, data: ResourceUpdate
+    ) -> Resource:
+        await self.get_for_user(resource_id, user_id)
+        # schema_dump drops UNSET fields, so only provided fields change
+        return await self.update(schema_dump(data), item_id=resource_id)
+
+    async def delete_for_user(self, resource_id: UUID, user_id: UUID) -> None:
+        await self.get_for_user(resource_id, user_id)
+        # Soft delete: stamp deleted_at instead of removing the row
+        await self.update({"deleted_at": datetime.now(UTC)}, item_id=resource_id)
 
 
-class ResourceService:
-    def __init__(self, db: AsyncSession):
-        self.db = db
-        self.repository = ResourceRepository(db)
+# ---------------------------------------------------------------------------
+# app/controllers/resource.py: controller layer (NO business logic here)
+# ---------------------------------------------------------------------------
 
+
+class ResourceController(Controller):
+    path = "/api/resources"
+    # Provides `resource_service` plus the query-parameter filters aggregated as `filters`
+    dependencies = providers.create_service_dependencies(
+        ResourceService,
+        "resource_service",
+        filters={
+            "pagination_type": "limit_offset",
+            "pagination_size": 20,
+            "search": "title",
+            "search_ignore_case": True,
+        },
+    )
+
+    @get()
     async def list_resources(
         self,
-        user_id: UUID,
-        skip: int = 0,
-        limit: int = 100,
-        search: str | None = None,
-        status: str | None = None,
-    ) -> Sequence[Resource]:
-        return await self.repository.list_for_user(
-            user_id=user_id,
-            skip=skip,
-            limit=limit,
-            search=search,
-            status=status,
+        request: Request[User, Token, Any],
+        resource_service: NamedDependency[ResourceService],
+        filters: NamedDependency[SkipValidation[list[FilterTypes]]],
+    ) -> OffsetPagination[ResourceResponse]:
+        results, total = await resource_service.list_for_user(request.user.id, *filters)
+        return resource_service.to_schema(
+            results, total, filters=filters, schema_type=ResourceResponse
         )
 
-    async def get_resource(self, resource_id: UUID) -> Resource | None:
-        return await self.repository.get(resource_id)
-
-    async def create_resource(self, user_id: UUID, data: ResourceCreate) -> Resource:
-        resource = Resource(**data.model_dump(), user_id=user_id)
-        self.repository.add(resource)
-        try:
-            await self.db.commit()
-        except Exception:
-            await self.db.rollback()
-            raise
-        await self.db.refresh(resource)
-        return resource
-
-    async def update_resource(self, resource: Resource, data: ResourceUpdate) -> Resource:
-        for field, value in data.model_dump(exclude_unset=True).items():
-            setattr(resource, field, value)
-
-        await self.db.commit()
-        await self.db.refresh(resource)
-        return resource
-
-    async def delete_resource(self, resource: Resource, hard: bool = False) -> None:
-        if hard:
-            await self.repository.delete(resource)
-        else:
-            resource.deleted_at = datetime.now(timezone.utc)
-
-        await self.db.commit()
-
-    async def bulk_create_resources(
+    @get("/{resource_id:uuid}")
+    async def get_resource(
         self,
-        user_id: UUID,
-        resources_data: list[ResourceCreate],
-    ) -> list[Resource]:
-        resources = [
-            Resource(**data.model_dump(), user_id=user_id)
-            for data in resources_data
-        ]
-        for resource in resources:
-            self.repository.add(resource)
+        request: Request[User, Token, Any],
+        resource_service: NamedDependency[ResourceService],
+        resource_id: FromPath[UUID],
+    ) -> ResourceResponse:
+        resource = await resource_service.get_for_user(resource_id, request.user.id)
+        return resource_service.to_schema(resource, schema_type=ResourceResponse)
 
-        try:
-            await self.db.commit()
-        except Exception:
-            await self.db.rollback()
-            raise
+    @post()
+    async def create_resource(
+        self,
+        request: Request[User, Token, Any],
+        resource_service: NamedDependency[ResourceService],
+        data: JSONBody[ResourceCreate],
+    ) -> ResourceResponse:
+        """POST /api/resources (201 by default)"""
+        resource = await resource_service.create_for_user(request.user.id, data)
+        return resource_service.to_schema(resource, schema_type=ResourceResponse)
 
-        for resource in resources:
-            await self.db.refresh(resource)
-        return resources
-"""
+    @patch("/{resource_id:uuid}")
+    async def update_resource(
+        self,
+        request: Request[User, Token, Any],
+        resource_service: NamedDependency[ResourceService],
+        resource_id: FromPath[UUID],
+        data: JSONBody[ResourceUpdate],
+    ) -> ResourceResponse:
+        """Partial update: only provided fields change."""
+        resource = await resource_service.update_for_user(
+            resource_id, request.user.id, data
+        )
+        return resource_service.to_schema(resource, schema_type=ResourceResponse)
+
+    @delete("/{resource_id:uuid}")
+    async def delete_resource(
+        self,
+        request: Request[User, Token, Any],
+        resource_service: NamedDependency[ResourceService],
+        resource_id: FromPath[UUID],
+    ) -> None:
+        """DELETE /api/resources/{resource_id} (soft delete, 204 by default)"""
+        await resource_service.delete_for_user(resource_id, request.user.id)
+
+
+# ---------------------------------------------------------------------------
+# app/main.py: application wiring
+# ---------------------------------------------------------------------------
+
+app = Litestar(
+    route_handlers=[ResourceController],
+    plugins=[SQLAlchemyPlugin(config=alchemy_config)],
+    on_app_init=[jwt_auth.on_app_init],
+    exception_handlers={AppError: app_error_handler},
+)

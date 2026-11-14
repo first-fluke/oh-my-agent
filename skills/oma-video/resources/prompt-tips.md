@@ -23,7 +23,7 @@ Example (shorts): `30s vertical short for a dev audience: how oma-video turns a 
 
 ### explainer (16:9 / 9:16)
 - Source is a README / code / data — point the brief at the file and the *one* thing to teach.
-- Mix oma-slide frames (structure, bullet beats) with oma-image diagrams (concepts) and code frames.
+- Choose one visual source per run: oma-image diagrams and stills (`--visual generate`), or oma-slide frames (`--visual slide`, each scene's `visual.ref` pointing at a deck built beforehand). A run cannot mix the two; under `--visual auto` a scene without a deck gets a placeholder.
 - Code frames use one fixed deterministic theme (v1). Keep snippets short and legible at 1920×1080.
 - Narration should explain *why*, not read the code line-by-line.
 - One diagram per scene, about 15–20s each; see `motion-principles.md` for the scene cast and diagram steps.
@@ -44,7 +44,7 @@ Scene/backdrop → Subject → Details → Constraints
 
 | Mode | Example per-scene prompt |
 |------|--------------------------|
-| shorts | `Aerial drone shot of Jeju coastline, turquoise water meeting volcanic rock, golden hour, vertical composition with headroom for a slow zoom` |
+| shorts | `Aerial drone shot of Jeju coastline, turquoise water meeting volcanic rock, golden hour, vertical composition with headroom` |
 | shorts | `Close-up of a hand pouring espresso into a glass over ice, warm cafe light, shallow depth of field` |
 | explainer | `Clean isometric diagram of a 3-stage pipeline (script → assets → render), flat vector, labeled boxes, neutral background` |
 | demo | `Minimal title card: product name centered, dark UI background, subtle accent gradient, 16:9` |
@@ -59,14 +59,14 @@ Scene/backdrop → Subject → Details → Constraints
 ## Don'ts
 
 - Don't write a brief with no mode and no topic — the agent will have to clarify.
-- Don't request paid stock/AIGC visuals without the key — the chain silently falls back to oma-image stills (annotated in `warnings`), which may surprise you.
+- Don't request stock/AIGC visuals (`--visual stock|aigc`) without the key — the chain silently falls back to oma-image stills (annotated in `warnings`), which may surprise you.
 - Don't exceed `max_duration_sec` (180) or `max_scenes` (40).
 - Don't put secrets in the brief unless `--no-brief-in-manifest` is set.
 
 ## Localization
 
 - Narration + on-screen text are authored in `--locale`. For a non-source locale, oma-translation translates the script text before TTS/captions (key-free). If the translator is absent, the source text is kept and a warning is recorded.
-- oma-image prompts are sent in **English** regardless of `--locale`; translate the user's subject and show the translated prompt during amplification.
+- oma-image prompts are sent in **English** regardless of `--locale`; translate the user's subject and show the translated prompt in the stated plan.
 
 ## Determinism
 

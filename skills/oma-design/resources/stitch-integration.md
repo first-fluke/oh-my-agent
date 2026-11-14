@@ -117,40 +117,6 @@ Flags must precede the server name. The equivalent private config entry is:
 
 Reload through `/mcp` and call `list_projects` to verify.
 
-#### Claude Code
-
-```bash
-claude mcp add stitch --transport http https://stitch.googleapis.com/mcp \
-  --header "X-Goog-Api-Key: YOUR_KEY" --scope user
-```
-
-#### Cursor (`.cursor/mcp.json` or user MCP config)
-
-```json
-{
-  "mcpServers": {
-    "stitch": {
-      "url": "https://stitch.googleapis.com/mcp",
-      "headers": { "X-Goog-Api-Key": "YOUR_KEY" }
-    }
-  }
-}
-```
-
-#### VS Code (`.vscode/mcp.json` or user MCP config)
-
-```json
-{
-  "servers": {
-    "stitch": {
-      "type": "http",
-      "url": "https://stitch.googleapis.com/mcp",
-      "headers": { "X-Goog-Api-Key": "YOUR_KEY" }
-    }
-  }
-}
-```
-
 #### Codex (`~/.codex/config.toml`)
 
 Set `STITCH_API_KEY` in the environment that launches Codex, then merge:
@@ -166,55 +132,59 @@ the value above is the variable name rather than the key itself.
 For other clients, follow their official HTTP MCP configuration schema
 with the same endpoint and API key header.
 
-## Namespace Discovery
+## Tool Discovery
 
-MCP tool names may be prefixed. Before calling, discover the prefix:
+The server's tool set changes and MCP tool names may be prefixed. Before calling:
 1. Use the runtime's tool discovery or MCP tool listing mechanism.
-2. Look for tools containing "list_projects", "get_screen", etc.
-3. Use the discovered names and input schemas.
+2. Match tools by suffix (`list_projects`, `get_screen`, `download_file`, ...).
+3. Use the discovered names and input schemas, and only tools exposed by the
+   connected official server.
 
-Call `get_screen` and download its `htmlCode.downloadUrl` or
-`screenshot.downloadUrl` for HTML or screenshots. To map screens to site
-routes, retrieve each screen's HTML and perform that mapping locally.
-Use only tools exposed by the connected official server.
+The tool names below are hints for that lookup. A tool the server does not
+expose is a capability limit to report.
 
-## Tool Mapping by Operation
+## Operations
 
-Follow the discovered input schemas for all calls.
+Uploading, creating, applying, generating, and editing change the user's
+Stitch project. Perform them only as part of the requested Stitch operation.
+
+### Carry DESIGN.md into Stitch (preferred when present)
+
+When the server exposes the DESIGN.md design-system tools, use them so Stitch
+screens follow the project's visual contract instead of a prompt paraphrase:
+
+1. `upload_design_md`: upload the project's `DESIGN.md` to the Stitch project.
+2. `create_design_system_from_design_md`: create the design system from that
+   upload, immediately after it.
+3. `apply_design_system`: restyle existing screens to a design system;
+   `list_design_systems` gives its identifier.
+
+`DESIGN.md` stays the source of truth; the Stitch design system is derived
+from it. Without these tools, pass the relevant `DESIGN.md` decisions in the
+generation prompt.
 
 ### Extract existing design context
-| Step | Tool | Input |
-|------|------|-------|
-| Find projects | `list_projects` | filter: "view=owned" |
-| Get design theme | `get_project` | resource name → designTheme object |
-| List screens | `list_screens` | numeric project ID |
-| Download HTML | `get_screen` + HTTP download | screen identifier → `htmlCode.downloadUrl` |
-| Download screenshot | `get_screen` + HTTP download | screen identifier → `screenshot.downloadUrl` |
+
+- Find the project: `list_projects`.
+- Read project details, including its design theme: `get_project`.
+- List screens: `list_screens`.
+- Retrieve a screen's HTML or screenshot: `get_screen`, then the server's
+  file-download tool (`download_file`) with the file resource name from the
+  screen's HTML or screenshot entry. Fetch a download URL directly only when
+  no download tool is exposed; those URLs need credentials and can return a
+  JSON wrapper instead of the file.
 
 ### Explore a requested direction
-| Step | Tool | Input |
-|------|------|-------|
-| Generate concept | `generate_screen_from_text` | text prompt + design context |
-| Generate variants | `generate_variants` | existing screen ID |
-| Preview | `get_screen` + HTTP download | `screenshot.downloadUrl` for visual comparison |
+
+- Generate a concept: `generate_screen_from_text` with the text prompt and
+  design context.
+- Generate variants of an existing screen: `generate_variants`.
+- Revise existing screens: `edit_screens`.
+- Preview: download the screenshot for visual comparison.
 
 ### Retrieve implementation references
-| Step | Tool | Input |
-|------|------|-------|
-| Map site routes | local operation | requested screen-to-route mapping |
-| Get page HTML | `get_screen` + HTTP download | `htmlCode.downloadUrl` per route |
 
-## Available Tools
-
-| Tool | Description |
-|------|-------------|
-| `list_projects` | List all accessible Stitch projects |
-| `get_project` | Get project details (including designTheme) |
-| `list_screens` | List screens within a project |
-| `get_screen` | Get screen metadata and download URLs |
-| `generate_screen_from_text` | Generate new screen from text prompt |
-| `edit_screens` | Edit existing screens via text prompt |
-| `generate_variants` | Generate design variants of a screen |
+Download each needed screen's HTML and map screens to site routes locally.
 
 ## Without Stitch
 

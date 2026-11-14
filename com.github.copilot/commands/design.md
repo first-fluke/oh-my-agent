@@ -1,6 +1,7 @@
 ---
-description: Design workflow that creates design systems, DESIGN.md, and design
-  tokens with anti-pattern enforcement and accessibility checks
+description: Design workflow that scopes a design task, selects the applicable
+  design guidance, and delivers findings, DESIGN.md, or design tokens through
+  oma-design
 ---
 
 <!-- oma:generated -->

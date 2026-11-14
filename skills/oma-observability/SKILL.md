@@ -33,8 +33,9 @@ Route, design, tune, and review observability work across MELT+P signals, layers
 - Chaos engineering orchestration: use Chaos Mesh, Litmus, Gremlin, or ChaosToolkit (this skill consumes their telemetry; it does not orchestrate chaos)
 - GPU / TPU infrastructure observability: use NVIDIA DCGM Exporter + Prometheus
 - Software supply chain (SBOM, attestation): use sigstore (cosign / rekor), in-toto framework, SLSA level attestations
-- Incident response workflow (on-call rotation, paging, escalation); use PagerDuty, OpsGenie, or Grafana OnCall
+- Incident response workflow (on-call rotation, paging, escalation); use PagerDuty, Jira Service Management, or Grafana Cloud IRM
 - Full TLS packet inspection: use packet-analysis or vendor TLS inspection tooling
+- Security scanning, skill/MCP audits, or penetration testing: use `oma-security` (this skill covers security telemetry only: audit trails, WAF signals, PII redaction)
 - Single-vendor setup already fully covered by that vendor's own published skill; invoke the vendor skill directly
 
 ### Expected inputs
@@ -47,7 +48,7 @@ Route, design, tune, and review observability work across MELT+P signals, layers
 - Vendor delegation target when appropriate
 
 ### Dependencies
-Load resources conditionally: start with the execution protocol and one intent guide. Read only relevant matrix rows, then add a boundary, signal, or transport section when evidence requires it. The reference list is an index, not a preload list.
+Load resources conditionally: start with the execution protocol and the one guide the intent route selects. Read only relevant matrix rows, then add a layer, boundary, signal, or transport guide when its trigger in §References is present. No reference is a mandatory preload.
 
 - OTel/W3C/CNCF references and resources under `resources/`
 - Vendor categories, matrix, standards, incident forensics, meta-observability, transport, layers, boundaries, and signal guides
@@ -76,7 +77,7 @@ Load resources conditionally: start with the execution protocol and one intent g
 - If a vendor-owned skill fully covers setup, delegate instead of duplicating docs.
 - If migration is requested, verify upstream support and compatibility before choosing a replacement.
 - If incident investigation is requested, use 6-dimensional localization.
-- If transport tuning appears, load transport-specific resources.
+- If transport tuning appears, load the one transport guide that matches the observed problem.
 
 ### Failure and recovery
 - If live CNCF/vendor status is load-bearing, verify current status.
@@ -109,7 +110,7 @@ Load resources conditionally: start with the execution protocol and one intent g
 ```text
 1. Classify intent: setup, migrate, investigate, alert, trace, tune, or route.
 2. Select layer/boundary/signal coverage from `resources/matrix.md`.
-3. Load the specific vendor, transport, incident, or signal guide before producing guidance.
+3. Load the guide whose trigger in §References matches before producing guidance.
 ```
 
 When CNCF/vendor status is load-bearing, verify live state at `https://landscape.cncf.io`.
@@ -151,7 +152,7 @@ The coverage matrix has four layers (L3, L4, mesh, L7), four boundaries (multi-t
 | `investigate` | `resources/incident-forensics.md` (MRA + 6-dim localization) | `resources/signals/traces.md` + `resources/signals/logs.md` |
 | `alert` | `resources/boundaries/slo.md` (burn-rate alert rules) | `resources/observability-as-code.md` |
 | `trace` | `resources/boundaries/cross-application.md` (propagator matrix) | `resources/layers/mesh.md` (zero-code auto-instrumentation) |
-| `tune` | `resources/transport/` (4 files: UDP/MTU, OTLP, topology, sampling) | `resources/meta-observability.md` (cardinality guardrails) |
+| `tune` | The one guide matching the problem: cardinality or series cost → `resources/meta-observability.md` Section C; telemetry volume → `resources/transport/sampling-recipes.md`; UDP/MTU, OTLP protocol, or Collector topology → the matching `resources/transport/` file | `resources/vendor-categories.md` when the current vendor's pricing model is the cause |
 | `route` | `resources/boundaries/multi-tenant.md` + `resources/transport/collector-topology.md` | `resources/boundaries/cross-application.md` (data residency) |
 
 Record the selected intent route, and any vendor category chosen for `setup`, with subject `observability.route-selection` per `references/_shared/runtime/route-selection.md`.
@@ -160,68 +161,70 @@ Record the selected intent route, and any vendor category chosen for `setup`, wi
 For example: `/oma-observability --investigate "5xx spike in checkout"`.
 Other skills pass the intent, system boundary, and evidence; the result returns guidance, checks, and any vendor handoff.
 
-Read `resources/execution-protocol.md` first. Use the selected route above, then only relevant checklist sections before delivery. Load `resources/examples.md` for an unfamiliar output shape and `resources/anti-patterns.md` only for the affected category. Do not load all transport, layer, boundary, and signal guides together.
+Read `resources/execution-protocol.md` first. Use the selected route above, add guides by the triggers in §References, then check only the applicable checklist sections before delivery. Do not load all transport, layer, boundary, and signal guides together.
 
 ### Integrations with OMA Ecosystem
 
 | Skill | Integration point |
 |-------|------------------|
-| `oma-debug` | On failure: pull traces + logs by `request_id` → trigger `resources/incident-forensics.md` 6-dim localization playbook |
-| `oma-qa` | Canary post-deploy loop via chrome-devtools MCP: console errors + Core Web Vitals trend; INP/LCP/CLS from `resources/layers/L7-application/web-rum.md` |
-| `oma-tf-infra` | Terraform modules for OTel Collector, Grafana, and Loki stack provisioning |
+| `oma-debug` | Production-failure evidence comes here: pull traces and logs by `trace_id` (resolve it from `request_id` when that is all the reporter has) and run `resources/incident-forensics.md` 6-dimension localization. Reproduction, the fix, and the regression test stay in `oma-debug` |
+| `oma-qa` | Supplies review inputs, not the review: Core Web Vitals targets (INP/LCP/CLS) from `resources/layers/L7-application/web-rum.md` and backend latency evidence from `resources/signals/traces.md`. `oma-qa` owns the performance review and verdict |
+| `oma-tf-infra` | Writes and reviews the Terraform that provisions Collectors, backends, and IAM. This skill supplies the requirements: topology (`resources/transport/collector-topology.md`), transport choice, retention (`resources/meta-observability.md` Section D), and release metadata. Neither skill ships ready-made observability modules |
+| `oma-security` | Source, skill, and MCP scanning and scoped penetration tests. This skill hands over security findings surfaced by telemetry and keeps only the telemetry side: `resources/signals/audit.md`, `resources/layers/L7-application/waf.md`, `resources/signals/privacy.md` |
+| `oma-search` | Vendor and upstream documentation lookup (`/oma-search --docs "<vendor> <topic>"`) when no vendor-owned skill is installed, and live CNCF or vendor status checks |
 | `oma-scm` | Deployment SHA → `service.version` OTel attribute + release marker events; see `resources/boundaries/release.md` |
-| `oma-backend` | Propagator and baggage rules; DB N+1 + Kafka patterns in `resources/signals/traces.md`. Back-reference: `oma-backend/SKILL.md` §References "Observability handoff" |
+| `oma-backend` | Propagator and baggage rules (`resources/boundaries/cross-application.md`); DB N+1 and messaging span patterns in `resources/signals/traces.md` §2–§3. Back-reference: `oma-backend/SKILL.md` §References "Observability handoff" |
 | `oma-frontend` | `resources/layers/L7-application/web-rum.md` INP/LCP/CLS checklist. Back-reference: `oma-frontend/SKILL.md` §References "Observability handoff" |
 | `oma-mobile` | `resources/layers/L7-application/mobile-rum.md` offline-queuing pattern. Back-reference: `oma-mobile/SKILL.md` §References "Observability handoff" |
-| `oma-db` | `resources/signals/traces.md` DB patterns (N+1, connection pool). Back-reference: `oma-db/SKILL.md` §References "Observability handoff" |
+| `oma-db` | `resources/signals/traces.md` §2 DB patterns (N+1, connection pool). Back-reference: `oma-db/SKILL.md` §References "Observability handoff" |
 
 ### Versioning & Deprecation
 
-- **Spec version pinning**: `otel_spec` / `otel_semconv` keys in each file's frontmatter document the assumed version. If content depends on a specific attribute stability tier, the tier is stated inline.
+- **No per-file version pins**: `resources/standards.md` holds the single statement on spec and semconv currency. Where content depends on an attribute's stability tier, the tier is stated inline; confirm it in the semconv registry when it is load-bearing.
 - **Update triggers** (not scheduled):
-  - OTel semconv promotion (Development → RC → Stable) affecting attributes cited in this skill → update `resources/standards.md` and the affected file, bump minor version.
-  - Attribute deprecation → replace across all citing files; migration note in `resources/standards.md`.
+  - OTel semconv promotion (Development → RC → Stable) affecting attributes cited in this skill → update `resources/standards.md` and the affected file.
+  - Attribute deprecation → replace the name across all citing files.
   - CNCF status change for a vendor/project named in `vendor-categories.md` (Graduated / Archived / acquired) → update the vendor table.
 - **Authoritative live state**: `https://landscape.cncf.io` for CNCF project status. This skill does not promise to track it on any schedule; verify at use time if the information is load-bearing.
-- Use `git log path/to/file` to inspect file changes; verify upstream status separately when it affects the task.
 
-Run `resources/checklist.md §1 Setup validation` before merging observability changes.
+Before delivering observability changes, check the items of `resources/checklist.md` that apply, starting with §1 Setup validation; report checks that were not run.
 
 ## References
-- Execution steps: `resources/execution-protocol.md`
-- Intent classification: `resources/intent-rules.md`
-- Coverage matrix: `resources/matrix.md`
-- Standards (OTel spec, W3C, ISO): `resources/standards.md`
-- Vendor categories: `resources/vendor-categories.md`
-- Incident forensics: `resources/incident-forensics.md`
-- Meta-observability: `resources/meta-observability.md`
-- Observability-as-code: `resources/observability-as-code.md`
-- Anti-patterns catalog (72 entries): `resources/anti-patterns.md`
-- Checklist: `resources/checklist.md`
-- Examples: `resources/examples.md`
-- Transport:
-  - `resources/transport/udp-statsd-mtu.md`
-  - `resources/transport/otlp-grpc-vs-http.md`
-  - `resources/transport/collector-topology.md`
-  - `resources/transport/sampling-recipes.md`
-- Layers:
-  - `resources/layers/L3-network.md`
-  - `resources/layers/L4-transport.md`
-  - `resources/layers/mesh.md`
-  - `resources/layers/L7-application/web-rum.md`
-  - `resources/layers/L7-application/mobile-rum.md`
-  - `resources/layers/L7-application/crash-analytics.md`
-  - `resources/layers/L7-application/waf.md`
-- Boundaries:
-  - `resources/boundaries/multi-tenant.md`
-  - `resources/boundaries/cross-application.md`
-  - `resources/boundaries/slo.md`
-  - `resources/boundaries/release.md`
-- Signals:
-  - `resources/signals/metrics.md`
-  - `resources/signals/logs.md`
-  - `resources/signals/traces.md`
-  - `resources/signals/profiles.md`
-  - `resources/signals/cost.md`
-  - `resources/signals/audit.md`
-  - `resources/signals/privacy.md`
+
+Each reference loads on its trigger. Paths are relative to the skill root.
+
+| Trigger | Load |
+|---------|------|
+| Every invocation: flag parsing, intent classification, output shape | `resources/execution-protocol.md` |
+| No flag and the intent is not obvious from the request | `resources/intent-rules.md` |
+| Deciding which artifact belongs at a layer × boundary × signal, or whether a cell is N/A | `resources/matrix.md` (matching rows only) |
+| Attribute naming or stability tier, W3C Trace Context / Baggage rule, OSI scope question, clock synchronization | `resources/standards.md` |
+| Choosing a vendor category or a delegation target | `resources/vendor-categories.md` |
+| Production incident, root-cause localization, missing forensic attributes | `resources/incident-forensics.md` |
+| Collector self-health, clock skew, cardinality budget, retention policy | `resources/meta-observability.md` |
+| Dashboards, alert rules, SLOs, or Collector config managed in git; CI validation of rules | `resources/observability-as-code.md` |
+| Validating a proposed design against known failure patterns | `resources/anti-patterns.md` (affected category only) |
+| Pre-delivery checks | `resources/checklist.md` (applicable sections only) |
+| Unfamiliar output shape for a greenfield setup or a log-agent migration | `resources/examples.md` |
+| StatsD or UDP drops, MTU, fragmentation | `resources/transport/udp-statsd-mtu.md` |
+| OTLP gRPC vs HTTP, proxy or firewall traversal, compression, batch and queue tuning | `resources/transport/otlp-grpc-vs-http.md` |
+| Collector deployment mode, agent vs gateway placement, routing fan-out | `resources/transport/collector-topology.md` |
+| Head or tail sampling policy, reducing trace volume | `resources/transport/sampling-recipes.md` |
+| VPC flow logs, PMTUD black holes, IP-level reachability | `resources/layers/L3-network.md` |
+| TCP retransmits or RTT, load-balancer idle timeouts, QUIC, eBPF instrumentation | `resources/layers/L4-transport.md` |
+| Istio, Linkerd, or Envoy telemetry; zero-code instrumentation; trace breaks at a proxy | `resources/layers/mesh.md` |
+| Browser RUM, Core Web Vitals, source maps, session replay | `resources/layers/L7-application/web-rum.md` |
+| Mobile RUM, offline telemetry queue, app start, ANR | `resources/layers/L7-application/mobile-rum.md` |
+| Crash-free rate, symbolication, crash grouping, crash-to-release correlation | `resources/layers/L7-application/crash-analytics.md` |
+| Edge 403 storm, WAF false positives, ruleset rollout, WAF fail-open or fail-closed | `resources/layers/L7-application/waf.md` |
+| Tenant isolation, per-tenant routing or sampling, data residency | `resources/boundaries/multi-tenant.md` |
+| Propagators, baggage, cross-cloud or cross-vendor trace continuity, `request_id`, third-party dependency outage | `resources/boundaries/cross-application.md` |
+| SLI or SLO definition, error budget, burn-rate alerts | `resources/boundaries/slo.md` |
+| Release markers, canary analysis, feature-flag telemetry, GitOps drift | `resources/boundaries/release.md` |
+| Metric naming, histogram buckets, exemplars, label design | `resources/signals/metrics.md` |
+| Log agent or pipeline choice, structured logging, trace-ID injection into logs | `resources/signals/logs.md` |
+| Span design; DB (N+1, connection pool) and messaging span patterns | `resources/signals/traces.md` |
+| Continuous profiling, flame graphs, heap or CPU diff across releases | `resources/signals/profiles.md` |
+| Cost attribution, OpenCost, FinOps unit economics | `resources/signals/cost.md` |
+| Audit trail, compliance evidence, retention schedule, tamper evidence | `resources/signals/audit.md` |
+| PII redaction, pseudonymization, cross-border transfer, backend access control | `resources/signals/privacy.md` |

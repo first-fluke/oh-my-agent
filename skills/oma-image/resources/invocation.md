@@ -10,8 +10,6 @@ This skill follows oh-my-agent's CLI-first concept: whenever a vendor's native C
 | `pollinations` | Direct HTTP via `gen.pollinations.ai/v1/images/generations` (free signup for key) | Free: `flux`, `zimage`. Credit-gated: `qwen-image`, `wan-image`, `gpt-image-2`, `klein`, `kontext`, `gptimage`, `gptimage-large` | `POLLINATIONS_API_KEY` set (free at https://enter.pollinations.ai). No native CLI exists. |
 | `antigravity` | `agy -p --dangerously-skip-permissions --add-dir <outDir>` — Antigravity's agentic CLI runs over the user's Gemini Code Assist subscription. agy writes raw bytes to absolute target paths we embed in the prompt; the provider sniffs format via magic bytes and renames the file extension to match. Model selection is opaque — agy picks internally, we never name a model. | (opaque — chosen by agy) | `agy` CLI installed + signed in. No API key, no per-image charge. |
 
-> The direct Gemini path (`gemini -p` stream, `generativelanguage.googleapis.com` API) is deprecated. `agy` is the supported Gemini image route — it's free with Gemini Code Assist and doesn't require billing on AI Studio.
-
 Since `agy` 1.2.16, native image requests use the built-in `image-generator` subagent. OMA asks agy to use that route when available, with `generate_image` as the fallback for older sessions, and to wait for completion before copying the generated image bytes to the requested paths.
 
 ### Invocation
@@ -54,14 +52,18 @@ Supported vendors:
 
 | Vendor | Support | How |
 |--------|---------|-----|
-| `codex` (gpt-image-2) | PASS | Passes `-i <path>` to `codex exec` |
-| `antigravity` | PASS | Refs copied to a per-run temp dir, `agy --add-dir <tmpdir>` grants access, paths inlined into the prompt |
-| `pollinations` | N/A | Rejected with exit code 4 when explicitly selected (requires URL hosting; see PR #2 roadmap). Under `--vendor auto`, reference-unsupported vendors are silently dropped from the run set instead. |
+| `codex` (gpt-image-2) | PASS | Passes `-i <path>` to `codex exec` (repeatable); the Codex CLI also enforces the 5MB-per-file cap |
+| `antigravity` | PASS | Refs copied to a per-run temp dir so agy's sandbox needs no access to the originals' parent directory; `agy --add-dir <tmpdir>` grants access, paths inlined into the prompt |
+| `pollinations` | N/A | Rejected with exit code 4 when explicitly selected (requires URL hosting). Under `--vendor auto`, reference-unsupported vendors are silently dropped from the run set instead. |
+
+All paths are validated in `reference-guard.ts` (magic-byte MIME check + size + count + duplicate rejection) before dispatch. The detected MIME is passed to the vendor as-is; the file extension is never trusted for MIME type.
 
 **Paths**: absolute or relative to `$CWD`. Host CLIs usually expose attached images via:
-- **Claude Code**: `~/.claude/image-cache/<session>/N.png` (surfaced in system messages as `[Image: source: <path>]`)
-- **Antigravity**: workspace upload directory (exact path shown in IDE)
-- **Codex CLI as host**: user must pass the filesystem path explicitly; in-conversation attachments are not forwarded
+- **Claude Code**: `~/.claude/image-cache/<session-uuid>/<N>.png` (surfaced in system messages as `[Image: source: <path>]`; undocumented, and the cache is cleared when the session ends)
+- **Antigravity**: workspace upload directory ("Upload to Agent"; exact path shown in the IDE file tree)
+- **Codex CLI as host**: `-i` attaches to the LLM context only and exposes no filesystem path; the user must pass an explicit path (e.g. `~/Downloads/foo.png`), and in-conversation pastes cannot be forwarded
+
+Prefer a user-supplied explicit path over a host-cache path when the file must outlive the session.
 
 #### Agent Behavior: Auto-forward Attached References (MANDATORY)
 

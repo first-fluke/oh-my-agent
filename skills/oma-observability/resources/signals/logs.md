@@ -1,104 +1,45 @@
----
-otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.43.0 (2026-07)"
-notes:
-  - "Fluent Bit: v3.x (CNCF Graduated); OTel Collector: v0.100+"
----
-
 # Logs Signal Reference
 
 ## 1. Scope
 
-Logs are the "L" in MELT+P. Covers: OTel LogRecord data model, structured logging, events-as-logs, systemd journal, and pipeline options.
+Logs are the "L" in MELT+P. Covers: events as LogRecords, systemd journal and OS log sources, collection agents, trace-ID injection, severity sampling, and retention.
 
 **Normative base:** `../standards.md`. Fluentd remains CNCF Graduated. Select Fluentd, Fluent Bit, or OTel Collector from workload, plugin, and operational requirements.
 
----
-
-## 2. OTel LogRecord Data Model
-
-Source: <https://opentelemetry.io/docs/specs/otel/logs/data-model/>
-
-| Field | Type | Description |
-|---|---|---|
-| `Timestamp` | uint64 (ns) | When the event occurred; 0 if unknown |
-| `ObservedTimestamp` | uint64 (ns) | When the collector observed the record; always set |
-| `SeverityText` | string | e.g. `"ERROR"`; original string from source |
-| `SeverityNumber` | int (1–24) | Normalized OTel severity |
-| `Body` | any | String, map, or primitive |
-| `Attributes` | map[string]any | Semconv-stable keys preferred |
-| `TraceId` | 16-byte hex | W3C trace ID; empty if not in a trace |
-| `SpanId` | 8-byte hex | W3C span ID; empty if not in a span |
-| `Resource` | map[string]any | `service.name`, `host.name`, etc. |
-
-**Severity scale:** TRACE 1–4 · DEBUG 5–8 · INFO 9–12 · WARN 13–16 · ERROR 17–20 · FATAL 21–24
-
-**Export:** OTLP gRPC `:4317` or HTTP `:4318/v1/logs`. Configure the SDK's `LogRecordExporter` to point at the OTel Collector.
+**Record shape.** Emit structured (JSON or OTLP) records, never free-form text that needs grok parsing. The mandatory fields on every record (`trace_id`, `span_id`, `service.name`, `service.version`, `deployment.environment.name`, ISO 8601 UTC timestamp, severity) are defined once in `../incident-forensics.md` (Minimum Required Attributes). The LogRecord field definitions and severity scale are in the OTel log data model: <https://opentelemetry.io/docs/specs/otel/logs/data-model/>.
 
 ---
 
-## 3. Structured Logging
+## 2. Events as LogRecords
 
-JSON over text: queryable, typed, machine-readable. No grok patterns.
+An OTel Event is a LogRecord with a non-empty `EventName`; the name identifies the event's structure (attributes and body). There is no separate event signal. Source: <https://opentelemetry.io/docs/specs/otel/logs/data-model/#events>
 
-```json
-{
-  "timestamp": "2026-04-21T09:15:32.847Z",
-  "level": "ERROR",
-  "message": "payment gateway timeout after 3 retries",
-  "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
-  "span_id": "00f067aa0ba902b7",
-  "service.name": "checkout-api",
-  "service.version": "1.4.2",
-  "deployment.environment": "production",
-  "error.type": "GatewayTimeoutError",
-  "retry.count": 3
-}
-```
-
-**Required fields on every log record:**
-
-| Field | Format | Why |
-|---|---|---|
-| `timestamp` | ISO 8601 UTC (`Z`) | Clock-ordered queries; cross-ref `../standards.md §Clock Discipline` |
-| `level` | OTel SeverityText | Filtering and sampling |
-| `message` | human-readable string | On-call readability |
-| `trace_id` + `span_id` | 32/16-char hex | Join with traces; critical for incident forensics |
-| `service.name`, `service.version` | semconv stable | Release comparison |
-| `deployment.environment` | `production` / `staging` | Noise isolation |
-
-**Metric correlation:** use `service.name`, `cloud.region`, `k8s.namespace.name` as shared labels across logs and metrics. Cross-ref `../incident-forensics.md §MRA` for the full mandatory resource attribute list.
-
----
-
-## 4. Events as LogRecords
-
-OTel spec v1+ folded events into LogRecord: set `event.name` + `event.*` attributes. Source: <https://opentelemetry.io/docs/specs/otel/logs/event-api/>
+Logical view of an event record (in OTLP the name is the LogRecord `event_name` field, not an attribute):
 
 ```json
 {
   "timestamp": "2026-04-21T09:15:33.001Z",
   "level": "INFO",
+  "event_name": "order.placed",
   "message": "order placed",
-  "event.name": "order.placed",
   "order.id": "ord_8f3k2",
   "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
   "span_id": "00f067aa0ba902b7",
   "service.name": "order-service",
-  "deployment.environment": "production"
+  "deployment.environment.name": "production"
 }
 ```
 
-Use cases: `feature_flag.evaluated`, `deployment.completed`, `order.placed`, `user.signup`.
+Use cases: `feature_flag.evaluation`, `deployment.completed`, `order.placed`, `user.signup`.
 
 **Distinction from metrics:** events are discrete occurrences; metrics are aggregated rates.  
-**Distinction from logs:** events have a declared `event.name` and attribute contract; logs are often free-form.
+**Distinction from logs:** events have a declared name and attribute contract; logs are often free-form.
 
 ---
 
-## 5. Systemd Journal Integration
+## 3. Systemd Journal Integration
 
-On most Linux cloud VMs, systemd-journald is the primary log sink. Map via `journaldreceiver` (stable).
+On most Linux cloud VMs, systemd-journald is the primary log sink. Map via `journaldreceiver` (alpha; confirm the current stability in the receiver README before depending on it).
 
 ```yaml
 # otelcol-config.yaml
@@ -123,7 +64,7 @@ service:
       exporters: [otlp]
 ```
 
-Source: <https://github.com/open-telemetry/opentelemetry-collector-contrib/receiver/journaldreceiver>
+Source: <https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/journaldreceiver>
 
 **journald field mapping:** `MESSAGE` → `Body` · `PRIORITY` → `SeverityNumber` · `_HOSTNAME` → `Resource["host.name"]` · `_SYSTEMD_UNIT` → `Resource["service.name"]` · `_PID` → `Attributes["process.pid"]`
 
@@ -133,23 +74,23 @@ Source: <https://github.com/open-telemetry/opentelemetry-collector-contrib/recei
 
 ---
 
-## 6. Collector and Agent Options
+## 4. Collector and Agent Options
 
-Cross-ref `../vendor-categories.md §Log Pipeline Collection` (category h).
+Cross-ref `../vendor-categories.md` category (h) Log Pipeline / Collection.
 
-| Tool | Runtime | RAM | CNCF | Notes |
+| Tool | Runtime | RAM (order of magnitude; measure under your load) | Project | Notes |
 |---|---|---|---|---|
-| **Fluent Bit** | C/Rust | 5–15 MB | Graduated | Edge DaemonSet; native OTLP output |
-| **OTel Collector** | Go | 30–100 MB | Incubating | Unified MELT; gateway aggregation |
+| **Fluent Bit** | C | 5–15 MB | CNCF Graduated (Fluentd project) | Edge DaemonSet; native OTLP output |
+| **OTel Collector** | Go | 30–100 MB | CNCF Graduated (OpenTelemetry) | Unified MELT; gateway aggregation |
 | **Vector** | Rust | 20–60 MB | Datadog OSS | Log + metric pipeline with transforms |
 | **Cribl Stream** | Proprietary | 100+ MB | Commercial | Advanced routing |
 | Fluentd | Ruby | Workload-dependent | CNCF Graduated | Validate plugin and resource requirements |
 
-**2026 best practice:** Fluent Bit DaemonSet (edge) → OTLP → OTel Collector gateway (enrichment, PII redaction, routing) → backends.
+**Common topology:** Fluent Bit DaemonSet (edge) → OTLP → OTel Collector gateway (enrichment, PII redaction, routing) → backends. An all-Collector pipeline (agent + gateway) is equally valid; choose from plugin, parser, and resource requirements.
 
 ---
 
-## 7. Trace ID Injection Rules
+## 5. Trace ID Injection Rules
 
 **EVERY log line from an instrumented service MUST carry `trace_id` + `span_id`.**
 
@@ -164,11 +105,11 @@ Without them, log-trace join fails during incident forensics, adding 15–30 min
 | Node.js | `pino` | `pino-opentelemetry-transport` |
 | Go | `zap` / `slog` | Manual `trace.SpanFromContext` extraction |
 
-**Verification:** assert in integration tests that the `trace_id` in a log record matches bytes 1–16 of the inbound `traceparent` header. Cross-ref `../standards.md §W3C Trace Context`.
+**Verification:** when a test or staging check is in scope, assert that the `trace_id` in a log record equals the trace-id field of the inbound `traceparent` header. Cross-ref `../standards.md` (W3C Trace Context).
 
 ---
 
-## 8. Log Severity and Sampling
+## 6. Log Severity and Sampling
 
 | Severity | Production policy |
 |---|---|
@@ -182,7 +123,7 @@ Apply sampling at the collection tier (Fluent Bit throttle filter or OTel Collec
 
 ---
 
-## 9. Log Retention and Compliance
+## 7. Log Retention, Compliance, and Backends
 
 | Category | Retention | Storage |
 |---|---|---|
@@ -190,74 +131,29 @@ Apply sampling at the collection tier (Fluent Bit throttle filter or OTel Collec
 | WARN / ERROR | 90 days | Hot or warm |
 | Audit logs | Approved schedule for the record class | Tamper protection; WORM when the selected obligation requires it |
 
-**PII redaction** MUST occur at ingestion (Fluent Bit or OTel Collector `redaction` processor), not at storage time. Cross-ref `privacy.md §PII redaction pipeline`.
+**PII redaction** MUST occur at ingestion (Fluent Bit or OTel Collector `redaction` processor), not at storage time. Cross-ref `privacy.md §6 OTel Collector Processors for Redaction`.
 
-Cross-ref `../meta-observability.md §Retention Matrix` for unified policy across all signals.
+Cross-ref `../meta-observability.md` (Section D: Retention Matrix) for unified policy across all signals.
+
+**Backends.** Selection (Loki, Elasticsearch, OpenSearch, ClickHouse-based stores) is in `../vendor-categories.md`, categories (a) OSS Full-Stack and (e) SIEM / Enterprise Logs. One rule is backend-specific and often missed: in label-indexed stores such as Loki, keep unbounded values (message IDs, request IDs, `trace_id`, user identifiers) in the log body or structured metadata, never in stream labels; each distinct label value creates a stream.
 
 ---
 
-## 10. OS-Level Log Sources
+## 8. OS-Level Log Sources
 
 | Source | Collection | Notes |
 |---|---|---|
 | systemd-journald | `journaldreceiver` | Primary on Linux; all systemd units |
 | syslog (legacy) | `syslogreceiver` | Facilities: kern, daemon, auth |
 | kernel dmesg | journald (forwarded automatically) | OOM kills, NIC errors |
-| Linux auditd | `filelogreceiver` on `/var/log/audit/audit.log` | Cross-ref `audit.md §auditd` |
+| Linux auditd | `filelogreceiver` on `/var/log/audit/audit.log` | Route to the audit pipeline; cross-ref `audit.md §3 Audit Event Categories` |
 
 ---
 
-## 11. Backends
-
-Cross-ref `../vendor-categories.md` for category (e) SIEM / Enterprise Logs and (a) OSS Full-Stack.
-
-| Backend | Query model | Notes |
-|---|---|---|
-| **Loki** (Grafana Labs) | LogQL; label-indexed | Chunks in object storage; cloud-native OSS |
-| **Elasticsearch** | Lucene / EQL | Full-text search; large existing footprints |
-| **OpenSearch** (AWS fork) | Lucene / SQL | No Elastic licensing |
-| **ClickHouse** | SQL; columnar | Rising default for high-volume structured log analytics; used by SigNoz |
-
----
-
-## 12. Matrix Coverage: Logs Column
-
-Cells from `../matrix.md` owned by this file:
-
-| Layer | Boundary | Status | Artifact |
-|---|---|---|---|
-| L3-network | multi-tenant | PASS | VPC flow log stream tagged by tenant CIDR |
-| L4-transport | multi-tenant | PASS | TCP connection events per tenant socket namespace |
-| mesh | multi-tenant | PASS | Envoy access logs with baggage-derived tenant tag |
-| mesh | cross-application | PASS | Envoy access logs; `trace_id` correlation |
-| mesh | slo | PARTIAL | Burn-rate event source; metric-based SLI preferred |
-| mesh | release | PASS | Deployment event with `service.version` tag |
-| L7-application | multi-tenant | PASS | `tenant.id` on every record; OTel Collector `routing_connector` |
-| L7-application | cross-application | PASS | `trace_id` + `span_id` enables log-trace join across services |
-| L7-application | slo | PARTIAL | Log-based SLI valid fallback; metric-based preferred |
-| L7-application | release | PASS | Deployment SHA, version, rollout strategy as structured event |
-
----
-
-## 13. Anti-patterns
-
-Append candidates for `../anti-patterns.md §Logs`:
-
-| ID | Anti-pattern | Fix |
-|---|---|---|
-| A-L1 | Free-form log text without JSON | Adopt structured JSON; no grok |
-| A-L2 | `trace_id` missing in logs | Inject via SDK hook (Section 7); enforce in CI |
-| A-L3 | `user.email` in log body | PII violation; redact at collection tier; cross-ref `privacy.md` |
-| A-L4 | Unique message IDs as log labels | Cardinality explosion in Loki; use attributes, not labels |
-| A-L5 | Log agent selected without checking plugins, routes, or resource use | Compare supported requirements and measured overhead; Fluentd is not deprecated by the CNCF migration guide |
-
----
-
-## 14. References
+## 9. References
 
 1. OTel log data model: <https://opentelemetry.io/docs/specs/otel/logs/data-model/>
-2. OTel event API: <https://opentelemetry.io/docs/specs/otel/logs/event-api/>
-3. journaldreceiver: <https://github.com/open-telemetry/opentelemetry-collector-contrib/receiver/journaldreceiver>
-4. CNCF Fluentd migration guide: <https://www.cncf.io/blog/2025/10/01/fluentd-to-fluent-bit-a-migration-guide/>
-5. Fluent Bit docs: <https://docs.fluentbit.io>
-6. `../standards.md` · `../matrix.md` · `../incident-forensics.md §MRA` · `../meta-observability.md §Retention Matrix` · `../transport/sampling-recipes.md` · `../vendor-categories.md`
+2. journaldreceiver: <https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/journaldreceiver>
+3. CNCF Fluentd migration guide: <https://www.cncf.io/blog/2025/10/01/fluentd-to-fluent-bit-a-migration-guide/>
+4. Fluent Bit docs: <https://docs.fluentbit.io>
+5. `../standards.md` · `../matrix.md` · `../incident-forensics.md` · `../meta-observability.md` · `../transport/sampling-recipes.md` · `../vendor-categories.md`

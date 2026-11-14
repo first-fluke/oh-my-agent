@@ -141,6 +141,8 @@ Track more than QPS and latency:
 - empty-result rate
 - prompt-token waste from irrelevant retrieval
 
+Calibrate similarity thresholds per domain and model; one cosine threshold is not universally meaningful. Use reranking for precision-sensitive cases.
+
 Maintain:
 
 - golden query sets

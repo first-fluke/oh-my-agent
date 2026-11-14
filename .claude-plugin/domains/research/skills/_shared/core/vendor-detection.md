@@ -25,7 +25,7 @@ If identity or native dispatch is unresolved, use the configured fallback; do no
 | OpenCode | Same session: native `task` tool with `subagent_type: {agent-id}` (the only path that shows as a native child task in the active OpenCode GUI/TUI). External fallback: `oma agent spawn`, which creates a temporary primary wrapper that delegates to the `mode: subagent` agent — `opencode run --agent {subagent}` alone is rejected and falls back to the default agent. | Native task return / result file poll |
 | Kilo Code | Same as OpenCode (Kilo is an OpenCode fork): native `task` tool with `subagent_type: {agent-id}` for `.kilo/agents/{name}.md`; external fallback `oma agent spawn` uses the same temporary primary wrapper (`kilo run --agent {subagent}` alone is rejected the same way). Kilo sets `KILO=1` in tool subprocesses. | Native task return / result file poll |
 | Codex CLI | Current-session native dispatch with custom agents in `.codex/agents/{name}.toml` when available, otherwise `oma agent spawn`. A role file without `model` runs on the parent's model; spawn `docs-curator` and `research-explorer` with the fastest model the spawn tool lists as available, and leave `model` unset for other roles and for files that pin one. Never invent a model name. | JSON output |
-| Antigravity | Prefer `oma agent spawn` unless a native role-subagent path is explicitly verified for the target vendor | MCP memory poll |
+| Antigravity | Prefer `oma agent spawn` unless a native role-subagent path is explicitly verified for the target vendor | Result file poll |
 | CLI Fallback | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Result file poll |
 
 ## Dispatch Rule
@@ -43,6 +43,27 @@ Example:
   - `frontend` -> native Claude subagent
   - `backend` -> native Claude subagent
   - `qa` -> external Codex spawn via `oma agent spawn`
+
+### Native role names
+
+A native call names the role's agent definition (`.claude/agents/{role}.md`, `.codex/agents/{role}.toml`, `.opencode/agents/{role}.md`, and so on). Issue one call per agent; calls issued together run in parallel.
+
+| Domain | Role |
+|:------|:-----|
+| backend | `backend-engineer` |
+| frontend | `frontend-engineer` |
+| mobile | `mobile-engineer` |
+| db | `db-engineer` |
+| qa | `qa-reviewer` |
+| debug | `debug-investigator` |
+| refactor | `refactor-engineer` |
+| pm | `pm-planner` |
+| architecture | `architecture-reviewer` |
+| tf-infra | `tf-infra-engineer` |
+| docs | `docs-curator` |
+| research | `research-explorer` |
+
+On Claude Code the call is `Agent(subagent_type="{role}", prompt="…", run_in_background=true)`.
 
 ### OpenCode specifics
 

@@ -19,7 +19,7 @@ mise tasks <task-name>
 mise install
 
 # Install specific runtime
-mise install node@24
+mise install node@<version>
 
 # List installed runtimes
 mise list

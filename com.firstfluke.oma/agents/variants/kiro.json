@@ -16,13 +16,25 @@
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/kiro.md",
   "agents": {
     "architecture-reviewer": {
-      "tools": ["read", "grep", "glob", "code"]
+      "tools": ["read", "write", "grep", "glob", "code"]
     },
     "pm-planner": {
-      "tools": ["read", "grep", "glob", "shell"]
+      "tools": ["read", "write", "grep", "glob", "shell"]
     },
     "qa-reviewer": {
       "tools": ["read", "grep", "glob", "shell"]
+    },
+    "research-explorer": {
+      "tools": [
+        "read",
+        "write",
+        "shell",
+        "grep",
+        "glob",
+        "code",
+        "subagent",
+        "web"
+      ]
     }
   }
 }

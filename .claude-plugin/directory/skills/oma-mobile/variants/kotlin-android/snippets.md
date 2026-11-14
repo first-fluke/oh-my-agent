@@ -9,90 +9,136 @@ Package placeholder: `com.example.app`. Generated packages: `com.example.generat
 
 ## §1. Gradle wiring: OpenAPI Generator (`kotlin` / `jvm-ktor`) + Ktor + OkHttp engine
 
+Versions live in the version catalog and are deliberately absent here: keep the
+project's existing pins, and take a new entry's version from that library's current
+stable release. `org.openapi.generator` is always an **exact** version, never a range —
+the generated constructor parameters in §3 follow it.
+
 ```kotlin
 // settings.gradle.kts
 rootProject.name = "ExampleApp"
 include(":app", ":api-client")
 ```
 
+```toml
+# gradle/libs.versions.toml — coordinates only
+[versions]
+# One entry per `version.ref` below, plus compileSdk / targetSdk (latest stable API level).
+# The values are the project's pins; this reference lists none on purpose.
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+
+[libraries]
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-ui = { module = "androidx.compose.ui:ui" }                       # BOM-managed
+compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
+hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifecycle-viewmodel-compose", version.ref = "androidx-hilt" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
+coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+junit = { module = "junit:junit", version.ref = "junit" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+```
+
 ```kotlin
-// build.gradle.kts (root) — pin every plugin version once, apply per module
+// build.gradle.kts (root) — declare every plugin once, apply per module
 plugins {
-    id("com.android.application") version "8.9.2" apply false
-    id("org.jetbrains.kotlin.android") version "2.1.20" apply false
-    id("org.jetbrains.kotlin.jvm") version "2.1.20" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.1.20" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.20" apply false
-    id("com.google.devtools.ksp") version "2.1.20-1.0.32" apply false
-    id("com.google.dagger.hilt.android") version "2.56.2" apply false
-    id("org.openapi.generator") version "7.26.0" apply false   // exact pin; never a range
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.openapi.generator) apply false       // exact pin; never a range
 }
 ```
 
 ```kotlin
 // app/build.gradle.kts
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
-    id("org.openapi.generator")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.openapi.generator)
 }
 
 android {
     namespace = "com.example.app"
-    compileSdk = 35
+    compileSdk = libs.versions.compileSdk.get().toInt()      // latest stable API level
     defaultConfig {
         applicationId = "com.example.app"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = libs.versions.targetSdk.get().toInt()
         buildConfigField("String", "API_BASE_URL",
             "\"${providers.gradleProperty("apiBaseUrl").orElse("http://10.0.2.2:8000").get()}\"")
     }
     buildFeatures { compose = true; buildConfig = true }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
-    kotlinOptions { jvmTarget = "17" }
 }
 
 dependencies {
     implementation(project(":api-client"))
 
-    val composeBom = platform("androidx.compose:compose-bom:2025.04.01")
+    val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.activity:activity-compose:1.10.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
-    implementation("androidx.navigation:navigation-compose:2.9.0")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation(libs.compose.ui)
+    implementation(libs.compose.material3)
+    implementation(libs.activity.compose)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.navigation.compose)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
 
-    implementation("com.google.dagger:hilt-android:2.56.2")
-    ksp("com.google.dagger:hilt-compiler:2.56.2")
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
-    implementation("androidx.room:room-runtime:2.7.1")
-    implementation("androidx.room:room-ktx:2.7.1")
-    ksp("androidx.room:room-compiler:2.7.1")
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    implementation(libs.coroutines.android)
+    implementation(libs.serialization.json)
 
     // Ktor: the generated client needs core + JSON; the ENGINE is this module's choice.
-    implementation("io.ktor:ktor-client-core:3.1.3")
-    implementation("io.ktor:ktor-client-okhttp:3.1.3")               // engine on device
-    implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
-    implementation("io.ktor:ktor-client-auth:3.1.3")
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)                  // engine on device
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.auth)                    // Auth plugin (§3)
+    implementation(libs.ktor.client.logging)                 // Logging plugin (§3)
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    testImplementation("app.cash.turbine:turbine:1.2.0")
-    testImplementation("io.ktor:ktor-client-mock:3.1.3")             // engine in tests
+    testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.ktor.client.mock)                // engine in tests
     androidTestImplementation(composeBom)
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.test.manifest)
 }
 
 // Pinned generator produces API/model/infrastructure sources from the committed server contract.
@@ -103,8 +149,7 @@ openApiGenerate {
     outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
     apiPackage.set("com.example.generated.api")
     modelPackage.set("com.example.generated.model")
-    invokerPackage.set("com.example.generated.infrastructure")
-    packageName.set("com.example.generated")
+    packageName.set("com.example.generated")                            // → …generated.infrastructure
     configOptions.set(mapOf(
         "serializationLibrary" to "kotlinx_serialization",
         "dateLibrary" to "string",
@@ -128,26 +173,27 @@ tasks.named("preBuild") { dependsOn(tasks.named("openApiGenerate")) }
 ```kotlin
 // api-client/build.gradle.kts — JVM module: compiles the generated sources and hosts contract tests
 plugins {
-    id("org.jetbrains.kotlin.jvm")
-    id("org.jetbrains.kotlin.plugin.serialization")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
 }
 kotlin {
     jvmToolchain(17)
     sourceSets.getByName("main").kotlin.srcDir("../app/build/generated/openapi/src/main/kotlin")
 }
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-    implementation("io.ktor:ktor-client-core:3.1.3")                 // no engine here on purpose
-    implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
-    testImplementation("io.ktor:ktor-client-mock:3.1.3")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    testImplementation("junit:junit:4.13.2")
+    implementation(libs.serialization.json)
+    implementation(libs.ktor.client.core)                    // no engine here on purpose
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.junit)
 }
 tasks.named("compileKotlin") { dependsOn(":app:openApiGenerate") }
 ```
 
-Generate and run the contract tests without an emulator:
+The contract tests need no emulator. This command generates sources and compiles, so
+run it only when the user or the active workflow asks for a test run:
 
 ```bash
 ./gradlew :app:openApiGenerate :api-client:test
@@ -224,10 +270,12 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
+import io.ktor.serialization.kotlinx.json.json
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -251,10 +299,15 @@ object NetworkModule {
         // addInterceptor(...) for OkHttp-level concerns (certificate pinning, Sentry/OTel).
     }
 
-    /** Cross-cutting transport concerns only — auth, timeouts, headers, logging. Never caching. */
-    @Provides @Singleton
-    fun provideClientConfig(tokenStore: TokenStore): (HttpClientConfig<*>) -> Unit = { config ->
+    /**
+     * Cross-cutting transport concerns only — JSON, auth, timeouts, headers, logging. Never caching.
+     * A plain function, not a binding: every generated *Api below receives the same block.
+     */
+    private fun clientConfig(tokenStore: TokenStore, codec: Json): (HttpClientConfig<*>) -> Unit = { config ->
         config.expectSuccess = false              // generated HttpResponse<T>.success carries the status
+        // With kotlinx_serialization the generated ApiClient installs ContentNegotiation
+        // without a converter; register the shared codec here.
+        config.install(ContentNegotiation) { json(codec) }
         config.install(HttpTimeout) { requestTimeoutMillis = 20_000 }
         config.install(Auth) {
             bearer {
@@ -267,21 +320,20 @@ object NetworkModule {
     }
 
     /**
-     * One generated *Api per OpenAPI tag. The pinned jvm-ktor template exposes
-     * `httpClientEngine` + `httpClientConfig` + `jsonSerializer` constructor hooks, so no
-     * template fork is needed. Parameter names follow the pinned generator version —
-     * confirm against build/generated/openapi/.../infrastructure/ApiClient.kt once.
+     * One generated *Api per OpenAPI tag. The jvm-ktor template exposes `baseUrl` +
+     * `httpClientEngine` + `httpClientConfig` constructor parameters, so no template fork
+     * is needed. Parameter names follow the pinned generator version — confirm against
+     * build/generated/openapi/.../infrastructure/ApiClient.kt once.
      */
     @Provides @Singleton
     fun provideTodosApi(
         engine: HttpClientEngine,
-        clientConfig: (HttpClientConfig<*>) -> Unit,
+        tokenStore: TokenStore,
         json: Json,
     ): TodosApi = TodosApi(
         baseUrl = BuildConfig.API_BASE_URL.trimEnd('/'),
         httpClientEngine = engine,
-        httpClientConfig = clientConfig,
-        jsonSerializer = json,
+        httpClientConfig = clientConfig(tokenStore, json),
     )
 }
 ```
@@ -320,17 +372,29 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
+/**
+ * Interface seam the view models depend on, so the repository is swappable for a
+ * fake in unit tests (no mocking library, no `open` class).
+ */
+interface TodoDataSource {
+    suspend fun list(): List<Todo>
+    suspend fun get(id: String): Todo
+    suspend fun create(title: String): Todo
+    suspend fun toggle(id: String): Todo
+    suspend fun delete(id: String)
+}
+
 /** Every HTTP operation is generated from the OpenAPI spec; this class owns mapping and errors only. */
 @Singleton
 class TodoRepository @Inject constructor(
     private val api: TodosApi,
     private val json: Json,
-) {
-    suspend fun list(): List<Todo> = call { api.listTodos() }
-    suspend fun get(id: String): Todo = call { api.getTodo(id) }
-    suspend fun create(title: String): Todo = call { api.createTodo(CreateTodoRequest(title = title)) }
-    suspend fun toggle(id: String): Todo = call { api.toggleTodo(id) }
-    suspend fun delete(id: String) { call { api.deleteTodo(id) } }
+) : TodoDataSource {
+    override suspend fun list(): List<Todo> = call { api.listTodos() }
+    override suspend fun get(id: String): Todo = call { api.getTodo(id) }
+    override suspend fun create(title: String): Todo = call { api.createTodo(CreateTodoRequest(title = title)) }
+    override suspend fun toggle(id: String): Todo = call { api.toggleTodo(id) }
+    override suspend fun delete(id: String) { call { api.deleteTodo(id) } }
 
     /** Unwraps the generated HttpResponse<T>: status → typed failure, IOException → Network. */
     private suspend fun <T> call(request: suspend () -> HttpResponse<T>): T {
@@ -357,6 +421,15 @@ class TodoRepository @Inject constructor(
 }
 ```
 
+```kotlin
+// app/src/main/java/com/example/app/di/DataModule.kt
+@Module @InstallIn(SingletonComponent::class)
+abstract class DataModule {
+    /** View models ask for the interface; Hilt supplies the generated-client repository. */
+    @Binds abstract fun bindTodoDataSource(impl: TodoRepository): TodoDataSource
+}
+```
+
 ---
 
 ## §5. `@HiltViewModel` with a single `StateFlow<UiState>`
@@ -368,7 +441,7 @@ package com.example.app.ui.todos
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.app.data.ApiFailure
-import com.example.app.data.TodoRepository
+import com.example.app.data.TodoDataSource
 import com.example.generated.model.Todo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -387,7 +460,7 @@ sealed interface TodoListUiState {
 
 @HiltViewModel
 class TodoListViewModel @Inject constructor(
-    private val repository: TodoRepository,
+    private val repository: TodoDataSource,          // interface seam (§4), never the concrete class
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<TodoListUiState>(TodoListUiState.Loading)
@@ -446,6 +519,7 @@ private fun ApiFailure.toUserMessage(): String = when (this) {
 // app/src/main/java/com/example/app/ui/todos/TodoListScreen.kt
 package com.example.app.ui.todos
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -455,7 +529,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.generated.model.Todo
 
@@ -564,7 +638,7 @@ fun AppNavHost() {
 }
 ```
 
-Screens receive callbacks, never the `NavController`. Enable predictive back once in `AndroidManifest.xml` (`android:enableOnBackInvokedCallback="true"`); the `NavHost` handles it.
+Screens receive callbacks, never the `NavController`. Predictive back is enabled by default for apps targeting API 36+; the `NavHost` handles it.
 
 ---
 
@@ -574,7 +648,7 @@ Screens receive callbacks, never the `NavController`. Enable predictive back onc
 // app/src/main/java/com/example/app/data/cache/TodoCache.kt
 package com.example.app.data.cache
 
-import androidx.room.*
+import androidx.room3.*
 import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "todo_cache")
@@ -602,7 +676,8 @@ interface TodoCacheDao {
     @Query("DELETE FROM todo_cache") suspend fun clear()
 }
 
-@Database(entities = [TodoCacheRow::class], version = 1, exportSchema = true)
+// A disposable response cache: no schema history to export.
+@Database(entities = [TodoCacheRow::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun todoCache(): TodoCacheDao
 }
@@ -614,14 +689,14 @@ package com.example.app.data
 
 import com.example.app.data.cache.TodoCacheDao
 import com.example.app.data.cache.TodoCacheRow
-import com.example.generated.api.TodosApi
 import com.example.generated.model.Todo
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 
 /**
  * Reads: emit cached rows immediately, revalidate when stale, let Room re-emit.
@@ -629,17 +704,23 @@ import kotlinx.coroutines.flow.onStart
  * Cache key = operation ("listTodos") + params; TTL is explicit.
  */
 @Singleton
-class CachedTodoRepository @Inject constructor(
-    private val api: TodosApi,
+class CachedTodoRepository(
     private val dao: TodoCacheDao,
-    private val remote: TodoRepository,            // §4 — owns HttpResponse unwrapping
-    private val clock: () -> Long = System::currentTimeMillis,
+    private val remote: TodoDataSource,            // §4 — owns HttpResponse unwrapping
+    private val clock: () -> Long,                 // tests pass a fake clock here
 ) {
+    // The injected constructor supplies the wall clock; tests call the primary one.
+    @Inject constructor(dao: TodoCacheDao, remote: TodoDataSource) :
+        this(dao, remote, System::currentTimeMillis)
+
     private val ttl = 5.minutes.inWholeMilliseconds
 
-    fun observeTodos(): Flow<List<Todo>> = dao.observeAll()
-        .map { rows -> rows.map { it.toModel() } }
-        .onStart { revalidateIfStale() }           // fire-and-forget inside the collector's scope
+    fun observeTodos(): Flow<List<Todo>> = channelFlow {
+        launch { revalidateIfStale() }             // concurrent with the cached rows below
+        dao.observeAll()
+            .map { rows -> rows.map { it.toModel() } }
+            .collect { send(it) }
+    }
 
     private suspend fun revalidateIfStale() {
         val oldest = dao.oldestFetchedAt()
@@ -668,10 +749,16 @@ private fun Todo.toRow(now: Long) = TodoCacheRow(id = id, title = title, complet
 object DatabaseModule {
     @Provides @Singleton
     fun provideDb(@ApplicationContext ctx: Context): AppDatabase =
-        Room.databaseBuilder(ctx, AppDatabase::class.java, "app.db").build()
+        Room.databaseBuilder<AppDatabase>(ctx, "app.db")
+            .setDriver(AndroidSQLiteDriver())      // androidx.sqlite.driver, on the classpath through room3-runtime
+            .build()
     @Provides fun provideTodoCache(db: AppDatabase): TodoCacheDao = db.todoCache()
 }
 ```
+
+A view model that renders cached data depends on an interface over
+`CachedTodoRepository` (`observeTodos()` plus the write methods), bound in Hilt the
+same way §4 binds `TodoDataSource` — never on the concrete class.
 
 ---
 
@@ -685,14 +772,23 @@ import com.example.generated.api.TodosApi
 import com.example.generated.model.CreateTodoRequest
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
 import io.ktor.http.content.TextContent
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Test
 
 class GeneratedClientContractTest {
-    private val json = ApiJson.create()
+    private val codec = ApiJson.create()
+
+    /** Same wiring as the Hilt module (§3): engine injected, codec registered through httpClientConfig. */
+    private fun todosApi(engine: MockEngine) = TodosApi(
+        baseUrl = "http://localhost",
+        httpClientEngine = engine,
+        httpClientConfig = { it.install(ContentNegotiation) { json(codec) } },
+    )
 
     @Test fun `create sends kotlinx-encoded body and decodes typed response`() = runTest {
         var sentBody = ""
@@ -706,7 +802,7 @@ class GeneratedClientContractTest {
                 headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
             )
         }
-        val api = TodosApi(baseUrl = "http://localhost", httpClientEngine = engine, jsonSerializer = json)
+        val api = todosApi(engine)
 
         val response = api.createTodo(CreateTodoRequest(title = "Buy milk"))
 
@@ -719,7 +815,7 @@ class GeneratedClientContractTest {
 
     @Test fun `non-2xx is surfaced through success=false, not an exception`() = runTest {
         val engine = MockEngine { respond("""{"detail":"not found"}""", HttpStatusCode.NotFound) }
-        val api = TodosApi(baseUrl = "http://localhost", httpClientEngine = engine, jsonSerializer = json)
+        val api = todosApi(engine)
 
         val response = api.getTodo("missing")
 
@@ -734,7 +830,7 @@ Because the engine is injected, this test exercises the *real* generated code pa
 
 ---
 
-## §10. ViewModel unit test (`runTest` + fake repository + Turbine)
+## §10. ViewModel unit test (`runTest` + fake `TodoDataSource` + Turbine)
 
 ```kotlin
 // app/src/test/java/com/example/app/ui/todos/TodoListViewModelTest.kt
@@ -742,7 +838,7 @@ package com.example.app.ui.todos
 
 import app.cash.turbine.test
 import com.example.app.data.ApiFailure
-import com.example.app.data.TodoRepository
+import com.example.app.data.TodoDataSource
 import com.example.generated.model.Todo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -781,16 +877,25 @@ class TodoListViewModelTest {
     }
 }
 
-/** Repository is a concrete class; make it `open` or extract an interface seam for fakes. */
+/** Fake behind the `TodoDataSource` seam (§4) — no mocking library, no network. */
 private class FakeTodoRepository(
-    private val todos: List<Todo> = emptyList(),
+    todos: List<Todo> = emptyList(),
     private val failure: ApiFailure? = null,
-) : TodoRepository(api = error("unused"), json = error("unused")) {
-    override suspend fun list(): List<Todo> = failure?.let { throw it } ?: todos
+) : TodoDataSource {
+    private val todos = todos.toMutableList()
+
+    override suspend fun list(): List<Todo> = failure?.let { throw it } ?: todos.toList()
+    override suspend fun get(id: String): Todo = todos.firstOrNull { it.id == id } ?: throw ApiFailure.NotFound()
+    override suspend fun create(title: String): Todo =
+        Todo(id = "new-${todos.size + 1}", title = title, completed = false).also { todos += it }
+    override suspend fun toggle(id: String): Todo {
+        val index = todos.indexOfFirst { it.id == id }
+        if (index < 0) throw ApiFailure.NotFound()
+        return todos[index].copy(completed = !todos[index].completed).also { todos[index] = it }
+    }
+    override suspend fun delete(id: String) { todos.removeAll { it.id == id } }
 }
 ```
-
-Prefer an interface (`TodoDataSource`) that both the real repository and the fake implement; the subclass trick above is the minimal seam when the project has not introduced one.
 
 ---
 
@@ -817,15 +922,16 @@ class TodoListContentTest {
 ```
 
 ```yaml
-# e2e/todo_create.yaml  (Maestro)
+# e2e/todo_list.yaml  (Maestro) — drives the §6 screen against a backend seeded with "Buy milk"
 appId: com.example.app
 ---
 - launchApp
-- assertVisible: "Todos"
-- tapOn: "Add"
-- inputText: "Buy milk"
-- tapOn: "Save"
-- assertVisible: "Buy milk"
+- assertVisible: "Todos"              # TopAppBar title
+- extendedWaitUntil:
+    visible: "Buy milk"               # ListItem headline once the list loads
+    timeout: 10000
+- assertNotVisible: "Retry"           # not the error state
+- tapOn: "Buy milk"                   # row click → onOpenDetail (§7)
 ```
 
 ---
@@ -837,35 +943,82 @@ appId: com.example.app
 package com.example.app.data.auth
 
 import android.content.Context
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import android.util.Base64
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 import javax.inject.Inject
 import javax.inject.Singleton
 
 data class Tokens(val access: String, val refresh: String)
 
+/**
+ * AES-256-GCM key held in the Android Keystore; only ciphertext reaches `SharedPreferences`.
+ * `androidx.security:security-crypto` (`EncryptedSharedPreferences`, `MasterKey`) is deprecated
+ * upstream in favour of this direct Keystore use — keep it only where a project already ships it.
+ */
 @Singleton
 class TokenStore @Inject constructor(@ApplicationContext ctx: Context) {
-    private val prefs = EncryptedSharedPreferences.create(
-        ctx, "auth",
-        MasterKey.Builder(ctx).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-    )
+    private val prefs = ctx.getSharedPreferences("auth", Context.MODE_PRIVATE)
 
     fun current(): Tokens? {
-        val access = prefs.getString("access", null) ?: return null
-        val refresh = prefs.getString("refresh", null) ?: return null
+        val access = read("access") ?: return null
+        val refresh = read("refresh") ?: return null
         return Tokens(access, refresh)
     }
 
-    fun save(tokens: Tokens) = prefs.edit().putString("access", tokens.access).putString("refresh", tokens.refresh).apply()
+    fun save(tokens: Tokens) = prefs.edit()
+        .putString("access", encrypt(tokens.access))
+        .putString("refresh", encrypt(tokens.refresh))
+        .apply()
+
     fun clear() = prefs.edit().clear().apply()
 
     /** Called by Ktor's Auth plugin (§3) on 401; perform the refresh through the generated AuthApi. */
     suspend fun refresh(): Tokens? = null // TODO: wire to AuthApi.refreshToken(); return null to force re-login
+
+    private fun key(): SecretKey {
+        val keyStore = KeyStore.getInstance(KEYSTORE).apply { load(null) }
+        (keyStore.getKey(KEY_ALIAS, null) as? SecretKey)?.let { return it }
+        val spec = KeyGenParameterSpec.Builder(
+            KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .build()
+        return KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, KEYSTORE).apply { init(spec) }.generateKey()
+    }
+
+    private fun encrypt(plain: String): String {
+        val cipher = Cipher.getInstance(TRANSFORMATION).apply { init(Cipher.ENCRYPT_MODE, key()) }
+        val sealed = cipher.iv + cipher.doFinal(plain.toByteArray(Charsets.UTF_8))   // Keystore-generated IV prefix
+        return Base64.encodeToString(sealed, Base64.NO_WRAP)
+    }
+
+    /** Null when absent or undecryptable (key invalidated, prefs restored without the key) → re-login. */
+    private fun read(name: String): String? {
+        val sealed = prefs.getString(name, null)?.let { Base64.decode(it, Base64.NO_WRAP) } ?: return null
+        return runCatching {
+            val cipher = Cipher.getInstance(TRANSFORMATION).apply {
+                init(Cipher.DECRYPT_MODE, key(), GCMParameterSpec(128, sealed, 0, IV_BYTES))
+            }
+            String(cipher.doFinal(sealed, IV_BYTES, sealed.size - IV_BYTES), Charsets.UTF_8)
+        }.getOrNull()
+    }
+
+    private companion object {
+        const val KEYSTORE = "AndroidKeyStore"
+        const val KEY_ALIAS = "auth_tokens"
+        const val TRANSFORMATION = "AES/GCM/NoPadding"
+        const val IV_BYTES = 12
+    }
 }
 ```
 
-Tokens never enter Room, DataStore, or logs. The Ktor `Auth` plugin in §3 reads from this store so no call site attaches headers manually.
+Tokens never enter Room, plain DataStore or `SharedPreferences`, or logs. The Ktor `Auth` plugin in §3 reads from this store so no call site attaches headers manually.

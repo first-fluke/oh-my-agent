@@ -405,4 +405,4 @@ After target changes, retain old proof and mark the new identity unverified unti
 Keep rejected leads to prevent repeated unsupported claims; suppression needs a recorded reason and current evidence, not deletion of the raw finding.
 Reports derive from current records: confirmed findings with demonstrated severity, reviewed validation leads without severity, pending candidates, rejection rationale where relevant, measured coverage, failures, and next checks.
 Retain raw traffic/logs in restricted local storage; produce separate redacted sharing copies. Credentials and private user data never appear in normalized records or reports.
-When an active `/security` workflow requires state decisions, follow its actual event/checkpoint contract using this run/finding identity; do not invent checkpoints or use a retired workflow name.
+When an active `/security` workflow requires state decisions, follow its actual event/checkpoint contract using this run/finding identity; do not invent checkpoints.

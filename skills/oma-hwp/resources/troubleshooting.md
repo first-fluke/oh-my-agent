@@ -6,7 +6,7 @@
 - Verify the extension matches the content. HWP5 files should start with `D0 CF 11 E0` (OLE compound). HWPX starts with `50 4B 03 04` (ZIP).
 - Check with: `xxd "{file}" | head -1`
 - If the extension is wrong, rename and retry.
-- If the file is genuinely a different format (e.g., Word, Excel), use the appropriate skill.
+- If the file is genuinely a different format (e.g., Word, Excel), it is outside this skill's scope (`SKILL.md`, When NOT to use).
 
 ### 2. Encrypted or password-protected HWP
 - kordoc reports `암호화된 문서` / "encrypted document".
@@ -20,7 +20,8 @@ Most likely causes:
 
 ### 4. Missing or broken tables
 - Simple tables: GFM pipe syntax.
-- Tables with `colspan` / `rowspan`: kordoc falls back to HTML `<table>`. This is expected and correct.
+- Tables with `colspan` / `rowspan`: kordoc emits HTML `<table>`, and the default post-process (`flatten-tables.ts`) converts it to a GFM pipe table with the merged cells flattened. Skip the post-process when the merge structure must survive.
+- Tables without a `<th>` heading row: the post-process keeps them as HTML, because the GFM converter needs a heading row.
 - Nested tables: kordoc emits the nested `<table>` inside its parent cell. The post-processor preserves the complete balanced outer table as HTML rather than flattening it and risking structural loss.
 - If tables are completely absent, confirm the source file actually contains tables (sometimes they are images).
 - `flatten-tables.ts` scans balanced outer `<table>...</table>` blocks. If a block contains a nested table, it is kept as HTML so parent/child structure and closing tags remain intact.
@@ -59,12 +60,3 @@ kordoc sanitizes links (XSS defense). If a legitimate link is stripped, verify t
 - Inline password entry for encrypted HWP: not yet supported.
 - OCR of scanned HWPs: out of kordoc's scope; it does not perform OCR.
 - Perfect fidelity of complex shapes / drawings: Markdown cannot represent drawing primitives; expect them to be dropped or replaced by placeholder markers.
-
-## When to route elsewhere
-| Symptom | Route to |
-|---------|----------|
-| Input is `.pdf` | `oma-pdf` |
-| Input is `.xlsx` / `.docx` | `bunx kordoc@latest` directly (skill not advertising) |
-| Need OCR of scanned documents | Out of scope; use a dedicated OCR pipeline |
-| Need to author / edit HWPX (generate, fill, seal, patch) | `bunx kordoc@latest generate|fill|seal|patch ...` directly (skill not advertising; see Scope Reminder table in `execution-protocol.md`) |
-| Need personal-data masking, notation lint, structure validation, or SVG render | `bunx kordoc@latest redact|lint|validate|render ...` directly (skill not advertising) |

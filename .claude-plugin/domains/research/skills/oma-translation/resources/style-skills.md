@@ -45,7 +45,6 @@ independent UI strings retain the lightweight path in the owning SKILL.md.
    | Codex | `codex/skills/humanize-korean/SKILL.md` |
    | Claude Code | `skills/humanize-korean/SKILL.md` |
    | GitHub Copilot | `copilot/skills/humanize-korean/SKILL.md` |
-   | Gemini | Follow upstream's `GEMINI.md` extension contract |
 
    For other Skills CLI loads, use the exact GitHub subpath of the matching
    SKILL.md directory. A repository-wide name selector can choose a different
@@ -71,9 +70,12 @@ independent UI strings retain the lightweight path in the owning SKILL.md.
    to physical paths. This is a fallback for missing execution resources, not a
    requirement to bypass Skills CLI loading.
 5. If retrieval, a supported runtime contract, or required resources are unavailable,
-   complete the supported translation checks and state that the selected style
-   pass was unavailable. Do not claim upstream execution or fall back to another
-   language's pattern catalog. Keep upstream files outside OMA-managed definitions.
+   use the in-repo fallback: load `../../_shared/core/anti-ai-prose.md` with
+   `anti-ai-patterns.md` and the target profile, apply them as the style
+   diagnostics, complete the supported translation checks, and state that the
+   selected external style pass was unavailable. Do not claim upstream execution
+   or use another language's pattern catalog. Keep upstream files outside
+   OMA-managed definitions.
 
 ## Execute within the translation boundary
 

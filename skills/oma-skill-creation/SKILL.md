@@ -35,7 +35,7 @@ A four-section SKILL.md, only necessary supporting resources, and validation res
 ## Structural Flow
 
 ### Transitions
-- New skill: compare 1–3 analogous skills, then use the template.
+- New skill: use the template and compare against the lean exemplars `oma-docs`, `oma-search`, `oma-security`, `oma-design`, and `oma-video`; read one analogous skill for domain detail only. Most other skills still carry the full legacy shape (Entry, Scenes, Actions, tool and scope tables); do not copy it.
 - Existing skill: preserve working domain detail and change only the requested scope.
 - Repeated instructions: retain one authoritative location and a short reference where independently invoked entry points need it.
 - Long or conditional detail: move to a named resource with a load condition. Do not move a duplicate merely to keep it elsewhere.
@@ -61,15 +61,15 @@ A completed skill has valid structure, useful routing, executable steps, recover
 3. Write the canonical procedure once. Preserve exact command/output contracts, failure mechanisms, side effects, and harmful-action limits; remove generic restatements and redundant examples.
 4. Index resources once under References with load conditions. Keep source-adjacent evidence one hop from SKILL.md where possible.
 5. Run `oma skill lint --skill <name>` and `git diff --check`. If routing descriptions changed, run `oma skill audit`. Apply the content checks in `resources/validation-checklist.md` that automated lint does not cover.
-6. Report the changes, checks, and remaining limits. Do not claim reduced token usage merely from removing duplicate files; measure the context actually loaded when making that claim.
+6. Report the changes, checks, and remaining limits. A token-savings claim needs the measurement described in `resources/prompt-evaluation.md`.
 
 ### Resource scope and effects
 Skill work reads and may change local definitions/resources and generated vendor copies through the authorized repository flow. User data and credentials are not skill examples. Commits and publishing require the corresponding authorization.
 
 ### Guardrails
 1. Keep YAML `name` and a routing-grade `description`. Preserve the four top-level headings: Scheduling, Structural Flow, Logical Operations, References.
-2. Keep one canonical command/workflow path, an Intent signature, When to use/When NOT to use, input/output expectations, failure recovery, and relevant effects/guardrails. Section titles beyond these are optional when their information is already represented.
-3. Entry, Scenes, Actions, and tool/scope tables must add distinct information. Do not repeat a procedure to fill the template.
+2. Keep one canonical command/workflow path, an Intent signature, When to use/When NOT to use, input/output expectations, failure recovery, and relevant effects/guardrails.
+3. Every other section is optional and must add distinct information, per the template's Optional detail rules. Do not repeat a procedure to fill the template.
 4. Keep SKILL.md under 500 body lines. Load supporting resources conditionally; do not create README/changelog/install documents inside a skill merely to explain the skill.
 5. Keep parsed output/schema examples. Do not prescribe decorative report layouts or add generic self-review loops; use runnable validators and explicit evidence requirements.
 6. Process bulk data through deterministic tools and return summaries/artifact paths instead of streaming raw data into context.
@@ -81,4 +81,4 @@ Skill work reads and may change local definitions/resources and generated vendor
 - Acceptance criteria: `resources/validation-checklist.md` (validation)
 - Context loading: `references/_shared/core/context-loading.md` (resource/injection decisions)
 - Quality principles: `references/_shared/core/quality-principles.md` (domain verification requirements)
-- Eval fixtures: `web/docs/guide/skill-eval.md` (when measuring held-out task utility with `oma skill eval` or `oma skill optimize`)
+- Eval fixtures: `oma skill eval --help` and `oma skill optimize --help` (when measuring held-out task utility); the guide `web/docs/guide/skill-eval.md` exists only in the oh-my-agent repository

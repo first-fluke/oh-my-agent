@@ -17,7 +17,7 @@ applyTo: "**/*.{tf,tfvars,hcl}"
 7. **No Secrets in Code**: Never hardcode passwords, API keys, or tokens in .tf files
 8. **Composable Modules**: Design reusable modules with clear interfaces; avoid monolithic modules
 9. **Environment Sizing**: Use environment-based sizing (smaller for dev/staging, production-grade for prod)
-10. **Policy as Code**: Run OPA/Sentinel and security scanning (Checkov, tfsec) in CI/CD before apply
+10. **Policy as Code**: Run OPA/Sentinel and security scanning (Checkov, Trivy) in CI/CD before apply
 11. **Version Pinning**: Pin all providers and modules; use `for_each` over `count`
 12. **Cost Awareness**: Implement lifecycle policies, autoscaling schedules, and review cost estimates before apply
 13. **No Auto-Approve**: Never use `auto-approve` in production; never `terraform destroy` without backup

@@ -15,20 +15,21 @@ Use this checklist to keep ownership and approval paths healthy.
 
 ## Baseline template
 
+Replace each `<placeholder>` path and team with the repository's own.
+
 ```text
 # Global fallback
 * @org/maintainers
 
 # CI and release control
 .github/workflows/* @org/devops
-cli/commands/migrations/* @org/release-engineering
+<release-or-migration-path>/** @org/release-engineering
 
-# Agent system and governance
-.agents/hooks/** @org/agent-platform
-.agents/workflows/** @org/agent-platform
+# Security-sensitive and infrastructure paths
+<auth-or-secrets-path>/** @org/security
+<infrastructure-path>/** @org/platform
 
 # Product docs/content
-web/content/** @org/docs
 docs/** @org/docs
 ```
 

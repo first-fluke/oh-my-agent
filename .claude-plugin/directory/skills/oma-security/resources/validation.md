@@ -34,11 +34,9 @@ Read the current pinned upstream validation procedure before using its implement
 Use `proof_context: authorized_runtime` only for a selected scoped runtime stage and its recorded test deployment. This is not Cloudflare local reproduction with a different label.
 The ARTEX resource owns snapshot/platform integration and enforceable target/budget controls. Reuse the actual scope/authorization; do not add a generic approval sequence or extend targets from model discovery.
 Bind the independent replay to the runtime task, exact URL/host/port, allowlist, test-account roles, allowed effects, deployment/environment/session identity, and execution limits in `runtime.json`.
-Record backend/LLM egress separately; it cannot enlarge attack-target scope. Redirects, linked hosts, discovered assets, and imported subdomains stay out of scope unless separately included through shared policy.
 Have a non-discoverer verifier replay the minimum candidate against dummy resources/accounts and observe the claimed security boundary crossing.
 Retain exact request/input shape, expected behavior, observed behavior, timestamps, sanitized request/response references, relevant tool logs, and verifier identity.
 An engine-written “exploitable” label, success message, graph edge, screenshot, or finding narrative alone does not establish independent runtime proof.
-If deployed revision cannot be established, a verified claim is limited to the observed deployment/session; it cannot confirm the checked-out source or a later deployment.
 Unsuccessful attack, error, incomplete exploration, or budget stop cannot establish security and does not automatically trigger another engine.
 
 ## Final disposition

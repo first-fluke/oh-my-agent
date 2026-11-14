@@ -1,10 +1,10 @@
 # Backend Agent - Self-Verification Checklist
 
-Run through every item before submitting your work.
+Check the items that apply to the task before submitting your work.
 
 ## API Design
 - [ ] RESTful conventions followed (proper HTTP methods, status codes)
-- [ ] OpenAPI documentation complete (all endpoints documented)
+- [ ] OpenAPI documentation covers the changed endpoints (when the project publishes OpenAPI)
 - [ ] Request/response schemas defined with validation library
 - [ ] Pagination for list endpoints returning > 20 items
 - [ ] Consistent error response format
@@ -19,7 +19,7 @@ Run through every item before submitting your work.
 - [ ] Query risks reviewed: missing indexes, full scans, repeated identical queries, join row multiplication
 
 ## Security
-- [ ] JWT authentication on protected endpoints
+- [ ] Protected endpoints require authentication (JWT unless the project uses another scheme)
 - [ ] Password hashing with Argon2id (bcrypt cost 10-12 acceptable for legacy compatibility)
 - [ ] Rate limiting on auth endpoints
 - [ ] Input validation enforced (no raw user input in queries)
@@ -28,7 +28,7 @@ Run through every item before submitting your work.
 
 ## Testing
 - [ ] Unit tests for service layer logic
-- [ ] Integration tests for all endpoints (happy + error paths)
+- [ ] Integration tests for the changed endpoints (happy + error paths)
 - [ ] Auth scenarios tested (missing token, expired, wrong role)
 - [ ] Project coverage target met; if no target exists, document changed behavior coverage and any justified exclusions
 

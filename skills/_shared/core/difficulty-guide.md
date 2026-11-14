@@ -6,7 +6,7 @@ Use this guide when scope or dependencies make the execution approach unclear. R
 
 | Task characteristics | Approach |
 |---|---|
-| Clear change following an existing pattern | Inspect the affected behavior, implement, and run relevant checks |
+| Clear change following an existing pattern | Inspect the affected behavior, implement, and apply the checks the task requires |
 | Several coupled changes or a material design choice | Identify dependencies and acceptance criteria; resolve the choice before dependent edits |
 | Multiple independently verifiable outcomes or uncertain boundaries | Break work into deliverables, each with its own implementation and verification |
 

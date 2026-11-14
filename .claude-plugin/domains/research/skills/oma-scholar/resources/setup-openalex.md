@@ -1,6 +1,6 @@
 # OpenAlex API Key Setup (Optional)
 
-OpenAlex powers metadata enrichment during Generate mode by backfilling missing DOI, venue, and year from a vast academic catalog. **The skill works without a key**, but enrichment is skipped.
+OpenAlex powers metadata enrichment during Generate mode by backfilling missing DOI, venue, and year from a vast academic catalog. **The skill works without a key**: enrichment and the search fallback run anonymously, and a key only raises the rate limit.
 
 ## When you need this
 
@@ -32,20 +32,7 @@ For most users, anonymous use is enough.
 export OPENALEX_API_KEY="your_key_here"
 ```
 
-### Option B: Persisted in `~/.claude/.env` (recommended)
-
-```bash
-mkdir -p ~/.claude
-echo 'OPENALEX_API_KEY=your_key_here' >> ~/.claude/.env
-```
-
-Some Claude Code setups source this file automatically; if not, source it from your shell rc:
-
-```bash
-echo '[ -f ~/.claude/.env ] && set -a && . ~/.claude/.env && set +a' >> ~/.zshrc
-```
-
-### Option C: Polite-pool email only (no key)
+### Option B: Polite-pool email only (no key)
 
 If you don't want to sign up but want priority, set just an email:
 
@@ -70,13 +57,12 @@ OpenAlex uses pay-as-you-go past the daily free allowance, with no monthly subsc
 
 ## Skill Behavior
 
-When this skill needs metadata enrichment:
+`oma scholar` reads only the process environment:
 
-1. Check `OPENALEX_API_KEY` env var
-2. If set -> use authenticated calls
-3. If not set, check `OPENALEX_EMAIL` -> anonymous polite-pool
-4. If neither, fall back to anonymous calls
-5. On 403/429 -> stop enrichment, tell user to set the key, leave fields omitted (anti-fabrication)
+1. `OPENALEX_API_KEY` set -> sent as `api_key`
+2. `OPENALEX_EMAIL` set -> sent as `mailto` (polite pool)
+3. Neither set -> anonymous calls
+4. On 403/429 -> stop enrichment, tell the user to set the key, leave fields omitted (anti-fabrication)
 
 ## Privacy
 

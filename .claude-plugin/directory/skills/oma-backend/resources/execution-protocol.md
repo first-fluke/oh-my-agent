@@ -25,15 +25,15 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   3. Service layer (business logic)
   4. API routes (thin, delegate to services)
   5. Tests (unit + integration)
-- Use `stack/api-template.*` as reference
+- Use the stack reference's `api-template.*` (`stack/`, or the matching `variants/<language>/`) as reference
 - Follow clean architecture: router -> service -> repository -> models
 
 ## Step 4: Verify
 - Check applicable items in `resources/checklist.md`
 - Use `../../_shared/core/common-checklist.md` only for cross-domain verification
-- Ensure affected tests and required project checks pass
+- Select the affected tests and project checks; run them only when the user or the active workflow requires it, and report what was not verified
 - For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../../_shared/core/test-approach.md`
-- Confirm OpenAPI docs are complete
+- When the project publishes OpenAPI docs, confirm they cover the changed endpoints
 
 ## On Error
 See `resources/error-playbook.md` for recovery steps.

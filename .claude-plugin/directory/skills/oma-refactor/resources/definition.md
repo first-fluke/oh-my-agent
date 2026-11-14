@@ -1,7 +1,5 @@
 # Refactoring - Invariant Definition
 
-Use `governance.md` for organization-specific parameters.
-
 ## Core definition
 
 Refactoring is the act of improving a system's internal structure toward its codebase's conventional form - without changing externally observable behavior (the contract its consumers depend on) - through small, revertible, named transformations whose behavior preservation is mechanically verifiable, in order to lower the future cost of change, whose dominant term is human comprehension cost.
@@ -23,7 +21,7 @@ If any property is missing, the activity is not refactoring.
 - Not preserved: internal call order, private structure, stack-trace shape.
 - Gray zone (performance, log format, serialization): judged by **Hyrum's Law** - if someone actually depends on it, it is part of the contract.
 - Performance (tuning) is allowed only as a side effect, never as the goal. If performance is contractual (SLA, real-time), preserve it too.
-- Preservation is necessary but not sufficient: behavior can be preserved while readability worsens - that is a failed refactoring. (Empirical: LLM refactorings preserved behavior ~84% yet worsened readability in ~71% of cases while static metrics improved.)
+- Preservation is necessary but not sufficient: behavior can be preserved while readability worsens - that is a failed refactoring. (Empirical: LLM refactorings have preserved behavior and improved static metrics while worsening readability.)
 
 ### 2. Verifiability - the precondition
 Guarantee mechanisms: (a) test suite - tests are FROZEN during refactoring; a failing test means behavior changed; (b) deterministic tool transformations - engines have bugs too (refactoring-engine bug studies exist), so re-run tests anyway; (c) type system / compiler; (d) differential testing and semantic equivalence checking (e.g., execution-driven differential testers, equivalence checkers).
@@ -32,7 +30,7 @@ Guarantee mechanisms: (a) test suite - tests are FROZEN during refactoring; a fa
 - When no net exists: write **characterization tests** (pin CURRENT behavior, bugs included - Hyrum). Practical form: golden-master / approval / snapshot tests.
 
 ### 3. Incrementality - an open catalog
-Composition of named transformations (Extract Function, Move Method, Rename, ...). Small enough to verify instantly, revert instantly, and review confidently. The standard catalog names only a fraction of real-world behavior-preserving changes (detector studies explain ~20% of real changesets with the standard catalog alone) - the test is the five properties, not catalog membership. Compound refactorings are where automated agents fail most; decompose to atomic steps.
+Composition of named transformations (Extract Function, Move Method, Rename, ...). Small enough to verify instantly, revert instantly, and review confidently. The standard catalog names only a fraction of real-world behavior-preserving changes (detector studies explain only a minority of real changesets with the standard catalog alone) - the test is the five properties, not catalog membership. Compound refactorings are where automated agents fail most; decompose to atomic steps.
 
 ### 4. Economics - readability is the dominant term
 `change cost = comprehension cost + ripple cost + verification cost`. Most developer time goes to comprehension, so readability (analysability) is the primary objective; coupling-driven ripple radius (modifiability) is the second, independent lever.

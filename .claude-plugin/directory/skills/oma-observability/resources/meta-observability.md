@@ -1,8 +1,3 @@
----
-otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.43.0 (2026-07)"
----
-
 # Meta-Observability
 
 ## Why Meta-Observability
@@ -21,8 +16,8 @@ that assumption. Four disciplines close the gap:
 | Cardinality guardrails | TSDB storage explosion, query latency, vendor bill spikes | C |
 | Retention matrix | Compliance violations, over-spend on raw data, data unavailable at audit | D |
 
-Cross-cutting failure modes and recovery paths are in Section E. Alert/dashboard scaffolding
-that feeds `resources/observability-as-code.md` is in Section F.
+Cross-cutting failure modes and recovery paths are in Section E. The alerts that guard the
+pipeline itself are in Section F.
 
 ---
 
@@ -30,22 +25,28 @@ that feeds `resources/observability-as-code.md` is in Section F.
 
 ### A1. OTel Collector Self-Metrics
 
-The Collector exposes its own telemetry via a Prometheus scrape endpoint (default `:8888/metrics`).
-Enable it explicitly:
+The Collector exposes its own telemetry through a Prometheus pull reader (port 8888 by convention).
+Configure the reader explicitly; a bare `metrics.address` setting is ignored by current Collectors:
 
 ```yaml
 # otelcol-config.yaml — telemetry block
 service:
   telemetry:
     metrics:
-      level: detailed          # normal | detailed | none
-      address: 0.0.0.0:8888
+      level: detailed          # none | basic | normal | detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
     logs:
       level: info
 ```
 
 Scrape this endpoint from a separate Prometheus instance (or a second Collector) so that
-Collector failures do not destroy their own observability.
+Collector failures do not destroy their own observability. Do not rely on the Collector
+scraping itself into its own pipeline: when it fails, the evidence fails with it.
 
 ### A2. Key otelcol_* Metrics
 
@@ -55,7 +56,7 @@ Collector failures do not destroy their own observability.
 | `otelcol_receiver_refused_spans` | Spans refused (parse failure, queue full) | > 0 sustained for 2m |
 | `otelcol_exporter_sent_spans` | Spans successfully shipped to backend | Baseline drop > 10% |
 | `otelcol_exporter_send_failed_spans` | Export failures (network, auth, rate-limit) | > 1% of sent for 5m |
-| `otelcol_processor_queued_retry_send_queue_length` | Backpressure queue depth | > 80% of queue capacity |
+| `otelcol_exporter_queue_size` / `otelcol_exporter_queue_capacity` | Exporter sending-queue depth vs capacity (backpressure) | > 80% of capacity |
 | `otelcol_process_runtime_heap_alloc_bytes` | Collector heap usage | > 75% of container limit |
 | `otelcol_processor_memory_limiter_refused_spans` | Forced drops due to memory limit | > 0 |
 | `otelcol_processor_memory_limiter_refused_metric_points` | Same, for metrics | > 0 |
@@ -63,6 +64,8 @@ Collector failures do not destroy their own observability.
 
 The same `*_accepted_*`, `*_refused_*`, `*_sent_*`, and `*_send_failed_*` counter families exist
 for metric points (`metric_points`) and log records (`log_records`). Apply identical thresholds.
+Metric names and the level at which each is emitted change across Collector releases; confirm them
+against the internal-telemetry docs for the deployed version.
 
 ### A3. Memory Limiter Processor (Required)
 
@@ -88,36 +91,18 @@ service:
     logs:
       receivers: [otlp, fluentforward]
       processors: [memory_limiter, batch, ...]
-      exporters: [loki]
+      exporters: [otlphttp/loki]
 ```
 
-### A4. Self-Scrape Configuration
+### A4. Agent Self-Resource Consumption
 
-Scrape Collector self-metrics into the same metrics pipeline so they land in the same TSDB
-alongside application metrics:
+Order-of-magnitude expectations; measure the deployed agents before sizing limits:
 
-```yaml
-receivers:
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: otelcol-self
-          scrape_interval: 15s
-          static_configs:
-            - targets: ["localhost:8888"]
-          metric_relabel_configs:
-            - source_labels: [__name__]
-              regex: otelcol_.*
-              action: keep
-```
-
-### A5. Agent Self-Resource Consumption
-
-| Agent | Typical RAM | Typical CPU | Source |
-|---|---|---|---|
-| Fluent Bit | 5–15 MB | < 1% (idle), < 5% (burst) | Fluent Bit 2.x benchmarks |
-| OTel Collector (DaemonSet) | 30–100 MB | < 5% (moderate load) | VictoriaMetrics 2026 benchmark |
-| OTel Collector (gateway) | 100–500 MB | scales with throughput | VictoriaMetrics 2026 benchmark |
+| Agent | Typical RAM | Typical CPU |
+|---|---|---|
+| Fluent Bit | 5–15 MB | < 1% (idle), < 5% (burst) |
+| OTel Collector (DaemonSet) | 30–100 MB | < 5% (moderate load) |
+| OTel Collector (gateway) | 100–500 MB | scales with throughput |
 
 Collect host-level CPU and memory for agent processes via `hostmetrics` receiver:
 
@@ -139,7 +124,7 @@ Fluent Bit exposes its own Prometheus metrics at `:2020/api/v1/metrics/prometheu
 - `fluentbit_output_proc_records_total`: records successfully processed per output plugin
 - `fluentbit_output_errors_total`: output failures
 
-### A6. End-to-End Delivery Checks
+### A5. End-to-End Delivery Checks
 
 Do not divide global exporter-sent spans by global receiver-accepted spans to
 estimate delivery. Sampling and filters intentionally remove spans; fan-out and
@@ -295,7 +280,7 @@ topk(10, count({__name__!=""}) by (__name__))
 VictoriaMetrics exposes `/api/v1/status/tsdb` for cardinality breakdown by metric name
 and label value; use this for bulk auditing.
 
-OTel metric SDK cardinality limit (Development feature as of SDK 1.x):
+Allow-list attributes with an SDK View:
 
 ```python
 # Python SDK example
@@ -320,7 +305,7 @@ Set a per-service series budget. The 5,000-series figure below is an illustrativ
 count({job="my-service"}) > 4000
 ```
 
-Cardinality explosion is an anti-pattern. See `resources/anti-patterns.md §Section B` for
+Cardinality explosion is an anti-pattern. See `resources/anti-patterns.md` §B for
 the full cardinality anti-pattern list.
 
 ---
@@ -344,16 +329,9 @@ and under what storage class. Failing to set explicit retention leads to either:
 | Profiles | 14d | N/A | N/A |
 | Events | 30d | 90d | N/A |
 
-### D2. Rationale by Signal
-
-**Metrics (15d / 90d / 2y)**: Full-resolution metrics are needed for hourly/daily incident
-investigation (15d covers most post-incident reviews). Downsampled 5m aggregates cover quarterly
-business reviews and SLO trend reporting (90d). 1h aggregates for 2y support year-over-year
-capacity planning without raw-data storage cost.
-
-**Logs (operational, 7d / 30d / 90d)**: Operational logs (app errors, access logs) are used
-within days of generation. 30d aggregated (e.g., error-count rollups) covers sprint-level
-incident retrospectives. 90d archive is a common compliance floor for operational data.
+The periods above are starting points sized to common use: 15d of full-resolution metrics covers
+most post-incident reviews, 30d of sampled traces covers cross-sprint investigations, and 100%
+trace capture is kept only through a release's stability window.
 
 **Logs (audit)**: document the applicable obligation and purpose for each
 record class, then select retention and tamper-protection controls. There is no
@@ -364,35 +342,10 @@ eligible erasure, subject to GDPR Article 17(3) exceptions such as a legal
 obligation or legal claims. A longer lock is not automatically safer.
 Cross-ref: `signals/audit.md` for evidence-specific retention and integrity.
 
-**Traces (sampled, 30d)**: Sampled traces (tail-based, typically 1-10% of production traffic)
-are the primary debugging artifact. 30d covers cross-sprint incident investigations. No
-aggregation applies; traces are point-in-time artifacts, not time-series.
-
-**Traces (full 100% sample, 3d)**: 100% sampling is expensive. Keep for 3 days only; long
-enough to cover a release rollout + initial stability period. Use head-based or tail-based
-sampling to reduce to 1-10% thereafter.
-
-**Profiles (14d)**: Continuous profiling data (Parca, Pyroscope) is used for performance
-regression detection immediately after a deploy and for on-call debugging. 14d covers
-two sprint cycles. No aggregation standard exists for profiling data yet.
-
-**Events (30d / 90d)**: Structured events (deployment markers, feature flag changes, SLO
-breaches) are retained for 30d raw (covers post-release review). Aggregated event counts
-(deploys per day, flag toggles per week) are retained for 90d to support quarterly reviews.
-
-### D3. Storage Class Configuration Example (Loki)
+### D2. Storage Class Configuration Example (Loki)
 
 ```yaml
-# loki-config.yaml — example retention per stream selector
-# NOTE: table_manager was removed in Loki 3.x. For Loki 3+, configure retention
-# via compactor only. The block below applies to Loki 2.8-2.9 legacy.
-
-# Legacy (Loki 2.x): table_manager
-table_manager:
-  retention_deletes_enabled: true
-  retention_period: 720h    # default 30d
-
-# Per-stream retention via compactor (Loki 2.8+ and required on Loki 3.x)
+# loki-config.yaml — retention is configured through the compactor
 compactor:
   retention_enabled: true
   retention_delete_delay: 2h
@@ -403,8 +356,8 @@ compactor:
 # {log_type="debug"} → 168h (7d)
 ```
 
-Cross-ref: `signals/audit.md` for WORM immutable storage configuration (S3 Object Lock,
-GCS Object Hold, Azure Immutable Blob Storage). Cross-ref: `signals/privacy.md` for
+Cross-ref: `signals/audit.md` for integrity and retention controls (S3 Object Lock, GCS
+Object Hold, Azure Immutable Blob Storage when the obligation requires them). Cross-ref: `signals/privacy.md` for
 GDPR Article 5(1)(e) storage limitation (data not kept longer than necessary for the purpose).
 
 ---
@@ -413,12 +366,12 @@ GDPR Article 5(1)(e) storage limitation (data not kept longer than necessary for
 
 | Failure mode | Symptom | Remediation |
 |---|---|---|
-| Upstream receiver overflow | `otelcol_receiver_refused_*` rising; `send_queue_length` climbing | Add `memory_limiter` processor; scale gateway Collector replicas horizontally |
-| Exporter backpressure | `otelcol_processor_queued_retry_send_queue_length` rising; `send_failed_*` incrementing | Check vendor rate limits; tune exporter `retry_on_failure` with exponential backoff; reduce batch size |
+| Upstream receiver overflow | `otelcol_receiver_refused_*` rising; `otelcol_exporter_queue_size` climbing toward capacity | Add `memory_limiter` processor; scale gateway Collector replicas horizontally |
+| Exporter backpressure | `otelcol_exporter_queue_size` near `otelcol_exporter_queue_capacity`; `send_failed_*` incrementing | Check vendor rate limits; tune exporter `retry_on_failure` with exponential backoff; reduce batch size |
 | Clock drift spike | Waterfall inversion; `node_clock_drift_ms > 100` alert fires | Run `chronyc makestep` to force immediate re-sync; for persistent drift, check NTP source reachability; escalate to PTP for sub-ms requirements |
 | Cardinality bomb | TSDB ingestion lag; query timeouts; vendor bill alert | Identify offending metric with `topk(10, count({__name__!=""}) by (__name__))`, add `filter` processor to drop or `transform` to remove offending label |
 | Memory OOM crash | Collector process exits; gap in all signals | `memory_limiter` prevents this if configured; if reached anyway, increase container memory limit or reduce `limit_percentage` |
-| Audit log retention violation | Audit records purged before WORM period | Verify S3/GCS Object Lock policy; confirm `retention_period` in log backend matches 7y; cross-ref `signals/audit.md §WORM` |
+| Audit log retention violation | Audit records deleted before, or kept past, their approved period | Verify the lock and lifecycle policy against the approved per-class schedule; cross-ref `signals/audit.md` |
 
 ### E1. Exporter Retry Configuration
 
@@ -450,11 +403,11 @@ processors:
 ```
 
 Cross-ref: `resources/checklist.md §7 Recovery` for the full recovery procedure checklist.
-Cross-ref: `resources/anti-patterns.md §Section C Pipeline` for pipeline anti-patterns.
+Cross-ref: `resources/anti-patterns.md` §C for pipeline anti-patterns.
 
 ---
 
-## Section F: Alerts & Dashboards
+## Section F: Alerts
 
 ### F1. Five Golden Meta-Observability Alerts
 
@@ -463,7 +416,7 @@ reliable. Without them, you cannot trust your alerts.
 
 **Alert 1; Synthetic pipeline delivery below the selected target**
 
-Requires the team-implemented completed-probe metric defined in A6; this is not
+Requires the team-implemented completed-probe metric defined in A5; this is not
 a ratio of default Collector receiver/exporter counters.
 
 ```yaml
@@ -484,15 +437,6 @@ a ratio of default Collector receiver/exporter counters.
 ```
 
 **Alert 2; Exporter send failures above 1%**
-
-```promql
-# Ratio of failed exports to sent (any signal)
-(
-  sum(rate(otelcol_exporter_send_failed_spans[5m]))
-  /
-  (sum(rate(otelcol_exporter_sent_spans[5m])) > 0)
-) > 0.01
-```
 
 ```yaml
 - alert: OtelcolExporterSendFailed
@@ -555,51 +499,10 @@ record-class policy, and monitor job freshness separately:
     description: "Check the applicable schedule, lock/lifecycle controls, eligible erasure, and legal holds. Cross-ref signals/audit.md."
 ```
 
-### F2. Grafana Dashboard Blueprint
+## Review Triggers
 
-A meta-observability Grafana dashboard MUST include the following panels:
-
-| Panel | Query summary | Visualization |
-|---|---|---|
-| Pipeline delivery ratio (traces) | `sent / accepted` rate | Stat (green > 99%, red < 99%) |
-| Pipeline delivery ratio (metrics) | same for metric_points | Stat |
-| Pipeline delivery ratio (logs) | same for log_records | Stat |
-| Receiver accepted vs refused | `rate(accepted)` and `rate(refused)` | Time series |
-| Exporter sent vs failed | `rate(sent)` and `rate(failed)` | Time series |
-| Queue depth | `send_queue_length` per exporter | Gauge |
-| Collector heap usage | `heap_alloc_bytes` vs limit | Gauge |
-| Node clock drift (all hosts) | `node_clock_drift_ms` | Heatmap by instance |
-| Top cardinality metrics | `topk(10, count(...) by (__name__))` | Table (auto-refresh 5m) |
-| Fluent Bit input vs output records | `fluentbit_input_records_total` vs `fluentbit_output_proc_records_total` | Time series |
-
-The full Jsonnet/YAML implementation of this dashboard belongs in `resources/observability-as-code.md`
-(Grafana-as-code section). This section provides the blueprint; that file provides the code.
-
----
-
-## Cross-References
-
-| Topic | File |
-|---|---|
-| Clock discipline normative requirements | `resources/standards.md §Clock Discipline` |
-| WORM immutable storage for audit logs | `signals/audit.md` |
-| GDPR storage limitation (Art. 5(1)(e)) | `signals/privacy.md` |
-| Cardinality anti-patterns (Section B) | `resources/anti-patterns.md` |
-| Pipeline anti-patterns (Section C) | `resources/anti-patterns.md` |
-| Recovery checklist (§7) | `resources/checklist.md` |
-| Dashboard/alert as code | `resources/observability-as-code.md` |
-| Two-tier Collector topology | `transport/collector-topology.md` |
-| Tail-based sampling configuration | `transport/sampling-recipes.md` |
-| SLO burn-rate alerts | `boundaries/slo.md` |
-| Incident forensics (6-dimension localization) | `resources/incident-forensics.md` |
-
----
-
-## Review and Maintenance
-
-- **Review triggers**: same as `resources/standards.md` (no scheduled cadence; see `SKILL.md` §Versioning & Deprecation).
-- On OTel Collector minor version bump: verify `otelcol_*` metric names have not changed.
-  Metric names are stable within a major version but have changed between 0.x and 1.x.
-- On cloud provider NTP endpoint changes: update Section B2 table.
-- On TSDB migration (e.g., Prometheus → VictoriaMetrics): verify cardinality query syntax
-  in Section C3; VictoriaMetrics uses `/api/v1/status/tsdb` instead of PromQL cardinality queries.
+- On Collector upgrade: verify `otelcol_*` metric names and the telemetry config shape against the
+  internal-telemetry docs for the deployed version.
+- On cloud provider NTP endpoint changes: update the Section B2 table.
+- On TSDB migration (e.g., Prometheus → VictoriaMetrics): verify the cardinality queries in
+  Section C3; VictoriaMetrics exposes `/api/v1/status/tsdb` for the same purpose.

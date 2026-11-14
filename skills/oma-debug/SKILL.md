@@ -37,7 +37,7 @@ Reproduce, diagnose, minimally fix, and regression-test bugs while preserving sc
 - Bug documentation under `.agents/results/bugs/` when appropriate
 
 ### Dependencies
-- `resources/execution-protocol.md`, examples, checklist, common patterns, and debugging checklist
+- `resources/execution-protocol.md`, `resources/checklist.md`, and `resources/debugging-checklist.md`
 - Local codebase search and symbol/reference tools
 - Project test, lint, typecheck, and runtime commands
 
@@ -58,7 +58,7 @@ Reproduce, diagnose, minimally fix, and regression-test bugs while preserving sc
 2. **ACQUIRE**: Read failing code, tests, references, and similar patterns.
 3. **REASON**: Isolate root cause and reject unsupported hypotheses.
 4. **ACT**: Apply minimal fix and regression test.
-5. **VERIFY**: Re-run failing and related checks.
+5. **VERIFY**: Re-run the original failing check and the regression test. Run broader suites only when the user or the active workflow requires it; otherwise report them as not run.
 6. **FINALIZE**: Document root cause, fix, test, and residual risk.
 
 ### Transitions
@@ -73,7 +73,7 @@ Reproduce, diagnose, minimally fix, and regression-test bugs while preserving sc
 - If fix scope grows, stop and call out the broader design issue.
 
 ### Exit
-- Success: bug is fixed, regression coverage exists, and checks pass.
+- Success: bug is fixed, regression coverage exists, and the original failing check and regression test pass.
 - Partial success: root cause or verification blocker is explicit.
 
 ## Logical Operations
@@ -87,13 +87,13 @@ Reproduce, diagnose, minimally fix, and regression-test bugs while preserving sc
 | Infer root cause | `INFER` | Diagnostic reasoning |
 | Write minimal fix | `WRITE` | Code patch |
 | Write regression test | `WRITE` | Test patch |
-| Verify behavior | `VALIDATE` | Tests/checks |
+| Verify behavior | `VALIDATE` | Failing check and regression test |
 | Report result | `NOTIFY` | Root-cause summary |
 
 ### Tools and instruments
 - Project test, lint, typecheck, runtime, and logging commands
 - Configured code-intelligence symbol/reference/pattern search with native fallback
-- Debugging checklist and bug report template
+- Bug report templates and the tools reference in `resources/debugging-checklist.md`
 
 ### Canonical workflow path
 Use the configured code-intelligence provider to locate files and inspect symbols
@@ -102,7 +102,7 @@ or content. For Serena, use `find_file`, `search_for_pattern`,
 provider exclusions and non-code paths permitted by the project's search policy.
 
 
-Then run the smallest reproduction command first, establish the causal mechanism, and follow `resources/execution-protocol.md` for the diagnosis record when an OMA workflow is active. Add the regression test and re-run the failing check plus related tests.
+Then run the smallest reproduction command first, establish the causal mechanism, and follow `resources/execution-protocol.md` for the diagnosis record when an OMA workflow is active. Add the regression test and re-run it with the original failing check (RED before the fix, GREEN after). Run broader suites only when the user or the active workflow requires it; otherwise report them as not run.
 
 ### Resource scope
 | Scope | Resource target |
@@ -137,9 +137,8 @@ Use the configured provider to locate the failing function, find callers, and se
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Checklist (pre-submit self-verification): `resources/checklist.md`
 - Error recovery: `resources/error-playbook.md`
-- Bug report template: `resources/bug-report-template.md`
-- Common patterns: `resources/common-patterns.md`
-- Debugging checklist (investigation guide, used during Steps 1-2): `resources/debugging-checklist.md`
+- Bug report template (Complex or CRITICAL/HIGH bugs): `resources/bug-report-template.md`
+- Condensed bug report, tools reference, and handoff routing: `resources/debugging-checklist.md`
 - Context loading: `references/_shared/core/context-loading.md`
 - Context budget: `references/_shared/core/context-budget.md`
 - Lessons learned: `references/_shared/core/lessons-learned.md` (matching prior failure or requested retrospective)
