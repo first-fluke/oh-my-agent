@@ -15,7 +15,6 @@ import {
   checkTypeScript,
 } from "./codebase-checks.js";
 import {
-  checkCharterPreflight,
   checkDeclaredOutputs,
   checkPmPlan,
   checkScopeViolation,
@@ -146,7 +145,6 @@ export function collectVerifyReport(
     };
   }
   checks.push(checkScopeViolation(workspace, agentType, selection));
-  checks.push(checkCharterPreflight(workspace, agentType, selection));
   checks.push(checkHardcodedSecrets(workspace));
   checks.push(checkTodoComments(workspace));
   checks.push(checkDeclaredOutputs(workspace, agentType));

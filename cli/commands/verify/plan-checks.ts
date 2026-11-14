@@ -145,50 +145,6 @@ export function checkScopeViolation(
   );
 }
 
-export function checkCharterPreflight(
-  workspace: string,
-  agentType: AgentType,
-  selection: VerifySelection = {},
-): VerifyCheck {
-  let resultFile: string | null;
-  try {
-    resultFile = findResultFile(
-      workspace,
-      agentType,
-      selection,
-      !selection.sessionId && !selection.runId,
-    );
-  } catch {
-    return createCheck(
-      "Charter Preflight",
-      "skip",
-      "Select a task/run for per-run preflight",
-    );
-  }
-  if (!resultFile) {
-    return createCheck("Charter Preflight", "skip", "Result file not found");
-  }
-
-  const content = readFileSync(resultFile, "utf-8");
-  if (!content.includes("CHARTER_CHECK:")) {
-    return createCheck(
-      "Charter Preflight",
-      "warn",
-      "Block missing from result",
-    );
-  }
-  if (
-    /\{[^}]+\}/.test(content.split("CHARTER_CHECK:")[1]?.split("```")[0] || "")
-  ) {
-    return createCheck(
-      "Charter Preflight",
-      "warn",
-      "Contains unfilled placeholders",
-    );
-  }
-  return createCheck("Charter Preflight", "pass", "Properly filled");
-}
-
 /**
  * Contract validation for the opt-in per-task test strategy (issue #671).
  * `test_approach` is optional; when present it must be a known value,
