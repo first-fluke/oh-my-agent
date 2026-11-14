@@ -1,5 +1,22 @@
 # Changelog
 
+## [20.43.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.1...cli-v20.43.2) (2026-11-14)
+
+
+### Bug Fixes
+
+* **docs:** skip generator regions in the i18n em-dash lint ([5e7d4b1](https://github.com/first-fluke/oh-my-agent/commit/5e7d4b15feda2fa124596e2aa46ec260755a8c42))
+
+
+### Refactoring
+
+* **agents:** remove the unused charter stripping ([4b629e3](https://github.com/first-fluke/oh-my-agent/commit/4b629e3658503b91728a486124df80652287a91c))
+
+
+### Documentation
+
+* **i18n:** resync translations and add missing pages ([f7817d1](https://github.com/first-fluke/oh-my-agent/commit/f7817d1c66186c01e0a8adb011fef5b33ee6ca56))
+
 ## [20.43.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.0...cli-v20.43.1) (2026-11-14)
 
 
