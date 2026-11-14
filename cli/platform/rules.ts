@@ -4,6 +4,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
 } from "node:fs";
 import { join } from "node:path";
 import {
@@ -106,6 +107,12 @@ export function applyCursorRules(
 /**
  * Generate .claude/rules/*.md from SSOT.
  * Claude Code uses: paths (mapped from globs) frontmatter.
+ *
+ * Claude Code loads a rule without `paths` into every session and has no
+ * on-request scope. So only always-on and path-scoped rules are written here.
+ * A rule that is neither stays reachable through the Project Rules index in
+ * AGENTS.md, which names its file for the model to open when the work matches;
+ * a copy left by an earlier install is removed so it stops loading everywhere.
  */
 export function generateClaudeRules(
   targetDir: string,
@@ -120,11 +127,16 @@ export function generateClaudeRules(
   const exported: string[] = [];
 
   for (const rule of rules) {
+    if (!rule.alwaysApply && !rule.globs) {
+      rmSync(join(claudeDir, `${rule.name}.md`), { force: true });
+      continue;
+    }
+
     const fm: Record<string, unknown> = {
       description: rule.description,
     };
 
-    if (!rule.alwaysApply && rule.globs) {
+    if (!rule.alwaysApply) {
       fm.paths = rule.globs;
     }
 

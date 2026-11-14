@@ -12,6 +12,7 @@ vi.mock("node:fs", () => ({
   mkdirSync: vi.fn(),
   readFileSync: vi.fn(),
   readdirSync: vi.fn(),
+  rmSync: vi.fn(),
   writeFileSync: vi.fn(),
   cpSync: vi.fn(),
   chmodSync: vi.fn(),
@@ -202,6 +203,29 @@ describe("generateClaudeRules", () => {
 
     const content = writeCall?.content as string;
     expect(content).not.toContain("paths:");
+  });
+
+  // Regression: a rule with neither `globs` nor `alwaysApply` is "on request"
+  // in the SSOT, but Claude Code loads any rule without `paths` into every
+  // session, so writing it made seven domain rules always-on.
+  it("should not write an on-request rule and should drop a stale copy", () => {
+    (fs.existsSync as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      (file: string) => !String(file).includes("oma-config"),
+    );
+    (fs.readdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue([
+      "backend.md",
+    ]);
+    (fs.readFileSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+      "---\ndescription: Backend standards\nglobs:\nalwaysApply: false\n---\n\n# Backend",
+    );
+
+    expect(generateClaudeRules(mockTargetDir)).toEqual([]);
+
+    expect(findAtomicWrite("backend.md")).toBeUndefined();
+    expect(fs.rmSync).toHaveBeenCalledWith(
+      expect.stringMatching(/\.claude[\\/]rules[\\/]backend\.md$/),
+      { force: true },
+    );
   });
 });
 
