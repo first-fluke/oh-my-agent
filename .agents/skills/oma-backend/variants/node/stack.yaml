@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../stack.schema.json
 language: node
-framework: hono
+framework: nestjs
 orm: prisma
 source: variant
 
@@ -10,8 +10,8 @@ verify:
     cmd: "bunx tsc --noEmit"
     skip_if_missing: bunx
   tests:
-    cmd: "bun test"
-    skip_if_missing: bun
+    cmd: "bunx vitest run"
+    skip_if_missing: bunx
   raw_sql:
     patterns:
       - "\\$queryRawUnsafe\\("

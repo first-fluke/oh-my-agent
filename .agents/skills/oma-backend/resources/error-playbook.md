@@ -37,7 +37,7 @@ Use the relevant recovery steps. If required information or authority is missing
 **Symptoms**: Migration command fails, `IntegrityError`, duplicate column
 
 1. Read the error; is it a conflict with existing migration?
-2. Check current DB state: Check current migration state
+2. Check the current migration state: applied revisions against the migration files
 3. Inspect applied steps and partial changes first. In production or shared environments, prefer a reviewed forward fix. Roll back only in disposable development databases or with a tested, data-safe down migration; do not rewrite an already-applied migration.
 4. If schema mismatch: compare model with actual DB schema
 5. **NEVER do this**: Force-mark migrations as applied (risk of data loss)
@@ -93,5 +93,5 @@ Follow `../../_shared/runtime/memory-protocol.md`; state storage is independent 
 ## General Principles
 
 - **After 3 failures**: If same approach fails 3 times, must try a different method
-- **Blocked**: If no progress after 5 turns, save current state and record `Status: blocked` in result
+- **Blocked**: If a missing fact or a repeated failure stops progress, save current state and report `blocked` with the cause in `unresolved`
 - **Out of scope**: If you find issues in another agent's domain, only record in result; do not modify directly

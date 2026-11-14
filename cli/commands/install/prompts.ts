@@ -397,12 +397,12 @@ export async function promptBackendVariant(
             {
               value: "python",
               label: "🐍 Python",
-              hint: "FastAPI/SQLAlchemy (default)",
+              hint: "Litestar/SQLAlchemy (default)",
             },
             {
               value: "node",
               label: "🟢 Node.js",
-              hint: "NestJS/Hono + Prisma/Drizzle",
+              hint: "NestJS + Prisma",
             },
             { value: "rust", label: "🦀 Rust", hint: "Axum/Actix-web" },
             {

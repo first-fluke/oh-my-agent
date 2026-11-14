@@ -1,23 +1,27 @@
 # Backend Agent - Tech Stack Reference (Node.js)
 
 ## Primary Stack
-- **Runtime**: Node.js 22+ / Bun 1.2+
-- **Language**: TypeScript 5.x (strict mode)
-- **Framework**: NestJS 11+ or Hono 4+
-- **ORM**: Prisma 6+ or Drizzle ORM
-- **Validation**: Zod
+- **Runtime**: Node.js 22.12+ / Bun 1.2+
+- **Language**: TypeScript 5.4+ (strict mode)
+- **Framework**: NestJS 11+
+- **ORM**: Prisma 7 (install `prisma@7` and `@prisma/client@7`; `prisma-client` generator with a driver adapter; connection URL in `prisma.config.ts`)
+- **Validation**: Zod 4+
 - **Type utilities**: type-fest (`SetRequired`, `Merge`, `JsonValue`, `Promisable`, etc.; prefer over hand-rolled conditional-type gymnastics)
 - **Database**: PostgreSQL 16+, Redis 7+
 - **Auth**: jsonwebtoken, argon2 (node-argon2)
 - **Testing**: Vitest, Supertest
-- **Migrations**: Prisma Migrate or Drizzle Kit
+- **Migrations**: Prisma Migrate
 
 ## Architecture
 ```
 src/
-  modules/          # Feature modules (NestJS) or routes (Hono)
-  common/           # Shared guards, pipes, interceptors
-  prisma/           # Prisma client and schema
+  modules/          # Feature modules (controller, service, repository, DTOs)
+  common/           # Shared guards, pipes, filters, errors
+  prisma/           # PrismaService and PrismaModule
+  generated/prisma/ # Generated Prisma Client
+prisma/
+  schema.prisma     # Data model
+prisma.config.ts    # Schema path and datasource URL
 ```
 
 ## Security Requirements

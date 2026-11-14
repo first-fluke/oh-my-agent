@@ -6,7 +6,6 @@ Use this guide when the task involves ORM query design, relation loading, transa
 
 ### 1. Relation loading must be chosen per use case
 
-Backend Agent should therefore:
 - choose loading strategy per endpoint or service method
 - compare join-based eager loading, batched/select-in loading, and separate follow-up queries
 - choose SQLAlchemy's `joinedload`, `selectinload`, `lazyload`, or `raiseload` explicitly for the access pattern
@@ -15,7 +14,6 @@ Backend Agent should therefore:
 
 ### 2. Transaction boundaries must follow business operations
 
-Backend Agent should therefore:
 - open one explicit transaction for one business operation; in Sequelize, use a managed transaction callback for that unit of work
 - keep read-modify-write flows inside the same transaction boundary
 - avoid per-statement auto-commit designs
@@ -23,7 +21,6 @@ Backend Agent should therefore:
 
 ### 3. ORM lifecycle objects are not generic shared singletons
 
-Backend Agent should therefore:
 - reuse factory/client objects only when the ORM recommends reuse
 - keep transaction-scoped mutable objects request-scoped or task-scoped
 - never share stateful unit-of-work objects across concurrent tasks unless the vendor explicitly permits it
@@ -35,7 +32,6 @@ Operational reading:
 
 ### 4. Field projection is mandatory unless full entity hydration is required
 
-Backend Agent should therefore:
 - fetch only required columns, attributes, or nested fields using Prisma nested `select`, TypeORM `select`, or Sequelize `attributes`
 - prefer projections, DTO shaping, or raw results when domain objects are not needed; use TypeORM `getRawMany()` or Sequelize `{ raw: true }` when entity hydration is unnecessary
 - treat over-fetching as a query design flaw, not a minor optimization item
@@ -46,14 +42,14 @@ Lazy and eager defaults are convenience features, not query plans. Multiple vend
 - lazy defaults can explode into N+1
 - eager defaults can create oversized joins, duplicate parent rows, or unnecessary payloads
 
-Backend Agent should therefore:
+Therefore:
 - inspect relation defaults before changing repository or endpoint behavior
 - override defaults at query time when access shape differs from mapping defaults
 - prefer repository-level query shaping over relying on entity metadata alone
 
 ### 6. Query review must include access-path and row-shape checks
 
-Backend Agent should therefore review:
+Review:
 - missing indexes on filters, joins, and foreign keys
 - full table scans
 - repeated identical queries that should be cached or batched
