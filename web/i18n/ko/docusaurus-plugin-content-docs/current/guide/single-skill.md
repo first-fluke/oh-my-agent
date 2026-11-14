@@ -107,7 +107,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 
 **예상 실행 흐름:**
 
-1. **스킬 라우팅:** `oma-frontend` 활성화 (키워드: "form", "component", "Tailwind CSS", "React")
+1. **스킬 라우팅:** 호스트 또는 워크플로우가 `oma-frontend`를 선택합니다("form", "component", "Tailwind CSS", "React" 같은 키워드가 라우팅 신호입니다)
 2. **난이도 평가:** 중간 (2-3개 파일, 유효성 검사 UX에 대한 일부 설계 결정)
 3. **로드된 리소스:**
    - `execution-protocol.md` (항상)
@@ -145,7 +145,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 **예상 실행 흐름:**
 
-1. **스킬 라우팅:** `oma-backend` 활성화 (키워드: "API", "endpoint", "REST")
+1. **스킬 라우팅:** 호스트 또는 워크플로우가 `oma-backend`를 선택합니다("API", "endpoint", "REST" 같은 키워드가 라우팅 신호입니다)
 2. **스택 감지:** `pyproject.toml`이나 `package.json`을 읽어 언어와 프레임워크를 판단합니다. 생성된 `stack/` 레퍼런스 또는 제공된 `variants/`가 있으면 해당 규칙을 불러옵니다.
 3. **난이도 평가:** 중간 (2-3개 파일: 라우트, 서비스, 리포지토리, 테스트 포함)
 4. **로드된 리소스:**
@@ -178,7 +178,7 @@ Add tests for: profile save, logout flow, offline state.
 
 **예상 실행 흐름:**
 
-1. **스킬 라우팅:** `oma-mobile` 활성화 (키워드: "Flutter", "screen", "mobile")
+1. **스킬 라우팅:** 호스트 또는 워크플로우가 `oma-mobile`을 선택합니다("Flutter", "screen", "mobile" 같은 키워드가 라우팅 신호입니다)
 2. **난이도 평가:** 중간 (설정 화면 + 상태 관리 + 오프라인 처리)
 3. **로드된 리소스:**
    - `execution-protocol.md`
@@ -211,7 +211,7 @@ Add deliverables: data standards table, glossary, migration script.
 
 **예상 실행 흐름:**
 
-1. **스킬 라우팅:** `oma-db` 활성화 (키워드: "database", "schema", "ERD", "migration")
+1. **스킬 라우팅:** 호스트 또는 워크플로우가 `oma-db`를 선택합니다("database", "schema", "ERD", "migration" 같은 키워드가 라우팅 신호입니다)
 2. **난이도 평가:** 복잡 (아키텍처 결정, 여러 엔터티, 용량 계획)
 3. **로드된 리소스:**
    - `execution-protocol.md`

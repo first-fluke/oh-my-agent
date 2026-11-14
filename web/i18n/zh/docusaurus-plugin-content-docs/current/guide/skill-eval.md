@@ -6,7 +6,7 @@ description: "说明如何为 oma skill eval 编写评估任务 fixture、使用
 
 # 技能效用评估
 
-`oma skill eval` 衡量加载某个技能是否改善智能体任务结果；`oma skill audit` 检查两个技能是否重复。
+`oma skill eval` 比较有该技能和没有该技能时的任务结果。`oma skill audit` 检查两条技能描述是否冗余。
 
 设计遵循两项研究发现：WikiSkill（arXiv:2608.27454）将原始经验、持久化知识和可执行技能分开，同时保留用于演进的保留集关卡；SkillLens（arXiv:2605.23899）表明技能效用独立于描述的独特性，一个独特的技能仍可能无用，存在重叠的技能仍可能有帮助。
 
@@ -107,7 +107,7 @@ Skill eval live run preview:
   record: rollouts will be written to <project>/.agents/eval/oma-scholar/_rollouts/
 ```
 
-接下来，按照[阅读报告](#reading-the-report)中的说明解读结果。本节之后的各节为参考资料。
+接下来，按照[阅读报告](#reading-the-report)中的说明解读结果。
 
 ---
 

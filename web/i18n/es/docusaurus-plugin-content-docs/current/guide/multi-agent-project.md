@@ -8,7 +8,7 @@ description: Guía completa para coordinar agentes de varios dominios en fronten
 
 ## Cuándo usar la coordinación multiagente
 
-La funcionalidad abarca varios dominios: API de backend, UI de frontend, esquema de base de datos, cliente mobile y revisión de QA. Los dominios pueden avanzar en paralelo sin modificar los archivos de los demás.
+Usa la coordinación multiagente cuando una funcionalidad abarca varios dominios, como una API de backend, una UI de frontend, un esquema de base de datos, un cliente mobile o una revisión de QA, y esos dominios pueden avanzar en paralelo sin modificar los mismos archivos.
 
 Usa coordinación multiagente cuando:
 

@@ -27,7 +27,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 - **uv**：Python 包管理器（引导脚本缺少时会提供安装选项）
 - **代码智能提供商**：Serena 是默认提供商。在提供商配置中选择后也支持 Gortex。安装器可以使用 `uv tool install` 引导安装 Serena；可选依赖不可用时会发出警告并继续。选择 Gortex 后，项目模式的 `oma install` 和 `oma update` 会在项目尚未被跟踪时，将其注册到 Gortex 守护进程（`gortex track`），并通过 Gortex CLI 把 OMA 生成的目录加入该项目的排除列表；不会向项目目录写入任何内容。Gortex 本身需要单独安装。
 
-安装器按能力组织集成。钩子供应商包括 Antigravity、Claude、Codex、CommandCode、Cursor、Grok、Kimi、Kiro 和 Qwen；OpenCode 与 pi 使用扩展桥接；GitHub Copilot 和 Hermes 会获得技能链接；ZCode 会获得工作流命令。你可以选择多个供应商，但第一次任务只需要选择计划使用的主机。
+安装器按能力组织集成。钩子供应商包括 Antigravity、Claude、Codex、CommandCode、Copilot、Cursor、Grok、Kimi、Kiro 和 Qwen；OpenCode 与 pi 使用扩展桥接；Hermes 会获得技能链接；ZCode 会获得工作流命令。你可以选择多个供应商，但第一次任务只需要选择计划使用的主机。
 
 ---
 
@@ -66,7 +66,7 @@ irm https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/cli/install.p
 - **commit-msg 守卫**：`.githooks/commit-msg` 会拒绝不在 `.githooks/co-authors.allow` 或 `scm.co_author.email` 中的 `Co-authored-by` 地址。只有在没有其他钩子生效时才会设置 `git config --local core.hooksPath .githooks`；否则 oma 会打印如何串联该守卫。设置 `scm.co_author.enforce_hook: false` 可退出。
 - **后台更新**：`oma update` 会在后台更新 `oma` CLI（用 `auto_update_cli: false` 或 `OMA_SKIP_VERSION_CHECK=1` 停止），并运行 `uv tool upgrade serena-agent --prerelease=allow`（用 `serena.auto_update: false` 停止）。
 - **Serena 清理定时器**：Serena 处于默认的 `bridge` 模式时，第一个启动共享 Serena 服务器的智能体会话会注册一个定时器，每 5 分钟停止空闲的共享 Serena 服务器（launchd `dev.oma.serena-daemon-gc`、systemd 用户定时器 `oma-serena-daemon-gc.timer` 或 Windows 计划任务 `OMA Serena Daemon GC`）。设置 `serena.mode: stdio` 可跳过共享服务器及其定时器。`oma uninstall` 不会移除该定时器。
-- **非交互式运行**（`-y`、`OMA_YES=1`、`CI=true`）使用 `All` 技能预设、`model_preset: auto`，并以 Python 作为后端语言。除非 `mcp.devtools_browsers` 已列出某个浏览器，否则不会选择任何浏览器 MCP（也会跳过 Aside 安装脚本）。
+- **非交互式运行**（`-y`、`OMA_YES=1`、`CI=true`）使用 `All` 技能预设，除非 `--preset` 另行指定；同时使用 `model_preset: auto`，并以 Python 作为后端语言。除非 `mcp.devtools_browsers` 已列出某个浏览器，否则不会选择任何浏览器 MCP（也会跳过 Aside 安装脚本）。
 
 ---
 

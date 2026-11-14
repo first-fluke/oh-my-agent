@@ -34,7 +34,7 @@ Los nombres canónicos de abajo proceden de `oma describe`. Solo se aceptan esta
 
 ## Superficie actual de comandos {#current-command-surface}
 
-La tabla agrupa las rutas registradas por familia. Usa `--help` para consultar la gramática exacta de los argumentos o ejecuta `oma describe <path>`; [Opciones del CLI](./options.md) contiene la matriz completa de flags del registro.
+Usa el `--help` de cada familia o `oma describe <path>` para la gramática exacta de los argumentos; [Opciones del CLI](./options.md) enumera los flags del registro para cada ruta de comando.
 
 | Familia | Rutas registradas |
 |:-------|:-----------------|

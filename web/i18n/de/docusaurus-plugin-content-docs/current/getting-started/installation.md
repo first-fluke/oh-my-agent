@@ -66,7 +66,7 @@ Das Bootstrap-Skript läuft auch nach Fehlern bei optionalen Abhängigkeiten wei
 - **commit-msg-Guard**: `.githooks/commit-msg` lehnt `Co-authored-by`-Adressen ab, die weder in `.githooks/co-authors.allow` noch in `scm.co_author.email` stehen. `git config --local core.hooksPath .githooks` wird nur gesetzt, wenn keine anderen Hooks aktiv sind; andernfalls gibt oma aus, wie Sie den Guard verketten. Setzen Sie `scm.co_author.enforce_hook: false`, um darauf zu verzichten.
 - **Hintergrund-Updates**: `oma update` aktualisiert die `oma`-CLI im Hintergrund (`auto_update_cli: false` oder `OMA_SKIP_VERSION_CHECK=1` stoppt das) und führt `uv tool upgrade serena-agent --prerelease=allow` aus (`serena.auto_update: false` stoppt das).
 - **Serena-Cleanup-Timer**: Mit Serena im Standardmodus `bridge` registriert die erste Agent-Session, die einen gemeinsamen Serena-Server startet, einen Timer, der inaktive gemeinsame Serena-Server alle 5 Minuten stoppt (launchd `dev.oma.serena-daemon-gc`, systemd-User-Timer `oma-serena-daemon-gc.timer` oder geplante Windows-Aufgabe `OMA Serena Daemon GC`). Setzen Sie `serena.mode: stdio`, um den gemeinsamen Server und seinen Timer zu überspringen. `oma uninstall` entfernt den Timer nicht.
-- **Nicht-interaktive Läufe** (`-y`, `OMA_YES=1`, `CI=true`) verwenden das Skill-Preset `All`, `model_preset: auto` und Python als Backend-Sprache. Dabei wird kein Browser-MCP ausgewählt (und das Aside-Installationsskript übersprungen), sofern `mcp.devtools_browsers` nicht bereits eines enthält.
+- **Nicht-interaktive Läufe** (`-y`, `OMA_YES=1`, `CI=true`) verwenden das Skill-Preset `All`, sofern nicht `--preset` ein anderes wählt, dazu `model_preset: auto` und Python als Backend-Sprache. Dabei wird kein Browser-MCP ausgewählt (und das Aside-Installationsskript übersprungen), sofern `mcp.devtools_browsers` nicht bereits eines enthält.
 
 ---
 
@@ -355,7 +355,7 @@ agents:
 
 ### Vendor-Auflösung
 
-Beim Starten eines Agenten löst die CLI die Einstellungen in dieser Reihenfolge auf: `agents.<id>`, das ausgewählte `model_preset`, der Orchestrator-Fallback des Presets und anschließend `default_cli`. Bei `model_preset: auto` liefert die native Konfiguration der aktuellen Laufzeit das Modell; eine unbekannte Laufzeit fällt auf `default_cli` zurück. Die vollständige Matrix steht unter [Modelle pro Agent](../guide/per-agent-models.md).
+Beim Starten eines Agenten löst die CLI die Einstellungen in dieser Reihenfolge auf: `agents.<id>`, das ausgewählte `model_preset`, der Orchestrator-Fallback des Presets und anschließend `agents.default.cli`. Bei `model_preset: auto` liefert die native Konfiguration der aktuellen Laufzeit das Modell; eine unbekannte Laufzeit fällt auf `agents.default.cli` zurück. Die vollständige Matrix steht unter [Modelle pro Agent](../guide/per-agent-models.md).
 
 ---
 

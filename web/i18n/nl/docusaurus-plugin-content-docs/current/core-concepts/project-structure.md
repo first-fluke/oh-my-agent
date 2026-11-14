@@ -11,7 +11,7 @@ Na de installatie van oh-my-agent krijgt je project twee kernbomen: `.agents/` (
 
 ## Representatieve directorystructuur
 
-De huidige catalogus bevat 33 skilldirectories; weggelaten skills volgen hetzelfde patroon met `SKILL.md` plus optionele `resources/`, `stack/` of een skillspecifieke directory. Beschouw de live `.agents/`-boom als leidend wanneer een gegenereerd of optioneel bestand ontbreekt.
+De boom hieronder toont de gedeelde resources en representatieve domeinskills in detail. De huidige catalogus bevat 33 skilldirectories; weggelaten skills volgen hetzelfde patroon met `SKILL.md` plus optionele `resources/`, `stack/` of een skillspecifieke directory. Beschouw de live `.agents/`-boom als leidend wanneer een gegenereerd of optioneel bestand ontbreekt.
 
 ```text
 your-project/
@@ -260,7 +260,7 @@ your-project/
 
 ## .agents/: de Source of Truth {#agents-the-source-of-truth}
 
-De projectconfiguratie en agentresources staan hier. OMA gebruikt de bestanden als bron voor vendorintegraties.
+Dit is de kernmap. Alles wat agenten nodig hebben, staat hier. Het is de enige map die ertoe doet voor het gedrag van agenten. Alle andere mappen worden hiervan afgeleid.
 
 ### oma-config.cue en oma-config.yaml
 
@@ -272,7 +272,7 @@ De projectconfiguratie en agentresources staan hier. OMA gebruikt de bestanden a
 - `providers`: capability-providers voor docs, web, code-intelligence en semantic memory
 - `auto_update_cli`: CLI automatisch op de achtergrond bijwerken (standaard `true`, uitschakelen met `false`)
 - `telemetry`: opt-in voor telemetrie van vendors (standaard `false`)
-- `mcp.devtools_browsers`: optionele browserlijst; weglaten behoudt de bestaande setup
+- `mcp.devtools_browsers`: optionele browserlijst; als de sleutel ontbreekt, blijven bestaande vermeldingen behouden
 - `agents`: gedeeltelijke overschrijvingen per agent (alleen objecten van het type `AgentSpec`)
 - `models`: door de gebruiker gedefinieerde modelslugs
 - `custom_presets`: optionele aangepaste presets met optionele `extends:`
@@ -320,9 +320,9 @@ Wordt gegenereerd door de workflow `/plan` en bevat het gestructureerde plan met
 
 ### state/
 
-Actieve statusbestanden voor persistente workflows. Deze JSON-bestanden bestaan alleen zolang een persistente workflow draait. Als je ze verwijdert (of zegt dat de workflow klaar is), deactiveer je de persistente workflow.
+Actieve statusbestanden voor persistente workflows. Deze JSON-bestanden bestaan alleen zolang een persistente workflow draait. Als je ze verwijdert (of "workflow done" zegt), deactiveer je de workflow.
 
-De subdirectory `state/memories/` is de canonieke store voor coördinatiegeheugen: sessiestatus van de orchestrator, taakbord, voortgangs- en resultaatbestanden per agent en taak, sessiemetrics en kostenregistratie. Dashboards bewaken deze directory en de CLI zoekt hier eerst (oudere projecten vallen terug op de legacy-directory `.serena/memories/`). Zie [.agents/state/memories/: runtimestatus](#agentsstatememories-runtime-state) hieronder.
+De subdirectory `state/memories/` is de canonieke store voor coördinatiegeheugen: sessiestatus van de orchestrator, taakbord, voortgangs- en resultaatbestanden per agent, sessiemetrics en kostentelemetrie. Dashboards bewaken deze directory en de CLI zoekt hier eerst (oudere projecten vallen terug op de legacy-directory `.serena/memories/`). Zie [.agents/state/memories/: runtimestatus](#agentsstatememories-runtime-state) hieronder.
 
 ### results/
 

@@ -67,7 +67,7 @@ Depois de instalar, execute `oma doctor`. [Seus primeiros 5 minutos](#your-first
 
 ## Detalhes da instalação
 
-O script instala o [bun](https://bun.sh) se ele estiver faltando, instala o comando `oma` globalmente (`bun install --global oh-my-agent`, etapa pulada quando `oma` já está no seu PATH) e então inicia a configuração interativa. O comando global é importante: os hooks (detecção de palavras-chave, o Stop gate) e vários workflows chamam `oma`, e os hooks simplesmente não fazem nada, sem aviso, quando não o encontram. Se você não usar o script, instale-o por conta própria com `bun install --global oh-my-agent` (`npm install --global oh-my-agent` ou `brew install oh-my-agent` também funcionam).
+O script instala o [bun](https://bun.sh) se ele estiver faltando, instala o comando `oma` globalmente (`bun install --global oh-my-agent`, etapa pulada quando `oma` já está no seu PATH) e então inicia a configuração interativa. Os hooks (detecção de palavras-chave e o Stop gate) e vários workflows chamam o comando `oma` instalado globalmente. Os hooks simplesmente não fazem nada se não o encontrarem. Se você pular o script, instale-o por conta própria com `bun install --global oh-my-agent` (`npm install --global oh-my-agent` ou `brew install oh-my-agent` também funcionam).
 
 <details>
 <summary>Windows, ou sem o script de instalação</summary>

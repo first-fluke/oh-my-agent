@@ -796,7 +796,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 
 - [Команды CLI](./commands.md): поведение и примеры для каждой команды.
 - Файлы правил вендоров (`.cursor/rules`, ...) пересоздаёт [`oma link <vendor>`](./commands.md#link), а не отдельная команда `export`.
-- [Справочник по конфигурации](../guide/configuration-reference.md): ключи конфигурации, которые переопределяют эти флаги.
+- [Справочник по конфигурации](../guide/configuration-reference.md): ключи конфигурации, которые эти флаги переопределяют.
 - [Автоматические обновления](../guide/automated-updates.md): запуск `oma update` из GitHub Action.
 - [Мониторинг через дашборды](../guide/dashboard-monitoring.md): `agent status` и дашборды.
 - [Глобальная установка](../guide/global-install.md): корни проектной и глобальной установки.

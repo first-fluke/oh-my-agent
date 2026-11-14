@@ -31,7 +31,7 @@ O instalador agrupa as integrações por capacidade. Os vendors de hooks incluem
 
 ---
 
-## Método 1: instalação em uma linha
+## Método 1: instalação em uma linha {#method-1-one-liner-install}
 
 ```bash
 # macOS / Linux

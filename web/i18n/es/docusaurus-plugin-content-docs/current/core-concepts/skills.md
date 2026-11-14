@@ -147,7 +147,7 @@ Fuente: `cli/commands/agent/spawn-status.ts`, `cli/platform/agent-config/loaders
 | **Lista de verificación** | `checklist.md` | Verificación de calidad específica del dominio | Las secciones pertinentes, para verificaciones sin resolver |
 | **Snippets** | `snippets.md` | Patrones de código listos para copiar y pegar | Implementación o estructura de salida poco familiares |
 | **Ejemplos** | `examples.md` | Ejemplos resueltos de entrada/salida (oma-pm, oma-db, oma-tf-infra, oma-observability) | Implementación o estructura de salida poco familiares |
-| **Variantes** | Directorio `variants/` | Referencias de stack por lenguaje o framework. Backend incluye `node`, `python` y `rust`; mobile incluye `flutter`, `react-native`, `swift-ios` y `kotlin-android`. Una habilidad usa `stack/` cuando existe y, en caso contrario, la variante coincidente; `/stack-set` genera el `stack/` del proyecto a partir de una variante. | Cuando el proyecto no tiene `stack/` o cuando se está configurando un stack coincidente |
+| **Variantes** | Directorio `variants/` | Referencias de stack por lenguaje o framework. Backend incluye `node`, `python` y `rust`; mobile incluye `flutter`, `react-native`, `swift-ios` y `kotlin-android`. Una habilidad usa `stack/` cuando existe y, en caso contrario, la variante coincidente; `/stack-set` siembra el `stack/` del proyecto a partir de una variante. | Cuando el proyecto no tiene `stack/` o cuando se está configurando un stack coincidente |
 | **Plantillas** | `api-template.*` en la referencia de stack de backend; mobile guarda sus patrones de pantalla y de API en `variants/<platform>/snippets.md` | Boilerplate para un módulo de API o una pantalla nuevos | Al crear ese archivo |
 | **Referencia de dominio** | `orm-reference.md`, `vector-db.md`, `data-grid.md`, etc. | Conocimiento profundo del dominio para subtareas específicas | Según el tipo de tarea |
 
@@ -294,7 +294,7 @@ La verificación se ajusta al riesgo de la tarea y a los requisitos del proyecto
 
 ## Mapas de carga de contexto por tarea (por agente) {#context-loading-task-maps-per-agent}
 
-Usa el índice actual de la habilidad responsable y selecciona solo las secciones aplicables según las necesidades de la tarea:
+Estos son ejemplos de referencias que conviene consultar cuando la tarea las necesita. Usa el índice actual de la habilidad responsable y selecciona solo las secciones aplicables:
 
 ### Agente backend
 
@@ -355,7 +355,7 @@ Cuando el orquestador escribe el prompt de un subagente (`oma-orchestration/reso
 - En el despacho nativo, pasa las rutas de esos archivos y de la habilidad responsable si el runtime no los ha proporcionado.
 - Añade una sección de la guía de errores solo después de un fallo observado, y `runtime/memory-protocol.md` solo cuando el agente coordina o reanuda un estado de tarea duradero.
 
-Esta composición dirigida evita cargar recursos innecesarios y maximiza el contexto disponible para el trabajo real del subagente.
+El prompt dirigido deja fuera los recursos no relacionados y deja más contexto disponible para la tarea.
 
 ---
 

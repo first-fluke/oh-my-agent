@@ -33,11 +33,11 @@ Renderiza una interfaz de caracteres de caja directamente en la terminal. Se act
 | Pie | `Updated: <time>  \|  Ctrl+C to exit` | Hora del último redibujado |
 
 **Símbolos de estado:**
-- `●` (verde): en ejecución
-- `✓` (cian): completado
-- `✗` (rojo): fallido
-- `○` (amarillo): bloqueado
-- `◌` (atenuado): pendiente
+- `●` (verde): running
+- `✓` (cian): completed
+- `✗` (rojo): failed
+- `○` (amarillo): blocked
+- `◌` (atenuado): pending
 
 ### Dashboard web
 

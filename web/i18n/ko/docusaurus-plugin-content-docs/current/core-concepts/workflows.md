@@ -1,6 +1,6 @@
 ---
 title: 워크플로우
-description: OMA의 20개 워크플로우 레퍼런스입니다. 슬래시 명령, 지속·비지속 모드, 트리거 키워드, 단계, 읽기·쓰기 파일, triggers.json과 keyword-detector.ts를 통한 자동 감지, 정보성 패턴 필터링, 지속 모드 상태 관리를 다룹니다.
+description: OMA의 20개 워크플로우 레퍼런스입니다. 슬래시 명령, 지속·비지속 모드, 11개 언어의 트리거 키워드, 단계, 읽기·쓰기 파일, triggers.json과 keyword-detector.ts를 통한 자동 감지, 정보성 패턴 필터링, 지속 모드 상태 관리를 다룹니다.
 ---
 
 # 워크플로우

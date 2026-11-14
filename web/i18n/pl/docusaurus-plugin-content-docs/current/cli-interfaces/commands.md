@@ -382,12 +382,13 @@ oma stats reset [--json] [--output <format>]
 - Znacznik czasu ostatniej aktualizacji
 
 **Telemetria kosztów** (agregowana ze wszystkich plików `session-cost-*.md` w `.agents/state/memories/`):
-- Łączna liczba tokenów wejściowych (przybliżenie na podstawie znaków promptu; tokeny wyjściowe nie są jeszcze liczone)
+- Zapisane tokeny, z rozróżnieniem rzeczywistego natywnego zużycia i szacunków na podstawie długości promptu
 - Łączna liczba uruchomień
-- Szacunkowa kwota USD według ostrożnej tabeli stawek tokenów wejściowych dostawców (Claude $3/M, Codex $5/M, Gemini $0.3/M, Qwen $0/M, Cursor $5/M, Antigravity $0.3/M)
+- Zarezerwowane uruchomienia i przebiegi z częściowym pokryciem natywnego zużycia
+- Szacunkowa kwota USD według tabeli stawek dla dostawcy; ten szacunek jest osobny od rzeczywistej liczby tokenów
 - Rozbicie według dostawcy (tokeny · uruchomienia · USD)
 
-To dolna granica, a nie kwota zgodna z rzeczywistym rozliczeniem. Skonfiguruj `session.quota_cap` w `.agents/oma-config.yaml`, aby wymuszać twarde budżety podczas uruchamiania; strona Dlaczego oh-my-agent w sekcji Wprowadzenie opisuje zestaw jakościowy, do którego należą te limity.
+Szacunek USD nie jest kwotą zgodną z rozliczeniem. Skonfiguruj `session.quota_cap` w `.agents/oma-config.yaml`, aby zablokować następne uruchomienie, gdy zapisane zużycie tokenów albo liczba uruchomień osiągnie limit. Brak natywnego zużycia zachowuje jawny szacunek, a działające procesy potomne nie są przerywane. Zobacz [limity kwot sesji](../guide/configuration-reference.md#session-quota-caps).
 
 Metryki są przechowywane w `.agents/state/metrics.json`; gdy istnieje, odczytywany jest starszy `.serena/metrics.json`. Dane pochodzą ze statystyk git i plików pamięci.
 
@@ -1180,6 +1181,8 @@ Gdy pasuje kilka planów sesji lub potwierdzeń uruchomień, weryfikacja kończy
 
 **Kontrole specyficzne dla agenta:**
 
+<!-- Stack manifests in this table are optional outputs of /stack-set, not shipped files. -->
+<!-- oma-docs:ignore-start -->
 | Typ agenta | Dodatkowe kontrole |
 |:-----------|:-----------------|
 | `backend` | Walidacja składni, wykrywanie SQL injection (wzorce surowego SQL) i testy, wszystko z poleceń `verify` w `.agents/skills/oma-backend/stack/stack.yaml` (zapisywanym przez `/stack-set`). Pomijane, gdy tego pliku brak |
@@ -1188,6 +1191,7 @@ Gdy pasuje kilka planów sesji lub potwierdzeń uruchomień, weryfikacja kończy
 | `qa` | Brak sprawdzeń mechanicznych; zapisuje jedno sprawdzenie `QA Report` jako `PASS` |
 | `debug` | Uruchamia testy Pythona lub frontendu na podstawie wykrytego typu projektu |
 | `pm` | Sprawdza, czy `.agents/results/plan-{sessionId}.json` istnieje i zawiera poprawny JSON |
+<!-- oma-docs:ignore-end -->
 
 **Format wyjścia:**
 Każda kontrola zgłasza `PASS`, `FAIL`, `WARN` albo `SKIP` wraz ze szczegółowym komunikatem. Wynik ogólny ma `ok: true` tylko wtedy, gdy żadna kontrola nie zakończyła się błędem.
@@ -2007,7 +2011,7 @@ oma skill lint --json | jq '.smells'
 
 ### skill eval {#skills-eval}
 
-`audit` sprawdza nakładanie się opisów; `eval` mierzy, czy załadowanie umiejętności poprawia wyniki zadań odłożonych do testu. Polecenie `skill audit` służy do pomiaru tej pierwszej właściwości.
+Mierzy użyteczność pojedynczej umiejętności: czy jej załadowanie rzeczywiście poprawia wyniki zadań odłożonych do testu? To odpowiednik `skill audit` po stronie *użyteczności* (tamto polecenie mierzy nakładanie się granic opisów). Tam, gdzie `audit` pyta „czy dwie umiejętności się dublują?”, `eval` pyta „czy ta umiejętność pomaga?”.
 
 ```text
 oma skill eval [--skill <id>] [--mock | --live] [--record] [--yes]

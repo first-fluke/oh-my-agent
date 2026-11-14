@@ -6,7 +6,7 @@ description: 결정론적 train, validation, 실행기 전용 holdout 게이트�
 
 # 스킬 최적화
 
-`oma skill optimize`는 `oma skill eval`이 산출하는 `utilityLift`를 최대화하도록 스킬의 `SKILL.md`를 진화시킵니다. 원시 롤아웃 근거, 범위가 지정된 영속 지식, 실행 가능한 스킬을 분리합니다. Wiki Maintainer가 관측 가능한 성공과 실패를 통합하고, Proposer가 그 지식으로 제한된 추가·삭제·교체 편집을 제안합니다. 후보는 학습 또는 검증 유용성을 높이면서 어느 분할에서도 퇴행하지 않아야 하고, 태스크와 음의 전이 측정이 완전해야 합니다. `--apply`에는 완전히 측정되어 퇴행하지 않은 실행기 전용 최종 테스트와 검증된 라이브 격리도 필요합니다. 배포 시에는 별도의 wiki 조회 비용 없이 결과가 `SKILL.md`에 남습니다.
+`oma skill optimize`는 `oma skill eval`이 산출하는 `utilityLift`를 최대화하도록 스킬의 `SKILL.md`를 진화시킵니다. 원시 롤아웃 근거, 범위가 지정된 영속 지식, 실행 가능한 스킬을 분리합니다. Wiki Maintainer가 관측 가능한 성공과 실패를 통합하고, Proposer가 그 지식으로 제한된 추가·삭제·교체 편집을 제안합니다. 후보는 학습 또는 검증 유용성을 높이면서 어느 분할에서도 퇴행하지 않아야 하고, 태스크와 음의 전이 측정이 완전해야 합니다. `--apply`에는 완전히 측정되어 퇴행하지 않은 실행기 전용 최종 테스트와 검증된 라이브 격리도 필요합니다. 배포할 때는 추론 시점에 wiki를 추가로 조회하지 않습니다. 출력은 그대로 `SKILL.md`입니다.
 
 연구 근거: Tang, L., Rashtchian, C., Ferng, C.-S., Tomkins, A., Juan, D.-C., & Vu, T. (2026). *WikiSkill: Compiling agent experience into persistent knowledge for skill evolution* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2608.27454
 
@@ -134,7 +134,7 @@ Skill opt  (skill: oma-scholar)
  - User wants citations or sources for a factual statement.
 ```
 
-diff는 최적화기가 쓰려는 내용을 보여줍니다. `--dry-run`에서는 `SKILL.md`를 바꾸지 않지만, 다음 실행을 위한 진화 근거와 게이트 결과는 저장합니다.
+diff는 최적화기가 쓰려는 내용을 보여줍니다. `SKILL.md`는 바뀌지 않고, 생성된 진화 근거와 범위가 지정된 게이트 결과는 이후 실행을 위해 남습니다.
 
 ---
 
@@ -239,7 +239,7 @@ oma skill optimize --skill my-skill --live --apply --yes
 
 비용 미리보기는 LLM을 호출하기 전에 하위 모델 호출 수의 상한을 표시합니다.
 
-Maintainer, Proposer, 평가 갈래, judge는 [스킬 격리](./skill-eval.md#skill-isolation-keeping-the-baseline-honest)에서 설명하는 보호된 텍스트 전송 경로를 공유합니다. Claude의 제한된 CLI 프로필 또는 네이티브 Codex `app-server` 프로필을 쓰며, 둘 다 새 임시 디렉토리에서 도구, 시작 시 지시 탐색, MCP 접근, 세션 저장을 꺼 둔 채 실행하므로 컴파일러 프로세스가 에이전트 도구로 숨겨 둔 픽스처를 읽을 수 없습니다. 다른 컴파일러 벤더는 검증된 전송 경로가 생기기 전까지 `[oma skill opt] protected compiler is unavailable for <vendor>`와 함께 멈춥니다. Maintainer와 Proposer는 `model_preset` 또는 `default_cli`를 따르는 `opt-agent` 역할을 쓰고, 평가 갈래와 judge는 `eval` 역할을 씁니다([평가 모델과 최적화기 모델 선택](./skill-eval.md#choose-the-evaluation-and-optimizer-models) 참고).
+Maintainer, Proposer, 평가 갈래, judge는 [스킬 격리](./skill-eval.md#skill-isolation-keeping-the-baseline-honest)에서 설명하는 보호된 텍스트 전송 경로를 공유합니다. Claude의 제한된 CLI 프로필 또는 네이티브 Codex `app-server` 프로필을 쓰며, 둘 다 새 임시 디렉토리에서 도구, 시작 시 지시 탐색, MCP 접근, 세션 저장을 꺼 둔 채 실행하므로 컴파일러 프로세스가 에이전트 도구로 숨겨 둔 픽스처를 읽을 수 없습니다. 다른 컴파일러 벤더는 검증된 전송 경로가 생기기 전까지 `[oma skill opt] protected compiler is unavailable for <vendor>`와 함께 멈춥니다. Maintainer와 Proposer는 `model_preset` 또는 `default_cli`를 따르는 `opt-agent` 역할을 쓰고, 평가 갈래와 judge는 `eval` 역할을 씁니다([평가 및 최적화기 모델 선택](./skill-eval.md#choose-the-evaluation-and-optimizer-models) 참고).
 
 최적화기는 유효한 편집에는 `proposed`를, 명시적인 `NO_ACTION` 응답에만 `no-action`을 보고합니다. 프로세스/API 실패는 `dispatch-error`가 되고, 유효한 편집이 없는 잘못된 형식의 응답은 `parse-error`가 됩니다. 이런 오류가 빈 편집 목록으로 바뀌는 일은 없습니다. Maintainer가 검증된 패턴을 제공하지 못하면 디스패치 또는 파싱 사유와 함께 `degraded`를 보고하고, 폴백 패턴은 영속 지식에서 제외되며, 그 실행은 후보를 승격할 수 없습니다. 평가 실패는 학습된 거부 이력이 아니라 `diagnostics`와 제안 게이트 기록에 나타납니다.
 

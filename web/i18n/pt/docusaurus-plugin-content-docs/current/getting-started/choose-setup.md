@@ -14,7 +14,7 @@ Escolha o ponto de entrada da tarefa que você quer concluir.
 | Instalação pelo marketplace do Claude Code | [Instalar o plugin](#install-the-claude-code-plugin) | O plugin OMA e o bootstrap do projeto |
 | Instalação de pacote para Copilot CLI, Kiro, Qwen Code, Hermes ou Codex | [Pacote Agent Plugins](../guide/vendor-capabilities.md#agent-plugins-package) | Skills e servidores MCP para todos os hosts; o Copilot também recebe agentes, comandos, regras e o hook de bootstrap |
 
-## Carregar uma skill
+## Carregar uma skill {#load-one-skill}
 
 Peça ao seu agente de código para executar o comando da sua tarefa e ler as
 instruções retornadas. `skills use` imprime as instruções e o caminho do
@@ -37,7 +37,7 @@ de admin e de produto, Taste para as demais direções de arte web e Impeccable 
 crítica, auditoria e polimento de uma UI existente. A stack do projeto e o `DESIGN.md`
 continuam sendo os contratos de implementação e de design.
 
-## Instalar um preset de skills
+## Instalar um preset de skills {#install-a-skill-preset}
 
 Instale a CLI uma vez e depois selecione as skills do projeto:
 
@@ -82,7 +82,7 @@ incluindo ramos condicionais, como manifestos de skills referenciados. Execute `
 para reparar entradas ausentes ou ilegíveis necessárias à sua tarefa. Essas verificações não
 conferem o conteúdo dos recursos, as ferramentas, os providers, as credenciais nem a execução.
 
-## Instalar o plugin do Claude Code
+## Instalar o plugin do Claude Code {#install-the-claude-code-plugin}
 
 Execute estes comandos dentro do Claude Code:
 

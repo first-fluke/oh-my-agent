@@ -100,7 +100,7 @@ oh-my-agent 通过专业化解决这些问题：
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
 | **oma-search** | 面向外部来源的搜索路由器 | 为每个请求选择一条主路由：`docs`（Context7，需要时查找官方站点）、`web`（配置的 `native`、`brave` 或 `exa` 提供商）、`code`（基于 `gh`/`glab` 的 `oma search code`）或 `fetch`（已知 URL）。返回的来源带有路由、实际使用的提供商、内容读取状态、支持证据和局限；它不分配数值化的可信度评分。只有证据缺口需要时才增加另一条路由，明确选定的提供商失败时会如实报告，不会被悄悄替换。标志：`--docs`、`--code`、`--web`、`--strict`、`--wide`、`--gitlab`。本地代码导航使用配置的代码工具。 |
-| **oma-recap** | 跨工具工作回顾 | 分析 Grok、Claude、Codex、Gemini、Qwen、Cursor 和 Antigravity 的对话历史。解析自然语言日期或时间窗口，按工作内容分组（3 天或更长的窗口按项目分组），提取主题，并记录 CLI 将请求窗口限制为 30 天的情况。 |
+| **oma-recap** | 跨工具工作回顾 | 分析 Grok、Claude、Codex、Gemini、Qwen、Cursor 和 Antigravity 的对话历史。解析自然语言日期或时间窗口，按工作内容分组（3 天或更长的窗口按项目分组），提取主题，渲染每日或时段摘要，并记录 CLI 将请求窗口限制为 30 天的情况。 |
 | **oma-hwp** | HWP/HWPX/HWPML → Markdown | 通过 `bunx kordoc@latest` 转换韩文文字处理文档。保留标题、表格（包括嵌套表格）、脚注、超链接和图片。通过 `flatten-tables.ts` 后处理器删除 Hancom 私有使用区字符。 |
 | **oma-pdf** | PDF → Markdown | 通过 `uvx opendataloader-pdf` 转换 PDF。保留标题、表格、列表和图片；扫描文档使用 OCR 混合模式；通过 `uvx mdformat` 规范化输出。 |
 
@@ -129,7 +129,7 @@ oh-my-agent 通过专业化解决这些问题：
 
 | 智能体 | 角色 | 主要能力 |
 |-------|------|---------|
-| **oma-market** | 社区信号智能 | 通过 `oma market run` 运行上游 `last30days` 引擎（Reddit 真实点赞和评论、X、YouTube 字幕、TikTok、HN、Polymarket、GitHub、arXiv、Techmeme、Bluesky、Web 等）；oma 始终保持引擎为最新版本（`~/.cache/oma-market/`），每次运行都通过 `detect-trap` 关卡，分类意图（痛点 / 趋势 / 竞品 / 发现），并附加 SWOT / Porter 五力 / PESTEL 章节。在 `.agents/results/market/{slug}-{YYYYMMDD}.md` 输出一份符合 LAW 的简报。 |
+| **oma-market** | 社区信号智能 | 通过 `oma market run` 运行上游 `last30days` 引擎（Reddit 真实点赞和评论、X、YouTube 字幕、TikTok、HN、Polymarket、GitHub、arXiv、Techmeme、Bluesky、Web 等）；该引擎通过 skills-CLI 安装（`oma market update`），oma 每次运行都通过 `detect-trap` 关卡，分类意图（痛点 / 趋势 / 竞品 / 发现），并附加 SWOT / Porter 五力 / PESTEL 章节。在 `.agents/results/market/{slug}-{YYYYMMDD}.md` 输出一份符合 LAW 的简报。 |
 
 ### 媒体与内容生成 {#media-and-content-generation}
 
@@ -224,7 +224,7 @@ flowchart TD
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-来源：`.agents/hooks/core/keyword-detector.ts`（跳过斜杠命令、匹配触发器、建议持久化工作流）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`，以及 `.agents/workflows/` 下的工作流文件。并非每个工作流都具备所有关卡：`/orchestrate` 运行验证脚本，`/review` 运行 QA 审查，`/ralph` 加入[评审器（judge）](./glossary.md#judge)。
+来源：`.agents/hooks/core/keyword-detector.ts`（跳过斜杠命令、显式匹配模式名称）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`，以及 `.agents/workflows/` 下的工作流文件。并非每个工作流都具备所有关卡：`/orchestrate` 运行验证脚本，`/review` 运行 QA 审查，`/ralph` 加入[评审器（judge）](./glossary.md#judge)。
 
 ---
 

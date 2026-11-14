@@ -108,7 +108,7 @@ flowchart TD
     same -->|no| spawn
 ```
 
-> **Despacho de modelos por agente:** el proveedor, el modelo y el esfuerzo de cada rol provienen de `.agents/oma-config.yaml` (o de `.agents/oma-config.cue`, con una superposición `.local` opcional). Con `model_preset: auto`, el valor predeterminado en instalaciones nuevas, los roles sin una sobrescritura en `agents:` siguen la configuración nativa de agente y modelo del runtime actual; `model_preset: free` siempre despacha mediante `oma agent spawn`. Consulta [Modelos por agente](../guide/per-agent-models.md) para los detalles de configuración y [`oma doctor --profile`](../cli-interfaces/commands.md#doctor) para inspeccionar la matriz activa.
+> **Despacho de modelos por agente:** el proveedor, el modelo y el esfuerzo de cada rol provienen de `.agents/oma-config.yaml` (o de `.agents/oma-config.cue`, con una sobrecarga `.local` opcional). Con `model_preset: auto`, el valor predeterminado en instalaciones nuevas, los roles sin una sobrescritura en `agents:` siguen la configuración nativa de agente y modelo del runtime actual; `model_preset: free` siempre despacha mediante `oma agent spawn`. Consulta [Modelos por agente](../guide/per-agent-models.md) para los detalles de configuración y [`oma doctor --profile`](../cli-interfaces/commands.md#doctor) para inspeccionar la matriz activa.
 
 ---
 
@@ -664,7 +664,7 @@ Estos son valores predeterminados del flujo; la configuración de modelo, provee
 
 **Dominio:** Prosa académica en inglés de calidad editorial: redacción, revisión y auditoría de ensayos, informes, secciones de análisis, resúmenes ejecutivos, conclusiones y revisiones bibliográficas.
 
-**Cuándo usar:** Redactar o revisar informes o ensayos académicos y secciones de análisis, escribir resúmenes ejecutivos, conclusiones o revisiones bibliográficas, reescribir prosa que suene a IA en inglés natural, pulir un borrador según una rúbrica de nivel alto (HD, A, top-band), o revisar variedad de estructuras, calidad verbal, hedging y cumplimiento anti-IA.
+**Cuándo usar:** Redactar o revisar informes o ensayos académicos y secciones de análisis, escribir resúmenes ejecutivos, conclusiones o revisiones bibliográficas, reescribir prosa que suene a IA en inglés académico natural, pulir un borrador según una rúbrica de nivel alto (HD, A, top-band), o revisar variedad de estructuras, calidad verbal, hedging y cumplimiento anti-IA.
 
 **Cuándo NO usar:** Traducción (usar oma-translation), descubrimiento de fuentes, recopilación de citas o búsqueda bibliográfica (usar oma-scholar), documentación de código/README/referencia de API (usar la habilidad de dominio correspondiente), textos informales o de marketing, redacción académica no inglesa (redactar en inglés y después pasar a oma-translation).
 
@@ -1035,7 +1035,7 @@ Durante las sesiones de orquestación, los agentes se coordinan mediante archivo
 | `orchestrator-session-{sessionId}.md` | Orquestador | ID de sesión, estado, hora de inicio, seguimiento de fases | Solo lectura |
 | `task-board-{sessionId}.md` | Orquestador | Asignaciones de tareas, prioridades, actualizaciones de estado | Solo lectura |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Progreso turno a turno: acciones realizadas, archivos leídos/modificados y estado actual | El orquestador lee |
-| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Salida final: estado (completado/fallido), resumen, archivos modificados y lista de criterios de aceptación | El orquestador lee |
+| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Salida final: estado (`completed`/`failed`), resumen, archivos modificados y lista de criterios de aceptación | El orquestador lee |
 | `session-metrics-{sessionId}.md` | Orquestador | Evidencia de sesión opcional: correcciones relevantes, retrabajo, hallazgos de revisión dictaminados | QA lee |
 | `lessons-{sessionId}.md` | Orquestador | Lecciones de la sesión respaldadas por evidencia | Todos leen |
 | `experiment-ledger-{sessionId}.md` | Orquestador/QA | Evidencia de experimentos reales | Todos leen |

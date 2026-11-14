@@ -345,7 +345,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-两个命令都会监视当前目录下的 `.agents/state/memories/`。传入 `--project-root <path>` 可监视其他项目，也可以设置 `MEMORIES_DIR`。智能体表格有四列：
+两个命令都会监视当前目录下 `.agents/state/memories/` 中的进度，以及 `.agents/results/` 中的 `result-*.md` 报告。传入 `--project-root <path>` 可监视其他项目。设置 `MEMORIES_DIR` 会让仪表盘只盯着这一个自定义目录。智能体表格有四列：
 
 | 列 | 来源 |
 |--------|--------|

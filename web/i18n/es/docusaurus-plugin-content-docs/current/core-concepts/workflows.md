@@ -139,7 +139,7 @@ La palabra `"work"` por sí sola no es un activador: es vocabulario normal ("Doe
 8. **Paso 6.1, Mediciones** (condicional): Registra una línea base cuando se necesita una comparación definida.
 9. **Paso 7, Iterar:** Si aparecen problemas CRITICAL/HIGH, vuelve a generar los agentes responsables. Si el mismo problema persiste tras 2 intentos, activa Exploration Loop.
 
-**Cuándo usar:** Funcionalidades que abarcan varios dominios y requieren coordinación paso a paso de planificación y QA.
+**Cuándo usar:** Funcionalidades que abarcan varios dominios y en las que quieres coordinación paso a paso de la planificación, la implementación y la QA.
 
 ---
 
@@ -439,7 +439,7 @@ La metodología de auditoría de Cloudflare guía la verificación independiente
 
 ### /recap
 
-**Descripción:** Recapitulación diaria o de período mediante `oma-recap`. Resuelve una fecha o ventana a partir del lenguaje natural, invoca `oma recap --json` sobre historiales de varias herramientas de IA (Grok, Claude, Codex, Qwen, Cursor y Antigravity), delega el análisis de temas y el formato Markdown a la habilidad y comunica un TL;DR junto con la ruta guardada. Se ejecuta inline (sin generar subagentes).
+**Descripción:** Recapitulación diaria o de período mediante `oma-recap`. Resuelve una fecha o ventana a partir del lenguaje natural, invoca `oma recap --json` sobre historiales de varias herramientas de IA (Grok, Claude, Codex, Qwen, Cursor y Antigravity), delega el análisis de temas y el formato Markdown a la habilidad y comunica un TL;DR junto con la ruta guardada. Se ejecuta inline (sin generar subagentes); todos los proveedores invocan directamente `oma recap`.
 
 **Palabras clave de activación:** Ninguna. Inícialo con `/recap`. El hook de palabras clave no abre este flujo desde una frase.
 

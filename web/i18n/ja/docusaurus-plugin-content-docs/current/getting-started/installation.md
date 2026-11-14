@@ -95,6 +95,7 @@ bunx oh-my-agent@latest
 | **backend** | データベースを持つ API またはサービス | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
 | **mobile** | モバイルアプリのみ | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
 | **devops** | インフラ、CI/CD、オブザーバビリティの作業 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **security** | セキュリティスキャン、コードレビュー、修正 | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | 論文、市場調査、PDF/HWP の変換 | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | デザインアセット、画像、音声、文章コンテンツ | design, image, voice, academic-writing, translation, scm | 6 |
 

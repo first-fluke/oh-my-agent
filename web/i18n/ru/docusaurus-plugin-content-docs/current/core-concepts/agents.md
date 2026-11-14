@@ -139,7 +139,7 @@ flowchart TD
 | **Рефакторинг** | oma-refactor | Поэтапная реструктуризация с сохранением поведения, поиск hotspots, characterization safety net и коммиты только рефакторинга |
 | **Исследование рынка** | oma-market | Исследование болевых точек, трендов, конкурентов и discovery по сигналам сообществ с framework SWOT/Porter's 5F/PESTEL по намерению |
 | **Авторинг навыков** | oma-skill-creation | Создание и проверка навыков OMA в формате SSL-lite |
-| **Генерация медиа** | oma-image, oma-slide, oma-video, oma-voice | Генерация изображений, HTML-презентаций, коротких/explainer/demo-видео и локальное TTS/STT |
+| **Генерация медиа** | oma-image, oma-slide, oma-video, oma-voice | Генерация изображений с помощью AI, HTML-презентации и редактируемые PPTX, короткие/explainer/demo-видео и локальное TTS/STT |
 
 ---
 

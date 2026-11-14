@@ -192,7 +192,7 @@ oma schedule list [--json]
 | `synced` | Job существует и в manifest, и в планировщике ОС |
 | `stale` | Job зарегистрирован, но регистрация в ОС вызывает команду, которую текущий CLI больше не принимает (например, `schedule:run <id>`, записанную до стандартизации путей команд). Выполните `schedule sync`, чтобы перезаписать её; `oma update` делает это автоматически. |
 | `missing-in-os` | Job есть в manifest, но отсутствует в планировщике ОС. Выполните `schedule sync` для восстановления. |
-| `orphan-in-os` | Job есть в планировщике ОС, но отсутствует в manifest. Выполните `schedule sync --prune` для удаления. |
+| `orphan-in-os` | Расписание агента (`dev.oma.sch_*`) есть в планировщике ОС, но отсутствует в manifest. Выполните `schedule sync --prune` для удаления. |
 
 У внутренних сервисов, таких как `dev.oma.agentmemory`, `dev.oma.serena-daemon-gc` и `dev.oma.serena-reaper`, есть собственные менеджеры сервисов. `schedule list` исключает их из обнаружения orphan, а `schedule sync --prune` их сохраняет.
 

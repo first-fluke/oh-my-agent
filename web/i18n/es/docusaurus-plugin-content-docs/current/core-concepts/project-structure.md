@@ -5,13 +5,13 @@ description: Mapa orientado al lector de una instalación de oh-my-agent, con la
 
 # Estructura del proyecto
 
-Después de instalar oh-my-agent, tu proyecto obtiene dos árboles de directorios principales: `.agents/` (la única fuente de verdad, incluido el almacén de coordinación `.agents/state/memories/`) y las capas de integración del runtime (por ejemplo, `.claude/`, `.cursor/` y `.codex/`). Si eliges Serena como proveedor de inteligencia de código, también puede existir un directorio `.serena/` opcional para sus memorias de incorporación. Los archivos compartidos y las rutas opcionales o generadas pueden ser relevantes al solucionar problemas.
+Después de instalar oh-my-agent, tu proyecto obtiene dos árboles de directorios principales: `.agents/` (la única fuente de verdad, incluido el almacén de coordinación `.agents/state/memories/`) y las capas de integración del runtime (por ejemplo, `.claude/`, `.cursor/` y `.codex/`). Si Serena es el proveedor de inteligencia de código, un directorio `.serena/` opcional puede contener las memorias de incorporación de Serena.
 
 ---
 
 ## Árbol de directorios representativo
 
-El catálogo actual tiene 33 directorios de skills; las skills omitidas siguen el mismo patrón de `SKILL.md` con `resources/`, `stack/` o directorios específicos opcionales. Trata el árbol activo de `.agents/` como la autoridad cuando un archivo generado u opcional no esté presente.
+El árbol siguiente muestra en detalle los recursos compartidos y las skills de dominio representativas. El catálogo actual tiene 33 directorios de skills; las skills omitidas siguen el mismo patrón de `SKILL.md` más `resources/`, `stack/` o un directorio específico de la skill, todos opcionales. Trata el árbol activo de `.agents/` como la autoridad cuando un archivo generado u opcional no esté presente.
 
 ```text
 your-project/
@@ -260,7 +260,7 @@ your-project/
 
 ## .agents/: la fuente de verdad {#agents-the-source-of-truth}
 
-Este es el único directorio que determina el comportamiento de los agentes; todos los demás directorios se derivan de él.
+Este es el directorio central. Todo lo que los agentes necesitan vive aquí. Es el único directorio que importa para el comportamiento de los agentes. Todos los demás directorios se derivan de él.
 
 ### oma-config.cue y oma-config.yaml
 
@@ -277,7 +277,7 @@ Este es el único directorio que determina el comportamiento de los agentes; tod
 - `models`: slugs de modelos opcionales definidos por el usuario.
 - `custom_presets`: presets opcionales definidos por el usuario con `extends:` opcional.
 
-Esta lista cubre las claves más comunes. Consulta la [referencia de configuración](../guide/configuration-reference.md) para ver las claves admitidas, sus tipos y valores predeterminados, y la [semántica de oma-config](../guide/oma-config-semantics.md) para saber cómo se combinan los archivos `.cue`, `.yaml` y las superposiciones locales.
+Esta lista cubre las claves más comunes. Consulta la [referencia de configuración](../guide/configuration-reference.md) para ver las claves admitidas, sus tipos y valores predeterminados, y la [semántica de oma-config](../guide/oma-config-semantics.md) para saber cómo se combinan los archivos `.cue`, `.yaml` y la sobrecarga local.
 
 ### skills/
 
@@ -326,7 +326,7 @@ El subdirectorio `state/memories/` es el almacén canónico de memoria de coordi
 
 ### results/
 
-Archivos de resultados de agentes. Los crean los agentes completados con estado (completado/fallido), resumen, archivos modificados y lista de criterios de aceptación. El orquestador los lee durante la recopilación y los dashboards los usan para monitorizar.
+Archivos de resultados de agentes. Los crean los agentes completados con estado (`completed`/`failed`), resumen, archivos modificados y lista de criterios de aceptación. El orquestador los lee durante la recopilación y los dashboards los usan para monitorizar.
 
 ### mcp.json
 
@@ -367,7 +367,7 @@ La entrada `statusLine` conserva una ruta directa `bun` (visualización de ruta 
 
 El directorio `hooks/` de un proveedor contiene **solo los archivos que algo ejecuta o lee de ese directorio durante el runtime**. La cadena de handlers (detección de palabras clave, modo persistente, inyección de skills, …) se ejecuta dentro del binario `oma` mediante `oma hook run`; los archivos `.ts` de los handlers se incluyen en la CLI durante el build y NO se materializan en los directorios de proveedores.
 
-**`oma-hook.sh`**: script wrapper generado por `oma link`/`oma install`/`oma update`. Cada evento de hook del proveedor pasa por este archivo. El orden de resolución en runtime es `$OMA_BIN` (sobrescritura explícita) → `command -v oma` (PATH) → directorios de instalación conocidos como `$HOME/.bun/bin` y `$HOME/.local/share/mise/shims` (los agentes iniciados desde una GUI heredan un PATH mínimo) → `exit 0` (fail-open, nunca bloquea al agente). No se escribe nada específico de la máquina en el script, así que es idéntico byte a byte para cada desarrollador y se puede confirmar con seguridad. Pasa `"$@"` literalmente para que los argumentos `--vendor`, `--event` y `--matcher` lleguen sin cambios a `oma hook run`. Incluye el preámbulo de autoduplicación que suprime el doble disparo cuando una instalación de proyecto y otra global registran el mismo evento.
+**`oma-hook.sh`**: script wrapper generado por `oma link`/`oma install`/`oma update`. Cada evento de hook del proveedor pasa por este archivo. El orden de resolución en runtime es `$OMA_BIN` (sobrescritura explícita) → `command -v oma` (PATH) → directorios de instalación conocidos como `$HOME/.bun/bin` y `$HOME/.local/share/mise/shims` (los agentes iniciados desde una GUI heredan un PATH mínimo) → `exit 0` (fail-open, nunca bloquea al agente). No se escribe nada específico de la máquina en el script, así que el archivo es idéntico byte a byte para cada desarrollador y se puede hacer commit con seguridad. Pasa `"$@"` literalmente para que los argumentos `--vendor`, `--event` y `--matcher` lleguen sin cambios a `oma hook run`. Incluye el preámbulo de desduplicación que suprime el doble disparo cuando una instalación de proyecto y otra global registran el mismo evento.
 
 **`hud.ts`**: renderiza el indicador `[OMA]` en la barra de estado con el nombre del modelo, el uso de contexto (codificado por color: verde/amarillo/rojo) y el estado del workflow activo. Se registra directamente bajo `statusLine` (no se enruta por `oma hook run`) para conservar la latencia de renderizado de la ruta rápida. Solo se materializa para proveedores cuya variante registra un evento `statusLine` o exclusivo del HUD (por ejemplo, claude, antigravity y qwen). Infiere el dialecto del proveedor a partir de su propia ruta instalada, por lo que la copia por proveedor es necesaria para que funcione.
 
@@ -436,7 +436,7 @@ Ahora el instalador deriva una lista permitida del JSON de variante del proveedo
 | codex, grok, kiro | `oma-hook.sh`, `oma/filter-test-output.sh` | test-filter, sin statusLine |
 | cursor | `oma-hook.sh` | sin statusLine ni test-filter |
 | commandcode | `oma-hook.sh` | Solo Stop — Command Code no tiene evento de prompt y PreToolUse no puede reescribir la entrada ([referencia de hooks](https://commandcode.ai/docs/hooks/reference)). |
-| antigravity | ninguno (proyecto) — `hud.ts` + hooks core copiados en `~/.gemini/antigravity-cli/hooks/` | agy solo lee ajustes desde HOME y hooks del workspace desde `.agents/hooks.json`, que ejecuta los handlers directamente desde `.agents/hooks/core/`; nunca se carga un `.gemini/antigravity-cli/` de proyecto (`homeOnly`). |
+| antigravity | ninguno (proyecto) — `hud.ts` + hooks core copiados en `~/.gemini/antigravity-cli/hooks/` | agy solo lee ajustes desde HOME y hooks del workspace desde `.agents/hooks.json`, que ejecuta los handlers directamente desde `.agents/hooks/core/`; nunca se carga un `.gemini/antigravity-cli/` de proyecto (flag de variante `homeOnly`) |
 | pi | conjunto completo de `.agents/hooks/core/` bajo `.pi/extensions/oma/` | el puente de pi lanza handlers como subprocesos en lugar de usar hooks de ajustes |
 
 <!-- oma-docs:ignore-end -->
@@ -486,7 +486,7 @@ Aquí escriben los agentes su progreso durante las sesiones de orquestación. Es
 | `orchestrator-session-{sessionId}.md` | Orquestador | Metadatos de la sesión: ID, estado, hora de inicio y fase actual. |
 | `task-board-{sessionId}.md` | Orquestador | Asignaciones de tareas: agente, tarea, prioridad, estado y dependencias. |
 | `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Actualizaciones turno a turno: acciones realizadas, archivos leídos/modificados y estado actual. |
-| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Salida final: estado completado/fallido, resumen, archivos modificados y criterios de aceptación. |
+| `result-{agentId}-{taskId}-{runId}-{sessionId}.md` | Esa ejecución | Salida final: estado de finalización, resumen, archivos modificados y criterios de aceptación. |
 | `session-metrics.md` | Orquestador | Correcciones relevantes y evidencia de experimentos. |
 | `experiment-ledger-{sessionId}.md` | Orquestador/QA | Filas de evidencia de experimentos reales. |
 | `lessons-{sessionId}.md` | Orquestador | Lecciones respaldadas por evidencia de experimentos (condicional). |
@@ -494,7 +494,7 @@ Aquí escriben los agentes su progreso durante las sesiones de orquestación. Es
 | `session-ultrawork.md` | Workflow Ultrawork | Seguimiento de fases específico de Ultrawork. |
 | `session-ralph-{sessionId}.md` | Workflow Ralph | Criterios, registros de iteración y resultados del juez de una ejecución de Ralph. |
 | `session-cost-{sessionId}.md` | Sistema | Telemetría de coste de spawns por sesión. |
-| `archive/metrics-{date}.md` | Sistema | Métricas archivadas del sistema (retención de 30 días). |
+| `archive/metrics-{date}.md` | Sistema | Métricas de sesión archivadas (retención de 30 días). |
 
 Las rutas de archivos de memoria y los nombres de herramientas se configuran en `.agents/mcp.json` mediante `memoryConfig`.
 

@@ -139,7 +139,7 @@ flowchart TD
 | **重构** | oma-refactor | 以保持行为为目标的渐进式重组，定位热点并使用特征测试安全网，提交仅含重构 |
 | **市场研究** | oma-market | 基于社区信号的痛点、趋势、竞品和发现研究，并使用意图自动选择的 SWOT、Porter 五力和 PESTEL 框架 |
 | **技能编写** | oma-skill-creation | 以 SSL-lite 格式创建并验证 OMA 技能 |
-| **媒体生成** | oma-image、oma-slide、oma-video、oma-voice | AI 图像生成、HTML 演示文稿、短视频、讲解视频或演示视频，以及本地 TTS/STT |
+| **媒体生成** | oma-image、oma-slide、oma-video、oma-voice | AI 图像生成、HTML 与可编辑 PPTX 演示文稿、短视频/讲解视频/演示视频，以及本地 TTS/STT |
 
 ---
 

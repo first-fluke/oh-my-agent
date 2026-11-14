@@ -5,7 +5,7 @@ description: Ejecuta varios roles de despacho de OMA en paralelo con la sintaxis
 
 # Ejecución en paralelo
 
-oh-my-agent permite ejecutar varios agentes especializados al mismo tiempo. Mientras el agente de backend implementa una API, el agente de frontend crea la interfaz y el agente mobile construye las pantallas de la app, el orquestador los coordina mediante un estado de ejecución persistente y recibos que registran cada ejecución.
+oh-my-agent ejecuta varios agentes especializados en paralelo. Por ejemplo, los agentes de backend, frontend y mobile pueden trabajar en partes distintas de una aplicación mientras el orquestador los coordina mediante el estado de ejecución duradero y los registros de verificación (receipts).
 
 ---
 
@@ -168,7 +168,7 @@ El mecanismo de generación varía según la IDE o CLI:
 |-----------|-----------------------------|-----------------------|
 | **Claude Code** | Las tareas del mismo proveedor usan la herramienta Agent con `.claude/agents/{name}.md`; las tareas entre proveedores recurren a `oma agent spawn`. | Retorno síncrono |
 | **Codex CLI** | Las tareas del mismo proveedor usan agentes personalizados nativos de `.codex/agents/{name}.toml`; las tareas entre proveedores recurren a `oma agent spawn`. | Salida JSON |
-| **Antigravity CLI/IDE** | `oma agent spawn` mediante el runtime `agy`; no se requieren subagentes nativos personalizados. | Recibo persistente (registro de la ejecución) y sondeo del archivo de resultados |
+| **Antigravity CLI/IDE** | `oma agent spawn` mediante el runtime `agy`; no se requieren subagentes nativos personalizados | Recibo duradero y sondeo del archivo de resultados |
 | **Cursor** | Usa la integración generada de Cursor cuando está disponible; de lo contrario, `oma agent spawn`. | Sondeo del archivo de resultados |
 | **OpenCode / pi** | Usa el puente de extensiones en proceso cuando se selecciona; el trabajo entre proveedores usa `oma agent spawn`. | Sondeo del archivo de resultados |
 | **CLI alternativa** | `oma agent spawn {agent} {prompt} {session} -w {workspace}` | Sondeo de resultados respaldados por evidencia |
@@ -284,7 +284,7 @@ Los IDs de sesión determinan:
 
 6. **Itera volviendo a generar agentes.** Si el resultado de un agente necesita ajustes, vuelve a generarlo con la tarea original y el contexto de la corrección. No empieces una sesión nueva.
 
-7. **Empieza con `/work` si tienes dudas.** El flujo de trabajo te guía paso a paso, con confirmación del usuario en cada puerta.
+7. **Empieza con `/work` si tienes dudas.** El flujo `/work` te guía paso a paso por el proceso, con confirmación del usuario en cada puerta.
 
 ### No hacer
 
@@ -338,7 +338,7 @@ oma dashboard terminal
 
 ## Ver también
 
-- [Resultados de agentes y reanudación](../guide/agent-results-and-resume.md): recibos de ejecución, claims y `oma agent resume`
+- [Resultados de agentes y reanudación](../guide/agent-results-and-resume.md): registros de verificación (receipts) de la ejecución, claims y `oma agent resume`
 - [Monitoreo con el dashboard](../guide/dashboard-monitoring.md)
 - [Guía de proyectos multiagente](../guide/multi-agent-project.md)
 - [Modelos por agente](../guide/per-agent-models.md)

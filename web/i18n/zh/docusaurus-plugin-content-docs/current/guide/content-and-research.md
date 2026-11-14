@@ -200,7 +200,7 @@ Review this draft in review mode and return the compliance report with recommend
 
 `draft` 返回正文、Writing Notes 和 Claim-Evidence Map。`revise` 返回原文与修订块及具体改动。`review` 返回关于句子结构、动词、限定语、具体性、反 AI 模式、段落清晰度、节奏和 claim-evidence 对齐的 PASS/FAIL 结果。技能会完整读取现有草稿以执行 revise/review，弱化或删除缺少支持的论断，并在英文处理后将非英语输出交给 `oma-translation`。
 
-起草前使用 `oma scholar` 发现来源并获取 sidecar 证据。如果缺少引用或评分标准，将论断标为待定，或询问缺少的约束；不要用臆造来源填补空白。可交付的成果应是正文加证据图或审计报告，而不是没有可追溯依据的通用“润色”段落。
+起草前使用 `oma scholar` 发现来源并获取 sidecar 证据。如果缺少引用或评分标准，将论断标为待定，或询问缺少的约束；不要用臆造来源填补空白。返回正文及其证据图或审计报告，以便读者追溯其中的论断。
 
 ## 故障恢复检查表 {#recovery-checklist}
 

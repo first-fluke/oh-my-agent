@@ -1,6 +1,6 @@
 ---
 title: Glossar
-description: Kurze Definitionen der oh-my-agent-Begriffe, darunter Skills, Workflows, Presets, OMA- und Vendor-Sitzungen, das Ereignisprotokoll, L1- und L2-Memory, Judges, Laufdatensätze und Ergebnisdeklarationen, Pläne und die SSOT, jeweils mit Links zu den Seiten, die sie erklären.
+description: Kurze Definitionen der oh-my-agent-Begriffe, darunter Skills, Workflows, Presets, OMA- und Vendor-Sitzungen, das Ereignisprotokoll, L1- und L2-Memory, Judges, Ergebnisdeklarationen, Pläne und die SSOT, jeweils mit Links zu den Seiten, die sie erklären.
 ---
 
 # Glossar
@@ -27,7 +27,7 @@ Ein Skill-Preset ist das Bündel von Skills, das der Installer einem Projekt hin
 
 ### Modell-Preset {#model-preset}
 
-Das Modell-Preset ist der Wert `model_preset` in `.agents/oma-config.yaml` (oder `.cue`). Es bestimmt, welchen Vendor und welches Modell jeder Agent verwendet. `auto`, der Standard für neue Installationen, folgt den eigenen Agenten- und Modelleinstellungen der aktuellen Laufzeit; feste Presets wie `claude`, `codex` oder `mixed` legen sie fest. Überschreibungen unter `agents.<id>` haben Vorrang vor dem Preset, außer bei `free`, wo `free.model` die Modellfestlegungen pro Agent ersetzt. Siehe [Eingebaute Presets](../guide/per-agent-models.md#built-in-presets).
+Das Modell-Preset ist der Wert `model_preset` in `.agents/oma-config.yaml` (oder `.cue`). Es bestimmt, welchen Vendor und welches Modell jeder Agent verwendet. `auto`, der Standard für neue Installationen, folgt den eigenen Agenten- und Modelleinstellungen der aktuellen Laufzeit; feste Presets wie `claude`, `codex` oder `mixed` legen sie fest. Überschreibungen unter `agents.<id>` haben Vorrang vor dem Preset, außer bei `free` oder einem anderen LLM-Provider unter `providers.<name>`, wo `default_model` des Providers die Modellfestlegungen pro Agent ersetzt. Siehe [Eingebaute Presets](../guide/per-agent-models.md#built-in-presets).
 
 ## Workflow-Ausführung
 

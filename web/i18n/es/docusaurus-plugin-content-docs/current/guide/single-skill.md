@@ -6,7 +6,7 @@ description: Guía detallada para tareas de un solo dominio en oh-my-agent, con 
 
 # Ejecución de una skill individual
 
-La ejecución de una skill individual es la vía rápida: un agente, un dominio y una tarea enfocada. No añade sobrecarga de orquestación ni coordinación entre agentes. El host o el flujo seleccionado puede enrutar un prompt en lenguaje natural a la skill; el sistema de hooks añade sugerencias de skills a partir de palabras clave y el comportamiento del enrutamiento depende del runtime seleccionado.
+La ejecución de una skill individual asigna una tarea enfocada, de un solo dominio, a un agente. Evita la coordinación entre varios agentes. El host o un flujo seleccionado puede enrutar un prompt en lenguaje natural a la skill; el sistema de hooks añade sugerencias de skills a partir de palabras clave, y el enrutamiento depende del runtime seleccionado.
 
 ## Ruta rápida
 
@@ -108,7 +108,7 @@ Add unit tests for: valid submission path, invalid email, short password, loadin
 **Flujo de ejecución esperado:**
 
 1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-frontend` (palabras como «form», «component», «Tailwind CSS» y «React» son señales de enrutamiento).
-2. **Evaluación de dificultad:** Media (2-3 archivos y algunas decisiones de diseño sobre la experiencia de validación).
+2. **Evaluación de dificultad:** Medium (2-3 archivos y algunas decisiones de diseño sobre la experiencia de validación).
 3. **Recursos cargados:**
    - `execution-protocol.md` (siempre).
    - `snippets.md` (patrones de formularios y Zod, además de los patrones de componentes existentes cuando la skill los proporcione).
@@ -147,7 +147,7 @@ Add tests for: auth required, pagination, status filter, empty results.
 
 1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-backend` (palabras como «API», «endpoint» y «REST» son señales de enrutamiento).
 2. **Detección del stack:** lee `pyproject.toml` o `package.json` para determinar el lenguaje y el framework. Si existen referencias generadas a `stack/` o `variants/` incluidas en el paquete, carga sus convenciones.
-3. **Evaluación de dificultad:** Media (2-3 archivos: ruta, servicio, repositorio y prueba).
+3. **Evaluación de dificultad:** Medium (2-3 archivos: ruta, servicio, repositorio y prueba).
 4. **Recursos cargados:**
    - `execution-protocol.md` (siempre).
 <!-- oma-docs:ignore-start -->
@@ -179,7 +179,7 @@ Add tests for: profile save, logout flow, offline state.
 **Flujo de ejecución esperado:**
 
 1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-mobile` (palabras como «Flutter», «screen» y «mobile» son señales de enrutamiento).
-2. **Evaluación de dificultad:** Media (pantalla de ajustes, gestión de estado y manejo sin conexión).
+2. **Evaluación de dificultad:** Medium (pantalla de ajustes, gestión de estado y manejo sin conexión).
 3. **Recursos cargados:**
    - `execution-protocol.md`.
    - `variants/flutter/snippets.md` (patrones de pantalla, de proveedor Riverpod y de capa de datos), o `stack/snippets.md` cuando `/stack-set` lo ha generado.
@@ -212,7 +212,7 @@ Add deliverables: data standards table, glossary, migration script.
 **Flujo de ejecución esperado:**
 
 1. **Enrutamiento de la skill:** el host o el flujo selecciona `oma-db` (palabras como «database», «schema», «ERD» y «migration» son señales de enrutamiento).
-2. **Evaluación de dificultad:** Compleja (decisiones de arquitectura, varias entidades y planificación de capacidad).
+2. **Evaluación de dificultad:** Complex (decisiones de arquitectura, varias entidades y planificación de capacidad).
 3. **Recursos cargados:**
    - `execution-protocol.md`.
    - `document-templates.md` (estructura de entregables).

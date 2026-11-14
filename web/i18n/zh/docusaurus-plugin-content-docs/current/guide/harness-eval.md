@@ -354,7 +354,11 @@ replay limitation: Recorded conditions differ from current: model: recorded "gpt
 每次分支运行还会在记录中保存 `diagnostics` 和 `trace`：
 
 - `diagnostics`：退出码、信号、超时标志，以及 stderr 的最后 8 KiB 和 `stderrStatus`（`captured`、`truncated` 或 `unavailable`）。
-- `trace`：harness 能够观察到的内容。`output` 为 `complete`、`partial`（失败的进程仍产生了 stdout）或 `unavailable`；`artifacts` 说明最终快照是否完整；`changedPaths` 列出分支相对于固定初始工作区新增、修改或删除的文件（上限为 200 个，并带有 `changedPathsTruncated`）；`toolCalls` 始终为 `unsupported`，因为供应商 CLI 不会向 harness 暴露逐个工具的观察结果。
+- `trace`：harness 能够观察到的内容。`output` 为 `complete`、`partial`（失败的进程仍产生了 stdout）或 `unavailable`；`artifacts` 说明最终快照是否完整；`changedPaths` 列出分支相对于固定初始工作区新增、修改或删除的文件（上限为 200 个，并带有 `changedPathsTruncated`）。
+- `trace.toolCalls`：`captured`、`partial`、`missing` 或 `unsupported`。Claude 和 Codex 运行可以加载一份新的原生 transcript，并绑定到该分支的会话和临时工作区。缺失的日志保持 `missing`；其他供应商保持 `unsupported`。
+- `trace.toolEvidence`：可用时包含根会话的工具调用 ID、名称、耗时、错误标志，以及规范化请求/响应文本的 SHA-256 哈希和字节数。原始工具参数和结果不会复制进评估记录。捕获上限为 200 次调用和 16 MiB 的原生 transcript；规范化细节上限为 20,000 个字符。中断、未匹配或被截断的观察标记为 partial，被截断的细节会标在对应哈希旁边。
+
+工具哈希有助于把失败和本地原生日志对应起来。它们不能重放工具响应或外部状态，也不会捕获最终的提供方 API 请求。原生子智能体 transcript 不在这次捕获范围内。没有工具观察的既有记录仍可读取，fixture 重放仍保持自己单独的证据要求。
 
 失败的分支因此会保留其部分输出、stderr 末尾、退出状态和文件改动，使最后一个错误可以追溯到该分支改动了什么。缺失的观察会被记录为一种状态；它绝不会被读成一次干净的运行。
 

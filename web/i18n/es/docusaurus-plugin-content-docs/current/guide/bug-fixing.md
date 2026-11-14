@@ -172,7 +172,7 @@ En este paso ocurren dos acciones:
    - Comprueba que la corrección funciona (debe pasar con la corrección).
    - Evita que el mismo bug reaparezca en cambios futuros.
 
-La prueba de regresión detecta si un cambio futuro vuelve a introducir el mismo bug.
+La prueba de regresión es el resultado más importante del flujo de depuración. Sin ella, cualquier cambio futuro puede volver a introducir el mismo bug.
 
 ### Paso 6: buscar patrones similares
 

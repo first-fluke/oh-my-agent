@@ -137,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Bước 6, Quét mẫu tương tự:** MCP `search_for_pattern` tìm các lời gọi `.map()` khác trên mảng có thể là undefined
    - Tìm thấy 3 pattern tương tự trong `user-list.tsx`, `comment-list.tsx`, `notification-list.tsx`
    - Chủ động áp dụng cùng mẫu sửa
-8. **Bước 7, Ghi tài liệu:** Ghi bug report vào memory với nguyên nhân gốc, bản sửa và cách phòng ngừa
+8. **Bước 7, Ghi tài liệu:** Ghi bug report vào `.agents/results/bugs/` với nguyên nhân gốc, bản sửa và cách phòng ngừa
 
 ---
 
@@ -249,7 +249,7 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 | `/work` | Liên tục | Lập kế hoạch, triển khai và QA đa lĩnh vực từng bước trong phạm vi được cho phép | Tính năng đa lĩnh vực cần giao hàng có điều phối |
 | `/ultrawork` | Liên tục | Workflow chất lượng 5 giai đoạn, 17 bước, 12 checkpoint review cô lập | Giao hàng chất lượng tối đa, mã production-critical |
 | `/plan` | Không liên tục | Phân tách task do PM dẫn dắt, API contract và artifact plan trong `docs/plans/work/` (`NNN-name.md` tuần tự, trường Status theo lifecycle) | Trước công việc đa agent phức tạp; tính năng phức tạp cần theo dõi và log quyết định |
-| `/brainstorm` | Không liên tục | Khám phá ý tưởng ưu tiên thiết kế với 2-3 đề xuất hướng tiếp cận | Trước khi cam kết hướng triển khai |
+| `/brainstorm` | Không liên tục | Khám phá hướng tiếp cận với 2-3 đề xuất và một bản nháp trong `docs/decisions/` | Trước khi cam kết hướng triển khai |
 | `/deepinit` | Không liên tục | Khởi tạo project đầy đủ (AGENTS.md, ARCHITECTURE.md, docs/) | Thiết lập oh-my-agent trong codebase hiện có |
 | `/review` | Không liên tục | Pipeline QA: bảo mật OWASP, hiệu suất, accessibility, chất lượng code. Phạm vi lấy từ yêu cầu và mặc định là các thay đổi hiện tại | Trước khi merge code hoặc review trước triển khai |
 | `/security` | Không liên tục | Quét mã nguồn ứng dụng, agent skill hoặc thành phần MCP, xác thực phát hiện và cấu hình security gate qua `oma-security`. Penetration test cho bản triển khai web thử nghiệm có phạm vi chỉ chạy trên nền tảng runtime đã qua rà soát do người dùng cung cấp | Trước release, hoặc khi thay đổi cần security scan hoặc gate |
@@ -270,7 +270,7 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 
 ## Ví dụ tự động phát hiện
 
-oh-my-agent phát hiện từ khóa workflow trong 11 ngôn ngữ. Ví dụ:
+Hook từ khóa chỉ khởi động bốn chế độ persistent, và chỉ khi prompt gọi đúng tên chế độ. Các workflow khác khởi động từ lệnh slash của chúng.
 
 | Bạn nhập | Workflow phát hiện | Ngôn ngữ |
 |----------|-------------------|----------|
@@ -282,6 +282,8 @@ oh-my-agent phát hiện từ khóa workflow trong 11 ngôn ngữ. Ví dụ:
 | "work workflow로 진행해줘" | `/work` | Tiếng Hàn |
 | "ralph this task" | `/ralph` | Tiếng Anh |
 | "랄프로 끝까지 해줘" | `/ralph` | Tiếng Hàn |
+
+Các câu như "plan the authentication feature", "fix the login bug", "do everything in parallel" và "don't stop until it's done" không khởi động workflow.
 
 **Câu hỏi thông tin được lọc:**
 
@@ -301,7 +303,7 @@ Preset `all` của installer bám theo registry đang chạy. Bảng nhóm mọi
 | Skill | Phù hợp nhất cho | Đầu ra chính |
 |-------|------------------|-------------|
 | **oma-academic-writing** | Soạn/sửa học thuật và review anti-AI | Prose hướng xuất bản và sửa claim/evidence |
-| **oma-architecture** | Ranh giới hệ thống, đánh đổi, ADR | Khuyến nghị kiến trúc hoặc decision record |
+| **oma-architecture** | Ranh giới hệ thống, đánh đổi, ADR | Báo cáo trong `.agents/results/architecture/`; decision record trong `docs/decisions/` |
 | **oma-backend** | API, auth, logic server, migration | Thay đổi Router/Service/Repository và xác minh |
 | **oma-brainstorm** | Ý tưởng mơ hồ và so sánh hướng tiếp cận | Bản nháp quyết định trong `docs/decisions/` |
 | **oma-coordination** | Quy tắc điều phối dùng chung cho `/work`, `/orchestrate` và `/ultrawork`; điều phối thủ công từng bước | Tái sử dụng plan, đồng bộ contract, quyền sở hữu workspace và hướng dẫn bàn giao QA |
@@ -343,7 +345,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Cả hai lệnh theo dõi `.agents/state/memories/` dưới thư mục hiện tại. Truyền `--project-root <path>` để theo dõi project khác, hoặc đặt `MEMORIES_DIR`. Bảng agent có bốn cột:
+Cả hai lệnh theo dõi `.agents/state/memories/` để lấy tiến độ và `.agents/results/` để lấy báo cáo `result-*.md` dưới thư mục hiện tại. Truyền `--project-root <path>` để theo dõi project khác. Đặt `MEMORIES_DIR` giữ dashboard ở đúng thư mục tùy chỉnh đó. Bảng agent có bốn cột:
 
 | Cột | Nguồn |
 |--------|--------|
@@ -400,7 +402,7 @@ Flag `-w` của `agent spawn` cô lập agent trong thư mục cụ thể. Đi�
 
 ## Mẹo
 
-1. **Viết prompt cụ thể.** Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL cho kết quả tốt hơn make an app.
+1. **Viết prompt cụ thể.** "Build a TODO app with JWT auth, React frontend, Express backend, PostgreSQL" cho kết quả tốt hơn "make an app."
 2. **Dùng workspace cho agent song song.** Luôn truyền `-w ./path` để ngăn xung đột file giữa các agent chạy đồng thời.
 3. **Khóa API contract trước khi spawn agent triển khai.** Chạy `/plan` trước để frontend và backend thống nhất hình dạng endpoint.
 4. **Giám sát tích cực.** Mở dashboard terminal để phát hiện agent thất bại sớm thay vì chờ mọi agent hoàn tất.

@@ -27,7 +27,7 @@ description: Descoberta de skills, definições de agentes, hooks e formatos de 
 
 “Sem links de vendor” significa que o OMA pode usar a descoberta compartilhada nos dois modos de instalação. A varredura de projeto do Kimi, sozinha, não substitui a projeção global de skills já existente. Uma bridge de hooks ou um diretório de agentes não implica um adaptador de runtime de subprocesso. Gemini não é um vendor do OMA; a Antigravity CLI tem a própria integração.
 
-## Pacote Agent Plugins
+## Pacote Agent Plugins {#agent-plugins-package}
 
 A raiz do repositório é um pacote [Agent Plugins 1.0](https://agent-plugins.org/), e `oma emit` o regenera a partir da SSOT `.agents/`:
 
@@ -156,7 +156,7 @@ A CLI de plugins não tem um comando de instalação de plugin individual. O reg
 
 Em 2026-11-05, os dois diretórios de skills, o diretório de agentes, o diretório de regras, o arquivo MCP e o logo do manifesto Cursor commitado resolveram dentro do repositório. A ajuda da CLI confirmou o suporte para carregar um diretório de plugin local. O registro de marketplace da conta e uma sessão de modelo ao vivo não foram exercitados.
 
-## Hosts de plugin compatíveis com Claude
+## Hosts de plugin compatíveis com Claude {#claude-compatible-plugin-hosts}
 
 Antigravity CLI, Grok Build CLI, ZCode e Kimi Code leem manifestos de plugin cuja forma descende de `.claude-plugin/plugin.json` do Claude Code. `oma emit` gera um manifesto nativo por host a partir da fonte de verdade `.agents/`. Um clone git deste repositório é o pacote instalável para Grok, ZCode e Kimi; a árvore da Antigravity é gerada (`oma emit --target antigravity-plugin`, ou o asset de release `oma-antigravity-plugin.tar.gz`) porque o validador rejeita a raiz do repositório:
 

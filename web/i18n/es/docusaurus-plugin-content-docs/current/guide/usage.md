@@ -24,7 +24,7 @@ Las tareas de un solo dominio no requieren una sintaxis especial. Usa la [guía 
 | Un bug con un mensaje de error | `/debug` junto con el error y los pasos de reproducción | [Corrección de bugs](./bug-fixing.md) |
 | Observar los agentes mientras se ejecutan | `oma dashboard terminal` | [Monitoreo del dashboard](./dashboard-monitoring.md) |
 | Auditar o reanudar resultados de agentes | `oma agent resume SESSION_ID --dry-run` | [Resultados y reanudación](./agent-results-and-resume.md) |
-| Buscar o migrar documentos de OMA | `oma docs migrate --dry-run` | [Estructura de artefactos](./artifact-layout.md) |
+| Buscar o migrar documentos de OMA | `oma docs migrate --dry-run` | [Disposición de artefactos](./artifact-layout.md) |
 | Algo falló | `oma doctor --json` | [Solución de problemas](./troubleshooting.md) |
 
 ---

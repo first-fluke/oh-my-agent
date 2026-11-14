@@ -559,7 +559,7 @@ oh-my-agent usa um hook `UserPromptSubmit` que executa antes de cada mensagem do
 
 Todas as seções são sempre carregadas: os usuários escrevem os prompts no idioma em que pensam, e a configuração `language` em `.agents/oma-config.yaml` controla apenas o idioma das respostas. Uma palavra-chave escrita em um idioma só pode corresponder a um prompt que contenha esse sistema de escrita, portanto mesclar todas as seções não pode disparar em prompts sem relação.
 
-Os limites de palavra dependem apenas da própria palavra-chave, nunca de `language`: palavras-chave ASCII correspondem somente a palavras inteiras (portanto "work" não corresponde a "network", e "ulw" não corresponde a um identificador mais longo), enquanto palavras-chave com texto não ASCII correspondem como substrings, porque partículas e flexões do CJK se ligam diretamente à palavra ("랄프로").
+Os limites de palavra dependem apenas da própria palavra-chave, nunca de `language`: palavras-chave ASCII correspondem somente a palavras inteiras (portanto "work" não corresponde a "network", e "ulw" não corresponde a um identificador mais longo), enquanto palavras-chave com texto não ASCII correspondem como substrings, porque as partículas do CJK se ligam diretamente à palavra ("랄프로").
 
 ### Campo pattern (regex bruta) {#pattern-field-raw-regex}
 

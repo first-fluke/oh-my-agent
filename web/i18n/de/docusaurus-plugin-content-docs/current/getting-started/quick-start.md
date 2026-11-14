@@ -1,6 +1,6 @@
 ---
 title: Schnellstart
-description: Eine abgegrenzte Aufgabe von der Installation bis zur Verifizierung ausführen, mit erwarteter Ausgabe und Wiederherstellung.
+description: Wählen Sie einen Skill oder ein Laufzeit-Preset und führen Sie dann eine abgegrenzte erste Aufgabe mit beobachteter Verifikation aus.
 ---
 
 # Schnellstart

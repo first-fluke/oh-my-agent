@@ -137,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Krok 6, przeskanuj podobne wzorce:** MCP `search_for_pattern` wyszukuje inne wywołania `.map()` na tablicach, które mogą być niezdefiniowane
    - znajduje 3 podobne wzorce w `user-list.tsx`, `comment-list.tsx` i `notification-list.tsx`
    - proaktywnie stosuje ten sam wzorzec poprawki
-8. **Krok 7, udokumentuj:** Raport błędu zostaje zapisany w pamięci wraz z przyczyną źródłową, poprawką i sposobem zapobiegania
+8. **Krok 7, udokumentuj:** Raport błędu zostaje zapisany w `.agents/results/bugs/` wraz z przyczyną źródłową, poprawką i sposobem zapobiegania
 
 ---
 
@@ -345,12 +345,12 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-Obie komendy obserwują `.agents/state/memories/` w bieżącym katalogu. Przekaż `--project-root <path>`, aby obserwować inny projekt, albo ustaw `MEMORIES_DIR`. Tabela agentów ma cztery kolumny:
+Obie komendy obserwują `.agents/state/memories/` pod kątem postępu i `.agents/results/` pod kątem raportów `result-*.md` w bieżącym katalogu. Przekaż `--project-root <path>`, aby obserwować inny projekt. Ustawienie `MEMORIES_DIR` utrzymuje dashboard na tym jednym niestandardowym katalogu. Tabela agentów ma cztery kolumny:
 
 | Kolumna | Źródło |
 |--------|--------|
 | Agent | `task-board.md` albo nazwy agentów wykryte w plikach pamięci |
-| Status | Symbole terminalowe: ● uruchomiony (zielony), ✓ ukończony (cyjan), ✗ nieudany (czerwony), ○ zablokowany (żółty), ◌ oczekujący (przygaszony) |
+| Status | Symbole terminalowe: ● running (zielony), ✓ completed (cyjan), ✗ failed (czerwony), ○ blocked (żółty), ◌ pending (przygaszony) |
 | Turn | `turn: N` w pliku `progress-<agent>*.md` agenta |
 | Task | Tekst zadania z task boardu albo z pliku agenta |
 
@@ -452,6 +452,7 @@ Typowe problemy opisano poniżej. Komunikaty błędów, nieudane wyniki uruchomi
 - Błąd z komunikatem błędu: [Naprawianie błędów](./bug-fixing.md)
 - Obserwowanie przebiegu: [Monitorowanie dashboardu](./dashboard-monitoring.md)
 - Audyt albo wznawianie wyników agentów: [Wyniki i wznawianie](./agent-results-and-resume.md)
+- Znajdź lub zmigruj dokumenty OMA: [Układ artefaktów](./artifact-layout.md)
 - Coś się nie powiodło: [Rozwiązywanie problemów](./troubleshooting.md)
 - Szczegóły integracji z projektem: [Przewodnik integracji](./integration.md)
 - Terminy używane w tych przewodnikach: [Słownik](../getting-started/glossary.md)

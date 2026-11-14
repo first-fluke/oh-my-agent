@@ -69,7 +69,7 @@ Esta comprobación solo demuestra que el diff de Git no contiene errores de espa
 oma agent begin docs docs SESSION_ID --workspace .
 ```
 
-Sustituye `SESSION_ID` por el identificador de sesión usado en el plan. El comando muestra JSON con un UUID `runId` generado y un `claimPath`, la ruta de la declaración de resultados, por ejemplo:
+Sustituye `SESSION_ID` por el identificador de sesión usado en el plan. El comando muestra JSON con un UUID `runId` generado y un `claimPath`, por ejemplo:
 
 ```json
 {
@@ -91,7 +91,7 @@ Carga las referencias seleccionadas por el grafo antes de editar:
 oma agent context docs --difficulty Medium
 ```
 
-La dificultad debe ser `Simple`, `Medium` o `Complex`. El comando muestra el contexto ensamblado para el agente seleccionado. Si no existe contexto respaldado por el grafo, corrige la definición de la tarea o continúa con la ruta de búsqueda nativa documentada por el proyecto; no fabriques un registro de contexto.
+La dificultad debe ser `Simple`, `Medium` o `Complex`. El comando muestra el contexto ensamblado para el agente seleccionado. Si no existe contexto respaldado por el grafo, corrige la definición de la tarea o continúa con la ruta de búsqueda nativa documentada por el proyecto; no fabriques un registro de verificación de contexto.
 
 Ejecuta la tarea en el workspace registrado por `begin`. Mantén fijo el plan de sesión mientras la ejecución esté activa. Si la tarea cambia sus criterios de aceptación o sus comprobaciones requeridas, actualiza el plan e inicia una nueva ejecución.
 
@@ -179,13 +179,13 @@ oma agent finish RUN_ID CLAIM_PATH
 
 Sustituye ambos valores por los del JSON de `begin`. `CLAIM_PATH` es la ruta `.claim.json` generada; no inventes otro nombre de archivo.
 
-El comando finish valida la declaración de resultados, el contrato actual, los registros de verificación y los hashes de los artefactos. Una declaración de resultados completada con evidencia obsoleta pasa a failed o partial. El comando rechaza finalizar una ejecución gestionada cuyo ciclo de vida pertenece al proceso padre.
+El comando finish valida la declaración de resultados, el contrato actual, los registros de verificación y los hashes de los artefactos. Una declaración `completed` con evidencia obsoleta pasa a `failed` o `partial`. El comando rechaza finalizar una ejecución gestionada cuyo ciclo de vida pertenece al proceso padre.
 
 ## Comportamiento de ejecuciones nativas y con spawn
 
-`oma agent spawn` y `oma agent parallel` crean una ejecución, inyectan la identidad de ejecución y las instrucciones de resultados en el prompt hijo y permiten que el padre capture el código de salida del hijo. El hijo debe escribir su declaración de resultados e informar de sus artefactos; el padre finaliza el registro de ejecución gestionado. Un hijo de solo lectura devuelve una línea `OMA_RESULT_JSON: {...}`; el padre la persiste y la explicación de `verificationSkipped` sigue diferenciada de la verificación ejecutable.
+`oma agent spawn` y `oma agent parallel` crean una ejecución, inyectan la identidad de ejecución y las instrucciones de resultados en el prompt hijo y permiten que el padre capture el código de salida del hijo. El hijo debe escribir su declaración de resultados e informar de sus artefactos; el padre finaliza el registro de verificación gestionado. Un hijo de solo lectura devuelve una línea `OMA_RESULT_JSON: {...}`; el padre la persiste y la explicación de `verificationSkipped` sigue diferenciada de la verificación ejecutable.
 
-Los archivos de resultados legibles por personas en `.agents/results/` y las notas de memoria en `.agents/state/memories/` ayudan a seguir el progreso. El registro de ejecución legible por máquinas de `.agents/state/agent-runs/` es la evidencia usada para reutilizar y reanudar.
+Los archivos de resultados legibles por personas en `.agents/results/` y las notas de memoria en `.agents/state/memories/` ayudan a seguir el progreso. El registro de verificación (receipt) legible por máquinas en `.agents/state/agent-runs/` es la evidencia que se usa para reutilizar y reanudar.
 
 ## Inspecciona la recuperación antes de reintentar
 
@@ -208,7 +208,7 @@ flowchart TD
   safe -->|no| blocked(["blocked"])
 ```
 
-Una dependencia que no está en `reused` devuelve a `ready` una tarea dependiente `reused` (o a `blocked` cuando no se puede repetir), y una tarea `ready` cuya dependencia está en `blocked` o `running` pasa a `blocked`. Un registro de ejecución completado válido se reutiliza solo cuando su contrato, sus entradas, los hashes de los artefactos y la evidencia de dependencias siguen vigentes. No se duplica un proceso gestionado activo ni una ejecución nativa sin evidencia de actividad.
+Una dependencia que no está en `reused` devuelve a `ready` una tarea dependiente `reused` (o a `blocked` cuando no se puede repetir), y una tarea `ready` cuya dependencia está en `blocked` o `running` pasa a `blocked`. Un registro de verificación completado y válido se reutiliza solo cuando su contrato, sus entradas, los hashes de los artefactos y la evidencia de dependencias siguen vigentes. No se duplica un proceso gestionado activo ni una ejecución nativa sin evidencia de actividad.
 
 Cuando el informe indique que es seguro ejecutar, reanuda las tareas ready en orden de dependencia:
 
@@ -224,13 +224,13 @@ oma agent resume SESSION_ID --max-attempts 2
 
 OMA escribe el checkpoint de recuperación bajo `.agents/state/agent-resume/` y usa un lease de sesión para impedir que dos coordinadores reintenten la misma sesión. Mantiene fijo el plan mientras se ejecuta la recuperación. Si cambia el plan, cambia una dependencia o un reintento posterior cambia una entrada anterior, las tareas afectadas pasan a blocked y necesitan una nueva ejecución de verificación.
 
-La reanudación inicia un intento nuevo; no restaura la conversación interrumpida del modelo. Antes de reanudar una ejecución nativa interrumpida, marca la ejecución anterior como `partial` o `failed` con su resultado real y el trabajo sin resolver. Después inspecciona el informe de simulación y reintenta solo las tareas que tengan una ruta de repetición segura.
+La reanudación inicia un intento nuevo; no restaura la conversación interrumpida del modelo. Antes de reanudar una ejecución nativa interrumpida, marca la ejecución anterior como `partial` o `failed` con su resultado real y el trabajo sin resolver. Después inspecciona el informe de dry-run y reintenta solo las tareas que tengan una ruta de repetición segura.
 
 ## Ejemplos de recuperación
 
 | Situación | Acción | Resultado esperado |
 | --- | --- | --- |
-| Falló una comprobación requerida | Corrige la tarea, vuelve a ejecutar `oma agent verify RUN_ID --required` y finaliza con una nueva declaración de resultados. | El registro de ejecución más reciente sustituye el resultado fallido cuando la huella del workspace está actualizada. |
+| Falló una comprobación requerida | Corrige la tarea, vuelve a ejecutar `oma agent verify RUN_ID --required` y finaliza con una nueva declaración de resultados. | El registro de verificación más reciente sustituye el resultado fallido cuando la huella del workspace está actualizada. |
 | El proceso murió antes de la declaración de resultados | Marca la ejecución como parcial o fallida y ejecuta `oma agent resume SESSION_ID --dry-run`. | El intento anterior se conserva; una tarea segura queda `ready` y una manual queda `blocked`. |
 | Cambió una dependencia | Vuelve a ejecutar la dependencia e inspecciona de nuevo el informe. | Se invalida la reutilización de la tarea dependiente aunque sus propios archivos no hayan cambiado. |
 | Cambió el plan o las entradas | Inicia una nueva ejecución cuando el plan sea estable. | La nueva ejecución toma una instantánea del contrato nuevo; la evidencia anterior no se reutiliza. |

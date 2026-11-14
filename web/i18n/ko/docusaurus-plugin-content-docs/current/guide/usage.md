@@ -137,7 +137,7 @@ There's a bug. Clicking the save button shows "Cannot read property 'map' of und
 7. **Step 6, 유사 패턴 스캔:** MCP `search_for_pattern`이 잠재적으로 undefined인 배열에 대한 다른 `.map()` 호출 검색
    - `user-list.tsx`, `comment-list.tsx`, `notification-list.tsx`에서 유사한 3개 패턴 발견
    - 동일한 수정 패턴을 사전 적용
-8. **Step 7, 문서화:** 근본 원인, 수정, 예방 조치와 함께 버그 리포트를 메모리에 기록
+8. **Step 7, 문서화:** 근본 원인, 수정, 예방 조치와 함께 버그 리포트를 `.agents/results/bugs/`에 기록합니다
 
 ---
 
@@ -249,7 +249,7 @@ oma stats get
 | `/work` | 지속 | 승인된 범위 안에서 단계별 멀티 도메인 계획, 구현, QA를 진행합니다 | 여러 도메인에 걸쳐 조율된 전달이 필요한 기능 |
 | `/ultrawork` | 지속 | 5단계, 17스텝 품질 워크플로우와 12개 격리된 리뷰 체크포인트를 실행합니다 | 최대 품질이 필요한 전달, 프로덕션에 중요한 코드 |
 | `/plan` | 비지속 | PM 주도 태스크 분해, API 컨트랙트, `docs/plans/work/`의 추적 계획 아티팩트(순번 `NNN-name.md`, 수명 주기를 나타내는 Status 필드)를 만듭니다 | 복잡한 멀티 에이전트 작업 전, 진행과 결정 로그를 추적해야 하는 복잡한 기능 |
-| `/brainstorm` | 비지속 | 2~3가지 접근 방식 제안을 포함한 디자인 우선 아이디어를 탐색합니다 | 구현 접근 방식을 정하기 전 |
+| `/brainstorm` | 비지속 | 2~3가지 제안과 `docs/decisions/`의 초안으로 접근 방식을 탐색합니다 | 구현 접근 방식을 정하기 전 |
 | `/deepinit` | 비지속 | 전체 프로젝트 초기화(AGENTS.md, ARCHITECTURE.md, docs/)를 수행합니다 | 기존 코드베이스에 oh-my-agent를 설정할 때 |
 | `/review` | 비지속 | OWASP 보안, 성능, 접근성, 코드 품질을 검토하는 QA 파이프라인입니다. 범위는 요청에서 가져오며 기본값은 현재 변경 사항입니다 | 코드 병합 전 또는 배포 전 리뷰 |
 | `/security` | 비지속 | `oma-security`로 애플리케이션 소스, 에이전트 스킬, MCP 컴포넌트를 스캔하고, 발견 사항을 검증하며 보안 게이트를 구성합니다. 범위가 지정된 웹 테스트 배포의 침투 테스트는 사용자가 제공하고 검토한 런타임 플랫폼을 대상으로만 실행합니다 | 릴리스 전, 또는 변경에 보안 스캔이나 게이트가 필요할 때 |
@@ -345,7 +345,7 @@ oma dashboard terminal   # live table in this terminal; Ctrl+C to exit
 oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 ```
 
-두 명령 모두 현재 디렉토리의 `.agents/state/memories/`를 감시합니다. 다른 프로젝트를 감시하려면 `--project-root <path>`를 전달하거나 `MEMORIES_DIR`를 설정하세요. 에이전트 테이블에는 네 개의 열이 있습니다.
+두 명령 모두 현재 디렉토리에서 `.agents/state/memories/`의 진행 상황과 `.agents/results/`의 `result-*.md` 보고서를 감시합니다. 다른 프로젝트를 감시하려면 `--project-root <path>`를 전달하세요. `MEMORIES_DIR`를 설정하면 대시보드는 그 사용자 지정 디렉토리 하나만 감시합니다. 에이전트 테이블에는 네 개의 열이 있습니다.
 
 | 열 | 출처 |
 |--------|--------|
@@ -384,7 +384,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 
 ### 프로젝트 메모리 저장소
 
-에이전트는 `.agents/state/memories/`의 영속 파일로 조율됩니다(오래된 프로젝트는 레거시 `.serena/memories/` 경로로 폴백). 오케스트레이터는 실행 범위가 지정된 세션·태스크 보드 파일을 작성합니다. Markdown 진행·결과 출력이 활성화되면 각 실행은 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`와 `result-{agentId}-{taskId}-{runId}-{sessionId}.md`를 기록하며, CLI 스폰에서는 `.agents/state/agent-runs/` 아래의 구조화된 실행 기록과 클레임이 기준입니다. 에이전트는 네이티브 파일 도구로 이 파일들을 읽고 쓰며, 도구 매핑은 `.agents/mcp.json → memoryConfig.tools`에서 설정할 수 있습니다.
+에이전트는 `.agents/state/memories/`의 영속 파일로 조율합니다(오래된 프로젝트는 레거시 `.serena/memories/` 경로로 폴백합니다). 이 디렉토리에는 세션 요약, 태스크 보드, 진행 상황, 교훈, 실험 기록이 있습니다. 사람이 읽는 `result-{agentId}-{taskId}-{runId}-{sessionId}.md` 보고서는 `.agents/results/`에 둡니다. CLI 스폰의 기준은 `.agents/state/agent-runs/` 아래의 구조화된 실행 기록과 클레임이며, 고정된 실행 계획은 `.agents/state/agent-plans/`에 남습니다. 에이전트는 네이티브 파일 도구로 이 파일을 읽고 쓰며, 도구 매핑은 `.agents/mcp.json → memoryConfig.tools`에서 설정할 수 있습니다.
 
 ### 문서와 보고서
 
@@ -440,7 +440,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | 지속 워크플로우가 중단되지 않음 | 상태 파일이 여전히 존재 | 채팅에서 "workflow done"이라고 말하거나 `.agents/state/`에서 상태 파일 수동 삭제 |
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 너무 모호 | 에이전트가 요청한 구체적인 답변 제공 후 재실행 |
 | MCP 도구가 작동하지 않음 | Serena가 설정되지 않았거나 실행 중이지 않음 | `oma doctor`로 MCP 설정 확인 |
-| 에이전트가 실행 예산을 초과함 | 한 번의 실행으로 처리하기에는 태스크가 너무 복잡함 | 태스크를 분해하거나, 태스크 경계가 명확한 워크플로우를 사용하거나, 더 좁은 인수 계약으로 다시 시도 |
+| 에이전트가 실행 예산을 초과함 | 한 번의 실행으로 처리하기에는 태스크가 너무 복잡함 | 태스크를 분해하거나, 태스크 경계가 명확한 워크플로우를 사용하거나, 더 좁은 작업 완료 조건으로 다시 시도 |
 | 에이전트에 잘못된 CLI 사용 | `model_preset`이 설정되지 않았거나 에이전트 오버라이드 누락 | `oma install`로 설정하거나 `oma-config.yaml`에서 `model_preset` 설정. [에이전트별 모델](./per-agent-models.md) 참고. |
 
 ---
