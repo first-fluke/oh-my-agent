@@ -1,6 +1,18 @@
-import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { backupPathFromRoot } from "../../io/backup.js";
+import {
+  barePresetStubLanguage,
+  type SeededStackSource,
+  seededStackManifest,
+} from "../../platform/skills-installer/stack-manifest.js";
 
 export type BackendStackState = {
   stackBackupDir: string;
@@ -83,6 +95,11 @@ export function restoreBackendStackAfterCopy(
   // Migrate legacy Python resources to stack/ (one-time)
   // hasLegacyFiles was captured before cpSync (old resources/ had Python files)
   // Read variant from repoDir (source temp dir), not cwd (already overwritten)
+  //
+  // Those resources described a FastAPI project and are gone by now. The
+  // shipped Python variant describes another framework, so its reference files
+  // are not copied: only the manifest is written, naming the framework the
+  // project was built on and keeping the variant's verify contract.
   if (hasLegacyFiles) {
     const variantPythonDir = join(
       repoDir,
@@ -94,16 +111,18 @@ export function restoreBackendStackAfterCopy(
     );
     if (existsSync(variantPythonDir)) {
       mkdirSync(backendStackDir, { recursive: true });
-      cpSync(variantPythonDir, backendStackDir, {
-        recursive: true,
-        force: true,
-      });
       writeFileSync(
         join(backendStackDir, "stack.yaml"),
-        "language: python\nframework: fastapi\norm: sqlalchemy\nsource: migrated\n",
+        manifestForEarlierInstall(variantPythonDir, "python", "migrated"),
       );
     }
   }
+
+  // An older installer replaced the preset's manifest with a two-line stub,
+  // which leaves `oma verify agent backend` with no checks to run. Restore the
+  // variant's manifest for a stub that was never edited; a customized or
+  // generated manifest is the user's and stays as it is.
+  repairBarePresetStub(backendStackDir, repoDir);
 
   // Clean up variants/ from user project (not needed at runtime)
   // Must run AFTER migration (which reads from repoDir, not cwd)
@@ -117,4 +136,54 @@ export function restoreBackendStackAfterCopy(
   if (existsSync(backendVariantsDir)) {
     rmSync(backendVariantsDir, { recursive: true, force: true });
   }
+}
+
+function repairBarePresetStub(backendStackDir: string, repoDir: string): void {
+  const manifestPath = join(backendStackDir, "stack.yaml");
+  if (!existsSync(manifestPath)) return;
+  let language: string | null;
+  try {
+    language = barePresetStubLanguage(readFileSync(manifestPath, "utf-8"));
+  } catch {
+    return;
+  }
+  if (!language) return;
+  const variantDir = join(
+    repoDir,
+    ".agents",
+    "skills",
+    "oma-backend",
+    "variants",
+    language,
+  );
+  if (!existsSync(join(variantDir, "stack.yaml"))) return;
+  writeFileSync(
+    manifestPath,
+    manifestForEarlierInstall(variantDir, language, "preset"),
+  );
+}
+
+/**
+ * The framework a variant shipped with before its preset changed. A project
+ * installed in that era was built on it and still holds that era's reference
+ * files in stack/, so a manifest rebuilt for it must not adopt the new one.
+ */
+const FRAMEWORK_OF_EARLIER_PRESET: Record<string, string> = {
+  python: "fastapi",
+};
+
+/**
+ * The variant manifest for a project installed before this version: the
+ * current verify contract, with the framework that install was seeded from.
+ */
+function manifestForEarlierInstall(
+  variantDir: string,
+  language: string,
+  source: SeededStackSource,
+): string {
+  const manifest = seededStackManifest(variantDir, language, source);
+  const framework = FRAMEWORK_OF_EARLIER_PRESET[language];
+  return framework
+    ? manifest.replace(/^framework:.*$/m, `framework: ${framework}`)
+    : manifest;
 }

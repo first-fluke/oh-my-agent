@@ -866,7 +866,10 @@ describe("installSkill - variant handling", () => {
     );
   });
 
-  it("should remove variants/ directory after install", () => {
+  // Regression: variants/ used to be removed from every skill, including ones
+  // installed without a variant. oma-mobile reads its variants directly, so a
+  // fresh install lost them with nothing in stack/ to replace them.
+  it("should keep variants/ when no variant was materialized", () => {
     const destBase = join(mockTargetDir, ".agents", "skills", skillName);
     const variantsDir = join(destBase, "variants");
 
@@ -881,9 +884,6 @@ describe("installSkill - variant handling", () => {
 
     installSkill(mockSourceDir, skillName, mockTargetDir);
 
-    expect(fs.rmSync).toHaveBeenCalledWith(variantsDir, {
-      recursive: true,
-      force: true,
-    });
+    expect(fs.rmSync).not.toHaveBeenCalledWith(variantsDir, expect.anything());
   });
 });

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { INSTALLED_SKILLS_DIR } from "../../constants/index.js";
 import { clearNonDirectory } from "../../utils/fs-utils.js";
 import { recordManagedSkills } from "../managed-skill-ownership.js";
+import { seededStackManifest } from "./stack-manifest.js";
 
 export function installSkill(
   sourceDir: string,
@@ -28,15 +29,20 @@ export function installSkill(
       recursive: true,
       force: true,
     });
+    // Keep the variant's manifest: its `verify:` block is what
+    // `oma verify agent` runs. Only `source` is re-stamped.
     fs.writeFileSync(
       join(stackDir, "stack.yaml"),
-      `language: ${variant}\nsource: preset\n`,
+      seededStackManifest(join(variantSrcDir, variant), variant, "preset"),
     );
-  }
 
-  const destVariantsDir = join(dest, "variants");
-  if (fs.existsSync(destVariantsDir)) {
-    fs.rmSync(destVariantsDir, { recursive: true, force: true });
+    // The chosen variant now lives in stack/, so the starter set is redundant.
+    // A skill installed without a variant keeps variants/: its SKILL.md reads
+    // them directly (oma-mobile), and nothing has replaced them.
+    const destVariantsDir = join(dest, "variants");
+    if (fs.existsSync(destVariantsDir)) {
+      fs.rmSync(destVariantsDir, { recursive: true, force: true });
+    }
   }
 
   recordManagedSkills(installRoot, [skillName]);
