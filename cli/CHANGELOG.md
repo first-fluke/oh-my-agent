@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.43.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.0...cli-v20.43.1) (2026-11-14)
+
+
+### Documentation
+
+* **i18n:** sync translations with the english docs ([dd90d46](https://github.com/first-fluke/oh-my-agent/commit/dd90d466f2b25281bbdba2617171bd966bb48da7))
+
 ## [20.43.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.42.3...cli-v20.43.0) (2026-11-14)
 
 
