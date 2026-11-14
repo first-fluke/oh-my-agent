@@ -185,6 +185,72 @@ describe("lintI18nStyle - cjk-em-dash rule", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("ignores em-dash inside a closed oma:generated region", () => {
+    const root = mkrepo();
+    try {
+      writeFile(
+        root,
+        "web/i18n/zh/docusaurus-plugin-content-docs/current/a.md",
+        [
+          "翻译正文",
+          "<!-- oma:generated cli-registry:start -->",
+          "| Command | Description |",
+          "| — | — |",
+          "<!-- oma:generated cli-registry:end -->",
+          "",
+        ].join("\n"),
+      );
+      const issues = lintI18nStyle({ repoRoot: root });
+      expect(issues).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports em-dashes before and after a generated region on their own lines", () => {
+    const root = mkrepo();
+    try {
+      writeFile(
+        root,
+        "web/i18n/zh/docusaurus-plugin-content-docs/current/a.md",
+        [
+          "前文 — 说明",
+          "<!-- oma:generated skill-catalog:start -->",
+          "| — |",
+          "<!-- oma:generated skill-catalog:end -->",
+          "后文 — 说明",
+          "",
+        ].join("\n"),
+      );
+      const issues = lintI18nStyle({ repoRoot: root });
+      expect(issues.map((issue) => issue.line)).toEqual([1, 5]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("does not hide lines after an unterminated generated-region start", () => {
+    // A start marker with no matching end is not a region. Lines after it
+    // stay checked so a missing end cannot hide the rest of the file.
+    const root = mkrepo();
+    try {
+      writeFile(
+        root,
+        "web/i18n/ko/docusaurus-plugin-content-docs/current/a.md",
+        [
+          "앞 — 설명",
+          "<!-- oma:generated cli-registry:start -->",
+          "남은 — 본문",
+          "",
+        ].join("\n"),
+      );
+      const issues = lintI18nStyle({ repoRoot: root });
+      expect(issues.map((issue) => issue.line)).toEqual([1, 3]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("lintI18nStyle - wrong-language rule", () => {

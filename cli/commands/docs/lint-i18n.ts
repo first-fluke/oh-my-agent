@@ -6,7 +6,8 @@
  *
  * Currently checks:
  * - cjk-em-dash: em-dash (—) usage in CJK targets (ko/ja/zh) outside code
- *   blocks. Per the oma-translation language profiles, em-dashes in CJK should
+ *   blocks and outside closed `<!-- oma:generated <name>:start/end -->`
+ *   regions. Per the oma-translation language profiles, em-dashes in CJK should
  *   be structurally restructured into separate clauses, parentheses, or
  *   coordinated noun phrases — never used as direct substitution from English.
  * - wrong-language: file lives under web/i18n/<lang>/... but the detected
@@ -101,15 +102,55 @@ function stripCodeBlocks(text: string): string {
   return lines.join("\n");
 }
 
+// A generator region is one whole line: `<!-- oma:generated <name>:start -->`
+// through the matching `<!-- oma:generated <name>:end -->`. `<name>` is any
+// single token (cli-registry, skill-catalog, …).
+const GENERATED_REGION_MARKER =
+  /^[ \t]*<!--\s*oma:generated\s+([^\s:]+):(start|end)\s*-->[ \t]*$/;
+
+/**
+ * Indexes of lines inside a closed generator region. The end marker closes the
+ * nearest unmatched start with the same `<name>`.
+ *
+ * A start marker with no matching end does not open a region. Those lines stay
+ * visible, so a missing end cannot hide the rest of the file.
+ */
+function generatedRegionLines(lines: readonly string[]): Set<number> {
+  const open: { name: string; line: number }[] = [];
+  const hidden = new Set<number>();
+  for (let i = 0; i < lines.length; i++) {
+    const match = GENERATED_REGION_MARKER.exec(lines[i] ?? "");
+    if (!match) continue;
+    const name = match[1] ?? "";
+    if (match[2] === "start") {
+      open.push({ name, line: i });
+      continue;
+    }
+    for (let j = open.length - 1; j >= 0; j--) {
+      const start = open[j];
+      if (!start || start.name !== name) continue;
+      open.splice(j, 1);
+      for (let k = start.line; k <= i; k++) hidden.add(k);
+      break;
+    }
+  }
+  return hidden;
+}
+
 function checkCjkEmDash(
   fileRel: string,
   lang: string,
   text: string,
 ): I18nStyleIssue[] {
   const issues: I18nStyleIssue[] = [];
+  // Code stripping keeps one line per source line. Region detection runs on
+  // that text so a marker inside a fence cannot suppress later prose, and
+  // finding line numbers stay the file's line numbers.
   const stripped = stripCodeBlocks(text);
   const lines = stripped.split("\n");
+  const generated = generatedRegionLines(lines);
   for (let i = 0; i < lines.length; i++) {
+    if (generated.has(i)) continue;
     const line = lines[i] ?? "";
     if (!line.includes(EM_DASH)) continue;
     issues.push({
