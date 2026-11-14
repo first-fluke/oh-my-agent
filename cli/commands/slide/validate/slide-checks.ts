@@ -1,5 +1,6 @@
 import { resolve, sep } from "node:path";
 import color from "picocolors";
+import { isAllowedFontUrl } from "../font-hosts.js";
 import {
   FONTS_READY_TIMEOUT_MS,
   MIN_FONT_SIZE_PX,
@@ -9,7 +10,9 @@ import { isOverflowing, isOverlapping } from "./geometry.js";
 import {
   IN_PAGE_CHECK_FN,
   type InPageCheckResult,
+  type InPageRemoteRef,
   type InPageTextElement,
+  type RemoteRefKind,
 } from "./in-page-check.js";
 import { awaitFontsReady, type PuppeteerPage } from "./puppeteer.js";
 import type { IssueCode, SlideResult, ValidateIssue } from "./types.js";
@@ -83,7 +86,7 @@ export async function validateSlide(
   }
 
   // Remote asset references — warning (not critical, but flagged for policy)
-  for (const ref of remoteRefs) {
+  for (const ref of findPolicyRemoteRefs(remoteRefs)) {
     issues.push({
       code: "remote_asset_ref",
       message: `Remote asset reference found (local-asset policy violation): ${ref.url}`,
@@ -141,6 +144,29 @@ export function findOverlappingTextPairs(
     }
   }
   return pairs;
+}
+
+// ─── Remote reference policy (pure, vitest-testable) ──────────────────────────
+
+const FONT_CARRYING_KINDS: ReadonlySet<RemoteRefKind> = new Set([
+  "link",
+  "stylesheet",
+]);
+
+/**
+ * Remote references that break the local-asset policy.
+ *
+ * A stylesheet link or `<style>` `url()` on an allowlisted font CDN is the
+ * supported way to load a typeface, and the render context lets that request
+ * through, so it is not reported. The same host in an `<img>`, `<script>`,
+ * frame, or inline style is not a font and stays reported.
+ */
+export function findPolicyRemoteRefs(
+  remoteRefs: InPageRemoteRef[],
+): InPageRemoteRef[] {
+  return remoteRefs.filter(
+    (ref) => !(FONT_CARRYING_KINDS.has(ref.kind) && isAllowedFontUrl(ref.url)),
+  );
 }
 
 // ─── Request interception — offline context ───────────────────────────────────

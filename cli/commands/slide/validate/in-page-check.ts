@@ -25,10 +25,29 @@ export interface InPageTextElement {
   lineRects: Rect[];
 }
 
+/**
+ * Which construct carried a remote URL: a `<link>` or a `url()` inside a
+ * `<style>` block can load a typeface; the others load media, scripts, or
+ * frames.
+ */
+export type RemoteRefKind =
+  | "media"
+  | "link"
+  | "script"
+  | "frame"
+  | "inline-style"
+  | "stylesheet";
+
+export interface InPageRemoteRef {
+  selector: string;
+  url: string;
+  kind: RemoteRefKind;
+}
+
 /** Serializable result from page.evaluate. */
 export interface InPageCheckResult {
   textElements: InPageTextElement[];
-  remoteRefs: Array<{ selector: string; url: string }>;
+  remoteRefs: InPageRemoteRef[];
 }
 
 /**
@@ -133,7 +152,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
   for (var k = 0; k < mediaSrcEls.length; k++) {
     var src = mediaSrcEls[k].getAttribute('src') || '';
     if (REMOTE_RE.test(src)) {
-      remoteRefs.push({ selector: getSelector(mediaSrcEls[k]), url: src });
+      remoteRefs.push({ selector: getSelector(mediaSrcEls[k]), url: src, kind: 'media' });
     }
   }
 
@@ -145,7 +164,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
     for (var pi = 0; pi < parts.length; pi++) {
       var url = parts[pi].trim().split(/\\s+/)[0] || '';
       if (REMOTE_RE.test(url)) {
-        remoteRefs.push({ selector: getSelector(srcsetEls[si]), url: url });
+        remoteRefs.push({ selector: getSelector(srcsetEls[si]), url: url, kind: 'media' });
         break; // one hit per element is enough
       }
     }
@@ -156,7 +175,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
   for (var l = 0; l < links.length; l++) {
     var href = links[l].getAttribute('href') || '';
     if (REMOTE_RE.test(href)) {
-      remoteRefs.push({ selector: getSelector(links[l]), url: href });
+      remoteRefs.push({ selector: getSelector(links[l]), url: href, kind: 'link' });
     }
   }
 
@@ -165,7 +184,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
   for (var sc = 0; sc < scripts.length; sc++) {
     var ssrc = scripts[sc].getAttribute('src') || '';
     if (REMOTE_RE.test(ssrc)) {
-      remoteRefs.push({ selector: getSelector(scripts[sc]), url: ssrc });
+      remoteRefs.push({ selector: getSelector(scripts[sc]), url: ssrc, kind: 'script' });
     }
   }
 
@@ -174,7 +193,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
   for (var ic = 0; ic < iframes.length; ic++) {
     var isrc = iframes[ic].getAttribute('src') || '';
     if (REMOTE_RE.test(isrc)) {
-      remoteRefs.push({ selector: getSelector(iframes[ic]), url: isrc });
+      remoteRefs.push({ selector: getSelector(iframes[ic]), url: isrc, kind: 'frame' });
     }
   }
 
@@ -186,7 +205,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
     var m;
     CSS_URL_RE.lastIndex = 0;
     while ((m = CSS_URL_RE.exec(styleAttr)) !== null) {
-      remoteRefs.push({ selector: getSelector(styledEls[se]), url: m[1] });
+      remoteRefs.push({ selector: getSelector(styledEls[se]), url: m[1], kind: 'inline-style' });
     }
   }
 
@@ -197,7 +216,7 @@ export const IN_PAGE_CHECK_FN = `(function() {
     CSS_URL_RE.lastIndex = 0;
     var urlMatch;
     while ((urlMatch = CSS_URL_RE.exec(cssText)) !== null) {
-      remoteRefs.push({ selector: getSelector(styleBlocks[sb]), url: urlMatch[1] });
+      remoteRefs.push({ selector: getSelector(styleBlocks[sb]), url: urlMatch[1], kind: 'stylesheet' });
     }
   }
 

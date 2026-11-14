@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { InPageTextElement } from "./in-page-check.js";
+import type { InPageRemoteRef, InPageTextElement } from "./in-page-check.js";
 import { awaitFontsReady } from "./puppeteer.js";
-import { findOverlappingTextPairs } from "./slide-checks.js";
+import {
+  findOverlappingTextPairs,
+  findPolicyRemoteRefs,
+} from "./slide-checks.js";
 
 function el(
   overrides: Partial<InPageTextElement> & { rect: InPageTextElement["rect"] },
@@ -15,6 +18,53 @@ function el(
     ...overrides,
   };
 }
+
+// Regression: the documented way to load a typeface (a stylesheet link to an
+// allowlisted font CDN) was reported as a local-asset policy violation.
+describe("findPolicyRemoteRefs", () => {
+  const ref = (
+    kind: InPageRemoteRef["kind"],
+    url: string,
+  ): InPageRemoteRef => ({
+    selector: "x",
+    url,
+    kind,
+  });
+
+  it("does not report a typeface loaded from an allowlisted font CDN", () => {
+    expect(
+      findPolicyRemoteRefs([
+        ref("link", "https://fonts.googleapis.com/css2?family=Inter"),
+        ref(
+          "link",
+          "https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css",
+        ),
+        ref("stylesheet", "https://fonts.gstatic.com/s/inter/v13/a.woff2"),
+      ]),
+    ).toEqual([]);
+  });
+
+  it("still reports non-font content on an allowlisted host", () => {
+    const refs = [
+      ref("media", "https://cdn.jsdelivr.net/npm/pkg/photo.png"),
+      ref("script", "https://cdn.jsdelivr.net/npm/pkg/index.js"),
+      ref("frame", "https://fonts.googleapis.com/embed"),
+      ref("inline-style", "https://cdn.jsdelivr.net/npm/pkg/bg.jpg"),
+    ];
+
+    expect(findPolicyRemoteRefs(refs)).toEqual(refs);
+  });
+
+  it("still reports a stylesheet from any other host or over http", () => {
+    const refs = [
+      ref("link", "https://example.com/theme.css"),
+      ref("link", "http://fonts.googleapis.com/css2?family=Inter"),
+      ref("stylesheet", "https://evil.example.com/font.woff2"),
+    ];
+
+    expect(findPolicyRemoteRefs(refs)).toEqual(refs);
+  });
+});
 
 describe("findOverlappingTextPairs", () => {
   it("skips ancestor-descendant pairs (inline child inside a text parent)", () => {
