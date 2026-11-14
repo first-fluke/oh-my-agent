@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.43.3](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.2...cli-v20.43.3) (2026-11-14)
+
+
+### Documentation
+
+* **i18n:** resync more translated pages ([0f564bd](https://github.com/first-fluke/oh-my-agent/commit/0f564bd04f80c78328c811ea79c126e83de1e3a4))
+
 ## [20.43.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.1...cli-v20.43.2) (2026-11-14)
 
 
