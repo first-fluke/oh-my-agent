@@ -37,7 +37,7 @@ Use the relevant recovery steps. If required information or authority is missing
 **Symptoms**: `next build` fails, `Module not found`, `SyntaxError`
 
 1. Read the full error: which module, which file
-2. If missing dependency: note in result as "requires `npm install X`"; do NOT install yourself
+2. If missing dependency: add it through the project's package manager when project conventions and the task scope justify it, and list it in the result; otherwise report it as "requires `<pm> add X`" instead of installing
 3. If import path wrong: use `search_for_pattern("export.*ComponentName")` to find actual path
 4. If dynamic import issue: ensure component is client-side (`'use client'`)
 5. Re-run the build only if the user explicitly requested a build; otherwise use relevant non-build checks and report the verification limit.
@@ -90,7 +90,7 @@ Use the relevant recovery steps. If required information or authority is missing
 
 1. Check Tailwind classes: typo? wrong breakpoint prefix?
 2. Check parent container: is it blocking layout? (`overflow-hidden`, fixed width)
-3. Test at specific breakpoints: 320px, 768px, 1024px, 1440px
+3. Test at the task's target breakpoints (checklist §Styling)
 4. Use browser DevTools to inspect computed styles
 5. If dark mode issue: check `dark:` variants applied
 
@@ -121,5 +121,4 @@ Follow `../../_shared/runtime/memory-protocol.md`; state storage is independent 
 ## General Principles
 
 - **After 3 failures**: If same approach fails 3 times, must try a different method
-- **Blocked**: If no progress after 5 turns, save current state and record `Status: blocked`
 - **Out of scope**: If you find backend issues, only record in result; do not modify directly

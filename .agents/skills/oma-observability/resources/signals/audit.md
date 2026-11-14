@@ -1,14 +1,8 @@
----
-otel_semconv: "1.43.0 (2026-07); security.* namespace: Development/proposed"
-tools:
-  - "Falco: v0.38+ (CNCF Graduated); rekor: v1.x (sigstore)"
----
-
 # Audit Signal Reference
 
 ## 1. Scope & Distinction
 
-Audit trails answer **who did what when**; immutable evidence for compliance, legal hold, and forensic investigation. They are a distinct signal from both operational logs (`logs.md`) and privacy records (`privacy.md`).
+Audit trails answer **who did what when**; tamper-evident evidence for compliance, legal hold, and forensic investigation. They are a distinct signal from both operational logs (`logs.md`) and privacy records (`privacy.md`).
 
 ### Integrity and privacy requirements
 
@@ -31,7 +25,7 @@ Audit and privacy are separate concerns, but both apply to personal data in an a
 | Storage         | Loki / Elasticsearch / ClickHouse   | Access-controlled evidence store with selected integrity/retention controls |
 | Primary tools   | Fluent Bit, OTel Collector          | Falco, auditd, pgaudit, audit pipeline |
 
-Cross-ref `../meta-observability.md §Retention Matrix` for unified policy across all signals.
+Cross-ref `../meta-observability.md` (Section D: Retention Matrix) for unified policy across all signals.
 
 ---
 
@@ -46,8 +40,6 @@ Cross-ref `../meta-observability.md §Retention Matrix` for unified policy acros
 | **PCI DSS v4.0** | Requirement 10; track and monitor all access to cardholder data | 1 year online + offline retention; tamper detection |
 | **GDPR Art. 30** | Records of processing activities | Audit of data processing operations |
 
-Cross-ref `../standards.md §ISO/IEC 27001/27002` for the normative standards baseline.
-
 Sources: [iso.org/standard/27001](https://www.iso.org/standard/27001) · [aicpa.org SOC 2](https://www.aicpa.org/soc2) · [hhs.gov HIPAA](https://www.hhs.gov/hipaa/for-professionals/security/index.html) · [pcisecuritystandards.org PCI DSS v4.0](https://www.pcisecuritystandards.org)
 
 ---
@@ -61,13 +53,13 @@ Sources: [iso.org/standard/27001](https://www.iso.org/standard/27001) · [aicpa.
 | **Data access** | Read/create/update/delete of regulated data (PII, CHD, PHI) | HIPAA §164.312(b), PCI DSS 10.2 |
 | **Administrative** | Config changes, user provisioning, API key lifecycle, certificate rotation | ISO A.5.25, SOC 2 CC7.3 |
 | **Security events** | IDS/IPS alerts, anomalous kernel syscalls (Falco), policy violations | SOC 2 CC7.3, ISO A.8.16 |
-| **System events** | Kernel audit (Linux auditd), container lifecycle events | ISO A.8.15; cross-ref `logs.md §OS-level log sources` |
+| **System events** | Kernel audit (Linux auditd), container lifecycle events | ISO A.8.15; cross-ref `logs.md §8 OS-Level Log Sources` |
 
 ---
 
 ## 4. Required Attributes per Audit Event
 
-Every audit event MUST carry these fields. Map to OTel `security.*` semconv namespace (Development/proposed).
+Every audit event MUST carry these fields. The names below are this skill's audit schema: OTel defines no audit-event convention. Where a registry attribute exists for the same meaning (`user.id`, `client.address`), use it and confirm its stability in the semconv registry.
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
@@ -77,7 +69,7 @@ Every audit event MUST carry these fields. Map to OTel `security.*` semconv name
 | `resource.type` | string | What was acted on: `order`, `user_record`, `api_key`, `rbac_role` |
 | `resource.id` | string | Identifier of the affected resource |
 | `event.outcome` | enum | `success` \| `failure` \| `denied` |
-| `ip.address` | string | Source IP; may be PII; cross-ref `privacy.md §IP addresses` |
+| `ip.address` | string | Source IP; may be PII; cross-ref `privacy.md §5 PII Handling Rules by Field` |
 | `timestamp` | ISO 8601 UTC | Event time; required for chain ordering (Section 6) |
 | `trace_id` | 32-char hex | Correlation with operational trace; cross-ref `../incident-forensics.md` |
 
@@ -93,9 +85,11 @@ Every audit event MUST carry these fields. Map to OTel `security.*` semconv name
   "ip.address": "203.0.113.42",
   "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
   "service.name": "user-management-api",
-  "deployment.environment": "production"
+  "deployment.environment.name": "production"
 }
 ```
+
+Minimize before write: personal data written to a locked (WORM) store cannot be erased until the lock expires, so an erasure request against it can only be answered with a documented retention exception. Pseudonymize `user.id`, decide `ip.address` handling per `privacy.md`, and keep free-text fields out of audit events.
 
 ---
 
@@ -144,8 +138,7 @@ event_N.hash = SHA256(event_N.payload + event_{N-1}.hash)
 
 | Tool | Type | Notes |
 |------|------|-------|
-| **rekor** (sigstore) | OSS transparency log | CNCF project; append-only; publicly verifiable |
-| **AWS QLDB** | Managed ledger DB | Cryptographic journal; AWS-proprietary |
+| **rekor** (sigstore) | OSS transparency log | OpenSSF project; append-only; publicly verifiable |
 | **IBM LinuxONE** | Hardware-backed ledger | Enterprise on-prem |
 
 Source: [github.com/sigstore/rekor](https://github.com/sigstore/rekor)
@@ -195,7 +188,7 @@ Custom Falco rule example (detect secret access in production namespace):
   tags: [audit, pci_dss, hipaa]
 ```
 
-**Pipeline integration:** Falco JSON output → `filelogreceiver` (OTel Collector) → audit logs pipeline → WORM cold tier. Apply the same hash chain enrichment as application audit events before writing.
+**Pipeline integration:** Falco JSON output → `filelogreceiver` (OTel Collector) → audit logs pipeline → the audit evidence store selected in Section 5. Apply the same hash chain enrichment as application audit events before writing.
 
 ---
 
@@ -250,7 +243,7 @@ Audit data must be readable by auditors and legal; and not writable by anyone af
 - Separate RBAC role: `audit-reader` is distinct from `operations-engineer` and `developer`
 - Auditors have read-only access, scoped to approved time ranges
 - No single engineer can both produce audit events and modify audit storage
-- Cross-ref `privacy.md §Backend RBAC` for principle of least privilege patterns
+- Cross-ref `privacy.md §11 Backend Access Control (RBAC on Observability Data)` for principle of least privilege patterns
 
 ---
 
@@ -260,43 +253,14 @@ Every audit event carries `trace_id`. During an incident:
 
 1. Start from the audit event (who did what)
 2. Pivot via `trace_id` to the operational trace (what the system did)
-3. Join with logs (`logs.md §Trace ID Injection Rules`) for execution detail
+3. Join with logs (`logs.md §5 Trace ID Injection Rules`) for execution detail
 4. Reference `../incident-forensics.md` for the full MRA playbook
 
 Audit events are the authoritative source of truth for incident timelines; operational traces provide the execution context.
 
 ---
 
-## 13. Matrix Coverage: Audit Column
-
-Cells from `../matrix.md` owned by this file:
-
-| Layer | Boundary | Status | Notes |
-|-------|----------|--------|-------|
-| L3-network | any | PASS | VPC flow audit trail; who connected to what |
-| L4-transport | any | PARTIAL | Limited: connection-level only, no payload |
-| L7-application | multi-tenant | PASS | Per-tenant audit trail; supports GDPR data subject right of access |
-| release | any | PASS | Deployment audit: who deployed what when (actor, SHA, timestamp) |
-| privacy | audit | overlap | See `privacy.md`; audit records data processing; privacy governs erasure |
-
----
-
-## 14. Anti-patterns
-
-Append candidates for `../anti-patterns.md §Section F Security & Compliance`:
-
-| ID | Anti-pattern | Fix |
-|----|--------------|-----|
-| A-AU1 | Audit evidence can be altered without detection | Apply access controls and tamper protection; choose WORM only when the approved obligation requires it |
-| A-AU2 | No tamper evidence (no hash chain or notary) | Implement hash chain per Section 6; anchor Merkle root to rekor |
-| A-AU3 | PII in audit events without redaction | Hash or pseudonymize `user.id`; evaluate `ip.address` per `privacy.md` |
-| A-AU4 | Shared RBAC for operations and audit readers | Create separate `audit-reader` role; enforce in IaC |
-| A-AU5 | Retention differs from the approved record-specific schedule | Apply the documented law/contract/purpose schedule and legal holds; expire eligible records |
-| A-AU6 | Kubernetes audit logs routed to operational log store | Separate pipeline: K8s audit → WORM cold tier |
-
----
-
-## 15. References
+## 13. References
 
 1. ISO/IEC 27001:2022; <https://www.iso.org/standard/27001>
 2. ISO/IEC 27002:2022; <https://www.iso.org/standard/27002>
@@ -306,5 +270,5 @@ Append candidates for `../anti-patterns.md §Section F Security & Compliance`:
 6. GDPR Art. 30: <https://gdpr-info.eu/art-30-gdpr/>
 7. Falco: <https://falco.org>
 8. sigstore rekor: <https://github.com/sigstore/rekor>
-9. OTel security semconv (proposed): <https://opentelemetry.io/docs/specs/semconv/attributes-registry/security/>
+9. OTel semconv attribute registry: <https://opentelemetry.io/docs/specs/semconv/registry/attributes/>
 10. `../standards.md` · `../matrix.md` · `../meta-observability.md` · `../incident-forensics.md` · `privacy.md` · `logs.md`

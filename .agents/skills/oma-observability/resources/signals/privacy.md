@@ -1,7 +1,3 @@
----
-otel_semconv: "1.43.0 (2026-07); GDPR: 2016/679; PIPA: 2023 amendment"
----
-
 # Privacy in Telemetry
 
 ## 1. Scope and Distinction from Audit
@@ -10,17 +6,17 @@ otel_semconv: "1.43.0 (2026-07); GDPR: 2016/679; PIPA: 2023 amendment"
 
 **Audit** answers: *what actions occurred, who performed them, and can we prove it?*
 
-These are architecturally opposite concerns. See Design Decision D5 for the split rationale.
+These concerns pull in different directions, so each has its own pipeline.
 
 | Dimension | Privacy | Audit |
 |-----------|---------|-------|
 | Goal | Collect less, protect subjects | Prove what happened |
-| Mutability | Supports deletion (right to erasure) | Immutable, append-only |
-| Retention | Short raw tier; long anonymized tier | Long-term (7–10 years typical) |
+| Mutability | Supports deletion (right to erasure) | Protected against unauthorized alteration; WORM only when the selected control requires it |
+| Retention | Short raw tier; long anonymized tier | Schedule set by the applicable framework and record class (`audit.md §7 Evidence-Specific Retention Policy`) |
 | Consumer | DPO, privacy engineers, legal | Security ops, compliance, auditors |
-| Regulation driver | GDPR Art. 5, Art. 17; PIPA § 21 | SOX, PCI-DSS, ISO/IEC 27001 |
+| Regulation driver | GDPR Art. 5, Art. 17; PIPA Art. 21 | SOX, PCI-DSS, ISO/IEC 27001 |
 
-**D5 Split rationale.** Merging privacy and audit into a single signal pipeline produces conflicting retention policies (erasure vs. immutability), access control models (broad deletion rights vs. tamper-evident storage), and regulatory obligations. Separating them lets each pipeline satisfy its own obligations without compromise. Cross-references between the two are explicit rather than implicit (see §9 and `audit.md`).
+**Why the pipelines are separate.** Merging privacy and audit into a single signal pipeline produces conflicting retention policies (erasure vs. evidence preservation), access control models (broad deletion rights vs. tamper-evident storage), and regulatory obligations. Separating them lets each pipeline satisfy its own obligations. Personal data inside an audit trail is still subject to both: see §9 and `audit.md`.
 
 Primary consumers of this file: Data Protection Officers (DPO), privacy engineers, legal counsel.
 
@@ -31,7 +27,7 @@ Primary consumers of this file: Data Protection Officers (DPO), privacy engineer
 | Regulation | Jurisdiction | Key Articles / Principles | Max Penalty |
 |------------|-------------|--------------------------|-------------|
 | GDPR | EU / EEA | Art. 5(1)(c) minimization; Art. 5(1)(e) storage limitation; Art. 17 erasure; Art. 32 security | 4% global annual turnover |
-| PIPA | South Korea | § 3 minimization; § 21 destruction; § 29 safety measures; separate sensitive data consent | KRW 300M or 3% revenue |
+| PIPA | South Korea | Art. 3 minimization; Art. 21 destruction; Art. 29 safety measures; separate sensitive data consent | KRW 300M or 3% revenue |
 | CCPA / CPRA | California, US | Opt-out of sale; right to delete; sensitive PI category | USD 7,500 per intentional violation |
 | HIPAA | United States | PHI definition; minimum necessary standard; breach notification | USD 100–50,000 per violation |
 | PIPEDA | Canada | Fair information principles; breach of security safeguards | CAD 100,000 per violation |
@@ -63,7 +59,7 @@ Assess whether a person can reasonably be identified, directly or indirectly, us
 | PII Category | Where It Appears in Telemetry | OTel Semconv Attribute |
 |-------------|------------------------------|------------------------|
 | IP address | HTTP server spans, logs, network metrics | `client.address`, `network.peer.address` |
-| User ID | Span attributes, baggage, log body | `enduser.id` (deprecated → `user.id`) |
+| User ID | Span attributes, baggage, log body | `user.id` |
 | Email, name, phone | Log body, error traces, baggage | None; must not be added |
 | Session token / cookie | HTTP headers, span attributes | `http.request.header.*` |
 | Browser user-agent | HTTP server spans | `user_agent.original` |
@@ -71,7 +67,7 @@ Assess whether a person can reasonably be identified, directly or indirectly, us
 | Query string parameters | URL full string | `url.full`, `url.query` |
 | Stack trace with user data | Exception events | `exception.stacktrace` |
 | Request body on error | Trace event attributes | Custom; avoid entirely |
-| Baggage values | W3C Baggage header, propagated downstream | See `../boundaries/cross-application.md §Baggage rules` |
+| Baggage values | W3C Baggage header, propagated downstream | See `../boundaries/cross-application.md` (baggage rules) |
 
 Baggage is especially dangerous: values propagate across service boundaries and can be logged or traced by any downstream collector. Apply trust-boundary filters before injecting user-derived values into baggage.
 
@@ -150,10 +146,10 @@ processors:
       - service.name
       - trace.id
       - span.id
-      - db.system
+      - db.system.name
       - rpc.system.name
     blocked_values:
-      - "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b"   # email pattern
+      - "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"   # email pattern
       - "\\b(?:\\d[ -]?){13,16}\\b"                                    # card number pattern
     summary: debug
 ```
@@ -223,7 +219,7 @@ def pseudonymize_user_id(user_id: str, vault_key: bytes) -> str:
 
 Erasure pipeline: request → verify identity and the applicable erasure ground → identify personal records across relevant tiers → check documented retention/legal-claim exceptions → delete eligible records under the approved schedule → record the action and justified exceptions. Audit records do not have a blanket exemption.
 
-Cross-reference: `../meta-observability.md §Retention Matrix` for full retention policy. Cross-reference: `audit.md` for erasure audit trail requirements.
+Cross-reference: `../meta-observability.md` (Section D: Retention Matrix) for full retention policy. Cross-reference: `audit.md` for erasure audit trail requirements.
 
 ---
 
@@ -236,7 +232,7 @@ GDPR Chapter V prohibits transfer of personal data to non-adequate countries wit
 | Standard Contractual Clauses (SCC) | EU → US, EU → most non-adequate countries |
 | Binding Corporate Rules (BCR) | Intra-group transfers |
 | Adequacy decision | EU → UK, Japan, Canada (PIPEDA), South Korea (partial) |
-| PIPA § 17 | KR → non-KR: contractual safeguards + PIPC notification |
+| PIPA Art. 28-8 | KR → non-KR: one of the permitted grounds in that article, with its safeguards |
 
 **Collector routing for regional compliance.**
 
@@ -246,35 +242,19 @@ connectors:
   routing:
     default_pipelines: [traces/global]
     table:
-      - statement: attributes["deployment.region"] == "eu-west-1"
+      - statement: route() where attributes["tenant.region"] == "eu"
         pipelines: [traces/eu]
-      - statement: attributes["deployment.region"] == "ap-northeast-2"
+      - statement: route() where attributes["tenant.region"] == "kr"
         pipelines: [traces/kr]
 ```
 
-Cross-reference: `../transport/collector-topology.md §Multi-cluster + regional`.
+Route on a residency attribute resolved server-side from the tenant registry, never on a client-supplied value or on the region the workload happens to run in; the source-of-truth rule and the residency policy table are in `../boundaries/multi-tenant.md` (data residency). A region label does not by itself authorize a transfer: document the transfer ground first.
+
+Cross-reference: `../transport/collector-topology.md` for the multi-region collector topology.
 
 ---
 
-## 11. TLS Context Attributes (L6 Development Status)
-
-OTel `tls.*` semantic conventions are **Development** stability tier as of semconv 1.43.0 (verified 2026-07). See `../standards.md` for stability tier definitions.
-
-| Attribute | Type | Use Case |
-|-----------|------|----------|
-| `tls.protocol.version` | string | Detect TLS 1.0/1.1 downgrade attacks |
-| `tls.cipher` | string | Flag weak ciphers (RC4, DES, 3DES) |
-| `tls.established` | boolean | Alert on handshake failures |
-| `tls.resumed` | boolean | Session resumption analysis |
-| `tls.server.certificate.expiry` | int (epoch) | Certificate expiry alerting |
-
-**Scope boundary.** These attributes provide *security context* for observability purposes (downgrade detection, cert expiry alerting). Full TLS inspection (decrypting payload for content analysis) is out of scope; use dedicated network inspection tooling.
-
-**Privacy note.** TLS cipher and protocol version are not PII. Certificate subject fields (CN, SAN) may contain hostnames; do not log end-user certificate subjects from mTLS without legal basis.
-
----
-
-## 12. Backend Access Control (RBAC on Observability Data)
+## 11. Backend Access Control (RBAC on Observability Data)
 
 Production traces and logs containing even pseudonymized data are sensitive. Access must be role-gated.
 
@@ -293,7 +273,7 @@ Vendor-specific RBAC: Grafana folder permissions + team sync; Datadog Teams with
 
 ---
 
-## 13. Third-Party Processor Obligations (GDPR Art. 28)
+## 12. Third-Party Processor Obligations (GDPR Art. 28)
 
 Observability vendors receiving telemetry containing personal data are **data processors** under GDPR. A Data Processing Agreement (DPA) is mandatory before routing data to them.
 
@@ -305,39 +285,6 @@ Observability vendors receiving telemetry containing personal data are **data pr
 | Deletion / return | Vendor must support data deletion on contract termination |
 
 Common vendors requiring DPA review: Datadog, Honeycomb, Grafana Cloud, Sentry, New Relic, Elastic Cloud. Each vendor publishes a DPA at their legal/privacy page. Reference your legal team's approved vendor list before routing production data.
-
----
-
-## 14. Matrix Coverage Notes
-
-The following cells in `../matrix.md` have privacy-specific guidance from this file:
-
-| Layer × Boundary | Privacy Status | Notes |
-|-----------------|---------------|-------|
-| L3 (Network) × any | Warning | IP addresses are GDPR Art. 4(1) personal data identifiers; mask or drop |
-| L4 (Transport) × any | Warning | Connection 5-tuple (src IP, dst IP, ports) can identify individuals |
-| L7 (Application) × multi-tenant | Primary coverage | Per-tenant data minimization; tenant ID must not leak across boundaries |
-| L7 × cross-application | Warning | Baggage crosses trust boundaries; apply filter at ingress (§4) |
-| Release / feature flags × any | Overlap | Feature flag cohort membership may constitute profiling under GDPR Art. 4(4) |
-
----
-
-## 15. Anti-Patterns
-
-> These entries feed into `../anti-patterns.md §Section A Privacy`.
-
-| Anti-Pattern | Risk | Remediation |
-|-------------|------|-------------|
-| Claiming anonymity from hashing or local irreversibility alone | Personal data may be misclassified and its safeguards omitted | Apply the re-identification assessment (§3); re-classify and update ROPA |
-| Hash without salt on low-entropy IDs | Rainbow-table reversal; GDPR breach | HMAC-SHA256 with vault-managed salt at SDK layer (§8) |
-| Key and telemetry accessible through the same permissions | One access compromise enables re-identification | Separate vault/IAM and access audit; choose geography under the risk and residency policy |
-| Baggage crossing trust boundary without filter | PII propagated to untrusted downstream collectors | Apply baggage allowlist at service ingress (cross-ref `../boundaries/cross-application.md`) |
-| Observability backend open to all engineers (no RBAC) | PII exposure; compliance failure | Implement role-scoped access per §12 |
-| Routing to 3rd-party vendor without DPA | GDPR Art. 28 violation | Block data flow until DPA is signed (§13) |
-| Capturing raw request body on error trace | Request bodies frequently contain credentials, PII | Drop request body by default; allowlist specific non-sensitive fields at SDK layer (§7) |
-| Cross-region telemetry routing without GDPR mechanism | GDPR Chapter V violation | Implement routing connector per §10; confirm SCC or adequacy decision |
-| OTel Collector `hash` action on production user IDs | Unsalted; brute-force reversible | Migrate to SDK-layer HMAC with vault key (§8) |
-| Logging `user_agent.original` without assessment | User-agent can be a unique identifier for profiling | Generalize to browser family only or drop (§5) |
 
 ---
 

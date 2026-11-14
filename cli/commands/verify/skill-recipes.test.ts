@@ -137,7 +137,7 @@ const sessionRegressionScript = [
   "  assert.notEqual(limit, -1, end);",
   "  return tail.slice(0, limit);",
   "}",
-  "for (const filename of ['api-template.ts', 'snippets.md']) {",
+  "for (const filename of ['snippets.md']) {",
   "  const source = readFileSync(join(skillsRoot, 'oma-mobile/variants/react-native', filename), 'utf8');",
   "  const guardBody = between(source,",
   "    'operation: (version: number) => Promise<T>): Promise<T> {\\n', '\\n}\\n');",

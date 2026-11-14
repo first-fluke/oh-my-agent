@@ -1,17 +1,42 @@
 # Release Coordination
 
-Release Please workflow for automated versioning and releases.
-
-## Overview
-
-This project uses Google's [Release Please](https://github.com/googleapis/release-please) for automated versioning and releases based on conventional commits.
+Release Please workflow for automated versioning and releases. Load when the
+repository uses [Release Please](https://github.com/googleapis/release-please)
+or the user asks to set it up. Keep an existing release tool (semantic-release,
+changesets) unless replacement was requested.
 
 ## How It Works
 
-1. **Release PR Creation**: When conventional commits are merged to main, Release Please creates a release PR
-2. **CHANGELOG Generation**: Automatically generates CHANGELOG.md from commits
-3. **Version Bumping**: Updates version in package.json and other files
-4. **Release on Merge**: When the release PR is merged, a GitHub release is created
+1. **Release PR Creation**: When conventional commits are merged to the default branch, Release Please opens or updates a release PR
+2. **CHANGELOG Generation**: The PR carries the generated CHANGELOG.md
+3. **Version Bumping**: The PR updates the version in the files the release type owns (for example `package.json`)
+4. **Release on Merge**: When the release PR is merged, a tag and GitHub release are created
+
+## Release Configuration
+
+The action uses the manifest configuration below unless `release-type` is set on
+the action itself, so keep the release type in the config file and leave that
+input unset.
+
+```json
+// release-please-config.json
+{
+  "packages": {
+    ".": {
+      "release-type": "node"
+    }
+  }
+}
+```
+
+```json
+// .release-please-manifest.json
+{
+  ".": "1.0.0"
+}
+```
+
+Use the release type that matches the package (`node`, `python`, `rust`, `simple`, ...). Add one `packages` entry per released path in a monorepo.
 
 ## GitHub Actions Workflow
 
@@ -34,42 +59,13 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: node
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 ```
 
-## Mise Tasks for Release Management
-
-```toml
-# Root mise.toml
-[tools]
-node = "24"
-bun = "latest"
-
-[tasks."release:check"]
-description = "Check release-please status"
-run = '''
-#!/usr/bin/env bash
-echo "Checking release status..."
-echo ""
-echo "Open release PRs:"
-gh pr list --label "autorelease: pending" --state open
-echo ""
-echo "Latest releases:"
-gh release list --limit 5
-'''
-
-[tasks."release:manifest"]
-description = "Show current release manifest"
-run = "cat .release-please-manifest.json"
-
-[tasks."release:changelog"]
-description = "Preview changelog (local dry-run)"
-run = '''
-#!/usr/bin/env bash
-echo "Recent conventional commits:"
-git log --pretty=format:"%s" $(git describe --tags --abbrev=0)..HEAD | grep -E "^(feat|fix|perf|build|revert|docs|style|refactor|test|chore|ci)(\(.+\))?:"
-'''
-```
+Pull requests opened with the default `GITHUB_TOKEN` do not trigger other
+workflows. When CI must run on the release PR, pass a token the project has
+provisioned for that purpose instead.
 
 ## Conventional Commit Format
 
@@ -87,154 +83,50 @@ Release Please recognizes these commit types:
 | `feat!:` | major | Breaking change |
 | `fix!:` | major | Breaking bug fix |
 
-## Release Configuration
-
-```json
-// .release-please-config.json
-{
-  "packages": {
-    ".": {
-      "release-type": "node",
-      "draft": false,
-      "prerelease": false
-    }
-  }
-}
-```
-
-```json
-// .release-please-manifest.json
-{
-  ".": "1.0.0"
-}
-```
-
 ## Release Flow
 
-### 1. Develop Features
-```bash
-# Make changes with conventional commits
-git commit -m "feat(infra): add infrastructure skills category"
-git commit -m "fix(shared): correct skill installation path"
-git commit -m "docs: update installation guide"
-```
+1. Merge conventional commits to the default branch, for example `feat(api): add export endpoint` or `fix(auth): handle expired refresh token`.
+2. Release Please opens a PR titled like `chore(main): release 1.1.0` with the updated CHANGELOG.md and version bump.
+3. Review the version and changelog in the release PR before merging through the
+   project's normal merge policy. The action alone does not auto-merge release
+   PRs or publish a package; those require explicit project automation.
+4. After the merge, confirm the tag and GitHub release exist.
 
-### 2. Merge to Main
-```bash
-git push origin main
-```
+If a publish job follows the release, build and test from the release tag, not
+from the default branch HEAD.
 
-### 3. Release Please Creates PR
-Automatically creates a PR like:
-- Title: `chore(main): release 1.1.0`
-- Includes updated CHANGELOG.md
-- Includes version bump in package.json
+## Mise Tasks for Release Management
 
-### 4. Review the release PR
-
-Review the version and changelog in the release PR before merging through the
-project's normal merge policy. This action alone does not auto-merge release PRs,
-sync OMA prompt manifests, or publish a package; those require explicit project
-automation.
-
-### 5. Verify Release
 ```toml
+# Root mise.toml
+[tasks."release:check"]
+description = "Show open release PRs and recent releases"
+run = '''
+#!/usr/bin/env bash
+gh pr list --label "autorelease: pending" --state open
+gh release list --limit 5
+'''
+
+[tasks."release:changelog"]
+description = "List releasable commits since the last tag"
+run = '''
+#!/usr/bin/env bash
+git log --pretty=format:"%s" $(git describe --tags --abbrev=0)..HEAD | grep -E "^(feat|fix|perf|build|revert|docs|style|refactor|test|chore|ci)(\(.+\))?!?:"
+'''
+
 [tasks."release:verify"]
-description = "Verify latest release"
-run = '''
-#!/usr/bin/env bash
-echo "Latest release:"
-gh release view --json tagName,name,createdAt
-
-echo ""
-echo "Assets:"
-gh release view --json assets
-'''
+description = "Show the latest release and its assets"
+run = "gh release view --json tagName,name,createdAt,assets"
 ```
 
-## Release Status
-
-Inspect release status without triggering a workflow:
-
-```toml
-[tasks."release:status"]
-description = "Show release-please status"
-run = '''
-#!/usr/bin/env bash
-echo "Release-please status:"
-echo "Workflow dispatch requires a separately configured workflow_dispatch trigger."
-echo ""
-echo "Current status:"
-mise run release:check
-'''
-```
-
-## Post-Release Tasks
-
-```toml
-[tasks."release:cleanup"]
-description = "Cleanup after release"
-run = '''
-#!/usr/bin/env bash
-echo "Post-release cleanup..."
-
-# Pull latest changes with tags
-git pull origin main --tags
-
-# Verify local state
-echo ""
-echo "Local version:"
-cat package.json | grep '"version"' | cut -d'"' -f4
-
-echo ""
-echo "Latest tag:"
-git describe --tags --abbrev=0
-
-echo ""
-echo "Release cleanup complete"
-'''
-```
-
-## Troubleshooting
-
-```toml
-[tasks."release:debug"]
-description = "Debug release issues"
-run = '''
-#!/usr/bin/env bash
-echo "Release Debugging"
-echo ""
-
-echo "1. Conventional commits since last tag:"
-git log --pretty=format:"%s" $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")..HEAD | grep -E "^(feat|fix|perf|build|revert|docs|style|refactor|test|chore|ci)(\(.+\))?:" || echo "  No conventional commits found"
-
-echo ""
-echo "2. Release Please config files:"
-ls -la .release-please*.json 2>/dev/null || echo "  Config files not found"
-
-echo ""
-echo "3. GitHub Actions status:"
-gh run list --workflow=release-please.yml --limit 5 2>/dev/null || echo "  No runs found"
-
-echo ""
-echo "4. Open release PRs:"
-gh pr list --label "autorelease: pending" 2>/dev/null || echo "  No release PRs"
-'''
-```
+When no release PR appears, check in order: releasable commits since the last
+tag (`release:changelog`), both config files present at the paths the workflow
+passes, and recent runs of the workflow (`gh run list --workflow=release-please.yml --limit 5`).
 
 ## Setup Requirements
 
 1. **GitHub Actions workflow** (`.github/workflows/release-please.yml`)
-2. **Release Please config** (`.release-please-config.json`)
+2. **Release Please config** (`release-please-config.json`)
 3. **Release Please manifest** (`.release-please-manifest.json`)
-4. **Conventional commits** (already configured via commitlint)
+4. **Conventional commits** enforced by commitlint (see [validation-pipeline.md](validation-pipeline.md))
 5. **GitHub CLI** (`gh`) installed for the release tasks — `brew install gh` or `mise use gh` (it is a Go binary, not an npm package; `bunx gh` resolves an unrelated deprecated package)
-6. **Publish gating** — the release workflow runs the full Test matrix against the release tag (`gate-tests` job) before publishing, and both publish jobs build from the tag rather than main HEAD
-
-## Benefits
-
-- Automated versioning based on commits
-- Auto-generated CHANGELOG.md
-- GitHub releases with notes
-- No manual version bumping
-- Integrated with GitHub PR workflow

@@ -4,13 +4,13 @@ Starter reference for the selected platform. Preserve existing project choices. 
 
 ## Framework: Jetpack Compose + Material 3
 
-- **Language**: Kotlin 2.1+ floor (K2 compiler), JDK 17 toolchain
+- **Language**: Kotlin 2.2.10+ floor (K2 compiler), JDK 17 toolchain
 - **UI Framework**: Jetpack Compose via the Compose BOM; Material 3 components
 - **State Management**: `ViewModel` + `StateFlow` (`androidx.lifecycle:lifecycle-viewmodel-compose`), collected with `collectAsStateWithLifecycle`
-- **Dependency Injection**: Hilt (`@HiltAndroidApp`, `@AndroidEntryPoint`, `@HiltViewModel`); KSP processor preferred, kapt acceptable on existing projects
+- **Dependency Injection**: Hilt 2.59+ (`@HiltAndroidApp`, `@AndroidEntryPoint`, `@HiltViewModel`) through the KSP processor; `hiltViewModel()` comes from `androidx.hilt:hilt-lifecycle-viewmodel-compose` (androidx.hilt 1.3+)
 - **Concurrency**: Kotlin coroutines + `Flow`; `viewModelScope` owns every network call
 - **Minimum SDK**: API 26 (Android 8.0); `compileSdk`/`targetSdk` track the latest stable
-- **Tooling**: Gradle Kotlin DSL (`*.gradle.kts`), Android Gradle Plugin 8.x, Compose compiler plugin (`org.jetbrains.kotlin.plugin.compose`)
+- **Tooling**: Gradle Kotlin DSL (`*.gradle.kts`) with a version catalog, Android Gradle Plugin 9.0+ (built-in Kotlin; `org.jetbrains.kotlin.android` is not applied), Compose compiler plugin (`org.jetbrains.kotlin.plugin.compose`)
 
 A `@HiltViewModel` exposes a single immutable `UiState` through `StateFlow`; composables never hold business state. `collectAsStateWithLifecycle` stops collection when the screen leaves `STARTED`, so no manual lifecycle plumbing is needed.
 
@@ -26,14 +26,14 @@ A `@HiltViewModel` exposes a single immutable `UiState` through `StateFlow`; com
 | HTTP engine in tests | `io.ktor:ktor-client-mock` |
 | JSON | `io.ktor:ktor-client-content-negotiation` + `io.ktor:ktor-serialization-kotlinx-json` + `org.jetbrains.kotlinx:kotlinx-serialization-json` |
 
-The generated API classes (`*Api` per OpenAPI tag, `DefaultApi` when the spec has no tags) are the **only** way to call the backend; never hand-assemble URL paths or JSON bodies for endpoints covered by the spec. **Regenerate, don't hand-edit** generated sources — they live under `build/generated/openapi` and are never committed.
+The generated API classes (`*Api` per OpenAPI tag, `DefaultApi` when the spec has no tags) are the **only** way to call the backend; never hand-assemble URL paths or JSON bodies for endpoints covered by the spec. **Regenerate, don't hand-edit** generated sources — they live under `build/generated/openapi` and are never committed. With `kotlinx_serialization` the generated `ApiClient` installs `ContentNegotiation` without a converter, so the module that constructs the `*Api` registers `json(...)` through the `httpClientConfig` constructor parameter (see `snippets.md` §3).
 
 ### Ktor is a layer, not an engine
 
 Ktor Client is an engine-agnostic API. The generated client depends only on `ktor-client-core`; the engine that performs socket I/O is a plug-in chosen by the module that constructs the client:
 
 ```
-Generated *Api (camp.example.generated.api)
+Generated *Api (com.example.generated.api)
   → Ktor HttpClient  (core + ContentNegotiation + kotlinx-json)
     → engine: OkHttp (app module)   |   MockEngine (tests)
       → network
@@ -52,7 +52,7 @@ Keeping the contract tests in a JVM module means they run with `./gradlew :api-c
 
 ### Generator options that matter
 
-- `apiPackage`, `modelPackage`, `invokerPackage` — fix the package names so app code imports stable symbols (`…generated.api`, `…generated.model`, `…generated.infrastructure`).
+- `apiPackage`, `modelPackage`, `packageName` — fix the package names so app code imports stable symbols (`…generated.api`, `…generated.model`, and `packageName` + `.infrastructure`).
 - `dateLibrary = "string"` — keep dates as ISO strings at the boundary and parse them in the repository; avoids pulling `java.time` serializers into every DTO.
 - `enumPropertyNaming = "UPPERCASE"` — enum constants read as Kotlin constants.
 - `schemaMappings` — OpenAPI primitive unions (`anyOf: [string, number, boolean]`) otherwise generate empty classes or `Any`. Map them to `kotlinx.serialization.json.JsonPrimitive` so `true` stays `true` on the wire instead of `{}`.
@@ -68,7 +68,7 @@ The backend owns the contract; the Android app is purely a **consumer** and neve
 
 | Component | Artifact |
 |-----------|----------|
-| Local relational cache | `androidx.room:room-runtime` + `room-ktx` (KSP compiler) |
+| Local relational cache | Room 3.0+: `androidx.room3:room3-runtime` with the `room3-compiler` KSP processor, opened through `AndroidSQLiteDriver` |
 
 When response caching is required, implement it at the Repository layer, backed by a Room table that stores **decoded domain models**, never raw bytes. The cache sits between the `ViewModel` and the generated `*Api`; it is never a Ktor plugin or an OkHttp interceptor.
 
@@ -98,7 +98,7 @@ See `snippets.md` §8 for the canonical cached repository.
 
 - **Room** — relational persistence; the response cache (above) and durable user-owned data in separate tables.
 - **DataStore (Preferences / Proto)** — typed key-value preferences; replaces `SharedPreferences`.
-- **Keystore-backed storage** — tokens and credentials via `EncryptedSharedPreferences` (security-crypto) or a `DataStore` encrypted with an Android Keystore key. Never plain `SharedPreferences`.
+- **Keystore-backed storage** — tokens and credentials encrypted with an Android Keystore key (AES-GCM) before they reach `SharedPreferences` or `DataStore`; see `snippets.md` §12. `EncryptedSharedPreferences` (security-crypto) is deprecated upstream — keep it only where the project already uses it. Never plain `SharedPreferences`.
 
 ## Testing
 
@@ -106,10 +106,10 @@ See `snippets.md` §8 for the canonical cached repository.
 |-------|-----------|
 | Unit (repository, view model) | JUnit 4/5 + `kotlinx-coroutines-test` (`runTest`) + Turbine for `Flow` assertions |
 | Generated-client contract | `ktor-client-mock` `MockEngine` in `:api-client` (no network, no Android) |
-| Compose UI | `androidx.compose.ui:ui-test-junit4` + `createAndroidComposeRule` |
+| Compose UI | `androidx.compose.ui:ui-test-junit4` + `createComposeRule` |
 | E2E | Maestro flows for critical user journeys |
 
-Run unit and contract tests with `./gradlew :app:testDebugUnitTest :api-client:test`; the CI pass signal is `BUILD SUCCESSFUL`. These tasks compile Kotlin, so under the execution policy run them only when the user has authorised test execution or a build.
+Unit and contract test command: `./gradlew :app:testDebugUnitTest :api-client:test`; the CI pass signal is `BUILD SUCCESSFUL`. These tasks compile Kotlin, so run them only when the user or the active workflow has asked for a test run or build.
 
 ## Project Layout: `app/{ui,data,di}` + `api-client`
 
@@ -118,7 +118,8 @@ Group by **feature inside `ui/`, by responsibility inside `data/`**. The same fe
 ```
 <project>/
 ├── settings.gradle.kts            # include(":app", ":api-client")
-├── build.gradle.kts               # plugin versions, apply false
+├── build.gradle.kts               # plugins declared once, apply false
+├── gradle/libs.versions.toml      # version catalog — the only place versions are pinned
 ├── api-client/                    # JVM module: generated srcDir + shared Json codec + contract tests
 │   ├── build.gradle.kts
 │   └── src/{main,test}/kotlin/<pkg>/client/
@@ -156,4 +157,4 @@ di/ assembles everything; nothing imports di/.
 
 ## Navigation: Navigation Compose with type-safe routes
 
-Routes are `@Serializable` objects/data classes passed to `NavHost` (`composable<Route>`), not string templates. Arguments arrive typed through `toRoute<Route>()`. Navigation lives in `ui/navigation/`; screens receive callbacks (`onOpenDetail: (String) -> Unit`) and never hold a `NavController`, which keeps every screen previewable and testable in isolation. Predictive back is enabled in the manifest (`android:enableOnBackInvokedCallback="true"`) and handled by the `NavHost`, not per screen.
+Type-safe routes need Navigation 2.8+. Routes are `@Serializable` objects/data classes passed to `NavHost` (`composable<Route>`), not string templates. Arguments arrive typed through `toRoute<Route>()`. Navigation lives in `ui/navigation/`; screens receive callbacks (`onOpenDetail: (String) -> Unit`) and never hold a `NavController`, which keeps every screen previewable and testable in isolation. Predictive back is enabled by default for apps targeting API 36+ and handled by the `NavHost`, not per screen.

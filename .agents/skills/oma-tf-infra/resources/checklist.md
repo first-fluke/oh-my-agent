@@ -1,5 +1,7 @@
 # TF Infra Agent: Self-Verification Checklist
 
+Check the items that apply to the change. The guardrails in `SKILL.md` state the rules; report an item you could not verify as unverified, not as passed.
+
 ## Configuration
 - [ ] `terraform validate` passes without errors
 - [ ] `terraform fmt` applied (consistent formatting)

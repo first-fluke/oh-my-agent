@@ -8,7 +8,7 @@ disable-model-invocation: true
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured tools; if the provider is unavailable or times out, use native search only for paths outside this project or ignored paths. Do not install or track repositories automatically.
 - Persist coordination artifacts through the file-memory contract in `.agents/skills/_shared/runtime/memory-protocol.md`; it is independent of code-intelligence MCP tools.
-- **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Core Rules.
+- **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Guardrails.
 - **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
 
 ---
@@ -44,11 +44,11 @@ Reviewers are read-only evaluators. Implementation and refactor **actions** (Pha
 
 ## Phase 0: Initialization (DO NOT SKIP)
 
-1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
+1. Read `.agents/skills/oma-coordination/SKILL.md` and apply its Guardrails.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
-4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
-5. Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`; the rest of that file is the event schema reference.
+5. Emit required L1 decisions by calling `oma state emit` directly, as documented in the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`.
 6. Read `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (12 review guides)
 7. Read `.agents/skills/_shared/core/quality-principles.md` (scope and verification guidance)
 8. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
@@ -116,22 +116,11 @@ Evaluate [the canonical PLAN_GATE](ultrawork/resources/phase-gates.md#plan_gate)
 Spawn Implementation Agents (Backend/Frontend/Mobile) in parallel.
 
 #### Per-Agent Dispatch
-Resolve the target vendor for each agent from `.agents/oma-config.yaml`.
-Use native subagents only when `target_vendor === current_runtime_vendor` and that runtime supports the vendor's role-subagent path.
-Otherwise use `oma agent spawn` for that agent.
+Dispatch each agent by the Dispatch Rule in `.agents/skills/_shared/core/vendor-detection.md`: the runtime's native role subagent when the agent's target vendor is the current runtime and that native path is verified, otherwise `oma agent spawn` for that agent only.
 
-#### If Claude Code and target vendor is Claude
-Use the Agent tool to spawn subagents:
-- `Agent(subagent_type="backend-engineer", prompt="Implement backend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
-- `Agent(subagent_type="frontend-engineer", prompt="Implement frontend tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
-- Multiple Agent tool calls in the same message = true parallel execution
+- **Native**: one call per implementation role (`backend-engineer`, `frontend-engineer`, `mobile-engineer`) with the prompt "Implement <domain> tasks per plan. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules." plus its task description, API contracts, and relevant context.
+- **CLI fallback**:
 
-#### If Codex CLI and target vendor is Codex
-Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
-Pass each agent its task description, API contracts, and relevant context.
-If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
-
-#### If target vendor differs from current runtime, or native dispatch is unavailable
 ```bash
 oma agent spawn backend backend-prompt.md {sessionId} --task-id {backend_task.id} -w ./backend &
 oma agent spawn frontend frontend-prompt.md {sessionId} --task-id {frontend_task.id} -w ./frontend &
@@ -176,17 +165,16 @@ Evaluate [the canonical IMPL_GATE](ultrawork/resources/phase-gates.md#impl_gate)
 ### Step 6-8: QA Verification (Cross-Context Review)
 Dispatch each of Steps 6, 7, 8 as a **separate fresh isolated reviewer subagent** per the **Cross-Context Review (CCR) Dispatch** section. Do NOT run all three in one agent, and do NOT pass this session's history or the implementation agents' reasoning into any reviewer prompt. Each reviewer reads only the durable artifacts (git diff, changed files, `.agents/results/plan-{sessionId}.json`, `result-{agent}` files, test/lint output) plus its own review guide section from `multi-review-protocol.md`.
 
-#### If Claude Code
-Use three separate Agent tool calls (one message = parallel, isolated contexts):
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 6 Alignment Review ONLY. Inputs (read fresh, assume no prior context): <diff + changed files + plan-{sessionId}.json>. Guide: Alignment Review section. Write a structured verdict to memory.", run_in_background=true)`
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 7 Security/Bug Review ONLY (npm audit, OWASP). Inputs (read fresh, assume no prior context): <diff + changed files + audit output>. Guide: Safety Review section. Write a structured verdict to memory.", run_in_background=true)`
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 8 Improvement/Regression Review ONLY. Inputs (read fresh, assume no prior context): <diff + test output>. Guide: Regression Review section. Write a structured verdict to memory.", run_in_background=true)`
+One `qa-reviewer` per step, dispatched together so they run in parallel, each with only its own inputs and guide section:
 
-#### If Codex CLI
-Spawn one native Codex custom agent (`.codex/agents/{agent}.toml`) **per review** when available, each with only its artifacts + guide section.
-If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
+| Step | Reviewer prompt |
+|:--|:--|
+| 6 | "CCR Step 6 Alignment Review ONLY. Inputs (read fresh, assume no prior context): <diff + changed files + plan-{sessionId}.json>. Guide: Alignment Review section. Write a structured verdict to memory." |
+| 7 | "CCR Step 7 Security/Bug Review ONLY (npm audit, OWASP). Inputs (read fresh, assume no prior context): <diff + changed files + audit output>. Guide: Safety Review section. Write a structured verdict to memory." |
+| 8 | "CCR Step 8 Improvement/Regression Review ONLY. Inputs (read fresh, assume no prior context): <diff + test output>. Guide: Regression Review section. Write a structured verdict to memory." |
 
-#### If Antigravity or CLI Fallback
+CLI fallback:
+
 ```bash
 oma agent spawn qa-agent step-6-prompt.md {sessionId} --task-id {qa_alignment_task.id} -w {workspace}
 oma agent spawn qa-agent step-7-prompt.md {sessionId} --task-id {qa_safety_task.id} -w {workspace}
@@ -232,7 +220,7 @@ Evaluate [the canonical VERIFY_GATE](ultrawork/resources/phase-gates.md#verify_g
 
 > **Review Loop termination conditions** (OR, whichever fires first wins):
 > 1. Gate failure count has reached the configured maximum iterations (default: 5 total VERIFY + REFINE cycles). Do not start another cycle.
-> 2. Session cost cap exceeded: `oma agent:spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save all current step results, and report to the user that the loop was terminated early due to quota.
+> 2. Session cost cap exceeded: `oma agent spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save all current step results, and report to the user that the loop was terminated early due to quota.
 >
 > If neither condition is met, return to Step 5 and continue.
 
@@ -257,19 +245,17 @@ REFINE mixes two kinds of work: **reviews** (Steps 10, 12), which are read-only 
 
 **Then, spawn the Refactor Agent** to perform the refactor actions (Steps 9, 11, 13) and apply the isolated reviewers' findings, and to write `result-refactor-{sessionId}.md` (this satisfies the REFINE artifact contract).
 
-#### If Claude Code
-Reviews (two separate calls, isolated contexts):
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 10 Reusability Review ONLY. Inputs (read fresh, assume no prior context): <diff + changed files>. Guide: Reusability Review section. Write a structured verdict to memory.", run_in_background=true)`
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 12 Consistency Review ONLY. Inputs (read fresh, assume no prior context): <diff + changed files>. Guide: Consistency Review section. Write a structured verdict to memory.", run_in_background=true)`
+Reviews, one `qa-reviewer` each, isolated contexts:
 
-Refactor actions (after the review verdicts are collected):
-- `Agent(subagent_type="refactor-engineer", prompt="Execute Phase 4 refactor actions. Step 9: Split large files. Step 11: Side Effect analysis (find_referencing_symbols). Step 13: Cleanup dead code. Apply the collected Reusability/Consistency verdicts. Write result-refactor-{sessionId}.md. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules.", run_in_background=true)`
+| Step | Reviewer prompt |
+|:--|:--|
+| 10 | "CCR Step 10 Reusability Review ONLY. Inputs (read fresh, assume no prior context): <diff + changed files>. Guide: Reusability Review section. Write a structured verdict to memory." |
+| 12 | "CCR Step 12 Consistency Review ONLY. Inputs (read fresh, assume no prior context): <diff + changed files>. Guide: Consistency Review section. Write a structured verdict to memory." |
 
-#### If Codex CLI
-Spawn one native Codex reviewer per review (`.codex/agents/{agent}.toml`) with only its artifacts + guide section, then the native refactor agent (`.codex/agents/refactor-engineer.toml`) for Steps 9/11/13.
-If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
+Refactor actions, after the review verdicts are collected — one `refactor-engineer`: "Execute Phase 4 refactor actions. Step 9: Split large files. Step 11: Side Effect analysis (find_referencing_symbols). Step 13: Cleanup dead code. Apply the collected Reusability/Consistency verdicts. Write result-refactor-{sessionId}.md. IMPORTANT: Follow .agents/skills/_shared/core/context-loading.md rules."
 
-#### If Antigravity or CLI Fallback
+CLI fallback:
+
 ```bash
 oma agent spawn qa-agent step-10-prompt.md {sessionId} --task-id {qa_reuse_task.id} -w {workspace}
 oma agent spawn qa-agent step-12-prompt.md {sessionId} --task-id {qa_consistency_task.id} -w {workspace}
@@ -283,7 +269,7 @@ oma agent spawn refactor-engineer refine-prompt.md {sessionId} --task-id {refine
 **Wait for the two reviewers and the Refactor Agent to complete refinement before proceeding.**
 
 1. Confirm both isolated reviewers wrote their structured verdicts to memory.
-2. Prefer completion notifications; otherwise use bounded polling of changed `progress-refactor*[-{sessionId}].md` files.
+2. Prefer completion notifications; otherwise use bounded polling of the refactor run's changed `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` file.
 3. Check the `refine_task` claim and its run-scoped result report. The injected
    claim path, not an agent-derived filename, is the completion identity.
    - **Claude-native path**: use the native result and persist it against the same plan task ID/run ID.
@@ -330,7 +316,7 @@ Evaluate [the canonical REFINE_GATE](ultrawork/resources/phase-gates.md#refine_g
 
 > **Review Loop termination conditions** (OR, whichever fires first wins):
 > 1. Total REFINE failure count has reached the configured maximum iterations (default: 5 cycles across all phases). Do not start another cycle.
-> 2. Session cost cap exceeded: `oma agent:spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save current step results, and report early termination due to quota.
+> 2. Session cost cap exceeded: `oma agent spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save current step results, and report early termination due to quota.
 >
 > If neither condition is met, re-spawn the Refactor Agent with specific issues and repeat until GATE passes.
 
@@ -444,6 +430,6 @@ Every review runs in its own fresh context (never inline, never batched) per the
 | **Keep/Discard** | When comparing actual experiments | `quality-score.md` acceptance and comparison criteria |
 | **Experiment logging** | When an actual experiment is run | `experiment-ledger.md` (via memory protocol) |
 | **Hypothesis exploration** | On repeated gate failures | `exploration-loop.md` (loaded on trigger) |
-| **Runtime learning** | At session end, if experiments exist | `{sessionId}/lessons-{sessionId}.md` |
+| **Runtime learning** | At session end, if experiments exist | `lessons-{sessionId}.md` |
 
 All protocols are loaded **conditionally** per `context-loading.md`, not at Phase 0.

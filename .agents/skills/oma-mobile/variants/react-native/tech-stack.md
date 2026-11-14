@@ -5,7 +5,7 @@ Starter reference for the selected platform. Preserve existing project choices. 
 ## Framework: React Native + TypeScript
 
 - **Language**: TypeScript (strict mode; `"strict": true` in `tsconfig.json`)
-- **UI Framework**: React Native 0.86 with React 19 (core components); Expo is the recommended toolchain for new projects (managed or bare workflow)
+- **UI Framework**: React Native 0.86 with React 19.2 (core components); Expo SDK 57 is the recommended toolchain for new projects (managed or bare workflow)
 - **Architecture**: New Architecture (Fabric + TurboModules) — default since RN 0.76 and the only mode from 0.82 onward
 - **Minimum OS**: iOS 16.0 / Android API 26 (Oreo)
 - **Tooling**: Metro bundler, Expo CLI or React Native CLI, React Native DevTools for dev debugging
@@ -27,7 +27,7 @@ Zustand stores live in `src/store/`. Keep stores small and feature-scoped — on
 ## HTTP Transport: Axios
 
 <!-- oma-docs:ignore-start -->
-Network calls are made through a **singleton Axios instance** configured in `src/api/client.ts`. The instance wires request interceptors for bearer-token injection and response interceptors for 401 handling / token refresh. Retry logic (exponential back-off) is attached via `axios-retry`.
+Network calls are made through a **singleton Axios instance** configured in `src/api/client.ts`. The instance wires request interceptors for bearer-token injection and response interceptors for 401 handling / token refresh. The transport does not retry: TanStack Query retries queries with exponential back-off and leaves mutations to the caller.
 <!-- oma-docs:ignore-end -->
 
 **Transport vs. server-state distinction.** Axios is a transport concern only — it sends and receives bytes. It knows nothing about caching, stale data, or background revalidation. TanStack Query (below) owns those concerns. React components never import the Axios instance directly; they consume typed hooks built on TanStack Query.
@@ -66,14 +66,14 @@ Backend REST API
 1. Every read is wrapped in a `useQuery` call with **explicit `staleTime` and `gcTime`** — no implicit infinite TTL. `staleTime` controls when a cached entry is considered stale and triggers a background revalidation; `gcTime` (formerly `cacheTime`) controls when an unused entry is garbage-collected from memory. For offline-first, `gcTime` **must stay `>=` the persister's `maxAge`** (default 24h) or the persisted cache is discarded before it can be restored on the next launch.
 2. Query keys include the validated account/tenant identity: `[account, accountId, operation, ...params]`, for example `['account', accountId, 'todos', 'list']`. **Never key on URLs** (they conflate transport with cache identity and break under proxy/versioning changes).
 3. Every mutation (`useMutation`) **must call `queryClient.invalidateQueries({ queryKey })`** for all affected query keys on `onSuccess`. Optimistic updates are optional but, when used, must pair a `rollback` in `onError`.
-4. When offline persistence is required: `@tanstack/react-query-persist-client` (the `PersistQueryClientProvider`) + `@tanstack/query-sync-storage-persister` driving a custom MMKV persister (`react-native-mmkv`) so the query cache survives app restarts. Wire `onlineManager` to `@react-native-community/netinfo` so paused mutations resume and stale queries refetch when connectivity returns.
+4. When offline persistence is required: `@tanstack/react-query-persist-client` (the `PersistQueryClientProvider`) + `@tanstack/query-async-storage-persister` driving a custom MMKV persister (`react-native-mmkv`) so the query cache survives app restarts. Wire `onlineManager` to `@react-native-community/netinfo` so paused mutations resume and stale queries refetch when connectivity returns.
 <!-- oma-docs:ignore-start -->
 5. Create one `QueryClient` per authenticated session (`src/api/queryClient.ts`), with an account-scoped disk key. On account change/logout, unmount the provider, cancel queries, clear memory and the previous account disk cache, and replace the client. Block delayed writes and mutations from retired sessions; never create per-component clients.
 <!-- oma-docs:ignore-end -->
 6. Network calls are isolated in `src/api/` typed functions (axios). **Screens and components never call axios directly** — this is the repository seam. Components consume hooks; hooks consume the api layer.
 7. The query cache is for **transient, server-owned data**. Durable non-secret user-owned data belongs in MMKV; secrets (the access token) live only in memory in a Zustand `authStore` hydrated from `react-native-keychain` — never in plain-text MMKV. TanStack Query is never a system of record.
 
-See `snippets.md §2` for QueryClient + MMKV persister setup, `snippets.md §5` for `queries.ts` / `mutations.ts`, and `snippets.md §9` for the cache rules recap.
+See `snippets.md §2` for QueryClient + MMKV persister setup and `snippets.md §5` for `queries.ts` / `mutations.ts`.
 
 ## Local Storage
 
@@ -81,25 +81,25 @@ See `snippets.md §2` for QueryClient + MMKV persister setup, `snippets.md §5` 
 |-------|---------|---------|
 | Fast KV (non-secret) | `react-native-mmkv` | User preferences, offline flags, TanStack Query persistence |
 | Secrets / tokens | `expo-secure-store` or `react-native-keychain` | Auth tokens, API keys |
-| Query cache persistence | MMKV persister (`@tanstack/query-sync-storage-persister` + `@tanstack/react-query-persist-client`) | Offline-first server-state survival across restarts |
+| Query cache persistence | MMKV persister (`@tanstack/query-async-storage-persister` + `@tanstack/react-query-persist-client`) | Offline-first server-state survival across restarts |
 
 **MMKV** is a C++-backed key-value store (the same one WeChat uses) that is 30× faster than `AsyncStorage` on both platforms. Use it for all non-secret durable state. Use `expo-secure-store` (Expo projects) or `react-native-keychain` (bare RN) for anything that must live in the platform secure enclave (iOS Keychain / Android Keystore).
 
 <!-- oma-docs:ignore-start -->
-Never store secrets in MMKV — it stores plain text unless an `encryptionKey` is passed. The access token lives in an in-memory Zustand `authStore` (`src/store/authStore.ts`) that is hydrated from the Keychain at app start; the axios request interceptor reads it synchronously via `useAuthStore.getState().accessToken`, and a 401 clears both the Keychain and the store. See `snippets.md §10`.
+Never store secrets in MMKV — it stores plain text unless an `encryptionKey` is passed. The access token lives in an in-memory Zustand `authStore` (`src/store/authStore.ts`) that is hydrated from the Keychain at app start; the axios request interceptor reads it synchronously via `useAuthStore.getState().accessToken`, and a 401 clears both the Keychain and the store. See `snippets.md §9`.
 <!-- oma-docs:ignore-end -->
 
 ## Testing
 
 | Layer | Framework |
 |-------|-----------|
-| Unit (domain logic, stores) | Jest |
+| Unit (domain logic, stores) | Jest (`@react-native/jest-preset`) |
 | Component / screen | `@testing-library/react-native` |
 | E2E / critical flows | Maestro |
 
 Components under test are wrapped in a `QueryClientProvider` with a fresh `QueryClient` (no retries, zero stale time) so tests do not make real network calls. The `src/api/` module is mocked at the Jest module boundary — tests assert on hook behavior, not axios internals.
 
-Run tests with `npx jest --ci`. Maestro flow files live in `e2e/` and exercise critical user journeys (login, create-todo, toggle, delete) via `maestro test e2e/`.
+Test command: `npx jest --ci`; run it only when the user or the active workflow asks for a test run. Maestro flow files live in `e2e/` and exercise critical user journeys (login, create-todo, toggle, delete) via `maestro test e2e/`.
 
 ## Project Layout
 

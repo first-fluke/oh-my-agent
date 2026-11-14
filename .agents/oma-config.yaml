@@ -56,7 +56,6 @@ auto_update_cli: true
 #                  (note: this also disables Claude Code Remote Control
 #                  v2.1.51+, since the RC eligibility check fails when
 #                  DISABLE_TELEMETRY is set)
-#       • Gemini : privacy.usageStatisticsEnabled = false in .gemini/settings.json
 #       • Qwen   : privacy.usageStatisticsEnabled = false in .qwen/settings.json
 #       • Codex  : analytics.enabled = false, feedback.enabled = false in
 #                  .codex/config.toml

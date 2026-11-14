@@ -13,7 +13,7 @@ Use the relevant recovery steps. If required information or authority is missing
 2. Check environment differences: browser, OS, node/python version
 3. Check data-dependent: does it need specific DB state or test data?
 4. Check timing: is it a race condition? Try adding delays or rapid repetition
-5. **After 3 attempts**: Record `Status: cannot_reproduce` in result with condition list
+5. If it still does not reproduce after those variations, report `partial` (or `blocked` when nothing else can proceed) and list the conditions tried in `unresolved`
    - NEVER give up immediately saying "cannot reproduce"
 
 ---
@@ -39,7 +39,7 @@ Use the relevant recovery steps. If required information or authority is missing
 3. `search_for_pattern("suspicious_pattern")` to find related code
 4. Check git history: `git log --oneline -20 -- path/to/file`. When was it last changed?
 5. Check: is it a dependency issue? Library version mismatch?
-6. **No progress after 5 turns**: Record current analysis in progress, switch to different hypothesis
+6. If a hypothesis keeps failing to explain the evidence, record the current analysis in progress and switch to a different hypothesis
 
 ---
 
@@ -52,8 +52,8 @@ Use the relevant recovery steps. If required information or authority is missing
    - Which endpoint/component is wrong
    - What the correct behavior should be
    - Evidence (request/response logs, stack trace)
-3. Record in result: `cross_domain_issue: {agent: "backend", description: "..."}`
-4. **Do NOT modify directly**; touching another agent's code causes conflicts
+3. In an orchestrated run where another agent owns that code, do not modify it: name the owning skill and the issue in `unresolved` so the coordinator can route it
+4. In a standalone run, fix the root cause where it lives, within the requested scope
 
 ---
 
@@ -77,7 +77,7 @@ Use the relevant recovery steps. If required information or authority is missing
 2. Try: integration test instead of unit test
 3. If truly untestable: document the manual reproduction steps
 4. Add a comment in code explaining why the fix is correct
-5. Note in result: `test_limitation: "reason why automated test is not feasible"`
+5. State in `unresolved` why an automated test is not feasible
 
 ---
 
@@ -90,5 +90,5 @@ Same as the backend playbook: see `../../oma-backend/resources/error-playbook.md
 ## General Principles
 
 - **After 3 failures**: If same approach fails 3 times, must try a different method
-- **Blocked**: If no progress after 5 turns, save current state, `Status: blocked`
-- **Out of scope**: Other agent's domain. Only record, do not modify directly
+- **Blocked**: If a missing fact or a repeated failure stops progress, save current state and report `blocked` with the cause in `unresolved`
+- **Another owner's code**: In an orchestrated run with assigned ownership, record the issue for its owner instead of modifying it

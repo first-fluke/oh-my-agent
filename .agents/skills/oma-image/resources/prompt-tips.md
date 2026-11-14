@@ -1,6 +1,6 @@
 # Prompt Tips
 
-Good prompts are specific about scene, subject, lighting, and style. `gpt-image-2` (codex), the Gemini-family "nano-banana" models (antigravity, chosen internally by agy), and flux/zimage (pollinations) all respond well to the same structural cues.
+Good prompts are specific about scene, subject, lighting, and style. `gpt-image-2` (codex), the model agy picks internally (antigravity), and flux/zimage (pollinations) all respond well to the same structural cues.
 
 ## Structure
 
@@ -20,7 +20,7 @@ Example: `minimalist product photography: single white ceramic coffee cup on dar
 
 ## Don'ts
 
-- Avoid vague prompts like "a nice picture"; both models produce generic output.
+- Avoid vague prompts like "a nice picture"; every routed model produces generic output.
 - Don't stack contradicting styles ("photorealistic cel-shaded 3D").
 - Skip negative prompts; none of the routed models treats them as first-class.
 
@@ -39,7 +39,7 @@ Example: `minimalist product photography: single white ceramic coffee cup on dar
 ## Vendor Nuances
 
 - **Codex (`gpt-image-2`)**: prefers slightly longer, descriptive prompts. Quality flag `high` noticeably sharpens fine detail but doubles generation time.
-- **Antigravity (Gemini-family "nano-banana" models, chosen internally by agy)**: robust on CJK-composed scenes ("hanok", "cherry blossom"); slightly stronger on illustrated/painterly styles. Driven via the `agy` CLI's agentic loop — output is JPEG by default even if `.png` is requested (the provider sniffs magic bytes and renames the extension accordingly).
+- **Antigravity (model chosen internally by agy)**: robust on CJK-composed scenes ("hanok", "cherry blossom"); slightly stronger on illustrated/painterly styles. Driven via the `agy` CLI's agentic loop — output is JPEG by default even if `.png` is requested (the provider sniffs magic bytes and renames the extension accordingly).
 
 ## Comparing Output
 
@@ -47,25 +47,25 @@ Example: `minimalist product photography: single white ceramic coffee cup on dar
 
 ## External Prompt Libraries (agent reference only)
 
-When the **Clarification Protocol** (see `SKILL.md`) reaches the *amplify* step, these galleries provide structural references.
+When the **Creative brief** (see `SKILL.md`) covers an unfamiliar image category, these galleries provide structural references.
 
 | Source | Vendor match | Prompts | Categories |
 |--------|--------------|---------|-----------|
 | [awesome-gpt-image-2](https://github.com/YouMind-OpenLab/awesome-gpt-image-2) | `codex` (gpt-image-2) | ~100 | Profile/Avatar · Social Post · Infographic · YouTube Thumbnail · Comic/Storyboard · Poster/Flyer · App/Web Design |
-| [awesome-nano-banana-pro-prompts](https://github.com/YouMind-OpenLab/awesome-nano-banana-pro-prompts) | `antigravity` (nano-banana-pro) | 10,000+ | Same taxonomy; 16 localized READMEs (en, ko-KR, ja-JP, zh-TW, de-DE, …) |
+| [awesome-nano-banana-pro-prompts](https://github.com/YouMind-OpenLab/awesome-nano-banana-pro-prompts) | `antigravity` | 10,000+ | Same taxonomy; 16 localized READMEs (en, ko-KR, ja-JP, zh-TW, de-DE, …) |
 
 For `pollinations` (flux / zimage), patterns from either library transfer; use the subject framing, lighting cues, and style-keyword structure, not the literal wording.
 
 **How to use (agent-side):**
 
 1. Classify the user's intent into one of the 7 categories. If no match, fall back to the *Scene/backdrop → Subject → Details → Constraints* template at the top of this file.
-2. Fetch the relevant README section via `gh api`, e.g. Korean user + nano-banana:
+2. Fetch the relevant README section via `gh api`, e.g. Korean user + `antigravity`:
    ```
    gh api repos/YouMind-OpenLab/awesome-nano-banana-pro-prompts/contents/README_ko-KR.md \
      --jq .content | base64 -d | less
    ```
    Scan headings like `### No. N: <Category> - <Title>` to locate 1–2 analogous entries.
 3. **Internalize the pattern, do not reproduce the text.** Extract lighting / framing / camera / style-keyword choices.
-4. Compose your amplified prompt by applying that pattern to the user's subject in your own wording. Preserve the requested subject and constraints; proceed under existing generation authorization unless a material decision remains.
+4. Compose the prompt by applying that pattern to the user's subject in your own wording. Preserve the requested subject and constraints; proceed under existing generation authorization unless a material decision remains.
 
 **Fallback:** If no category matches, use the structural template at the top of this file.

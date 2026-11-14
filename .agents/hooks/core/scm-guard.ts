@@ -1,5 +1,6 @@
 // PreToolUse hook — Block staging of likely-secret files (oma-scm enforcement).
-// Enforces `forbidden_patterns` from oma-scm's commit-config.yaml mechanically:
+// Enforces `scm.forbidden_patterns` from oma-config (legacy oma-scm
+// commit-config.yaml is still read as a fallback) mechanically:
 // before this hook the pattern list was advisory-only (model compliance).
 // Works with: Claude Code, Codex CLI, Cursor, Grok, Kimi, Kiro, Qwen Code.
 //

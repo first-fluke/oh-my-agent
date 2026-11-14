@@ -6,13 +6,15 @@
 
 - `core/`
   - Common policy and task-selected guides; not a task-start reading list.
-  - Examples: context loading, clarification, difficulty, reasoning, lessons learned.
+  - Examples: context loading, clarification, difficulty, lessons learned.
 - `conditional/`
   - Load only when the workflow reaches a specific trigger.
   - Examples: quality score, experiment ledger, exploration loop, diagram engine (archify ↔ Mermaid, stack-diagram).
 - `runtime/`
   - Runtime-injected or CLI-specific protocols.
   - Examples: memory protocol, vendor execution protocols.
+- `ui-interaction-quality.md`
+  - Motion and interaction acceptance rules shared by `oma-design` and `oma-frontend`; loaded on their stated triggers.
 
 ## Workflow-Owned Resources
 
@@ -20,6 +22,7 @@ Workflow-specific materials do not belong in `_shared/`.
 
 - `ultrawork/resources/phase-gates.md`
 - `ultrawork/resources/multi-review-protocol.md`
+- `ralph/resources/judge-protocol.md`
 
 ## Load Classes
 

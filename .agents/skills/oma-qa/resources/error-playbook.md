@@ -14,7 +14,7 @@ Use the relevant recovery steps. If required information or authority is missing
 3. If `npm audit`: check the lockfile, registry access, and selected dependency scope. A narrower audit does not clear unreviewed dependencies; record exclusions.
 4. If `bandit`: check Python path; may need `python -m bandit`
 5. If `lighthouse`: requires a running server; note if server not available
-6. **If tool unavailable**: Fall back to manual review, record `tool_unavailable: ["tool_name"]` in result
+6. **If tool unavailable**: Fall back to manual review; name the tool and the checks it would have covered as a verification gap in the report and in the claim's `unresolved` list
 
 ---
 
@@ -52,7 +52,7 @@ Use the relevant recovery steps. If required information or authority is missing
    - Missing pagination
    - Large bundle imports
    - No code splitting
-3. Report findings with `static_analysis_only: true` flag
+3. Label these findings as static-analysis-only in the report, and list the unmeasured metrics as verification gaps
 4. Recommend specific metrics to measure when environment is available
 
 ---
@@ -66,7 +66,7 @@ Use the relevant recovery steps. If required information or authority is missing
    - `search_for_pattern("password|secret|token|api_key")`
    - `search_for_pattern("execute|eval|innerHTML")`
 3. Review critical paths: auth flow, payment, data mutation
-4. Note in report: `scope_coverage: "critical paths only, full audit requires more"`
+4. State the reviewed scope in the report and list the unreviewed areas as verification gaps (claim `unresolved`)
 
 ---
 
@@ -95,4 +95,4 @@ claiming a missing receipt or substituting an undisclosed `/tmp` result.
 
 - **False positive prevention**: Keep uncertain hypotheses separate from confirmed defect findings; state the check needed to resolve each gap
 - **Blocked**: Record a material unavailable prerequisite and affected work; use an accurate result status and continue independent work when possible
-- **No code modification**: QA only reports; delegate code changes to the appropriate agent
+- **No code modification by default**: QA reports; change code only when explicitly requested, otherwise route the fix to the owning agent

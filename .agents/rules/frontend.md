@@ -15,7 +15,7 @@ Apply framework-specific rules only to that framework. Existing project choices 
 3. **Rendering Strategy**: Default to Server Components for performance. Use Client Components only for interactivity and API integration.
 4. **Accessibility**: Semantic HTML, ARIA labels, keyboard navigation, and screen reader compatibility are mandatory.
 5. **Tool First**: Check for existing solutions and tools before coding.
-7. **Request proxy convention**: when the target project uses Next.js 16+ with `proxy.ts`, preserve that convention. Check the installed framework version and routing before recommending a file rename. Diagnose wiring from code and tests.
+6. **Request proxy convention**: when the target project uses Next.js 16+ with `proxy.ts`, preserve that convention. Check the installed framework version and routing before recommending a file rename. Diagnose wiring from code and tests.
 7. **No Prop Drilling**: Avoid passing props beyond 3 levels. Use the project's client-state library (Jotai atoms or a Zustand store — see oma-frontend `resources/tech-stack.md`) instead. Avoid React Context.
 8. **Auth Boundary**: Client code must not import database adapters or server-only auth code. Keep server-side application logic in the project's existing server boundary.
 9. **Animation library**: preserve the project's existing animation library for scoped edits. For new motion-based implementations, use the `motion` package and `motion/react` imports.

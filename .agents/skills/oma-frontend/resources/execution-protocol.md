@@ -34,13 +34,14 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Follow `resources/tailwind-rules.md` for styling
 
 ## Step 4: Verify
+Select the checks relevant to the change. Run commands only when the user or the active workflow requires it; report the rest as not verified.
 - Check applicable items in `resources/checklist.md`
 - Use `../../_shared/core/common-checklist.md` only for cross-domain verification
 - Check TypeScript strict mode: no errors
 - For `tdd` tasks, append the `TDD_EVIDENCE` block (test command, RED, GREEN) to the result file per `../../_shared/core/test-approach.md`
-- Verify responsive design at 320px, 768px, 1024px, 1440px
+- Verify responsive design at the task's target breakpoints (checklist §Styling)
 - Test keyboard navigation and screen reader compatibility
-- For a new or substantially changed admin console, dashboard, SaaS product UI, or internal tool, follow the [recommended product-interface review](../../oma-design/resources/product-interface-review.md). Record its advisory outcome; reviewer approval is not a completion prerequisite unless the task explicitly requires it.
+- For a new or substantially changed admin console, dashboard, SaaS product UI, or internal tool, follow the [recommended product-interface review](../../oma-design/resources/product-interface-review.md). Record its outcome as `resources/checklist.md` describes.
 
 ## On Error
 See `resources/error-playbook.md` for recovery steps.

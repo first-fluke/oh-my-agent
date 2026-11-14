@@ -14,7 +14,7 @@ alwaysApply: false
 4. **Never WebSearch-only**: if the engine cannot run (no engine, no Python 3.12+, non-zero exit), stop and report; a WebSearch-only synthesis presented as market research is a contract violation.
 5. **Keyless-first**: Reddit, HN, GitHub, Polymarket, arXiv, Techmeme, Digg, and web run without keys. Keyed sources (X, TikTok, Instagram, YouTube transcripts, …) are enabled only through the upstream setup wizard with user consent; skipped sources stay visible in the footer.
 6. **Frameworks cite the engine**: SWOT / Porter's 5F / PESTEL sections use only clusters present in the engine output, cited as `[name](url)`; plain text when a URL is missing, never `[name]()`. Auto-toggle: pain/trend → SWOT; competitor → SWOT + 5F; discovery → SWOT + PESTEL; `--frameworks` overrides.
-7. **LAW enforcement**: the engine's badge is the first line; upstream LAWs 1–8 plus `resources/output-laws.md` self-check must pass before the file is written.
+7. **LAW enforcement**: the engine's badge is the first line; write the candidate brief, then upstream LAWs 1–8 plus the `resources/output-laws.md` self-check must pass on the written file before it is delivered.
 8. **Single brief, single date**: `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`; raw engine files under `market.save_dir` (default `.agents/results/market/raw/`). Same-day rerun overwrites.
 9. **Personal data refuse**: refuse queries that target a private individual's personal data before running the engine. Founders, creators, and public handles are allowed (upstream person mode).
 10. **Side effects are consented**: first-run `.env` creation, credential storage, and a `uv`-managed Python install happen only after the user says yes in the upstream Step 0 flow.

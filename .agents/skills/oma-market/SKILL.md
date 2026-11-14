@@ -8,7 +8,7 @@ description: "Research customer pain points, trends, and competitors through the
 ## Scheduling
 
 ### Goal
-Run the upstream `last30days` research engine (always the latest release, managed by oma) for community-signal research, then frame the result for the user's intent (pain / trend / competitor / discovery) with strategic frameworks and save one brief under `.agents/results/market/`.
+Run the installed upstream `last30days` research engine for community-signal research, then frame the result for the user's intent (pain / trend / competitor / discovery) with strategic frameworks and save one brief under `.agents/results/market/`.
 
 ### Intent signature
 - User asks about pain points, user complaints, or voice-of-customer signals for a product or category.
@@ -30,11 +30,11 @@ Run the upstream `last30days` research engine (always the latest release, manage
 ### Expected inputs
 - Topic string; optional `--intent pain|trend|competitor|discovery` (else classified per `resources/intent-rules.md`)
 - Optional window (`--days`), `--vs <entity>` (competitor), `--frameworks auto|none|swot,5f,pestel`
-- Any native last30days flag (see `oma market run --help`) — passed through verbatim
+- Any native last30days flag (listed in the upstream contract at `engine.skillMd`) — passed through verbatim
 
 ### Expected outputs
 - Single markdown brief at `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`
-- First line: the engine's badge (`🌐 last30days v{VERSION} · synced {date}`); body per the upstream OUTPUT CONTRACT; framework sections appended per intent; engine footer preserved
+- First line: the engine's badge (`🌐 last30days v{VERSION} · synced {date}`); body per the upstream OUTPUT CONTRACT; framework sections per intent after the body; engine footer last
 - Raw engine artifacts under `market.save_dir` (default `.agents/results/market/raw/`)
 
 ```yaml
@@ -44,6 +44,8 @@ outputs:
     artifact: ".agents/results/market/*.md"
     required: true
 ```
+
+No CLI gate reads this block for `oma-market` (`oma verify` checks `outputs:` only for agent-type skills); the self-check in `resources/output-laws.md` enforces the brief.
 
 ### Dependencies
 - `oma market resolve` / `oma market run` — engine location, Python 3.12+ resolution, `--save-dir` default
@@ -68,13 +70,12 @@ outputs:
 1. **PREPARE**: detect-trap, resolve, read upstream SKILL.md, classify intent.
 2. **UPSTREAM STEPS**: follow the upstream SKILL.md exactly — Step 0 (first-run setup wizard, consent-driven), intent parsing, Step 0.45 (its own query-quality preflight), Step 0.5 / 0.55 (handle, subreddit, hashtag resolution when WebSearch is available), Step 0.75 (query plan). Skip only its "Runtime Preflight" Python-hunt block: `oma market run` already resolved the interpreter.
 3. **RUN**: wherever the upstream contract says `"${LAST30DAYS_PYTHON}" "${SKILL_DIR}/scripts/last30days.py" <args>`, run `oma market run <args>` with the **same arguments** (foreground, 5-minute timeout, `--emit=compact`). `--save-dir` is added automatically from `market.save_dir` unless you pass one.
-4. **SYNTHESIZE**: produce the brief exactly as the upstream OUTPUT CONTRACT dictates (badge first line, Ranked Evidence Clusters, LAWs). Then append the framework sections selected for the intent, using only clusters present in the engine output as evidence (`resources/frameworks/`).
-5. **FINALIZE**: run the self-check in `resources/output-laws.md`, write `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`, preview the first 50 lines.
+4. **SYNTHESIZE**: produce the brief exactly as the upstream OUTPUT CONTRACT dictates (badge first line, Ranked Evidence Clusters, LAWs). Then add the framework sections selected for the intent between the engine body and the engine footer, using only clusters present in the engine output as evidence (`resources/frameworks/`).
+5. **FINALIZE**: write `.agents/results/market/{topic-slug}-{YYYYMMDD}.md`, run the self-check in `resources/output-laws.md` against the written file, fix and re-check, then preview the first 50 lines.
 
 ### Transitions
 - `--vs <entity>` or "A vs B" phrasing → competitor intent → upstream COMPARISON flow (two passes + head-to-head as its contract specifies) → SWOT + Porter's 5F.
 - Person / company / ticker topics → upstream person / hiring-signals / StockTwits handling applies unchanged.
-- `engine.status: stale` → include the `note` in the report (research ran on the cached engine version).
 
 ### Failure and recovery
 - detect-trap exit 2 → REFUSE; do not run the engine; `--force` only on explicit user reconfirmation.
@@ -83,7 +84,7 @@ outputs:
 - Upstream Python-version gate / setup wizard messages → relay to the user exactly as the upstream contract instructs.
 
 ### Exit
-- Success: brief written with badge, clusters, frameworks, and engine footer; path reported.
+- Success: brief written with badge, clusters, frameworks, and engine footer, in that order; path reported.
 - Partial: engine ran with skipped sources (footer lists them) — say so; never pad with invented evidence.
 
 ## Logical Operations
@@ -98,7 +99,7 @@ outputs:
 | Upstream pre-research steps | `INFER` | Upstream SKILL.md Steps 0–0.75 |
 | Run engine | `CALL_TOOL` | `oma market run <args>` |
 | Synthesize + frameworks | `WRITE` | Upstream OUTPUT CONTRACT, `resources/frameworks/` |
-| Self-check + write brief | `WRITE` | `resources/output-laws.md`, `.agents/results/market/` |
+| Write brief + self-check | `WRITE` | `.agents/results/market/`, `resources/output-laws.md` |
 
 ### Tools and instruments
 - `oma market detect-trap <topic>` (preflight gate)
@@ -118,7 +119,7 @@ oma market run "$TOPIC" --plan "$QUERY_PLAN_FILE" --subreddits=vscode --emit=com
 ### Resource scope
 | Scope | Resource target |
 |-------|-----------------|
-| `NETWORK` | Inside the engine only (its per-source fetchers); GitHub for the managed engine refresh |
+| `NETWORK` | Inside the engine (its per-source fetchers); the skills CLI during `oma market update` |
 | `LOCAL_FS` | installed skill dir such as `~/.agents/skills/last30days/` (engine), `~/.config/last30days/` (engine config, keys), `.agents/results/market/` (brief + raw) |
 | `PROCESS` | `oma market` subcommands → the resolved upstream Python entry point |
 
@@ -138,4 +139,4 @@ oma market run "$TOPIC" --plan "$QUERY_PLAN_FILE" --subreddits=vscode --emit=com
 - Applicable framework: `resources/frameworks/swot.md`, `resources/frameworks/porters-5f.md`, or `resources/frameworks/pestel.md` (load only the selected framework)
 - Validation: `resources/checklist.md`
 - Recovery: `resources/error-playbook.md`
-- Upstream engine instructions: read the resolved `engine.skillMd` path from `oma market resolve --json`; upstream scripts are managed engine files, not bundled skill resources.
+- Upstream engine instructions: read the resolved `engine.skillMd` path from `oma market resolve --json`; upstream scripts belong to the installed engine, not to this skill's resources.

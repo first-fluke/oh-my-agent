@@ -185,7 +185,7 @@ Official sources: [core](https://github.com/greensock/gsap-skills/blob/aed9cfd32
 ## Motion principles and handoff evidence
 
 Use [shared interaction quality](../../_shared/ui-interaction-quality.md) for purpose, frequency, interruption, compositor cost, input feedback and reduced motion.
-The absorbed Emil guidance informs those project-level decisions; it is not an automatic extra external-skill chain or library picker.
+That guidance informs project-level decisions; it is not an automatic extra external-skill chain or library picker.
 A CSS/Motion implementation that already satisfies the request remains valid.
 
 Report the chosen extension and item/skills, actual target changes, asset/dependency effects, cleanup ownership and verification performed.

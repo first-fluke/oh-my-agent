@@ -1,15 +1,8 @@
----
-otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.43.0 (2026-07)"
-tools:
-  - "Istio: 1.22+; Envoy: 1.29+; OTel Operator: v0.100+"
----
-
 # Service Mesh Observability
 
 ## 1. Why the Service Mesh Has Its Own Observability File
 
-The service mesh is classified as a **L4-L7 hybrid layer** in the taxonomy defined in `resources/standards.md §OSI Boundary Decision`. It differs from the adjacent L4-transport layer in a fundamental way: the mesh proxy (sidecar or ambient agent) operates at the HTTP/gRPC framing level, not at raw TCP socket level.
+The service mesh is classified as a **L4-L7 hybrid layer** in the taxonomy defined in `resources/standards.md` (OSI boundary decision). It differs from the adjacent L4-transport layer in a fundamental way: the mesh proxy (sidecar or ambient agent) operates at the HTTP/gRPC framing level, not at raw TCP socket level.
 
 Three properties make mesh observability distinct enough to warrant a dedicated file:
 
@@ -21,12 +14,12 @@ Three properties make mesh observability distinct enough to warrant a dedicated 
 
 ---
 
-## 2. Service Mesh Options (as of 2026-Q2)
+## 2. Service Mesh Options
 
 | Mesh | CNCF Status | Proxy engine | Deployment modes | Primary differentiator |
 |------|------------|-------------|-----------------|----------------------|
-| **Istio** | Graduated | Envoy | Sidecar, Ambient (ztunnel + waypoint) | Richest Envoy telemetry; Telemetry API v2; OTLP direct export since 1.22 |
-| **Linkerd** | Graduated | linkerd2-proxy (Rust) | Sidecar only | Lightweight; minimal CPU overhead; built-in mTLS; own propagator headers |
+| **Istio** | Graduated | Envoy | Sidecar, Ambient (ztunnel + waypoint) | Richest Envoy telemetry; Telemetry API `telemetry.istio.io/v1` and OTLP/HTTP trace export (Istio 1.22+) |
+| **Linkerd** | Graduated | linkerd2-proxy (Rust) | Sidecar only | Lightweight; minimal CPU overhead; built-in mTLS; proxy propagates W3C and B3 headers |
 | **Envoy** | Graduated | Self | Standalone gateway or sidecar | Proxy engine underlying Istio; also deployed as standalone API gateway |
 | **Consul Connect** | Not CNCF | Envoy (via xDS) | Sidecar | HashiCorp ecosystem; strong multi-datacenter support |
 | **Kuma** | CNCF Sandbox | Envoy (via xDS) | Sidecar, Universal (VM) | Multi-cloud and multi-zone; Kong-backed |
@@ -49,15 +42,15 @@ Envoy exposes golden signals per **listener** (inbound) and **cluster** (outboun
 | Saturation (pending) | `envoy_cluster_upstream_rq_pending_total` | Per cluster |
 | mTLS handshake errors | `istio_tcp_connections_closed_total` | Proxy-level |
 
-Istio 1.22+ Telemetry API disables `destination_service_name` by default at high pod counts to cap cardinality. Override only after confirming cardinality budget in `resources/meta-observability.md`.
+`istio_requests_total` multiplies source × destination × method × response code, and adding per-path or per-endpoint tags exceeds a Prometheus series budget quickly. Remove high-cardinality tags with Telemetry API metric overrides (`tagOverrides` with `operation: REMOVE`) or aggregate in a Collector `transform` processor, and confirm the cardinality budget in `resources/meta-observability.md` before adding tags.
 
 ### 3.2 Distributed Traces
 
 Envoy automatically creates **ingress and egress spans** for every HTTP/gRPC call that traverses the proxy. Each span captures:
 
 - `http.request.method`, `http.response.status_code`, `url.full` (Stable semconv)
-- `service.peer.name` derived from Envoy cluster name (Development semconv; successor to the deprecated `peer.service`)
-- mTLS peer identity (SPIFFE SVID) via `tls.*` attributes (Development semconv; see `resources/standards.md §3`)
+- Peer service identity derived from the Envoy cluster name: `server.service.name` on client spans, `client.service.name` on server spans (Development semconv)
+- mTLS peer identity (SPIFFE SVID) via `tls.*` attributes (Development semconv; see the stability tiers in `resources/standards.md`)
 - `x-request-id` correlation ID (Istio-specific; carries across internal calls)
 
 Spans are created without SDK changes. The caveat is that without application-level header forwarding, each service starts a **new root span** rather than contributing to the existing trace. This is the context propagation problem addressed in Section 5.
@@ -79,7 +72,7 @@ Structured access log format (JSON) is required for trace correlation:
 }
 ```
 
-> Envoy command operators `%TRACE_ID%` and `%SPAN_ID%` (available since Envoy 1.25) extract the W3C `traceparent` context Envoy itself emitted. Using `%REQ(X-B3-TRACEID)%` is only correct if the upstream explicitly sent the B3 header. Since this skill standardizes on W3C (see §6 Propagator Headers), prefer the command operators.
+> Envoy command operators `%TRACE_ID%` and `%SPAN_ID%` extract the W3C `traceparent` context Envoy itself emitted. Using `%REQ(X-B3-TRACEID)%` is only correct if the upstream explicitly sent the B3 header. Since this skill standardizes on W3C (see §6 Propagator Headers), prefer the command operators.
 
 ### 3.4 mTLS Certificate Observability
 
@@ -89,7 +82,7 @@ Istio exposes certificate expiry and rotation events as Prometheus metrics:
 - `pilot_xds_pushes{type="sds"}`: SDS secret delivery (certificate rotation)
 - Cert expiry: scraped from `istio-proxy` via `/pki` endpoint, alertable as a PrometheusRule
 
-Cross-reference: `signals/privacy.md §Security Context (TLS attrs Development)` for attribute stability notes.
+`tls.*` attributes are Development tier; see the stability tiers in `resources/standards.md`.
 
 ---
 
@@ -97,9 +90,9 @@ Cross-reference: `signals/privacy.md §Security Context (TLS attrs Development)`
 
 ### 4.1 Envoy OTLP Tracer
 
-Since Envoy 1.29, the built-in OTLP tracer exports spans directly over OTLP/HTTP to any OTel-compatible backend or OTel Collector, replacing the older Zipkin and Jaeger tracers.
+Since Envoy 1.29, the built-in OpenTelemetry tracer exports spans over OTLP/HTTP as well as OTLP/gRPC to any OTel-compatible backend or OTel Collector, with resource detectors and a configurable sampler.
 
-Istio 1.22 surfaces this via the **Telemetry API** `opentelemetry` provider type, which avoids editing raw Envoy bootstrap config.
+Istio 1.22 surfaces this via the `opentelemetry` extension provider in MeshConfig, which a **Telemetry API** resource selects; this avoids editing raw Envoy bootstrap config.
 
 ### 4.2 Telemetry CR (Istio 1.22+)
 
@@ -130,11 +123,11 @@ spec:
 #           environment: {}
 ```
 
-The `resourceDetectors.environment` block activates the **Environment Resource Detector**, which reads `OTEL_RESOURCE_ATTRIBUTES` from the proxy environment and enriches every span with `service.name`, `service.namespace`, `k8s.pod.name`, and `k8s.node.name` (Stable semconv) automatically.
+The `resourceDetectors.environment` block activates the **Environment Resource Detector**, which reads `OTEL_RESOURCE_ATTRIBUTES` from the proxy environment and adds those attributes to the exported resource.
 
 ### 4.3 Custom Samplers (Envoy 1.29+)
 
-Envoy 1.29 introduced the OTel Sampler interface, allowing parent-based or trace-ID-ratio samplers to be configured without patching application code. Tail-based sampling decisions are still made at the Collector tier; see `resources/transport/sampling-recipes.md` for tail-sampler configuration.
+Envoy 1.29 added a configurable sampler to the OpenTelemetry tracer; current Envoy ships always-on, parent-based, trace-ID-ratio, CEL, and Dynatrace samplers. In Istio, custom samplers are configured through MeshConfig. Tail-based sampling decisions are still made at the Collector tier; see `resources/transport/sampling-recipes.md` for tail-sampler configuration.
 
 ---
 
@@ -144,7 +137,7 @@ Envoy 1.29 introduced the OTel Sampler interface, allowing parent-based or trace
 
 The mesh sidecar creates spans but cannot inject `traceparent` into the application's outbound HTTP calls by itself. If the application does not read the incoming `traceparent` header and forward it on outbound calls, Envoy on the egress side starts a **new trace**, breaking the trace chain. The result is a trace forest of disconnected single-hop spans rather than a unified distributed trace.
 
-This is anti-pattern #1 for mesh observability: mesh-only tracing without application header forwarding.
+This is the primary mesh tracing pitfall: mesh-only tracing without application header forwarding. The mesh also sees only network hops; database queries, cache reads, and business logic stay invisible until the application carries an SDK (Section 7).
 
 ### 5.2 Solution A: Application-Level Propagator Library
 
@@ -167,7 +160,7 @@ set_global_textmap(CompositePropagator([
 
 The **OpenTelemetry Operator** (`github.com/open-telemetry/opentelemetry-operator`) injects the OTel SDK init container and environment variables into Pods automatically via a mutating webhook, without any application code change.
 
-Supported language runtimes: Java, NodeJS, Python, .NET, Go, Apache HTTPD, Nginx.
+Supported language runtimes: Java, NodeJS, Python, .NET, Go, PHP, Ruby, Apache HTTPD, Nginx.
 
 **Step 1; Deploy the Instrumentation CR:**
 
@@ -221,18 +214,16 @@ Cross-reference: `resources/boundaries/cross-application.md` for full propagator
 | `traceparent` | W3C Trace Context L1 | W3C-compliant SDKs, Envoy OTLP, Istio | Recommended default for all new deployments |
 | `tracestate` | W3C Trace Context L1 | Same as above | Vendor-specific trace flags; opaque to intermediaries |
 | `baggage` | W3C Baggage | OTel SDK, Istio | Key-value propagation; strip PII at ingress gateway |
-| `x-b3-traceid` | B3 (Zipkin) | Envoy B3 propagator, Linkerd (legacy compat) | 128-bit; use B3 multi-header format |
+| `x-b3-traceid` | B3 (Zipkin) | Envoy B3 propagator, Linkerd proxy | 128-bit; use B3 multi-header format |
 | `x-b3-spanid` | B3 (Zipkin) | Same | 64-bit |
 | `x-b3-parentspanid` | B3 (Zipkin) | Same | 64-bit; absent on root spans |
 | `x-b3-sampled` | B3 (Zipkin) | Same | `1` = keep, `0` = drop; overrides downstream sampler |
 | `x-request-id` | Envoy / Istio internal | Istio sidecar injected | Stable correlation ID across retries; not a trace ID |
-| `x-ot-span-context` | OpenTracing (legacy) | Envoy OpenTracing tracer | Deprecated; replaced by OTLP tracer in Envoy 1.29+ |
-| `l5d-ctx-trace` | Linkerd | linkerd2-proxy | Linkerd trace context; not W3C-compatible |
-| `l5d-ctx-span` | Linkerd | linkerd2-proxy | Current span identifier in Linkerd format |
-| `l5d-ctx-parent` | Linkerd | linkerd2-proxy | Parent span reference |
-| `l5d-ctx-deadline` | Linkerd | linkerd2-proxy | Deadline propagation (timeout budget) |
+| `x-ot-span-context` | LightStep (legacy) | Envoy LightStep tracer | Legacy; Envoy 1.24+ does not ship that tracer, so use the Envoy OpenTelemetry tracer |
 
-**Cross-mesh compatibility rule:** when Istio and Linkerd coexist (or when a service exits the mesh boundary to an external system), standardize on W3C `traceparent` / `tracestate` as the translation surface. Configure each mesh's propagator list to include W3C as the first entry. Translate Linkerd `l5d-ctx-*` headers to W3C at the mesh boundary gateway to avoid split-brain traces.
+**Cross-mesh compatibility rule:** when Istio and Linkerd coexist (or when a service exits the mesh boundary to an external system), standardize on W3C `traceparent` / `tracestate` as the translation surface. Configure each mesh's propagator list to include W3C as the first entry.
+
+**Linkerd:** the Linkerd proxy propagates both W3C and B3 trace headers and, when a request carries both, forwards only the W3C headers. It emits a span only for requests that already carry a trace header, and exports to any collector that accepts the OpenTelemetry protocol. The application must still copy the trace headers from inbound to outbound requests; confirm details in the current Linkerd distributed-tracing docs.
 
 ---
 
@@ -268,7 +259,7 @@ For Collector topology options see `resources/transport/collector-topology.md`.
 
 When Istio PeerAuthentication is set to `STRICT` mode, all pod-to-pod traffic is encrypted with mTLS. The mesh then exposes security context as observable attributes:
 
-- **TLS version**: `tls.protocol.version` (Development tier per semconv 1.43.0; see `resources/standards.md §Semconv Stability Tiers`)
+- **TLS version**: `tls.protocol.version` (Development tier; see the stability tiers in `resources/standards.md`)
 - **Cipher suite**: `tls.cipher` (Development tier)
 - **Certificate expiry**: alertable via PrometheusRule on `citadel_server_root_cert_expiry_timestamp`
 - **SPIFFE peer identity**: available in Envoy access log via `%DOWNSTREAM_PEER_SUBJECT%`; identifies source workload for zero-trust audit
@@ -294,8 +285,6 @@ spec:
             summary: "Istio root certificate expires in fewer than 7 days"
 ```
 
-Cross-reference: `resources/signals/privacy.md §Security Context` for TLS attribute stability notes.
-
 ---
 
 ## 9. Sampling Considerations
@@ -309,44 +298,16 @@ Istio's default sampling rate is **1%** (`randomSamplingPercentage: 1.0`). At 1%
 | High-traffic SLO critical path | Tail-based at Collector | Collector `tail_sampling` processor |
 | Canary release tracing | 100% on canary subset | Telemetry CR scoped to canary namespace or label |
 
-Tune via the Telemetry API `samplingPercentage` field (Istio 1.22+) or by configuring a custom OTel Sampler via Envoy 1.29+. For tail-based sampling (retain error traces, drop successful traces after SLO window), configure at the gateway Collector tier as documented in `resources/transport/sampling-recipes.md`.
+Tune via the Telemetry API `randomSamplingPercentage` field or by configuring a custom OTel Sampler via Envoy 1.29+. For tail-based sampling (retain error traces, drop successful traces after SLO window), configure at the gateway Collector tier as documented in `resources/transport/sampling-recipes.md`.
 
 ---
 
-## 10. Matrix Coverage Reference (mesh row)
-
-These cells from `resources/matrix.md` are the primary coverage drivers for this file:
-
-| matrix cell | symbol | artifact |
-|------------|--------|---------|
-| mesh × cross-application × traces | PASS | Zero-code L7 trace continuity; primary use case of the mesh layer |
-| mesh × multi-tenant × traces | PASS | `tenant.id` via W3C Baggage; proxy can enforce baggage scrubbing at gateway |
-| mesh × release × traces | PARTIAL | Canary routing rules are observable; `service.version` on spans; trace continuity requires OTel Operator CR |
-| mesh × privacy × * | PASS | mTLS config observability; baggage scrubbing; SPIFFE identity in access log |
-| mesh × slo × metrics | PASS | Envoy request rate + error rate are primary SLI sources |
-
----
-
-## 11. Anti-Patterns
-
-The following are anti-patterns for this layer. They are candidates for inclusion in `resources/anti-patterns.md`.
-
-| # | Anti-pattern | Impact | Remedy |
-|---|-------------|--------|--------|
-| AP-M1 | Mesh-only tracing without application SDK | Spans cover network hops only; DB queries, business logic, and external API calls invisible | Deploy OTel Operator Instrumentation CR to inject SDK into all application pods |
-| AP-M2 | W3C Trace Context not standardized across meshes | Linkerd and Istio produce disconnected trace forests when a request crosses mesh boundaries | Configure W3C as first propagator in both meshes; translate at boundary gateway |
-| AP-M3 | Default 1% Istio sampling rate in production without awareness | First trace visible only after 100 requests; low-traffic endpoints never appear in trace backend | Raise to 10% baseline; use tail-based sampling at Collector for cost control |
-| AP-M4 | OTel Operator Instrumentation CR not deployed | `traceparent` not forwarded by application code; mesh spans are disconnected root spans | Deploy `Instrumentation` CR and annotate all application Deployments |
-| AP-M5 | Cardinality explosion from per-endpoint Envoy labels | `istio_requests_total` with high-cardinality `destination_service_name` × `source_workload` × URL path exceeds Prometheus cardinality budget | Use Telemetry API to suppress high-cardinality labels; aggregate at Collector metric transform processor |
-
----
-
-## 12. References
+## 10. References
 
 
 Internal cross-references:
 - `resources/standards.md`: normative semconv stability tiers and W3C Trace Context requirements
-- `resources/matrix.md`: full 112-cell coverage map (mesh row)
+- `resources/matrix.md`: coverage map (mesh rows)
 - `resources/transport/sampling-recipes.md`: tail-based sampling at Collector tier
 - `resources/transport/collector-topology.md`: DaemonSet vs sidecar Collector topology
 - `resources/meta-observability.md`: cardinality guardrails and pipeline self-health
@@ -354,15 +315,15 @@ Internal cross-references:
 - `resources/boundaries/cross-application.md`: full propagator compatibility matrix
 - `resources/boundaries/multi-tenant.md`: baggage-based tenant attribution
 - `resources/boundaries/release.md`: canary trace routing with `service.version`
-- `resources/signals/privacy.md`: TLS attribute stability and mTLS security context
+- `resources/signals/privacy.md`: baggage PII rules at the ingress gateway
 - `resources/signals/traces.md`: OTel SDK trace patterns for application layer
 
-## References
+External:
 
 - Istio observability concepts: <https://istio.io/latest/docs/concepts/observability/>
 - Istio OpenTelemetry tracing task: <https://istio.io/latest/docs/tasks/observability/distributed-tracing/opentelemetry/>
 - Envoy + Istio OTel features (2024): <https://opentelemetry.io/blog/2024/new-otel-features-envoy-istio/>
 - OTel Operator GitHub: <https://github.com/open-telemetry/opentelemetry-operator>
-- Linkerd observability and propagator docs: <https://linkerd.io/2.15/features/distributed-tracing/>
+- Linkerd distributed tracing: <https://linkerd.io/2-edge/tasks/distributed-tracing/>
 - W3C Trace Context L1: <https://www.w3.org/TR/trace-context/>
-- OTel semconv `tls.*`: <https://opentelemetry.io/docs/specs/semconv/attributes-registry/tls/>
+- OTel semconv `tls.*`: <https://opentelemetry.io/docs/specs/semconv/registry/attributes/tls/>

@@ -60,13 +60,13 @@ translation resource. Show the language-specific example beneath that reference.
 Common topics include participle phrases, vocabulary, synonym cycling, compound
 stacking, dash handling, and translation-ese.
 
-Say explicitly when a shared rule **does not** apply. `en.md` does this for the
-em-dash rule, which exists only for CJK targets. Silence gets read as agreement.
+Say explicitly when a shared rule **does not** apply. Silence gets read as
+agreement.
 
 ## `<Language>` self-check
 
-A flat checklist, one line per rule, each citing its rule ID. It runs after the
-shared self-check, before emitting.
+A flat checklist, one line per rule, each citing its rule ID. Check the items
+that apply before emitting.
 
 ## References
 

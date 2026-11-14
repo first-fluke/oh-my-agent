@@ -1,7 +1,3 @@
----
-otel_spec: "1.x (stable API/SDK)"
----
-
 # UDP StatsD MTU and Fragmentation Guide
 
 ## 1. Scope

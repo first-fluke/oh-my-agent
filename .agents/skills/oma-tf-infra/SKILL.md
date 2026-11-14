@@ -182,12 +182,12 @@ trivy config .   # tfsec is in maintenance mode; Trivy is its successor
 ## References
 
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
-- Self-check (run before handoff): `resources/checklist.md`
+- Self-check (check the items that apply before handoff): `resources/checklist.md`
 - Examples: `resources/examples.md`
-- Multi-cloud HCL patterns: `resources/multi-cloud-examples.md`
-- Cost optimization: `resources/cost-optimization.md`
-- Policy & testing: `resources/policy-testing-examples.md`
-- ISO controls: `resources/iso-42001-infra.md`
+- Multi-cloud HCL patterns: `resources/multi-cloud-examples.md` (compute, OIDC, or secret resources)
+- Cost levers and commitment/Spot gotchas: `resources/cost-optimization.md` (sizing or cost review)
+- Policy & testing: `resources/policy-testing-examples.md` (policy enforcement, module tests, or CI wiring)
+- ISO controls: `resources/iso-42001-infra.md` (AI-system, continuity, or architecture-documentation work)
 - Error recovery: `resources/error-playbook.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Clarification: `../_shared/core/clarification-protocol.md`

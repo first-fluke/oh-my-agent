@@ -104,16 +104,14 @@ No arbitrary MCP tool execution or additional endpoint access follows from a CI 
 
 ## ARTEX runtime gates
 
-Do not add a guessed `artex scan`, headless flag, or severity-based exit wrapper. A running platform process says nothing about task completion or vulnerability severity.
+ARTEX has no native CI contract (table above); [artex.md](artex.md) owns the platform prerequisite, task bounds, evidence, and replay rules.
 Before automation, verify the chosen snapshot's adapter/API, task lifecycle, scope enforcement, artifact export, and failure/budget-stop reporting.
 Otherwise use `integration: manual_external` and import the actual task/evidence receipt; label the integration external/manual, not native CI support.
 When runtime is required, a pending external task cannot produce a pass.
 
-Validate the runtime receipt's target URL/host/port, allowlist, account roles, allowed effects, bounded execution budget, backend egress, snapshot/tool/image digests, and deployment/session identity.
-Require observed completion/coverage and retained traffic/tool evidence; engine narrative, a screenshot, or “no successful attack” is insufficient.
-Independent replay must bind each confirmed runtime record to the same observed deployment/session; absent deployed revision limits the claim to that session.
+Check the imported `runtime.json` against those bounds and the findings contract's semantic checks, including observed completion/coverage and retained traffic/tool evidence.
 If proof is required and a target identity cannot be established, keep the gate incomplete rather than mapping the checked-out commit onto the deployment.
-Redirects/discovered hosts cannot expand the allowlist; scope violations or budget stops remain visible in receipts and coverage.
+Scope violations and budget stops remain visible in receipts and coverage.
 
 ## CI trust and artifacts
 

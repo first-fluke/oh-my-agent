@@ -123,11 +123,14 @@ provides context only; it never automates login or starts a recorder. Without
    or `OMA_VIDEO_YES=1` only for an already authorized paid action; the event does
    not grant permission.
 4. For creation, respect `limits.max_duration_sec` (180) and
-   `limits.max_scenes` (40). Cancel subprocess work on SIGINT/SIGTERM.
+   `limits.max_scenes` (40).
 5. Keep run directories. Never auto-prune a user’s video artifacts.
    A demo capture is inspected for personal information and masked before
    render (`resources/hyperframes-authoring/demo.md`); an unchecked capture is
-   not rendered.
+   not rendered. Masking happens only in the `--polish` composition: a demo run
+   without `--polish` copies the raw, unmasked capture to the output MP4, which
+   is not deliverable until the personal-information check has been done and
+   found nothing to mask.
 6. Creation via `oma video generate --dry-run` writes only planning artifacts
    and does no provider render. It does not prove an MP4 exists. For delegated
    media work, follow the loaded upstream operation's dry-run contract.
@@ -156,8 +159,11 @@ oma video generate "Jeju coffee" --mode shorts --aspect 9:16 \
 # Deterministic planning only; no real render or provider work.
 oma video generate "explain this project" --mode explainer --seed 42 --dry-run
 
-# Human-recorded demo input.
-oma video generate "feature walkthrough" --mode demo --capture <absolute-path>.mp4
+# Human-recorded demo input. --polish routes the capture through the Demo
+# composition, where personal information is masked. Without --polish the
+# output MP4 is the raw, unmasked capture.
+oma video generate "feature walkthrough" --mode demo --polish \
+  --capture <absolute-path>.mp4
 
 # Scaffold the per-run HyperFrames project, author index.html as instructed,
 # then render and validate the encoded output.
@@ -213,18 +219,3 @@ Load only what the task needs:
 - `resources/hyperframes-authoring/README.md` and the selected mode guide before
   writing `index.html`.
 - `resources/checklist.md` before handing a newly generated video to a user.
-
-### Verification
-
-For CLI/runtime changes, add a regression test for the affected success and
-failure paths. At minimum run the focused Vitest files, for example:
-
-```bash
-cd cli
-bunx vitest run commands/video/providers/compositor.test.ts \
-  commands/video/orchestrator.test.ts
-bunx biome check commands/video/providers/compositor.ts \
-  commands/video/providers/compositor.test.ts
-```
-
-Do not run a live render merely to test documentation or a mock-only branch.

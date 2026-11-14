@@ -93,7 +93,7 @@ Rules for marble tests:
 
 ## Verification
 
-Before handoff, run the project's Angular checks (typical set):
+Select the project's relevant Angular checks (typical set below). Run them only when the user or the active workflow requires it; otherwise report them as not verified:
 
 ```bash
 {pm} run lint          # or: ng lint

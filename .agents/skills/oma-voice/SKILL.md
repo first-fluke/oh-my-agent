@@ -46,7 +46,7 @@ Generate and transcribe speech through a local speech backend (the Voicebox app,
 ### Dependencies
 - Processing only: installed `ffmpeg` and `ffprobe`; no Voicebox app or voice profile is required.
 - Generation/transcription: Voicebox desktop app installed and running locally, or a running VoiceStudio backend selected through `voice.backend` (`resources/voicestudio.md`).
-- Generation/transcription only: Voicebox MCP registered (`claude mcp add --transport http voicebox http://127.0.0.1:17493/mcp`).
+- Generation/transcription only: Voicebox MCP registered in the host's MCP config (Streamable HTTP at `http://127.0.0.1:17493/mcp`).
 - TTS only: at least one voice profile created in the Voicebox app UI.
 - TTS only: optionally pre-downloaded engine models for the selected profile.
 
@@ -73,10 +73,10 @@ Generate and transcribe speech through a local speech backend (the Voicebox app,
 5. **FINALIZE**: Write `manifest.json` alongside the output. Report the path or transcript to the user.
 
 ### Transitions
-- For generation/transcription, if Voicebox is unreachable, surface the install or launch hint and exit. Do not attempt auto-relaunch. Existing-file processing continues without it.
+- For generation/transcription, if Voicebox is unreachable, surface the install or launch hint and stop. Do not attempt auto-relaunch. Existing-file processing continues without it.
 - Loopback addresses refer to the process's own host or container. Invoke a host Voicebox service from the host, then transfer the resulting file to the task container; a container's `127.0.0.1` does not probe the host app.
 - For timed narration, keep the raw generation. Select a language-capable available profile, measure the raw duration, and use `resources/audio-processing.md` for fitting. A neural engine or correct loudness does not establish natural pronunciation or prosody.
-- If a TTS request has no usable profile, point the user at the Voicebox app UI to create a profile, then exit. A transcription request never needs a profile.
+- If a TTS request has no usable profile, point the user at the Voicebox app UI to create a profile, then stop. A transcription request never needs a profile.
 - If a TTS request exceeds 5000 chars, ask whether to truncate or split. Do not auto-chunk in v1.
 - If an STT input exceeds 30 minutes, ask whether to proceed. Do not auto-split.
 - If the selected engine model is not loaded, ask the user before triggering a download.
@@ -84,14 +84,14 @@ Generate and transcribe speech through a local speech backend (the Voicebox app,
 ### Failure and recovery
 | Failure | Recovery |
 |---------|----------|
-| No selected backend reachable | Print the Voicebox install/launch hint (and VoiceStudio for `auto`), exit code 5 |
-| No voice profile for TTS | Print "create a profile in Voicebox" hint, exit code 3 |
+| No selected backend reachable | Give the Voicebox install/launch hint (and VoiceStudio for `auto`), then stop and report `blocked` |
+| No voice profile for TTS | Give the "create a profile in Voicebox" hint, then stop and report `blocked` |
 | Engine model missing | Ask before triggering download |
 | Output path outside `$PWD` | Use an explicitly requested path; ask only if the destination is ambiguous or overwrites unrelated data |
 | TTS over 5000 chars | Ask the user to split or truncate |
 | STT over 30 minutes | Confirm only if the requested duration or resource cost is unresolved |
 | MCP tool name drift | Re-run `tools/list` and update the cache |
-| SIGINT | Abort the MCP call, write no partial output |
+| Call interrupted | Write no partial output; report the request as not completed |
 | Local media executable missing | Report the missing tool for the requested operation; do not start Voicebox or replace audio with a placeholder |
 | Speech cannot fit naturally | Retain the raw audio; adjust generation pacing when synthesis is available and authorized, or report the unresolved timing constraint instead of clipping words |
 
@@ -105,7 +105,7 @@ Generate and transcribe speech through a local speech backend (the Voicebox app,
 ### Actions
 | Action | SSL primitive | Evidence |
 |--------|---------------|----------|
-| Validate mode and inputs | `VALIDATE` | Clarification protocol in execution-protocol.md |
+| Validate mode and inputs | `VALIDATE` | Clarification protocol below |
 | Resolve TTS voice profile | `SELECT` | `voicebox_list_profiles` + config defaults |
 | Health check | `READ` | MCP handshake or `GET /health` |
 | Generate speech | `CALL_TOOL` | MCP `voicebox_speak` |
@@ -159,12 +159,12 @@ GET http://127.0.0.1:17493/audio/{generation_id}  ->  wav bytes
 Tools not exposed via MCP (REST only): model status (`GET /models/status`), audio file serving (`GET /audio/{generation_id}`), per-version audio (`GET /audio/version/{version_id}`). The skill calls those over loopback HTTP when needed.
 
 **Notes on `voicebox_speak`:**
-- Required: `text`. Optional: `profile`, `engine`, `language`, `personality` (bool).
+- Required: `text`. Optional: `profile`, `engine`, `language`, `personality` (bool). Returns a generation id.
 - Audio plays on the user speakers and is saved to the Captures / History panel automatically. There is no `save_to_disk` toggle on the MCP tool itself; to persist a local copy, fetch `GET /audio/{generation_id}` (Voicebox TTS always stores `wav`).
 - Without a default profile set in Voicebox Settings, `profile=` is required.
 
 **Notes on `voicebox_transcribe`:**
-- Accepts exactly one of `audio_base64` or `audio_path` (loopback only). Optional `language`, `model`.
+- Accepts exactly one of `audio_base64` or `audio_path` (absolute local path; loopback only). Optional `language`, `model`. Returns the transcript text and the detected language.
 
 ### Resource scope
 | Scope | Resource target |
@@ -191,13 +191,13 @@ Tools not exposed via MCP (REST only): model status (`GET /models/status`), audi
 
 ### Guardrails
 
-1. **Voicebox modes**: generation/transcription requires the MCP handshake or `GET /health`. On failure, exit with a one-shot install or launch hint; do not retry or auto-relaunch. Local processing does not require Voicebox.
+1. **Voicebox modes**: generation/transcription requires the MCP handshake or `GET /health`. On failure, stop with a one-shot install or launch hint; do not retry or auto-relaunch. Local processing does not require Voicebox.
 2. **Profile required for TTS only**: resolve a profile and check the TTS engine only for notification or asset mode. Transcription proceeds with a valid audio input and optional STT model even when no profile exists.
 3. **Tool-name discovery**: on the first Voicebox invocation, call MCP `tools/list` and cache the resolved names. Reuse the cache for subsequent calls in the same session.
-4. **Length limits**: TTS calls cap at 5000 chars per call; warn at 2000. STT inputs cap at 30 minutes. v1 does not auto-chunk or auto-split.
+4. **Length limits**: TTS calls cap at 5000 chars per call. STT inputs cap at 30 minutes. v1 does not auto-chunk or auto-split.
 5. **Auto-invocation transparency**: notifications fire automatically only when the active task exceeds `auto_notify_after_sec` (default 60s). This threshold is agent-enforced guidance — no hook measures task duration — so apply it by judgment when a long task completes or blocks. Always announce intent in one short line before generating audio.
 6. **Path safety**: an explicitly requested output path authorizes writing there. Resolve ambiguity or unrelated-data replacement before the dependent write; preserve required CLI path flags.
-7. **Cancellation**: SIGINT aborts the MCP call and writes no partial output.
+7. **Interruption**: an interrupted call writes no partial output.
 8. **Manifest required for persisted output**: asset TTS and transcription modes write `manifest.json` with at minimum: `skill`, `mode`, `voicebox_generation_id`, `text` (or `transcript_preview`), `profile`, `engine`, `language`, `format` (TTS only), `created_at`. Processing records the source, operations, and measured output properties as specified in `resources/audio-processing.md`; it never invents Voicebox provenance. Notification mode is exempt because Voicebox Captures is its system of record and no disk output is written by default.
 9. **Out of scope**: the Voicebox cloning UI, captures archive, stories editor, microphone dictation loop, and cloud vendors are intentionally not exposed. VoiceStudio cloning and voice design run only on an explicit request with the voice owner's permission (`resources/voicestudio.md`).
 10. **No cost guard**: Voicebox is free. The cost guardrail from `oma-image` does not apply.
@@ -244,4 +244,4 @@ Other skills can request audio output by calling the same MCP tools directly, or
 - Configuration: read the `voice:` section of `.agents/oma-config.yaml` first, then fall back to `config/voice-config.yaml` for any key it does not set. `voice.backend` (`auto` | `voicebox` | `voicestudio`, default `auto`) lives only in oma-config. Both profiles ship as `null` and must be set per machine — write them to `.agents/oma-config.yaml`, since `oma update` overwrites the skill config.
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`
-- Design reference: `../../../docs/plans/designs/012-oma-voice.md` (source repo only; absent in global-mode installs)
+- Design reference: `../../../docs/decisions/012-oma-voice.md` (source repo only; absent in global-mode installs)

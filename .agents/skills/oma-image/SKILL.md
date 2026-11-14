@@ -19,7 +19,7 @@ Generate images and visual assets through authenticated multi-vendor routing whi
 
 - Generating images, visual assets, illustrations, product photos, concept art
 - Comparing output between multiple image models for the same prompt
-- Producing images from prompts within editor workflows (Claude Code, Codex, Gemini CLI)
+- Producing images from prompts within editor workflows (Claude Code, Codex, Antigravity)
 - Other skills needing image generation infrastructure (shared invocation)
 - Regenerating a new image that follows a supplied reference's subject, style, lighting, or composition
 
@@ -33,7 +33,7 @@ Generate images and visual assets through authenticated multi-vendor routing whi
 ### Expected inputs
 - Image prompt or creative brief
 - Optional vendor, size, quality, count, output directory, and reference images
-- Authentication/environment state for Codex, Pollinations, or Gemini
+- Authentication/environment state for Codex, Antigravity (`agy`), or Pollinations
 
 ### Expected outputs
 - Generated image files under `.agents/results/images/` or requested output directory
@@ -42,7 +42,7 @@ Generate images and visual assets through authenticated multi-vendor routing whi
 
 ### Dependencies
 - `oma image generate` CLI and vendor authentication
-- Codex image generation, Pollinations API, or Gemini API/CLI strategy
+- Codex image generation, Antigravity (`agy`), or the Pollinations API
 - `resources/vendor-matrix.md`, `resources/prompt-tips.md`, and the `image:` section of `.agents/oma-config.yaml`
 
 ### Control-flow features
@@ -80,7 +80,7 @@ Generate images and visual assets through authenticated multi-vendor routing whi
 
 ### Tools and instruments
 - `oma image generate`, `oma image doctor`, `oma image vendor list`
-- Codex, Pollinations, and Gemini provider paths
+- Codex, Antigravity (`agy`), and Pollinations provider paths
 - Prompt tips, vendor matrix, and image config
 
 ### Canonical command path
@@ -99,11 +99,11 @@ oma image generate --reference "<absolute-path>" --vendor codex "<prompt>"
 |-------|-----------------|
 | `LOCAL_FS` | Reference images, generated images, manifests |
 | `PROCESS` | Provider CLIs and image router commands |
-| `NETWORK` | Pollinations/Gemini or provider APIs |
+| `NETWORK` | Pollinations API and the vendor CLIs' backends |
 | `CREDENTIALS` | Provider auth and API keys |
 
 ### Preconditions
-- Prompt is sufficiently specified or user approves amplification.
+- The subject and intended result are stated or inferable.
 - Required vendor auth and output permissions exist.
 - Reference paths are accessible when used.
 
@@ -131,7 +131,7 @@ Use the requested subject and constraints. Infer setting, style, lighting, and a
 
 ### Configuration
 
-Project-specific settings: the `image:` section of `.agents/oma-config.yaml`, which `oma update` preserves. Shipped defaults live in the CLI (`DEFAULTS` in `cli/commands/image/config.ts`) — write only the keys you change. The legacy `config/image-config.yaml` is no longer read by the CLI; migration 022 moves anything you had changed there into oma-config (and deletes the file when it was never edited).
+Project-specific settings: the `image:` section of `.agents/oma-config.yaml`, which `oma update` preserves. Shipped defaults live in the CLI (`DEFAULTS` in `cli/commands/image/config.ts`) — write only the keys you change.
 Env vars: `OMA_IMAGE_DEFAULT_VENDOR`, `OMA_IMAGE_DEFAULT_OUT`, `OMA_IMAGE_YES`, `POLLINATIONS_API_KEY`.
 
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`

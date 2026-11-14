@@ -2,15 +2,15 @@
 
 ## 1) Planning
 
-1. Read the effective `scm` configuration and files listed under `documented_process`.
-2. If missing, infer from `CONTRIBUTING.md` / `README`; state assumptions.
+1. Read the effective `scm` configuration (`conventional_commits`, `branching_strategy`, `require_pr_for_default_branch`, `co_author`, `forbidden_patterns`, `allowed_exceptions`) and the repository's documented process (`CONTRIBUTING.md`, `README`, release docs).
+2. If neither states the process, infer it from branch and tag history; state assumptions.
 3. Confirm **branching model** and whether **force-push** on shared branches is allowed (default: not without explicit approval).
 
 ## 2) Identification
 
 1. Canonical refs: default branch, release branches/tags, version sources (`package.json`, etc.).
 2. `.gitattributes` / LFS for binaries and generated assets.
-3. Branch names vs the effective `scm` configuration `branch_prefixes` when the project uses them.
+3. Branch names vs `scm.branching_strategy` and the repository's documented prefixes; without a documented scheme, use the prefixes in `conventional-commits.md`.
 
 ## 3) Control
 
@@ -29,28 +29,8 @@
 1. Required CI and `merge_group` when merge queue applies.
 2. Never stage/commit secrets (`.env`, keys, raw tokens). Filename patterns from the effective `scm` configuration `forbidden_patterns` are enforced mechanically by the `scm-guard` PreToolUse hook; for content-level leaks (tokens hardcoded in ordinary source files), run a scanner when available (`gitleaks protect --staged`, `trufflehog git`) before large or unfamiliar commits.
 3. Call out signed-commit expectations when the org cares about verification badges.
-
-### CODEOWNERS maintenance checklist
-
-1. Validate CODEOWNERS file exists (prefer `.github/CODEOWNERS`).
-2. Ensure critical paths are explicitly owned (not only fallback `*`).
-3. Ensure owners are active and mapped to current teams.
-4. Confirm branch protection requires CODEOWNERS review where needed.
-5. Flag overlapping/ambiguous rules that can hide intended owners.
-
-Read `change_governance.require_codeowners` and `ownership.*` in the effective `scm` configuration when present.
+4. CODEOWNERS: apply the checks in `codeowners-playbook.md`.
 
 ## 6) Onboarding risk scan (optional)
 
-Use this quick scan when joining or inheriting a repository to identify risky areas before major changes.
-
-1. High churn files in `lookback` window.
-2. Ownership concentration / bus-factor signals.
-3. Bug hotspot files from fix-related history.
-4. Velocity trend by month.
-5. Revert/hotfix/emergency frequency.
-
-Read thresholds from the effective `scm` configuration `onboarding_metrics` when present and cite caveats:
-- squash merge teams can distort ownership metrics,
-- weak commit labeling reduces hotspot accuracy,
-- monorepo commit counts can bias subsystem interpretation.
+When joining or inheriting a repository, run the scans in `onboarding-risk-signals.md` before major changes. That file states the lookback window, heuristics, and caveats.

@@ -1,7 +1,7 @@
 # ARTEX runtime testing
 
-Load for an explicit ARTEX request or a concrete `web_runtime`/`pentest` target.
-ARTEX is the selected runtime engine for a scoped web test deployment; absent deployment/artifact prerequisites leave that stage pending.
+Load for an explicit ARTEX request, or to check the platform prerequisite of a concrete `web_runtime`/`pentest` target.
+ARTEX is never selected by default. Runtime testing needs an existing ARTEX platform that the user supplies and that passes the review below; without it, the runtime stage is `skipped` with that prerequisite recorded.
 Use [findings-contract.md](findings-contract.md) for `run.json`/`runtime.json` and [validation.md](validation.md) for independent replay.
 The shared execution policy governs the actual target, effects, credentials, and cost; this resource adds no separate approval sequence.
 
@@ -98,8 +98,7 @@ ARTEX's narrative, screenshot, or self-reported success remains a candidate clai
 A fresh verifier must seek counterevidence and independently replay the bounded request sequence against the same authorized identity.
 Use `proof_context: authorized_runtime` for that replay; Cloudflare's local no-external-network procedure does not authorize runtime requests.
 Grant `confirmed` only after supported, observed reproduction; otherwise retain `needs_validation` with gaps under the common contract.
-Failure to reproduce is not automatic refutation, and an unsuccessful attack does not establish that the deployment is secure.
-Without deployment revision identity, proof is session-specific; it cannot confirm the local source checkout or another deployment.
+Failed replays and proof without a deployment revision follow the status mapping and semantic checks in [findings-contract.md](findings-contract.md).
 
 Record `completed` only when the selected task is finished and its required completion/evidence receipt is valid.
 Budget stops, tool errors, absent traffic proof, or incomplete intended exploration produce `partial`; unusable execution is `failed`; missing prerequisites are `skipped`.

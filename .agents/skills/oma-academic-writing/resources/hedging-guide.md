@@ -13,56 +13,12 @@ Academic writing requires calibrated certainty: neither overclaiming nor excessi
 | Interpretive | Author's own analysis without external validation | Attribution | "This pattern **appears to** reflect...", "One possible interpretation is that..." |
 | Speculative | No direct evidence; inference from adjacent domains | Maximal | "It is **conceivable** that...", "**If** this trend continues, X **could** occur." |
 
-## Hedging devices
-
-### Modal verbs (ordered by certainty)
-
-| Certainty Level | Modals |
-|----------------|--------|
-| High | will, must, is (certain to) |
-| Moderate | would, should, is likely to |
-| Low | may, might, could, can |
-| Speculative | would potentially, might conceivably |
-
-### Hedging verbs
-
-| Certainty Level | Verbs |
-|----------------|-------|
-| High | demonstrate, confirm, establish, verify, prove |
-| Moderate | suggest, indicate, imply, point to, appear |
-| Low | hint at, raise the possibility, appear to, tend to |
-
-### Hedging adverbs
-
-| Certainty Level | Adverbs |
-|----------------|---------|
-| High | clearly, definitively, conclusively, unequivocally (rule 7: mathematical or logical certainties only) |
-| Moderate | generally, typically, largely, predominantly |
-| Low | possibly, potentially, perhaps, arguably, presumably |
-| Speculative | conceivably, hypothetically, tentatively |
-
-### Hedging nouns
-
-possibility, tendency, likelihood, indication, suggestion, assumption, interpretation, speculation
-
-### Hedging prepositional phrases
-
-according to, on the basis of, in light of, given the limitations of, with reference to, from the perspective of
-
 ## Rules
 
 ### 1. Match hedge to evidence
 
-Every claim in academic writing must carry the appropriate degree of certainty.
-
-**Strong evidence → assertive language:**
-> "The regression analysis **demonstrates** a statistically significant correlation (p < .001) between match duration and surface type."
-
-**Moderate evidence → moderate hedge:**
-> "The findings **suggest** that match duration **tends to** increase on clay surfaces."
-
-**Limited evidence → strong hedge:**
-> "Preliminary data **may indicate** a relationship between surface type and match duration, although further investigation is warranted."
+Every claim carries the degree of certainty its evidence supports, per the
+mapping table above.
 
 ### 2. Never over-hedge strong evidence
 
@@ -118,15 +74,3 @@ These intensifiers are appropriate only for:
 - Universally accepted facts: appropriate in very limited contexts
 
 For all other claims, remove the intensifier and let the evidence speak.
-
-## Quick reference: hedge calibration checklist
-
-Before submitting any academic text:
-
-- [ ] Does every claim carry appropriate hedging for its evidence base?
-- [ ] No double-hedging found?
-- [ ] No "clearly/obviously" used without mathematical or logical justification?
-- [ ] No "I think/believe" constructions?
-- [ ] Interpretive claims attributed with "appears to", "one interpretation", etc.?
-- [ ] Strong evidence not weakened by unnecessary hedges?
-- [ ] Weak evidence not presented as established fact?

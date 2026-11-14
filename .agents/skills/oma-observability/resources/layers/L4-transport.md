@@ -1,7 +1,3 @@
----
-otel_semconv: "1.43.0 (2026-07)"
----
-
 # L4 Transport Layer Observability
 
 > **DISAMBIGUATION; read before proceeding.**
@@ -24,26 +20,29 @@ otel_semconv: "1.43.0 (2026-07)"
 
 OSI Layer 4 observability for production systems: TCP, UDP, QUIC/HTTP3, eBPF auto-instrumentation,
 and connection lifecycle. Out of scope: L5 session (gRPC/WebSocket → L7), L6 full TLS inspection
-(use Wireshark/vendor tooling), security-focused eBPF (Cilium Tetragon/Falco → security skill).
-See `../standards.md §5` for the authoritative OSI boundary decision.
+(use Wireshark/vendor tooling), and security-focused eBPF policy enforcement (Cilium Tetragon). Falco
+runtime events as an audit source are covered in `../signals/audit.md`; security scanning and
+penetration testing hand off to `oma-security`.
+See the OSI boundary decision in `../standards.md`.
 
 ---
 
 ## 2. L4 Semconv (OTel)
 
-Source: <https://opentelemetry.io/docs/specs/semconv/attributes-registry/network/>
+Source: <https://opentelemetry.io/docs/specs/semconv/registry/attributes/network/>
 
 | Attribute | Values | Stability | Notes |
 |-----------|--------|-----------|-------|
 | `network.transport` | `tcp`, `udp`, `unix`, `pipe`, `quic` | **Stable** | Set on spans and metrics describing a socket |
 | `network.protocol.name` | `http`, `grpc`, `amqp`, … | **Stable** | Application protocol over the transport |
 | `network.protocol.version` | `1.1`, `2`, `3` | **Stable** | `3` = HTTP/3 over QUIC |
-| `network.peer.address` | IP or hostname | **Stable** | Apply IP-masking before retention; `../signals/privacy.md §IP addresses` |
-| `network.connection.state` | `established`, `close_wait`, … | **Development** | Do not build SLOs against this; schema may change |
+| `network.peer.address` | IP or hostname | **Stable** | Apply the IP-address handling rules in `../signals/privacy.md` before retention |
+| `network.connection.state` | `established`, `close_wait`, … | **Release Candidate** | Do not build SLOs against this until it is Stable |
 | `network.connection.type` | `wifi`, `cell`, … | **Development** | Mobile/RUM only; flag in production use |
 
-`network.connection.*` attributes are Development tier (`../standards.md §3`). Use them in test
-environments and tolerate breaking changes before promoting to production dashboards.
+Non-Stable `network.connection.*` attributes may change; confirm the current tier in the registry,
+use them in test environments first, and tolerate breaking changes before promoting them to
+production dashboards.
 
 ---
 
@@ -51,41 +50,45 @@ environments and tolerate breaking changes before promoting to production dashbo
 
 ### 3.1 Key Metrics
 
-| Metric | Type | Measures | Source |
-|--------|------|----------|--------|
-| `tcp_retransmits_total` | Counter | Retransmit segments; rate spike = congestion or loss | hostmetrics, eBPF |
-| `tcp_rtt_ms` (p50/p99) | Histogram | Round-trip time per connection | eBPF socket stats |
-| `tcp_active_connections` | Gauge | In-flight established connections; growth = pool leak | `/proc/net/sockstat` |
-| `tcp_time_wait_connections` | Gauge | TIME_WAIT count; high under short-lived connection churn | `/proc/net/sockstat` |
-| `tcp_syn_queue_drops_total` | Counter | SYN queue overflow; SYN flood or low `tcp_max_syn_backlog` | netlink / eBPF |
-| `tcp_close_wait_connections` | Gauge | CLOSE_WAIT growth = server not closing half-open connections | hostmetrics |
+OTel defines no host-level TCP retransmit or RTT metric. Use one of these sources; names are quoted
+from each source and are not interchangeable.
+
+| Source | Metric | Measures |
+|--------|--------|----------|
+| Prometheus node_exporter (`netstat`) | `node_netstat_Tcp_RetransSegs` / `node_netstat_Tcp_OutSegs` | Retransmitted vs sent segments; ratio spike = congestion or loss |
+| Prometheus node_exporter (`netstat`) | `node_netstat_Tcp_CurrEstab` | Established connections; growth = pool leak |
+| Prometheus node_exporter (`netstat`) | `node_netstat_TcpExt_ListenOverflows`, `node_netstat_TcpExt_ListenDrops`, `node_netstat_TcpExt_SyncookiesSent` | Accept/SYN queue overflow; SYN flood or backlog too small |
+| Prometheus node_exporter (`sockstat`) | `node_sockstat_TCP_tw`, `node_sockstat_TCP_inuse` | TIME_WAIT and in-use sockets; high under short-lived connection churn |
+| OTel hostmetrics `network` scraper | `system.network.connections` (attributes `protocol`, `state`) | Connection count per TCP state, including `CLOSE_WAIT` and `TIME_WAIT` |
+| OpenTelemetry eBPF Instrumentation (OBI) | `obi.stat.tcp.rtt` (histogram, seconds), `obi.stat.tcp.retransmits`, `obi.stat.tcp.failed.connections`, `obi.stat.tcp.resets` | Per-connection RTT, retransmits, and failures with source/destination workload attributes (Development stability) |
 
 ```promql
-# Retransmit rate per node
-rate(tcp_retransmits_total[5m])
+# Retransmit ratio per node
+rate(node_netstat_Tcp_RetransSegs[5m]) / rate(node_netstat_Tcp_OutSegs[5m])
 
-# p99 RTT per service
-histogram_quantile(0.99, sum by (le, service_name) (rate(tcp_rtt_ms_bucket[5m])))
+# Accept queue overflow
+rate(node_netstat_TcpExt_ListenOverflows[5m]) > 0
 
 # TIME_WAIT pressure alert
-tcp_time_wait_connections > 10000
+node_sockstat_TCP_tw > 10000
 ```
 
 ### 3.2 Collection
 
 | Method | Mechanism | Privilege |
 |--------|-----------|-----------|
-| OTel hostmetrics receiver | `/proc/net/tcp`, `/proc/net/snmp`, `/proc/net/sockstat` | Root or CAP_SYS_PTRACE |
-| eBPF socket filter | kprobes on `tcp_retransmit_skb`, `tcp_sendmsg` | CAP_BPF (kernel ≥ 5.8) or root |
-| Linux netlink SOCK_DIAG | TCP socket state enumeration | Unprivileged in most distros |
+| node_exporter `netstat` / `sockstat` collectors | `/proc/net/netstat`, `/proc/net/snmp`, `/proc/net/sockstat` | Unprivileged read of `/proc` |
+| OTel hostmetrics receiver (`network` scraper) | Per-interface I/O, errors, drops, and connection counts by state | Host `/proc` access |
+| eBPF (OBI, Pixie) | Kernel probes on TCP send/retransmit paths | CAP_BPF + CAP_PERFMON (kernel ≥ 5.8) or root |
 
 ### 3.3 Common Pitfalls
 
-**Connection pool exhaustion.** High `tcp_active_connections` with high application latency but no TCP errors
-points to pool queue saturation, not network failure. Cross-ref: `../signals/traces.md §DB connection pool patterns`.
+**Connection pool exhaustion.** A rising established-connection count with high application latency but no TCP errors
+points to pool queue saturation, not network failure. Instrument pool size, wait time, and timeouts at the
+application layer; see the connection pool exhaustion pattern in `../signals/traces.md`.
 
-**SYN cookie activation.** `tcp_syn_queue_drops_total` > 0 in normal traffic means `tcp_max_syn_backlog`
-is too low. SYN cookies mask drop counters in `/proc/net/snmp`; use eBPF for reliable counts.
+**SYN cookie activation.** Non-zero `ListenOverflows` / `ListenDrops` in normal traffic means the accept
+backlog (`somaxconn`, `tcp_max_syn_backlog`) is too low. Rising `SyncookiesSent` confirms the SYN queue overflowed.
 
 **TIME_WAIT accumulation.** Short-lived HTTP/1.1 connections exhaust ephemeral ports. Remediation:
 `SO_REUSEADDR`, wider `ip_local_port_range`, or HTTP/2 multiplexing.
@@ -94,16 +97,18 @@ is too low. SYN cookies mask drop counters in `/proc/net/snmp`; use eBPF for rel
 
 ## 4. UDP Observability
 
-| Metric | Source | Measures |
+| Metric (node_exporter `netstat`) | `/proc/net/snmp` field | Measures |
 |--------|--------|----------|
-| `udp_datagrams_sent_total` | `/proc/net/snmp` | Baseline send throughput |
-| `udp_receive_buffer_errors_total` | `/proc/net/snmp` `RcvbufErrors` | Socket buffer overflow; increase `net.core.rmem_max` |
-| `udp_no_ports_total` | `/proc/net/snmp` `NoPorts` | Drop because no listener on destination port |
-| `udp_checksum_errors_total` | `/proc/net/snmp` `InCsumErrors` | Corrupted datagrams; NIC or path corruption |
+| `node_netstat_Udp_OutDatagrams`, `node_netstat_Udp_InDatagrams` | `OutDatagrams`, `InDatagrams` | Baseline throughput |
+| `node_netstat_Udp_RcvbufErrors` | `RcvbufErrors` | Socket receive buffer overflow; increase `net.core.rmem_max` |
+| `node_netstat_Udp_SndbufErrors` | `SndbufErrors` | Send buffer exhaustion |
+| `node_netstat_Udp_NoPorts` | `NoPorts` | Drop because no listener on destination port |
+| `node_netstat_Udp_InErrors` | `InErrors` | Receive errors, including checksum failures |
 
-OTel hostmetrics `network` scraper covers these counters automatically.
-Cross-ref: `../transport/udp-statsd-mtu.md` for StatsD payload sizing constraints that affect
-`udp_receive_buffer_errors_total` in high-throughput StatsD pipelines.
+The OTel hostmetrics `network` scraper reports per-interface packets, errors, and drops, not these
+per-protocol UDP counters; scrape node_exporter (or read `/proc/net/snmp`) for them.
+Cross-ref: `../transport/udp-statsd-mtu.md` for StatsD payload sizing constraints that drive
+`RcvbufErrors` in high-throughput StatsD pipelines.
 
 ---
 
@@ -113,46 +118,41 @@ eBPF instruments the Linux kernel without application code changes. Three tools 
 
 ### 5.1 Tool Comparison
 
-| Tool | CNCF Status | Primary signal | OTel output | Key use case |
+| Tool | Project status | Primary signal | OTel output | Key use case |
 |------|-------------|----------------|-------------|--------------|
-| **Grafana Beyla** | CNCF Incubating (2024) | HTTP/gRPC traces + Go/C++ runtime | OTLP natively | Zero-code HTTP/gRPC auto-instrumentation via uprobes; also emits `tcp_rtt_us` histograms. Requires kernel ≥ 5.2 with BTF enabled |
-| **Pixie** | CNCF Sandbox | Multi-protocol traces + L4 metrics via PxL | OTLP via `px-export` | Scriptable cluster-wide eBPF; auto-discovers pods |
-| **Parca** | CNCF Sandbox | Continuous CPU + off-CPU flame graphs | pprof-compatible | Whole-cluster profiling; cross-ref `../signals/profiles.md` |
+| **OpenTelemetry eBPF Instrumentation (OBI)**; Grafana Beyla is Grafana's distribution of it | OpenTelemetry project | HTTP/gRPC/database traces and RED metrics; network flow and TCP stat metrics | OTLP natively | Zero-code auto-instrumentation; also emits `obi.stat.tcp.rtt` and `obi.network.flow.bytes` |
+| **Pixie** | CNCF Sandbox | Multi-protocol traces + L4 metrics via PxL scripts | OTLP via the PxL OpenTelemetry export plugin | Scriptable cluster-wide eBPF; auto-discovers pods |
+| **Parca** | Independent open source (not a CNCF project) | Continuous CPU flame graphs | pprof-compatible | Whole-cluster profiling; cross-ref `../signals/profiles.md` |
 
-Sources: <https://grafana.com/oss/beyla/>, <https://px.dev/>, <https://parca.dev/>
+Sources: <https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation>, <https://grafana.com/oss/beyla/>, <https://px.dev/>, <https://parca.dev/>
+
+Project status changes; verify at <https://landscape.cncf.io> when it is load-bearing.
 
 **Out of scope: Cilium Tetragon.** Security-focused runtime policy enforcement (syscall filtering, process
-exec tracing) belongs to a security skill. Falco is the comparable alternative for kernel security events.
+exec tracing) is not transport observability. Falco kernel security events feed the audit signal; see
+`../signals/audit.md`.
 
 ### 5.2 Kernel and Privilege Requirements
 
 | Requirement | Detail |
 |-------------|--------|
-| Minimum kernel | ≥ 4.14 for most eBPF features; ≥ 5.8 for CAP_BPF without root |
+| Kernel (OBI) | Linux ≥ 5.8 with BTF exposed; RHEL-based distributions ≥ 4.18 with eBPF backports |
+| Kernel (other tools) | Check each tool's support matrix; requirements differ |
 | Capabilities | CAP_BPF + CAP_PERFMON (kernel ≥ 5.8) or root on older kernels |
-| GKE Autopilot | eBPF DaemonSets disallowed; use Standard node pools |
+| GKE Autopilot | Privileged eBPF DaemonSets are restricted; use Standard node pools |
 | EKS Fargate | No DaemonSet support; eBPF unavailable |
 | AKS | Supported on standard node pools; verify with `uname -r` |
 
 ```bash
-# Preflight kernel check (run in initContainer or node admission)
-uname -r           # must be >= 4.14, ideally >= 5.8
+# Preflight check (run in initContainer or node admission); exit non-zero when unmet
+uname -r                          # compare against the tool's minimum kernel
+test -f /sys/kernel/btf/vmlinux   # BTF exposed
 capsh --print | grep cap_bpf
-
-# Beyla deploy via Helm
-helm repo add grafana https://grafana.github.io/helm-charts
-helm install beyla grafana/beyla --namespace beyla --create-namespace
 ```
 
-### 5.3 Pixie PxL (Conceptual)
-
-```python
-# Conceptual PxL — TCP retransmit counts per pod
-import px
-df = px.DataFrame(table='tcp_retransmits', start_time='-5m')
-df = df.groupby(['pod', 'namespace']).agg(retransmits=('retransmits', px.sum))
-px.display(df)
-```
+An eBPF agent on an unsupported kernel or without the required capabilities can fail to attach while
+its pod stays `Running`. Fail the preflight explicitly so the gap surfaces at deploy time. Resolve
+the Helm chart name and version from the project's current docs at use time.
 
 ---
 
@@ -166,20 +166,22 @@ LISTEN → SYN_RECEIVED → ESTABLISHED → (data transfer)
 
 | State | Observable signal | Tooling |
 |-------|------------------|---------|
-| SYN → ESTABLISHED | Setup latency (SYN-ACK RTT) | eBPF `tcp_v4_connect` kprobe |
-| ESTABLISHED idle | Keepalive probe success/failure | `/proc/net/tcp` + hostmetrics |
-| FIN_WAIT / TIME_WAIT | TIME_WAIT gauge; ephemeral port pressure | hostmetrics `/proc/net/sockstat` |
-| CLOSE_WAIT growth | Server not releasing half-open connections | hostmetrics + eBPF alert |
+| SYN → ESTABLISHED | Setup latency (SYN-ACK RTT) | eBPF connect-path probes |
+| ESTABLISHED idle | Keepalive probe success/failure | `ss -o` keepalive timers; resets in `node_netstat_Tcp_OutRsts` |
+| FIN_WAIT / TIME_WAIT | TIME_WAIT gauge; ephemeral port pressure | `node_sockstat_TCP_tw` |
+| CLOSE_WAIT growth | Server not releasing half-open connections | `system.network.connections{state="CLOSE_WAIT"}` |
 
 **TLS handshake boundary.** TLS sits at L4/L5. `tls.*` semconv is Development tier; do not build
 production SLOs on it. Use eBPF uprobes on OpenSSL/BoringSSL or vendor tooling for handshake latency.
-Cross-ref: `../signals/privacy.md §TLS context`.
 
 **Keepalive tuning.** TCP keepalive interval must be shorter than the upstream LB idle timeout
-(AWS ALB: 60 s; AWS NLB: 350 s; GCP CLB: 600 s default). Mismatches cause silent connection resets.
+(defaults: AWS ALB 60 s; AWS NLB 350 s for TCP flows; GCP external Application LB 610 s client HTTP
+keepalive and a fixed 600 s backend keepalive). Mismatches cause silent connection resets.
 
-**WebSocket and gRPC streams**; full lifecycle coverage is deferred to L7 (`../standards.md §5`).
-Long-lived streams mitigate TIME_WAIT accumulation but introduce reconnection-storm risk on restart.
+**WebSocket and gRPC streams**; full lifecycle coverage is deferred to L7 (`../standards.md`).
+Long-lived streams mitigate TIME_WAIT accumulation but introduce reconnection-storm risk on restart:
+a server restart without graceful drain makes every client reconnect at once, and the SYN burst looks
+like ordinary new connections. Count client reconnections and require exponential backoff with jitter.
 
 ---
 
@@ -194,7 +196,7 @@ migration. HTTP/3 (RFC 9114) runs exclusively over QUIC.
 |-------------|----------------|----------------------|
 | 3-way SYN handshake | 1-RTT or 0-RTT | No SYN/FIN to observe; connection state is QUIC-internal |
 | 5-tuple for correlation | Connection ID (opaque bytes) | Connection ID survives NAT rebinding; log it on establishment |
-| `/proc/net/tcp` retransmit | QUIC loss recovery (packet number gaps) | Not visible in proc; requires QUIC-aware tooling |
+| TCP retransmit counters (`/proc/net/snmp`) | QUIC loss recovery (packet number gaps) | Not visible in proc; requires QUIC-aware tooling |
 | TCP FIN / RST | QUIC GOAWAY / CONNECTION_CLOSE frames | Surfaced in Envoy access logs |
 | HTTP/2 HOL blocking | Per-stream flow control; no HOL blocking | Stream errors do not block other streams |
 
@@ -222,15 +224,17 @@ Detect QUIC blocking:
 
 Action: coordinate with network security to allowlist UDP 443/8443 for validated destinations; document the fallback behavior so regressions do not silently halve transport performance.
 
-### 7.5 Tool Support (2026)
+### 7.5 Tool Support
 
 | Tool | QUIC support |
 |------|-------------|
-| Envoy 1.29+ | QUIC upstream and downstream; stats in admin API and access logs |
-| Istio 1.22+ | QUIC upstream via Envoy; mTLS over QUIC experimental; see `layers/mesh.md` |
-| Grafana Beyla | HTTP/3 uprobes in roadmap; verify release notes before QUIC-heavy deployments |
+| Envoy | HTTP/3 upstream and downstream; stats in admin API and access logs |
+| Istio | Inherits Envoy's HTTP/3 support; confirm the feature status in current Istio docs; see `mesh.md` |
+| OBI / Grafana Beyla | Protocol support matrix lists HTTP/1.x, HTTP/2, and gRPC; verify HTTP/3 coverage in the current support matrix before QUIC-heavy deployments |
 | Cloudflare QUIC telemetry | <https://blog.cloudflare.com/tag/quic/>; public connection migration + 0-RTT metrics |
-| Google QUIC metrics | <https://research.google>; packet loss recovery timing |
+
+Before enabling QUIC in production, assert in staging that client spans carry
+`network.transport: quic` and that the chosen L4 tooling sees the UDP flows; TCP metrics are blind to them.
 
 ---
 
@@ -238,62 +242,29 @@ Action: coordinate with network security to allowlist UDP 443/8443 for validated
 
 | Source | Signal | Cross-ref |
 |--------|--------|-----------|
-| systemd-journal / syslog | TCP resets, netfilter drops, NIC errors | `../signals/logs.md §OS-level log sources` |
-| cgroup v2 net accounting | Per-container byte/packet counters | `../transport/collector-topology.md §kubernetes` |
-| nf_conntrack | NAT and stateful firewall connection table size | Requires `nf_conntrack` kernel module |
+| systemd-journal / syslog | TCP resets, netfilter drops, NIC errors | `../signals/logs.md` |
+| cgroup v2 net accounting | Per-container byte/packet counters | `../transport/collector-topology.md` |
+| nf_conntrack | NAT and stateful firewall connection table size (`system.network.conntrack.count` / `.max`, optional hostmetrics metrics) | Requires `nf_conntrack` kernel module |
 
 ---
 
-## 9. Matrix Cells: L4 Row
+## 9. References
 
-From `../matrix.md §L4-transport`:
-
-| Cell | Symbol | Rationale |
-|------|--------|-----------|
-| L4 × cross-application × traces | PARTIAL | TCP is not trace-native; log socket 5-tuple for post-hoc correlation to L7 spans only |
-| L4 × * × profiles | PASS | eBPF off-CPU profiling via Parca captures kernel socket overhead and network-wait; pprof output |
-| L4 × privacy (all boundaries) | PARTIAL | Source/destination IPs in TCP logs are PII (GDPR Art. 4(1)); apply masking at pipeline ingress |
-| L4 × SLO and L4 × release | N/A | SLO budgets and release markers are application-layer; TCP health is infra-SLI fallback only |
-
----
-
-## 10. Anti-Patterns: Candidates for `../anti-patterns.md §Section H`
-
-**H-L4-1: Connection pool observability absent.** Pool queue saturation is invisible in TCP metrics
-alone; neither retransmit rate nor error rate spikes until the pool times out. Instrument pool size,
-wait time, and timeout counters at the application layer. Severity: HIGH.
-
-**H-L4-2: QUIC adoption without HTTP/3 trace tooling validation.** Enabling QUIC without verifying
-that OTel SDKs emit `network.transport: quic` and `network.protocol.version: "3"` creates a
-transport-layer blind spot. Add a canary assertion in staging before production rollout. Severity: HIGH.
-
-**H-L4-3: eBPF agent deployed without kernel/capability preflight.** Beyla or Pixie DaemonSets on
-incompatible kernels fail silently with no operator-visible error. Add an `initContainer` asserting
-kernel version and CAP_BPF presence; fail non-zero if requirements are unmet. Severity: HIGH.
-
-**H-L4-4: WebSocket reconnection storm undetected.** Server restart without graceful WebSocket drain
-causes simultaneous mass-reconnect. TCP SYN counts look like normal new connections. Instrument client
-reconnection counters and alert on rate spikes; implement exponential backoff + jitter. Severity: MEDIUM.
-
----
-
-## 11. References
-
-- OTel network attributes registry: <https://opentelemetry.io/docs/specs/semconv/attributes-registry/network/>
+- OTel network attributes registry: <https://opentelemetry.io/docs/specs/semconv/registry/attributes/network/>
+- OpenTelemetry eBPF Instrumentation (support matrix, telemetry reference): <https://github.com/open-telemetry/opentelemetry-ebpf-instrumentation>
 - Grafana Beyla: <https://grafana.com/oss/beyla/>
-- Pixie (CNCF Sandbox): <https://px.dev/>
-- Parca (CNCF Sandbox): <https://parca.dev/>
+- Pixie: <https://px.dev/>
+- Parca: <https://parca.dev/>
 - QUIC RFC 9000: <https://www.rfc-editor.org/rfc/rfc9000>
 - HTTP/3 RFC 9114: <https://www.rfc-editor.org/rfc/rfc9114>
 - Cloudflare QUIC telemetry: <https://blog.cloudflare.com/tag/quic/>
 - OTel hostmetrics receiver: <https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver>
-- Linux `/proc/net/tcp` format: <https://www.kernel.org/doc/html/latest/networking/proc_net_tcp.html>
-- Semconv stability tiers: `../standards.md §3`
-- OSI boundary decisions: `../standards.md §5`
-- Coverage matrix (L4 row): `../matrix.md §L4-transport`
-- IP masking rules: `../signals/privacy.md §IP addresses`
-- Profiling (eBPF/Parca): `../signals/profiles.md`
-- OS-level logs: `../signals/logs.md §OS-level log sources`
+- Prometheus node_exporter: <https://github.com/prometheus/node_exporter>
+- Semconv stability tiers and OSI boundary decisions: `../standards.md`
+- Coverage matrix (L4 rows): `../matrix.md`
+- IP-address handling rules: `../signals/privacy.md`
+- Profiling: `../signals/profiles.md`
+- OS-level logs: `../signals/logs.md`
 - Collector Kubernetes topology: `../transport/collector-topology.md`
 - StatsD UDP sizing: `../transport/udp-statsd-mtu.md`
-- Service mesh + QUIC: `layers/mesh.md`
+- Service mesh + QUIC: `mesh.md`

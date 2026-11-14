@@ -6,7 +6,7 @@ Every item maps to a SKILL.md guardrail or the validator contract in `fixed-stag
 ## Gate (must pass)
 
 - [ ] `oma slide validate --workspace "$DECK_DIR" --output json` passes, or the surfaced diff was explicitly approved by the user after 3 auto-fix iterations
-- [ ] Every slide root carries `data-om-validate` (validator contract)
+- [ ] Every slide is a `.slide` inside `.deck-stage` (the frame the validator measures), and the only remaining `remote_asset_ref` warnings are font CDN links
 - [ ] All slides authored at the fixed 1920×1080 stage in px units (no vw/vh/% layout)
 - [ ] All `<img src>` / `<video src>` point to local `./assets/<file>` only — no remote URLs
 - [ ] `meta.json` is current: `{ title, order[], style, density, speakerNotes }` matches the actual `slide-NN.html` set

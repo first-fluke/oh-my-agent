@@ -1,7 +1,3 @@
----
-otel_spec: "1.x (stable API/SDK)"
----
-
 # OTLP Transport: gRPC vs HTTP Decision Guide
 
 ## 1. OTLP Basics
@@ -226,31 +222,10 @@ resolves DNS and maintains one gRPC connection per pod.
 
 ## 7. Security: TLS and mTLS
 
-### Collector Receiver (server-side)
-
-```yaml
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: "0.0.0.0:4317"
-        tls:
-          cert_file: /etc/ssl/certs/collector.crt
-          key_file: /etc/ssl/private/collector.key
-          client_ca_file: /etc/ssl/certs/ca.crt   # enforce mTLS
-```
-
-### Exporter (client-side)
-
-```yaml
-exporters:
-  otlp:
-    endpoint: "collector:4317"
-    tls:
-      ca_file: /etc/ssl/certs/ca.crt
-      cert_file: /etc/ssl/certs/client.crt        # mTLS client cert
-      key_file: /etc/ssl/private/client.key
-```
-
-For Kubernetes workloads, use cert-manager to auto-rotate TLS credentials (90-day TTL).
-Use SPIFFE/SPIRE for zero-touch mTLS in multi-cluster scenarios.
+- Receiver: set `tls.cert_file` and `tls.key_file` on the `grpc`/`http` protocol block; adding
+  `tls.client_ca_file` enforces mTLS.
+- Exporter: set `tls.ca_file`, plus `tls.cert_file` and `tls.key_file` when the receiver enforces mTLS.
+- `tls.insecure: true` in the examples of this skill is for in-cluster illustration only; do not
+  carry it across a cluster, VPC, or tenant boundary.
+- For Kubernetes workloads, rotate TLS credentials with cert-manager. Use SPIFFE/SPIRE for
+  zero-touch mTLS in multi-cluster scenarios.

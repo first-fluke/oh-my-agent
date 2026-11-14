@@ -20,6 +20,7 @@ Repository documentation verification, diff-based synchronization, and translati
 - General source research -> oma-search.
 - Application implementation -> the owning specialist.
 - Translating known text -> oma-translation.
+- Moving decision or report files into the canonical layout -> `oma docs migrate` on explicit request (`resources/commands.md`); it is not a maintenance mode.
 
 ### Expected inputs
 Mode (`verify`, `sync`, `i18n`, or `lint`), target paths or diff range, and authorized edit scope. Use `verify` when no mode is specified.

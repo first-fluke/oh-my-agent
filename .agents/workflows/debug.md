@@ -19,7 +19,7 @@ Steps 1-5 execute inline for all vendors. Step 6 (similar pattern scanning) may 
 
 ### L1 Decision Events
 
-Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`.
 
 ### Subagent Spawn Criteria
 
@@ -28,19 +28,11 @@ Spawn `debug-investigator` when:
 - Similar pattern scan scope is 10+ files
 - Deep dependency tracing is needed for diagnosis
 
-### Vendor-Specific Spawn (Step 6)
+### Spawn (Step 6)
 
-#### If Claude Code
+Dispatch `debug-investigator` by the Dispatch Rule in `.agents/skills/_shared/core/vendor-detection.md`, with the diagnosis results so far and the scan scope in the prompt.
 
-Spawn `debug-investigator` via **Agent tool** using `.claude/agents/debug-investigator.md`.
-Include diagnosis results so far + scan scope in prompt.
-
-#### If Codex CLI
-
-Request subagent execution via model-mediated subagent request.
-Include diagnosis results and scan scope. Results returned as JSON output.
-
-#### If Antigravity or CLI Fallback
+CLI fallback:
 
 ```bash
 oma agent spawn debug "scan prompt with diagnosis context" {session_id} -w {workspace}

@@ -1,36 +1,39 @@
 # Mobile Agent - Tech Stack Index
 
 Per-platform tech stacks live under `variants/{platform}/`, mirroring
-`oma-backend/variants/`. Each variant owns its own `stack.yaml` (SSOT),
-`tech-stack.md`, `snippets.md`, and API template. This file holds only the
-**cross-platform guidance** shared by every variant plus a pointer index.
+`oma-backend/variants/`. Each variant owns its own `stack.yaml`,
+`tech-stack.md`, and `snippets.md`. This file holds only the cross-platform
+index and the shared response-cache contract; the cross-platform rules
+themselves are the SKILL.md guardrails.
 
 ## Platform Variants
 
-| Platform | Stack manifest | Tech stack | Snippets | API template |
-|----------|----------------|-----------|----------|--------------|
-| Swift (iOS native) | `../variants/swift-ios/stack.yaml` | `../variants/swift-ios/tech-stack.md` | `../variants/swift-ios/snippets.md` | `../variants/swift-ios/api-template.swift` |
-| Kotlin (Android native) | `../variants/kotlin-android/stack.yaml` | `../variants/kotlin-android/tech-stack.md` | `../variants/kotlin-android/snippets.md` | `../variants/kotlin-android/api-template.kt` |
-| Flutter | `../variants/flutter/stack.yaml` | `../variants/flutter/tech-stack.md` | `../variants/flutter/snippets.md` | `../variants/flutter/api-template.dart` |
-| React Native | `../variants/react-native/stack.yaml` | `../variants/react-native/tech-stack.md` | `../variants/react-native/snippets.md` | `../variants/react-native/api-template.ts` |
+| Platform | Stack manifest | Tech stack | Snippets |
+|----------|----------------|-----------|----------|
+| Swift (iOS native) | `../variants/swift-ios/stack.yaml` | `../variants/swift-ios/tech-stack.md` | `../variants/swift-ios/snippets.md` |
+| Kotlin (Android native) | `../variants/kotlin-android/stack.yaml` | `../variants/kotlin-android/tech-stack.md` | `../variants/kotlin-android/snippets.md` |
+| Flutter | `../variants/flutter/stack.yaml` | `../variants/flutter/tech-stack.md` | `../variants/flutter/snippets.md` |
+| React Native | `../variants/react-native/stack.yaml` | `../variants/react-native/tech-stack.md` | `../variants/react-native/snippets.md` |
 
-Stack selection: detect from project files (`Package.swift` / `settings.gradle.kts` +
-`com.android.application` / `pubspec.yaml` / `package.json` + `react-native`), or run `/stack-set` to generate a
-project-specific `stack/` from the matching variant baseline. The variant
-`stack.yaml` is the default; `/stack-set` may override any field per project.
+Stack selection: when the skill has a `stack/` directory, it is the project's
+stack — `/stack-set` generates it from the detected codebase, seeded from the
+matching variant, and `oma verify agent mobile` reads its `stack.yaml`. Without
+`stack/`, detect the platform from project files (`Package.swift` /
+`settings.gradle.kts` + `com.android.application` / `pubspec.yaml` /
+`package.json` + `react-native`) and read the matching variant directly.
 
 ## Stack at a glance
 
 | | Swift iOS | Kotlin Android | Flutter | React Native |
 |---|---|---|---|---|
-| Language | Swift 6+ | Kotlin 2.1+ | Dart 3.10+ | TypeScript (strict) |
+| Language | Swift 6+ | Kotlin 2.2.10+ | Dart 3.13+ | TypeScript (strict) |
 | UI | SwiftUI | Jetpack Compose / Material 3 | Flutter / Material 3 | React Native |
 | State | Observation (`@MainActor @Observable`) | `ViewModel` + `StateFlow` (Hilt) | Riverpod 3 | Zustand 5 (client) + TanStack Query 5 (server) |
 | Navigation | NavigationStack | Navigation Compose (type-safe routes) | GoRouter 17 | React Navigation v7 |
 | HTTP transport | URLSession | Ktor Client (OkHttp engine; MockEngine in tests) | Dio | Axios |
 | API/data layer | swift-openapi-generator | openapi-generator `kotlin`/`jvm-ktor` | Repository (Dio) | TanStack Query + `api/` |
 | Response cache (when required) | hyperoslo/Cache | Room repository | Drift offline-first repo | TanStack Query |
-| Durable storage | SwiftData / Keychain | Room / DataStore / EncryptedSharedPreferences | Drift / flutter_secure_storage | MMKV / secure-store |
+| Durable storage | SwiftData / Keychain | Room / DataStore / Keystore-backed token storage | Drift / flutter_secure_storage | MMKV / Keychain-backed secure storage |
 | Unit test | XCTest / Swift Testing | JUnit + coroutines-test + ktor-client-mock | flutter_test + mocktail | jest + RNTL (matchers built in ≥12.4) |
 | E2E | XCUITest | Maestro | Maestro | Maestro |
 
@@ -51,19 +54,3 @@ same philosophy across platforms, different idiomatic tooling:
 
 See each variant's `tech-stack.md` "Response Cache" section and `snippets.md`
 for the platform-specific implementation.
-
-## Cross-platform guidelines (shared)
-
-- **Clean Architecture**: domain → data → presentation (App/Core/Features/Shared
-  on Swift; `app/{ui,data,di}` + `api-client` on Kotlin). Business logic never
-  lives in UI widgets/views/composables.
-- **Platform design**: Material Design 3 on Android, iOS Human Interface
-  Guidelines on iOS. Use platform checks for platform-specific behavior.
-- **State management**: no raw `setState`/ad-hoc state for complex logic — use
-  the variant's state solution.
-- **Networking**: transport-layer interceptors handle auth/retry/logging only;
-  domain-model caching is a repository concern (see above). Handle offline
-  gracefully.
-- **Lifecycle**: dispose controllers / cancel tasks to prevent leaks.
-- **Performance**: 60fps target; test on both platforms.
-- **E2E**: Maestro for critical user flows.

@@ -32,11 +32,6 @@ verb unless a more specific one improves the claim.
 
 ## Evidence and certainty
 
-| Evidence | Suitable wording |
-|---|---|
-| Direct, well-supported result | `shows`, `demonstrates`, `is associated with` |
-| Observational or mixed evidence | `indicates`, `suggests`, `is consistent with` |
-| Proposal or interpretation | `may explain`, `could reflect`, `hypothesizes` |
-
-Read `hedging-guide.md` when certainty is material. This guide offers choices; it does not set a
-required vocabulary or a frequency target.
+Read `hedging-guide.md` when certainty is material; its evidence-to-hedge table
+decides how strong a reporting verb the evidence supports. This guide offers
+choices; it does not set a required vocabulary or a frequency target.

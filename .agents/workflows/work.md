@@ -8,7 +8,7 @@ disable-model-invocation: true
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search only for paths outside this project or ignored paths when unavailable or timed out. Do not install a provider or track a repository automatically.
 - Use native file tools and `.agents/skills/_shared/runtime/memory-protocol.md` for durable coordination state; code-intelligence memory tools are not required.
-- **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Core Rules.
+- **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Guardrails.
 - **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
 
 ---
@@ -27,11 +27,11 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 
 ## Step 0: Preparation (DO NOT SKIP)
 
-1. Read `.agents/skills/oma-coordination/SKILL.md` and confirm Core Rules.
+1. Read `.agents/skills/oma-coordination/SKILL.md` and apply its Guardrails.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
-4. Read `.agents/skills/_shared/runtime/event-spec.md` for L1 event protocol.
-5. Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`; the rest of that file is the event schema reference.
+5. Emit required L1 decisions by calling `oma state emit` directly, as documented in the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`.
 6. Generate a session ID (format: `YYYYMMDD-HHmmss`). It keys `plan-{sessionId}.json` and all session-scoped memory artifacts (`progress-*-{sessionId}.md`, `result-*-{sessionId}.md`).
 7. Record session start using memory write tool:
    - Create `session-work.md` in the memory base path
@@ -79,24 +79,11 @@ Spawn agents for each task by priority tier (lowest first: tier 1, then tier 2, 
 Spawn all same-priority tasks in parallel. Assign separate workspaces to avoid file conflicts.
 
 ### Per-Agent Dispatch
-Resolve the target vendor for each agent from `.agents/oma-config.yaml`.
-Use native subagents only when `target_vendor === current_runtime_vendor` and that runtime supports the vendor's role-subagent path.
-Otherwise use `oma agent spawn` for that agent.
+Dispatch each agent by the Dispatch Rule in `.agents/skills/_shared/core/vendor-detection.md`: the runtime's native role subagent when the agent's target vendor is the current runtime and that native path is verified, otherwise `oma agent spawn` for that agent only.
 
-### If Claude Code and target vendor is Claude
-Use the Agent tool to spawn subagents:
-- `Agent(subagent_type="backend-engineer", prompt="Implement backend tasks per plan.", run_in_background=true)`
-- `Agent(subagent_type="frontend-engineer", prompt="Implement frontend tasks per plan.", run_in_background=true)`
-- Multiple Agent tool calls in the same message = true parallel execution
-- Agent definitions: `.claude/agents/{agent}.md`
+- **Native**: one call per agent with its task description, API contracts, and relevant context, for example the `backend-engineer` and `frontend-engineer` roles.
+- **CLI fallback**:
 
-### If Codex CLI and target vendor is Codex
-Spawn native Codex custom agents using `.codex/agents/{agent}.toml` when available.
-Native CLI executor path: `codex exec "@{agent} ..."` using the generated agent file.
-Pass each agent its task description, API contracts, and relevant context.
-If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
-
-### If target vendor differs from current runtime, or native dispatch is unavailable
 ```bash
 oma agent spawn backend "task description" session-id --task-id {backend_task.id} -w ./backend &
 oma agent spawn frontend "task description" session-id --task-id {frontend_task.id} -w ./frontend &
@@ -108,7 +95,7 @@ wait
 ## Step 5: Monitor Agent Progress
 
 - Apply the deadline, cancellation, resource ownership, and bounded monitoring rules in `.agents/skills/_shared/core/execution-policy.md`. Cancellation or deadline exhaustion stops dispatch and recovery; perform only bounded shutdown and a partial handoff.
-- Prefer host completion notifications. If polling is needed, one coordinator reads changed `progress-{agent}[-{sessionId}].md` files with bounded backoff.
+- Prefer host completion notifications. If polling is needed, one coordinator reads changed `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` files with bounded backoff.
 - Use configured symbol/pattern tools or native search to verify API contract alignment between agents
 - Use memory edit tool to record monitoring results
 
@@ -153,7 +140,7 @@ Apply the shared per-task attempt and cost budget in `.agents/skills/oma-orchest
 
    > **Fix Loop termination conditions** (OR, whichever fires first wins):
    > 1. Total fix cycles have reached the configured maximum (default: 5). Do not start another cycle; report the remaining CRITICAL/HIGH findings and stop.
-   > 2. Session cost cap exceeded: `oma agent:spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save current results, and report early termination due to quota.
+   > 2. Session cost cap exceeded: `oma agent spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save current results, and report early termination due to quota.
    >
    > If neither condition is met, repeat Steps 5-7.
 

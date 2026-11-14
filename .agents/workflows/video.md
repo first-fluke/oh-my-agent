@@ -11,7 +11,7 @@ disable-model-invocation: true
 - **Demo capture is human-supplied.** `--source web --url` gives URL context only; it neither opens nor records a browser. The human records the flow with Cap or another recorder, then supplies `--capture <path>`. Never automate login or capture credentials. Mask URL query tokens in logs and manifests.
 - **The `oma video` CLI owns the pipeline. This workflow owns the brief, the agent-authored script, the QA loop, and decision checkpoints.** Do NOT reimplement orchestration, provider selection, or rendering in the workflow.
 - **Code intelligence and state are separate capabilities.** Follow `.agents/skills/_shared/core/code-intelligence.md` for configured tools and native fallback. Follow `.agents/skills/_shared/runtime/memory-protocol.md` for run tracking and result paths. Do not require an MCP memory tool or automatically install, initialize, or track a repository.
-- **Read the oma-video skill BEFORE starting.** Read `.agents/skills/oma-video/SKILL.md` and follow its Core Rules and execution protocol, including `resources/execution-protocol.md`. If the skill is not installed, stop and ask the user to run `oma install` first.
+- **Read the oma-video skill BEFORE starting.** Read `.agents/skills/oma-video/SKILL.md` and follow its guardrails and execution protocol, including `resources/execution-protocol.md`. If the skill is not installed, stop and ask the user to run `oma install` first.
 
 ---
 
@@ -21,7 +21,7 @@ disable-model-invocation: true
 
 ## L1 Decision Events
 
-Emit required L1 decisions by calling `oma state emit` directly, as documented in `.agents/skills/_shared/runtime/event-spec.md`.
+Emit required L1 decisions by calling `oma state emit` directly, as documented in the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`.
 
 Record **mode-selection** at Step 2. Record **cost-confirmation** at Step 4 only when the estimate reaches the guardrail or a paid-provider choice needs authorization. Emit and verify that decision before a non-dry run, paid rerun, or provider action; an under-guardrail default does not require a confirmation event.
 
@@ -45,7 +45,7 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
 
 ## Cost Guardrail & Key-Optional Notes (read before Step 4)
 
-- **Guardrail**: default `cost.guardrail_usd: 0.20` in `.agents/skills/oma-video/config/video-config.yaml` (reused from oma-image). Any provider whose estimated cost meets or exceeds the guardrail requires spend authorization (`-y` / `--yes` backed by existing authorization and the Step 4 decision). Reuse an existing authorization covering that provider and amount. `--max-usd <n>` overrides the threshold.
+- **Guardrail**: default `cost.guardrail_usd: 0.20`, set under `video:` in `.agents/oma-config.yaml` (shipped defaults live in the CLI). Any provider whose estimated cost meets or exceeds the guardrail requires spend authorization (`-y` / `--yes` backed by existing authorization and the Step 4 decision). Reuse an existing authorization covering that provider and amount. `--max-usd <n>` overrides the threshold.
 - **Key-optional pairs** (real path is gated; fallback is always wired):
 
   | capability | real (key/resource) | key-free fallback | deferred marker |
@@ -97,7 +97,7 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
 The agent writes the script — this is the start of the determinism boundary. Do NOT call an external LLM; you are the script provider.
 
 1. Produce a script honoring the `script.json` schema (`schemaVersion: "1.0"` — required literal — plus `mode, aspect, locale, title, scenes[{id, durationSec, narration, onScreenText, visual{kind: still|clip|mixed|slide|capture, prompt, ref, source}, transition}], music, brand`). Author against `.agents/skills/oma-video/resources/script-schema.md` (full field reference + example) — a schema mismatch is exit 4.
-2. Respect limits from `.agents/skills/oma-video/config/video-config.yaml` (`max_duration_sec: 180`, `max_scenes: 40`). Keep narration tight and per-scene so scene boundaries map cleanly to TTS timing.
+2. Respect the limits under `video:` in `.agents/oma-config.yaml` (shipped defaults: `max_duration_sec: 180`, `max_scenes: 40`). Keep narration tight and per-scene so scene boundaries map cleanly to TTS timing.
 3. Mode-specific sourcing:
    - `shorts`: a hook-first synthetic script from the topic; each scene gets a `visual.prompt` for oma-image.
    - `explainer`: ground scenes in the README / code / data the user pointed to; mark scenes that should become oma-slide frames vs oma-image diagrams.

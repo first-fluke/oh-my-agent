@@ -45,7 +45,7 @@ Resolve at most four inputs. Target ref follows the resolution order in the skil
 
 ## Step 2: Load Contracts
 
-Read `.agents/skills/oma-explanation/SKILL.md` and `.agents/skills/oma-explanation/resources/draft-format.md` before generating anything. In change mode also read `resources/document-structure.md` and `resources/html-contract.md`.
+Read `.agents/skills/oma-explanation/SKILL.md` and `.agents/skills/oma-explanation/resources/draft-format.md` before generating anything. In change mode also read `resources/document-structure.md` and the validation and secret-gate sections (§6–§7) of `resources/html-contract.md`; the hand-written-HTML rules in those two files apply only when the render command cannot be used.
 
 ## Step 3: Collect & Gate
 
@@ -67,7 +67,7 @@ Run `oma explain validate <file>` and the final-HTML secret scan from `html-cont
 
 ## Step 6: Deliver
 
-Attempt `open <path>` (warn-only), then report a TL;DR and the file path in the user's language.
+Open the page by rendering the validated draft with `oma explain render --open` (a failed open is a warning, not a failure), then report a TL;DR and the file path in the user's language.
 
 ### Step 6a: archify sidecar (opt-in)
 
@@ -90,7 +90,7 @@ Trigger when either `diagram.explain_sidecar: true` in `.agents/oma-config.yaml`
 | `gh` CLI missing / unauthenticated | Install/auth guidance + local branch-diff alternative |
 | Merge/rebase in progress | Stop — worktree unstable |
 | Non-git directory | Stop immediately |
-| Headless `open` failure | Warn-only — the reported path suffices |
+| `--open` fails in a headless environment | Warn-only — the reported path suffices |
 | archify sidecar requested but engine resolves to `mermaid` | Deliver the explainer; state the skip reason (`oma diagram update` hint when `ok: false`) |
 | archify sidecar `failed` | Deliver the explainer without the anchor; leave the `.archify.json` and report the diagnostic the command printed |
 | `oma explain render` rejects the draft | Fix the reported line using the printed syntax; after 3 failed renders stop and show the error |

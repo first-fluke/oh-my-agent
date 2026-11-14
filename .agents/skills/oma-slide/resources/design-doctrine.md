@@ -64,24 +64,8 @@ deck's mood, not because it is available.
 ### 2c. CJK Decks — Pretendard Required
 
 Any deck whose content includes **Korean (한국어), Japanese (日本語), or Chinese (中文)** characters
-**must** include Pretendard Variable as the primary font. This is non-negotiable.
-
-```html
-<!-- In <head> -->
-<link rel="preconnect" href="https://cdn.jsdelivr.net" />
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-/>
-```
-
-```css
-:root {
-  --font-body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-    "Apple SD Gothic Neo", "Noto Sans KR", "Noto Sans JP", "Noto Sans SC", sans-serif;
-  --font-display: "Pretendard Variable", Pretendard, sans-serif;
-}
-```
+**must** include Pretendard Variable as the primary font. This is non-negotiable. The CDN
+`<link>` markup and the `--font-body` / `--font-display` stacks are in `fixed-stage.md` §7.
 
 Rationale: the system CJK font stack varies wildly across OS versions and produces
 inconsistent rendering at large display sizes. Pretendard is modern, variable, and has

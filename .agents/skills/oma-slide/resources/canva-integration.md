@@ -33,7 +33,6 @@ The config entry shape (inside `mcpServers`):
 | Vendor | Scope | Config file | Key path |
 |--------|-------|-------------|----------|
 | Claude / Cursor | project | `.mcp.json` | `mcpServers.canva` |
-| Gemini VS Code Extension | project | `.gemini/settings.json` | `mcpServers.canva` |
 | Antigravity CLI (agy) | project | `.agents/mcp_config.json` | `mcpServers.canva` |
 | Antigravity CLI (agy) | user global | `~/.gemini/antigravity-cli/mcp_config.json` | `mcpServers.canva` |
 | Antigravity shared | user global (IDE+CLI) | `~/.gemini/config/mcp_config.json` | `mcpServers.canva` |
@@ -133,11 +132,10 @@ Project-level:
 1. .agents/mcp.json                               (OMA shared SSOT)
 2. .agents/mcp_config.json                         (Antigravity CLI project-scoped config)
 3. .mcp.json                                       (Claude / Cursor project config)
-4. .gemini/settings.json                            (Gemini VS Code Extension project settings)
 
 User-global (optional, only if project-level is absent):
-5. ~/.gemini/antigravity-cli/mcp_config.json        (agy CLI global config)
-6. ~/.gemini/config/mcp_config.json                 (Antigravity shared IDE+CLI config)
+4. ~/.gemini/antigravity-cli/mcp_config.json        (agy CLI global config)
+5. ~/.gemini/config/mcp_config.json                 (Antigravity shared IDE+CLI config)
 ```
 
 If `canva` is absent from **all** project-level files, the skill surfaces a setup prompt.
@@ -176,7 +174,7 @@ For each target config file:
 After writing config files:
 
 1. **Notify the user** that a session restart may be needed for the MCP client to pick up
-   the new server. Some runtimes (e.g., Gemini CLI) require a restart; others hot-reload.
+   the new server. Some runtimes require a restart; others hot-reload.
 2. **Attempt a probe** (`search-designs` using the discovered schema) — if it succeeds, continue with the Canva operation.
    If it fails (expected on first run before OAuth), notify:
    > "Canva MCP config added. You'll need to authenticate with Canva on first use.

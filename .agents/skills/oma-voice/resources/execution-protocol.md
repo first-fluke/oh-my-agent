@@ -25,7 +25,7 @@ steps still apply.
 2. On success, continue to Step 2.
 3. On failure with `voice.backend: auto`, probe VoiceStudio as described in
    `resources/voicestudio.md`. With `voice.backend: voicebox`, or when no
-   backend is healthy, surface this hint and exit with code 5:
+   backend is healthy, surface this hint, then stop and report `blocked`:
    ```
    Voicebox is not reachable. Install or launch the Voicebox desktop app
    from GitHub Releases (https://github.com/jamiepine/voicebox/releases).
@@ -33,31 +33,20 @@ steps still apply.
      - Apple Silicon: download Voicebox_<ver>_aarch64.dmg
      - Intel Mac:     download Voicebox_<ver>_x64.dmg
      - Windows:       Voicebox_<ver>_x64-setup.exe
-   Then register the MCP server:
-     claude mcp add --transport http voicebox http://127.0.0.1:17493/mcp
+   Then register the MCP server in the host's MCP config
+   (Streamable HTTP): http://127.0.0.1:17493/mcp
    ```
 
 ## Step 2: Tool discovery cache
 
-Verified Voicebox MCP tool names (as of v0.5.0):
-
-```
-tts        -> voicebox_speak
-stt        -> voicebox_transcribe
-profiles   -> voicebox_list_profiles
-captures   -> voicebox_list_captures
-```
-
-Model status and audio retrieval are REST-only at the Voicebox app, not exposed as MCP tools. Call them over loopback HTTP when needed:
-- `GET http://127.0.0.1:17493/models/status`
-- `GET http://127.0.0.1:17493/audio/{generation_id}`
+Tool names, their REST backing, and the REST-only endpoints are listed in `SKILL.md` > MCP tool mapping.
 
 On the first call in this session:
 
 1. Invoke MCP `tools/list` on the `voicebox` server.
 2. Confirm the tool required by the selected mode: `voicebox_transcribe` for `transcribe`, or
-   `voicebox_speak` and `voicebox_list_profiles` for `notify` and `asset`. `captures` is optional.
-3. If a required tool is missing, exit with code 4 and surface the gap. A missing profile tool
+   `voicebox_speak` and `voicebox_list_profiles` for `notify` and `asset`. `voicebox_list_captures` is optional.
+3. If a required tool is missing, stop, report `failed`, and name the gap. A missing profile tool
    must not block transcription. Voicebox may have renamed a tool in a newer release.
 
 ## Step 3: TTS profile resolution
@@ -66,7 +55,7 @@ Run this step only for `notify` and `asset` modes. `transcribe` has no profile
 parameter: skip directly to its audio checks and then `voicebox_transcribe`.
 
 1. Call the cached `profiles` tool.
-2. If the list is empty, surface this hint and exit with code 3:
+2. If the list is empty, surface this hint, then stop and report `blocked`:
    ```
    No voice profile found in Voicebox.
    Create one in the app UI (cloning or preset), then retry.
@@ -98,27 +87,10 @@ For `asset` and `notify` modes only:
 
 ## Step 7: Invoke MCP tool
 
-### TTS path
-```text
-MCP call: voicebox_speak
-  text:        <normalized text, required>
-  profile:     <resolved profile name from voicebox_list_profiles>
-  language:    <auto or explicit; optional>
-  engine:      <optional engine override>
-  personality: <optional bool>
-```
-Voicebox plays the audio on the user speakers and saves a capture entry automatically. The tool returns a generation id; the audio file lives inside the Voicebox app's Captures panel and is also reachable over loopback at `GET /audio/{generation_id}` when a local copy is needed.
+Parameters and return values are in `SKILL.md` > MCP tool mapping.
 
-### STT path
-```text
-MCP call: voicebox_transcribe
-  audio_path:    <absolute local path; loopback only>
-  # OR
-  audio_base64:  <base64-encoded audio bytes>
-  language:      <auto or explicit; optional>
-  model:         <optional model override>
-```
-Expected response: transcript text and detected language. Pass exactly one of `audio_path` or `audio_base64`.
+- **TTS**: call `voicebox_speak` with the normalized text and the profile name resolved in Step 3. Keep the returned generation id for Step 8.
+- **STT**: call `voicebox_transcribe` with exactly one of `audio_path` or `audio_base64`.
 
 ## Step 8: Persist output and manifest
 
@@ -187,27 +159,20 @@ Report to the user in one short message:
 - Duration in seconds
 - Any warnings (length truncated, disk warn fired, model fallback used)
 
-## Error code mapping
+## Outcome mapping
 
-Mirror `oma-image` exit codes:
+The skill runs MCP calls, not a CLI process, so there is no exit code. Stop and report one status:
 
-| Code | Meaning |
+| Situation | Status |
 |---|---|
-| 0 | Success |
-| 1 | Generic failure |
-| 2 | Safety block (currently unused; reserved) |
-| 3 | Resource not found (no profile, missing audio file) |
-| 4 | Invalid input (length, format, MCP tool missing) |
-| 5 | Auth or environment required (voicebox not reachable) |
-| 6 | Timeout |
+| Output or transcript written with a complete manifest | `completed` |
+| Output exists but a warning applies (text truncated, model fallback) | `partial` |
+| Backend not reachable, no voice profile, missing audio file, or a model download awaiting approval | `blocked` |
+| Invalid input (length, format), required MCP tool missing, call error, or timeout | `failed` |
 
-## Cancellation
+## Interruption
 
-On SIGINT or SIGTERM:
-
-1. Send an abort signal to the in-flight MCP call when supported.
-2. Do not write partial output.
-3. Exit with the originating signal's conventional code.
+When a call is interrupted, do not write partial output, and report the request as not completed.
 
 ## Idempotency
 

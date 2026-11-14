@@ -36,8 +36,8 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 - Review history and retry/remediation status when loops fail
 
 ### Dependencies
-- `.agents/oma-config.yaml`, `.codex/agents/*.toml`, `.gemini/agents/*.md`, or fallback `oma agent spawn`
-- Memory provider config, subagent prompt template, scripts, task templates, verify script, and session metrics
+- `.agents/oma-config.yaml`, the runtime's native agent definitions (for example `.claude/agents/*.md`, `.codex/agents/*.toml`), or fallback `oma agent spawn`
+- Memory provider config, subagent prompt template, scripts, verify script, and the session evidence guide
 
 ### Control-flow features
 - Branches by vendor/native dispatch availability, priority tiers, agent completion/failure, verification status, QA verdict, retry limits, and unresolved decisions
@@ -91,12 +91,12 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 | Spawn agents | `CALL_TOOL` | exposed native role-subagent tool or `oma agent spawn` |
 | Poll progress | `READ` | progress/result files |
 | Run verification | `CALL_TOOL` | `oma verify`, tests, QA |
-| Update retry state | `UPDATE_STATE` | loop counters and CD metrics |
+| Update retry state | `UPDATE_STATE` | loop counters and the recovery budget |
 | Report final result | `NOTIFY` | compiled summary |
 
 ### Tools and instruments
 - Exposed native role-subagent tools, fallback spawn scripts, memory tools, verify script, QA agent
-- Session metrics, prompt templates, task templates
+- Session evidence guide, subagent prompt template
 
 ### Canonical command path
 ```bash
@@ -135,9 +135,9 @@ Current native executor paths:
 - Claude Code: Agent tool with `.claude/agents/{agent}.md` definitions (multiple Agent tool calls in one message run in parallel; results return synchronously — no polling)
 - OpenCode / Kilo Code: native `task` tool with `subagent_type: {agent-id}`; do not use `oma agent spawn` for same-session OpenCode or Kilo work because it will not appear as a native child task
 - Codex: use the current session's exposed native subagent tool with the resolved custom role from `.codex/agents/*.toml` when supported; otherwise use `oma agent spawn`. Model tiering follows `../_shared/core/vendor-detection.md`.
-- Gemini: use the current session's exposed native role-subagent tool with the resolved role when supported; otherwise use `oma agent spawn`.
+- Antigravity and other runtimes: use `oma agent spawn` unless a native role-subagent path is verified for the target vendor (`../_shared/core/vendor-detection.md`).
 
-`codex exec` and `gemini -p` start external CLI sessions. An `@agent` string in a prompt does not establish native dispatch or apply a custom-role contract.
+`codex exec` and `agy -p` start external CLI sessions. An `@agent` string in a prompt does not establish native dispatch or apply a custom-role contract.
 
 ### Configuration
 
@@ -209,7 +209,7 @@ Accept result
 
 ### Step Details
 
-**[1] Mechanical Self-Check** (formerly "Self-Review"):
+**[1] Mechanical Self-Check**:
 Before requesting external review, the implementation agent must:
 - Run lint, type-check, and tests in the workspace
 - Verify only planned files were modified (diff scope check)
@@ -289,10 +289,9 @@ For material corrections or review findings, retain the cause, impact, and evide
 - Prompt template: `resources/subagent-prompt-template.md`
 - Memory schema: `resources/memory-schema.md`
 - Scripts: `scripts/spawn-agent.sh`, `scripts/parallel-run.sh`, `scripts/verify.sh`
-- Task templates: `templates/`
 - Skill-to-agent mapping: `../_shared/core/skill-routing.md`
 - Verification: `scripts/verify.sh <agent-type>`
-- Session metrics: `../_shared/core/session-metrics.md`
+- Session evidence: `../_shared/core/session-metrics.md` (requested retrospective or separate session summary)
 - API contract template (SSOT): `../_shared/core/api-contracts/template.md`; read generated contracts from `.agents/results/api-contracts/` (run artifact) or `docs/plans/contracts/` (durable spec)
 - Context loading: `../_shared/core/context-loading.md`
 - Task decomposition: `../_shared/core/difficulty-guide.md` (unresolved scope or dependencies)

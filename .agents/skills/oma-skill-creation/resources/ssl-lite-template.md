@@ -1,8 +1,8 @@
 # SSL-lite Skill Template
 
-Keep the four top-level sections. Describe execution once in the canonical path. Add a
-subsection only when it contributes a distinct branch, contract, or constraint; do not copy
-the same steps into Entry, Scenes, Actions, and the canonical path.
+Keep the four top-level sections. Describe execution once in the canonical path. The
+skeleton below is the complete default shape; Optional detail lists the only reasons to
+add a subsection.
 
 ````markdown
 ---
@@ -86,8 +86,11 @@ description: >
 ## Machine-checkable outputs
 
 When artifacts can be globbed, replace the freeform Expected outputs bullets with an
-`outputs:` YAML block. `oma verify` checks required artifact presence via
-`parseExpectedOutputs`:
+`outputs:` YAML block. The block is enforced only for agent-type skills: `oma verify agent
+<agent-type>` (backend, frontend, mobile, qa, debug, pm) and the self-healing gate read
+it from the skill named `oma-<agent-type>` and check required artifact presence. In any
+other skill nothing reads the block; it documents the artifact, so the enforcing check
+must be a step in the canonical path:
 
 ```yaml
 outputs:

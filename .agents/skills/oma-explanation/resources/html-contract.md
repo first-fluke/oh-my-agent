@@ -99,4 +99,4 @@ Mirroring a MINIMAL pattern set for secret-like literal values (API keys, tokens
 - Redacted continuation requires explicit user confirmation.
 
 ## 8. Sharing Caution
-**Caution (informational, for the operator):** the artifact embeds code excerpts — treat it like source code when sharing externally. Embedding this caution inside the generated document itself is deferred to v2 (design 022 Tier 3); the generated footer's contract is `document-structure.md` §9 and does not include a sharing-caution line in v1.
+**Caution (informational, for the operator):** the artifact embeds code excerpts — treat it like source code when sharing externally. The generated document does not carry this caution: the footer's contract is `document-structure.md` §9 and has no sharing-caution line.

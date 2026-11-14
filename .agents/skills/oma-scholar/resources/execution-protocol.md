@@ -10,7 +10,7 @@ Create a `.knows.yaml` sidecar from a paper, draft, or research notes.
 
 1. Identify input: PDF path, LaTeX file, plain text, or pasted content
 2. If PDF and only path is given -> chain via `oma-pdf` first to extract markdown
-3. Determine output path: `{base}.knows.yaml` next to input (or as configured)
+3. Determine output path: `{base}.knows.yaml` next to the input unless the user names a path; ask before overwriting an existing file
 
 ### Step 1: Read Source Thoroughly
 
@@ -20,20 +20,11 @@ Create a `.knows.yaml` sidecar from a paper, draft, or research notes.
 
 ### Step 2: Draft Sidecar Structure
 
-Use the local production compatibility rules in `sidecar-spec.md`; they do not establish full canonical-schema conformance. Top-level structure:
-
-- `knows_version: "0.9.0"`, `profile: "paper@1"`, `subject_ref: art:paper`
-- **Top-level metadata**: `title`, `authors`, `venue`, `year` (no `metadata` wrapper); omit `doi`/`venue`/`year` if not visible
-- `summary`: one-paragraph overview
-- `coverage`: object with `statements` and `evidence` enums (NOT a single value)
-- `provenance`: `origin`, single `actor` object (`type: tool|person|org`), `generated_at`, `method`
-- `version`: `{spec, record, source}`
-- `freshness`: `{as_of, update_policy}`
-- `artifacts`: list (`art:` prefix, `artifact_type`, `role: subject|supporting|cited`); include `representations` for the source
-- `statements`: list (`stmt:` prefix, `statement_type`, `modality`, `status`, `confidence` object, `source_anchors`)
-- `evidence`: list (`ev:` prefix, `evidence_type`)
-- `relations`: list (`rel:` prefix, `predicate` in present tense, `subject_ref`, `object_ref`)
-- `actions`: usually empty for paper profile
+Use the local production compatibility rules in `sidecar-spec.md` for every
+block, field name, and enum; they do not establish full canonical-schema
+conformance. Start from its `paper@1` structure, omit `doi`/`venue`/`year`
+when they are not visible in the source, and include a `representations` entry
+for the source artifact.
 
 ### Step 3: Wire Relations
 
@@ -41,30 +32,22 @@ Use relations appropriate to the statement type and supported by the source.
 Claims with evidence use `supported_by`; methods may use `uses`, `implements`,
 or `evaluates_on`. Definitions and open questions can remain source-anchored
 without invented empirical support. The lint ratio target of 1.5 is a coverage
-diagnostic, not a requirement to pad the graph. Common patterns:
-
-| Subject | Predicate | Object |
-|---------|-----------|--------|
-| Claim | `supported_by` | Evidence |
-| Claim | `depends_on` | Assumption |
-| Method | `evaluates_on` | Dataset |
-| Method | `implements` | Code repo |
-| Paper | `cites` | Other paper (optional `citation_intent`) |
-| Claim | `challenged_by` | Counter-claim / prior work |
+diagnostic, not a requirement to pad the graph. Predicate directions are in
+`sidecar-spec.md`; the per-statement-type wiring pattern is in
+`canonical-delta.md`.
 
 ### Step 4: Optional Metadata Enrichment
 
-If `OPENALEX_API_KEY` is set and DOI/venue/year are missing:
+If DOI/venue/year are missing from the source, look the paper up. This works
+with or without `OPENALEX_API_KEY`; a key only raises the rate limit.
 
 ```bash
-# PAPER_TITLE is the source title; inspect candidates before selecting a record.
-curl -s --get "https://api.openalex.org/works" \
-  --data-urlencode "search=$PAPER_TITLE" \
-  --data-urlencode "api_key=$OPENALEX_API_KEY" \
-  | jq '.results[] | {id, title, doi, publication_year, authorships, primary_location}'
+oma scholar resolve "<paper title>"   # candidates from each source
+oma scholar get "<doi>"               # confirm the selected DOI
 ```
 
-If the key is not set, skip enrichment and tell the user how to set it (point to `setup-openalex.md`).
+On OpenAlex 403/429, stop enrichment, leave the fields omitted, and point the
+user to `setup-openalex.md`.
 
 Verify candidate identity against the source title, authors, year, and any
 existing DOI/arXiv identifier before enrichment. A title-search ranking is not
@@ -181,20 +164,13 @@ paper isn't in the (2026-only) knows.academy index, then to Semantic Scholar
 
 ### Recommended path: `oma scholar` (handles cascade automatically)
 
-```bash
-# Hybrid search
-oma scholar search "<query>"
+Use `oma scholar search`, `resolve`, and `get [--section <one>]`; the commands
+and accepted id forms are in SKILL.md Quick Reference. See
+`fallback-providers.md` for the cascade design.
 
-# Cross-source resolve (decides which source has the right paper)
-oma scholar resolve "<title>"
+### Manual cascade (raw curl, when the CLI is unavailable)
 
-# Get specific record (knows id, OpenAlex W-id, DOI, arXiv:<id>, CorpusId:<n>)
-oma scholar get [--section <one>] "<id>"
-```
-
-See `resources/fallback-providers.md` for full cascade design.
-
-### Manual cascade (raw curl)
+`{base}` is `https://knows.academy` unless `scholar.base_url` is set (SKILL.md Configuration).
 
 1. **knows.academy search**: `curl -s "{base}/api/proxy/search?q={query}"`
 2. If hits → fetch sidecar:
@@ -221,4 +197,4 @@ See `resources/fallback-providers.md` for full cascade design.
 | Empty search results | Broaden query; remove quotes; try keyword-only |
 | YAML parse error after Generate | Re-emit with stricter quoting on string values containing `:` `#` `&` `*` |
 | Source PDF has no text layer | Chain via `oma-pdf` with hybrid OCR mode first |
-| OpenAlex 403/429 | Tell user to set `OPENALEX_API_KEY`; see `setup-openalex.md` |
+| OpenAlex 403/429 | Stop enrichment and leave fields omitted; tell user to set `OPENALEX_API_KEY` (see `setup-openalex.md`) |

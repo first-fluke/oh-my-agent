@@ -2,10 +2,10 @@
 
 These generation rules describe observed `knows.academy` production shapes and
 the narrower local `oma scholar lint` contract. They are not a complete
-canonical JSON Schema validator. `upstream-spec-cache.md` records the upstream
-snapshot, which also permits author objects, imported provenance, and normative
-modality. Preserve those shapes in imported records and report local-lint
-incompatibilities instead of erasing information. Set `$schema` only after
+canonical JSON Schema validator. `canonical-delta.md` lists what the canonical
+spec permits beyond these rules, including author objects, imported provenance,
+and normative modality. Preserve those shapes in imported records and report
+local-lint incompatibilities instead of erasing information. Set `$schema` only after
 validation against that exact schema; a clean local lint is insufficient.
 
 ## Local Generation Structure (paper@1 production compatibility)
@@ -80,44 +80,21 @@ freshness:
     generated_at: "..."
 ```
 
-### Statement Type Frequencies (252 statements / 15 papers)
-
-| Type | Frequency | Use |
-|------|-----------|-----|
-| `claim` | 117 (46%) | Headline assertion of the paper |
-| `method` | 58 (23%) | Procedure, technique, or pipeline |
-| `limitation` | 31 (12%) | Acknowledged limit or threat to validity |
-| `assumption` | 18 (7%) | Precondition for the claim/method |
-| `definition` | 18 (7%) | Term or concept introduction |
-| `question` | 10 (4%) | Open research question / RQ |
-
 ## Evidence Shape
 
 ```yaml
 - id: ev:descriptive-kebab-case
-  evidence_type: table_result   # see frequencies below
+  evidence_type: table_result   # see Local Generation Values
   summary: "..."
   source_anchors: [...]
   provenance: {...}
 ```
 
-### Evidence Type Frequencies (138 evidence / 15 papers)
-
-| Type | Frequency | Use |
-|------|-----------|-----|
-| `table_result` | 64 (46%) | Numeric results in a table |
-| `figure` | 34 (25%) | Graphical/diagram-based result |
-| `proof` | 15 (11%) | Theoretical/mathematical proof |
-| `observation` | 11 (8%) | Qualitative observation |
-| `experiment_run` | 6 (4%) | Single experimental run/trial |
-| `case_study` | 4 (3%) | Detailed walkthrough of a case |
-| `citation_backed` | 4 (3%) | Cited from another paper |
-
 ## Artifact Shape
 
 ```yaml
 - id: art:paper
-  artifact_type: paper       # see frequencies below
+  artifact_type: paper       # see Local Generation Values
   role: subject              # subject | supporting | cited
   title: "..."
   identifiers:
@@ -130,26 +107,6 @@ freshness:
         type: path | url
         value: "..."
 ```
-
-### Artifact Type Frequencies (50 artifacts / 15 papers)
-
-| Type | Frequency | Use |
-|------|-----------|-----|
-| `paper` | 15 (30%) | The subject paper or a cited paper |
-| `dataset` | 12 (24%) | Training/eval dataset |
-| `benchmark` | 10 (20%) | Standard benchmark suite |
-| `repository` | 6 (12%) | Code repository (GitHub etc.) |
-| `model` | 4 (8%) | Pre-trained or released model |
-| `software` | 2 (4%) | Library/toolkit |
-| `other` | 1 (2%) | Catch-all |
-
-### Artifact Role Frequencies (50 / 15 papers)
-
-| Role | Frequency | Use |
-|------|-----------|-----|
-| `cited` | 18 (36%) | Referenced as prior work |
-| `supporting` | 17 (34%) | Used by the paper (dataset, code, model) |
-| `subject` | 15 (30%) | The paper itself (always 1 per record) |
 
 ## Relation Shape
 
@@ -255,8 +212,6 @@ Descriptive kebab-case with type prefix. **Never** use opaque IDs.
 
 ## Predicates
 
-Verified frequencies across 330 relations in 15 production sidecars:
-
 | Predicate | Direction | Use |
 |-----------|-----------|-----|
 | `supported_by` | claim → evidence | most common; primary evidence wiring |
@@ -271,7 +226,7 @@ Verified frequencies across 330 relations in 15 production sidecars:
 | `implements` | method → repository | code implementation |
 | `defines` | statement → definition | term introduction |
 
-The upstream `knows.md` (2026-07-17 snapshot) closes the predicate set at 12:
+The canonical spec closes the predicate set at 12:
 
 ```
 supported_by, challenged_by, depends_on, limited_by, cites, uses,
@@ -282,7 +237,7 @@ evaluates_on, implements, documents, same_as, supersedes, retracts
 `supports | extends | uses_method | compares_to | contradicts | reviews | cites_data | background | other`.
 Notions like "extends" or "contradicts" are citation intents, **not** predicates.
 Production-observed extras (`used_by`, `defines`) remain accepted by our lint
-(spec drift — see `upstream-spec-cache.md`).
+(see `canonical-delta.md`).
 
 ```yaml
 # Wrong tense (warning)
@@ -302,31 +257,8 @@ predicate: challenged_by
 The average-ratio target **1.5** is a lint diagnostic. Add only source-supported
 relations appropriate to each statement type; do not invent links to satisfy
 a quota. Source-anchored questions or definitions need not assert empirical
-support. Common patterns:
-
-| Subject | Predicate | Object |
-|---------|-----------|--------|
-| Claim (statement) | `supported_by` | Evidence |
-| Claim | `depends_on` | Assumption (statement) |
-| Method (statement_type=method) | `implements` | Repository (artifact) |
-| Method | `uses` | Model/Dataset (artifact) |
-| Claim | `limited_by` | Limitation (statement) |
-
-## Common Mistakes Cheatsheet
-
-| Wrong | Correct |
-|-------|---------|
-| `metadata: {title: ...}` | top-level `title:` |
-| `provenance.actors: [...]` | `provenance.actor: {...}` (single) |
-| `confidence: high` | `confidence: {claim_strength: high, extraction_fidelity: high}` |
-| `coverage: exhaustive` | `coverage: {statements: exhaustive, evidence: ...}` |
-| `type: ai` | `type: tool` |
-| `value: '22'` | `value: 22` |
-| `type: paper` (on artifact) | `artifact_type: paper` |
-| `type: claim` (on statement) | `statement_type: claim` |
-| `evaluated_on` | `evaluates_on` |
-| `doi: TODO` | omit `doi` key entirely |
-| `id: stmt:c1` | `id: stmt:descriptive-name` |
+support. The Predicates table above gives each predicate's direction; the
+per-statement-type wiring pattern is in `canonical-delta.md`.
 
 ## Statement Density Guidance
 

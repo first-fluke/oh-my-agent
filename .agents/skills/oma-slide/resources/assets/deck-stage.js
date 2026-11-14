@@ -32,12 +32,12 @@
  *
  * No build step required. ES2022 class syntax; no external dependencies.
  *
- * Validator contract:
+ * Slide labels:
  *   Each slide receives:
  *     data-screen-label="Slide N / M"
  *     data-om-validate="no_overflowing_text,no_overlapping_text,slide_sized_text"
- *   These attributes are read by `oma slide validate` (puppeteer-core) to locate
- *   slides and know which checks to run on each one.
+ *   They name the slide and the checks `oma slide validate` applies. The
+ *   validator does not read them: it checks every `.slide` inside `.deck-stage`.
  */
 
 "use strict";
@@ -178,16 +178,16 @@ class DeckStage extends HTMLElement {
 
   /**
    * Tags each slide with data-screen-label and data-om-validate.
-   * Called once on connect. Required by the validator contract.
+   * Called once on connect. Labels only; the validator does not read them.
    */
   #annotateSlides() {
     const total = this.#slides.length;
     this.#slides.forEach((slide, i) => {
-      // data-screen-label: human-readable label consumed by the validator
+      // data-screen-label: human-readable slide label
       if (!slide.dataset.screenLabel) {
         slide.dataset.screenLabel = `Slide ${i + 1} / ${total}`;
       }
-      // data-om-validate: comma-separated list of checks the validator runs
+      // data-om-validate: names of the checks the validator applies to every slide
       if (!slide.dataset.omValidate) {
         slide.dataset.omValidate = VALIDATOR_CHECKS;
       }

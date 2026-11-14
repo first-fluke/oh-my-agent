@@ -1,10 +1,3 @@
----
-otel_spec: "1.x (stable API/SDK)"
-otel_semconv: "1.43.0 (2026-07)"
-notes:
-  - "OTel mobile semconv still experimental; vendor-native SDKs dominate in 2026"
----
-
 # Mobile RUM: L7 Application Layer
 
 ---
@@ -19,19 +12,18 @@ notes:
 
 ---
 
-## 2. OTel Mobile SDK Status (as of 2026-Q2)
+## 2. OTel Mobile SDK Status
 
-OpenTelemetry mobile SDKs are less mature than backend or web SDKs. Both are experimental status:
+OpenTelemetry mobile SDKs trail backend SDKs in auto-instrumentation coverage, and mobile-specific semconv is not Stable. Confirm per-module stability in each repository's README before depending on it:
 
 | Platform | OTel SDK | Status |
 |----------|----------|--------|
-| Android | `opentelemetry-android` + `opentelemetry-java-instrumentation` | Experimental |
-| iOS | `opentelemetry-swift` | Experimental |
+| Android | `opentelemetry-android` + `opentelemetry-java-instrumentation` | 1.x releases; the BOM and instrumentation modules are published with an `-alpha` suffix |
+| iOS | `opentelemetry-swift` | Traces, baggage, logs, and metrics are stable; instrumentation libraries vary |
 | React Native | No official OTel SDK | Vendor SDK only |
 | Flutter | No official OTel SDK | Vendor SDK only |
 
 In practice, mobile teams use **vendor-native SDKs** and map signals to OTel concepts where possible. This file uses vendor SDKs as the primary path and notes where OTel semconv applies.
-
 
 ---
 
@@ -52,7 +44,7 @@ Offline queuing is the defining mobile-specific concern. Mobile networks are int
 ### Quality considerations
 
 - **Event ordering:** Queue flush order may differ from emit order. Attach a local device timestamp (`observed_time_unix_nano`) to every event. Server must tolerate out-of-order arrivals and sort by device timestamp for waterfall reconstruction.
-- **Clock skew:** Device clocks may drift relative to server. Cross-reference `../../meta-observability.md §Clock skew` for handling. Do not rely on server receipt time as the canonical event timestamp.
+- **Clock skew:** Device clocks may drift relative to server. Cross-reference the clock-skew section of `../../meta-observability.md` for handling. Do not rely on server receipt time as the canonical event timestamp.
 - **Server tolerance:** OTLP backends (and vendor equivalents) are designed for out-of-order ingestion. Verify TTL settings on the collector pipeline so stale events are dropped before indexing.
 
 ### Privacy: queued data on disk
@@ -60,7 +52,7 @@ Offline queuing is the defining mobile-specific concern. Mobile networks are int
 Events queued to disk are **PII at rest on user devices**. Requirements:
 - Encrypt the queue using platform-native key storage: iOS Keychain, Android Keystore.
 - Apply the same field-level redaction to queued events as to events sent immediately (mask email, card number, password fields before write, not before send).
-- Anti-pattern: unencrypted telemetry queue on device; see Section 12.
+- Anti-pattern: unencrypted telemetry queue on device; see `../../anti-patterns.md §A`.
 
 ---
 
@@ -79,7 +71,7 @@ App lifecycle events anchor session boundaries and correlate performance observa
 
 ### Semconv (experimental)
 
-OTel mobile semconv is in progress as of 2026-Q2. Use custom attributes pending stabilization:
+OTel mobile semconv is not Stable. Use custom attributes pending stabilization:
 
 ```
 app.lifecycle.event   = "foreground" | "background" | "terminate" | "memory_warning"
@@ -122,10 +114,6 @@ RUM SDKs are frequently among the largest third-party battery consumers on a mob
 - iOS: Xcode Energy Organizer + Instruments Energy Log
 - Android: Battery Historian (<https://developer.android.com/topic/performance/power/battery-historian>)
 
-### Carbon operations consideration
-
-Mobile device CPU and network activity contribute to device-level energy consumption. For green observability practices, minimize telemetry flush frequency and batch size. Server-side carbon impact is tracked via Kepler (CNCF Sandbox) using CPU and network metrics on the collector nodes; mobile-side impact is the device CPU time and radio-on duration during flush.
-
 ---
 
 ## 6. Network Egress Observability
@@ -137,11 +125,11 @@ Mobile device CPU and network activity contribute to device-level energy consump
 | Certificate pinning | Implement mTLS or certificate pinning for telemetry endpoints beyond mesh-level TLS; use platform SecTrustEvaluate / TrustManager accordingly |
 | PII leakage via URL | Strip query parameters containing tokens, emails, or IDs before recording `url.full` in spans |
 
-Network request spans follow OTel HTTP client semconv (`http.request.method`, `server.address`, `http.response.status_code`, `network.protocol.name`). These are Stable semconv as of 1.43.0.
+Network request spans follow OTel HTTP client semconv (`http.request.method`, `server.address`, `http.response.status_code`, `network.protocol.name`). These are Stable semconv.
 
 ---
 
-## 7. iOS vs Android SDK Comparison (as of 2026-Q2)
+## 7. iOS vs Android SDK Comparison
 
 ### iOS SDKs
 
@@ -151,7 +139,7 @@ Network request spans follow OTel HTTP client semconv (`http.request.method`, `s
 | Datadog iOS RUM | RUM, traces, logs, error tracking | iOS, tvOS | Strong OTel bridge; custom view timing |
 | Firebase Crashlytics | Crashes, breadcrumbs | iOS, macOS | Free; Google ecosystem; no RUM performance. ANR is Android-only; iOS Hang metric is a separate concept handled by MetricKit / Embrace |
 | Embrace | Startup, Hang (iOS) / ANR (Android), network spans, session replay | iOS | Startup-time focus; per-session timeline view |
-| `opentelemetry-swift` | Traces, metrics (experimental) | iOS, macOS | OTel-native; no auto-instrumentation yet |
+| `opentelemetry-swift` | Traces, metrics, logs | iOS, macOS | OTel-native; limited instrumentation libraries (URLSession, network status) |
 
 ### Android SDKs
 
@@ -161,9 +149,9 @@ Network request spans follow OTel HTTP client semconv (`http.request.method`, `s
 | Datadog Android RUM | RUM, traces, logs, error tracking | Kotlin-first; OTel exporter available |
 | Firebase Crashlytics | Crashes, ANR, breadcrumbs | Free; no RUM performance |
 | Embrace | Startup, ANR, network, session replay | App Standby bucket reporting |
-| `opentelemetry-android` | Traces, metrics (experimental) | OTel-native; auto-instrumentation via Bytecode plugin (experimental) |
+| `opentelemetry-android` | Traces, metrics, logs | OTel-native; instrumentation modules are alpha; check per-module stability |
 
-Vendor category cross-reference: `../../vendor-categories.md §Crash Analytics` for full category taxonomy and how-to-choose criteria.
+Vendor category cross-reference: `../../vendor-categories.md` category (j) Crash Analytics for the category taxonomy and how-to-choose criteria.
 
 ---
 
@@ -210,7 +198,7 @@ Database / Queue / External API
 **Implementation rules:**
 
 1. The mobile SDK intercepts outbound HTTP requests and injects `traceparent` (and optionally `tracestate`) automatically. Configure the propagator in SDK init, not at call sites.
-2. `tracestate` carries the mobile sampling decision. Backend tail samplers MUST respect the `sampled` flag to avoid dropping traces that the mobile side intends to keep.
+2. The `traceparent` trace-flags carry the mobile sampling decision. Backend tail samplers MUST respect the `sampled` flag to avoid dropping traces that the mobile side intends to keep.
 3. The mobile span is `SpanKind.CLIENT`. The backend root span receiving the call is `SpanKind.SERVER`. This pairing is required by OTel span kind semantics.
 4. **Session span challenge:** A mobile user session may span minutes or hours with many backend requests. Each HTTP call starts a new child span under the session root span. Store the session root span context in memory (not disk) to avoid stale context on OS-kill and restart.
 5. Cross-reference: `../../boundaries/cross-application.md` for the full propagator matrix across service, domain, and vendor boundaries.
@@ -230,40 +218,15 @@ W3C Trace Context reference: `../../standards.md §W3C Trace Context`.
 | User-perceived ANR rate | Daily active users with a user-perceived ANR / daily active users | Android Play overall threshold: 0.47%; custom session stall rates have a different denominator |
 | iOS Hang rate | Non-responsive main thread > 250 ms | < 0.1% (MetricKit `MXHangDiagnostic`) |
 | Network latency | Per-request round-trip time | Monitor p50/p95/p99 histograms; no universal target |
-| Crash-Free Session Rate | Sessions without a crash / total sessions | Cross-reference `crash-analytics.md §CFR` |
+| Crash-Free Session Rate | Sessions without a crash / total sessions | Cross-reference `crash-analytics.md` §2 Core Metrics |
 
 Semconv for mobile startup spans: use `app.lifecycle.event = "cold_start"` with `app.startup.duration_ms` as a custom span attribute until OTel mobile semconv stabilizes.
 
----
-
-## 11. Matrix Cells (L7 Row, Mobile Slice)
-
-These cells supplement the L7 rows in `../../matrix.md` with mobile-specific caveats:
-
-| Cell | Symbol | Detail |
-|------|--------|--------|
-| L7 × multi-tenant × metrics | PARTIAL | `tenant.id` on mobile is typically derived from the authenticated user ID, not a direct tenant header. Map `user.id → tenant.id` server-side in the pipeline; avoid attaching `tenant.id` as a metric label on-device (cardinality risk). |
-| L7 × cross-application × traces | PASS | Mobile → backend `traceparent` propagation; mobile span is the root CLIENT span. See Section 9. |
-| L7 × slo × metrics | PASS | Mobile-side SLIs: cold start time p95, ANR rate, Hang rate. Define SLO targets in OpenSLO YAML referencing mobile metrics ingested via OTLP. Cross-reference `../../boundaries/slo.md`. |
-| L7 × privacy × logs | PASS | On-device queued events contain PII at rest. Encryption via Keychain/Keystore required. Field-level masking of card numbers, emails, and passwords before write. Cross-reference `../../signals/privacy.md`. |
+**Tenant attribution:** `tenant.id` on mobile is typically derived from the authenticated user, not from a tenant header. Map `user.id → tenant.id` server-side in the pipeline; do not attach `tenant.id` as a metric label on-device (cardinality risk).
 
 ---
 
-## 12. Anti-Patterns (Candidates for `../../anti-patterns.md §Section G`)
-
-| Anti-pattern | Risk | Fix |
-|-------------|------|-----|
-| Telemetry queue stored unencrypted on device | PII at rest exposed if device is lost or compromised | Encrypt queue using iOS Keychain / Android Keystore before writing |
-| Heavy RUM SDK flush on every event without batching | Battery drain → user complaints → app uninstall | Batch flushes; align with `BGAppRefreshTask` / `WorkManager` cadence |
-| No event TTL on queue | Stale events (hours or days old) arrive at backend; mislead dashboards | Set TTL (24–72 h); drop on exceed before send |
-| Missing `traceparent` injection on outbound HTTP | Client-server correlation broken; mobile sessions invisible in backend traces | Configure SDK HTTP interceptor at init; verify with network proxy tool |
-| Session replay without PII field masking | Card numbers, emails, passwords captured in replay | Enable SDK masking rules on input fields; test with automated replay review |
-| Using server receipt time as event timestamp | Clock skew between device and server corrupts waterfall ordering | Store `observed_time_unix_nano` (device local time) on every event at emit time |
-
----
-
-## References
-
+## 11. References
 
 - OTel Swift SDK: <https://opentelemetry.io/docs/languages/swift/>
 - OTel Android SDK: <https://github.com/open-telemetry/opentelemetry-android>

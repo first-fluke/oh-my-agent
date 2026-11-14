@@ -38,7 +38,7 @@ Scan the project root for package manifests. Evaluate **all three** tables indep
 | `*.csproj`, `*.sln` | C#/.NET |
 
 Read manifest contents to detect framework:
-- Python: FastAPI? Django? Flask?
+- Python: Litestar? FastAPI? Django? Flask?
 - Node.js: NestJS? Express? Hono?
 - Rust: Axum? Actix-web? Rocket?
 - Java: Spring Boot? Quarkus?
@@ -204,12 +204,12 @@ test: {test_framework}
 source: detected
 detected_from:
   - {manifest_file}
-verify:                          # consumed by `oma verify backend` (see _shared/core/stack-verify.schema.json)
+verify:                          # consumed by `oma verify agent backend` (see _shared/core/stack-verify.schema.json)
   detect: {manifest_file}        # e.g. package.json, pyproject.toml
   syntax:
     cmd: "{syntax_check_cmd}"    # e.g. bunx tsc --noEmit
   tests:
-    cmd: "{test_cmd}"            # e.g. bun test
+    cmd: "{test_cmd}"            # e.g. bunx vitest run
     skip_if_missing: "{optional_binary}"
   raw_sql:                       # raw-SQL injection grep scan — omit only when the stack has no raw-query escape hatch
     patterns:
@@ -218,7 +218,7 @@ verify:                          # consumed by `oma verify backend` (see _shared
     exclude_dirs: [{build_and_dep_dirs}]  # e.g. node_modules, dist, .venv, target
 ```
 
-Seed `raw_sql` patterns from the matching `variants/{language}/stack.yaml` when one exists (node/python/rust ship with tested patterns); otherwise derive patterns from the detected ORM's raw-query APIs.
+Seed `raw_sql` patterns from the shipped preset for the language when the install has it: the existing `stack/stack.yaml` of a preset install, or `variants/{language}/stack.yaml` where the variants are present (node, python, and rust ship tested patterns). Otherwise derive patterns from the detected ORM's raw-query APIs.
 
 #### tech-stack.md
 Generate tech stack reference with these MANDATORY sections:
@@ -262,7 +262,7 @@ source: detected
 detected_from:
   - angular.json
   - package.json
-verify:                          # consumed by `oma verify frontend` (see _shared/core/stack-verify.schema.json)
+verify:                          # consumed by `oma verify agent frontend` (see _shared/core/stack-verify.schema.json)
   detect: angular.json
   syntax:
     cmd: "{syntax_check_cmd}"    # e.g. bunx tsc --noEmit -p tsconfig.app.json
@@ -345,7 +345,7 @@ test: XCTest
 source: detected
 detected_from:
   - {manifest_file}          # e.g. Package.swift
-verify:                      # consumed by `oma verify mobile` (see _shared/core/stack-verify.schema.json)
+verify:                      # consumed by `oma verify agent mobile` (see _shared/core/stack-verify.schema.json)
   detect: Package.swift
   syntax:
     cmd: "{non_emitting_syntax_check_cmd}" # detected project command; do not default to swift build
@@ -374,8 +374,8 @@ Generate a Swift-specific tech stack reference with these MANDATORY sections:
 - [ ] App entry point + DI composition root (wiring `Client` → service → view model)
 - [ ] XCTest example for the service or view model
 
-#### api-template.swift
-Generate a CRUD service built on the generated `Client` (using `Operations.*` call patterns from `swift-openapi-generator`). This is the Swift analogue of the backend `api-template.*`. The template must:
+#### API service snippet
+Include in `snippets.md` a CRUD service built on the generated `Client` (using `Operations.*` call patterns from `swift-openapi-generator`). This is the Swift analogue of the backend `api-template.*`; the mobile stack keeps it in `snippets.md` rather than a separate file. The snippet must:
 - Import and instantiate the generated `Client` (not a hand-rolled `URLSession` request builder).
 - Implement list, get-by-id, create, update, and delete operations using `Operations.*` types.
 - Handle transport errors and map them to domain error types.
@@ -411,7 +411,7 @@ test: junit
 source: detected
 detected_from:
   - {manifest_file}          # e.g. settings.gradle.kts, app/build.gradle.kts
-verify:                      # consumed by `oma verify mobile` (see _shared/core/stack-verify.schema.json)
+verify:                      # consumed by `oma verify agent mobile` (see _shared/core/stack-verify.schema.json)
   detect: settings.gradle.kts
   syntax:
     cmd: "{non_compiling_check_cmd}"   # e.g. ktlint / detekt; Gradle compile tasks are builds — do not default to them
@@ -442,8 +442,8 @@ Generate a Kotlin-specific tech stack reference with these MANDATORY sections:
 - [ ] Generated-client contract test with `MockEngine` in `:api-client`
 - [ ] ViewModel unit test (`runTest` + fake repository)
 
-#### api-template.kt
-Generate a CRUD repository built on the generated `*Api`. This is the Kotlin analogue of the backend `api-template.*`. The template must:
+#### API repository snippet
+Include in `snippets.md` a CRUD repository built on the generated `*Api`. This is the Kotlin analogue of the backend `api-template.*`; the mobile stack keeps it in `snippets.md` rather than a separate file. The snippet must:
 - Inject and call the generated `*Api` (not a hand-rolled Ktor `HttpClient` request builder or raw OkHttp calls).
 - Implement list, get-by-id, create, update, and delete operations through generated methods and `HttpResponse<T>`.
 - Map non-2xx statuses and `IOException` to typed domain failures; rethrow `CancellationException`.
@@ -453,7 +453,7 @@ Generate a CRUD repository built on the generated `*Api`. This is the Kotlin ana
 
 ### Mobile path — Flutter / React Native
 
-Seed from `.agents/skills/oma-mobile/variants/flutter/` or `.agents/skills/oma-mobile/variants/react-native/` respectively (same **adapt, not copy** rule as amendment E): generate `stack.yaml` (with a runnable `verify:` block, e.g. `flutter analyze` / `flutter test`, or `bunx tsc --noEmit` / `jest`), `tech-stack.md`, `snippets.md`, and an api-template in the detected idiom, replacing variant placeholders with the project's actual module names, SDK versions, and state-management library.
+Seed from `.agents/skills/oma-mobile/variants/flutter/` or `.agents/skills/oma-mobile/variants/react-native/` respectively (same **adapt, not copy** rule as amendment E): generate `stack.yaml` (with a runnable `verify:` block, e.g. `flutter analyze` / `flutter test`, or `bunx tsc --noEmit` / `jest`), `tech-stack.md`, and `snippets.md` (including the API service or repository snippet in the detected idiom), replacing variant placeholders with the project's actual module names, SDK versions, and state-management library.
 
 ---
 
@@ -463,8 +463,8 @@ Confirm generated files meet requirements. Verification commands must follow the
 
 ### Backend checks
 - [ ] `stack.yaml` has `language`, `framework`, `orm`, `validation` fields
-- [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd` (otherwise `oma verify backend` cannot dispatch)
-- [ ] `stack.yaml` `verify:` includes a `raw_sql` scan with ORM-appropriate patterns (without it `oma verify backend` silently skips the raw-SQL injection check); omit only when the stack has no raw-query escape hatch
+- [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd` (otherwise `oma verify agent backend` cannot dispatch)
+- [ ] `stack.yaml` `verify:` includes a `raw_sql` scan with ORM-appropriate patterns (without it `oma verify agent backend` silently skips the raw-SQL injection check); omit only when the stack has no raw-query escape hatch
 - [ ] `snippets.md` contains all 8 mandatory patterns
 - [ ] `tech-stack.md` contains all 6 mandatory sections
 - [ ] `api-template` file uses the correct language extension
@@ -485,9 +485,9 @@ Confirm generated files meet requirements. Verification commands must follow the
 
 ### Mobile (Swift) checks
 - [ ] `stack.yaml` has `language`, `api_generator`, `api_spec`, and `structure` fields populated with project-specific values (not variant defaults)
-- [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd` (otherwise `oma verify mobile` cannot dispatch)
+- [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd` (otherwise `oma verify agent mobile` cannot dispatch)
 - [ ] `snippets.md` includes the generator configuration snippet (`openapi-generator-config.yaml`) and at least one snippet that uses the generated `Client` via `Operations.*`
-- [ ] `api-template.swift` uses the generated client — not hand-rolled `URLSession` request construction
+- [ ] The API service snippet in `snippets.md` uses the generated client — not hand-rolled `URLSession` request construction
 - [ ] `tech-stack.md` documents where `api_spec` originates and how it syncs from the backend producer
 - [ ] Module names in snippets reflect real `Features/` modules detected in the project, not generic placeholders
 
@@ -496,7 +496,7 @@ Confirm generated files meet requirements. Verification commands must follow the
 - [ ] `stack.yaml` has a `verify:` block with runnable `syntax.cmd` and `tests.cmd`; `tests.cmd` names a real Gradle task for the detected flavors
 - [ ] `snippets.md` includes the `openApiGenerate {}` snippet and at least one snippet that calls a generated `*Api` method and unwraps `HttpResponse<T>`
 - [ ] The Ktor engine appears only where the client is constructed (Hilt module) and as `MockEngine` in the contract test — never inside repositories or composables
-- [ ] `api-template.kt` uses the generated client — not hand-assembled URL paths or JSON bodies
+- [ ] The API repository snippet in `snippets.md` uses the generated client — not hand-assembled URL paths or JSON bodies
 - [ ] `tech-stack.md` documents where `api_spec` originates and how it syncs from the backend producer
 - [ ] Package and module names in snippets reflect the real `namespace`, generated packages, and `settings.gradle.kts` modules, not `com.example.*` placeholders
 

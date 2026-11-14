@@ -28,12 +28,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - business policies, implicit workflows, or external side effects in affected triggers, stored procedures/functions, views, DB jobs, or ORM hooks
 - For the affected logic, identify callers and all writers (API, batch, admin, import, direct SQL); use `resources/anti-patterns.md` §5 to distinguish application responsibilities from DB enforcement
 - Record assumptions and open risks
-- If vector retrieval is needed, define:
-  - hybrid vs pure vector retrieval
-  - exact-filter requirements
-  - embedding model and dimension
-  - chunking strategy
-  - reranking need
+- If vector retrieval is needed, load `resources/vector-db.md` and settle its Design Sequence steps 1-3 (retrieval problem, justification, chunking and embedding strategy)
 
 ## Step 2: Design
 - Produce **external schema**:
@@ -57,11 +52,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - document traversal depth expectations and whether the engine's strength (index-free adjacency) is actually exercised
   - keep source-of-truth entities in the primary store when the graph is a derived projection; document the sync path
 - Vector path:
-  - define embedding model, dimension, normalization, and metadata versioning
-  - define chunking policy, overlap, and document-type-specific chunk rules
-  - design hybrid retrieval: lexical + ANN + metadata filtering + reranking
-  - define canonical document store vs vector index boundary
-  - document ANN index choice and key tuning parameters
+  - design per `resources/vector-db.md` and record the result in the Vector Retrieval Design template of `resources/document-templates.md`
 - Apply data standards:
   - naming, definition, format, code set, validation rule
 - Review security/compliance posture:
@@ -77,11 +68,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
 - Validate hot paths against indexes and partitions; tune with `resources/query-tuning.md` (measure -> explain -> nominate -> test, never guesswork)
 - If optimization requires schema changes on live tables, plan them via `resources/migration-playbook.md` (expand-contract, lock-aware DDL, batched backfill)
 - If moving existing DB business logic into the application, use the same playbook's ownership cutover steps to preserve writer coverage and avoid duplicate side effects
-- For vector systems:
-  - benchmark recall vs latency on production-like queries
-  - measure ANN parameter tradeoffs, filter pushdown cost, and write amplification
-  - design re-embedding and shadow-index migration flow
-  - separate ingestion/search clusters or hot/cold vector tiers when write load is high
+- For vector systems, benchmark and plan the lifecycle per `resources/vector-db.md` Best Practices 4-6 (ANN tuning on real data, filtering cost, writes and re-embedding)
 - Separate hot and cold data:
   - recent operational data stays online
   - historical/archive data moves to cheaper storage or archive partitions
@@ -105,7 +92,7 @@ Use the task's scope, existing project conventions, and acceptance criteria. Fol
   - backup volume
 
 ## Step 4: Verify
-- Run `resources/checklist.md`
+- Check the sections of `resources/checklist.md` relevant to the task
 - For a schema-design task, confirm affected existing artifacts were updated;
   for scoped tuning, record SQL/plan evidence instead of creating this full set:
   - glossary

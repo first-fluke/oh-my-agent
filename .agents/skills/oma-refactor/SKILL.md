@@ -50,12 +50,11 @@ outputs:
     required: false
 ```
 
-Standalone runs write plan / before-after reports under `.agents/results/refactor/`; orchestrated runs (via the `refactor-engineer` agent) write `.agents/results/result-refactor[-{sessionId}].md` per the agent execution protocol.
+Standalone runs write plan / before-after reports under `.agents/results/refactor/`; orchestrated runs (via the `refactor-engineer` agent) write the result report at the path defined by the agent result contract (`../_shared/runtime/result-contract.md`).
 
 ### Dependencies
 - `resources/definition.md` (invariant definition: 5 properties, boundaries, destination principle, naming roles, inline evidence)
 - `resources/measurement.md` (4-layer measurement + git forensics commands)
-- `resources/governance.md` (optional organization conventions and existing verification tools)
 - Configured code-intelligence symbol/reference tools; existing project test runners for the target language
 - Git history for churn/ownership/hotspot analysis
 
@@ -80,11 +79,11 @@ information from missing authorization: retain existing permission, pause only
 dependent work, and continue independent authorized work.
 
 ### Scenes
-1. **PREPARE**: Within the refactoring scope, classify greenfield (safety net exists) vs brownfield (build net first); check size gates and hotspot rank; confirm two-hats scope (no feature/bug work mixed in).
+1. **PREPARE**: Within the refactoring scope, classify greenfield (safety net exists) vs brownfield (build net first); check any existing project size gate and hotspot rank; confirm two-hats scope (no feature/bug work mixed in).
 2. **ACQUIRE**: Read target code via symbol tools; collect metrics (complexity, size, coupling) and git signals (churn, ownership); read the coding guide for conventions.
 3. **REASON**: Decompose the goal into a sequence of named atomic transformations; for stateful targets plan expand-contract; verify each step is independently verifiable and revertible.
-4. **ACT**: Apply ONE transformation; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits. When one feature spans several files after a split, consider G-5's optional header map if it helps navigation.
-5. **VERIFY**: Re-run existing tests unchanged. Pass -> commit (refactor-only) -> next transformation. Repeated failure -> Mikado: record the broken prerequisite, undo only this transformation's edits, recurse on the prerequisite first. Preserve pre-existing edits and other contributors' work.
+4. **ACT**: Apply ONE transformation; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits. When one feature spans several files after a split, a short entry-file comment listing the related paths and their roles can serve as a map; keep it current.
+5. **VERIFY**: Re-run existing tests unchanged. This safety-net run is the skill's required verification: perform it when test execution is permitted; when the user or project instructions rule it out, stop before the next transformation and report the applied transformation as unverified. Pass -> commit (refactor-only) -> next transformation. Repeated failure -> Mikado: record the broken prerequisite, undo only this transformation's edits, recurse on the prerequisite first. Preserve pre-existing edits and other contributors' work.
 6. **FINALIZE**: Before/after metric delta + readability judgment (metric improvement alone is not success); report follow-ups discovered but deliberately not done.
 
 ### Transitions
@@ -130,7 +129,7 @@ dependent work, and continue independent authorized work.
 - Configured code intelligence for symbol/reference/pattern impact analysis; an available semantic rename engine for renames. Native inspection remains valid, but do not replace a semantic rename with blind text replacement
 - Deterministic transformers: IDE refactoring actions, codemods (jscodeshift / OpenRewrite / ast-grep / comby)
 - Metrics: use already installed complexity tools such as lizard / radon and existing project lint limits; installing or downloading additional tools requires authorization
-- Test stack: preserve the project runner and configuration; use mutation tooling only when available and appropriate (see `resources/governance.md`)
+- Test stack: use the repository's existing test runner and coverage commands (Jest, Vitest, unittest, pytest, XCTest, Swift Testing, cargo test, go test, or whatever the project already uses) and preserve their configuration. Add coverage or mutation instrumentation only when it is relevant to the task and available in the project; a runner migration is separate work
 - Git forensics one-liners (see `resources/measurement.md`)
 
 ### Canonical workflow path
@@ -177,7 +176,6 @@ dependent work, and continue independent authorized work.
 
 - Invariant definition (5 properties, boundaries, destination, naming roles, contexts, D&C, inline evidence): `resources/definition.md`
 - Measurement: 4 layers + git forensics commands: `resources/measurement.md`
-- Optional organization conventions and existing verification tools: `resources/governance.md`
 - Context loading: `../_shared/core/context-loading.md`
 - Quality principles: `../_shared/core/quality-principles.md`
 - Adjacent skills: `oma-debug` (bugs), `oma-qa` (audits), `oma-architecture` (boundaries/ADR), `oma-db` (schema), `oma-scm` (commits)

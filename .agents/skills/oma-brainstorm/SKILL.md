@@ -40,7 +40,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 - Saved design artifact before handoff to planning
 
 ### Dependencies
-- Shared context loading, reasoning templates, clarification protocol, quality principles, and skill routing
+- Shared context loading, clarification protocol, quality principles, and skill routing
 - Optional `resources/triz-lite.md` for contradiction-shaped approach seeding
 - Per-agent reviewer dispatch (e.g. `qa-reviewer`, `architecture-reviewer`) for the high-stakes blind-review escalation path
 - Downstream PM workflow for task decomposition after design approval
@@ -58,13 +58,6 @@ Explore user intent, constraints, and alternative approaches before planning or 
 1. Confirm that the request is exploratory rather than ready for implementation.
 2. Load enough project context to understand constraints.
 3. Start with intent and constraints, not solutions.
-
-### Scenes
-1. **PREPARE**: Explore context and frame the design question.
-2. **ACQUIRE**: Ask clarifying questions one at a time.
-3. **REASON**: Compare viable approaches with tradeoffs when alternatives aid the decision; explain binding constraints when only one remains.
-4. **VERIFY**: Reuse existing design authority and resolve only material open choices, then run a blind review round (independent lenses critique without seeing each other's feedback) before saving.
-5. **FINALIZE**: Save design and transition to planning when appropriate.
 
 ### Transitions
 - If requirements become clear and implementation-ready, transition to PM planning.
@@ -97,7 +90,7 @@ Explore user intent, constraints, and alternative approaches before planning or 
 | Transition to plan | `NOTIFY` | Handoff summary |
 
 ### Tools and instruments
-- Context loading, reasoning templates, clarification protocol
+- Context loading and clarification protocol
 - Optional TRIZ-lite resource for contradiction seeding
 - Project memory for coordination summaries and `docs/decisions/` for retained approach proposals
 
@@ -135,27 +128,6 @@ Explore user intent, constraints, and alternative approaches before planning or 
 7. **YAGNI** - do not over-engineer; design only what is needed for the stated goal
 8. **TRIZ-lite is optional** - only for technical/UX contradictions or same-axis collapse; max 3–5 principles from the curated set; no fake scores, full TRIZ/ARIZ, or classical matrices; seeds feed Step 3 briefs and do not replace user approval
 9. **Save the selected approach, then transition** - persist it in `docs/decisions/` before handing off to `/plan`. Run-specific critique and `result-*.md` reports belong in `.agents/results/`; leave the destination in the source report when promoting a document into `docs/`
-
-### Execution Phases
-Follow the brainstorm workflow step by step:
-1. **Phase 1 - Context**: Explore the existing codebase and understand the project landscape
-2. **Phase 2 - Questions**: Ask clarifying questions one at a time to understand intent and constraints
-3. **Phase 3 - Approaches**: Optionally seed with TRIZ-lite for a real contradiction; compare viable approaches in prose and recommend according to the stated constraints, effort, reversibility, and risk
-4. **Phase 4 - Design**: Present the detailed design section by section, preserving existing authorization and resolving only open material choices
-5. **Phase 5 - Blind Review**: Use independent reviewer lenses proportionate to the design uncertainty and stakes, consolidate into Tier 1/2/3 issues, resolve Tier 1 before save; escalate to fresh-context reviewer subagents for high-stakes designs. Skip only for trivially small designs (1-2 files, low stakes)
-6. **Phase 6 - Documentation**: Save the approved approach to `docs/decisions/{NNN}-{name}.md`, update its index, and record a linked coordination summary in project memory
-7. **Phase 7 - Transition**: Hand off to `/plan` for task decomposition
-
-### Common Pitfalls
-- **Jumping to solutions**: Asking "how" before fully understanding "what" and "why"
-- **Too many questions at once**: Overwhelming the user with a wall of questions
-- **Single approach bias**: Skipping viable alternatives without explaining binding constraints
-- **Matrix-only options**: Dumping a trade-off table without scenario/mechanism prose so the user cannot choose
-- **Same-axis "alternatives"**: Three intensities of the same knob (interval/TTL/debounce) presented as distinct approaches
-- **TRIZ on everything**: Loading triz-lite without a real contradiction, adding ceremony without better options
-- **Over-engineering**: Designing for hypothetical future requirements instead of stated needs
-- **Inventing design authority**: Treating an agent recommendation as approval of a user-owned unresolved choice, or asking again for a choice already authorized
-- **Skipping blind review**: Saving a non-trivial design without the independent critique round, or letting the design's author-context leak into escalated reviewer prompts
 
 ## References
 - TRIZ-lite (optional Step 3 seeding): `resources/triz-lite.md`
