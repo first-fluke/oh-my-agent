@@ -6,10 +6,11 @@
  *
  * Currently checks:
  * - cjk-em-dash: em-dash (—) usage in CJK targets (ko/ja/zh) outside code
- *   blocks and outside closed `<!-- oma:generated <name>:start/end -->`
- *   regions. Per the oma-translation language profiles, em-dashes in CJK should
- *   be structurally restructured into separate clauses, parentheses, or
- *   coordinated noun phrases — never used as direct substitution from English.
+ *   blocks, outside closed `<!-- oma:generated <name>:start/end -->` regions,
+ *   and outside placeholder-only Markdown table cells (`| — |`). Per the
+ *   oma-translation language profiles, em-dashes in CJK should be structurally
+ *   restructured into separate clauses, parentheses, or coordinated noun
+ *   phrases — never used as direct substitution from English.
  * - wrong-language: file lives under web/i18n/<lang>/... but the detected
  *   language of its prose body doesn't match <lang>. Catches untranslated
  *   placeholder copies (most common: EN copied as bootstrap for every locale
@@ -137,6 +138,39 @@ function generatedRegionLines(lines: readonly string[]): Set<number> {
   return hidden;
 }
 
+function splitTableCells(line: string): string[] {
+  const cells: string[] = [];
+  let start = 0;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === "\\") {
+      i++;
+      continue;
+    }
+    if (line[i] === "|") {
+      cells.push(line.slice(start, i));
+      start = i + 1;
+    }
+  }
+  cells.push(line.slice(start));
+  return cells;
+}
+
+/**
+ * Return true when `strippedLine` contains an em-dash that is not a lone
+ * no-value placeholder (`—`) occupying an entire Markdown table cell.
+ */
+function hasProseEmDash(rawLine: string, strippedLine: string): boolean {
+  if (!strippedLine.includes(EM_DASH)) return false;
+  // Mask inline code with a non-whitespace token so a cell like `` `x` — ``
+  // does not collapse to a bare `—` while pipes inside code stay ignored.
+  const codeMasked = rawLine.replace(/`[^`\n]+`/g, "_");
+  if (!codeMasked.includes("|")) return true;
+  return splitTableCells(codeMasked).some((cell) => {
+    const trimmed = cell.trim();
+    return trimmed.includes(EM_DASH) && trimmed !== EM_DASH;
+  });
+}
+
 function checkCjkEmDash(
   fileRel: string,
   lang: string,
@@ -146,13 +180,14 @@ function checkCjkEmDash(
   // Code stripping keeps one line per source line. Region detection runs on
   // that text so a marker inside a fence cannot suppress later prose, and
   // finding line numbers stay the file's line numbers.
+  const rawLines = text.split("\n");
   const stripped = stripCodeBlocks(text);
   const lines = stripped.split("\n");
   const generated = generatedRegionLines(lines);
   for (let i = 0; i < lines.length; i++) {
     if (generated.has(i)) continue;
     const line = lines[i] ?? "";
-    if (!line.includes(EM_DASH)) continue;
+    if (!hasProseEmDash(rawLines[i] ?? "", line)) continue;
     issues.push({
       file: fileRel,
       lang,

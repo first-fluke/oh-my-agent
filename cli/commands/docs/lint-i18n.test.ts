@@ -251,6 +251,69 @@ describe("lintI18nStyle - cjk-em-dash rule", () => {
       rmSync(root, { recursive: true, force: true });
     }
   });
+
+  it("ignores table rows with placeholder em-dash cells only", () => {
+    const root = mkrepo();
+    try {
+      writeFile(
+        root,
+        "web/i18n/ko/docusaurus-plugin-content-docs/current/a.md",
+        [
+          "| Platform | Manager | Fallback |",
+          "| --- | --- | --- |",
+          "| macOS | launchd | — |",
+          "| — | — | — |",
+          "",
+        ].join("\n"),
+      );
+      const issues = lintI18nStyle({ repoRoot: root });
+      expect(issues).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("reports a row with a placeholder cell and a non-placeholder em-dash cell once", () => {
+    const root = mkrepo();
+    try {
+      writeFile(
+        root,
+        "web/i18n/zh/docusaurus-plugin-content-docs/current/a.md",
+        ["| Key | Description |", "| --- | --- |", "| — | 文 — 文 |", ""].join(
+          "\n",
+        ),
+      );
+      const issues = lintI18nStyle({ repoRoot: root });
+      expect(issues).toHaveLength(1);
+      expect(issues[0]?.rule).toBe("cjk-em-dash");
+      expect(issues[0]?.line).toBe(3);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps prose em-dashes reported and line numbers accurate across placeholder tables", () => {
+    const root = mkrepo();
+    try {
+      writeFile(
+        root,
+        "web/i18n/ko/docusaurus-plugin-content-docs/current/a.md",
+        [
+          "앞 문단 — 설명",
+          "",
+          "| macOS | launchd | — |",
+          "| — | — | — |",
+          "",
+          "뒤 문단 — 설명",
+          "",
+        ].join("\n"),
+      );
+      const issues = lintI18nStyle({ repoRoot: root });
+      expect(issues.map((issue) => issue.line)).toEqual([1, 6]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("lintI18nStyle - wrong-language rule", () => {
