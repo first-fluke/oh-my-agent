@@ -5,14 +5,13 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-13 · 2 unstarred
+## 2026-11-15 · 1 unstarred
 
-- **@songmw90** · 0 repos · 0 followers
-- **@soulfactorx** · 이준혁 · 7 repos · 2 followers
+- **@geek-79** · geek-ceo · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1461)
+## Current (1464)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -174,6 +173,7 @@ summaries to spot which persona is churning.
 - @bob-kkn — 2026-04-17
 - @bogdanliusik — 2026-04-12
 - @Bonggoo — 2026-06-12
+- @borarim-design — 2026-11-14
 - @boscodb — 2026-06-17
 - @Bounasissi — 2026-05-03
 - @boysbelegend — 2026-03-18
@@ -440,7 +440,6 @@ summaries to spot which persona is churning.
 - @GavinTomlins — 2026-07-23
 - @gdaegeun539 — 2026-02-02
 - @gdfernandes2019 — 2026-03-21
-- @geek-79 — 2026-09-04
 - @geekypanda411 — 2026-02-02
 - @GeneralProgrammer — 2026-02-02
 - @genevera — 2026-07-06
@@ -922,6 +921,7 @@ summaries to spot which persona is churning.
 - @Misaka-No-10032 — 2026-04-22
 - @Mizar999 — 2026-04-14
 - @mnm967 — 2026-09-21
+- @mocionism — 2026-11-15
 - @modulexcite — 2026-09-30
 - @mohamedhamad — 2026-01-31
 - @MokuDev — 2026-10-20
@@ -1223,6 +1223,7 @@ summaries to spot which persona is churning.
 - @sommio — 2026-04-21
 - @songbongs — 2026-04-26
 - @SongSeoYoung — 2026-02-01
+- @sosunnyproject — 2026-11-14
 - @soujhony — 2026-03-15
 - @soWhatmf — 2026-05-29
 - @spacehamster0429 — 2026-11-12
@@ -1414,6 +1415,7 @@ summaries to spot which persona is churning.
 - @xLagerFeuer — 2026-09-20
 - @xusyang — 2026-04-21
 - @xycool — 2026-02-07
+- @yairrose — 2026-11-14
 - @Yaklede — 2026-06-11
 - @yakubmungai — 2026-02-06
 - @yakzan — 2026-03-23
