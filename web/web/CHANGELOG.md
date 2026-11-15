@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.22.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.21.0...web-v11.22.0) (2026-11-15)
+
+
+### Features
+
+* **hooks:** add skill hints for docs, explanation, scholar, skill-creation ([a76d9d0](https://github.com/first-fluke/oh-my-agent/commit/a76d9d0960fc7a020412718c91b538a9c5dc1feb))
+
 ## [11.21.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.12...web-v11.21.0) (2026-11-15)
 
 
