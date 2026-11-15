@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.44.2",
-  "releaseDate": "2026-11-15T22:16:24.439Z",
+  "releaseDate": "2026-11-15T22:27:10.758Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -96,8 +96,8 @@
     },
     {
       "path": ".agents/agents/variants/grok.json",
-      "sha256": "cacd8c3856259e47ca5e03a1ebb220d6e91d72882c4d3577c3a207923327a3a6",
-      "size": 467
+      "sha256": "6c1d46ab6a55f55ee6c973b0ae485763113ef81b3f0ee48abe39b14baa4f305b",
+      "size": 676
     },
     {
       "path": ".agents/agents/variants/kilo.json",
@@ -281,8 +281,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "ad7ca8dcee79760a59cec95a4f80f4c66515bd53aedd4eb01c292e90e5d5d0df",
-      "size": 40809
+      "sha256": "51ef4e5e5af67c1b5711e83ecc2eea94b6308bc68b3963ef5f3904c1334b9554",
+      "size": 43345
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -1031,8 +1031,8 @@
     },
     {
       "path": ".agents/skills/oma-explanation/SKILL.md",
-      "sha256": "27180bd82f6fc27b09c27176a52afbdc1cec12333b2878412883cab88d305a84",
-      "size": 11412
+      "sha256": "02581fcca6eef3d9859259597944ad55fecfd11f7791f2aa07f1321b6ab9d9e9",
+      "size": 11475
     },
     {
       "path": ".agents/skills/oma-explanation/resources/document-structure.md",
@@ -2111,8 +2111,8 @@
     },
     {
       "path": ".agents/workflows/deepinit.md",
-      "sha256": "a5db9c180bffdcb55a4440064765e751ad5032a249c14ac7bc61908368031b5d",
-      "size": 15843
+      "sha256": "ecda7a577a2540324ee71938689c6ae47d750cd487d5af79c6c56298fdde4d8c",
+      "size": 16055
     },
     {
       "path": ".agents/workflows/design.md",
@@ -2191,8 +2191,8 @@
     },
     {
       "path": ".agents/workflows/ultrawork.md",
-      "sha256": "d4dae33971b7350896da5604dd3b1d2097358ede39a5c1e284f3ea6f7d822b89",
-      "size": 31057
+      "sha256": "b5d59f8c4e322ed7daa4bdec559fbffcf65613b0543b5bb03bbd3f4b92f4950a",
+      "size": 29881
     },
     {
       "path": ".agents/workflows/video.md",
