@@ -162,8 +162,9 @@ describe("sanitizeFrontmatterForVendor — codex", () => {
       description: "Backend specialist",
       model: "openai/o3",
       model_reasoning_effort: "high",
-      sandbox_mode: "workspace-write",
     });
+    // Codex ignores sandbox_mode in a custom agent file.
+    expect(result).not.toHaveProperty("sandbox_mode");
     expect(result).not.toHaveProperty("tools");
     expect(result).not.toHaveProperty("maxTurns");
     expect(result).not.toHaveProperty("effort");
@@ -182,10 +183,11 @@ describe("sanitizeFrontmatterForVendor — codex", () => {
 
     sanitizeFrontmatterForVendor(input, "codex");
 
-    expect(warnSpy).toHaveBeenCalledTimes(2);
+    expect(warnSpy).toHaveBeenCalledTimes(3);
     const warnMessages: string[] = warnSpy.mock.calls.map(
       (c: unknown[]) => c[0] as string,
     );
+    expect(warnMessages.some((m) => m.includes("'sandbox_mode'"))).toBe(true);
     expect(warnMessages.some((m) => m.includes("'tools'"))).toBe(true);
     expect(warnMessages.some((m) => m.includes("'maxTurns'"))).toBe(true);
     expect(warnMessages.every((m) => m.includes("codex variant"))).toBe(true);
@@ -759,6 +761,17 @@ describe("installVendorAgents — real Codex variant SSOT", () => {
       );
       expect(backend).not.toMatch(/^model = /m);
       expect(backend).toContain('model_reasoning_effort = "high"');
+      // Regression: every agent file carried sandbox_mode, which Codex takes
+      // from the parent session and ignores here, so qa-reviewer looked
+      // read-only without being so.
+      for (const agent of ["backend-engineer", "qa-reviewer"]) {
+        expect(
+          readFileSync(
+            join(targetDir, ".codex", "agents", `${agent}.toml`),
+            "utf-8",
+          ),
+        ).not.toMatch(/^(sandbox_mode|approval_policy) = |^\[mcp_servers\]/m);
+      }
 
       for (const [agent, effort] of [
         ["docs-curator", "medium"],

@@ -453,7 +453,8 @@ describe("installVendorAdaptations", () => {
     );
     expectAtomicWrite(
       join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),
-      expect.stringContaining('sandbox_mode = "read-only"'),
+      // The variant asks for a sandbox; Codex ignores that key in an agent file.
+      expect.not.stringContaining("sandbox_mode"),
     );
     expectAtomicWrite(
       join(mockTargetDir, ".codex", "agents", "architecture-reviewer.toml"),

@@ -7,70 +7,27 @@
   "toolsDefault": [],
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/codex.md",
   "agents": {
-    "backend-engineer": {
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
-    },
-    "frontend-engineer": {
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
-    },
-    "db-engineer": {
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
-    },
+    "backend-engineer": {},
+    "frontend-engineer": {},
+    "db-engineer": {},
     "debug-investigator": {
-      "effort": "high",
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
+      "effort": "high"
     },
     "architecture-reviewer": {
-      "effort": "high",
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
+      "effort": "high"
     },
-    "tf-infra-engineer": {
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
-    },
-    "mobile-engineer": {
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
-    },
-    "pm-planner": {
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
-    },
+    "tf-infra-engineer": {},
+    "mobile-engineer": {},
+    "pm-planner": {},
     "qa-reviewer": {
-      "effort": "high",
-      "extra": {
-        "sandbox_mode": "read-only"
-      }
+      "effort": "high"
     },
-    "refactor-engineer": {
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
-    },
+    "refactor-engineer": {},
     "docs-curator": {
-      "effort": "medium",
-      "extra": {
-        "sandbox_mode": "workspace-write"
-      }
+      "effort": "medium"
     },
     "research-explorer": {
-      "effort": "low",
-      "extra": {
-        "sandbox_mode": "read-only"
-      }
+      "effort": "low"
     }
   }
 }
