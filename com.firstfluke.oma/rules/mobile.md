@@ -6,9 +6,8 @@ alwaysApply: false
 
 # Mobile Development Standards
 
-Variant-specific stacks live in `.agents/skills/oma-mobile/variants/{flutter,react-native,swift-ios,kotlin-android}/`.
-React Native sources (`.ts`/`.tsx`) are not matched by this rule's glob — for RN work, read the
-`react-native` variant directly. `.kt` files are Kotlin-native (Compose) when the project is an
+React Native sources (`.ts`/`.tsx`) are not matched by this rule's glob. `.kt` files are
+Kotlin-native (Compose) when the project is an
 Android application (`settings.gradle.kts` + `com.android.application`, no `pubspec.yaml` /
 `react-native`); otherwise they are Flutter/RN Android host code.
 
