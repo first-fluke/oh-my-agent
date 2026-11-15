@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.21.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.12...web-v11.21.0) (2026-11-15)
+
+
+### Features
+
+* **cli:** add vendor_auto_update config key ([8fcb3a1](https://github.com/first-fluke/oh-my-agent/commit/8fcb3a13ce9ba4f85cad47238840e174df919af1))
+
 ## [11.20.12](https://github.com/first-fluke/oh-my-agent/compare/web-v11.20.11...web-v11.20.12) (2026-11-14)
 
 
