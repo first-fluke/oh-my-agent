@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.45.0",
-  "releaseDate": "2026-11-15T22:28:15.119Z",
+  "releaseDate": "2026-11-15T22:34:00.111Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -76,8 +76,8 @@
     },
     {
       "path": ".agents/agents/variants/codex.json",
-      "sha256": "b26986e517500d4ad5a827f74c2907071184c3360473c989469e1c961bf2ba38",
-      "size": 1574
+      "sha256": "2b746be8fed75348b353d231e64c7f88dc3bf7236800c35556a068b2ed4c859a",
+      "size": 742
     },
     {
       "path": ".agents/agents/variants/commandcode.json",
@@ -406,13 +406,13 @@
     },
     {
       "path": ".agents/rules/database.md",
-      "sha256": "7729970c4d38730b9da7765974bbdf34112a5e10fdef6c010ff39462f686689f",
-      "size": 3629
+      "sha256": "78ecd2bbc992771eb5b8f4296fe29eb0e3aadfeca330347f085385aaeecfe62a",
+      "size": 3459
     },
     {
       "path": ".agents/rules/frontend.md",
-      "sha256": "4671c4f69083863f0072d457f2b5658b97fb83dda7fcd8a40aca81fed64e592c",
-      "size": 5179
+      "sha256": "89529bfcb242e5161fdc70300cf24d7afab138fefeaa7f01fddad9f52a230806",
+      "size": 5132
     },
     {
       "path": ".agents/rules/i18n-arb.md",
@@ -431,8 +431,8 @@
     },
     {
       "path": ".agents/rules/mobile.md",
-      "sha256": "119a46739f5be58f9aa2a6f066f8d8b866626cdc7cf6c35140b1c901a045620e",
-      "size": 1912
+      "sha256": "640bdc2dd5dba52d47b4ff80588d4035910195ffff1c09605bd73b00aa397977",
+      "size": 1735
     },
     {
       "path": ".agents/skills/_shared/README.md",
