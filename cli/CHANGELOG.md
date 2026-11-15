@@ -1,5 +1,22 @@
 # Changelog
 
+## [20.45.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.44.2...cli-v20.45.0) (2026-11-15)
+
+
+### Features
+
+* **hooks:** add skill hints for docs, explanation, scholar, skill-creation ([a76d9d0](https://github.com/first-fluke/oh-my-agent/commit/a76d9d0960fc7a020412718c91b538a9c5dc1feb))
+
+
+### Bug Fixes
+
+* **agents:** give the grok review role a list without the edit tool ([e316c95](https://github.com/first-fluke/oh-my-agent/commit/e316c95ade5b7f59e8822135a21300153e4b360a))
+
+
+### Documentation
+
+* **workflows:** remove duplicated text in ultrawork and fix deepinit ([d2c393a](https://github.com/first-fluke/oh-my-agent/commit/d2c393ac5a78cab3c4111a4ff6525a24b92ebf52))
+
 ## [20.44.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.44.1...cli-v20.44.2) (2026-11-15)
 
 
