@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.44.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.44.0...cli-v20.44.1) (2026-11-15)
+
+
+### Refactoring
+
+* **rules:** let skills own the rules that had no load scope ([eaebdb3](https://github.com/first-fluke/oh-my-agent/commit/eaebdb34eafeacb29c9b504f14d1ac95b70bffdd))
+
 ## [20.44.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.5...cli-v20.44.0) (2026-11-15)
 
 
