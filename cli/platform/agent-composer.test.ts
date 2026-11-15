@@ -532,10 +532,30 @@ describe("installVendorAgents — Claude code-intelligence tools", () => {
     installVendorAgents(sourceDir, targetDir, "grok");
 
     const backend = agentFrontmatter(targetDir, ".grok", "backend-engineer");
-    expect(backend.tools).toBe(
-      "run_terminal_cmd, read_file, search_replace, list_dir, grep",
-    );
+    expect(backend.tools).toEqual([
+      "run_terminal_cmd",
+      "read_file",
+      "search_replace",
+      "list_dir",
+      "grep",
+    ]);
     expect(backend.disallowedTools).toBeUndefined();
+  });
+
+  // Regression: every Grok role carried the edit tool, so the review role
+  // could modify the code it reviews. Grok keeps its whole toolset when one
+  // allowlist entry is not a tool id, so the list is written entry by entry.
+  it("gives the Grok review role a list without the edit tool", () => {
+    const targetDir = makeTargetDir();
+    installVendorAgents(sourceDir, targetDir, "grok");
+
+    const qa = agentFrontmatter(targetDir, ".grok", "qa-reviewer");
+    expect(qa.tools).toEqual([
+      "run_terminal_cmd",
+      "read_file",
+      "list_dir",
+      "grep",
+    ]);
   });
 });
 

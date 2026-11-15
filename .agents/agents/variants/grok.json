@@ -4,11 +4,28 @@
   "destDir": ".grok/agents",
   "modelDefault": "grok-build",
   "maxTurnsDefault": 100,
-  "toolsDefault": "run_terminal_cmd, read_file, search_replace, list_dir, grep",
+  "toolsDefault": [
+    "run_terminal_cmd",
+    "read_file",
+    "search_replace",
+    "list_dir",
+    "grep"
+  ],
   "protocolPath": ".agents/skills/_shared/runtime/execution-protocols/grok.md",
   "agents": {
+    "qa-reviewer": {
+      "tools": ["run_terminal_cmd", "read_file", "list_dir", "grep"]
+    },
     "research-explorer": {
-      "tools": "run_terminal_cmd, read_file, search_replace, list_dir, grep, web_search, web_fetch"
+      "tools": [
+        "run_terminal_cmd",
+        "read_file",
+        "search_replace",
+        "list_dir",
+        "grep",
+        "web_search",
+        "web_fetch"
+      ]
     }
   }
 }
