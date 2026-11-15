@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.44.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.5...cli-v20.44.0) (2026-11-15)
+
+
+### Features
+
+* **cli:** add vendor_auto_update config key ([8fcb3a1](https://github.com/first-fluke/oh-my-agent/commit/8fcb3a13ce9ba4f85cad47238840e174df919af1))
+
 ## [20.43.5](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.43.4...cli-v20.43.5) (2026-11-14)
 
 
