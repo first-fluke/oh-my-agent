@@ -14,7 +14,7 @@ a single JSON argument describing the run. The driver loads MPT in-process here
 via `app.services.task.start(...)`, then copies the produced mp4 to the caller's
 output path.
 
-Key-free by construction (design 013 §5, backend rule 11):
+Key-free by construction (design 013 §5, oma-backend core rule 11):
   * video_script is injected directly -> MPT's custom-script mode, NO LLM key.
   * voice defaults to an edge-tts voice -> NO TTS key.
   * subtitle_provider="edge" (MPT config) reuses the edge sub_maker -> no
@@ -212,7 +212,7 @@ def run(spec: dict) -> dict:
         params = VideoParams(
             video_subject=subject,
             # Injecting video_script puts MPT in custom-script mode: generate_script
-            # returns it verbatim, no LLM call (backend rule 11 key-free path).
+            # returns it verbatim, no LLM call (oma-backend core rule 11 key-free path).
             video_script=script,
             # Empty terms + local source avoids generate_terms' LLM call too.
             video_terms=[] if video_source == "local" else None,

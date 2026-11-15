@@ -38,8 +38,7 @@ Each task must include:
 ## Rules
 
 1. Stay in scope — planning only, no code implementation
-2. API-first design
-3. Minimize dependencies for maximum parallelism
+2. Apply the rules in `.agents/skills/oma-pm/SKILL.md`; read it first when it is not already in context
+3. API-first design
 4. Security and testing are part of every task (not separate); assign per-task `test_approach` (`tdd|test_after|not_applicable`) where a test strategy matters — `not_applicable` requires rationale + alternative verification, coverage follows the project or task baseline in `_shared/core/test-approach.md`
-5. Each task completable by a single agent
-6. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
+5. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions

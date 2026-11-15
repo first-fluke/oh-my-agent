@@ -1,6 +1,6 @@
 // VisualProvider:stock — Pexels stock video (design §4.5).
 //
-// Key-optional, two-branch contract (backend rule 11):
+// Key-optional, two-branch contract (oma-backend core rule 11):
 //   real     : gated on PEXELS_API_KEY — query the Pexels API, download the
 //              clip, localize it into runDir/visuals.
 //   fallback : delegate to oma-image stills (the orchestrator's visual chain

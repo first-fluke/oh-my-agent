@@ -1,7 +1,7 @@
 // VisualProvider:aigc — Pixelle-MCP / RunningHub AIGC video (design §4.5, §5).
 //
 // Off by default (community MCP + paid RunningHub credits). Key-optional,
-// two-branch contract (backend rule 11):
+// two-branch contract (oma-backend core rule 11):
 //   real     : gated on RUNNINGHUB_API_KEY + one-time consent — Pixelle-MCP at
 //              localhost:9004/pixelle/mcp produces an AIGC clip. The live MCP
 //              wiring is deferred (cannot be exercised in-process / in tests).

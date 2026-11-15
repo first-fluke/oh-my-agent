@@ -88,6 +88,7 @@ import { migrateArtifactLayoutPaths } from "./032-artifact-layout.js";
 import { migrateConsolidateConfigKeys } from "./033-consolidate-config-keys.js";
 import { migrateRemoveToolsWorkflow } from "./034-remove-tools-workflow.js";
 import { migrateRemoveMcpToolGroups } from "./035-remove-mcp-tool-groups.js";
+import { migrateRemoveUnscopedRules } from "./036-remove-unscoped-rules.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -124,6 +125,7 @@ const migrations: Migration[] = [
   migrateConsolidateConfigKeys,
   migrateRemoveToolsWorkflow,
   migrateRemoveMcpToolGroups,
+  migrateRemoveUnscopedRules,
 ];
 
 export function runMigrations(

@@ -45,18 +45,11 @@ Read the relevant file from `.agents/rules/` when working on matching code.
 
 | Rule | File | Scope |
 |------|------|-------|
-| backend | `.agents/rules/backend.md` | on request |
-| commit | `.agents/rules/commit.md` | on request |
 | database | `.agents/rules/database.md` | **/*.{sql,prisma} |
-| debug | `.agents/rules/debug.md` | on request |
-| design | `.agents/rules/design.md` | on request |
-| dev-workflow | `.agents/rules/dev-workflow.md` | on request |
 | frontend | `.agents/rules/frontend.md` | **/*.{tsx,jsx,css,scss} |
 | i18n-arb | `.agents/rules/i18n-arb.md` | **/*.arb |
 | i18n-guide | `.agents/rules/i18n-guide.md` | always |
 | infrastructure | `.agents/rules/infrastructure.md` | **/*.{tf,tfvars,hcl} |
-| market | `.agents/rules/market.md` | on request |
 | mobile | `.agents/rules/mobile.md` | **/*.{dart,swift,kt} |
-| quality | `.agents/rules/quality.md` | on request |
 
 <!-- OMA:END -->

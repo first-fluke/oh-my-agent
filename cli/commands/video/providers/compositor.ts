@@ -123,7 +123,7 @@ export class VideoCompositor implements Compositor {
   }
 
   /**
-   * MoneyPrinterTurbo render path. Gate (key-optional, backend rule 11): real
+   * MoneyPrinterTurbo render path. Gate (key-optional, oma-backend core rule 11): real
    * only when NOT mock mode AND ffmpeg present AND the MPT checkout is installed
    * (clone + venv) AND a key-free material source is available (local materials
    * always are, so this is satisfied without any key; PEXELS_API_KEY enables the

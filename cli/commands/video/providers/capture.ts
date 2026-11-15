@@ -1,6 +1,6 @@
 // CaptureProvider — Cap / openscreen demo capture (design §5, §7 Tier-2).
 //
-// Two-branch contract (backend rule 11):
+// Two-branch contract (oma-backend core rule 11):
 //   real (guided) : Cap CLI is triggered when present; otherwise the human
 //                   performs the capture and passes --capture <path>. The first
 //                   run states "capture is performed by a human."

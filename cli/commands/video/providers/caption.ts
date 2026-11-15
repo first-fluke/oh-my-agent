@@ -1,7 +1,7 @@
 // CaptionProvider — key-free captions built from script text + timing.json
 // (design 013 §1.6, §4.5: captions are a first-class, key-free track).
 //
-// Key-optional, two-branch contract (backend rule 11):
+// Key-optional, two-branch contract (oma-backend core rule 11):
 //   real     : when the requested locale differs from the source locale and an
 //              oma-translation path is available, translate the caption text
 //              first (still key-free — agent-as-key). The live translator call

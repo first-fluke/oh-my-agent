@@ -3,7 +3,7 @@
 // `voice.backend` picks the backend: `voicebox`, `voicestudio`, or `auto`
 // (the first healthy one, Voicebox before VoiceStudio).
 //
-// Key-optional, two-branch contract (backend rule 11):
+// Key-optional, two-branch contract (oma-backend core rule 11):
 //   voicebox    : probe /health → MCP voicebox_speak (REST /speak fallback) →
 //                 generation_id → REST GET /audio/{id} (save wav into
 //                 runDir/audio) → MCP voicebox_transcribe (REST /transcribe

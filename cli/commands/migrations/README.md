@@ -52,4 +52,5 @@ export const migrateExample: Migration = {
 | 031 | `031-claude-md-agents.ts` | Once `claude --version` is ≥ 2.1.277 (Claude Code reads `AGENTS.md` natively), strips the legacy OMA block from `./CLAUDE.md`: deletes the file when the block was its sole content, otherwise appends an `@AGENTS.md` import so the surviving `CLAUDE.md` does not shadow `AGENTS.md` |
 | 034 | `034-remove-tools-workflow.ts` | Removes the shipped `.agents/workflows/tools.md`; a project workflow that only reuses the file name is left alone |
 | 035 | `035-remove-mcp-tool-groups.ts` | Drops the unused `toolGroups` key from `.agents/mcp.json`; every other key is kept |
+| 036 | `036-remove-unscoped-rules.ts` | Removes the seven shipped rules that had no `globs` or `alwaysApply` (`backend`, `commit`, `debug`, `design`, `dev-workflow`, `market`, `quality`) and their generated `.claude/rules` and `.cursor/rules` copies, in the project and the home directory; a rule with another `description` is left alone |
 <!-- oma-docs:ignore-end -->

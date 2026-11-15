@@ -1,6 +1,6 @@
 // VisualProvider:generate — oma-image stills (design 013 §5).
 //
-// Key-optional, two-branch contract (backend rule 11):
+// Key-optional, two-branch contract (oma-backend core rule 11):
 //   real     : spawn `oma image generate "<prompt>" --vendor auto
 //              --size <16-multiple> --output json --output-dir <runDir>/visuals`,
 //              parse the JSON manifest, localize the produced file.

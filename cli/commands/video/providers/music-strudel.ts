@@ -1,6 +1,6 @@
 // MusicProvider — Strudel offline BGM renderer.
 //
-// Key-optional, two-branch contract (backend rule 11):
+// Key-optional, two-branch contract (oma-backend core rule 11):
 //   real     : write music/pattern.strudel → spawn the vendored render.mjs
 //              (headless Chrome + OfflineAudioContext) → music/bgm.wav
 //   fallback : no wav, `pathTaken: "fallback"` + a reason the orchestrator
