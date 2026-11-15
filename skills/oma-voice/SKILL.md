@@ -52,27 +52,7 @@ Generate and transcribe speech through a local speech backend (the Voicebox app,
 - TTS only: at least one voice profile created in the Voicebox app UI.
 - TTS only: optionally pre-downloaded engine models for the selected profile.
 
-### Control-flow features
-- Branches by mode (notify, asset, transcribe), language, and profile availability.
-- Calls voicebox via MCP tools, with REST `GET /health` as the handshake probe.
-- Reads input audio files and writes generated audio plus manifests.
-- Caches discovered MCP tool names after the first successful `tools/list`.
-
 ## Structural Flow
-
-### Entry
-1. Detect the requested mode: notification, asset TTS, transcription, or existing-audio processing. For processing, follow `resources/audio-processing.md` directly, before any Voicebox health, profile, or model lookup.
-2. Resolve `voice.backend` (`auto` tries Voicebox, then VoiceStudio). For VoiceStudio, follow `resources/voicestudio.md` from here; the steps below describe Voicebox. Verify Voicebox is reachable via MCP handshake or `GET /health`. When `auto` resolves the backend, or an engine/profile is chosen by use case, record it with subject `voice.route-selection` per `references/_shared/runtime/route-selection.md` (backend, engine/profile, and the health or language fact that decided it).
-3. On the first run only, call MCP `tools/list` and cache the resolved tool names.
-4. For notification or asset TTS, resolve the target voice profile id. For transcription,
-   validate the audio input and continue without a profile.
-
-### Scenes
-1. **PREPARE**: Resolve the operation and its inputs. Voicebox modes use text/audio and language; TTS additionally needs a profile. File processing uses the source and requested media properties.
-2. **ACQUIRE**: If a required signal is missing, run the clarification protocol once.
-3. **ACT**: Invoke the appropriate MCP tool (TTS or STT), or process the existing asset with local FFmpeg commands.
-4. **VERIFY**: Confirm the response carries audio output or transcript content. Validate manifest fields.
-5. **FINALIZE**: Write `manifest.json` alongside the output. Report the path or transcript to the user.
 
 ### Transitions
 - For generation/transcription, if Voicebox is unreachable, surface the install or launch hint and stop. Do not attempt auto-relaunch. Existing-file processing continues without it.
@@ -104,50 +84,35 @@ Generate and transcribe speech through a local speech backend (the Voicebox app,
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Validate mode and inputs | `VALIDATE` | Clarification protocol below |
-| Resolve TTS voice profile | `SELECT` | `voicebox_list_profiles` + config defaults |
-| Health check | `READ` | MCP handshake or `GET /health` |
-| Generate speech | `CALL_TOOL` | MCP `voicebox_speak` |
-| Transcribe audio | `CALL_TOOL` | MCP `voicebox_transcribe` |
-| Write output and manifest | `WRITE` | Audio or transcript plus `manifest.json` |
-| Inspect result | `VALIDATE` | Output presence, duration, manifest fields |
-| Report result | `NOTIFY` | Final user-facing summary |
-
-### Tools and instruments
-- Voicebox MCP server at `http://127.0.0.1:17493/mcp` for generation/transcription; local FFmpeg and ffprobe for existing audio.
-- REST surface for health and audio retrieval (`GET /health`, `GET /audio/{generation_id}`).
-- Resource references: voice matrix, prompt tips, execution protocol, checklist.
-
 ### Canonical command path
 
-Dispatch existing-audio work to `resources/audio-processing.md`. The path below
-is for Voicebox generation/transcription only; timed TTS follows the processing
-reference after fetching the raw WAV.
+1. Detect the requested mode: notification, asset TTS, transcription, or existing-audio processing. Dispatch existing-audio work to `resources/audio-processing.md` directly, before any Voicebox health, profile, or model lookup. The steps below are for generation/transcription only; timed TTS follows the processing reference after fetching the raw WAV.
+2. Resolve `voice.backend` (`auto` tries Voicebox, then VoiceStudio). For VoiceStudio, follow `resources/voicestudio.md` from here; the steps below describe Voicebox. When `auto` resolves the backend, or an engine/profile is chosen by use case, record it with subject `voice.route-selection` per `references/_shared/runtime/route-selection.md` (backend, engine/profile, and the health or language fact that decided it).
+3. If a required signal is missing, run the clarification protocol once. For transcription, validate the audio input and continue without a profile.
+4. Run the Voicebox call sequence:
+   ```text
+   # 1. MCP handshake or REST health
+   GET http://127.0.0.1:17493/health  ->  200 OK
 
-```text
-# 1. MCP handshake or REST health
-GET http://127.0.0.1:17493/health  ->  200 OK
+   # 2. Discover tool names on first run
+   MCP tools/list                      ->  cache real names
 
-# 2. Discover tool names on first run
-MCP tools/list                      ->  cache real names
+   # 3. TTS only: resolve profile
+   MCP voicebox_list_profiles          ->  pick profile by name or config default
 
-# 3. TTS only: resolve profile
-MCP voicebox_list_profiles          ->  pick profile by name or config default
+   # 4. Generate or transcribe (STT skips profile lookup and model-status check)
+   MCP voicebox_speak     { text, profile, language?, engine?, personality? }
+   MCP voicebox_transcribe { audio_path | audio_base64, language?, model? }
 
-# 4. Generate or transcribe (STT skips profile lookup and model-status check)
-MCP voicebox_speak     { text, profile, language?, engine?, personality? }
-MCP voicebox_transcribe { audio_path | audio_base64, language?, model? }
+   # 5. Fetch the generated audio (MCP has no save-to-disk; TTS output is wav)
+   GET http://127.0.0.1:17493/audio/{generation_id}  ->  wav bytes
 
-# 5. Fetch the generated audio (MCP has no save-to-disk; TTS output is wav)
-GET http://127.0.0.1:17493/audio/{generation_id}  ->  wav bytes
-
-# 6. Persist output + manifest
-.agents/results/voice/<timestamp>-<shortid>/output.wav + manifest.json
-.agents/results/voice/transcripts/<timestamp>-<shortid>/transcript.md + manifest.json
-```
+   # 6. Persist output + manifest
+   .agents/results/voice/<timestamp>-<shortid>/output.wav + manifest.json
+   .agents/results/voice/transcripts/<timestamp>-<shortid>/transcript.md + manifest.json
+   ```
+5. Confirm the response carries audio output or transcript content, check output presence and duration, and validate the manifest fields (Guardrail 8).
+6. Report the output path or the transcript to the user.
 
 ### MCP tool mapping (verified against Voicebox 0.5.0)
 
@@ -168,28 +133,11 @@ Tools not exposed via MCP (REST only): model status (`GET /models/status`), audi
 **Notes on `voicebox_transcribe`:**
 - Accepts exactly one of `audio_base64` or `audio_path` (absolute local path; loopback only). Optional `language`, `model`. Returns the transcript text and the detected language.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Input audio, generated audio, transcripts, manifests |
-| `PROCESS` | Local Voicebox app (managed by the user), FFmpeg/ffprobe processing |
-| `NETWORK` | Loopback HTTP to Voicebox `127.0.0.1:17493`, or the user's configured VoiceStudio backend (default `127.0.0.1:3900`) |
-| `MEMORY` | Cached MCP tool names, resolved profile metadata |
-| `CREDENTIALS` | None for Voicebox. A protected VoiceStudio backend uses the user's `OMNIVOICE_API_KEY`; never print it. |
-
-### Preconditions
-- Processing: local `ffmpeg` and `ffprobe` can read the source asset.
-- Generation/transcription: Voicebox app is running and the MCP handshake succeeds.
-- TTS only: at least one voice profile exists.
-- TTS only: the selected engine model is loaded or the user approves a download.
-- Output directory is inside `$PWD` unless explicitly allowed.
-
-### Effects and side effects
-- Creates audio files, transcripts, and manifests under `.agents/results/voice/`.
-- Existing-audio processing runs local media subprocesses and preserves the input file.
-- Triggers local Voicebox generation, which consumes CPU or GPU.
-- May trigger an engine model download when the user approves.
-- Does not call any cloud service. VoiceStudio cloud features and remote backends run only when the user chooses them.
+### Resource scope and effects
+- Files: writes audio files, transcripts, and manifests under `.agents/results/voice/`, or to an explicitly requested output path. Existing-audio processing preserves the input file.
+- Processes: generation and transcription run in the local Voicebox app, which the user manages; generation consumes CPU or GPU and may trigger an engine model download when the user approves. Processing runs local FFmpeg/ffprobe subprocesses.
+- Network: loopback HTTP to Voicebox `127.0.0.1:17493`, or the user's configured VoiceStudio backend (default `127.0.0.1:3900`). No cloud service is called; VoiceStudio cloud features and remote backends run only when the user chooses them.
+- Credentials: none for Voicebox. A protected VoiceStudio backend uses the user's `OMNIVOICE_API_KEY`; never print it.
 
 ### Guardrails
 

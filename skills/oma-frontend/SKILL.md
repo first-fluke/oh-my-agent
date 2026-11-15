@@ -44,25 +44,10 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 - Project sources of truth for design tokens, i18n strings, and shared utilities
 - `resources/execution-protocol.md`, `resources/checklist.md`, and the stack references listed under Stack Reference, each loaded on its trigger
 - Conditional visual implementation routes and shared interaction-quality guidance; load only for the affected capability.
-
-### Control-flow features
-- Branches by server/client component boundary, responsive state, component library availability, and i18n/token requirements
-- Reads and writes frontend codebase files
-- May call the shadcn CLI (or shadcn registry MCP tools when connected); runs verification commands only when the user or the active workflow requires them
+- The shadcn CLI, or shadcn registry MCP tools when connected, and the libraries in the Libraries table
+- The project's lint, typecheck, test, and browser-inspection commands
 
 ## Structural Flow
-
-### Entry
-1. Identify target route, component, state boundary, and design-system constraints.
-2. Read existing patterns before adding components or utilities.
-3. Determine whether work belongs in Server Components, Client Components, wrappers, hooks, or styles.
-
-### Scenes
-1. **PREPARE**: Load relevant project conventions, UI requirements, and acceptance criteria.
-2. **ACQUIRE**: Inspect existing components, tokens, i18n keys, APIs, and shadcn availability.
-3. **ACT**: Implement UI, state, styles, validation, and integration.
-4. **VERIFY**: Check the applicable checklist items and select the relevant automated and browser/responsive checks; run them only when the user or the active workflow requires it.
-5. **FINALIZE**: Summarize changed UI behavior, what was verified, and what was not.
 
 ### Transitions
 - If a strict shadcn primitive exists, use or wrap it before creating generic markup.
@@ -83,51 +68,18 @@ Build, modify, and verify React/Next.js or Angular TypeScript user interfaces th
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Inspect existing frontend patterns | `READ` | Components, routes, hooks, styles |
-| Select component and state approach | `SELECT` | Server/client and shadcn workflow |
-| Implement UI code | `WRITE` | TSX, CSS, hooks, wrappers |
-| Validate form/data contracts | `VALIDATE` | Zod/forms/API schemas |
-| Call shadcn or required verification tools | `CALL_TOOL` | shadcn CLI/registry; checks the user or workflow requires |
-| Compare responsive states | `COMPARE` | Desktop/mobile behavior |
-| Report result | `NOTIFY` | Final summary |
-
-### Tools and instruments
-- React, Next.js, TypeScript, TailwindCSS v4, shadcn/ui
-- `ahooks` or `@mantine/hooks`, `es-toolkit`, `nuqs`, TanStack Query, Jotai/Zustand, TanStack React Form, `zod`
-- Angular (standalone + signals), RxJS + `rxjs/testing` (`TestScheduler` marble tests) in Angular projects
-- Lint, typecheck, tests, and browser inspection when the user or the active workflow requires them
-
 ### Canonical workflow path
-Use the configured code-intelligence provider to locate files and inspect symbols
-or content. For Serena, use `find_file`, `search_for_pattern`,
-`get_symbols_overview`, and `find_symbol`. Native search is limited to the
-provider exclusions and non-code paths permitted by the project's search policy.
+1. Identify the target route, component, state boundary, design-system constraints, UI requirements, and acceptance criteria. State assumptions where design tokens, i18n sources, or API contracts are unavailable.
+2. Locate files and inspect symbols or content with the configured code-intelligence provider. For Serena, use `find_file`, `search_for_pattern`, `get_symbols_overview`, and `find_symbol`. Native search is limited to the provider exclusions and non-code paths permitted by the project's search policy.
+3. Read the existing components, routes, hooks, styles, tokens, i18n keys, APIs, and shadcn availability before adding components or utilities.
+4. Decide whether the work belongs in Server Components, Client Components, wrappers, hooks, or styles.
+5. For a specialized visual capability, use `resources/specialized-visual-implementation.md`. For affected motion, touch, component feedback, or interaction performance, use `references/_shared/ui-interaction-quality.md`. Ordinary UI work does not preload these paths.
+6. Implement the UI, state, styles, validation (form and data contracts through zod, form, and API schemas), and integration.
+7. Select the project's relevant frontend checks (typically lint, typecheck, tests, and browser/responsive checks of desktop and mobile behavior when the UI changes). Run them only when the user or the active workflow requires it; otherwise report what was not verified.
+8. Check the applicable checklist items and summarize the changed UI behavior, what was verified, and what was not.
 
-For a specialized visual capability, use `resources/specialized-visual-implementation.md`.
-For affected motion, touch, component feedback, or interaction performance, use
-`references/_shared/ui-interaction-quality.md`. Ordinary UI work does not preload these paths.
-
-Then select the project's relevant frontend checks (typically lint, typecheck, tests, and browser/responsive checks when the UI changes). Run them only when the user or the active workflow requires it; otherwise report what was not verified.
-
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | Frontend routes, components, styles, hooks, tests |
-| `LOCAL_FS` | Design tokens, i18n files, resource references |
-| `PROCESS` | Lint, typecheck, test, and browser commands when required; builds only on explicit user request |
-| `NETWORK` | Backend APIs or registry tools when required |
-
-### Preconditions
-- Target UI behavior and affected frontend area are identifiable.
-- Required design tokens, i18n, and API contracts are available or assumptions are stated.
-
-### Effects and side effects
-- Mutates frontend source, styles, tests, and possibly i18n keys.
-- May add dependencies or shadcn components only when justified by project conventions.
-- Does not edit `components/ui/*` directly.
+### Resource scope and effects
+Reads and edits frontend routes, components, styles, hooks, and tests, and possibly i18n keys; reads design tokens, i18n files, and resource references. Adds a dependency or shadcn component only when project conventions justify it. Lint, typecheck, test, and browser commands run only when the user or the active workflow requires them; builds run only on explicit user request. Backend APIs and registry tools are called only when the task requires them.
 
 ### Guardrails
 Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.

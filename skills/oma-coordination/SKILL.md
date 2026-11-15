@@ -45,11 +45,6 @@ Supply the coordination rules every multi-agent run shares (plan reuse, contract
 
 ## Structural Flow
 
-### Entry
-1. Confirm the task needs more than one specialist agent.
-2. Identify priority tiers and shared contracts from the current plan.
-3. Apply the shared collaboration policy before assigning parallel work or coordinating ownership handoffs and result collection.
-
 ### Transitions
 - If task is simple, route to one specialist.
 - If the user wants automated execution, hand execution to `oma-orchestration`; the Guardrails below still apply.
@@ -66,43 +61,22 @@ Supply the coordination rules every multi-agent run shares (plan reuse, contract
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Read request and domains | `READ` | User prompt and project context |
-| Select agent plan | `SELECT` | PM decomposition and priority tiers |
-| Spawn agents | `CALL_TOOL` | `oma agent spawn` |
-| Monitor progress | `READ` | injected task/run-scoped progress, claims, and receipts |
-| Validate contracts | `VALIDATE` | API/data model alignment |
-| Notify coordination status | `NOTIFY` | Final coordination summary |
-
 ### Canonical command path
-```bash
-# One spawn per ready task; agent, task ID, and workspace come from the current plan.
-oma agent spawn <agent-id> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
-```
+1. Confirm the task needs more than one specialist agent and spans multiple domains.
+2. Identify task ownership, acceptance checks, dependencies, priority tiers, and shared contracts from the current plan (Guardrail 1 covers a missing or stale plan).
+3. Apply the shared collaboration policy before assigning parallel work or coordinating ownership handoffs and result collection.
+4. Resolve the dispatch path per agent as `oma-orchestration` defines: the runtime's native subagent path when the agent's target vendor equals the current runtime vendor, otherwise `oma agent spawn`.
+   ```bash
+   # One spawn per ready task; agent, task ID, and workspace come from the current plan.
+   oma agent spawn <agent-id> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
+   ```
+   Useful `agent spawn` options: `--vendor <vendor>` (CLI vendor override), `--isolation worktree` (git worktree per spawn, prevents file conflicts), `--read-only` (non-destructive tools only, e.g. for review/QA passes).
+5. While agents run, apply `references/_shared/core/execution-policy.md` for the execution deadline, resource ownership, and cancellation. Read injected task/run-scoped progress, claims, run artifacts, and receipts; progress and result file names are defined in `references/_shared/runtime/memory-protocol.md`.
+6. Validate API and data-model alignment between agents that share a contract, then route each implementation through QA review (Guardrail 4).
+7. Report the final coordination summary.
 
-Resolve the dispatch path per agent as `oma-orchestration` defines: the runtime's native subagent path when the agent's target vendor equals the current runtime vendor, otherwise `oma agent spawn`.
-
-Useful `agent spawn` options: `--vendor <vendor>` (CLI vendor override), `--isolation worktree` (git worktree per spawn, prevents file conflicts), `--read-only` (non-destructive tools only, e.g. for review/QA passes).
-
-While agents run, apply `references/_shared/core/execution-policy.md` for the execution deadline, resource ownership, and cancellation. Read injected run artifacts and receipts; progress and result file names are defined in `references/_shared/runtime/memory-protocol.md`.
-
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Progress/result files and workspaces |
-| `PROCESS` | Agent spawn commands |
-| `MEMORY` | Session state and task board |
-| `CODEBASE` | Shared contracts and implementation areas |
-
-### Preconditions
-- Task requires multiple domains.
-- A current plan identifies task ownership, acceptance checks, dependencies, and priority tiers.
-
-### Effects and side effects
-- Spawns or guides multiple agents.
-- Coordinates workspace ownership and QA feedback.
+### Resource scope and effects
+Starts agent processes through the native subagent path or `oma agent spawn`, or guides the user through each dispatch. Reads progress and result files, session state, and the task board. Spawned agents edit shared contracts and implementation areas in their assigned workspaces; this skill coordinates workspace ownership and QA feedback.
 
 ### Guardrails
 

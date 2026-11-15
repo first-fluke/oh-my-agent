@@ -40,19 +40,10 @@ Collect AI tool conversation history for a date or window and synthesize it into
 
 ### Dependencies
 - `oma recap --json`
-- Optional Claude fallback history at `~/.claude/history.jsonl`
+- Optional Claude fallback history at `~/.claude/history.jsonl`, read with `jq` and `date`
 - `.agents/oma-config.yaml` for language behavior
 
-### Control-flow features
-- Branches by date resolution, window length, available tool history, and daily vs multi-day output shape
-- Reads local history data and writes Markdown recap files
-
 ## Structural Flow
-
-### Entry
-1. Resolve requested date or window.
-2. Collect normalized conversation history.
-3. Decide daily versus multi-day output structure.
 
 ### Transitions
 - If no date is specified, use today via `--date` (bare `--window` is a rolling window ending now, not calendar-aligned).
@@ -71,44 +62,20 @@ Collect AI tool conversation history for a date or window and synthesize it into
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Resolve date/window | `INFER` | Natural-language date rules |
-| Collect history | `CALL_TOOL` | `oma recap --json` or `jq` fallback |
-| Read extracted records | `READ` | Conversation history |
-| Group and classify themes/projects | `INFER` | Time/content rules plus prompt, progress, completion, receipt, or artifact evidence |
-| Validate output shape | `VALIDATE` | Daily or multi-day template |
-| Write recap | `WRITE` | `.agents/results/recap/` |
-| Report summary | `NOTIFY` | Displayed recap |
-
-### Tools and instruments
-- `oma recap --json`
-- `jq` fallback for Claude history
-- Markdown output templates
-
 ### Canonical command path
-```bash
-oma recap --date YYYY-MM-DD --json
-oma recap --window 7d --json
-oma recap --json  # rolling last 24h, not "today"
-```
+1. Resolve the requested date or window per Resolve Date; default to today.
+2. Collect normalized conversation history with the matching command. Collect Data covers the tool filter and the fallback when the CLI is not installed.
+   ```bash
+   oma recap --date YYYY-MM-DD --json
+   oma recap --window 7d --json
+   oma recap --json  # rolling last 24h, not "today"
+   ```
+3. Read all extracted records, then group and classify themes or projects per Theme Analysis and Grouping.
+4. Write the recap in the daily or multi-day template per Output Format and check it against that template.
+5. Save the recap per Save Results and display it.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Conversation history and recap output files |
-| `PROCESS` | `oma recap`, `jq`, date commands |
-| `USER_DATA` | Conversation prompts and project activity |
-| `MEMORY` | Theme grouping and summary notes |
-
-### Preconditions
-- Requested time range can be resolved.
-- At least one history source is available.
-
-### Effects and side effects
-- Writes recap Markdown under `.agents/results/recap/`.
-- Reads local conversation history data.
+### Resource scope and effects
+Reads local conversation history (prompts and project activity) through `oma recap`, or `~/.claude/history.jsonl` in the fallback. Writes one recap Markdown file under `.agents/results/recap/`.
 
 ### Guardrails
 

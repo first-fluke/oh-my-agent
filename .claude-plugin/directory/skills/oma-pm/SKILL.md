@@ -49,24 +49,7 @@ outputs:
 - Shared API contract references and project context-loading rules
 - Downstream specialist skills for implementation
 
-### Control-flow features
-- Branches by ambiguity, dependency structure, risk level, and whether standards/governance framing is needed
-- Produces planning artifacts rather than code
-- Optimizes for parallelizable specialist-agent execution
-
 ## Structural Flow
-
-### Entry
-1. Clarify the product goal, constraints, and target deliverables.
-2. Identify technical domains and required contracts.
-3. Decide whether ISO/risk/governance framing is relevant.
-
-### Scenes
-1. **PREPARE**: Gather requirements, constraints, and context.
-2. **REASON**: Decompose work, identify dependencies, risks, and API/data contracts.
-3. **ACT**: Produce the JSON plan.
-4. **VERIFY**: Check task atomicity, acceptance criteria, security/testing coverage, and dependency shape.
-5. **FINALIZE**: Save plan artifacts and summarize execution path.
 
 ### Transitions
 - If requirements are ambiguous, clarify before decomposition.
@@ -85,42 +68,16 @@ outputs:
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Read requirements/context | `READ` | User request and project context |
-| Select planning structure | `SELECT` | Task template and workflow needs |
-| Infer tasks and dependencies | `INFER` | Domain decomposition |
-| Validate acceptance criteria | `VALIDATE` | Checklist and task schema |
-| Write plan artifacts | `WRITE` | JSON plan |
-| Notify plan summary | `NOTIFY` | Final planning report |
-
-### Tools and instruments
-- Task template, examples, ISO planning guide, shared API contracts
-- Local filesystem for result artifacts
-
 ### Canonical workflow path
-```text
-1. Define API/data contracts.
-2. Decompose tasks with agent, title, priority, dependencies, and acceptance criteria.
-3. Save `.agents/results/plan-{sessionId}.json` using the injected session ID. Write the run-scoped report from the shared memory/result contract.
-```
+1. Clarify the product goal, constraints, and target deliverables. Identify the technical domains and required contracts, and decide whether ISO/risk/governance framing is relevant.
+2. Define API/data contracts.
+3. Decompose tasks with agent, title, priority, dependencies, and acceptance criteria.
+4. Check task atomicity, acceptance criteria, security/testing coverage, and dependency shape against `resources/task-template.json`.
+5. Save `.agents/results/plan-{sessionId}.json` using the injected session ID. Write the run-scoped report from the shared memory/result contract.
+6. Summarize the plan and its execution path.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `MEMORY` | Requirements, assumptions, dependencies |
-| `LOCAL_FS` | `.agents/results/plan-{sessionId}.json`, injected claim path and task/run-scoped report |
-| `CODEBASE` | Optional project context and API/data model references |
-
-### Preconditions
-- Product goal and planning boundary are sufficiently clear.
-- Required implementation domains can be identified.
-
-### Effects and side effects
-- Creates plan artifacts.
-- Influences downstream agent assignments and execution order.
-- Does not directly implement code.
+### Resource scope and effects
+Writes `.agents/results/plan-{sessionId}.json`, the task/run-scoped report, and the structured claim at the injected claim path. Reads project context and API/data model references when the plan needs them. The plan determines downstream agent assignments and execution order; this skill does not implement code.
 
 ### Guardrails
 1. For changed interfaces, reuse or define API/data contracts before dependent implementation tasks

@@ -45,20 +45,9 @@ Explore user intent, constraints, and alternative approaches before planning or 
 - Optional `resources/triz-lite.md` for contradiction-shaped approach seeding
 - Per-agent reviewer dispatch (e.g. `qa-reviewer`, `architecture-reviewer`) for the high-stakes blind-review escalation path
 - Downstream PM workflow for task decomposition after design approval
-
-### Control-flow features
-- Branches by ambiguity, user answers, approach comparison, and approval gates
-- Optional TRIZ-lite branch when a technical/UX contradiction blocks distinct approaches
-- Asks one question at a time
-- Blind review round before save; may dispatch fresh-context reviewer subagents for high-stakes designs (the only subagent-spawning path in this skill)
-- Stops before implementation or task planning
+- Project memory for coordination summaries; `docs/decisions/` for retained approach proposals
 
 ## Structural Flow
-
-### Entry
-1. Confirm that the request is exploratory rather than ready for implementation.
-2. Load enough project context to understand constraints.
-3. Start with intent and constraints, not solutions.
 
 ### Transitions
 - If requirements become clear and implementation-ready, transition to PM planning.
@@ -77,47 +66,15 @@ Explore user intent, constraints, and alternative approaches before planning or 
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Read context and idea | `READ` | User prompt and project context |
-| Ask targeted questions | `REQUEST` | Clarification phase |
-| Compare approaches | `COMPARE` | Tradeoff matrix |
-| Infer recommendation | `INFER` | Recommended option |
-| Record option selection | `CALL_TOOL` | Actual approach, comparison evidence, and design/option revision; matching `instanceId` and verifier `--instance` in an active OMA workflow |
-| Resolve design authority | `VALIDATE` | Existing instruction, delegated choice, or explicit answer for an unresolved material design choice |
-| Run blind review | `VALIDATE` | Independent lens critiques, tiered issue list, Tier 1 resolution |
-| Write design artifact | `WRITE` | `docs/decisions/` and a linked coordination summary |
-| Transition to plan | `NOTIFY` | Handoff summary |
-
-### Tools and instruments
-- Context loading and clarification protocol
-- Optional TRIZ-lite resource for contradiction seeding
-- Project memory for coordination summaries and `docs/decisions/` for retained approach proposals
-
 ### Canonical workflow path
-```text
-1. Ask one clarifying question at a time.
-2. (Optional) If technical/UX contradiction or same-axis approaches only → resources/triz-lite.md.
-3. Present viable alternatives as prose briefs and compare them when useful; do not invent extra options to meet a count; reuse an existing selection or delegated choice and resolve only an open material choice. In an active OMA workflow, record the actual approach, rationale, evidence, and design/option revision with `brainstorm.option-selection`; verify the matching --instance (workflow Step 3 owns the commands).
-4. Design section by section within existing authorization, then blind review: independent lenses suited to the uncertainty and stakes critique the design; resolve Tier 1 issues (fresh-context reviewer subagents for high-stakes designs).
-5. Save the approved approach to `docs/decisions/{NNN}-{name}.md` and update `docs/decisions/index.md` before handing off to planning. Keep this directory versioned. Read `docs/plans/designs/` and `docs/design-docs/` only as legacy fallback until migration; `design` names UI work.
-```
+1. Confirm that the request is exploratory or ambiguous rather than ready for implementation, and load enough project context to understand constraints. Ask one clarifying question at a time, starting with intent and constraints, not solutions.
+2. (Optional) If technical/UX contradiction or same-axis approaches only → `resources/triz-lite.md`.
+3. Present viable alternatives as prose briefs and compare them when useful; do not invent extra options to meet a count; reuse an existing selection or delegated choice and resolve only an open material choice. In an active OMA workflow, record the actual approach, rationale, evidence, and design/option revision with `brainstorm.option-selection`; verify with the matching `instanceId` as `--instance` (workflow Step 3 owns the commands).
+4. Design section by section within existing authorization, then blind review: independent lenses suited to the uncertainty and stakes critique the design; consolidate a tiered issue list and resolve Tier 1 issues (fresh-context reviewer subagents for high-stakes designs).
+5. Save the approved approach to `docs/decisions/{NNN}-{name}.md` and update `docs/decisions/index.md` before handing off to planning. Keep this directory versioned. Read `docs/plans/designs/` and `docs/design-docs/` only as legacy fallback until migration; `design` names UI work. Record a coordination summary that links the decision document, then hand off with a summary.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `MEMORY` | User intent, assumptions, decisions |
-| `CODEBASE` | Existing project context when relevant |
-| `LOCAL_FS` | Approved design artifacts; optional TRIZ-lite appendix in design doc |
-
-### Preconditions
-- The user is still exploring or the request is ambiguous.
-- The agent can ask clarifying questions before implementation.
-
-### Effects and side effects
-- Produces design decisions and persisted design docs.
-- Influences downstream planning but does not implement code.
+### Resource scope and effects
+Reads existing project context when the idea must fit a codebase. Writes the approved design under `docs/decisions/` (the design document may carry an optional TRIZ-lite appendix), updates `docs/decisions/index.md`, and records a coordination summary in project memory. The high-stakes blind review is the only subagent-spawning path in this skill. The saved design feeds downstream planning; this skill does not implement code.
 
 ### Guardrails
 1. **No implementation or planning before design approval** - brainstorm produces a design document, not code or task plans

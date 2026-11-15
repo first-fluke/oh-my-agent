@@ -47,26 +47,9 @@ Convert PDF files into structured Markdown or another requested extraction forma
 - `uvx mdformat` for Markdown normalization
 - Local filesystem access to input and output paths
 - Optional OCR runtime via the hybrid server
-
-### Control-flow features
-- Branches on text-layer quality, tagged PDF availability, scan/OCR needs, and user-requested output format
-- Calls external CLI tools through `uvx`
-- Reads local files and writes local extraction outputs
-- Uses a hybrid server only when OCR or complex extraction needs justify it
+- Optional preflight commands when available: `file`, `wc`, or `pdfinfo`
 
 ## Structural Flow
-
-### Entry
-1. Confirm that the input path exists and is a PDF file, PDF folder, or supported batch input.
-2. Check file size and warn when the input is large enough to risk slow conversion or memory pressure.
-3. Resolve `output_dir` and the expected output filename.
-
-### Scenes
-1. **PREPARE**: Validate the input path, output target, and requested extraction options.
-2. **ACQUIRE**: Assess whether the PDF has a readable text layer by extracting a text preview.
-3. **ACT**: Convert using standard mode, tagged-structure mode, or hybrid OCR mode.
-4. **VERIFY**: Run `mdformat` for Markdown output and inspect the result for readable structure.
-5. **FINALIZE**: Report output path, page count, format, and any extraction quality issues.
 
 ### Transitions
 - If the preview text is readable, use standard conversion.
@@ -95,60 +78,31 @@ Convert PDF files into structured Markdown or another requested extraction forma
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Validate path and options | `VALIDATE` | Input preflight in execution protocol |
-| Probe text layer | `READ` | Text preview extraction |
-| Choose conversion strategy | `SELECT` | Standard, tagged, or hybrid mode decision |
-| Run converter | `CALL_TOOL` | `uvx opendataloader-pdf` |
-| Start OCR server | `CALL_TOOL` | `uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid` |
-| Write output artifact | `WRITE` | Markdown, text, JSON, or HTML output |
-| Normalize Markdown | `CALL_TOOL` | `uvx mdformat` |
-| Inspect extraction quality | `VALIDATE` | Structure/readability verification |
-| Report result | `NOTIFY` | Final user-facing summary |
-
-### Tools and instruments
-- `opendataloader-pdf`: primary PDF extraction CLI
-- `opendataloader-pdf-hybrid`: hybrid OCR and complex extraction path
-- `mdformat`: Markdown normalization
-- Filesystem commands such as `file`, `wc`, or `pdfinfo` may be used for preflight when available
-
 ### Canonical command path
-```bash
-uvx opendataloader-pdf "{input_path}" -f text --pages 1-3 --to-stdout -q   # text-layer probe (no temp files)
-uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_dir}"
-uvx mdformat "{output_path}"
-```
-
-For scanned/image-based PDFs, start OCR first and then convert through hybrid mode:
-```bash
-uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid --port 5002 --force-ocr --ocr-lang "{languages}"
-uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full "{input_path}" --format markdown --output-dir "{output_dir}"
-```
+1. Confirm that the input path exists and is a readable PDF file, PDF folder, or supported batch input, and that the output location is writable or can be created. Resolve `output_dir` and the expected output filename. Defaults come from the `pdf:` section of `.agents/oma-config.yaml`, falling back to `config/pdf-config.yaml` for unset keys; explicit user options override both, and `output.overwrite: false` requires confirmation before replacing an existing output file. Check file size and warn when the input is large enough to risk slow conversion or memory pressure.
+2. Assess whether the PDF has a readable text layer by extracting a text preview:
+   ```bash
+   uvx opendataloader-pdf "{input_path}" -f text --pages 1-3 --to-stdout -q   # text-layer probe (no temp files)
+   ```
+3. Convert in the mode the preview and Transitions select (standard, tagged-structure, or hybrid OCR). Standard conversion:
+   ```bash
+   uvx opendataloader-pdf "{input_path}" --format markdown --output-dir "{output_dir}"
+   ```
+   For scanned/image-based PDFs, start OCR first and then convert through hybrid mode. Attempt OCR only when the hybrid server is available or can be started:
+   ```bash
+   uvx --from "opendataloader-pdf[hybrid]" opendataloader-pdf-hybrid --port 5002 --force-ocr --ocr-lang "{languages}"
+   uvx opendataloader-pdf --hybrid docling-fast --hybrid-mode full "{input_path}" --format markdown --output-dir "{output_dir}"
+   ```
+4. For Markdown output, normalize it and inspect the result for readable structure:
+   ```bash
+   uvx mdformat "{output_path}"
+   ```
+5. Report the output path, page count, format, and any extraction quality issues.
 
 On-request flags — `--sanitize` (PII masking), `--pages` (range extraction), `--threads` (parallel pages), `--detect-strikethrough`, hybrid `--enrich-formula` / `--enrich-picture-description` — are detailed in `resources/execution-protocol.md`. The two enrichment flags require client-side `--hybrid-mode full`.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Input PDFs and generated output files |
-| `PROCESS` | `uvx` subprocesses and optional hybrid server |
-| `MEMORY` | Extracted previews and validation notes |
-| `OTHER` | OCR model/runtime behavior inside hybrid mode |
-
-### Preconditions
-- The input PDF path exists and is readable.
-- The output location is writable or can be created.
-- Required CLIs are available through `uvx`.
-- OCR is only attempted when hybrid mode is available or can be started.
-- Defaults come from the `pdf:` section of `.agents/oma-config.yaml`, falling back to `config/pdf-config.yaml` for unset keys; explicit user options override both, and `output.overwrite: false` requires confirmation before replacing an existing output file.
-
-### Effects and side effects
-- Creates or overwrites extraction output depending on configuration and user intent.
-- May start a local hybrid OCR server on the configured port.
-- May consume significant CPU, memory, or time for large or scanned PDFs.
-- Does not intentionally modify the source PDF.
+### Resource scope and effects
+Reads the input PDFs and does not modify the source PDF. Creates or overwrites extraction output in the output directory, depending on configuration and user intent. Runs `uvx` subprocesses and, for OCR, may start a local hybrid server on the configured port. Large or scanned PDFs may consume significant CPU, memory, or time.
 
 ### Guardrails
 1. Do not invent missing content when extraction is incomplete.

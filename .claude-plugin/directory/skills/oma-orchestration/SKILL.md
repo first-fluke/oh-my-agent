@@ -39,28 +39,9 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 ### Dependencies
 - `.agents/oma-config.yaml`, the runtime's native agent definitions (for example `.claude/agents/*.md`, `.codex/agents/*.toml`), or fallback `oma agent spawn`
 - Memory provider config, subagent prompt template, scripts, verify script, and the session evidence guide
-
-### Control-flow features
-- Branches by vendor/native dispatch availability, priority tiers, agent completion/failure, verification status, QA verdict, retry limits, and unresolved decisions
-- Spawns processes/agents and reads/writes memory/result files
-- Preserves unresolved evidence when bounded recovery stops
+- Memory tools named in `memoryConfig`, and the QA agent for cross-review
 
 ## Structural Flow
-
-### Entry
-1. Resolve agent vendor routing and runtime dispatch path.
-2. Decompose request into priority-tiered tasks.
-3. For each task, classify into one or more `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`. Tasks that match no domain confidently inherit the union of their parent feature's tags.
-4. Select the references needed by each task. One confidently matched skill is sufficient; expand the set when classification is uncertain or a dependency requires another domain.
-5. Record selected domains, references, and any fallback reason in the task board. These are coordinator notes, not launcher-enforced exposure fields; use only reference/context controls supported by the active dispatch path.
-6. Apply the shared collaboration policy before dispatch: assign edit ownership, peer contact paths, and a collection owner.
-
-### Scenes
-1. **PREPARE**: Plan, setup session ID, and initialize memory files.
-2. **ACT**: Spawn agents by priority tier within parallelism limits.
-3. **VERIFY**: Run self-check, `oma verify`, and QA cross-review loop.
-4. **RECOVER**: Retry failed agents with review history when limits allow.
-5. **FINALIZE**: Collect verified claims, compile summary, and preserve progress artifacts.
 
 ### Transitions
 - If native dispatch is available for current runtime/vendor, use it.
@@ -81,48 +62,27 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Read config and task context | `READ` | oma config, routing, request |
-| Classify task into domain tags | `INFER` | task text vs each skill's `Intent signature` |
-| Select task references | `SELECT` | confident domain matches, dependencies, and supported context controls |
-| Select dispatch path | `SELECT` | Native vs fallback |
-| Write session state | `WRITE` | task board and memory files |
-| Spawn agents | `CALL_TOOL` | exposed native role-subagent tool or `oma agent spawn` |
-| Poll progress | `READ` | progress/result files |
-| Run verification | `CALL_TOOL` | `oma verify`, tests, QA |
-| Update retry state | `UPDATE_STATE` | loop counters and the recovery budget |
-| Report final result | `NOTIFY` | compiled summary |
-
-### Tools and instruments
-- Exposed native role-subagent tools, fallback spawn scripts, memory tools, verify script, QA agent
-- Session evidence guide, subagent prompt template
-
 ### Canonical command path
-```bash
-oma agent spawn <agent-type> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
-oma verify agent <agent-type> --workspace <workspace> --json
-```
+Phase names refer to Workflow Phases below.
 
-When native runtime dispatch is available, prefer the runtime-specific native path listed in this skill before falling back to `oma agent spawn`.
+1. Read the project configuration and the request. Confirm the request decomposes into specialist-agent tasks, then resolve agent vendor routing and the dispatch path for each agent, native or fallback (Guardrails 1–3).
+2. Run PHASE 1 and PHASE 1.5: reuse the valid plan or decompose the request into priority-tiered tasks, then select and record each task's references.
+3. Apply the shared collaboration policy before dispatch: assign edit ownership, peer contact paths, and a collection owner.
+4. Run PHASE 2: set the session ID and initialize the task board and memory files.
+5. Run PHASE 3: spawn agents by priority tier within the parallelism limit, through the exposed native role-subagent tool or the fallback. When native runtime dispatch is available, prefer the runtime-specific native path listed in this skill before falling back to `oma agent spawn`.
+   ```bash
+   oma agent spawn <agent-type> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
+   ```
+6. Run PHASE 4: monitor each run through completion notifications, or through its progress and result files when polling is the fallback.
+7. Run PHASE 4.5 for every completed agent: mechanical self-check, automated verify, then QA cross-review (Agent-to-Agent Review Loop).
+   ```bash
+   oma verify agent <agent-type> --workspace <workspace> --json
+   ```
+8. When an agent fails or the review loop is exhausted, update the loop counters and the recovery budget, then retry with review history while the limits allow (Loop Limits, Recovery Budget).
+9. Run PHASE 5: collect verified claims, compile the summary, and preserve progress artifacts.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Session, task-board, progress, result, config files |
-| `PROCESS` | Agent CLI processes and verify scripts |
-| `MEMORY` | Session state and unresolved decisions |
-| `CODEBASE` | Workspaces owned by spawned agents |
-
-### Preconditions
-- Task is decomposable into specialist agent work.
-- Runtime/vendor dispatch path or fallback exists.
-
-### Effects and side effects
-- Spawns agents and writes session/progress/result artifacts.
-- May cause code changes through specialist agents.
-- May trigger iterative review and retries.
+### Resource scope and effects
+Reads project configuration and writes the session, task-board, progress, and result files through the configured memory provider (under the `basePath` in `memoryConfig`), including session state and unresolved decisions. Starts agent processes (native subagents or `oma agent spawn`) and verify scripts. Spawned agents change code in the workspaces they own. A failed verify or review starts further agent runs, each consuming the recovery budget.
 
 ### Guardrails
 1. Orchestrate per-agent dispatch from the project configuration before spawning any agent.
@@ -171,7 +131,7 @@ Memory provider and tool names are configurable via `.agents/mcp.json` (not the 
 ### Workflow Phases
 
 **PHASE 1 - Plan**: Reuse the current valid plan or decompose the request; preserve injected session/task/run IDs.
-**PHASE 1.5 - References**: Select task references as described in Entry; record uncertainty and expansion reasons without assuming runtime enforcement.
+**PHASE 1.5 - References**: For each task, classify into one or more `domain_tags` by matching against the `Intent signature` block of each installed `.agents/skills/oma-*/SKILL.md`. Tasks that match no domain confidently inherit the union of their parent feature's tags. Select the references needed by each task. One confidently matched skill is sufficient; expand the set when classification is uncertain or a dependency requires another domain. Record selected domains, references, and any fallback reason in the task board; record uncertainty and expansion reasons without assuming runtime enforcement. These are coordinator notes, not launcher-enforced exposure fields; use only reference/context controls supported by the active dispatch path.
 **PHASE 2 - Setup**: Create session/task-board artifacts with the current IDs and selected references.
 **PHASE 3 - Execute**: Dispatch ready tasks within MAX_PARALLEL using supported native or fallback context controls.
 **PHASE 4 - Monitor**: Prefer completion notifications; otherwise use one coordinator with bounded polling backoff. Follow `../_shared/core/execution-policy.md` for the shared deadline, cancellation, resource ownership, and shutdown rules. Cancellation or deadline exhaustion stops dispatch and recovery before verification.

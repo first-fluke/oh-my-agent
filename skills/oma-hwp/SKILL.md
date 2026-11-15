@@ -47,26 +47,7 @@ Convert Korean HWP-family documents into readable Markdown or structured JSON wh
 - `resources/flatten-tables.ts` for Markdown cleanup
 - Local filesystem access to input and output paths
 
-### Control-flow features
-- Branches by file extension, output target, format, page range, encryption/DRM state, and post-processing requirements
-- Calls external CLI tools through `bunx` and `bun run`
-- Reads local HWP-family files and writes local Markdown or JSON output
-- Routes non-HWP inputs to other skills instead of stretching this skill's scope
-
 ## Structural Flow
-
-### Entry
-1. Confirm the input path exists.
-2. Confirm the extension is `.hwp`, `.hwpx`, or `.hwpml`.
-3. Resolve output path or directory and default filename.
-4. Check that `bun` is available.
-
-### Scenes
-1. **PREPARE**: Validate path, extension, size, output target, and requested format.
-2. **ACQUIRE**: Detect source format and runtime availability.
-3. **ACT**: Run `kordoc` with explicit output target and requested options.
-4. **VERIFY**: Post-process Markdown and inspect structure for headings, tables, lists, images, and footnotes.
-5. **FINALIZE**: Report output path, source format, and any conversion limitations.
 
 ### Transitions
 - If the input is `.pdf`, stop and route to `oma-pdf`.
@@ -93,54 +74,28 @@ Convert Korean HWP-family documents into readable Markdown or structured JSON wh
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Validate file path and extension | `VALIDATE` | Input preflight in execution protocol |
-| Check runtime availability | `VALIDATE` | `bun --version` |
-| Select output target and format | `SELECT` | Output behavior and config |
-| Run converter | `CALL_TOOL` | `bunx kordoc@latest` |
-| Write output artifact | `WRITE` | Markdown or JSON output |
-| Flatten tables and strip PUA glyphs | `CALL_TOOL` | `resources/flatten-tables.ts` |
-| Inspect extraction quality | `VALIDATE` | Verification step |
-| Report result | `NOTIFY` | Final user-facing summary |
-
-### Tools and instruments
-- `kordoc`: primary HWP-family conversion CLI
-- `flatten-tables.ts`: post-processing for GFM tables and Hancom PUA cleanup
-- `bun` / `bunx`: runtime and CLI executor
-
 ### Canonical command path
-```bash
-bunx kordoc@latest "{input_path}" -o "{output_path}"
-# fresh clone: run `bun install` in {skill_dir}/resources/ first (node_modules is gitignored)
-bun "{skill_dir}/resources/flatten-tables.ts" "{output_path}"
-# {skill_dir} = this skill's directory: .agents/skills/oma-hwp (project mode) or ~/.agents/skills/oma-hwp (global mode)
-```
+1. Confirm the input path exists and is readable, the extension is `.hwp`, `.hwpx`, or `.hwpml`, and `bun` is available (`bun --version`). Check the file size and detect the source format.
+2. Resolve the output path or directory, the default filename, and the requested format; the output location must be writable or creatable.
+3. Run `kordoc` with an explicit output target and the requested options:
+   ```bash
+   bunx kordoc@latest "{input_path}" -o "{output_path}"
+   ```
+   For batch conversion, use an explicit output directory:
+   ```bash
+   bunx kordoc@latest "{input_pattern}" -d "{output_dir}"
+   ```
+4. For Markdown output, flatten tables and strip PUA glyphs (see Transitions for the exception):
+   ```bash
+   # fresh clone: run `bun install` in {skill_dir}/resources/ first (node_modules is gitignored)
+   bun "{skill_dir}/resources/flatten-tables.ts" "{output_path}"
+   # {skill_dir} = this skill's directory: .agents/skills/oma-hwp (project mode) or ~/.agents/skills/oma-hwp (global mode)
+   ```
+5. Inspect the structure for headings, tables, lists, images, and footnotes.
+6. Report the output path, source format, and any conversion limitations.
 
-For batch conversion, use an explicit output directory:
-```bash
-bunx kordoc@latest "{input_pattern}" -d "{output_dir}"
-```
-
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Input HWP-family files and generated outputs |
-| `PROCESS` | `bunx kordoc` and `bun run` subprocesses |
-| `MEMORY` | Format decisions, validation notes, and final report |
-
-### Preconditions
-- Input file exists and is readable.
-- Output location is writable or can be created.
-- `bun` is installed.
-- `kordoc` can parse the document or fail with a reportable error.
-
-### Effects and side effects
-- Creates Markdown or JSON output files.
-- May flatten merged-cell tables, trading cell fidelity for Markdown compatibility.
-- Strips Private Use Area characters by default because they render as blanks without Hancom fonts.
-- Does not intentionally modify the source HWP-family document.
+### Resource scope and effects
+Reads the input HWP-family files and does not modify the source document. Creates Markdown or JSON output files next to the input or in the requested directory. Runs `bunx kordoc` and `bun` subprocesses. Post-processing may flatten merged-cell tables, trading cell fidelity for Markdown compatibility, and strips Private Use Area characters by default because they render as blanks without Hancom fonts.
 
 ### Guardrails
 1. Always pass `@latest` or an explicit pinned version to avoid stale `bunx` cache.
