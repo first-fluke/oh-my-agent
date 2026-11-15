@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 - **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
-- **Key-optional by default (backend rule 11).** The baseline path uses **zero external API keys**: the agent writes the script, oma-voice does TTS, oma-image does visuals, captions are key-free, HyperFrames composites. Every paid upgrade (Pexels stock, Pixelle AIGC) sits behind a key-free fallback and is **off by default**. Never disable the fallback to force a real call, and never silently drop a requested real path.
+- **Key-optional by default (oma-backend core rule 11).** The baseline path uses **zero external API keys**: the agent writes the script, oma-voice does TTS, oma-image does visuals, captions are key-free, HyperFrames composites. Every paid upgrade (Pexels stock, Pixelle AIGC) sits behind a key-free fallback and is **off by default**. Never disable the fallback to force a real call, and never silently drop a requested real path.
 - **Determinism boundary = `render-spec.json` + asset files (+ seed + embedded Pretendard).** "Reproducible from script/assets, not from brief." Never edit assets or render-spec by hand after generation; re-run the stage that produced them.
 - **Demo capture is human-supplied.** `--source web --url` gives URL context only; it neither opens nor records a browser. The human records the flow with Cap or another recorder, then supplies `--capture <path>`. Never automate login or capture credentials. Mask URL query tokens in logs and manifests.
 - **The `oma video` CLI owns the pipeline. This workflow owns the brief, the agent-authored script, the QA loop, and decision checkpoints.** Do NOT reimplement orchestration, provider selection, or rendering in the workflow.
@@ -177,7 +177,7 @@ Review the finished video against the brief and the quality bars. Iterate by re-
 1. **Checklist** (priority order: correctness → sync → readability → polish):
    - Output plays; duration matches the script total within tolerance.
    - Narration audio is present (or intentionally silent) and aligns to scenes.
-   - Captions are synced to `timing.json`, within the safe area, and legible (static windowed cues, CSS-wrapped, Pretendard, design rule 2).
+   - Captions are synced to `timing.json`, within the safe area, and legible (static windowed cues, CSS-wrapped, Pretendard).
    - Visuals match each scene's intent; any placeholder visual asset is declared in warnings, and a real validated MP4 remains required.
    - Aspect / dimensions are correct for the mode; branding applied as requested. (A requested music mode yields `music/bgm.wav` mixed at −18 dB, or a fallback warning and a silent render when Strudel is not installed.)
 2. **Route each defect to its stage:**

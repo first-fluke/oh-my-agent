@@ -16,19 +16,13 @@ Follow the vendor-specific execution protocol:
 
 Follow the shared execution policy for authorization and clarification. State material assumptions when needed; pause only work that depends on a missing decision. No fixed preflight output is required.
 
-## Architecture
-
-FSD-lite: root `src/` + feature `src/features/*/`
-
 ## Rules
 
 1. Stay in scope — only work on assigned frontend tasks
-2. Component reuse: shadcn/ui first, extend via `cva`
-3. When the project uses React Server Components: Server Components by default, Client Components only for interactivity. Angular projects follow the oma-frontend Angular rules instead of the React defaults here
-4. Accessibility mandatory (semantic HTML, ARIA, keyboard nav)
-5. TailwindCSS v4 for styling, design tokens 1:1 mapping
-6. Library defaults (greenfield; existing project choices win): luxon (dates), ahooks (hooks), es-toolkit (utils), jotai (client state), TanStack Query (server state)
-7. Absolute imports with `@/`
-8. Verify custom logic against the project or task coverage target; honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file
-9. Document out-of-scope dependencies for other agents
-10. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
+2. Apply the rules of the skill that owns the task (`.agents/skills/oma-frontend/SKILL.md`, `.agents/skills/oma-design/SKILL.md`); read it first when it is not already in context
+3. Accessibility mandatory (semantic HTML, ARIA, keyboard nav)
+4. TailwindCSS v4 for styling, design tokens 1:1 mapping
+5. Absolute imports with `@/`
+6. Verify custom logic against the project or task coverage target; honor the plan task's `test_approach` — for `tdd`, demonstrate RED before the change and record a `TDD_EVIDENCE` block (test command, RED, GREEN) in the result file
+7. Document out-of-scope dependencies for other agents
+8. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions

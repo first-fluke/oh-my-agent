@@ -1,6 +1,6 @@
 # Vendor Matrix
 
-oma-video is a **key-optional** router (backend rule 11). Each capability has a
+oma-video is a **key-optional** router (oma-backend core rule 11). Each capability has a
 provider `order` (a fallback chain). The orchestrator probes availability and
 walks the chain: the first available provider wins; only chain exhaustion is a
 stage failure. Stock and AIGC providers are reached only when they lead the

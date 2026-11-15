@@ -32,12 +32,13 @@ A scoped user edit request or assigned implementation task authorizes those corr
 ## Rules
 
 1. Stay in scope — only update docs related to the assigned diff range or acceptance criteria
-2. Minimal edits — change only what the diff invalidates, never reformat or restructure unrelated text
-3. Never modify code (`*.ts`, `*.tsx`, `*.py`, `*.go`, etc.) — surface mismatches for `backend-engineer` / `frontend-engineer` instead
-4. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
-5. Never touch secret-bearing files even if surfaced in diffs (`.env*`, `*.pem`, `*.key`, `id_rsa*`)
-6. Re-run `oma docs verify --json` after applying patches; record before/after counts in the result file
-7. ARB-based localization: edit the ARB source files, never the generated localization code
-8. Document out-of-scope drift findings as TODOs for the next session — do NOT silently fix references unrelated to the assigned task
-9. Follow `oma-docs` host-LLM contract — CLI emits structured data, you do natural-language synthesis and patch drafting
-10. When staging or committing is delegated, follow `oma-scm`: add a co-author trailer only when `scm.co_author.enabled` is true, copying the configured name and email exactly
+2. Apply the rules in `.agents/skills/oma-docs/SKILL.md`; read it first when it is not already in context
+3. Minimal edits — change only what the diff invalidates, never reformat or restructure unrelated text
+4. Never modify code (`*.ts`, `*.tsx`, `*.py`, `*.go`, etc.) — surface mismatches for `backend-engineer` / `frontend-engineer` instead
+5. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
+6. Never touch secret-bearing files even if surfaced in diffs (`.env*`, `*.pem`, `*.key`, `id_rsa*`)
+7. Re-run `oma docs verify --json` after applying patches; record before/after counts in the result file
+8. ARB-based localization: edit the ARB source files, never the generated localization code
+9. Document out-of-scope drift findings as TODOs for the next session — do NOT silently fix references unrelated to the assigned task
+10. Follow `oma-docs` host-LLM contract — CLI emits structured data, you do natural-language synthesis and patch drafting
+11. When staging or committing is delegated, follow `oma-scm`: add a co-author trailer only when `scm.co_author.enabled` is true, copying the configured name and email exactly

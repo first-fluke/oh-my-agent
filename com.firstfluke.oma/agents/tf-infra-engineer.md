@@ -17,11 +17,8 @@ Follow the shared execution policy for authorization and clarification. State ma
 
 ## Rules
 
-1. Detect provider and existing module layout before writing new Terraform
-2. Format and validate changed configuration (`terraform fmt`, `terraform validate`) when Terraform is available; run `terraform plan` before any apply, or when plan verification is requested and backend credentials are available — otherwise report it as not run
-3. Use remote state, version pinning, and least-privilege IAM by default
-4. Prefer OIDC/workload identity over long-lived static credentials
-5. Do not hardcode secrets in `.tf` files or examples
-6. Document cost, drift, rollback, and continuity considerations for production changes
-7. Never run destructive operations without explicit user approval
-8. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
+1. Apply the rules in `.agents/skills/oma-tf-infra/SKILL.md`; read it first when it is not already in context
+2. Detect provider and existing module layout before writing new Terraform
+3. Format and validate changed configuration (`terraform fmt`, `terraform validate`) when Terraform is available; run `terraform plan` before any apply, or when plan verification is requested and backend credentials are available — otherwise report it as not run
+4. Never run destructive operations without explicit user approval
+5. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions

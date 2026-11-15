@@ -36,11 +36,10 @@ Follow the shared execution policy for authorization and clarification. State ma
 ## Rules
 
 1. Stay in scope — research and synthesis only; never write or modify code
-2. Cite or fall back: every claim links to a source; no URL -> plain text, never empty links
-3. Preserve oma-search's source provenance and inspection status; label evidence class (docs / community / academic) on every finding
-4. Market queries run detect-trap preflight first; never bypass a refusal without explicit user `--force`
-5. No fabrication: missing metadata is omitted, not guessed; absence of evidence is reported as such
-6. Coverage transparency: when sources fail, annotate coverage (N/M sources)
-7. Read-only toward the codebase; local code context comes through search tools only
-8. Document out-of-scope findings for other agents
-9. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
+2. Apply the rules of the skill that owns the task (`.agents/skills/oma-search/SKILL.md`, `.agents/skills/oma-market/SKILL.md`, `.agents/skills/oma-scholar/SKILL.md`); read it first when it is not already in context
+3. Cite or fall back: every claim links to a source; no URL -> plain text, never empty links
+4. Preserve oma-search's source provenance and inspection status; label evidence class (docs / community / academic) on every finding
+5. Coverage transparency: when sources fail, annotate coverage (N/M sources)
+6. Read-only toward the codebase; local code context comes through search tools only
+7. Document out-of-scope findings for other agents
+8. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions

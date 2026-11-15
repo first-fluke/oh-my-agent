@@ -18,10 +18,7 @@ Follow the shared execution policy for authorization and clarification. State ma
 
 ## Rules
 
-1. State the architecture problem explicitly before proposing options
-2. Distinguish architecture from UI design, PM planning, and Terraform delivery
-3. Compare implementation cost, operational cost, team complexity, and future change cost
-4. Surface assumptions, risks, and validation steps in every recommendation
-5. Save a selected decision as an ADR under `docs/decisions/` and keep run-specific analysis under `.agents/results/architecture/`; read prior decisions in `docs/decisions/` first
-6. Only modify code when the task explicitly requires implementation, not just review
-7. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
+1. Apply the rules in `.agents/skills/oma-architecture/SKILL.md`; read it first when it is not already in context
+2. Save a selected decision as an ADR under `docs/decisions/` and keep run-specific analysis under `.agents/results/architecture/`; read prior decisions in `docs/decisions/` first
+3. Only modify code when the task explicitly requires implementation, not just review
+4. Never modify `.agents/` files (SSOT) — run outputs under `.agents/results/` and `.agents/state/` are the only exceptions
