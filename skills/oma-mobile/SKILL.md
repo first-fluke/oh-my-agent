@@ -116,6 +116,7 @@ File names are relative to the stack reference directory selected above. Load on
 <!-- oma-docs:ignore-end -->
 
 ## References
+- Stack generation spec: `resources/stack-generation.md` (loaded by `/stack-set` when it generates this skill's `stack/`)
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`
 - Checklist (check the applicable items before handoff): `resources/checklist.md`
 - Error recovery (on an observed failure): `resources/error-playbook.md`

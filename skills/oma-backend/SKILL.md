@@ -126,6 +126,7 @@ File names are relative to the stack reference directory selected above.
 <!-- oma-docs:ignore-end -->
 
 ## References
+- Stack generation spec: `resources/stack-generation.md` (loaded by `/stack-set` when it generates this skill's `stack/`)
 - Local code tools: `references/_shared/core/code-intelligence.md` (code search/navigation)
 
 - Execution steps (follow for the selected task): `resources/execution-protocol.md`

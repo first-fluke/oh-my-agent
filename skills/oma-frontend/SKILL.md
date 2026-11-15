@@ -158,6 +158,7 @@ Project stack conventions live in dedicated files. Load a file when its trigger 
 To extend: add `resources/<name>.md` and append a row above.
 
 ## References
+- Stack generation spec: `resources/stack-generation.md` (loaded by `/stack-set` when it generates this skill's `stack/`)
 - `../oma-design/resources/product-interface-review.md`: recommended design review after substantial product-interface implementation.
 - Specialized visual implementation: `resources/specialized-visual-implementation.md` (requested CanvasUI GPU effect, Scroll World scene, or selected GSAP implementation)
 - Interaction quality: `references/_shared/ui-interaction-quality.md` (motion, feedback, touch, interruption, or performance changes)
