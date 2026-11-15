@@ -80,7 +80,7 @@ Not all files are required. Generate only what is **discoverable and relevant** 
 
 ## Step 0: Preparation
 
-1. Check if `AGENTS.md`, `ARCHITECTURE.md`, or `docs/` already exists. If so, this is an **update run** (see Step 6).
+1. Check if `AGENTS.md`, `ARCHITECTURE.md`, or `docs/` already exists. If so, this is an **update run**: keep everything below a `<!-- MANUAL -->` marker and every file this workflow did not generate, and regenerate only the sections this workflow owns. Drift checks after the run belong to `oma-docs` (Step 6).
 
 ---
 
@@ -244,7 +244,7 @@ Reference this file from AGENTS.md so review agents load it automatically.
 
 ## Step 4: Generate Root AGENTS.md
 
-**~100 lines. Table of contents pointing to docs/.**
+**About 100 lines, under 120. Table of contents pointing to docs/.**
 
 ### Template
 
@@ -330,7 +330,7 @@ Only at **package/app boundaries** in monorepos.
 
 ### Rules
 
-- **Max 50 lines.** Point to `docs/` for details.
+- **Under 60 lines.** Point to `docs/` for details.
 - Content must be **specific to this boundary**. Don't repeat root-level rules.
 
 ---
