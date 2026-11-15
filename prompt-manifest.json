@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.44.1",
-  "releaseDate": "2026-11-15T22:13:05.937Z",
+  "releaseDate": "2026-11-15T22:15:16.721Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -721,8 +721,8 @@
     },
     {
       "path": ".agents/skills/oma-backend/SKILL.md",
-      "sha256": "898808c6719d8ae2e3fa1c20e74a7acdceb57950c0a3f06e8538553de740e8d1",
-      "size": 9363
+      "sha256": "cb8b93c6014c2c7d0c8855ea5837f61b2776765a92db17e6b81ebee2b7ba1f25",
+      "size": 9485
     },
     {
       "path": ".agents/skills/oma-backend/resources/checklist.md",
@@ -743,6 +743,11 @@
       "path": ".agents/skills/oma-backend/resources/orm-reference.md",
       "sha256": "61672767ba0f85c62a487be8c706c14a97be0de13a607c14013e360ff38b0cbc",
       "size": 3125
+    },
+    {
+      "path": ".agents/skills/oma-backend/resources/stack-generation.md",
+      "sha256": "300a84db09b0a56cfe26f70681e8a919b2adbe538d8fd0b4f96fb5c1f9fdeac6",
+      "size": 2898
     },
     {
       "path": ".agents/skills/oma-backend/variants/node/api-template.ts",
@@ -1046,8 +1051,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/SKILL.md",
-      "sha256": "dbdfefc83fd11963a62afea7d8e3011fc0a1263cfa7a866be7bffaa105b96767",
-      "size": 13407
+      "sha256": "6c68531f0c4030e1dc092eab8382df8b5d5ce3afa80e5b975e21f8f2b4169531",
+      "size": 13529
     },
     {
       "path": ".agents/skills/oma-frontend/resources/angular-rules.md",
@@ -1078,6 +1083,11 @@
       "path": ".agents/skills/oma-frontend/resources/specialized-visual-implementation.md",
       "sha256": "2286d4c57ff9a59c2bd1b5d8054b0eaee8efd37828dcc9bc3ce516d74c0a9534",
       "size": 14575
+    },
+    {
+      "path": ".agents/skills/oma-frontend/resources/stack-generation.md",
+      "sha256": "8ab52a3dfd3974cbec8c7b8c27e29356d445e6a60fa66d3bca99626a0219a023",
+      "size": 5826
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tailwind-rules.md",
@@ -1216,8 +1226,8 @@
     },
     {
       "path": ".agents/skills/oma-mobile/SKILL.md",
-      "sha256": "74d6e8d1878b4f28082020cce9a7847316bae949caecb7b7ecb174f134cea50a",
-      "size": 12378
+      "sha256": "044db5c88a04714b6bd6470328f8343610117998339c8075561fe92d3aae0d05",
+      "size": 12500
     },
     {
       "path": ".agents/skills/oma-mobile/resources/checklist.md",
@@ -1233,6 +1243,11 @@
       "path": ".agents/skills/oma-mobile/resources/execution-protocol.md",
       "sha256": "4c4222b89d8d1b030df2d061c48dd2f14e3d84c2d381a94fd4c96237cc9cd304",
       "size": 5223
+    },
+    {
+      "path": ".agents/skills/oma-mobile/resources/stack-generation.md",
+      "sha256": "3dff922bfcebf8978c0a03b0608a6e7fa0bb270fd81efbd2d3e2c5b72d148d8d",
+      "size": 11170
     },
     {
       "path": ".agents/skills/oma-mobile/resources/tech-stack.md",
@@ -2161,8 +2176,8 @@
     },
     {
       "path": ".agents/workflows/stack-set.md",
-      "sha256": "a4c481d2ab98c552b8fe0a64baa6b020ec0b822ba8eb4a5e90299cc01ec642e2",
-      "size": 30027
+      "sha256": "03aa1d0d1ee8d35c6a5bc7bc51e4e902fa441cd73d92144c8cbbafb25085a896",
+      "size": 11601
     },
     {
       "path": ".agents/workflows/ultrawork/resources/multi-review-protocol.md",
@@ -2196,6 +2211,6 @@
   "metadata": {
     "skillCount": 33,
     "workflowCount": 23,
-    "totalFiles": 437
+    "totalFiles": 440
   }
 }
