@@ -169,6 +169,7 @@ function getOmaConfigDeepPaths(): Set<string> {
     "timezone",
     "auto_update_cli",
     "telemetry",
+    "vendor_auto_update",
     "agents",
     "models",
     "custom_presets",

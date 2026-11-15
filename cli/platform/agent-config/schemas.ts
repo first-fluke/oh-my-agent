@@ -129,6 +129,7 @@ export const OmaConfigSchema = z
       .strict()
       .optional(),
     telemetry: z.boolean().optional(),
+    vendor_auto_update: z.boolean().optional(),
     providers: ProvidersSchema.optional(),
     brave: BraveConfigSchema.optional(),
     exa: ExaConfigSchema.optional(),

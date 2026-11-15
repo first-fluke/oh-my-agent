@@ -43,6 +43,17 @@ export function isTelemetryEnabled(cwd?: string): boolean {
 }
 
 /**
+ * Read vendor_auto_update from oma-config.yaml. Three states: `false` turns
+ * every selected vendor CLI's self-updater off, `true` removes the opt-outs
+ * oma wrote, and `undefined` (key absent) means oma leaves the vendors'
+ * update settings alone — a user's own opt-out is never stripped by default.
+ */
+export function vendorAutoUpdatePreference(cwd?: string): boolean | undefined {
+  const value = loadOmaConfig(cwd)?.vendor_auto_update;
+  return typeof value === "boolean" ? value : undefined;
+}
+
+/**
  * Read timezone from oma-config.yaml.
  * Falls back to system timezone.
  */

@@ -31,6 +31,7 @@ const OMA_CONFIG_TOP_KEYS = new Set([
   "timezone",
   "auto_update_cli",
   "telemetry",
+  "vendor_auto_update",
   "agents",
   "models",
   "custom_presets",

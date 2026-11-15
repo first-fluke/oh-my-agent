@@ -82,6 +82,7 @@ vi.mock("../../../utils/config.js", () => ({
   loadDevToolsBrowsers: vi.fn(() => undefined),
   loadSerenaConfig: vi.fn(() => ({ mode: "stdio" })),
   serenaTransportMode: vi.fn(() => "stdio"),
+  vendorAutoUpdatePreference: vi.fn(() => undefined),
 }));
 
 vi.mock("../../../vendors/antigravity/hud.js", () => ({

@@ -52,7 +52,9 @@ import type { CliTool, CliVendor } from "../../types/index.js";
 import {
   isTelemetryEnabled,
   loadDevToolsBrowsers,
+  vendorAutoUpdatePreference,
 } from "../../utils/config.js";
+import { syncVendorAutoUpdate } from "../../vendors/auto-update.js";
 import { syncBrowserMcp } from "../../vendors/browser-mcp.js";
 import { syncVendorSettings } from "./internal/vendor-settings.js";
 import type { LinkPlanEntry } from "./plan.js";
@@ -266,6 +268,24 @@ export function link(opts: LinkOptions = {}): LinkResult {
       record(path, "write", "browser MCP selection");
     }
   };
+  // `vendor_auto_update` in oma-config: one switch for every selected vendor
+  // CLI's self-updater. An absent key leaves the vendors' settings alone.
+  const syncVendorUpdates = (): void => {
+    const autoUpdate = vendorAutoUpdatePreference(root);
+    if (autoUpdate === undefined) return;
+    for (const path of syncVendorAutoUpdate(
+      root,
+      autoUpdate,
+      configuredVendors,
+      { global: safeGetInstallMode() === "global", dryRun },
+    )) {
+      record(
+        path,
+        "write",
+        `vendor auto-update (${autoUpdate ? "on" : "off"})`,
+      );
+    }
+  };
   // Extension-model vendors (pi) install via a forked path, not the
   // settings-file hook flow. Match through the extension-vendor guard so they
   // stay out of the hook-vendor pipeline.
@@ -287,6 +307,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
     }
     syncBrowsers();
     syncProviders();
+    syncVendorUpdates();
     return empty;
   }
 
@@ -436,6 +457,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
     // bridge / prompts / commands are installed above.
     syncBrowsers();
     syncProviders();
+    syncVendorUpdates();
     if (dryRun && !quiet) {
       renderLinkPlan(plan, root);
     }
@@ -503,6 +525,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
 
   syncBrowsers();
   syncProviders();
+  syncVendorUpdates();
 
   // 6. Merge vendor documentation. AGENTS.md is the only managed doc;
   //    CLAUDE.md / GEMINI.md are never written and stay fully user-owned.

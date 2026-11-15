@@ -50,6 +50,7 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `timezone` | IANA name | system time zone | Dates used by schedules and reports. |
 | `auto_update_cli` | boolean | `true` | Background CLI version checks; opt out with `false`. |
 | `telemetry` | boolean | `false` | Vendor telemetry opt-in used by install, update, and link reconciliation. |
+| `vendor_auto_update` | boolean | unset | One switch for every selected vendor CLI's self-updater: `false` writes each vendor's update opt-out, `true` removes the opt-outs OMA wrote, and an absent key leaves vendor update settings untouched. See [the notes](/docs/guide/oma-config-semantics#notes) for the per-vendor keys. |
 | `model_preset` | non-empty string | `auto` in new templates | Built-in or custom model preset. `OMA_MODEL_PRESET` overrides it for one process. |
 | `free` | `base_url`, `api_key_env`, `model` | unset | Legacy spelling of `providers.free` (`model` is `default_model` there); still read, and `oma update` moves it. |
 | `providers` | `docs`, `web`, `code_intelligence`, `code_intelligence_guard`, `semantic_memory`; `brave`, `exa`, `honcho` credential sections; any other `<name>` → LLM provider object | `context7`, `native`, `serena`, `block`, `agentmemory`; no credentials or LLM providers | Select documentation, search, code-intelligence, and semantic-memory providers, hold their credential references, and declare LLM endpoints agents can be routed through. See [Providers](#providers). |

@@ -64,6 +64,26 @@ auto_update_cli: true
 #                     Remote Control becomes eligible).
 telemetry: false
 
+# Vendor CLI self-updates. One switch for the auto-updater of every vendor in
+# `vendors`, applied at `oma install` / `oma update` / `oma link`.
+#   unset (default) — oh-my-agent leaves each vendor's update settings alone.
+#   false           — oh-my-agent writes the vendor's own opt-out:
+#       • Claude   : env.DISABLE_AUTOUPDATER = "1" in .claude/settings.json
+#       • Codex    : check_for_update_on_startup = false in .codex/config.toml
+#       • Qwen     : general.enableAutoUpdate = false in .qwen/settings.json
+#       • Grok     : [cli] auto_update = false in ~/.grok/config.toml
+#       • Kiro     : app.disableAutoupdates = true in ~/.kiro/settings/cli.json
+#       • opencode : update = "disable" in ~/.config/opencode/opencode.json
+#       • Kilo     : autoupdate = false in ~/.config/kilo/kilo.json
+#       • Kimi     : [upgrade] auto_install = false in ~/.kimi-code/tui.toml
+#       • Copilot  : autoUpdate = false in ~/.copilot/settings.json
+#     A HOME file is written only once that CLI has created its config
+#     directory. Antigravity, Cursor, pi, Command Code, ZCode, and Hermes have
+#     no config-file opt-out and are not changed.
+#   true            — the opt-outs above are removed on the next install/update,
+#                     restoring each vendor's default.
+# vendor_auto_update: false
+
 # Capability providers (docs, web, code_intelligence, semantic_memory)
 #
 # code_intelligence_guard — `block` (default) | `off`. While a code-intelligence

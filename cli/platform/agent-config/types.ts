@@ -147,6 +147,13 @@ export interface OmaConfig {
    */
   telemetry?: boolean;
   /**
+   * One switch for every selected vendor CLI's own self-updater. `false`
+   * writes each vendor's update opt-out, `true` removes the opt-outs oma
+   * wrote, and an absent key leaves vendor settings untouched. See
+   * `vendors/auto-update.ts`.
+   */
+  vendor_auto_update?: boolean;
+  /**
    * Per-agent overrides applied as shallow merge on top of preset. The
    * reserved `default` entry holds effort / thinking / memory for roles that
    * set none (never a model).

@@ -7,12 +7,13 @@ package config
 // ── 1. Global preferences ───────────────────────────────────────────────────
 
 #GlobalPreferences: {
-	language:           string
-	translation_voice?: "formal" | "balanced" | "interpreter"
-	date_format?:       "ISO" | "US" | "EU" | string
-	timezone?:          string
-	auto_update_cli?:   bool
-	telemetry?:         bool
+	language:            string
+	translation_voice?:  "formal" | "balanced" | "interpreter"
+	date_format?:        "ISO" | "US" | "EU" | string
+	timezone?:           string
+	auto_update_cli?:    bool
+	telemetry?:          bool
+	vendor_auto_update?: bool
 }
 
 // ── 2. Model selection & registries ─────────────────────────────────────────
@@ -410,6 +411,9 @@ package config
 	// timezone: omitted → host system timezone (e.g. timezone: "Europe/Berlin")
 	auto_update_cli:   true
 	telemetry:         false
+	// vendor_auto_update: omitted → vendor update settings stay untouched
+	// (false turns every selected vendor CLI's self-updater off, true removes
+	// the opt-outs oma wrote)
 
 	// ── Provider integrations ──
 	providers: {
