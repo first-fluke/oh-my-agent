@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.44.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.44.1...cli-v20.44.2) (2026-11-15)
+
+
+### Refactoring
+
+* **skills:** bring legacy-shaped skills to the ssl-lite template ([755cfb3](https://github.com/first-fluke/oh-my-agent/commit/755cfb3fd11b906fd2cceab3fcd357fde9b98b8b))
+* **workflows:** move stack-set generation specs into their skills ([0a20db4](https://github.com/first-fluke/oh-my-agent/commit/0a20db453ad90d75ed912351959f4a1bd4dd1149))
+
 ## [20.44.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.44.0...cli-v20.44.1) (2026-11-15)
 
 
