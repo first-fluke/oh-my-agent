@@ -8,8 +8,6 @@ disable-model-invocation: true
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured tools; if the provider is unavailable or times out, use native search only for paths outside this project or ignored paths. Do not install or track repositories automatically.
 - Persist coordination artifacts through the file-memory contract in `.agents/skills/_shared/runtime/memory-protocol.md`; it is independent of code-intelligence MCP tools.
-- **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Guardrails.
-- **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
 
 ---
 
@@ -47,18 +45,17 @@ Reviewers are read-only evaluators. Implementation and refactor **actions** (Pha
 1. Read `.agents/skills/oma-coordination/SKILL.md` and apply its Guardrails.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
-4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`; the rest of that file is the event schema reference.
-5. Emit required L1 decisions by calling `oma state emit` directly, as documented in the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`.
-6. Read `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (12 review guides)
-7. Read `.agents/skills/_shared/core/quality-principles.md` (scope and verification guidance)
-8. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
-9. Resolve the session ID:
+4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md` (the rest of that file is the event schema reference) and emit required L1 decisions by calling `oma state emit` directly, as documented there.
+5. Read `.agents/workflows/ultrawork/resources/multi-review-protocol.md` (12 review guides)
+6. Read `.agents/skills/_shared/core/quality-principles.md` (scope and verification guidance)
+7. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
+8. Resolve the session ID:
    - If a caller workflow (e.g. `/ralph`) delegated to ultrawork with an existing `sessionId`, **reuse it verbatim** — plan tasks, claims, and receipts must carry that session/task/run identity so artifact verification matches.
    - Otherwise generate one now (format: `YYYYMMDD-HHmmss`).
-10. Record session start using memory write tool:
+9. Record session start using memory write tool:
    - Create `session-ultrawork.md` in the memory base path
    - Include: session start time, session ID, user request summary, workflow version (ultrawork)
-11. (Recommended) Attach a mechanical stop gate when the project has a cheap deterministic check:
+10. (Recommended) Attach a mechanical stop gate when the project has a cheap deterministic check:
    - `oma goal set --gate typecheck` (allowlist: `typecheck` | `test` | `lint`; maps to the package.json script)
    - While set, the Stop hook allows the session to end only when the gate passes; failures return the output tail. Add `--budget-minutes <n>` to bound the gate with an honest partial stop. This does not terminate external work. Apply `.agents/skills/_shared/core/execution-policy.md` for the whole-execution deadline and owned-resource shutdown; user cancellation overrides gate repair and recovery.
 
@@ -314,9 +311,7 @@ Evaluate [the canonical REFINE_GATE](ultrawork/resources/phase-gates.md#refine_g
 
 **Gate failure → Before re-spawning the Refactor Agent, apply the same termination check:**
 
-> **Review Loop termination conditions** (OR, whichever fires first wins):
-> 1. Total REFINE failure count has reached the configured maximum iterations (default: 5 cycles across all phases). Do not start another cycle.
-> 2. Session cost cap exceeded: `oma agent spawn` enforces `session.quota_cap` mechanically — when the cap is exceeded it prints the quota message and refuses the spawn with a `[session-cost] Quota cap exceeded` error (no cap configured → spawns proceed normally). If a spawn is rejected that way, stop the loop immediately, save current step results, and report early termination due to quota.
+> Apply the **Review Loop termination conditions** stated under VERIFY_GATE. REFINE failures count toward the same maximum (default: 5 cycles across all phases), and a spawn rejected for the session cost cap ends the loop the same way.
 >
 > If neither condition is met, re-spawn the Refactor Agent with specific issues and repeat until GATE passes.
 
@@ -329,18 +324,17 @@ Evaluate [the canonical REFINE_GATE](ultrawork/resources/phase-gates.md#refine_g
 ### Step 14-17: Final QA & Deployment Readiness (Cross-Context Review)
 Dispatch each of Steps 14, 15, 16, 17 as a **separate fresh isolated reviewer subagent** per the **Cross-Context Review (CCR) Dispatch** section. Do NOT run them in one agent, and do NOT pass this session's history or the implementation/refine agents' reasoning into any reviewer prompt. Each reviewer reads only the durable artifacts (git diff, changed files, lint/coverage output, prior `result-*.md`) plus its own review guide section.
 
-#### If Claude Code
-Use separate Agent tool calls (one message = parallel, isolated contexts):
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 14 Code Quality Review ONLY (lint/coverage). Inputs (read fresh, assume no prior context): <diff + lint/coverage output>. Guide: Quality Review section. Write a structured verdict to memory.", run_in_background=true)`
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 15 UX Flow Verification ONLY. Inputs (read fresh, assume no prior context): <diff + user journey/routes>. Guide: UX Flow Review section. Write a structured verdict to memory.", run_in_background=true)`
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 16 Related Issues / Cascade Impact Review ONLY. Inputs (read fresh, assume no prior context): <diff + find_referencing_symbols impact>. Guide: Cascade Impact Review section. Write a structured verdict to memory.", run_in_background=true)`
-- `Agent(subagent_type="qa-reviewer", prompt="CCR Step 17 Deployment Readiness Review ONLY. Inputs (read fresh, assume no prior context): <diff + secrets/migrations checklist>. Guide: Final Review section. Write a structured verdict to memory.", run_in_background=true)`
+One `qa-reviewer` per step, dispatched together so they run in parallel, each with only its own inputs and guide section:
 
-#### If Codex CLI
-Spawn one native Codex reviewer per review (`.codex/agents/{agent}.toml`) when available, each with only its artifacts + guide section.
-If native dispatch is not verified in the current runtime, fall back to `oma agent spawn`.
+| Step | Reviewer prompt |
+|:--|:--|
+| 14 | "CCR Step 14 Code Quality Review ONLY (lint/coverage). Inputs (read fresh, assume no prior context): <diff + lint/coverage output>. Guide: Quality Review section. Write a structured verdict to memory." |
+| 15 | "CCR Step 15 UX Flow Verification ONLY. Inputs (read fresh, assume no prior context): <diff + user journey/routes>. Guide: UX Flow Review section. Write a structured verdict to memory." |
+| 16 | "CCR Step 16 Related Issues / Cascade Impact Review ONLY. Inputs (read fresh, assume no prior context): <diff + find_referencing_symbols impact>. Guide: Cascade Impact Review section. Write a structured verdict to memory." |
+| 17 | "CCR Step 17 Deployment Readiness Review ONLY. Inputs (read fresh, assume no prior context): <diff + secrets/migrations checklist>. Guide: Final Review section. Write a structured verdict to memory." |
 
-#### If Antigravity or CLI Fallback
+CLI fallback:
+
 ```bash
 oma agent spawn qa-agent step-14-prompt.md {sessionId} --task-id {qa_quality_task.id} -w {workspace}
 oma agent spawn qa-agent step-15-prompt.md {sessionId} --task-id {qa_ux_task.id} -w {workspace}
