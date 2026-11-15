@@ -25,8 +25,9 @@ Layout, theme, diagram geometry, and the quiz script are the renderer's, not the
 - User asks for a visual / HTML explanation of a topic that is not a diff: how a system works,
   a comparison, an answer worth keeping as a page (`/explain how does the row planner work`).
 - Another skill or workflow delegates "explain this as a document" output.
-- Activation is slash/explicit/delegated only — this skill is intentionally excluded from
-  keyword auto-detection ("explain" is everyday vocabulary; `convert` precedent).
+- The `/explain` workflow starts from its slash command only. The skill hint matches
+  explainer-specific phrases ("html explainer", "walkthrough document"); the bare word
+  "explain" is everyday vocabulary and never selects this skill.
 
 ### When to use
 - Explaining a PR, branch, commit range, or the current staged/unstaged change as a document

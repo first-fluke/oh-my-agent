@@ -8,7 +8,7 @@ description: Complete guide to oh-my-agent's /explain workflow and oma-explanati
 
 `/explain` turns a code change into a self-contained HTML document that explains what changed and why. The page includes skippable background for newcomers, a core-intuition section with toy data, a comprehension-ordered code walkthrough, and an accessible quiz with five questions by default. The offline-capable `.html` file includes diagrams and callouts, is saved under `.agents/results/explain/`, and is validated against a deterministic checklist before delivery.
 
-The `/explain` workflow does not auto-activate from natural language because "explain" is everyday vocabulary. Keyword detection excludes the term, as it does `/convert`. Say `/explain` explicitly, or ask another skill to produce an "explainer document" as a delegated output.
+The `/explain` workflow does not auto-activate from natural language because "explain" is everyday vocabulary. Keyword detection excludes the term, as it does `/convert`. Say `/explain` explicitly, or ask another skill to produce an "explainer document" as a delegated output. A prompt that names an explainer ("html explainer", "walkthrough document") gets an advisory `oma-explanation` skill hint, which does not start the workflow.
 
 ## Two modes
 

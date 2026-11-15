@@ -1371,6 +1371,90 @@
           "重构计划"
         ]
       }
+    },
+    "oma-docs": {
+      "keywords": {
+        "*": ["oma docs"],
+        "en": [
+          "broken doc links",
+          "docs drift",
+          "documentation drift",
+          "sync the docs",
+          "update the docs for this diff",
+          "doc references",
+          "stale docs",
+          "translation drift"
+        ],
+        "ko": [
+          "문서 동기화",
+          "문서 드리프트",
+          "깨진 문서 링크",
+          "문서 참조 확인",
+          "번역 드리프트"
+        ],
+        "ja": [
+          "ドキュメント同期",
+          "ドキュメントのずれ",
+          "リンク切れ確認",
+          "翻訳のずれ"
+        ],
+        "zh": ["文档同步", "文档漂移", "失效文档链接", "翻译漂移"]
+      }
+    },
+    "oma-explanation": {
+      "keywords": {
+        "*": ["explainer"],
+        "en": [
+          "html explainer",
+          "explainer document",
+          "visual walkthrough",
+          "walkthrough document",
+          "explain this diff as a page",
+          "explain this pr as a document"
+        ],
+        "ko": ["해설 문서", "설명서 만들어", "코드 해설", "변경 해설"],
+        "ja": ["コード解説", "解説ページ", "解説ドキュメント"],
+        "zh": ["代码讲解", "讲解文档", "讲解页面"]
+      }
+    },
+    "oma-scholar": {
+      "keywords": {
+        "*": ["openalex", "knows.academy"],
+        "en": [
+          "literature search",
+          "find papers on",
+          "paper sidecar",
+          "knows sidecar",
+          "academic papers on",
+          "compare these papers",
+          "claims and evidence"
+        ],
+        "ko": [
+          "논문 검색",
+          "논문 찾아",
+          "문헌 조사",
+          "논문 비교",
+          "사이드카 생성"
+        ],
+        "ja": ["論文検索", "論文を探して", "文献調査", "論文比較"],
+        "zh": ["论文检索", "查找论文", "文献调研", "论文对比"]
+      }
+    },
+    "oma-skill-creation": {
+      "keywords": {
+        "*": ["ssl-lite"],
+        "en": [
+          "create a skill",
+          "write a skill",
+          "new oma skill",
+          "revise this skill",
+          "skill authoring",
+          "audit this skill"
+        ],
+        "ko": ["스킬 만들어", "스킬 작성", "스킬 수정", "스킬 추가"],
+        "ja": ["スキルを作成", "スキル作成", "スキルを修正"],
+        "zh": ["创建技能", "编写技能", "修改技能"]
+      }
     }
   },
   "informationalPatterns": {

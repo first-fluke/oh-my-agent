@@ -262,7 +262,7 @@ All of these behaviors come from `.agents/hooks/core/skill-injector.ts`.
 | An expected skill is missing from the note | Only the top 3 matches are listed (10 points per matched keyword) | Use a more specific term or name the skill |
 | A skill suggested earlier is not suggested again | A SKILL.md path is suggested once per session; the record in `.agents/state/skill-sessions.json` expires after an hour without new suggestions | The earlier suggestion still applies |
 | A keyword is ignored | Text inside code fences, backticks, or double quotes is removed before matching | Mention the term in plain text |
-| oma-academic-writing, oma-docs, oma-explanation, oma-scholar, or oma-skill-creation is never suggested | These skills have no keywords in `triggers.json` | Use `/docs` or `/explain`, or name the skill; host discovery still sees their descriptions |
+| oma-academic-writing is never suggested | This skill has no keywords in `triggers.json` | Name the skill; host discovery still sees its description |
 | The hint names an unrelated skill | Matching is keyword-based and advisory | State the outcome you want; the note tells the model to apply judgement |
 
 ---
