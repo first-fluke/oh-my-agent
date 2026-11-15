@@ -47,25 +47,7 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 - knows.academy public API; OpenAlex and Semantic Scholar fallbacks
 - `resources/sidecar-spec.md`, API endpoints, OpenAlex setup, canonical delta, checklist, and execution protocol
 
-### Control-flow features
-- Branches by mode, source availability, Knows/OpenAlex coverage, strict vs lenient validation, and fetched section
-- Reads/writes YAML sidecars and may call public APIs
-- Avoids fabrication when source evidence is missing
-
 ## Structural Flow
-
-### Entry
-1. Identify mode and source artifact/query.
-2. Resolve paper identity through Knows or OpenAlex when needed.
-3. Load sidecar spec and mode-specific protocol.
-
-### Scenes
-1. **PREPARE**: Select mode and gather source or remote identifiers.
-2. **ACQUIRE**: Fetch paper metadata, sidecar sections, or local source text.
-3. **REASON**: Extract claims, evidence, relations, provenance, or comparison structure.
-4. **ACT**: Generate, lint, review, analyze, compare, or fetch sidecar data.
-5. **VERIFY**: Check the supported local contract, IDs, relations, and provenance; report lint limitations. Full canonical conformance requires the exact schema validator.
-6. **FINALIZE**: Return sidecar, report, summary, or comparison with caveats.
 
 ### Transitions
 - If knows.academy lacks the paper, fall back to OpenAlex metadata/abstract.
@@ -84,45 +66,16 @@ Search, fetch, generate, validate, analyze, review, and compare scholarly paper 
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Select mode | `SELECT` | Generate/Validate/Review/Analyze/Compare/Remote |
-| Read paper or sidecar | `READ` | Source files or YAML |
-| Request remote data | `REQUEST` | Knows/OpenAlex APIs |
-| Infer claims/evidence/relations | `INFER` | Sidecar generation/analysis |
-| Write sidecar | `WRITE` | `.knows.yaml` outputs |
-| Validate sidecar | `VALIDATE` | `oma scholar lint` |
-| Report result | `NOTIFY` | Summary or lint report |
-
-### Tools and instruments
-- `oma scholar search|resolve|get|lint`
-- Knows public API, OpenAlex fallback, sidecar spec, checklist
-
 ### Canonical command path
-```bash
-oma scholar search "<query>"
-oma scholar resolve "<title-or-doi>"
-oma scholar get "<record-id-or-doi>"
-oma scholar lint "<paper.knows.yaml>"
-```
+1. Identify the mode (see Modes) and the source artifact, identifier, or query. Load `resources/execution-protocol.md` for the selected mode, and `resources/sidecar-spec.md` when generating, reviewing, or fixing lint findings.
+2. Resolve the paper identity through Knows or OpenAlex when needed: `oma scholar search "<query>"` to discover papers, `oma scholar resolve "<title-or-doi>"` to find one specific paper (see Provider Fallback).
+3. Acquire the source: `oma scholar get "<record-id-or-doi>"` for paper metadata or sidecar sections, or read the local paper, draft, notes, or sidecar.
+4. Perform the mode's operation: extract claims, evidence, relations, and provenance to generate or review a sidecar, or analyze or compare existing sidecars.
+5. Run `oma scholar lint "<paper.knows.yaml>"` on a generated, reviewed, or supplied sidecar. Check the supported local contract, IDs, relations, and provenance; report lint limitations. Full canonical conformance requires the exact schema validator.
+6. Return the sidecar, report, summary, or comparison with caveats.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Paper drafts, sidecar YAML, review sidecars |
-| `NETWORK` | knows.academy and OpenAlex APIs |
-| `PROCESS` | `oma scholar` CLI and lint |
-| `USER_DATA` | User-provided paper content and research notes |
-
-### Preconditions
-- Mode and source are identifiable.
-- Spec rules are available for generation or validation.
-
-### Effects and side effects
-- May create local sidecar or review sidecar files.
-- May query public scholarly APIs.
-- Does not submit sidecars back to knows.academy.
+### Resource scope and effects
+May create local sidecar or review sidecar files (`{paper}.knows.yaml`, `{paper}.review.knows.yaml`) from user-provided paper content and research notes. The `oma scholar` CLI queries the public knows.academy, OpenAlex, and Semantic Scholar APIs. Does not submit sidecars back to knows.academy.
 
 ### Guardrails
 

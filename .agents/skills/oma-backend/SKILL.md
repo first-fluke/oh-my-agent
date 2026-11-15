@@ -43,27 +43,10 @@ Implement or review backend APIs, authentication, database integration, server-s
 <!-- oma-docs:ignore-start -->
 - Optional stack reference (`stack/`, or the matching `variants/<language>/`): `stack.yaml`, `tech-stack.md`, snippets, and API templates
 <!-- oma-docs:ignore-end -->
+- The project's own toolchain: ORM or database client, and its test, lint, typecheck, and migration commands
 - Database, queue, cache, mail, auth, or external API resources configured through environment or secret managers
 
-### Control-flow features
-- Branches by detected stack, ORM/query pattern, auth requirement, migration impact, and transaction scope
-- Reads and writes codebase files
-- May touch local database migrations or generated code
-- Must not hardcode secrets or share unsafe ORM lifecycle objects across concurrent work
-
 ## Structural Flow
-
-### Entry
-1. Detect the backend stack from project files first.
-2. Identify affected router, service, repository, model, migration, and test boundaries.
-3. Load stack-specific references only when needed.
-
-### Scenes
-1. **PREPARE**: Determine stack, architecture boundaries, and acceptance criteria.
-2. **ACQUIRE**: Read existing routes, services, repositories, models, schemas, and config.
-3. **ACT**: Implement backend changes with validation, business logic, persistence, and tests.
-4. **VERIFY**: Select the relevant lint, type, test, and migration checks and review the applicable checklist items. Run a check only when the user or the active workflow requires it; otherwise report what was not verified.
-5. **FINALIZE**: Report changed behavior, verification, and unresolved risks.
 
 ### Transitions
 - If stack files exist, follow them before generic guidance.
@@ -82,52 +65,18 @@ Implement or review backend APIs, authentication, database integration, server-s
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Detect stack and conventions | `READ` | Manifests, stack files, existing code |
-| Select implementation boundary | `SELECT` | Router/service/repository pattern |
-| Validate inputs and schemas | `VALIDATE` | Stack validation library |
-| Implement business logic | `WRITE` | Service layer code |
-| Implement persistence | `WRITE` | Repository/model/migration code |
-| Call external/backing services | `CALL_TOOL` | DB, queue, cache, auth, or API clients |
-| Run required checks | `CALL_TOOL` | Checks the user or active workflow requires |
-| Report result | `NOTIFY` | Final summary |
-
-### Tools and instruments
-- Project language/framework toolchain
-- ORM or database client
-- Test, lint, typecheck, and migration commands
-- Stack-specific templates and snippets when present
-
 ### Canonical workflow path
-Use the configured code-intelligence provider to locate files and inspect symbols
-or content. For Serena, use `find_file`, `search_for_pattern`,
-`get_symbols_overview`, and `find_symbol`. Native search is limited to the
-provider exclusions and non-code paths permitted by the project's search policy.
-
+1. Detect the stack (see Stack Detection) and identify the affected router, service, repository, model, migration, and test boundaries.
+2. Locate files and inspect symbols or content with the configured code-intelligence provider. For Serena, use `find_file`, `search_for_pattern`, `get_symbols_overview`, and `find_symbol`. Native search is limited to the provider exclusions and non-code paths permitted by the project's search policy.
+3. Read the existing routes, services, repositories, models, schemas, and config. Load a stack-specific reference only when the task needs it.
+4. Implement the change with validation, business logic, persistence, and tests, following the Core Rules.
 <!-- oma-docs:ignore-start -->
-Then select the project's verification commands (lint, typecheck, tests, and migrations when schema changes are involved), preferring the `verify:` commands in `stack/stack.yaml` when present. Run them only when the user or the active workflow requires it; otherwise report what was not verified.
+5. Select the project's verification commands (lint, typecheck, tests, and migrations when schema changes are involved), preferring the `verify:` commands in `stack/stack.yaml` when present. Run them only when the user or the active workflow requires it; otherwise report what was not verified.
 <!-- oma-docs:ignore-end -->
+6. Review the applicable checklist items and report the changed behavior, the verification status, and unresolved risks.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | Backend source, tests, schemas, migrations |
-| `LOCAL_FS` | Stack references and generated artifacts |
-| `PROCESS` | Required test, lint, typecheck, and migration commands |
-| `CREDENTIALS` | Environment-managed DB URLs, API keys, secrets |
-| `NETWORK` | External APIs or backing services when required |
-
-### Preconditions
-- Target behavior and affected backend boundary are identifiable.
-- Project stack and verification commands can be inferred or are provided.
-- Required credentials remain outside source code.
-
-### Effects and side effects
-- Mutates backend source files, tests, and possibly migrations.
-- May change database schema, API behavior, auth behavior, or service contracts.
-- May require generated clients or migration artifacts.
+### Resource scope and effects
+Reads and edits backend source, tests, schemas, and migrations. A change may alter the database schema, API or auth behavior, or a service contract, and may require regenerated clients or migration artifacts. Credentials (DB URLs, API keys, secrets) stay in the environment or a secret manager; external APIs and backing services are called only when the task requires them.
 
 ### Guardrails
 Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.

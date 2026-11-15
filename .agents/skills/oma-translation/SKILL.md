@@ -41,18 +41,11 @@ structure.
   are defined in `resources/style-skills.md`.
 - Shared prose diagnostics and translation exceptions for other target languages.
 - Existing siblings and glossary when translating into a project.
-
-### Control-flow features
-- Branches by UI batch versus prose, profile availability, locale variant, ambiguity, and review mode.
-- Loads only the target profile and references required for the content type.
-- Edits files only when the user asked for file changes.
+- Configured `code_intelligence` capability when available for code-context navigation; native
+  search/read for local source and sibling translations, and when the capability is unavailable
+  or times out.
 
 ## Structural Flow
-
-### Entry
-1. Identify source, target locale, content type, and whether this is translate, review, or diff-sync.
-2. Preserve exact tokens first: placeholders, code, URLs, keys, and structural markers.
-3. Load the target profile if available; read sibling translations when the target is in a project.
 
 ### Transitions
 - A profile exists -> load it; its target-language rules take precedence over shared guidance.
@@ -148,26 +141,9 @@ the suggested revision only when warranted, and the evidence for each finding.
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|---|---|---|
-| Resolve locale and mode | `SELECT` | User request and file context |
-| Read profile and siblings conditionally | `READ` | Target profile, glossary, nearby translations |
-| Protect syntax and structure | `VALIDATE` | Source tokens and structural markers |
-| Infer meaning and register | `INFER` | Source, audience, project convention |
-| Translate or revise | `WRITE` | Target text or requested file patch |
-| Review substantive content | `VALIDATE` | Rubric and concrete findings |
-| Report result and limits | `NOTIFY` | Translation, patch, or review |
-
-### Tools and instruments
-- Native search/read for local source and sibling translations.
-- Configured `code_intelligence` capability when available for code-context navigation; native
-  search/read when it is unavailable or times out.
-- Target profile, rubric, selected prose-style implementation, and language-template
-  resources as selected by the canonical workflow.
-
 ### Canonical workflow path
-1. Resolve target locale and protect exact syntax.
+1. Identify the source, target locale, content type, and mode (translate, review, or
+   diff-sync). Protect exact tokens first: placeholders, code, URLs, keys, and structural markers.
 2. Load the one applicable language profile and relevant siblings; load the rubric for substantive
    content or review. For substantive prose, select by the **target** BCP 47 primary subtag:
    - `en` (including regional variants): load `resources/style-skills.md` and resolve `humanizer`.
@@ -183,21 +159,11 @@ the suggested revision only when warranted, and the evidence for each finding.
 5. Emit the requested translation, patch, or evidence-backed review. State a material
    context limitation.
 
-### Resource scope
-| Scope | Resource target |
-|---|---|
-| `LOCAL_FS` | Source/target files, glossaries, language profiles |
-| `CODEBASE` | Sibling translations and code context |
-| `PROCESS` | Syntax checks and selected external-skill acquisition or local gates |
-| `NETWORK` | Upstream style-skill retrieval when not already available |
-| `MEMORY` | Locale, terminology, register, protected syntax, unresolved ambiguity |
-
-### Effects and side effects
-- Produces translated text or review findings.
-- Changes locale/docs files only when explicitly requested.
-- Retains source structure, identifiers, and placeholders.
-- May retrieve a missing selected style-skill bundle; reuses installed or cached
-  instructions. Upstream intermediate files stay in a writable scratch workspace.
+### Resource scope and effects
+Changes locale or docs files only when the user asked for file changes; otherwise the result is
+translated text or review findings in the response. May retrieve a missing selected style-skill
+bundle from upstream over the network; installed or cached instructions are reused. Upstream
+intermediate files stay in a writable scratch workspace.
 
 ### Guardrails
 1. Preserve meaning, protected syntax, and file structure before stylistic preference.

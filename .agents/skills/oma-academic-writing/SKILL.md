@@ -54,26 +54,7 @@ Produce, revise, and audit publication-grade academic English prose: clear sente
 - `../_shared/core/context-loading.md`: task-relevant resource loading
 - `../_shared/core/quality-principles.md`: shared quality bar
 
-### Control-flow features
-- Mode branching: `draft` vs `revise` vs `review` produce different output formats and pass sequences
-- Rubric constraints: quote supplied assignment requirements before applying them; draft-only revision/review can proceed without inventing a rubric
-- Citation gap branch: when a claim lacks evidence, weaken or remove rather than fabricate; optionally hand off to `oma-scholar`
-- Language branch: non-English target hands off to `oma-translation` after the English pass
-
 ## Structural Flow
-
-### Entry
-1. Identify the mode (`draft`, `revise`, `review`) and the rubric source.
-2. If assignment constraints were supplied, quote their exact text before applying them. Without a rubric, revise/review the draft using the requested register and evidence; do not invent assignment rules.
-3. If revising or reviewing, read the existing draft in full first; if drafting, confirm available source data and citations.
-4. Index `resources/` and identify any claims that need a more precise verb or hedge.
-
-### Scenes
-1. **PREPARE**: load rubric, existing draft, source data; record quoted constraints and note claims whose verbs or hedges need attention.
-2. **ACQUIRE**: read `resources/sentence-structure-reference.md`, `academic-verb-guide.md`, and `hedging-guide.md` only for the patterns relevant to the current section.
-3. **ACT**: write or revise prose with sentence variety, accurate verb choice, evidence-matched hedging, clear paragraphing, and direct statements. Keep a common verb when it is the clearest accurate choice.
-4. **VERIFY**: apply the shared prose diagnostics and academic checklist; use reverse outlining and the Claim-Evidence Map to identify unsupported claims. In review mode, report findings without rewriting the draft.
-5. **FINALIZE**: cohesion check, specificity audit, word-count verification, paragraph-length variation, rhythm check; emit per the mode's output format.
 
 ### Transitions
 - If a rubric line is ambiguous → quote it back to the user and ask for interpretation; do not infer combined rules.
@@ -100,55 +81,16 @@ Produce, revise, and audit publication-grade academic English prose: clear sente
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Read rubric / constraint and quote literal text | `READ` | Rubric file or assignment brief |
-| Read existing draft (revise/review modes) | `READ` | Draft file or inline text |
-| Index resources for the current section | `READ` | `resources/{anti-ai-checklist,sentence-structure-reference,academic-verb-guide,hedging-guide}.md` |
-| Select sentence mix and evidence-appropriate wording | `SELECT` | Sentence-structure and verb guidance |
-| Plan paragraph as Topic-Support-Conclude | `INFER` | Outline notes |
-| Draft / revise prose per the sentence, verb, and hedging guidance | `WRITE` | Generated prose |
-| Audit prose against anti-AI checklist | `VALIDATE` | `resources/anti-ai-checklist.md` |
-| Reverse outline + build Claim-Evidence Map | `VALIDATE` | Mapping table |
-| Weaken or remove unsupported claims | `WRITE` | Revised claim line |
-| Compare original vs revised (revise mode) | `COMPARE` | Diff block |
-| Hand off non-English target | `NOTIFY` | `oma-translation` |
-| Hand off citation gap | `NOTIFY` | `oma-scholar` |
-| Emit per mode output format | `WRITE` | Final artifact |
-| Report compliance status | `NOTIFY` | PASS/FAIL summary or Writing Notes block |
-
-### Tools and instruments
-- `Read` / `Edit` / `Write` for draft and rubric files
-- `resources/anti-ai-checklist.md`, `sentence-structure-reference.md`, `academic-verb-guide.md`, `hedging-guide.md`
-- Topic-Support-Conclude paragraph model: the paragraph cohesion model in `resources/sentence-structure-reference.md`
-- Claim-Evidence Map: a three-column table (Claim / Evidence / Status) with one row per major claim
-
 ### Canonical workflow path
-1. **READ** the draft and any supplied rubric; quote actual assignment constraints and pin their requirements. If no rubric is supplied, use the requested revision/review scope without inventing constraints.
-2. **PLAN** each paragraph as Topic-Support-Conclude; identify where evidence strength or a vague claim calls for a more precise verb. For research abstracts, use `resources/abstract-guide.md` to select motivation, approach, measured results, and a supported contribution within the venue's format.
+1. **READ**: identify the mode (`draft`, `revise`, `review`); a rubric / constraint or an existing draft (or both) must be provided. Read the existing draft in full when revising or reviewing; when drafting, confirm the available source data and citations. Read any supplied rubric; quote actual assignment constraints and pin their requirements. If no rubric is supplied, use the requested revision/review scope without inventing constraints. If the final deliverable is non-English, confirm the user agrees to a downstream `oma-translation` handoff.
+2. **PLAN** each paragraph as Topic-Support-Conclude (the paragraph cohesion model in `resources/sentence-structure-reference.md`); identify where evidence strength or a vague claim calls for a more precise verb or hedge. Read `resources/sentence-structure-reference.md`, `resources/academic-verb-guide.md`, and `resources/hedging-guide.md` only for the patterns relevant to the current section. For research abstracts, use `resources/abstract-guide.md` to select motivation, approach, measured results, and a supported contribution within the venue's format.
 3. **DRAFT** prose with sentence variety, clear verb choice, hedging, and Topic-Support-Conclude structure.
 4. **AUDIT** with `../_shared/core/anti-ai-prose.md` and `resources/anti-ai-checklist.md`. Fix supported defects in draft/revise mode; in review mode, quote the passage, identify the defect, and recommend a local fix without a full rewrite or AI-authorship estimate.
-5. **REVERSE-OUTLINE** the section and build the Claim-Evidence Map; weaken or remove any unsupported claim.
+5. **REVERSE-OUTLINE** the section and build the Claim-Evidence Map, a three-column table (Claim / Evidence / Status) with one row per major claim; weaken or remove any unsupported claim.
 6. **POLISH** with cohesion, specificity, word-count, rhythm, and paragraph-length-variation checks; emit in the mode's output format.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `LOCAL_FS` | Rubric, existing draft, generated prose output |
-| `CODEBASE` | Task-relevant `resources/` files, `_shared/core/{context-loading,quality-principles}.md` |
-| `MEMORY` | Mode, quoted constraints, wording decisions, anti-AI flags resolved, Claim-Evidence Map |
-
-### Preconditions
-- A rubric / constraint or an existing draft (or both) is provided.
-- The target register is academic English. If the final deliverable is non-English, the user has agreed to a downstream `oma-translation` handoff.
-- The source data needed to support claims is available, or unsupported claims are explicitly allowed to be weakened or removed.
-
-### Effects and side effects
-- Writes drafted, revised, or reviewed prose to the user's working location (file or inline).
-- Does not modify `resources/` reference files.
-- Does not fetch external citations; defers to `oma-scholar` when discovery is required.
-- May NOTIFY adjacent skills but does not auto-spawn them; user or workflow drives the actual handoff.
+### Resource scope and effects
+Writes drafted, revised, or reviewed prose to the user's working location (file or inline). Does not modify `resources/` reference files. Does not fetch external citations; defers to `oma-scholar` when discovery is required. A handoff to `oma-scholar` or `oma-translation` is a notification only: the user or workflow drives the actual handoff, and this skill does not auto-spawn either.
 
 ### Guardrails
 1. Every sentence must be verifiable; never fabricate data, statistics, or citations.

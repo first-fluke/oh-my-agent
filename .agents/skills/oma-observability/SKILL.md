@@ -51,26 +51,9 @@ Load resources conditionally: start with the execution protocol and the one guid
 
 - OTel/W3C/CNCF references and resources under `resources/`
 - Vendor categories, matrix, standards, incident forensics, meta-observability, transport, layers, boundaries, and signal guides
-
-### Control-flow features
-- Branches by intent, vendor category, layer/boundary/signal matrix, transport topology, privacy/audit risk, and incident localization dimension
-- May read/write observability config and docs; generally delegates vendor-specific implementation
-- Requires live status verification for load-bearing CNCF/vendor currency
+- Optional CLI/config tooling from the target stack
 
 ## Structural Flow
-
-### Entry
-1. Classify the intent: setup, migrate, investigate, alert, trace, tune, or route.
-2. Identify layers, boundaries, signals, and vendor category.
-3. Load only the relevant resource guide(s).
-
-### Scenes
-1. **PREPARE**: Classify intent and matrix coverage.
-2. **ACQUIRE**: Read configs, topology, telemetry examples, or incident signals.
-3. **REASON**: Route vendor/category, tune transport, assess meta-observability, or localize incident.
-4. **ACT**: Produce setup/migration/tuning/alert/trace/forensics guidance or config changes.
-5. **VERIFY**: Check pipeline health, clock skew, cardinality, retention, privacy, and audit concerns.
-6. **FINALIZE**: Report route, evidence, risks, and handoff references.
 
 ### Transitions
 - If a vendor-owned skill fully covers setup, delegate instead of duplicating docs.
@@ -89,46 +72,18 @@ Load resources conditionally: start with the execution protocol and the one guid
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Classify observability intent | `SELECT` | Intent rules |
-| Read telemetry/config evidence | `READ` | OTel/vendor configs, dashboards, samples |
-| Route vendor/category | `SELECT` | Vendor categories |
-| Infer coverage gaps | `INFER` | Matrix and signal/boundary mapping |
-| Validate meta-observability | `VALIDATE` | Clock, cardinality, retention, health |
-| Write guidance/config | `WRITE` | OaC/config/docs when requested |
-| Notify result | `NOTIFY` | Routed recommendation |
-
-### Tools and instruments
-- OTel/CNCF/W3C standards references
-- Vendor categories, matrix, incident forensics, meta-observability, transport and signal guides
-- Optional CLI/config tooling from the target stack
-
 ### Canonical workflow path
-```text
-1. Classify intent: setup, migrate, investigate, alert, trace, tune, or route.
-2. Select layer/boundary/signal coverage from `resources/matrix.md`.
+1. Classify intent: setup, migrate, investigate, alert, trace, tune, or route. Identify the system boundary the request is about.
+2. Select layer/boundary/signal coverage from `resources/matrix.md`, note coverage gaps, and identify the vendor category when the route needs one.
 3. Load the guide whose trigger in §References matches before producing guidance.
-```
+4. Read the available evidence: OTel and vendor configs, dashboards, deployment topology, telemetry samples, or incident signals. State which evidence is missing.
+5. Follow the selected route in §Routes (Intent): route the vendor or category, tune transport, assess meta-observability, or localize the incident. Produce the setup, migration, tuning, alert, trace, or forensics guidance; write observability-as-code, config, or docs only when requested.
+6. When CNCF/vendor status is load-bearing, verify live state at `https://landscape.cncf.io`.
+7. Check pipeline health, clock skew, cardinality, retention, privacy, and audit concerns (Guardrails 3 and 6).
+8. Report the route, evidence, risks, and handoff references.
 
-When CNCF/vendor status is load-bearing, verify live state at `https://landscape.cncf.io`.
-
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | Observability config, dashboards, alert rules, instrumentation |
-| `LOCAL_FS` | Resource guides and generated docs |
-| `NETWORK` | Vendor/CNCF status and telemetry backends when checked |
-| `USER_DATA` | Incident symptoms, logs, metrics, traces, profiles |
-
-### Preconditions
-- Observability intent and system boundary are identifiable.
-- Relevant telemetry/config evidence is available or missing evidence is stated.
-
-### Effects and side effects
-- May recommend or modify observability config, dashboards, alerts, and instrumentation docs.
-- May route to vendor-owned skills or external tools.
+### Resource scope and effects
+Reads observability config, dashboards, alert rules, instrumentation, and the incident symptoms, logs, metrics, traces, and profiles the user supplies. Output is guidance by default; a requested change may modify observability config, dashboards, alert rules, and instrumentation docs. Network access covers vendor or CNCF status checks and telemetry backends when a check needs them. Vendor-specific implementation is routed to vendor-owned skills or external tools.
 
 ### Guardrails
 1. Classify intent and use `resources/vendor-categories.md` only when category selection or vendor delegation is needed.

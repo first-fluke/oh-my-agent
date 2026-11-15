@@ -23,7 +23,7 @@ Improve internal code structure - readability first - without changing observabl
 - Auditing whether code is safe to refactor now (coverage breadth x mutation strength x flakiness)
 
 ### When NOT to use
-- Adding or completing behavior already requested by the user -> use the appropriate existing implementation skill; classify the scope under Entry first.
+- Adding or completing behavior already requested by the user -> use the appropriate existing implementation skill; classify the scope in step 1 of the canonical workflow path first.
 - Fixing a reported bug or failing behavior -> use `oma-debug` (refactoring must not change behavior)
 - Security/performance/accessibility review or quality audit -> use `oma-qa`
 - System design, module boundary decisions, ADRs, convention changes -> use `oma-architecture` (a convention/pattern change is an architecture decision, not a local refactoring)
@@ -57,34 +57,12 @@ Standalone runs write plan / before-after reports under `.agents/results/refacto
 - `resources/measurement.md` (4-layer measurement + git forensics commands)
 - Configured code-intelligence symbol/reference tools; existing project test runners for the target language
 - Git history for churn/ownership/hotspot analysis
-
-### Control-flow features
-- Branches by safety-net state (greenfield vs brownfield), statefulness (code-only vs expand-contract), and verification outcome (pass vs Mikado revert)
-- Reads code/history/metrics; writes code, tests (in separate commits), and reports
-- Stops and routes to `oma-architecture` when the change requires a convention/boundary decision
+- Configured code intelligence for symbol/reference/pattern impact analysis; an available semantic rename engine for renames. Native inspection remains valid, but do not replace a semantic rename with blind text replacement
+- Deterministic transformers: IDE refactoring actions, codemods (jscodeshift / OpenRewrite / ast-grep / comby)
+- Metrics: use already installed complexity tools such as lizard / radon and existing project lint limits; installing or downloading additional tools requires authorization
+- Test stack: use the repository's existing test runner and coverage commands (Jest, Vitest, unittest, pytest, XCTest, Swift Testing, cargo test, go test, or whatever the project already uses) and preserve their configuration. Add coverage or mutation instrumentation only when it is relevant to the task and available in the project; a runner migration is separate work
 
 ## Structural Flow
-
-### Entry
-1. Classify the requested outcome against the actual target code, not the word "refactor" alone. Behavior-preserving restructuring stays here. Implementation or bug fixing already included in the request continues under the appropriate existing implementation skill or `oma-debug`, within existing authorization and without renewed approval. For mixed requests, separate behavior changes from restructuring and apply this skill only to the latter.
-2. For the refactoring scope, establish its motivation and diagnose the safety net: coverage of changed lines, test determinism (flakiness), mutation strength if measurable.
-3. Identify the destination form: the language idiom and codebase convention the result must match.
-
-Missing or stub code does not itself authorize new behavior. A pure refactor with
-no implementation to restructure reports the missing target rather than inventing
-one. If a contract fact needed for correctness remains unknown after checking
-available task and project evidence, ask for that specific fact under the shared
-execution policy and clarification protocol. Distinguish missing
-information from missing authorization: retain existing permission, pause only
-dependent work, and continue independent authorized work.
-
-### Scenes
-1. **PREPARE**: Within the refactoring scope, classify greenfield (safety net exists) vs brownfield (build net first); check any existing project size gate and hotspot rank; confirm two-hats scope (no feature/bug work mixed in).
-2. **ACQUIRE**: Read target code via symbol tools; collect metrics (complexity, size, coupling) and git signals (churn, ownership); read the coding guide for conventions.
-3. **REASON**: Decompose the goal into a sequence of named atomic transformations; for stateful targets plan expand-contract; verify each step is independently verifiable and revertible.
-4. **ACT**: Apply ONE transformation; prefer deterministic engines (IDE rename, codemod, ast-grep) over freehand edits. When one feature spans several files after a split, a short entry-file comment listing the related paths and their roles can serve as a map; keep it current.
-5. **VERIFY**: Re-run existing tests unchanged. This safety-net run is the skill's required verification: perform it when test execution is permitted; when the user or project instructions rule it out, stop before the next transformation and report the applied transformation as unverified. Pass -> commit (refactor-only) -> next transformation. Repeated failure -> Mikado: record the broken prerequisite, undo only this transformation's edits, recurse on the prerequisite first. Preserve pre-existing edits and other contributors' work.
-6. **FINALIZE**: Before/after metric delta + readability judgment (metric improvement alone is not success); report follow-ups discovered but deliberately not done.
 
 ### Transitions
 - If the safety net is missing or weak (low diff coverage, flaky, no assertions), write characterization / golden-master tests FIRST, committed separately, before touching production code.
@@ -103,6 +81,8 @@ dependent work, and continue independent authorized work.
 | Metric improves but readability worsens | Reject the transformation; readability is the success criterion, metrics are proxies |
 | Scope keeps growing | Stop; report the boundary issue and split into a Mikado graph or route to architecture |
 | Refactoring engine/codemod produces wrong output | Engines are not infallible - tests re-run is mandatory; fall back to manual atomic edits |
+| A pure refactor has no implementation to restructure (missing or stub code) | Report the missing target rather than inventing one; missing or stub code does not itself authorize new behavior |
+| A contract fact needed for correctness remains unknown after checking available task and project evidence | Ask for that specific fact under the shared execution policy and clarification protocol. Distinguish missing information from missing authorization: retain existing permission, pause only dependent work, and continue independent authorized work |
 
 ### Exit
 - Success: behavior verified unchanged, structure measurably improved, readability confirmed, refactor-only commits, follow-ups reported.
@@ -112,53 +92,21 @@ dependent work, and continue independent authorized work.
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Diagnose safety net | `VALIDATE` | Coverage/flakiness/mutation state of target scope |
-| Collect signals | `READ` | Metrics, git churn/ownership, smells, SATD |
-| Rank targets | `COMPARE` | Hotspot = complexity x churn |
-| Plan atomic sequence | `INFER` | Named transformations, Mikado graph |
-| Write characterization tests | `WRITE` | Golden-master/snapshot tests (separate commit) |
-| Apply transformation | `WRITE` / `CALL_TOOL` | One atomic refactor, engine-first |
-| Verify preservation | `VALIDATE` | Existing tests re-run unchanged |
-| Commit separately | `UPDATE_STATE` | `refactor:`-typed commits only |
-| Report delta | `NOTIFY` | Metric + readability before/after |
-
-### Tools and instruments
-- Configured code intelligence for symbol/reference/pattern impact analysis; an available semantic rename engine for renames. Native inspection remains valid, but do not replace a semantic rename with blind text replacement
-- Deterministic transformers: IDE refactoring actions, codemods (jscodeshift / OpenRewrite / ast-grep / comby)
-- Metrics: use already installed complexity tools such as lizard / radon and existing project lint limits; installing or downloading additional tools requires authorization
-- Test stack: use the repository's existing test runner and coverage commands (Jest, Vitest, unittest, pytest, XCTest, Swift Testing, cargo test, go test, or whatever the project already uses) and preserve their configuration. Add coverage or mutation instrumentation only when it is relevant to the task and available in the project; a runner migration is separate work
-- Git forensics one-liners (see `resources/measurement.md`)
-
 ### Canonical workflow path
-1. Apply Entry's scope routing first. For the remaining refactoring scope, run coverage and check test determinism; classify green/brownfield.
-2. If brownfield: find a seam, write characterization (golden-master) tests for CURRENT behavior, commit.
-3. Select targets by hotspot rank (complexity x churn), not by smell aesthetics alone.
-4. Plan a sequence of named atomic transformations toward the language-idiomatic, convention-conforming form.
-5. Loop per transformation: apply (engine-first) -> re-run tests UNCHANGED -> commit `refactor:` only.
-   On repeated failure: record prerequisite, undo only this transformation's edits,
-   preserve pre-existing and concurrent work, recurse (Mikado).
-6. Finish: metric delta + readability verdict; list discovered-but-deferred work; never mix in behavior changes.
+1. Classify the requested outcome against the actual target code, not the word "refactor" alone. Behavior-preserving restructuring stays here. Implementation or bug fixing already included in the request continues under the appropriate existing implementation skill or `oma-debug`, within existing authorization and without renewed approval. For mixed requests, separate behavior changes from restructuring and apply this skill only to the latter (two hats: no feature or bug work mixed in).
+2. For the refactoring scope, establish its motivation and diagnose the safety net: run coverage on the changed lines, check test determinism (flakiness), and measure mutation strength if measurable. Classify greenfield (safety net exists) vs brownfield (build the net first). When no verification path (tests, types, tooling) exists, the first deliverable is the safety net, not restructuring.
+3. If brownfield: find a seam, write characterization (golden-master or snapshot) tests for CURRENT behavior, and commit them separately.
+4. Read the target code via symbol tools and the coding guide for conventions (known, or explicitly absent). Collect metrics (complexity, size, coupling), git signals (churn, ownership), smells, and SATD; check any existing project size gate.
+5. Select targets by hotspot rank (complexity x churn), not by smell aesthetics alone.
+6. Identify the destination form: the language idiom and codebase convention the result must match. Plan a sequence of named atomic transformations toward it, each independently verifiable and revertible; for stateful targets plan expand-contract.
+7. Loop per transformation: apply ONE transformation, preferring deterministic engines (IDE rename, codemod, ast-grep) over freehand edits -> re-run existing tests UNCHANGED -> commit `refactor:` only -> next transformation. This safety-net run is the skill's required verification: perform it when test execution is permitted; when the user or project instructions rule it out, stop before the next transformation and report the applied transformation as unverified.
+   On repeated failure (Mikado): record the broken prerequisite, undo only this transformation's edits,
+   preserve pre-existing edits and other contributors' concurrent work, recurse on the prerequisite first.
+8. When one feature spans several files after a split, a short entry-file comment listing the related paths and their roles can serve as a map; keep it current.
+9. Finish: before/after metric delta + readability verdict (metric improvement alone is not success); list discovered-but-deferred work; never mix in behavior changes.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | Target source, tests, coding guide, lint configs |
-| `LOCAL_FS` | Reports under `.agents/results/refactor/`, `.git-blame-ignore-revs` |
-| `PROCESS` | Test runners, coverage/mutation tools, codemod engines, git log analysis |
-| `MEMORY` | Mikado prerequisite graph, deferred follow-ups, metric baselines |
-
-### Preconditions
-- A verification path exists or can be built (tests/types/tooling); otherwise the first deliverable is the safety net, not restructuring.
-- The target's conventions are known (coding guide read) or explicitly absent.
-
-### Effects and side effects
-- Mutates production code (structure only) and adds tests in separate commits.
-- Runs test/coverage/mutation commands; reads git history.
-- May write reports under `.agents/results/refactor/` and entries to `.git-blame-ignore-revs`.
-- Never alters observable behavior, public contracts, or persisted data without an expand-contract plan.
+### Resource scope and effects
+Reads target source, tests, the coding guide, lint configs, and git history. Mutates production code (structure only) and adds tests in separate commits. Runs test runners, coverage/mutation tools, codemod engines, and git log analysis. May write reports under `.agents/results/refactor/` and entries to `.git-blame-ignore-revs`. Never alters observable behavior, public contracts, or persisted data without an expand-contract plan.
 
 ### Guardrails
 1. **Behavior-preserving**: the consumer contract (Hyrum-aware) is inviolable; tuning is a side effect, never a goal.

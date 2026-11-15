@@ -44,27 +44,12 @@ Design, implement, review, and document Terraform-based infrastructure across cl
 
 ### Dependencies
 - Terraform CLI, provider CLIs/config, remote state backend, and policy/security scanners
+- OpenTofu as a drop-in for the Terraform CLI
+- Checkov, Trivy (`trivy config`, successor to tfsec), OPA/Sentinel, native `terraform test`, and Terratest when applicable
+- Infracost for plan-time cost estimation when available
 - `resources/multi-cloud-examples.md`, cost guide, policy/testing examples, ISO infra guide, and checklist
 
-### Control-flow features
-- Branches by provider, environment, state backend, destructive risk, policy scan result, and plan/apply intent
-- Reads and writes Terraform files; may run local Terraform/process commands
-- Must not apply/destroy production infrastructure without explicit confirmation and backup awareness
-
 ## Structural Flow
-
-### Entry
-1. Detect provider and environment from project context.
-2. Identify state backend, module boundaries, resources, and risk level.
-3. Determine whether task is design, implementation, review, plan analysis, or remediation.
-
-### Scenes
-1. **PREPARE**: Load Terraform scope, provider, environment, and constraints.
-2. **ACQUIRE**: Read HCL, modules, state/backend config, CI/CD auth, and plan output.
-3. **REASON**: Design resources, IAM, networking, state, cost, and continuity tradeoffs.
-4. **ACT**: Write or review HCL, modules, variables, outputs, and docs.
-5. **VERIFY**: Run fmt, validate, plan, scans, and policy checks when available.
-6. **FINALIZE**: Report diff, plan risk, validation status, and next apply steps.
 
 ### Transitions
 - If provider is unclear, detect from HCL before writing.
@@ -83,54 +68,26 @@ Design, implement, review, and document Terraform-based infrastructure across cl
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Detect provider and scope | `READ` | HCL, providers, modules |
-| Select cloud/resource mapping | `SELECT` | Multi-cloud mapping |
-| Write Terraform | `WRITE` | `.tf`, `.tfvars`, modules |
-| Validate HCL | `CALL_TOOL` | `terraform fmt`, `validate`, `plan` |
-| Compare plan risk | `COMPARE` | Plan output and drift |
-| Infer cost/security/continuity risks | `INFER` | Policy, ISO, cost guides |
-| Report result | `NOTIFY` | Final infra summary |
-
-### Tools and instruments
-- Terraform CLI (or OpenTofu as a drop-in) and provider ecosystem
-- Checkov, Trivy (`trivy config`, successor to tfsec), OPA/Sentinel, native `terraform test`, Terratest when applicable
-- Infracost for plan-time cost estimation when available
-- Cost, policy, multi-cloud, and ISO resource guides
-
 ### Canonical command path
-```bash
-terraform init            # required before validate/plan (-backend=false for static-only checks)
-terraform fmt -recursive
-terraform validate
-terraform plan -out=tfplan
-```
+1. Detect the provider (see Cloud Provider Detection) and environment from project context. Identify the state backend, module boundaries, resources, and risk level, and determine whether the task is design, implementation, review, plan analysis, or remediation.
+2. Read the HCL, modules, state/backend config, CI/CD auth, and any plan output.
+3. Write or review HCL, modules, variables, outputs, and docs, weighing IAM, networking, state, cost, and continuity tradeoffs. Use Multi-Cloud Resource Mapping to select the provider's equivalent resource.
+4. Format, validate, and plan:
+   ```bash
+   terraform init            # required before validate/plan (-backend=false for static-only checks)
+   terraform fmt -recursive
+   terraform validate
+   terraform plan -out=tfplan
+   ```
+5. Run scanners when available before any apply:
+   ```bash
+   checkov -d .
+   trivy config .   # tfsec is in maintenance mode; Trivy is its successor
+   ```
+6. Compare the plan output against the intended change and any drift, then report the diff, plan risk, validation status, and next apply steps.
 
-Run scanners when available before any apply:
-```bash
-checkov -d .
-trivy config .   # tfsec is in maintenance mode; Trivy is its successor
-```
-
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | Terraform modules, variables, outputs, CI config |
-| `LOCAL_FS` | Plans, state config, documentation |
-| `PROCESS` | Terraform, scanner, and policy commands |
-| `CREDENTIALS` | Cloud provider auth and state backend credentials |
-| `NETWORK` | Cloud APIs and remote state backends |
-
-### Preconditions
-- Terraform scope and provider can be determined.
-- Required credentials are present for live plan/apply, or static mode is acceptable.
-
-### Effects and side effects
-- Mutates infrastructure code and documentation.
-- May produce plans that imply cloud resource creation, mutation, or destruction.
-- Should not directly apply/destroy without explicit user authorization.
+### Resource scope and effects
+Reads and writes Terraform modules, variables, outputs, CI config, and infrastructure documentation. `terraform init` and `terraform plan` call cloud APIs and the remote state backend with cloud provider and state backend credentials, and `terraform plan -out=tfplan` writes a local plan file. A plan may imply cloud resource creation, mutation, or destruction. This skill does not apply or destroy without explicit user authorization.
 
 ### Guardrails
 

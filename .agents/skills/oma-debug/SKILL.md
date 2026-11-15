@@ -39,26 +39,10 @@ Reproduce, diagnose, minimally fix, and regression-test bugs while preserving sc
 - `resources/execution-protocol.md`, `resources/checklist.md`, and `resources/debugging-checklist.md`
 - Local codebase search and symbol/reference tools
 - Project test, lint, typecheck, and runtime commands
-
-### Control-flow features
-- Branches by reproduction success, error class, suspected layer, and verification outcome
-- Reads logs/code/tests and writes code/tests/docs
-- Must search for similar patterns after fixing
+- Project logging commands
+- `resources/bug-report-template.md` and the tools reference in `resources/debugging-checklist.md`
 
 ## Structural Flow
-
-### Entry
-1. Capture the reported symptom and suspected scope.
-2. Reproduce or establish the closest reliable failing signal.
-3. Identify affected files, tests, and related patterns.
-
-### Scenes
-1. **PREPARE**: Gather symptoms, logs, reproduction path, and verification command.
-2. **ACQUIRE**: Read failing code, tests, references, and similar patterns.
-3. **REASON**: Isolate root cause and reject unsupported hypotheses.
-4. **ACT**: Apply minimal fix and regression test.
-5. **VERIFY**: Re-run the original failing check and the regression test. Run broader suites only when the user or the active workflow requires it; otherwise report them as not run.
-6. **FINALIZE**: Document root cause, fix, test, and residual risk.
 
 ### Transitions
 - If reproduction fails, use logs/tests to establish a weaker but explicit diagnostic signal.
@@ -77,47 +61,17 @@ Reproduce, diagnose, minimally fix, and regression-test bugs while preserving sc
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Reproduce failure | `CALL_TOOL` | Test/runtime/log command |
-| Search affected code | `READ` | Code, tests, symbols, references |
-| Compare similar patterns | `COMPARE` | Pattern search |
-| Infer root cause | `INFER` | Diagnostic reasoning |
-| Write minimal fix | `WRITE` | Code patch |
-| Write regression test | `WRITE` | Test patch |
-| Verify behavior | `VALIDATE` | Failing check and regression test |
-| Report result | `NOTIFY` | Root-cause summary |
-
-### Tools and instruments
-- Project test, lint, typecheck, runtime, and logging commands
-- Configured code-intelligence symbol/reference/pattern search with native fallback
-- Bug report templates and the tools reference in `resources/debugging-checklist.md`
-
 ### Canonical workflow path
-Use the configured code-intelligence provider to locate files and inspect symbols
-or content. For Serena, use `find_file`, `search_for_pattern`,
-`get_symbols_overview`, and `find_symbol`. Native search is limited to the
-provider exclusions and non-code paths permitted by the project's search policy.
+1. Capture the reported symptom, logs, suspected scope, reproduction path, and verification command.
+2. Run the smallest reproduction command first (a test, runtime, or log command), or establish the closest reliable failing signal.
+3. Locate files and inspect symbols or content with the configured code-intelligence provider. For Serena, use `find_file`, `search_for_pattern`, `get_symbols_overview`, and `find_symbol`. Native search is limited to the provider exclusions and non-code paths permitted by the project's search policy.
+4. Read the failing code, affected tests, references, and similar patterns.
+5. Establish the causal mechanism: isolate the root cause and reject unsupported hypotheses. Follow `resources/execution-protocol.md` for the diagnosis record when an OMA workflow is active.
+6. Add the regression test, apply the minimal fix, and re-run the regression test with the original failing check (RED before the fix, GREEN after). Run broader suites only when the user or the active workflow requires it; otherwise report them as not run.
+7. Document the root cause, fix, test, and residual risk.
 
-
-Then run the smallest reproduction command first, establish the causal mechanism, and follow `resources/execution-protocol.md` for the diagnosis record when an OMA workflow is active. Add the regression test and re-run it with the original failing check (RED before the fix, GREEN after). Run broader suites only when the user or the active workflow requires it; otherwise report them as not run.
-
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | Failing source, tests, and related patterns |
-| `LOCAL_FS` | Bug reports and result artifacts |
-| `PROCESS` | Reproduction and verification commands |
-| `MEMORY` | Hypotheses, root-cause notes, verification evidence |
-
-### Preconditions
-- A bug signal, symptom, or failing behavior is available.
-- Relevant code and verification path can be inspected or the blocker is stated.
-
-### Effects and side effects
-- Mutates source/tests only as needed for the fix.
-- May create bug documentation under `.agents/results/bugs/`.
+### Resource scope and effects
+Reads logs, the failing source, tests, and related patterns; edits source and tests only as needed for the fix. Runs reproduction and verification commands. May create bug reports and result artifacts under `.agents/results/bugs/`.
 
 ### Guardrails
 1. Reproduce first, then diagnose - never guess at fixes

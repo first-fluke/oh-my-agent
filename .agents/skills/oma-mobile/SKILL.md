@@ -38,25 +38,9 @@ Build, modify, and verify cross-platform mobile application features with clean 
 - Flutter/Dart, React Native, Swift, or Kotlin/Gradle toolchain as detected from the project
 - Riverpod/Bloc, Dio, Hilt, Ktor, platform SDKs, and Maestro where applicable
 - `resources/execution-protocol.md`, `resources/checklist.md`, and the stack reference (`stack/` when it exists, otherwise the matching `variants/<platform>/`)
-
-### Control-flow features
-- Branches by platform, state management pattern, offline requirement, native permission, and test level
-- Reads and writes mobile codebase files
-- Selects test, simulator, emulator, or E2E checks and runs them only when the user or the active workflow requires it; builds only when the user asked for one
+- The project's unit, widget, integration, and E2E test commands, and a simulator or emulator when a check needs one
 
 ## Structural Flow
-
-### Entry
-1. Identify target platform(s), screen/feature, architecture layer, and state boundary.
-2. Inspect existing mobile patterns and dependencies.
-3. Determine test level and verification environment.
-
-### Scenes
-1. **PREPARE**: Load app architecture, platform constraints, and acceptance criteria.
-2. **ACQUIRE**: Read existing widgets/screens, providers/blocs, API clients, and tests.
-3. **ACT**: Implement mobile UI, state, platform integration, offline handling, and tests.
-4. **VERIFY**: Select the relevant unit/widget/integration/E2E checks; run them only when the user or the active workflow requires it.
-5. **FINALIZE**: Report behavior, platforms covered, what was verified, and what was not.
 
 ### Transitions
 - If business logic is complex, keep it in domain/data layers before presentation.
@@ -75,46 +59,18 @@ Build, modify, and verify cross-platform mobile application features with clean 
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Inspect mobile architecture | `READ` | Domain/data/presentation files |
-| Select state and platform strategy | `SELECT` | Riverpod/Bloc and platform constraints |
-| Implement mobile code | `WRITE` | Widgets, screens, providers, clients |
-| Validate lifecycle and permissions | `VALIDATE` | Dispose, permissions, offline behavior |
-| Call required verification tools | `CALL_TOOL` | Tests or E2E the user or workflow required; builds only on explicit request |
-| Report result | `NOTIFY` | Final summary |
-
-### Tools and instruments
-- Flutter/Dart, React Native, Swift, or Kotlin Android stack
-- Riverpod/Bloc, Dio, Hilt, Ktor, platform SDKs, Maestro
-- Unit, widget, integration, and E2E test commands
-
 ### Canonical workflow path
-Use the configured code-intelligence provider to locate files and inspect symbols
-or content. For Serena, use `find_file`, `search_for_pattern`,
-`get_symbols_overview`, and `find_symbol`. Native search is limited to the
-provider exclusions and non-code paths permitted by the project's search policy.
-
+1. Detect the platform and stack (see Stack Detection) and identify the target platform(s), screen or feature, architecture layer, state boundary, platform constraints, and acceptance criteria. State assumptions where a required SDK, permission, or API contract is unavailable.
+2. Locate files and inspect symbols or content with the configured code-intelligence provider. For Serena, use `find_file`, `search_for_pattern`, `get_symbols_overview`, and `find_symbol`. Native search is limited to the provider exclusions and non-code paths permitted by the project's search policy.
+3. Read the existing domain, data, and presentation code: widgets or screens, providers or blocs, API clients, tests, and dependencies.
+4. Implement the mobile UI, state, platform integration, offline handling, and tests, following the Guardrails. Check resource disposal, permissions, and offline behavior.
 <!-- oma-docs:ignore-start -->
-Then select the project's mobile verification commands (the `verify:` block of `stack/stack.yaml` when present, otherwise the variant's): typically unit/widget tests and E2E for critical flows. Run them only when the user or the active workflow requires it, never build unless the user asked for a build, and report what was not verified.
+5. Determine the test level and verification environment, then select the project's mobile verification commands (the `verify:` block of `stack/stack.yaml` when present, otherwise the variant's): typically unit/widget tests and E2E for critical flows. Run them only when the user or the active workflow requires it, never build unless the user asked for a build, and report what was not verified.
 <!-- oma-docs:ignore-end -->
+6. Check the applicable checklist items and report the behavior, the platforms covered, what was verified, and what was not.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | Mobile source, tests, platform config |
-| `LOCAL_FS` | Snippets, stack reference, resources |
-| `PROCESS` | Test, emulator, simulator, E2E commands when required; builds only on explicit request |
-| `NETWORK` | Backend APIs when the feature integrates remotely |
-
-### Preconditions
-- Target mobile feature and platform scope are identifiable.
-- Required SDKs, permissions, and API contracts are available or assumptions are stated.
-
-### Effects and side effects
-- Mutates mobile source, tests, and platform configuration.
-- May affect permissions, app lifecycle, offline data, or performance.
+### Resource scope and effects
+Reads and edits mobile source, tests, and platform configuration; reads the stack reference, snippets, and resources. A change may affect permissions, app lifecycle, offline data, or performance. Test, emulator, simulator, and E2E commands run only when the user or the active workflow requires them; builds run only on explicit request. Backend APIs are called when the feature integrates remotely.
 
 ### Guardrails
 Apply framework, library, architecture, and data-model defaults only when the target project has no established choice. Scoped edits do not authorize a stack migration or unrelated infrastructure.

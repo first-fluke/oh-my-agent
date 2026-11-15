@@ -52,24 +52,7 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 - Resource guides for mise basics, tooling profiles, validation, example task wiring, release coordination, and troubleshooting (References)
 - Selected language toolchains and locally provisioned commitlint; no package downloads from Git hooks
 
-### Control-flow features
-- Branches by affected apps, task dependency graph, port availability, task failure, and CI/release context
-- Calls local process commands; may write workflow/config files
-- Must avoid destructive tasks and secrets in workflow configs
-
 ## Structural Flow
-
-### Entry
-1. Identify affected apps/packages and requested workflow outcome.
-2. Read `mise.toml` files and available tasks.
-3. Determine whether tasks can run in parallel or must be sequential.
-
-### Scenes
-1. **PREPARE**: Analyze requirements, task graph, runtime prerequisites, and ports.
-2. **ACQUIRE**: Inspect mise config, task definitions, CI hooks, env patterns, and logs.
-3. **ACT**: Run or modify mise tasks, workflow configs, or validation pipelines.
-4. **VERIFY**: Check exit codes, generated artifacts, logs, and CI compatibility.
-5. **FINALIZE**: Report command status, duration, failures, and next steps.
 
 ### Transitions
 - If runtime versions changed, run `mise install`.
@@ -93,43 +76,16 @@ Set up, run, optimize, and troubleshoot reproducible development workflows using
 
 ## Logical Operations
 
-### Actions
-| Action | SSL primitive | Evidence |
-|--------|---------------|----------|
-| Read task definitions | `READ` | `mise.toml`, CI config |
-| Select task strategy | `SELECT` | Parallel/sequential/changed-scope |
-| Run workflow commands | `CALL_TOOL` | `mise run`, `mise install`, `mise tasks` |
-| Write workflow config | `WRITE` | Hooks, CI, env templates |
-| Validate outputs | `VALIDATE` | Exit codes, logs, artifacts |
-| Report status | `NOTIFY` | Final workflow summary |
-
-### Tools and instruments
-- `mise`, shell, CI/CD tooling, project package manager tasks behind mise
-- Resource guides listed under References, loaded on their stated triggers
-
 ### Canonical command path
-1. Inspect affected app manifests, lockfiles, tool configs, `mise.toml`, CI, hooks, and any `stack/stack.yaml`. Read task definitions and use `mise tasks --all` to discover existing commands.
+1. Identify the affected apps/packages and the requested workflow outcome. Inspect affected app manifests, lockfiles, tool configs, `mise.toml`, CI, hooks, env patterns, and any `stack/stack.yaml`. Read task definitions and use `mise tasks --all` to discover existing commands. Determine whether tasks can run in parallel or must be sequential.
 2. For setup or tool changes, load the selected tooling profiles from References. Configure missing dependencies, settings, and tasks with the detected package manager; preserve existing tool choices. For checks alone, skip setup.
 3. Expose applicable checks as `lint`, `format:check`, and `typecheck`; keep mutating `format` separate. A `check` task can aggregate non-emitting checks. Connect existing stack `verify.syntax.cmd` to that task without adding unsupported schema keys; preserve `verify.tests` and domain-specific scans.
 4. For hook/CI setup, load the validation pipeline. Provision locked local tools first, preserve the existing hook manager, and connect commitlint to the local `commit-msg` hook. Staged lint stays on pre-commit. Typecheck the whole affected app on the push gate when commit time is the constraint. Configure CI for app checks and tests; integration tests stay out of default hooks and required CI (Guardrails).
-5. Before relaunching local validation, follow the validation pipeline's repeated-run guidance. A skipped run is not a pass. Run the configured `mise run check` aggregate, or the applicable individual `lint`, `format:check`, and `typecheck` tasks, plus the relevant hermetic tests. Do not start Docker or external services for validation. Run each underlying checker once. Use `mise run //{path}:{task}` for configured monorepos; typecheck the complete affected app rather than individual changed files.
-6. Report the selected tools, commands, checks passed, and any unavailable or inapplicable checks. Builds remain subject to the execution policy.
+5. Before relaunching local validation, follow the validation pipeline's repeated-run guidance. A skipped run is not a pass. Run the configured `mise run check` aggregate, or the applicable individual `lint`, `format:check`, and `typecheck` tasks, plus the relevant hermetic tests. Do not start Docker or external services for validation. Run each underlying checker once. Use `mise run //{path}:{task}` for configured monorepos; typecheck the complete affected app rather than individual changed files. Check exit codes, logs, generated artifacts, and CI compatibility.
+6. Report the selected tools, commands, checks passed, and any unavailable or inapplicable checks. Include command status, duration, failures, and next steps. Builds remain subject to the execution policy.
 
-### Resource scope
-| Scope | Resource target |
-|-------|-----------------|
-| `CODEBASE` | `mise.toml`, CI configs, scripts, generated clients |
-| `LOCAL_FS` | Env templates, build outputs, logs |
-| `PROCESS` | mise, build, test, lint, dev-server commands |
-| `CREDENTIALS` | Secrets must not be hardcoded in workflow configs |
-
-### Preconditions
-- Target workflow and affected project area are identifiable.
-- Task definitions can be discovered or missing-task state is reported.
-
-### Effects and side effects
-- May start dev servers, run tests/builds, generate clients, run migrations, or edit workflow configs.
-- May consume CPU/time or occupy ports.
+### Resource scope and effects
+Reads and edits `mise.toml`, CI configs, hook configs, scripts, and env templates. Running tasks may start dev servers (which occupy ports), run tests or builds, generate clients, or run migrations; they write build outputs, generated clients, and logs, and consume CPU and time.
 
 ### Guardrails
 
