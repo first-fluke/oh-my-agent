@@ -1,5 +1,13 @@
 # Changelog
 
+## [20.45.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.45.0...cli-v20.45.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **codex:** stop writing keys codex ignores in agent files ([d5d0a72](https://github.com/first-fluke/oh-my-agent/commit/d5d0a72a8485f9d9a24eca04cc3f876f00aa7706))
+* **rules:** keep path-scoped rules free of skill file references ([bf6dedb](https://github.com/first-fluke/oh-my-agent/commit/bf6dedb1cbdb32eaf7814353a4fdd97de746da36))
+
 ## [20.45.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.44.2...cli-v20.45.0) (2026-11-15)
 
 
