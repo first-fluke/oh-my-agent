@@ -56,6 +56,7 @@ import {
 } from "../../utils/config.js";
 import { syncVendorAutoUpdate } from "../../vendors/auto-update.js";
 import { syncBrowserMcp } from "../../vendors/browser-mcp.js";
+import { syncVendorLimits } from "../../vendors/limits.js";
 import { syncVendorSettings } from "./internal/vendor-settings.js";
 import type { LinkPlanEntry } from "./plan.js";
 import { renderLinkPlan } from "./plan.js";
@@ -286,6 +287,16 @@ export function link(opts: LinkOptions = {}): LinkResult {
       );
     }
   };
+  // Resource limits oma lifts for every selected vendor CLI; the whole set is
+  // listed in vendors/limits.ts. Only keys the user has not set are written.
+  const syncLimits = (): void => {
+    for (const path of syncVendorLimits(root, configuredVendors, {
+      global: safeGetInstallMode() === "global",
+      dryRun,
+    })) {
+      record(path, "write", "vendor resource limits");
+    }
+  };
   // Extension-model vendors (pi) install via a forked path, not the
   // settings-file hook flow. Match through the extension-vendor guard so they
   // stay out of the hook-vendor pipeline.
@@ -308,6 +319,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
     syncBrowsers();
     syncProviders();
     syncVendorUpdates();
+    syncLimits();
     return empty;
   }
 
@@ -458,6 +470,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
     syncBrowsers();
     syncProviders();
     syncVendorUpdates();
+    syncLimits();
     if (dryRun && !quiet) {
       renderLinkPlan(plan, root);
     }
@@ -526,6 +539,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
   syncBrowsers();
   syncProviders();
   syncVendorUpdates();
+  syncLimits();
 
   // 6. Merge vendor documentation. AGENTS.md is the only managed doc;
   //    CLAUDE.md / GEMINI.md are never written and stay fully user-owned.

@@ -108,6 +108,13 @@ vi.mock("../../../vendors/cursor/settings.js", () => ({
     homeWriters.cursorAttribution(...(args as [])),
 }));
 
+// Kimi's and Copilot's limits live in their HOME config, so the real pass in
+// the control test would edit the developer's own files. The module's dry-run
+// and HOME guards are covered in vendors/limits.test.ts.
+vi.mock("../../../vendors/limits.js", () => ({
+  syncVendorLimits: () => [],
+}));
+
 import {
   _resetInstallContext,
   setInstallContext,

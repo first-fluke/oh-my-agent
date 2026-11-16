@@ -135,6 +135,10 @@ vi.mock("../../../vendors/grok/settings.js", () => ({
   needsGrokTelemetryUpdate: vi.fn(() => false),
 }));
 
+vi.mock("../../../vendors/limits.js", () => ({
+  syncVendorLimits: vi.fn(() => []),
+}));
+
 vi.mock("../../../vendors/qwen/settings.js", () => ({
   applyQwenSettings: vi.fn((s: unknown) => s),
   needsQwenSettingsUpdate: vi.fn(() => false),
