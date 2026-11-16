@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.46.0",
-  "releaseDate": "2026-11-16T06:44:40.718Z",
+  "releaseDate": "2026-11-16T06:51:22.610Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -200,6 +200,11 @@
       "size": 1122
     },
     {
+      "path": ".agents/hooks/core/open-subagents.ts",
+      "sha256": "b9c67b02b79ce0b707613b12bedf6d5e4797ce9b8601f3117d918edc15910a79",
+      "size": 3111
+    },
+    {
       "path": ".agents/hooks/core/persistent-mode.ts",
       "sha256": "d09f60ef49ccd086f2aa789faaa6b7e1c55ab0c8c93602cc1368d722bc07dc96",
       "size": 33334
@@ -216,8 +221,8 @@
     },
     {
       "path": ".agents/hooks/core/scm-guard.ts",
-      "sha256": "ea35cf57c255062f21d2c045647b68fefaa74987efc33c4ced100433b4750b62",
-      "size": 11616
+      "sha256": "3f62ba636eeecbfd554cb1592745eaba46c71a1aae19e17d3beeb04a681e7a22",
+      "size": 14103
     },
     {
       "path": ".agents/hooks/core/serena-primer.ts",
@@ -281,8 +286,8 @@
     },
     {
       "path": ".agents/hooks/core/triggers.json",
-      "sha256": "0019fd9b42d0cc51658a11834ba4c4eda5b3c09d9c648591a0bd4bd15a5c7a82",
-      "size": 43264
+      "sha256": "ef5c04fb74091ccc77c2ba290d8ed24c063e92d3c2ea0b5893f126a5a35a7759",
+      "size": 43705
     },
     {
       "path": ".agents/hooks/core/types.ts",
@@ -536,8 +541,8 @@
     },
     {
       "path": ".agents/skills/_shared/core/skill-routing.md",
-      "sha256": "6a897c5592628f3ed216308c44533abd4e121b269ed2d400bd8de3bb7d7a6dd1",
-      "size": 3119
+      "sha256": "c18cb30a50bd31064baca60ef504e3512f7623e4f9ee0cf62f3b8fd6fb6ae2a9",
+      "size": 3198
     },
     {
       "path": ".agents/skills/_shared/core/stack-verify.schema.json",
@@ -1491,8 +1496,8 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "86f9c6e08b2a1f755136940747cb663de1800675798a0a4cdd67d2b2178a9ed9",
-      "size": 17038
+      "sha256": "0bef899f58a825b0f387767902de50319114cd076d1f23b7f03719057999c242",
+      "size": 19278
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
@@ -1671,8 +1676,8 @@
     },
     {
       "path": ".agents/skills/oma-scm/SKILL.md",
-      "sha256": "9c4973bb585f77d1b0f58f69b0ab389d51aeb14605df39f4ce285f0e3ba81455",
-      "size": 6030
+      "sha256": "8ff701d218cc8bc532323b260ce7a634281303b6688e13162d250e2d43eed1c2",
+      "size": 6389
     },
     {
       "path": ".agents/skills/oma-scm/resources/cm-operations.md",
@@ -2206,6 +2211,6 @@
   "metadata": {
     "skillCount": 32,
     "workflowCount": 23,
-    "totalFiles": 439
+    "totalFiles": 440
   }
 }
