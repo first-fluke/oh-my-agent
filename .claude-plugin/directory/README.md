@@ -39,7 +39,7 @@ This plugin adds 32 skills and 12 specialist agents. Claude loads a skill only w
 - **oma-market** Research customer pain points, trends, and competitors through the OMA market engine. Use for market discovery or voice-of-customer analysis.
 - **oma-mobile** Implement Flutter, React Native, native Swift, or native Kotlin Android apps. Use for mobile screens, widgets, platform integrations, and application data flows.
 - **oma-observability** Design or troubleshoot telemetry, SLOs, and incident diagnostics. Route to the relevant signal, system boundary, or vendor guide.
-- **oma-orchestration** Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, or to coordinate agents step by step.
+- **oma-orchestration** Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, to coordinate agents step by step, or to hand a task to a named vendor or model.
 - **oma-pdf** Extract PDF text, headings, tables, and images into Markdown using opendataloader-pdf. Use for PDF parsing, not PDF layout creation.
 - **oma-pm** Turn product requirements into scoped tasks with dependencies and acceptance criteria. Use for implementation planning and prioritization.
 - **oma-qa** Review changes for correctness, security, accessibility, and performance. Use for scoped quality reviews or verification plans; bug fixes use oma-debug.

@@ -618,14 +618,15 @@ Esta tabela é gerada a partir de `oma describe`. Não a edite manualmente: exec
 
 | Command | Arguments | Options | Description |
 |:--|:--|:--|:--|
+| `agent batch` | `<agent-id> <prompt-template>` | `--items <file>`, `--check <command>`, `--vendor <vendor>`, `--fallback-vendors <vendors>`, `--model-id <id>`, `--edit-only`, `--concurrency <count>` (default: `3`), `--max-attempts <count>` (default: `2`), `--session-id <id>`, `-w, --workspace <path>`, `--dry-run`, `--timeout-seconds <seconds>`, `--deadline <timestamp>` | Run one bounded agent session per worklist item until each item's check passes |
 | `agent begin` | `<agent-id> <task-id> <session-id>` | `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--project-root <path>`, `-w, --workspace <path>` | Start an evidence-backed native agent run |
 | `agent board` | `<action> [values...]` | `--board <name>`, `--actor <label>`, `--owner <label>`, `--note <text>`, `--json` | Use an available Qwen Agent Board alongside OMA run receipts |
 | `agent context` | `<agent-id>` | `--project-root <path>`, `--difficulty <level>` (default: `Medium`) | Load graph-selected context for a native dispatch prompt |
 | `agent finish` | `<run-id> <result-file>` | `--project-root <path>` | Validate a native agent result against its verification receipts |
-| `agent parallel` | `[tasks...]` | `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--session-id <id>`, `--vendor <vendor>`, `-i, --inline`, `--no-wait` | Run multiple sub-agents in parallel |
+| `agent parallel` | `[tasks...]` | `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--session-id <id>`, `--vendor <vendor>`, `-i, --inline`, `--edit-only`, `--model-id <id>`, `--no-wait` | Run multiple sub-agents in parallel |
 | `agent resume` | `<session-id>` | `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--project-root <path>`, `--dry-run`, `--max-attempts <count>` (default: `3`) | Resume safe incomplete tasks, reusing current acceptance evidence |
 | `agent review` | — | `--session-id <id>`, `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--vendor <vendor>`, `-p, --prompt <prompt>`, `-w, --workspace <path>`, `--no-uncommitted` | Run code review using external CLI (codex/claude/qwen/grok) |
-| `agent spawn` | `<agent-id> <prompt> <session-id>` | `--resumed-from <run-id>`, `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--fallback-vendors <vendors>`, `--task-id <id>`, `--vendor <vendor>`, `-w, --workspace <path>`, `--isolation <mode>`, `--read-only` | Spawn a subagent (prompt can be inline text or a file path) |
+| `agent spawn` | `<agent-id> <prompt> <session-id>` | `--resumed-from <run-id>`, `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--fallback-vendors <vendors>`, `--task-id <id>`, `--vendor <vendor>`, `-w, --workspace <path>`, `--isolation <mode>`, `--read-only`, `--edit-only`, `--model-id <id>` | Spawn a subagent (prompt can be inline text or a file path) |
 | `agent status` | `<session-id> [agent-ids...]` | `--project-root <path>` (default: current directory) | Check status of subagents |
 | `agent verify` | `<run-id> [command...]` | `--timeout-seconds <seconds>`, `--deadline <timestamp>`, `--project-root <path>`, `--required`, `--affected <paths...>` | Execute verification argv after -- and record its real exit code |
 | `auth status` | — | `--json`, `--output <format>` | Check authentication status of all supported CLIs |

@@ -81,6 +81,7 @@ Report created commits/refs and verification. A failed commit, rejected push, or
 3. Do not rewrite shared history without explicit authorization. For an authorized rewrite, use `--force-with-lease`, never plain `--force`.
 4. Read the staged diff before an amend. Unpushed commits may be amended or reorganized within the requested scope; pushed commits are shared history.
 5. User-facing responses follow the configured language; commit messages, branch names, and PR titles/bodies stay in English.
+6. Do not commit while subagents are editing the working tree: a pre-commit hook that stashes unstaged changes can discard their edits. Wait for them or stop them first. The SCM guard refuses the commit while a subagent of the session is open; prefix the commit with `OMA_SCM_ALLOW_BUSY=1` only after the user confirms those agents are not editing this tree.
 
 ### Push and PR safety (only when requested)
 - Confirm the branch, upstream, and ahead/behind state before pushing.
