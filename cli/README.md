@@ -57,7 +57,7 @@ After installing, run `oma doctor`. [Your first 5 minutes](#your-first-5-minutes
 |---|---|---|
 | **12 specialist roles** | PM, architect, backend, frontend, mobile, database and infra engineers, QA reviewer, debugger, refactorer, docs curator, researcher ([meet them](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **20 workflows** | Slash commands from `/brainstorm` and `/plan` to `/review`, `/debug` and `/scm`. The four multi-agent modes also start when a plain request names them | "ultrawork: add rate limiting" |
-| **33 skills** | Domain know-how that loads only when a task needs it: UI, APIs, schemas, Terraform, CI, security, git, observability | loads by itself, e.g. "add a Terraform S3 bucket" |
+| **32 skills** | Domain know-how that loads only when a task needs it: UI, APIs, schemas, Terraform, CI, security, git, observability | loads by itself, e.g. "add a Terraform S3 bucket" |
 | **Files you can open** | Plans, design docs, API contracts, ADRs, bug notes, per-agent results, security evidence, HTML explainers, recaps | `ls .agents/results` |
 | **Research and content** | Cited search, market research, papers, slide decks, MP4 videos, images, local voice, PDF/HWP to Markdown | `/video`, `/convert` |
 | **One folder, 14 runtimes** | One portable `.agents/` directory, written into each runtime's own config files | `oma link cursor` |
@@ -120,7 +120,7 @@ This selects the eight frontend-preset skills. The installer still configures th
 
 | Preset | Skills |
 |--------|--------|
-| **All** | **All 33 skills** (recommended) |
+| **All** | **All 32 skills** (recommended) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack without mobile and tf-infra |
 | Fullstack Mobile | Fullstack without frontend and tf-infra |
@@ -391,7 +391,7 @@ Agents coordinate through plain files in `.agents/state/`, with no outside servi
 </details>
 
 <details>
-<summary><strong>All 33 skills</strong></summary>
+<summary><strong>All 32 skills</strong></summary>
 
 | Skill | What it does |
 |---|---|
@@ -399,7 +399,6 @@ Agents coordinate through plain files in `.agents/state/`, with no outside servi
 | **oma-architecture** | Weighs architecture tradeoffs and draws module boundaries, with ADR/ATAM/CBAM analysis. |
 | **oma-backend** | Builds APIs, authentication, and data access in Python, Node.js, or Rust. |
 | **oma-brainstorm** | Explores ideas with you before you commit to building. |
-| **oma-coordination** | Guides manual, step-by-step coordination of PM, frontend, backend, mobile, and QA agents. |
 | **oma-db** | Designs schemas, migrations, indexes, and vector stores. |
 | **oma-debug** | Finds the root cause, fixes the bug, and writes a regression test. |
 | **oma-design** | Builds design systems with tokens, accessibility, and responsive layouts. |
@@ -412,7 +411,7 @@ Agents coordinate through plain files in `.agents/state/`, with no outside servi
 | **oma-market** | Researches your market from community signals and frames it with SWOT, 5F, and PESTEL. |
 | **oma-mobile** | Builds mobile apps with Flutter, React Native, or native Swift. |
 | **oma-observability** | Routes observability work across metrics, logs, traces, SLOs, and incident forensics. |
-| **oma-orchestration** | Runs multiple agents in parallel from the CLI. |
+| **oma-orchestration** | Runs multiple agents in parallel from the CLI, automatically or one dispatch at a time. |
 | **oma-pdf** | Converts PDF files to Markdown. |
 | **oma-pm** | Plans tasks, breaks down requirements, and defines API contracts. |
 | **oma-qa** | Reviews changes for correctness, OWASP security, performance, and accessibility. |

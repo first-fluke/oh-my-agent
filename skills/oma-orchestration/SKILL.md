@@ -1,7 +1,8 @@
 ---
 name: oma-orchestration
 description: Dispatch and supervise parallel specialist agents with durable task
-  state. Use when automated multi-agent execution is requested.
+  state. Use for automated multi-agent execution, or to coordinate agents step
+  by step.
 ---
 
 # Orchestration - Automated Multi-Agent Coordination
@@ -20,10 +21,10 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 - User wants automated execution without manually spawning agents
 - Full-stack implementation spanning backend, frontend, mobile, and QA
 - User says "run it automatically", "run in parallel", or similar automation requests
+- User wants to coordinate the agents manually, approving each dispatch
 
 ### When NOT to use
 - Simple single-domain task -> use the specific agent directly
-- User wants step-by-step manual control -> use oma-coordination
 - Quick bug fixes or minor changes
 
 ### Expected inputs
@@ -44,6 +45,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 ## Structural Flow
 
 ### Transitions
+- If the user wants step-by-step control, run the canonical path one dispatch at a time: present the next ready task, spawn it when the user says go, and report its result before the next.
 - If native dispatch is available for current runtime/vendor, use it.
 - If vendors differ or native path is unavailable, use fallback spawn.
 - Record the dispatch path per target vendor with subject `orchestration.route-selection` per `references/_shared/runtime/route-selection.md` (native or `oma agent spawn`, and the vendor match or unavailability that decided it).
@@ -67,12 +69,13 @@ Phase names refer to Workflow Phases below.
 
 1. Read the project configuration and the request. Confirm the request decomposes into specialist-agent tasks, then resolve agent vendor routing and the dispatch path for each agent, native or fallback (Guardrails 1–3).
 2. Run PHASE 1 and PHASE 1.5: reuse the valid plan or decompose the request into priority-tiered tasks, then select and record each task's references.
-3. Apply the shared collaboration policy before dispatch: assign edit ownership, peer contact paths, and a collection owner.
+3. Apply the shared collaboration policy before dispatch: its coordination rules, edit ownership, peer contact paths, and a collection owner.
 4. Run PHASE 2: set the session ID and initialize the task board and memory files.
 5. Run PHASE 3: spawn agents by priority tier within the parallelism limit, through the exposed native role-subagent tool or the fallback. When native runtime dispatch is available, prefer the runtime-specific native path listed in this skill before falling back to `oma agent spawn`.
    ```bash
    oma agent spawn <agent-type> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
    ```
+   Spawn options: `--vendor <vendor>` (CLI vendor override), `--isolation worktree` (git worktree per spawn), `--read-only` (non-destructive tools only, for review and QA passes).
 6. Run PHASE 4: monitor each run through completion notifications, or through its progress and result files when polling is the fallback.
 7. Run PHASE 4.5 for every completed agent: mechanical self-check, automated verify, then QA cross-review (Agent-to-Agent Review Loop).
    ```bash

@@ -13,7 +13,6 @@
     "./.agents/skills/oma-architecture",
     "./.agents/skills/oma-backend",
     "./.agents/skills/oma-brainstorm",
-    "./.agents/skills/oma-coordination",
     "./.agents/skills/oma-db",
     "./.agents/skills/oma-debug",
     "./.agents/skills/oma-design",

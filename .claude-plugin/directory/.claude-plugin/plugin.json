@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.45.1",
-  "description": "33 skills and 12 specialist agents that plan, build in parallel, review, and debug.",
+  "description": "32 skills and 12 specialist agents that plan, build in parallel, review, and debug.",
   "author": {
     "name": "First Fluke"
   },
@@ -15,7 +15,6 @@
     "./skills/oma-architecture",
     "./skills/oma-backend",
     "./skills/oma-brainstorm",
-    "./skills/oma-coordination",
     "./skills/oma-db",
     "./skills/oma-debug",
     "./skills/oma-design",

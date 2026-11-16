@@ -4,7 +4,7 @@
 
 oh-my-agent turns Claude into a team. A planner splits the work, engineers build in parallel, a reviewer checks the result, and a debugger fixes the root cause.
 
-This plugin adds 33 skills and 12 specialist agents. Claude loads a skill only when a task needs it, so the rest stay out of your context.
+This plugin adds 32 skills and 12 specialist agents. Claude loads a skill only when a task needs it, so the rest stay out of your context.
 
 ## Agents
 
@@ -27,7 +27,6 @@ This plugin adds 33 skills and 12 specialist agents. Claude loads a skill only w
 - **oma-architecture** Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs.
 - **oma-backend** Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db.
 - **oma-brainstorm** Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration.
-- **oma-coordination** Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination.
 - **oma-db** Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend.
 - **oma-debug** Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests.
 - **oma-design** Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions.
@@ -40,7 +39,7 @@ This plugin adds 33 skills and 12 specialist agents. Claude loads a skill only w
 - **oma-market** Research customer pain points, trends, and competitors through the OMA market engine. Use for market discovery or voice-of-customer analysis.
 - **oma-mobile** Implement Flutter, React Native, native Swift, or native Kotlin Android apps. Use for mobile screens, widgets, platform integrations, and application data flows.
 - **oma-observability** Design or troubleshoot telemetry, SLOs, and incident diagnostics. Route to the relevant signal, system boundary, or vendor guide.
-- **oma-orchestration** Dispatch and supervise parallel specialist agents with durable task state. Use when automated multi-agent execution is requested.
+- **oma-orchestration** Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, or to coordinate agents step by step.
 - **oma-pdf** Extract PDF text, headings, tables, and images into Markdown using opendataloader-pdf. Use for PDF parsing, not PDF layout creation.
 - **oma-pm** Turn product requirements into scoped tasks with dependencies and acceptance criteria. Use for implementation planning and prioritization.
 - **oma-qa** Review changes for correctness, security, accessibility, and performance. Use for scoped quality reviews or verification plans; bug fixes use oma-debug.

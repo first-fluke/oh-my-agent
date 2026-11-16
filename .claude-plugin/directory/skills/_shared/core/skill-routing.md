@@ -19,7 +19,7 @@ The runtime exposes skill names and descriptions for discovery. Read the owning 
 | Requested ideation or alternative exploration | `oma-brainstorm` |
 | Requirements, dependencies, acceptance criteria | `oma-pm` |
 | Requested parallel specialist execution | `oma-orchestration` |
-| Requested manual multi-agent coordination | `oma-coordination` |
+| Requested manual multi-agent coordination | `oma-orchestration` |
 | Git branches, commits, merges, repository history | `oma-scm` |
 
 For other domains, select from the installed skill descriptions. Preserve explicit task ownership and vendor/model configuration.

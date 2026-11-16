@@ -2,6 +2,17 @@
 
 Use when assigning or coordinating parallel worker tasks. Apply the existing execution policy, task contracts, verification, and recovery limits.
 
+## Coordination rules
+
+Every multi-agent workflow applies these before dispatch.
+
+1. Reuse a valid plan; call PM only when decomposition or contract changes are required. Preserve injected session/task/run IDs and do not regenerate a plan already frozen by dispatch.
+2. Run independent tasks of the same priority tier in parallel, within the parallelism limit resolved from project configuration.
+3. Reuse or update contracts for changed API boundaries before dependent work starts.
+4. Accept an implementation only after QA review. Review is an iterative loop (verify, QA cross-review, fix, review again within the recovery budget), not a single final pass.
+5. Assign separate workspaces to avoid file conflicts, or use `--isolation worktree` for a git worktree per spawn.
+6. Resume from the current handoff state and execute applicable steps in dependency order; record why a branch is not applicable.
+
 ## Assignment and collection
 
 - Give each worker a concrete deliverable, allowed edit paths, shared constraints, and the identities of relevant peers. Choose the worker count from the work and available parallelism.
