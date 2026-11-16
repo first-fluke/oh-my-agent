@@ -15,6 +15,8 @@ export interface AgyCaps {
   addDir: boolean;
   /** `--print-timeout <dur>` — raise print mode's 5m default ceiling (agy 1.1+). */
   printTimeout: boolean;
+  /** `--mode <mode>` — per-session execution mode such as `accept-edits`. */
+  modeFlag: boolean;
 }
 
 let cached: AgyCaps | null = null;
@@ -46,6 +48,7 @@ export function detectAgyCaps(runHelp: () => string = runAgyHelp): AgyCaps {
     modelFlag: /^\s*--model\b/m.test(help),
     addDir: /^\s*--add-dir\b/m.test(help),
     printTimeout: /^\s*--print-timeout\b/m.test(help),
+    modeFlag: /^\s*--mode\b/m.test(help),
   };
   return cached;
 }
@@ -90,7 +93,13 @@ export function agyPrintTimeoutArgs(
  * have to restate the rest.
  */
 export function primeAgyCaps(caps: Partial<AgyCaps>): void {
-  cached = { modelFlag: false, addDir: false, printTimeout: false, ...caps };
+  cached = {
+    modelFlag: false,
+    addDir: false,
+    printTimeout: false,
+    modeFlag: false,
+    ...caps,
+  };
 }
 
 /** Clear the cached probe so the next detectAgyCaps() re-runs it. */

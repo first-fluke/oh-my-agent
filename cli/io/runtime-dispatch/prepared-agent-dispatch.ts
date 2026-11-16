@@ -25,6 +25,9 @@ interface PrepareAgentDispatchOptions {
   wrapperId?: string;
   workspace: string;
   readOnly?: boolean;
+  editOnly?: boolean;
+  /** Explicit model for this launch, spelled as the target CLI expects it. */
+  model?: string;
 }
 
 /**
@@ -42,6 +45,8 @@ export function prepareAgentDispatch({
   wrapperId,
   workspace,
   readOnly = false,
+  editOnly = false,
+  model,
 }: PrepareAgentDispatchOptions): PreparedAgentDispatch {
   const dispatch = planDispatch(
     agentId,
@@ -50,7 +55,7 @@ export function prepareAgentDispatch({
     promptFlag,
     promptContent,
     undefined,
-    { readOnly, workspace },
+    { readOnly, editOnly, model, workspace },
   );
 
   applyAgentDefinition(dispatch, agentId, workspace);

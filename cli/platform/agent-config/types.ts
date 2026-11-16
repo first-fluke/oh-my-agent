@@ -79,6 +79,9 @@ export type VendorConfig = {
   /** Declares a read-only restriction supported by this CLI or custom wrapper.
    * Omit to use a built-in default; an explicitly empty value is rejected. */
   read_only_flag?: string;
+  /** Declares a restriction that approves file edits and nothing else.
+   * Omit to use a built-in default; an explicitly empty value is rejected. */
+  edit_only_flag?: string;
   output_format_flag?: string;
   output_format?: string;
   model_flag?: string;

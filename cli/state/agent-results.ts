@@ -99,7 +99,12 @@ export interface AgentRun {
   decisionEventHashes?: Record<string, string>;
   requiredDecisions?: RequiredDecision[];
   contract?: TaskContract;
-  dispatch?: { prompt: string; readOnly?: boolean };
+  dispatch?: {
+    prompt: string;
+    readOnly?: boolean;
+    editOnly?: boolean;
+    model?: string;
+  };
   resumedFrom?: string;
   /**
    * Tail of the agent's captured stdout/stderr, kept beside the run so a
@@ -151,7 +156,12 @@ export const RunSchema = z.object({
   requiredDecisions: z.array(RequiredDecisionSchema).optional(),
   contract: TaskContractSchema.optional(),
   dispatch: z
-    .object({ prompt: z.string(), readOnly: z.boolean().optional() })
+    .object({
+      prompt: z.string(),
+      readOnly: z.boolean().optional(),
+      editOnly: z.boolean().optional(),
+      model: z.string().optional(),
+    })
     .optional(),
   resumedFrom: z.string().uuid().optional(),
   output: z
@@ -412,6 +422,7 @@ export function agentResultInstructions(
   root: string,
   run: AgentRun,
   readOnly = false,
+  editOnly = false,
 ): string {
   const decisions =
     `Required decisions: ${JSON.stringify(run.requiredDecisions ?? run.contract?.required_decisions ?? [])}. Suggested decision subjects: ${JSON.stringify(listAgentDecisionSubjects(run.agentId)[run.agentId] ?? [])}. Report material choices made during this task, including optional choices, as {"subject":"declared or relevant subject","decision":"chosen approach","rationale":"reason","alternatives":[],"evidence":[]}; decisions and rationales must be nonblank. Do not invent decisions. Only required_decisions are mandatory. The parent records decisions for this run and checks every declared subject before completion. Routine work without declared decisions may return decisions: [].\n` +
@@ -420,6 +431,11 @@ export function agentResultInstructions(
       : "");
   if (readOnly)
     return `## Read-only result contract\nRun ${run.runId}, task ${run.taskId}, session ${run.sessionId}. Do not write coordination or result files. Return one final line: OMA_RESULT_JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"decisions":[],"verificationSkipped":"specific explanation of the read-only inspection performed"}. The parent records this inspection; it does not count as executable verification.\n${decisions}`;
+  // An edit-only run has no approved shell, so it can neither execute checks
+  // nor reliably write outside its workspace: it reports through its output,
+  // and the parent verifies.
+  if (editOnly)
+    return `## Edit-only result contract\nRun ${run.runId}, task ${run.taskId}, session ${run.sessionId}. This run approves file edits and nothing else: edit files under ${JSON.stringify(run.workspace)}, do not attempt shell commands, and do not write coordination or result files. Return one final line: OMA_RESULT_JSON: {"status":"completed|partial|blocked|failed","changedFiles":[],"unresolved":[],"artifacts":[],"decisions":[],"verificationSkipped":"edit-only run without shell access; the parent verifies the change"}. List every file you changed in changedFiles, relative to ${JSON.stringify(run.artifactRoot)}. The parent records this result; it does not count as executable verification.\n${decisions}`;
   return (
     `## Execution result contract\nRun: ${run.runId}\nTask: ${run.taskId}\nSession: ${run.sessionId}\n` +
     (run.evidenceRepair

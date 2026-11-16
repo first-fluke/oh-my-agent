@@ -1,13 +1,16 @@
 import type { VendorConfig } from "../../../platform/agent-config.js";
 import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
 import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
-import { resolveReadOnlyArgs } from "../read-only.js";
+import { resolveRestrictionArgs } from "../edit-only.js";
 import type { Invocation } from "../types.js";
 
 export interface NativeInvocationOptions {
   /** Requires a built-in restriction or an explicit read_only_flag.
    * Suppresses auto-approve and rejects missing or conflicting restrictions. */
   readOnly?: boolean;
+  /** Approves file edits and nothing else. Requires a built-in edit-only mode
+   * or an explicit edit_only_flag; suppresses auto-approve like readOnly. */
+  editOnly?: boolean;
   /** Absolute workspace path the agent must be able to write. Used by vendors
    * whose CLI confines writes to a trusted root unless granted explicitly
    * (antigravity/agy → `--add-dir`; codex derives its extra sandbox roots
@@ -28,7 +31,7 @@ export function buildClaudeNativeInvocation(
   vendorConfig: VendorConfig,
   options: NativeInvocationOptions = {},
 ): Invocation {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs("claude", vendorConfig, options);
   const command = vendorConfig.command || "claude";
   const args = ["--agent", agentId];
 
@@ -42,8 +45,8 @@ export function buildClaudeNativeInvocation(
     args.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs("claude", vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   }
@@ -59,7 +62,8 @@ export function buildCodexNativeInvocation(
   vendorConfig: VendorConfig,
   options: NativeInvocationOptions = {},
 ): Invocation {
-  const { readOnly = false, workspace } = options;
+  const { workspace } = options;
+  const restricted = resolveRestrictionArgs("codex", vendorConfig, options);
   const command = vendorConfig.command || "codex";
   const args: string[] = [];
 
@@ -73,8 +77,8 @@ export function buildCodexNativeInvocation(
     args.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs("codex", vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   } else {
     args.push(
       ...resolveCodexAutoApproveArgs(vendorConfig.auto_approve_flag, {
@@ -124,12 +128,17 @@ export function buildAntigravityNativeInvocation(
   vendorConfig: VendorConfig,
   options: NativeInvocationOptions = {},
 ): Invocation {
-  const { readOnly = false, workspace } = options;
+  const { workspace } = options;
+  const restricted = resolveRestrictionArgs(
+    "antigravity",
+    vendorConfig,
+    options,
+  );
   const command = vendorConfig.command || "agy";
   const args: string[] = [];
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs("antigravity", vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
@@ -176,12 +185,12 @@ export function buildKiroNativeInvocation(
   vendorConfig: VendorConfig,
   options: NativeInvocationOptions = {},
 ): Invocation {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs("kiro", vendorConfig, options);
   const command = vendorConfig.command || "kiro-cli";
   const args: string[] = ["chat", "--no-interactive"];
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs("kiro", vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
@@ -213,7 +222,7 @@ export function buildCursorAgentPrintInvocation(
   vendorConfig: VendorConfig,
   options: NativeInvocationOptions = {},
 ): Invocation {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs("cursor", vendorConfig, options);
   const command = vendorConfig.command || "cursor";
   const args: string[] = ["agent", "-p"];
 
@@ -223,8 +232,8 @@ export function buildCursorAgentPrintInvocation(
     args.push(vendorConfig.output_format_flag);
   }
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs("cursor", vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {

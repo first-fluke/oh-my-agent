@@ -51,6 +51,7 @@ import {
   agentResultInstructions,
   beginAgentRun,
   finishAgentRun,
+  readOnlyClaim,
 } from "../../state/agent-results.js";
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import { beginSessionExecution } from "./common.js";
@@ -69,6 +70,10 @@ interface ParallelOptions extends ExecutionOptions {
   inline?: boolean;
   noWait?: boolean;
   session?: string;
+  /** Approve file edits and nothing else for every task. */
+  editOnly?: boolean;
+  /** Explicit model for every task, spelled as the target CLI expects it. */
+  model?: string;
   /** Internal supervisor handoff; never exposed as a user CLI option. */
   runDir?: string;
 }
@@ -112,7 +117,13 @@ async function startParallelSupervisor(
   const manifestFile = path.join(runDir, "supervisor.json");
   fs.writeFileSync(
     manifestFile,
-    JSON.stringify({ tasks, vendor: options.vendor, session: options.session }),
+    JSON.stringify({
+      tasks,
+      vendor: options.vendor,
+      session: options.session,
+      editOnly: options.editOnly,
+      model: options.model,
+    }),
     { mode: 0o600 },
   );
   const logFd = fs.openSync(path.join(runDir, "supervisor.log"), "w", 0o600);
@@ -156,12 +167,16 @@ export async function runParallelSupervisor(
   const manifest = JSON.parse(fs.readFileSync(manifestFile, "utf8")) as {
     vendor?: string;
     session?: string;
+    editOnly?: boolean;
+    model?: string;
   };
   const runDir = path.dirname(path.resolve(manifestFile));
   try {
     await parallelRun([manifestFile], {
       vendor: manifest.vendor,
       session: manifest.session,
+      editOnly: manifest.editOnly,
+      model: manifest.model,
       runDir,
     });
   } finally {
@@ -328,7 +343,11 @@ export async function parallelRun(
           taskId: taskDef.id ?? `${agent}-${idx}`,
           vendor,
           managed: true,
-          dispatch: { prompt: rawPromptContent },
+          dispatch: {
+            prompt: rawPromptContent,
+            editOnly: options.editOnly,
+            model: options.model,
+          },
         });
         const taskPrompt = executionProtocol
           ? `${rawPromptContent}\n\n${executionProtocol}`
@@ -338,7 +357,7 @@ export async function parallelRun(
           classifyDifficulty(rawPromptContent, 3, 2),
           runRoot,
         );
-        const promptContent = `${taskPrompt}\n\n${agentResultInstructions(runRoot, run)}${taskContext ? `\n\n${taskContext}` : ""}`;
+        const promptContent = `${taskPrompt}\n\n${agentResultInstructions(runRoot, run, false, options.editOnly)}${taskContext ? `\n\n${taskContext}` : ""}`;
 
         let prepared: ReturnType<typeof prepareAgentDispatch>;
         try {
@@ -351,6 +370,8 @@ export async function parallelRun(
             sessionId,
             wrapperId: run.runId,
             workspace: resolvedWorkspace,
+            editOnly: options.editOnly,
+            model: options.model,
           });
         } catch (error) {
           finishAgentRun(runRoot, run.runId, null);
@@ -504,11 +525,16 @@ export async function parallelRun(
               if (error instanceof ExecutionStoppedError)
                 signalExitCode = error.exitCode;
             }
+            // An edit-only run reports through its output, not a claim file.
+            const claim =
+              options.editOnly && fs.existsSync(logFile)
+                ? readOnlyClaim(fs.readFileSync(logFile, "utf8"))
+                : undefined;
             const result = finishAgentRun(
               runRoot,
               run.runId,
               signalExitCode ?? code,
-              undefined,
+              claim,
               {
                 logPath: logFile,
                 ...(signalExitCode === undefined

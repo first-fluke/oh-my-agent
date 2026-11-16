@@ -8,13 +8,16 @@ import {
 } from "../../../platform/agent-config.js";
 import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
 import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
-import { resolveReadOnlyArgs } from "../read-only.js";
+import { resolveRestrictionArgs } from "../edit-only.js";
 import type { Invocation } from "../types.js";
 
 export interface ExternalInvocationOptions {
   /** Requires a built-in restriction or an explicit read_only_flag.
    * Suppresses auto-approve and rejects missing or conflicting restrictions. */
   readOnly?: boolean;
+  /** Approves file edits and nothing else. Requires a built-in edit-only mode
+   * or an explicit edit_only_flag; suppresses auto-approve like readOnly. */
+  editOnly?: boolean;
   /** Absolute workspace path the agent must be able to write. Used by vendors
    * whose CLI confines writes to a trusted root unless granted explicitly
    * (antigravity/agy → `--add-dir`; codex derives its extra sandbox roots
@@ -52,7 +55,7 @@ const buildExternalCursorInvocation: ExternalInvocationBuilder = ({
   promptContent,
   options,
 }) => {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs("cursor", vendorConfig, options);
   const command = vendorConfig.command || "cursor";
   const args: string[] = ["agent", "-p"];
 
@@ -62,8 +65,8 @@ const buildExternalCursorInvocation: ExternalInvocationBuilder = ({
     args.push(vendorConfig.output_format_flag);
   }
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs("cursor", vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   } else if (vendorConfig.auto_approve_flag) {
     args.push(vendorConfig.auto_approve_flag);
   } else {
@@ -88,18 +91,16 @@ const buildExternalKiroInvocation: ExternalInvocationBuilder = ({
   agentId,
   options,
 }) => {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs(vendor, vendorConfig, options);
   const command = vendorConfig.command || "kiro-cli";
   const args: string[] = ["chat", "--no-interactive"];
 
-  if (!readOnly) {
-    if (vendorConfig.auto_approve_flag) {
-      args.push(vendorConfig.auto_approve_flag);
-    } else {
-      args.push("--trust-all-tools");
-    }
+  if (restricted) {
+    args.push(...restricted);
+  } else if (vendorConfig.auto_approve_flag) {
+    args.push(vendorConfig.auto_approve_flag);
   } else {
-    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
+    args.push("--trust-all-tools");
   }
 
   if (agentId) {
@@ -122,18 +123,16 @@ const buildExternalGrokInvocation: ExternalInvocationBuilder = ({
   promptContent,
   options,
 }) => {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs(vendor, vendorConfig, options);
   const command = vendorConfig.command || "grok";
   const args: string[] = [];
 
-  if (!readOnly) {
-    if (vendorConfig.auto_approve_flag) {
-      args.push(vendorConfig.auto_approve_flag);
-    } else {
-      args.push("--yolo");
-    }
+  if (restricted) {
+    args.push(...restricted);
+  } else if (vendorConfig.auto_approve_flag) {
+    args.push(vendorConfig.auto_approve_flag);
   } else {
-    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
+    args.push("--yolo");
   }
 
   if (vendorConfig.model_flag && vendorConfig.default_model) {
@@ -160,7 +159,7 @@ const buildExternalKimiInvocation: ExternalInvocationBuilder = ({
   promptContent,
   options,
 }) => {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs(vendor, vendorConfig, options);
   const command = vendorConfig.command || "kimi";
   const args: string[] = [];
 
@@ -168,8 +167,8 @@ const buildExternalKimiInvocation: ExternalInvocationBuilder = ({
     args.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   }
 
   // `-p`/`--prompt` is Kimi's non-interactive prompt flag.
@@ -191,12 +190,12 @@ const buildExternalPiInvocation: ExternalInvocationBuilder = ({
   promptContent,
   options,
 }) => {
-  const { readOnly = false } = options;
+  const restricted = resolveRestrictionArgs("pi", vendorConfig, options);
   const command = vendorConfig.command || "pi";
   const args: string[] = ["-p"];
 
-  if (readOnly) {
-    args.push(...resolveReadOnlyArgs("pi", vendorConfig));
+  if (restricted) {
+    args.push(...restricted);
   }
 
   // Fallback model path (no resolved plan): emit the vendor default model.
@@ -226,7 +225,8 @@ const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
   agentId,
   options,
 }) => {
-  const { readOnly = false, workspace = process.cwd() } = options;
+  const { workspace = process.cwd() } = options;
+  const restricted = resolveRestrictionArgs(vendor, vendorConfig, options);
   const host =
     OPENCODE_FAMILY_HOSTS[isOpencodeFamily(vendor) ? vendor : "opencode"];
   const command = vendorConfig.command || host.binary;
@@ -244,10 +244,10 @@ const buildExternalOpencodeInvocation: ExternalInvocationBuilder = ({
 
   args.push("--dir", workspace);
 
-  if (!readOnly) {
-    args.push(host.autoApproveFlag);
+  if (restricted) {
+    args.push(...restricted);
   } else {
-    args.push(...resolveReadOnlyArgs(vendor, vendorConfig));
+    args.push(host.autoApproveFlag);
   }
 
   // Prompt is the last positional arg — never preceded by a -p flag.
@@ -283,7 +283,8 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
   promptContent,
   options,
 }) => {
-  const { readOnly = false, workspace } = options;
+  const { workspace } = options;
+  const restricted = resolveRestrictionArgs(vendor, vendorConfig, options);
 
   // Vendors whose CLI binary name differs from the vendor identifier.
   const binaryByVendor: Record<string, string> = {
@@ -335,28 +336,26 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
     optionArgs.push(...splitArgs(vendorConfig.isolation_flags));
   }
 
-  if (readOnly) {
-    optionArgs.push(...resolveReadOnlyArgs(vendor, vendorConfig));
+  if (restricted) {
+    optionArgs.push(...restricted);
+  } else if (vendor === "codex") {
+    optionArgs.push(
+      ...resolveCodexAutoApproveArgs(vendorConfig.auto_approve_flag, {
+        workspace,
+      }),
+    );
+  } else if (vendorConfig.auto_approve_flag) {
+    optionArgs.push(vendorConfig.auto_approve_flag);
   } else {
-    if (vendor === "codex") {
-      optionArgs.push(
-        ...resolveCodexAutoApproveArgs(vendorConfig.auto_approve_flag, {
-          workspace,
-        }),
-      );
-    } else if (vendorConfig.auto_approve_flag) {
-      optionArgs.push(vendorConfig.auto_approve_flag);
-    } else {
-      const defaultAutoApprove: Record<string, string> = {
-        qwen: "--yolo",
-        antigravity: "--dangerously-skip-permissions",
-        grok: "--yolo",
-        kiro: "--trust-all-tools",
-      };
-      const fallbackFlag = defaultAutoApprove[vendor];
-      if (fallbackFlag) {
-        optionArgs.push(fallbackFlag);
-      }
+    const defaultAutoApprove: Record<string, string> = {
+      qwen: "--yolo",
+      antigravity: "--dangerously-skip-permissions",
+      grok: "--yolo",
+      kiro: "--trust-all-tools",
+    };
+    const fallbackFlag = defaultAutoApprove[vendor];
+    if (fallbackFlag) {
+      optionArgs.push(fallbackFlag);
     }
   }
 
@@ -410,7 +409,8 @@ export function buildExternalInvocation(
   agentId?: string,
   options: ExternalInvocationOptions = {},
 ): Invocation {
-  if (options.readOnly) resolveReadOnlyArgs(vendor, vendorConfig);
+  // Reject an unenforceable restriction before any builder side effect.
+  resolveRestrictionArgs(vendor, vendorConfig, options);
   const builder = EXTERNAL_DISPATCH[vendor] ?? buildGenericExternalInvocation;
   return builder({
     vendor,

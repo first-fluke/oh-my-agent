@@ -131,6 +131,14 @@ export function registerAgentCommands(program: Command): void {
       "--read-only",
       "Restrict the spawned agent to non-destructive tools (suppresses auto-approve flags)",
     )
+    .option(
+      "--edit-only",
+      "Approve file edits and nothing else (suppresses auto-approve flags; refuses a vendor without such a mode)",
+    )
+    .option(
+      "--model-id <id>",
+      "Run on this model, spelled as the target CLI expects it (replaces the configured plan)",
+    )
     .action(
       runAction(async (agentId, prompt, sessionId, options) => {
         await spawnAgent(
@@ -152,6 +160,8 @@ export function registerAgentCommands(program: Command): void {
             timeoutSeconds: options.timeoutSeconds,
             deadline: options.deadline,
           },
+          undefined,
+          { editOnly: options.editOnly, model: options.modelId },
         );
       }),
     );
@@ -189,6 +199,14 @@ export function registerAgentCommands(program: Command): void {
       "-i, --inline",
       "Inline mode: specify tasks as agent:task arguments",
     )
+    .option(
+      "--edit-only",
+      "Approve file edits and nothing else for every task (refuses a vendor without such a mode)",
+    )
+    .option(
+      "--model-id <id>",
+      "Run every task on this model, spelled as the target CLI expects it",
+    )
     .option("--no-wait", "Don't wait for completion (background mode)")
     .action(
       runAction(async (tasks, options) => {
@@ -197,6 +215,8 @@ export function registerAgentCommands(program: Command): void {
           inline: options.inline,
           noWait: !options.wait,
           session: options.session,
+          editOnly: options.editOnly,
+          model: options.modelId,
           timeoutSeconds: options.timeoutSeconds,
           deadline: options.deadline,
         });

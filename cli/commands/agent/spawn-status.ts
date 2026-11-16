@@ -206,6 +206,14 @@ export function hasSessionResultArtifact(
   return false;
 }
 
+/** How a spawned agent is restricted and which model it runs on. */
+export interface SpawnDispatchOptions {
+  /** Approve file edits and nothing else (mutually exclusive with readOnly). */
+  editOnly?: boolean;
+  /** Explicit model, spelled as the target CLI expects it. */
+  model?: string;
+}
+
 export async function spawnAgent(
   agentId: string,
   prompt: string,
@@ -223,7 +231,15 @@ export async function spawnAgent(
   pendingMemoryDeliveries: Promise<unknown>[] = [],
   executionOptions: ExecutionOptions = {},
   inheritedExecution?: SessionExecution,
+  dispatchOptions: SpawnDispatchOptions = {},
 ) {
+  const { editOnly = false, model } = dispatchOptions;
+  if (readOnly && editOnly) {
+    throw new Error("--read-only and --edit-only are mutually exclusive.");
+  }
+  // Claims and failover checkpoints are files an unrestricted run writes; a
+  // restricted run reports through its output instead.
+  const restricted = Boolean(readOnly) || editOnly;
   const accountingRoot = resolveProjectRoot(process.cwd());
   const execution =
     inheritedExecution ??
@@ -346,7 +362,7 @@ export async function spawnAgent(
       taskId: taskId ?? agentId,
       vendor,
       managed: true,
-      dispatch: { prompt: rawPromptContent, readOnly },
+      dispatch: { prompt: rawPromptContent, readOnly, editOnly, model },
       resumedFrom,
     });
     // Separate launch evidence even when the same role runs concurrently in one
@@ -359,9 +375,14 @@ export async function spawnAgent(
       ? `${rawPromptContent}\n\n${executionProtocol}`
       : rawPromptContent;
 
-    const resultInstructions = agentResultInstructions(runRoot, run, readOnly);
+    const resultInstructions = agentResultInstructions(
+      runRoot,
+      run,
+      readOnly,
+      editOnly,
+    );
     if (resultInstructions) promptContent += `\n\n${resultInstructions}`;
-    if (hasFailover && !readOnly) {
+    if (hasFailover && !restricted) {
       promptContent += `\n\n${failoverCheckpointInstructions({
         root: runRoot,
         runId: run.runId,
@@ -395,6 +416,12 @@ export async function spawnAgent(
     if (readOnly) {
       console.log(color.dim("  Mode: read-only (auto-approve suppressed)"));
     }
+    if (editOnly) {
+      console.log(
+        color.dim("  Mode: edit-only (file edits approved, nothing else)"),
+      );
+    }
+    if (model) console.log(color.dim(`  Model: ${model} (explicit)`));
     let prepared: ReturnType<typeof prepareAgentDispatch>;
     try {
       prepared = prepareAgentDispatch({
@@ -406,6 +433,8 @@ export async function spawnAgent(
         sessionId,
         workspace: resolvedWorkspace,
         readOnly,
+        editOnly,
+        model,
       });
     } catch (error) {
       finishAgentRun(runRoot, run.runId, null);
@@ -740,7 +769,7 @@ export async function spawnAgent(
         console.log(color.blue(`[${agentId}] Exited with code ${code}`));
 
         const claim =
-          readOnly && fs.existsSync(logFile)
+          restricted && fs.existsSync(logFile)
             ? readOnlyClaim(fs.readFileSync(logFile, "utf8"))
             : undefined;
         const result = finishAgentRun(runRoot, run.runId, code, claim, {
@@ -856,6 +885,9 @@ export async function spawnAgent(
             pendingMemoryDeliveries,
             executionOptions,
             execution,
+            // A model id belongs to one vendor's catalog; the fallback vendor
+            // resolves its own.
+            { editOnly },
           ).catch((error) => {
             console.error(
               color.red(

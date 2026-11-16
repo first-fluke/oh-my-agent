@@ -24,7 +24,8 @@ import {
 import { resolveProjectRoot } from "../../utils/fs-utils.js";
 import { beginSessionExecution } from "./common.js";
 
-function dispatchResume(
+/** Run one `agent spawn` child under the session budget; resolves with its exit code. */
+export function dispatchResume(
   task: ResumeTask,
   sessionId: string,
   root: string,
@@ -48,6 +49,8 @@ function dispatchResume(
   ];
   if (task.vendor) args.push("--vendor", task.vendor);
   if (task.readOnly) args.push("--read-only");
+  if (task.editOnly) args.push("--edit-only");
+  if (task.model) args.push("--model-id", task.model);
   if (task.previousRunId) args.push("--resumed-from", task.previousRunId);
   return new Promise((resolve, reject) => {
     execution.assertActive();

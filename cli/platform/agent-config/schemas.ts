@@ -183,6 +183,7 @@ const VendorConfigSchema = z
       }),
     auto_approve_flag: z.string().optional(),
     read_only_flag: z.string().optional(),
+    edit_only_flag: z.string().optional(),
     output_format_flag: z.string().optional(),
     output_format: z.string().optional(),
     model_flag: z.string().optional(),

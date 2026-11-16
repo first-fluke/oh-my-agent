@@ -25,6 +25,8 @@ export interface ResumeTask {
   vendor?: string;
   prompt?: string;
   readOnly?: boolean;
+  editOnly?: boolean;
+  model?: string;
   previousRunId?: string;
   dependsOn: string[];
   status: "reused" | "ready" | "running" | "blocked" | "completed" | "failed";
@@ -95,6 +97,8 @@ function scheduleSessionResume(
       prompt:
         definition.task ?? previous?.dispatch?.prompt ?? definition.description,
       readOnly: previous?.dispatch?.readOnly,
+      editOnly: previous?.dispatch?.editOnly,
+      model: previous?.dispatch?.model,
       previousRunId: previous?.runId,
       dependsOn: contract?.dependencies ?? [],
       status: "ready",

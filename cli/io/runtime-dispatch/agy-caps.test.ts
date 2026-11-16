@@ -29,6 +29,7 @@ describe("detectAgyCaps", () => {
       modelFlag: true,
       addDir: true,
       printTimeout: true,
+      modeFlag: false,
     });
   });
 
@@ -37,6 +38,7 @@ describe("detectAgyCaps", () => {
       modelFlag: false,
       addDir: false,
       printTimeout: false,
+      modeFlag: false,
     });
   });
 
@@ -45,7 +47,12 @@ describe("detectAgyCaps", () => {
       detectAgyCaps(() => {
         throw new Error("agy not installed");
       }),
-    ).toEqual({ modelFlag: false, addDir: false, printTimeout: false });
+    ).toEqual({
+      modelFlag: false,
+      addDir: false,
+      printTimeout: false,
+      modeFlag: false,
+    });
   });
 
   it("matches only flag-definition lines, not prose mentions", () => {
@@ -53,6 +60,7 @@ describe("detectAgyCaps", () => {
       modelFlag: false,
       addDir: false,
       printTimeout: false,
+      modeFlag: false,
     });
   });
 
@@ -62,13 +70,20 @@ describe("detectAgyCaps", () => {
       modelFlag: true,
       addDir: true,
       printTimeout: true,
+      modeFlag: false,
     });
     resetAgyCapsCache();
     expect(detectAgyCaps(() => HELP_1_0)).toEqual({
       modelFlag: false,
       addDir: false,
       printTimeout: false,
+      modeFlag: false,
     });
+  });
+
+  it("detects --mode from a flag-definition line", () => {
+    const help = `${HELP_1_1}\n  --mode                          Set the agent execution mode for this session (accept-edits, auto, plan)`;
+    expect(detectAgyCaps(() => help).modeFlag).toBe(true);
   });
 
   it("primeAgyCaps seeds the cache without probing", () => {
@@ -77,6 +92,7 @@ describe("detectAgyCaps", () => {
       modelFlag: true,
       addDir: false,
       printTimeout: false,
+      modeFlag: false,
     });
   });
 });

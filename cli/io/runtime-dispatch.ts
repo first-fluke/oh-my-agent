@@ -1,11 +1,13 @@
 import { isOpencodeFamily } from "../constants/opencode-family.js";
 import type { VendorConfig } from "../platform/agent-config.js";
+import { detectAgyCaps } from "./runtime-dispatch/agy-caps.js";
 import { persistCodexEffortToToml } from "./runtime-dispatch/codex-effort.js";
 import { ConfigError } from "./runtime-dispatch/config-error.js";
 import {
   detectRuntimeVendor,
   resolveAutoVendor,
 } from "./runtime-dispatch/detect.js";
+import { resolveRestrictionArgs } from "./runtime-dispatch/edit-only.js";
 import { applyLlmProvider } from "./runtime-dispatch/free-invocation.js";
 import {
   buildExternalInvocation,
@@ -20,7 +22,6 @@ import {
   type NativeInvocationOptions,
 } from "./runtime-dispatch/invocations/native.js";
 import { buildAgentPlanArgs } from "./runtime-dispatch/plan-args.js";
-import { resolveReadOnlyArgs } from "./runtime-dispatch/read-only.js";
 import { resolveAgentPlan } from "./runtime-dispatch/resolve-plan.js";
 import type {
   AgentPlan,
@@ -89,6 +90,47 @@ function injectModelBeforeTrailingPrompt(
   invocation.args.push(modelFlag, cliModel);
   invocation.args.push(prompt);
   return invocation;
+}
+
+/** Model flag of each dispatch target, used when the vendor config names none. */
+const BUILT_IN_MODEL_FLAG: Record<string, string> = {
+  antigravity: "--model",
+  claude: "--model",
+  codex: "-m",
+  cursor: "--model",
+  grok: "-m",
+  kilo: "-m",
+  kimi: "-m",
+  kiro: "--model",
+  opencode: "-m",
+  pi: "--model",
+  qwen: "-m",
+};
+
+/**
+ * Vendor config that launches with an explicitly requested model. The value is
+ * passed verbatim: the caller names the model the way the target CLI spells it.
+ */
+function vendorConfigWithModel(
+  vendorConfig: VendorConfig,
+  targetVendor: string,
+  model: string,
+): VendorConfig {
+  const modelFlag =
+    vendorConfig.model_flag ?? BUILT_IN_MODEL_FLAG[targetVendor];
+  if (!modelFlag) {
+    throw new ConfigError(
+      `explicit model for vendor '${targetVendor}': no model flag is known; set vendors.${targetVendor}.model_flag.`,
+    );
+  }
+  // agy 1.0 has no `--model`; its builders drop the flag, which would run the
+  // task on a model the caller did not ask for.
+  if (targetVendor === "antigravity" && !detectAgyCaps().modelFlag) {
+    throw new ConfigError(
+      "explicit model for vendor 'antigravity': the installed agy has no --model flag.",
+    );
+  }
+  return { ...vendorConfig, model_flag: modelFlag, default_model: model };
 }
 
 function planMatchesTargetVendor(
@@ -160,11 +202,57 @@ const NATIVE_DISPATCH: Record<
   },
 };
 
+/**
+ * Resolve the per-agent plan from oma-config and the built-in presets. Returns
+ * null on ConfigError (missing config) so existing installs without
+ * oma-config.yaml keep the legacy VendorConfig path.
+ */
+function resolveConfiguredPlan(
+  agentId: string,
+  targetVendor: string,
+  runtimeVendor: string,
+  env: NodeJS.ProcessEnv,
+): AgentPlan | null {
+  try {
+    // Thread the pi override into plan resolution only when pi is the target (or
+    // runtime), so pi resolves `plan.cli = "pi"` with a per-agent provider model.
+    // All other vendors keep the prior behavior (no override → OMA_RUNTIME_VENDOR
+    // env fallback inside resolveAgentPlan), avoiding any regression.
+    const planOverride =
+      targetVendor === "pi" || runtimeVendor === "pi" ? "pi" : undefined;
+    let plan = resolveAgentPlan(agentId, planOverride, env);
+    if (plan.provider) {
+      // A provider route follows the dispatch target (codex / claude / qwen by
+      // transport), not the pi/runtime override used for registry models.
+      plan = resolveAgentPlan(agentId, targetVendor, env);
+    }
+    // An inherited plan follows the already resolved dispatch target, including
+    // an explicit --vendor choice. It never injects an OMA default model.
+    if (!plan.cliModel)
+      plan = { ...plan, cli: resolveAutoVendor(undefined, targetVendor, env) };
+    return plan;
+  } catch (err) {
+    if (err instanceof ConfigError) {
+      console.warn(
+        `[runtime-dispatch] ${agentId}: ${err.message} — falling back to vendor config defaults`,
+      );
+      return null;
+    }
+    throw err;
+  }
+}
+
 export interface PlanDispatchOptions {
   /** Requires a built-in restriction or an explicit read_only_flag.
    * Suppresses auto_approve_flag; rejects missing or conflicting restrictions
    * before launching the vendor CLI. */
   readOnly?: boolean;
+  /** Approves file edits and nothing else. Requires a built-in edit-only mode
+   * or an explicit edit_only_flag; mutually exclusive with readOnly. */
+  editOnly?: boolean;
+  /** Launch with this model, spelled as the target CLI expects it. Replaces the
+   * configured per-agent plan, so its effort and provider route do not apply. */
+  model?: string;
   /** Absolute workspace path the spawned agent must be able to write.
    * Threaded to native and external builders for vendors that confine writes
    * to a trusted root (antigravity/agy → `--add-dir`; codex sandbox roots). */
@@ -180,46 +268,29 @@ export function planDispatch(
   env: NodeJS.ProcessEnv = process.env,
   options: PlanDispatchOptions = {},
 ): DispatchPlan {
-  const { readOnly = false, workspace } = options;
+  const { readOnly = false, editOnly = false, workspace } = options;
+  const model = options.model?.trim();
+  if (options.model !== undefined && !model) {
+    throw new ConfigError("explicit model must not be empty.");
+  }
   // Keep required restrictions outside the legacy config-fallback catch and
   // before model-plan persistence or vendor capability probes.
-  if (readOnly) resolveReadOnlyArgs(targetVendor, vendorConfig);
+  resolveRestrictionArgs(targetVendor, vendorConfig, { readOnly, editOnly });
+  const explicitModelConfig = model
+    ? vendorConfigWithModel(vendorConfig, targetVendor, model)
+    : null;
   const invOptions: NativeInvocationOptions & ExternalInvocationOptions = {
     readOnly,
+    editOnly,
     workspace,
   };
 
   const runtimeVendor = detectRuntimeVendor(env);
 
-  // Resolve per-agent plan from oma-config and the built-in presets.
-  // Falls back to legacy VendorConfig path on ConfigError (missing config) so
-  // existing installs without oma-config.yaml continue to work unchanged.
+  // An explicit model replaces the configured plan for this launch.
   let plan: AgentPlan | null = null;
-  try {
-    // Thread the pi override into plan resolution only when pi is the target (or
-    // runtime), so pi resolves `plan.cli = "pi"` with a per-agent provider model.
-    // All other vendors keep the prior behavior (no override → OMA_RUNTIME_VENDOR
-    // env fallback inside resolveAgentPlan), avoiding any regression.
-    const planOverride =
-      targetVendor === "pi" || runtimeVendor === "pi" ? "pi" : undefined;
-    plan = resolveAgentPlan(agentId, planOverride, env);
-    if (plan.provider) {
-      // A provider route follows the dispatch target (codex / claude / qwen by
-      // transport), not the pi/runtime override used for registry models.
-      plan = resolveAgentPlan(agentId, targetVendor, env);
-    }
-    // An inherited plan follows the already resolved dispatch target, including
-    // an explicit --vendor choice. It never injects an OMA default model.
-    if (!plan.cliModel)
-      plan = { ...plan, cli: resolveAutoVendor(undefined, targetVendor, env) };
-  } catch (err) {
-    if (err instanceof ConfigError) {
-      console.warn(
-        `[runtime-dispatch] ${agentId}: ${err.message} — falling back to vendor config defaults`,
-      );
-    } else {
-      throw err;
-    }
+  if (!explicitModelConfig) {
+    plan = resolveConfiguredPlan(agentId, targetVendor, runtimeVendor, env);
   }
 
   const activePlan = planMatchesTargetVendor(plan, targetVendor) ? plan : null;
@@ -232,9 +303,9 @@ export function planDispatch(
   // When a plan is resolved, strip default_model from vendorConfig so the
   // existing native/external builders do not emit a duplicate model flag.
   // buildAgentPlanArgs(plan) appended below provides the correct model flag.
-  const effectiveVendorConfig = activePlan
-    ? vendorConfigWithoutModel(vendorConfig)
-    : vendorConfig;
+  const effectiveVendorConfig =
+    explicitModelConfig ??
+    (activePlan ? vendorConfigWithoutModel(vendorConfig) : vendorConfig);
 
   if (activePlan?.cli === "codex" && activePlan.effort !== undefined) {
     persistCodexEffortToToml(process.cwd(), activePlan.effort);
