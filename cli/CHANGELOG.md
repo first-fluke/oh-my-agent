@@ -1,5 +1,12 @@
 # Changelog
 
+## [20.45.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.45.1...cli-v20.45.2) (2026-11-16)
+
+
+### Refactoring
+
+* **skills:** fold oma-coordination into shared policy and orchestration ([f469ede](https://github.com/first-fluke/oh-my-agent/commit/f469ede979ae8dc7f5d8df3ff249bd028fc807c6))
+
 ## [20.45.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.45.0...cli-v20.45.1) (2026-11-15)
 
 
