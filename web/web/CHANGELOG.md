@@ -1,5 +1,12 @@
 # Changelog
 
+## [11.22.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.22.0...web-v11.22.1) (2026-11-16)
+
+
+### Refactoring
+
+* **skills:** fold oma-coordination into shared policy and orchestration ([f469ede](https://github.com/first-fluke/oh-my-agent/commit/f469ede979ae8dc7f5d8df3ff249bd028fc807c6))
+
 ## [11.22.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.21.0...web-v11.22.0) (2026-11-15)
 
 
