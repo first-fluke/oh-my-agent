@@ -7,12 +7,12 @@ describe("resolvePresetSkills", () => {
     expect(resolvePresetSkills()).toBeUndefined();
   });
 
-  it("selects the eight frontend skills instead of all thirty-three", () => {
+  it("selects the eight frontend skills instead of all thirty-two", () => {
     const selected = resolvePresetSkills("frontend");
     expect(selected).toHaveLength(8);
     expect(selected).toContain("oma-frontend");
     expect(selected).not.toContain("oma-backend");
-    expect(resolvePresetSkills("all")).toHaveLength(33);
+    expect(resolvePresetSkills("all")).toHaveLength(32);
   });
 
   it.each(["unknown-preset", "custom", "", "__proto__", "toString"])(

@@ -58,7 +58,7 @@ oh-my-agent (`oma`) เปลี่ยน Claude Code, Codex CLI, Cursor แล�
 |---|---|---|
 | **12 บทบาทผู้เชี่ยวชาญ** | PM, สถาปนิก, วิศวกร backend, frontend, mobile, ฐานข้อมูล และ infra, ผู้รีวิว QA, ผู้ดีบัก, ผู้รีแฟกเตอร์, ผู้ดูแลเอกสาร, นักวิจัย ([รู้จักพวกเขา](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **20 เวิร์กโฟลว์** | คำสั่ง slash ตั้งแต่ `/brainstorm` และ `/plan` ไปจนถึง `/review`, `/debug` และ `/scm` ส่วนโหมดหลายเอเจนต์ทั้งสี่ยังเริ่มได้เมื่อคำขอธรรมดาเรียกชื่อโหมดนั้น | "ultrawork: add rate limiting" |
-| **33 skill** | ความรู้เฉพาะโดเมนที่โหลดเฉพาะเมื่องานต้องใช้: UI, API, schema, Terraform, CI, ความปลอดภัย, git, observability | โหลดเอง เช่น "add a Terraform S3 bucket" |
+| **32 skill** | ความรู้เฉพาะโดเมนที่โหลดเฉพาะเมื่องานต้องใช้: UI, API, schema, Terraform, CI, ความปลอดภัย, git, observability | โหลดเอง เช่น "add a Terraform S3 bucket" |
 | **ไฟล์ที่คุณเปิดดูได้** | แผนงาน เอกสารดีไซน์ API contract, ADR บันทึกบัค ผลลัพธ์รายเอเจนต์ หลักฐานด้านความปลอดภัย เอกสารอธิบาย HTML และสรุปงาน | `ls .agents/results` |
 | **งานวิจัยและคอนเทนต์** | การค้นหาพร้อมแหล่งอ้างอิง วิจัยตลาด งานวิจัยวิชาการ สไลด์ วิดีโอ MP4 ภาพ เสียงบนเครื่อง และการแปลง PDF/HWP เป็น Markdown | `/video`, `/convert` |
 | **โฟลเดอร์เดียว 14 runtime** | ไดเรกทอรี `.agents/` ที่พกพาไปได้เพียงชุดเดียว ซึ่งถูกเขียนลงไฟล์คอนฟิกของแต่ละ runtime เอง | `oma link cursor` |
@@ -121,7 +121,7 @@ oma install --preset frontend --yes
 
 | Preset | Skill |
 |--------|--------|
-| **All** | **Skill ทั้ง 33 ตัว** (แนะนำ) |
+| **All** | **Skill ทั้ง 32 ตัว** (แนะนำ) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack โดยไม่มี mobile และ tf-infra |
 | Fullstack Mobile | Fullstack โดยไม่มี frontend และ tf-infra |
@@ -396,7 +396,7 @@ Serena ให้บริการนำทางโค้ดและวิน�
 </details>
 
 <details>
-<summary><strong>สกิลทั้ง 33 รายการ</strong></summary>
+<summary><strong>สกิลทั้ง 32 รายการ</strong></summary>
 
 | สกิล | ทำอะไร |
 |---|---|
@@ -404,7 +404,6 @@ Serena ให้บริการนำทางโค้ดและวิน�
 | **oma-architecture** | ชั่งน้ำหนัก tradeoffs ด้านสถาปัตยกรรมและกำหนดขอบเขตโมดูล พร้อมวิเคราะห์ด้วย ADR/ATAM/CBAM |
 | **oma-backend** | สร้าง API ระบบยืนยันตัวตน และการเข้าถึงข้อมูลด้วย Python, Node.js หรือ Rust |
 | **oma-brainstorm** | สำรวจไอเดียร่วมกับคุณก่อนตัดสินใจลงมือสร้างจริง |
-| **oma-coordination** | แนะนำการประสานงานเอเจนต์ PM, frontend, backend, mobile และ QA แบบแมนวลทีละขั้นตอน |
 | **oma-db** | ออกแบบ schema, migration, index และ vector store |
 | **oma-debug** | ค้นหาสาเหตุต้นตอ แก้บัก และเขียน regression test |
 | **oma-design** | สร้าง design system พร้อม token, accessibility และ responsive layout |

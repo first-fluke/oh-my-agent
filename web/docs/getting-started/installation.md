@@ -94,7 +94,7 @@ Pick the preset that matches the work the repository needs. Skill names below dr
 
 | Preset | Choose it when the project is | Skills included | Count |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Any project, or you want every workflow to work out of the box | Every skill in the registry | 33 |
+| **all** | Any project, or you want every workflow to work out of the box | Every skill in the registry | 32 |
 | **fullstack** | Web and mobile clients with a backend and Terraform infrastructure | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | A web frontend with a backend and database | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | A mobile app with a backend and database | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -134,15 +134,15 @@ still need their own checks.
 
 Every preset copies the workflow and agent definitions. Commands and prompts are
 exposed only for workflows whose required skills are available. For example, a
-fresh frontend installation leaves `/work` unavailable because it lacks
-`oma-coordination`; its existing PM and QA skills already satisfy the other entry
-requirements. The installer reports that missing skill without switching to
-`all`.
+fresh frontend installation leaves `/orchestrate` unavailable because it lacks
+`oma-orchestration`, while `/work`, `/ultrawork`, and `/ralph` are available: the
+preset's PM and QA skills satisfy their entry requirements. The installer reports
+the missing skill without switching to `all`.
 
 | Workflow | Required entry skills | Presets that include them |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

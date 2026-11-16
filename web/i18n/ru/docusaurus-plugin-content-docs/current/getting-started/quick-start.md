@@ -100,6 +100,6 @@ OMA запускается с `model_preset: auto`, Serena для code intellige
 - [Выбор настройки](./choose-setup.md) для одного навыка, пресета runtime или плагина Claude Code
 - [Важные значения по умолчанию](./important-defaults.md): приоритеты, provider и варианты восстановления
 - [Установка](./installation.md): пресеты, настройка вендоров, глобальная установка и обновления
-- [Агенты](../core-concepts/agents.md): 33 пакета навыков и роли dispatch
+- [Агенты](../core-concepts/agents.md): 32 пакета навыков и роли dispatch
 - [Рабочие процессы](../core-concepts/workflows.md): планирование, параллельное выполнение, QA и persistent mode
 - [Устранение неполадок](../guide/troubleshooting.md), если установка, вендор или хук ведут себя не так, как ожидалось

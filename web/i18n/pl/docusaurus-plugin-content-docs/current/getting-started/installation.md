@@ -86,7 +86,7 @@ Wybierz preset odpowiadający pracy, której potrzebuje repozytorium. Nazwy umie
 
 | Preset | Wybierz go, gdy projekt to | Zawarte umiejętności | Liczba |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Dowolny projekt albo chcesz, aby każdy workflow działał od razu | Każda umiejętność z rejestru | 33 |
+| **all** | Dowolny projekt albo chcesz, aby każdy workflow działał od razu | Każda umiejętność z rejestru | 32 |
 | **fullstack** | Klienty web i mobile z backendem i infrastrukturą Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Frontend webowy z backendem i bazą danych | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Aplikacja mobilna z backendem i bazą danych | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -112,12 +112,12 @@ Po instalacji sprawdź listę wybranych umiejętności i raport dostępności wo
 
 ### Workflowy wymagające umiejętności spoza presetu {#workflows-that-need-skills-outside-a-preset}
 
-Każdy preset kopiuje definicje workflowów i agentów. Polecenia i prompty są udostępniane wyłącznie dla workflowów, których wymagane umiejętności są dostępne. Przykładowo świeża instalacja presetu `frontend` pozostawia `/work` niedostępne, ponieważ brakuje w niej `oma-coordination`; jej istniejące umiejętności PM i QA spełniają już pozostałe wymagania wejściowe. Instalator zgłasza brakującą umiejętność bez przełączania na `all`.
+Każdy preset kopiuje definicje workflowów i agentów. Polecenia i prompty są udostępniane wyłącznie dla workflowów, których wymagane umiejętności są dostępne. Przykładowo świeża instalacja presetu `frontend` pozostawia `/orchestrate` niedostępne, ponieważ brakuje w niej `oma-orchestration`, natomiast `/work`, `/ultrawork` i `/ralph` są dostępne: umiejętności PM i QA z presetu spełniają ich wymagania wejściowe. Instalator zgłasza brakującą umiejętność bez przełączania na `all`.
 
 | Workflow | Wymagane umiejętności wejściowe | Presety, które je zawierają |
 |----------|----------------------------------|-----------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

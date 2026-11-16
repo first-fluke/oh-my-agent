@@ -11,7 +11,7 @@ description: 面向读者介绍 oh-my-agent 的安装目录，涵盖 `.agents/` 
 
 ## 代表性目录树 {#representative-directory-tree}
 
-下方目录树详细展示共享资源和具有代表性的领域技能。当前目录包含 33 个技能目录；省略的技能遵循相同的 `SKILL.md` 加上可选 `resources/`、`stack/` 或技能专用目录的模式。如果生成文件或可选文件不存在，应以实时 `.agents/` 目录为准。
+下方目录树详细展示共享资源和具有代表性的领域技能。当前目录包含 32 个技能目录；省略的技能遵循相同的 `SKILL.md` 加上可选 `resources/`、`stack/` 或技能专用目录的模式。如果生成文件或可选文件不存在，应以实时 `.agents/` 目录为准。
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -281,7 +278,7 @@ your-project/
 
 ### skills/
 
-技能专业知识所在的位置。当前目录包含 33 个技能目录和 `_shared` 资源；`all` 预设从这个实时目录派生。
+技能专业知识所在的位置。当前目录包含 32 个技能目录和 `_shared` 资源；`all` 预设从这个实时目录派生。
 
 **`_shared/`**：所有智能体共用的资源：
 - `core/`：执行策略、代码智能规则、路由、上下文加载、提示结构、澄清协议、上下文预算、难度评估、质量原则、测试方法、供应商检测、会话指标、通用检查清单、经验教训和 API 契约模板

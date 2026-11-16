@@ -1,7 +1,7 @@
 ---
 title: Guide d’utilisation
 sidebar_label: Utiliser OMA
-description: "Guide d’utilisation d’OMA : choisir une tâche en fonction du lecteur, exemples single-skill et multi-domaines, workflows, détection automatique, 33 compétences, exécution CLI parallèle, tableaux de bord, valeurs par défaut et récupération."
+description: "Guide d’utilisation d’OMA : choisir une tâche en fonction du lecteur, exemples single-skill et multi-domaines, workflows, détection automatique, 32 compétences, exécution CLI parallèle, tableaux de bord, valeurs par défaut et récupération."
 ---
 
 # Utiliser oh-my-agent
@@ -296,7 +296,7 @@ Des phrases telles que « plan the authentication feature », « fix the login b
 
 ---
 
-## Les 33 compétences : référence rapide
+## Les 32 compétences : référence rapide
 
 Le preset `all` de l’installateur suit le registre actif. Cette table regroupe chaque compétence selon son usage principal ; une compétence peut tout de même se coordonner avec une autre à une frontière.
 
@@ -306,7 +306,6 @@ Le preset `all` de l’installateur suit le registre actif. Cette table regroupe
 | **oma-architecture** | Frontières système, compromis, ADR | Recommandation d’architecture ou décision consignée |
 | **oma-backend** | API, auth, logique serveur, migrations | Changements Router/service/repository et vérification |
 | **oma-brainstorm** | Idées ambiguës et comparaison d’approches | Document de design dans `docs/plans/designs/` |
-| **oma-coordination** | Règles de coordination partagées pour `/work`, `/orchestrate` et `/ultrawork` ; coordination manuelle étape par étape | Recommandations sur la réutilisation du plan, l’alignement des contrats, la responsabilité des workspaces et la transmission QA |
 | **oma-db** | Schéma, ERD, réglage de requêtes, capacité | Documentation de schéma, migrations et plan de récupération |
 | **oma-debug** | Reproduction et cause profonde d’un bug | Correction minimale, preuve de régression et recherche de motifs |
 | **oma-security** | Scan de sécurité du code source, des compétences d’agents et de MCP ; tests d’intrusion uniquement sur une plateforme d’exécution fournie par l’utilisateur et préalablement vérifiée | Constats validés et configuration des gates de scan |

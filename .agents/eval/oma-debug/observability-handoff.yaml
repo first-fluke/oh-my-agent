@@ -15,7 +15,7 @@ checker:
   rubric: |
     PASS only if the answer hands off to `oma-observability` by name and
     says the traces/logs are looked up by `trace_id`. FAIL if it names a
-    different skill (oma-search, oma-backend, oma-coordination) or a
+    different skill (oma-search, oma-backend, oma-orchestration) or a
     generic tool (grep the logs, Datadog, Sentry) instead, or if it does
     not identify `trace_id` as the correlation key.
 weight: 1

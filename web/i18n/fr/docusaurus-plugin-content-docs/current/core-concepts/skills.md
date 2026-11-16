@@ -239,7 +239,6 @@ Une seule compétence responsable traite une tâche délimitée ; n’ajoutez un
 | Idéation ou exploration d’alternatives demandée | oma-brainstorm |
 | Exigences, dépendances, critères d’acceptation | oma-pm |
 | Exécution parallèle de spécialistes demandée | oma-orchestration |
-| Coordination multi-agents manuelle demandée | oma-coordination |
 | Branches Git, commits, fusions, historique du dépôt | oma-scm |
 
 ### Dépendances entre compétences

@@ -59,7 +59,7 @@ oh-my-agent（`oma`）把 Claude Code、Codex CLI、Cursor 以及其他 11 个�
 |---|---|---|
 | **12 个专家角色** | PM、架构师、后端、前端、移动端、数据库和基础设施工程师、QA 审查者、调试者、重构者、文档管理员、研究员（[认识他们](#meet-the-team)） | `/orchestrate build a TODO app with login` |
 | **20 个工作流** | 斜杠命令，从 `/brainstorm`、`/plan` 到 `/review`、`/debug` 和 `/scm`。四种多 agent 模式在普通请求点名时也会启动 | “ultrawork: add rate limiting” |
-| **33 个技能** | 只在任务需要时加载的领域知识：UI、API、schema、Terraform、CI、安全、git、可观测性 | 自动加载，例如“add a Terraform S3 bucket” |
+| **32 个技能** | 只在任务需要时加载的领域知识：UI、API、schema、Terraform、CI、安全、git、可观测性 | 自动加载，例如“add a Terraform S3 bucket” |
 | **能打开的文件** | 计划、设计文档、API 契约、ADR、bug 笔记、各 agent 的结果、安全证据、HTML 讲解文档、回顾总结 | `ls .agents/results` |
 | **研究与内容** | 带引用的搜索、市场研究、论文、幻灯片、MP4 视频、图像、本地语音、PDF/HWP 转 Markdown | `/video`、`/convert` |
 | **一个目录，14 个运行时** | 一个可移植的 `.agents/` 目录，写入每个运行时自己的配置文件 | `oma link cursor` |
@@ -123,7 +123,7 @@ oma install --preset frontend --yes
 
 | 预设 | 技能 |
 |--------|--------|
-| **All** | **全部 33 个技能**（推荐） |
+| **All** | **全部 32 个技能**（推荐） |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack 去掉 mobile 和 tf-infra |
 | Fullstack Mobile | Fullstack 去掉 frontend 和 tf-infra |
@@ -398,7 +398,7 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 </details>
 
 <details>
-<summary><strong>全部 33 个技能</strong></summary>
+<summary><strong>全部 32 个技能</strong></summary>
 
 | 技能 | 作用 |
 |---|---|
@@ -406,7 +406,6 @@ agent 之间通过 `.agents/state/` 中的普通文件协调，不依赖任何�
 | **oma-architecture** | 权衡架构取舍、划定模块边界，并提供 ADR/ATAM/CBAM 分析 |
 | **oma-backend** | 用 Python、Node.js 或 Rust 构建 API、认证与数据访问 |
 | **oma-brainstorm** | 在动手构建之前，先和你一起探索想法 |
-| **oma-coordination** | 指导你逐步手动协调 PM、前端、后端、移动端与 QA agent |
 | **oma-db** | 设计 schema、迁移、索引与 vector store |
 | **oma-debug** | 找到根因、修复 bug，并编写回归测试 |
 | **oma-design** | 构建包含 token、无障碍与响应式布局的设计系统 |

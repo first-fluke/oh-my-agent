@@ -100,6 +100,6 @@ Jeśli zarządzane zadanie utknie, zacznij od `oma agent status <session-id> [ag
 - [Wybór konfiguracji](./choose-setup.md) — dla pojedynczej umiejętności, presetu runtime'u albo wtyczki Claude Code
 - [Ważne wartości domyślne](./important-defaults.md) — priorytety, dostawcy i sposoby odzyskiwania
 - [Instalacja](./installation.md) — presety, konfiguracja dostawców, instalacje globalne i aktualizacje
-- [Agenci](../core-concepts/agents.md) — 33 pakiety umiejętności i role dispatchu
+- [Agenci](../core-concepts/agents.md) — 32 pakiety umiejętności i role dispatchu
 - [Workflowy](../core-concepts/workflows.md) — planowanie, wykonanie równoległe, QA i tryby trwałe
 - [Rozwiązywanie problemów](../guide/troubleshooting.md) — gdy instalacja, dostawca albo hook nie działa zgodnie z oczekiwaniami

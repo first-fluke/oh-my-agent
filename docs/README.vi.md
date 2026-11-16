@@ -60,7 +60,7 @@ Sau khi cài, chạy `oma doctor`. [5 phút đầu tiên](#your-first-5-minutes)
 |---|---|---|
 | **12 vai trò chuyên gia** | PM, kiến trúc sư, kỹ sư backend, frontend, mobile, database và infra, QA reviewer, debugger, refactorer, docs curator, researcher ([gặp gỡ họ](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **20 workflow** | Slash command từ `/brainstorm` và `/plan` đến `/review`, `/debug` và `/scm`. Bốn chế độ đa agent cũng khởi động khi một yêu cầu thông thường gọi tên chúng | "ultrawork: add rate limiting" |
-| **33 skill** | Kiến thức chuyên môn chỉ được tải khi task cần: UI, API, schema, Terraform, CI, bảo mật, git, observability | tự tải, ví dụ "add a Terraform S3 bucket" |
+| **32 skill** | Kiến thức chuyên môn chỉ được tải khi task cần: UI, API, schema, Terraform, CI, bảo mật, git, observability | tự tải, ví dụ "add a Terraform S3 bucket" |
 | **File bạn có thể mở** | Kế hoạch, design doc, API contract, ADR, ghi chú bug, kết quả theo từng agent, bằng chứng bảo mật, tài liệu giải thích HTML, bản tóm tắt | `ls .agents/results` |
 | **Nghiên cứu và nội dung** | Tìm kiếm có trích dẫn, nghiên cứu thị trường, bài báo khoa học, slide deck, video MP4, hình ảnh, giọng nói cục bộ, PDF/HWP sang Markdown | `/video`, `/convert` |
 | **Một thư mục, 14 runtime** | Một thư mục `.agents/` di động duy nhất, được ghi vào file cấu hình riêng của từng runtime | `oma link cursor` |
@@ -124,7 +124,7 @@ Lệnh này chọn tám skill của preset frontend. Installer vẫn cấu hình
 
 | Preset | Skill |
 |--------|--------|
-| **All** | **Toàn bộ 33 skill** (khuyến nghị) |
+| **All** | **Toàn bộ 32 skill** (khuyến nghị) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack, bỏ mobile và tf-infra |
 | Fullstack Mobile | Fullstack, bỏ frontend và tf-infra |
@@ -399,7 +399,7 @@ Các agent phối hợp qua các file thường trong `.agents/state/`, không c
 </details>
 
 <details>
-<summary><strong>Toàn bộ 33 skill</strong></summary>
+<summary><strong>Toàn bộ 32 skill</strong></summary>
 
 | Skill | Chức năng |
 |---|---|
@@ -407,7 +407,6 @@ Các agent phối hợp qua các file thường trong `.agents/state/`, không c
 | **oma-architecture** | Cân nhắc đánh đổi kiến trúc và vạch ranh giới module, kèm phân tích ADR/ATAM/CBAM |
 | **oma-backend** | Xây dựng API, xác thực và truy cập dữ liệu bằng Python, Node.js hoặc Rust |
 | **oma-brainstorm** | Cùng bạn khám phá ý tưởng trước khi bắt tay vào xây dựng |
-| **oma-coordination** | Hướng dẫn phối hợp thủ công từng bước các agent PM, frontend, backend, mobile và QA |
 | **oma-db** | Thiết kế schema, migration, index và vector store |
 | **oma-debug** | Tìm nguyên nhân gốc rễ, sửa lỗi và viết regression test |
 | **oma-design** | Xây dựng hệ thống thiết kế với token, accessibility và responsive layout |

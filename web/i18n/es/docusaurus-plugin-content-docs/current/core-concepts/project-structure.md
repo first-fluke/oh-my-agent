@@ -11,7 +11,7 @@ Después de instalar oh-my-agent, tu proyecto obtiene dos árboles de directorio
 
 ## Árbol de directorios representativo
 
-El árbol siguiente muestra en detalle los recursos compartidos y las habilidades de dominio representativas. El catálogo actual tiene 33 directorios de habilidades; las habilidades omitidas siguen el mismo patrón de `SKILL.md` más `resources/`, `stack/` o un directorio específico de la habilidad, todos opcionales. Trata el árbol activo de `.agents/` como la autoridad cuando un archivo generado u opcional no esté presente.
+El árbol siguiente muestra en detalle los recursos compartidos y las habilidades de dominio representativas. El catálogo actual tiene 32 directorios de habilidades; las habilidades omitidas siguen el mismo patrón de `SKILL.md` más `resources/`, `stack/` o un directorio específico de la habilidad, todos opcionales. Trata el árbol activo de `.agents/` como la autoridad cuando un archivo generado u opcional no esté presente.
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -281,7 +278,7 @@ Esta lista cubre las claves más comunes. Consulta la [referencia de configuraci
 
 ### skills/
 
-Aquí vive la experiencia de las habilidades. En el catálogo actual hay 33 directorios de habilidades además de los recursos `_shared`; el preset `all` se deriva de este árbol activo.
+Aquí vive la experiencia de las habilidades. En el catálogo actual hay 32 directorios de habilidades además de los recursos `_shared`; el preset `all` se deriva de este árbol activo.
 
 **`_shared/`**: recursos usados por todos los agentes:
 - `core/`: política de ejecución, reglas de inteligencia de código, enrutamiento, carga de contexto, estructura de prompts, protocolo de aclaración, presupuesto de contexto, evaluación de dificultad, principios de calidad, enfoque de pruebas, detección de proveedores, métricas de sesión, lista común de comprobaciones, lecciones aprendidas y plantillas de contratos API.

@@ -100,6 +100,6 @@ Nếu managed task bị dừng, bắt đầu bằng `oma agent status <session-i
 - [Chọn cách thiết lập](./choose-setup.md) cho một skill, một runtime preset hoặc plugin Claude Code
 - [Các mặc định quan trọng](./important-defaults.md) về precedence, provider và lựa chọn khôi phục
 - [Cài đặt](./installation.md) về preset, thiết lập vendor, cài đặt toàn cục và cập nhật
-- [Agents](../core-concepts/agents.md) về 33 skill package và vai trò dispatch
+- [Agents](../core-concepts/agents.md) về 32 skill package và vai trò dispatch
 - [Các workflow](../core-concepts/workflows.md) về lập kế hoạch, thực thi song song, QA và chế độ liên tục
 - [Troubleshooting](../guide/troubleshooting.md) khi việc cài đặt, vendor hoặc hook không hoạt động như mong đợi

@@ -11,7 +11,7 @@ After installing oh-my-agent, your project gains two core directory trees: `.age
 
 ## Representative directory tree
 
-The tree below shows the shared resources and representative domain skills in detail. The current catalog has 33 skill directories; omitted skills follow the same `SKILL.md` plus optional `resources/`, `stack/`, or skill-specific directory pattern. Treat the live `.agents/` tree as authoritative when a generated or optional file is absent.
+The tree below shows the shared resources and representative domain skills in detail. The current catalog has 32 skill directories; omitted skills follow the same `SKILL.md` plus optional `resources/`, `stack/`, or skill-specific directory pattern. Treat the live `.agents/` tree as authoritative when a generated or optional file is absent.
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -281,7 +278,7 @@ This list covers the most common keys. See the [configuration reference](../guid
 
 ### skills/
 
-Where skill expertise lives. There are 33 skill directories plus `_shared` resources in the current catalog; the `all` preset derives from this live tree.
+Where skill expertise lives. There are 32 skill directories plus `_shared` resources in the current catalog; the `all` preset derives from this live tree.
 
 **`_shared/`**: Resources used by all agents:
 - `core/`: Execution policy, code-intelligence rules, routing, context loading, prompt structure, clarification protocol, context budget, difficulty assessment, quality principles, test approach, vendor detection, session metrics, common checklist, lessons learned, API contract templates

@@ -239,7 +239,6 @@ flowchart TD
 | 요청된 아이디어 탐색 또는 대안 탐색 | oma-brainstorm |
 | 요구사항, 의존성, 인수 기준 | oma-pm |
 | 요청된 병렬 전문가 실행 | oma-orchestration |
-| 요청된 수동 멀티 에이전트 조율 | oma-coordination |
 | Git 브랜치, 커밋, 머지, 저장소 이력 | oma-scm |
 
 ### 스킬 간 의존성

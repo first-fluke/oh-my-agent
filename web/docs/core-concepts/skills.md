@@ -162,7 +162,7 @@ All agents share common foundations from `.agents/skills/_shared/`. These are or
 | Resource | Purpose | When Loaded |
 |----------|---------|-------------|
 | **`execution-policy.md`** | Authorization, clarification, verification, and completion rules for every skill and workflow. | Injected into every `oma agent spawn` prompt; native agents read it if not supplied |
-| **`skill-routing.md`** | Routes by task outcome, ownership, and actual dependencies; no compulsory agent chain or turn quota. | Referenced by orchestrator and coordination skills |
+| **`skill-routing.md`** | Routes by task outcome, ownership, and actual dependencies; no compulsory agent chain or turn quota. | Referenced by the orchestration skill and the multi-agent workflows |
 | **`context-loading.md`** | Owning entry, conditional references, and runtime loading boundaries. | When composing context |
 | **`prompt-structure.md`** | Guides unfamiliar task handoffs with goal, context, real constraints, and acceptance evidence; no mandatory template for direct tasks. | When composing an unfamiliar handoff; not a mandatory preload |
 | **`clarification-protocol.md`** | Resolves routine details from context and asks only for material missing information or authorization. | When requirements are ambiguous |
@@ -238,8 +238,7 @@ One owning skill handles a scoped task; add a handoff only when another skill su
 | Visual system, DESIGN.md, redesign direction | oma-design |
 | Requested ideation or alternative exploration | oma-brainstorm |
 | Requirements, dependencies, acceptance criteria | oma-pm |
-| Requested parallel specialist execution | oma-orchestration |
-| Requested manual multi-agent coordination | oma-coordination |
+| Requested parallel specialist execution, automated or step by step | oma-orchestration |
 | Git branches, commits, merges, repository history | oma-scm |
 
 ### Dependencies between skills

@@ -37,12 +37,8 @@ export const SKILLS: SkillsRegistry = {
       desc: `Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration.`,
     },
     {
-      name: "oma-coordination",
-      desc: `Coordinate assigned specialist tasks and handoffs manually. Use when supervising a multi-agent project step by step.`,
-    },
-    {
       name: "oma-orchestration",
-      desc: `Dispatch and supervise parallel specialist agents with durable task state. Use when automated multi-agent execution is requested.`,
+      desc: `Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, or to coordinate agents step by step.`,
     },
     {
       name: "oma-pm",
@@ -108,7 +104,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-security",
-      desc: `Scan application source, agent skills, and MCP components; run penetration tests against scoped web test deployments, validate findings, and configure scan gates. Use oma-qa for broad quality reviews and domain skills for remediation.`,
+      desc: `Scan application source, agent skills, and MCP components, validate findings, and configure scan gates. Penetration tests of a scoped web test deployment run only on a user-supplied, reviewed runtime platform. Use oma-qa for broad quality reviews and domain skills for remediation.`,
     },
     {
       name: "oma-skill-creation",
@@ -116,7 +112,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-slide",
-      desc: `Create, import, revise, or export presentation decks through the OMA slide CLI. Use for HTML slides and PDF, PNG, or PPTX deck delivery.`,
+      desc: `Create, import, revise, or export presentation decks through the OMA slide CLI or the ppt-master route. Use for HTML slides, editable PPTX, and PDF, PNG, or PPTX deck delivery.`,
     },
     {
       name: "oma-translation",
@@ -124,11 +120,11 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-video",
-      desc: `Create videos through the OMA video CLI, or analyze and edit existing clips with media tools. Use for frame extraction, visual analysis, silence cuts, dubbing assembly, scripts, and composition; audio-only work uses oma-voice.`,
+      desc: `Create videos through the OMA video CLI, or analyze and edit existing clips with media tools. Use for frame extraction, visual analysis, silence cuts, dubbing assembly, sound effects, scripts, and composition; audio-only work uses oma-voice.`,
     },
     {
       name: "oma-voice",
-      desc: `Generate or transcribe speech with Voicebox, or process existing audio locally. Use for narration, transcripts, timed speech, and loudness conversion; video editing uses oma-video.`,
+      desc: `Generate or transcribe speech with Voicebox or VoiceStudio, or process existing audio locally. Use for narration, transcripts, timed speech, and loudness conversion; video editing uses oma-video.`,
     },
   ],
   infrastructure: [

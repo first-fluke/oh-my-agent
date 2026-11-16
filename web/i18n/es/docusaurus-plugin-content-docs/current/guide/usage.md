@@ -1,7 +1,7 @@
 ---
 title: Guía de uso
 sidebar_label: Uso de OMA
-description: Guía de uso de OMA para elegir tareas según el lector, con ejemplos de una sola habilidad y de varios dominios, flujos de trabajo, autodetección, los 33 paquetes de habilidades, ejecución CLI en paralelo, dashboards, valores predeterminados y recuperación.
+description: Guía de uso de OMA para elegir tareas según el lector, con ejemplos de una sola habilidad y de varios dominios, flujos de trabajo, autodetección, los 32 paquetes de habilidades, ejecución CLI en paralelo, dashboards, valores predeterminados y recuperación.
 ---
 
 # Cómo usar oh-my-agent
@@ -296,7 +296,7 @@ Frases como "plan the authentication feature", "fix the login bug", "do everythi
 
 ---
 
-## Las 33 habilidades: referencia rápida
+## Las 32 habilidades: referencia rápida
 
 El preset `all` del instalador sigue el registro activo. La tabla agrupa cada habilidad actual por su uso principal; una habilidad aún puede coordinarse con otra en una frontera.
 
@@ -306,7 +306,6 @@ El preset `all` del instalador sigue el registro activo. La tabla agrupa cada ha
 | **oma-architecture** | Límites de sistema, compromisos y ADR | Informes en `.agents/results/architecture/`; registros de decisión en `docs/decisions/` |
 | **oma-backend** | APIs, auth, lógica de servidor y migraciones | Cambios y verificación de router/service/repository |
 | **oma-brainstorm** | Ideas ambiguas y comparación de enfoques | Borrador de decisión en `docs/decisions/` |
-| **oma-coordination** | Reglas de coordinación compartidas para `/work`, `/orchestrate` y `/ultrawork`; coordinación manual paso a paso | Guía de reutilización del plan, alineación de contratos, propiedad de workspaces y handoff a QA |
 | **oma-db** | Diseño de esquemas, ERD, consultas, capacidad | Documentación de esquema, migraciones y plan de recuperación |
 | **oma-debug** | Reproducción de bugs y causa raíz | Corrección mínima, evidencia de regresión y búsqueda de patrones |
 | **oma-security** | Escaneo de seguridad de código fuente, habilidades de agentes y MCP; pruebas de penetración solo en una plataforma de runtime aportada por el usuario y revisada | Hallazgos validados y configuración de gates de escaneo |

@@ -239,7 +239,6 @@ Một skill sở hữu xử lý một task có phạm vi; chỉ thêm bàn giao 
 | Lên ý tưởng hoặc khám phá phương án được yêu cầu | oma-brainstorm |
 | Yêu cầu, phụ thuộc, tiêu chí chấp nhận | oma-pm |
 | Thực thi specialist song song được yêu cầu | oma-orchestration |
-| Điều phối đa agent thủ công được yêu cầu | oma-coordination |
 | Branch Git, commit, merge, lịch sử repository | oma-scm |
 
 ### Phụ thuộc giữa các skill {#dependencies-between-skills}

@@ -35,7 +35,7 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 
 ## Step 0: Preparation (DO NOT SKIP)
 
-1. Read `.agents/skills/oma-coordination/SKILL.md` and apply its Guardrails.
+1. Read `.agents/skills/_shared/core/collaboration-policy.md` and apply its coordination rules.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`; the rest of that file is the event schema reference.

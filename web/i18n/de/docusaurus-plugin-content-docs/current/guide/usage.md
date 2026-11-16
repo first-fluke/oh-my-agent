@@ -1,7 +1,7 @@
 ---
 title: Nutzungsanleitung
 sidebar_label: Verwendung
-description: "Nutzungsanleitung für OMA mit aufgabenorientierter Auswahl, Einzel-Skill- und Multi-Domain-Beispielen, Workflows, Auto-Erkennung, allen 33 Skill-Paketen, paralleler CLI-Ausführung, Dashboards, Defaults und Wiederherstellung."
+description: "Nutzungsanleitung für OMA mit aufgabenorientierter Auswahl, Einzel-Skill- und Multi-Domain-Beispielen, Workflows, Auto-Erkennung, allen 32 Skill-Paketen, paralleler CLI-Ausführung, Dashboards, Defaults und Wiederherstellung."
 ---
 
 # So verwendest du oh-my-agent
@@ -296,7 +296,7 @@ Sätze wie "plan the authentication feature", "fix the login bug", "do everythin
 
 ---
 
-## Alle 33 Skills: Kurzreferenz
+## Alle 32 Skills: Kurzreferenz
 
 Das `all`-Preset des Installers folgt der Live-Registry. Die Tabelle gruppiert alle aktuellen Skills nach ihrem Hauptzweck; an einer Grenze kann ein Skill weiterhin mit einem anderen zusammenarbeiten.
 
@@ -306,7 +306,6 @@ Das `all`-Preset des Installers folgt der Live-Registry. Die Tabelle gruppiert a
 | **oma-architecture** | Systemgrenzen, Trade-offs, ADRs | Architekturempfehlung oder Entscheidungsprotokoll |
 | **oma-backend** | APIs, Auth, Serverlogik, Migrationen | Router-/Service-/Repository-Änderungen und Verifikation |
 | **oma-brainstorm** | Unklare Ideen und Ansatzvergleich | Designdokument in `docs/plans/designs/` |
-| **oma-coordination** | Gemeinsame Koordinationsregeln für `/work`, `/orchestrate` und `/ultrawork`; manuelle, schrittweise Koordination | Anleitung zu Plan-Wiederverwendung, Vertragsabgleich, Workspace-Zuständigkeit und QA-Übergabe |
 | **oma-db** | Schemaentwurf, ERD, Query-Tuning, Kapazitätsplanung | Schemadokumentation, Migrationen und Wiederherstellungsplan |
 | **oma-debug** | Bug-Reproduktion und Grundursachenanalyse | Minimale Korrektur, Regressionsevidenz und Musterscan |
 | **oma-security** | Sicherheitsscans von Quellcode, Agenten-Skills und MCP; Penetrationstests nur auf einer vom Benutzer bereitgestellten, geprüften Laufzeitplattform | Validierte Befunde und Scan-Gate-Konfiguration |

@@ -239,7 +239,6 @@ flowchart TD
 | 被要求的构思或备选方案探索 | oma-brainstorm |
 | 需求、依赖、验收标准 | oma-pm |
 | 被要求的并行专业执行 | oma-orchestration |
-| 被要求的手动多智能体协调 | oma-coordination |
 | Git 分支、提交、合并、仓库历史 | oma-scm |
 
 ### 技能之间的依赖 {#dependencies-between-skills}

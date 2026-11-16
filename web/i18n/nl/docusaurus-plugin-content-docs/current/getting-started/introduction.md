@@ -1,11 +1,11 @@
 ---
 title: Introductie
-description: Een uitgebreid overzicht van oh-my-agent, het multi-agent-orchestratieframework dat AI-codeerassistenten omzet in gespecialiseerde engineeringteams met 33 skillpakketten, 12 subagentdefinities, progressief laden van skills en portabiliteit tussen IDE's.
+description: Een uitgebreid overzicht van oh-my-agent, het multi-agent-orchestratieframework dat AI-codeerassistenten omzet in gespecialiseerde engineeringteams met 32 skillpakketten, 12 subagentdefinities, progressief laden van skills en portabiliteit tussen IDE's.
 ---
 
 # Introductie
 
-oh-my-agent is een multi-agent-orchestratieframework voor AI-aangedreven IDE's en CLI-tools. In plaats van voor alles op één AI-assistent te vertrouwen, routeert oh-my-agent werk langs 33 skillpakketten en 13 canonieke dispatchrollen. Twaalf ingecheckte subagentdefinitiebestanden leveren herbruikbare persona's voor implementatie, review, planning, debugging, documentatie, onderzoek en infrastructuur. `research-explorer.md` wordt gekoppeld aan de canonieke rol `explore`; `orchestrator` is een runtime-coördinatierol zonder afzonderlijk definitiebestand.
+oh-my-agent is een multi-agent-orchestratieframework voor AI-aangedreven IDE's en CLI-tools. In plaats van voor alles op één AI-assistent te vertrouwen, routeert oh-my-agent werk langs 32 skillpakketten en 13 canonieke dispatchrollen. Twaalf ingecheckte subagentdefinitiebestanden leveren herbruikbare persona's voor implementatie, review, planning, debugging, documentatie, onderzoek en infrastructuur. `research-explorer.md` wordt gekoppeld aan de canonieke rol `explore`; `orchestrator` is een runtime-coördinatierol zonder afzonderlijk definitiebestand.
 
 OMA biedt mechanische controles wanneer je ze aanroept of een workflow selecteert die ze bevat. `oma verify agent <agent-type>` voert de controles uit voor het geselecteerde agenttype; `/ralph` voegt verificatie met artefacten en een [judge](./glossary.md#judge)-lus toe; ingeschakelde Stop-hooks van vendors (de [stop gate](./glossary.md#stop-gate)) kunnen een workflow openhouden terwijl de geconfigureerde controles draaien. Alleen skills laden stelt geen acceptatie vast en een gewone prompt voert niet automatisch elke workflowgate uit. Gebruik de acceptatiecriteria van de workflow en de resulterende bestanden om te bepalen wat voltooid is.
 
@@ -35,11 +35,11 @@ OMA wijst domeinen toe aan skills en routeert taakwerk naar agenten:
 
 ---
 
-## De huidige catalogus: 33 skills, 12 definities, 20 workflows
+## De huidige catalogus: 32 skills, 12 definities, 20 workflows
 
 De catalogus scheidt drie zaken die gemakkelijk door elkaar raken:
 
-- **[Skills](./glossary.md#skill)** zijn de 33 domeinkennis-pakketten onder `.agents/skills/*/SKILL.md`. Ze routeren vanuit natuurlijke taal en laden hun resources progressief.
+- **[Skills](./glossary.md#skill)** zijn de 32 domeinkennis-pakketten onder `.agents/skills/*/SKILL.md`. Ze routeren vanuit natuurlijke taal en laden hun resources progressief.
 - **[Agentdefinities](./glossary.md#agent-definition)** zijn de 12 bestanden onder `.agents/agents/`. Ze leveren vendor-native subagentpersona's en verwijzen naar één of meer skills.
 - **[Workflows](./glossary.md#workflow)** zijn de 20 procesdefinities onder `.agents/workflows/`. Vier zijn [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` en `ralph`); de overige draaien tot een rapport en houden geen persistente modus actief.
 
@@ -93,7 +93,6 @@ De 12 ingecheckte definitiebestanden dekken de 13 runtime-rollen via aliassen: `
 | **oma-translation** | Contextbewuste vertaling | De vertaalmethode heeft vier stappen: betekenis en beschermde syntax lezen, register kiezen, in de doeltaal reconstrueren en de auteursstijl behouden waar die thuishoort. Profielen per doeltaal (`resources/lang/{code}.md`) bevatten register- en typografieregels. Resources: `translation-rubric.md`, `anti-ai-patterns.md`, `style-skills.md` en `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | Geautomatiseerde multi-agentcoördinator | Start CLI-subagenten parallel, coördineert via duurzame sessie-, taakbord-, voortgangs- en resultaatbestanden en bewaakt verificatielussen. Standaardwaarden: MAX_PARALLEL 3 en MAX_RECOVERY_ATTEMPTS 3 (herpogingen en verkenningshypothesen per taak, inclusief de oorspronkelijke poging); polling van voortgang gebruikt begrensde backoff en gebeurt alleen wanneer voltooiingsmeldingen niet beschikbaar zijn. Selecteert skillverwijzingen per taak en legt die vast als coördinatornotities. Bevat een agent-naar-agent-reviewlus en optionele sessie-evidence. Resources: `subagent-prompt-template.md` en `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Begeleidt branchingstrategieën, merge/rebase/conflict-workflows, worktrees, baselines en release-status. Geeft ook richtlijnen voor Conventional Commit-berichten met veilig stagen; co-author-trailers komen uit de effectieve `scm.co_author`-configuratie wanneer die is ingeschakeld. |
-| **oma-coordination** | Gedeelde coördinatieregels | Coördinatieregels voor multi-agentwerk: hergebruik van plannen, contractafstemming, werkruimte-eigenaarschap en QA-overdracht. Geladen door de workflows `/work`, `/orchestrate` en `/ultrawork`, en ook bruikbaar voor handmatige stapsgewijze coördinatie met `oma agent spawn`: een plan hergebruiken of maken, taken met gelijke prioriteit in aparte werkruimten starten, rungebonden voortgangs- en resultaatbestanden bewaken, API- en datacontracten afstemmen vóór frontend- en mobilewerk en eindigen met een QA-review. `oma-orchestration` is eigenaar van geautomatiseerde uitvoering. |
 
 ### Zoeken, retrospectief en documentverwerking
 
@@ -165,7 +164,7 @@ Alles wat oh-my-agent nodig heeft, staat in de directory `.agents/`:
 ├── oma-config.yaml   # Shared preferences and provider/model settings
 ├── oma-config.cue    # Optional schema-backed configuration
 ├── mcp.json          # MCP server configuration
-├── skills/           # 33 skill directories + _shared resources
+├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
 ├── workflows/        # 20 workflow definitions
@@ -243,7 +242,6 @@ De host kiest een skill op basis van de namen en beschrijvingen van de geïnstal
 | Gevraagde ideevorming of verkenning van alternatieven | oma-brainstorm |
 | Requirements, afhankelijkheden, acceptatiecriteria | oma-pm |
 | Gevraagde parallelle uitvoering door specialisten | oma-orchestration |
-| Gevraagde handmatige multi-agentcoördinatie | oma-coordination |
 | Git-branches, commits, merges, repositorygeschiedenis | oma-scm |
 
 Voor andere domeinen kiest de host uit de beschrijvingen van de geïnstalleerde skills. Werk over meerdere domeinen heeft geen vaste keten: een onbesliste architectuur- of productbeslissing wordt eerst opgelost, en backend- en clientwerk kunnen parallel verlopen zodra hun gedeelde API-contract bruikbaar is.
@@ -301,7 +299,7 @@ De directory `.agents/` blijft de bron van waarheid. De installatie linkt of pro
 ## Wat volgt
 
 - **[Installatie](./installation.md)**: drie installatiemethoden, presets, CLI-setup en verificatie
-- **[Agenten](/docs/core-concepts/agents)**: uitgebreide uitleg van de 33 skills, 13 dispatchrollen en het autorisatie- en verduidelijkingsbeleid
+- **[Agenten](/docs/core-concepts/agents)**: uitgebreide uitleg van de 32 skills, 13 dispatchrollen en het autorisatie- en verduidelijkingsbeleid
 - **[Skills](/docs/core-concepts/skills)**: uitleg van de architectuur met twee lagen
 - **[Workflows](/docs/core-concepts/workflows)**: alle 20 workflows met triggers en fasen
 - **[Gebruiksgids](/docs/guide/usage)**: praktijkvoorbeelden van enkele taken tot volledige orchestratie

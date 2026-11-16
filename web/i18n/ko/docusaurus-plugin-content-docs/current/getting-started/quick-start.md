@@ -101,6 +101,6 @@ OMA는 `model_preset: auto`, 코드 인텔리전스의 Serena, 시맨틱 메모�
 - 스킬 하나, 런타임 프리셋, Claude Code 플러그인 중에서 고르려면 [설정 선택](./choose-setup.md)
 - 우선순위, 프로바이더, 복구 선택은 [중요한 기본값](./important-defaults.md)
 - 프리셋, 벤더 설정, 전역 설치, 업데이트는 [설치](./installation.md)
-- 33개 스킬 패키지와 디스패치 역할은 [에이전트](../core-concepts/agents.md)
+- 32개 스킬 패키지와 디스패치 역할은 [에이전트](../core-concepts/agents.md)
 - 계획, 병렬 실행, QA, 지속 모드는 [워크플로우](../core-concepts/workflows.md)
 - 설치, 벤더, 훅이 예상대로 동작하지 않을 때는 [문제 해결](../guide/troubleshooting.md)

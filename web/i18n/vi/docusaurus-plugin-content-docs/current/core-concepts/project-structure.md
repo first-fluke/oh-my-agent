@@ -11,7 +11,7 @@ Sau khi cài oh-my-agent, project của bạn có hai cây thư mục cốt lõi
 
 ## Cây thư mục tiêu biểu {#representative-directory-tree}
 
-Cây dưới đây trình bày chi tiết tài nguyên dùng chung và các skill domain tiêu biểu. Danh mục hiện tại có 33 thư mục skill; các skill bị lược bỏ dùng cùng mẫu `SKILL.md` kèm các thư mục tùy chọn `resources/`, `stack/` hoặc thư mục riêng của skill. Khi một file được tạo hoặc tùy chọn bị thiếu, hãy coi cây `.agents/` đang chạy là nguồn có thẩm quyền.
+Cây dưới đây trình bày chi tiết tài nguyên dùng chung và các skill domain tiêu biểu. Danh mục hiện tại có 32 thư mục skill; các skill bị lược bỏ dùng cùng mẫu `SKILL.md` kèm các thư mục tùy chọn `resources/`, `stack/` hoặc thư mục riêng của skill. Khi một file được tạo hoặc tùy chọn bị thiếu, hãy coi cây `.agents/` đang chạy là nguồn có thẩm quyền.
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -281,7 +278,7 @@ Danh sách này gồm các key phổ biến nhất. Xem [tham chiếu cấu hìn
 
 ### skills/
 
-Nơi lưu kiến thức chuyên môn của skill. Có 33 thư mục skill cùng tài nguyên `_shared` trong danh mục hiện tại; preset `all` được suy ra từ cây đang chạy này.
+Nơi lưu kiến thức chuyên môn của skill. Có 32 thư mục skill cùng tài nguyên `_shared` trong danh mục hiện tại; preset `all` được suy ra từ cây đang chạy này.
 
 **`_shared/`**: Tài nguyên dùng cho mọi agent:
 - `core/`: Execution policy, rule code-intelligence, định tuyến, tải context, cấu trúc prompt, clarification protocol, context budget, đánh giá độ khó, quality principles, test approach, phát hiện vendor, session metrics, common checklist, lessons learned và API contract template

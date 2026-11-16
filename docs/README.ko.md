@@ -58,7 +58,7 @@ oh-my-agent(`oma`)는 Claude Code, Codex CLI, Cursor와 다른 코딩 에이전�
 |---|---|---|
 | **전문 역할 12개** | PM, 아키텍트, 백엔드·프런트엔드·모바일·데이터베이스·인프라 엔지니어, QA 리뷰어, 디버거, 리팩터러, 문서 큐레이터, 리서처([팀 소개](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **워크플로우 20개** | `/brainstorm`, `/plan`부터 `/review`, `/debug`, `/scm`까지의 슬래시 커맨드. 멀티 에이전트 모드 네 가지는 평범한 요청에서 이름을 부르는 것으로도 시작됩니다 | "ultrawork: add rate limiting" |
-| **스킬 33개** | 태스크에 필요할 때만 불러오는 도메인 노하우: UI, API, 스키마, Terraform, CI, 보안, git, 관측성 | 저절로 불러옴. 예: "add a Terraform S3 bucket" |
+| **스킬 32개** | 태스크에 필요할 때만 불러오는 도메인 노하우: UI, API, 스키마, Terraform, CI, 보안, git, 관측성 | 저절로 불러옴. 예: "add a Terraform S3 bucket" |
 | **직접 열어 볼 수 있는 파일** | 계획, 설계 문서, API 계약, ADR, 버그 노트, 에이전트별 결과, 보안 증거, HTML 설명서, 리캡 | `ls .agents/results` |
 | **리서치와 콘텐츠** | 출처가 달린 검색, 시장 조사, 논문, 슬라이드 덱, MP4 영상, 이미지, 로컬 음성, PDF/HWP를 Markdown으로 변환 | `/video`, `/convert` |
 | **폴더 하나, 런타임 14개** | 이식 가능한 `.agents/` 디렉터리 하나를 각 런타임의 자체 설정 파일에 기록 | `oma link cursor` |
@@ -121,7 +121,7 @@ oma install --preset frontend --yes
 
 | 프리셋 | 스킬 |
 |--------|--------|
-| **All** | **스킬 33개 전체** (권장) |
+| **All** | **스킬 32개 전체** (권장) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack에서 mobile, tf-infra 제외 |
 | Fullstack Mobile | Fullstack에서 frontend, tf-infra 제외 |
@@ -396,7 +396,7 @@ Serena는 LSP 기반 코드 탐색과 진단을 제공하며, 지원되는 경�
 </details>
 
 <details>
-<summary><strong>스킬 33개 전체</strong></summary>
+<summary><strong>스킬 32개 전체</strong></summary>
 
 | 스킬 | 하는 일 |
 |---|---|
@@ -404,7 +404,6 @@ Serena는 LSP 기반 코드 탐색과 진단을 제공하며, 지원되는 경�
 | **oma-architecture** | 아키텍처 트레이드오프를 검토하고 모듈 경계를 정의하며 ADR/ATAM/CBAM 분석 수행 |
 | **oma-backend** | Python, Node.js, Rust로 API, 인증, 데이터 접근을 구현 |
 | **oma-brainstorm** | 구현에 들어가기 전에 함께 아이디어를 탐색 |
-| **oma-coordination** | PM, 프론트엔드, 백엔드, 모바일, QA 에이전트를 단계별로 수동 조율하도록 안내 |
 | **oma-db** | 스키마, 마이그레이션, 인덱스, vector store 설계 |
 | **oma-debug** | 근본 원인을 찾아 버그를 수정하고 회귀 테스트 작성 |
 | **oma-design** | 토큰, 접근성, 반응형 레이아웃을 갖춘 디자인 시스템 구축 |

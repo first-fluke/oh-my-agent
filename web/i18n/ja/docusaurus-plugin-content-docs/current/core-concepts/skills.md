@@ -239,7 +239,6 @@ flowchart TD
 | 依頼されたアイデア出しや代替案の検討 | oma-brainstorm |
 | 要件、依存関係、受入基準 | oma-pm |
 | 依頼されたスペシャリストの並列実行 | oma-orchestration |
-| 依頼された手動のマルチエージェント調整 | oma-coordination |
 | Git のブランチ、コミット、マージ、リポジトリ履歴 | oma-scm |
 
 ### スキル間の依存関係

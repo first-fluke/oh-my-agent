@@ -22,7 +22,6 @@ Bảng này là danh sách chính thức các skill đã cài đặt. Bảng đ�
 | [`oma-architecture`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-architecture/SKILL.md) | Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs. |
 | [`oma-backend`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-backend/SKILL.md) | Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db. |
 | [`oma-brainstorm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-brainstorm/SKILL.md) | Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration. |
-| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination. |
 | [`oma-db`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-db/SKILL.md) | Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend. |
 | [`oma-debug`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-debug/SKILL.md) | Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests. |
 | [`oma-design`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-design/SKILL.md) | Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions. |
@@ -35,7 +34,7 @@ Bảng này là danh sách chính thức các skill đã cài đặt. Bảng đ�
 | [`oma-market`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-market/SKILL.md) | Research customer pain points, trends, and competitors through the OMA market engine. Use for market discovery or voice-of-customer analysis. |
 | [`oma-mobile`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-mobile/SKILL.md) | Implement Flutter, React Native, native Swift, or native Kotlin Android apps. Use for mobile screens, widgets, platform integrations, and application data flows. |
 | [`oma-observability`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-observability/SKILL.md) | Design or troubleshoot telemetry, SLOs, and incident diagnostics. Route to the relevant signal, system boundary, or vendor guide. |
-| [`oma-orchestration`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-orchestration/SKILL.md) | Dispatch and supervise parallel specialist agents with durable task state. Use when automated multi-agent execution is requested. |
+| [`oma-orchestration`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-orchestration/SKILL.md) | Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, or to coordinate agents step by step. |
 | [`oma-pdf`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-pdf/SKILL.md) | Extract PDF text, headings, tables, and images into Markdown using opendataloader-pdf. Use for PDF parsing, not PDF layout creation. |
 | [`oma-pm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-pm/SKILL.md) | Turn product requirements into scoped tasks with dependencies and acceptance criteria. Use for implementation planning and prioritization. |
 | [`oma-qa`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-qa/SKILL.md) | Review changes for correctness, security, accessibility, and performance. Use for scoped quality reviews or verification plans; bug fixes use oma-debug. |
@@ -127,7 +126,7 @@ flowchart TD
 | **Chất lượng** | oma-qa | Kiểm tra bảo mật (OWASP), hiệu suất, accessibility (WCAG), đánh giá chất lượng mã |
 | **Gỡ lỗi** | oma-debug | Tái hiện lỗi, phân tích nguyên nhân gốc, sửa tối thiểu, test hồi quy |
 | **Bản địa hóa** | oma-translation | Dịch thuật nhận biết ngữ cảnh, bảo toàn giọng điệu, phong cách và thuật ngữ lĩnh vực |
-| **Điều phối** | oma-orchestration, oma-coordination | Điều phối đa agent tự động; quy tắc điều phối dùng chung và điều phối thủ công từng bước |
+| **Điều phối** | oma-orchestration | Điều phối đa agent tự động; quy tắc điều phối dùng chung và điều phối thủ công từng bước |
 | **Git** | oma-scm | Tạo Conventional Commits, tách commit theo tính năng |
 | **Tìm kiếm & Truy xuất** | oma-search | Bộ định tuyến tìm kiếm cho các nguồn bên ngoài, kèm trích dẫn (tài liệu Context7, các provider web, mã từ xa qua `gh`/`glab`, fetch URL đã biết) |
 | **Hồi tưởng** | oma-recap | Phân tích lịch sử hội thoại đa công cụ và tóm tắt công việc theo chủ đề |
@@ -549,27 +548,6 @@ Ma trận bao phủ có bốn tầng (L3, L4, mesh, L7), bốn ranh giới (mult
 - Ghi message vào một file và commit bằng `git commit -F <message-file>`
 - Không viết lại lịch sử dùng chung khi chưa được ủy quyền rõ ràng; dùng `--force-with-lease`, không bao giờ dùng `--force` thuần
 - Trailer co-author chỉ được thêm khi cấu hình `scm.co_author` hiệu lực bật nó và cung cấp tên cùng email.
-
----
-
-### oma-coordination
-
-**Lĩnh vực:** Quy tắc điều phối dùng chung cho công việc đa agent: dùng lại plan, căn chỉnh contract, quyền sở hữu workspace và bàn giao cho QA.
-
-**Khi nào sử dụng:** Bất kỳ workflow nào điều phối nhiều hơn một agent chuyên gia. `/work`, `/orchestrate` và `/ultrawork` tải skill này và áp dụng các guardrail của nó. Cũng dùng skill này cho điều phối thủ công từng bước, khi bạn tự điều khiển từng lần dispatch, và khi các agent dùng chung một API contract hoặc data contract.
-
-**Khi nào KHÔNG sử dụng:** Task đơn lĩnh vực (dùng agent lĩnh vực trực tiếp). Việc dispatch, giám sát và xác minh tự động thuộc về oma-orchestration; skill này chỉ cung cấp các quy tắc mà oma-orchestration áp dụng.
-
-**Quy tắc cốt lõi:**
-- Dùng lại plan hợp lệ; chỉ gọi oma-pm khi cần thay đổi phân tách hoặc contract
-- Spawn song song các task độc lập cùng tier ưu tiên, mỗi task trong workspace riêng hoặc với `--isolation worktree`
-- Cập nhật contract cho các ranh giới API đã thay đổi trước công việc frontend hoặc mobile phụ thuộc
-- QA review luôn là bước cuối
-- Chuyển các lỗi QA chặn và các lỗ hổng xác minh bắt buộc về agent chịu trách nhiệm, rồi chạy lại các kiểm tra bị ảnh hưởng
-
-**Quy trình:** Plan (dùng lại hoặc PM) → Spawn theo tier ưu tiên → Giám sát → QA review → Sửa vấn đề → Phát hành.
-
-**Khác biệt với oma-orchestration:** Coordination cung cấp các quy tắc và hướng dẫn một lần chạy thủ công trong đó người dùng kiểm soát nhịp độ; orchestrator sở hữu việc thực thi tự động (phân giải dispatch, giới hạn song song, ngân sách phục hồi và vòng lặp review).
 
 ---
 

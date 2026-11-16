@@ -58,7 +58,7 @@ Draai na de installatie `oma doctor`. [Je eerste 5 minuten](#your-first-5-minute
 |---|---|---|
 | **12 specialistische rollen** | PM, architect, backend-, frontend-, mobile-, database- en infra-engineers, QA-reviewer, debugger, refactorer, docs-curator, researcher ([maak kennis](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **20 workflows** | Slash commands van `/brainstorm` en `/plan` tot `/review`, `/debug` en `/scm`. De vier multi-agentmodi starten ook wanneer een gewoon verzoek ze bij naam noemt | "ultrawork: add rate limiting" |
-| **33 skills** | Domeinkennis die alleen laadt wanneer een taak die nodig heeft: UI, API's, schema's, Terraform, CI, beveiliging, git, observability | laadt vanzelf, bijv. "add a Terraform S3 bucket" |
+| **32 skills** | Domeinkennis die alleen laadt wanneer een taak die nodig heeft: UI, API's, schema's, Terraform, CI, beveiliging, git, observability | laadt vanzelf, bijv. "add a Terraform S3 bucket" |
 | **Bestanden die je kunt openen** | Plannen, ontwerpdocumenten, API-contracten, ADR's, bugnotities, resultaten per agent, beveiligingsbewijs, HTML-uitleg, recaps | `ls .agents/results` |
 | **Onderzoek en content** | Zoeken met bronvermelding, marktonderzoek, papers, slidedecks, MP4-video's, afbeeldingen, lokale spraak, PDF/HWP naar Markdown | `/video`, `/convert` |
 | **Eén map, 14 runtimes** | Eén draagbare `.agents/`-map, weggeschreven naar de eigen configuratiebestanden van elke runtime | `oma link cursor` |
@@ -121,7 +121,7 @@ Dit selecteert de acht skills van de frontend-preset. De installer configureert 
 
 | Preset | Skills |
 |--------|--------|
-| **All** | **Alle 33 skills** (aanbevolen) |
+| **All** | **Alle 32 skills** (aanbevolen) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack zonder mobile en tf-infra |
 | Fullstack Mobile | Fullstack zonder frontend en tf-infra |
@@ -396,7 +396,7 @@ Agents coördineren via gewone bestanden in `.agents/state/`, zonder externe die
 </details>
 
 <details>
-<summary><strong>Alle 33 skills</strong></summary>
+<summary><strong>Alle 32 skills</strong></summary>
 
 | Skill | Wat het doet |
 |---|---|
@@ -404,7 +404,6 @@ Agents coördineren via gewone bestanden in `.agents/state/`, zonder externe die
 | **oma-architecture** | Weegt architectuurafwegingen af en bepaalt modulegrenzen met ADR/ATAM/CBAM-analyse |
 | **oma-backend** | Bouwt API's, authenticatie en datatoegang in Python, Node.js of Rust |
 | **oma-brainstorm** | Verkent ideeën samen met jou voordat je begint met bouwen |
-| **oma-coordination** | Begeleidt stap voor stap de handmatige coördinatie van PM-, frontend-, backend-, mobile- en QA-agents |
 | **oma-db** | Ontwerpt schema's, migraties, indexes en vector stores |
 | **oma-debug** | Zoekt de root cause, lost de bug op en schrijft een regressietest |
 | **oma-design** | Bouwt design systems met tokens, toegankelijkheid en responsive layouts |

@@ -1,7 +1,7 @@
 ---
 title: Руководство по использованию
 sidebar_label: Использование OMA
-description: "Руководство по OMA: выбор задачи с учётом читателя, примеры одного навыка и нескольких доменов, рабочие процессы, автодетекция, все 33 пакета навыков, параллельное выполнение через CLI, дашборды, defaults и восстановление."
+description: "Руководство по OMA: выбор задачи с учётом читателя, примеры одного навыка и нескольких доменов, рабочие процессы, автодетекция, все 32 пакета навыков, параллельное выполнение через CLI, дашборды, defaults и восстановление."
 ---
 
 # Как использовать oh-my-agent
@@ -294,7 +294,7 @@ oh-my-agent обнаруживает workflow keywords на 11 языках. Н�
 
 ---
 
-## Все 33 навыка: краткий справочник
+## Все 32 навыка: краткий справочник
 
 Пресет `all` установщика следует актуальному реестру. Таблица группирует каждый текущий skill по основному назначению; на границах skill всё равно может координироваться с другим skill.
 
@@ -304,7 +304,6 @@ oh-my-agent обнаруживает workflow keywords на 11 языках. Н�
 | **oma-architecture** | System boundaries, tradeoffs, ADRs | Отчёты в `.agents/results/architecture/`; записи решений в `docs/decisions/` |
 | **oma-backend** | APIs, auth, server logic, migrations | Router/service/repository changes и verification |
 | **oma-brainstorm** | Неоднозначные идеи и сравнение подходов | Черновик решения в `docs/decisions/` |
-| **oma-coordination** | Общие правила координации для `/work`, `/orchestrate` и `/ultrawork`; ручная пошаговая координация | Переиспользование планов, согласование контрактов, владение workspace и handoff в QA |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations и recovery plan |
 | **oma-debug** | Bug reproduction и root cause analysis | Minimal fix, regression evidence и pattern scan |
 | **oma-security** | Security scanning исходного кода, agent skills и MCP; тесты на проникновение только на предоставленной и проверенной пользователем runtime-платформе | Проверенные findings и конфигурация scan gates |

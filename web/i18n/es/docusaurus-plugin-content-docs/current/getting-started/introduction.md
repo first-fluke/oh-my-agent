@@ -1,11 +1,11 @@
 ---
 title: Introducción
-description: Descripción completa de oh-my-agent, el framework de orquestación multiagente que convierte asistentes de programación basados en IA en equipos de ingeniería especializados con 33 paquetes de habilidades, 12 definiciones de subagentes, carga progresiva de habilidades y portabilidad entre IDEs.
+description: Descripción completa de oh-my-agent, el framework de orquestación multiagente que convierte asistentes de programación basados en IA en equipos de ingeniería especializados con 32 paquetes de habilidades, 12 definiciones de subagentes, carga progresiva de habilidades y portabilidad entre IDEs.
 ---
 
 # Introducción
 
-oh-my-agent es un framework de orquestación multiagente para IDEs y herramientas CLI con IA. En lugar de depender de un único asistente de IA para todo, oh-my-agent reparte el trabajo entre 33 paquetes de habilidades y 13 roles canónicos de despacho. Doce archivos de definición de subagentes versionados definen perfiles reutilizables para implementación, revisión, planificación, depuración, documentación, investigación e infraestructura. `research-explorer.md` se asigna al rol canónico `explore`; `orchestrator` es un rol de coordinación del runtime sin un archivo de definición independiente.
+oh-my-agent es un framework de orquestación multiagente para IDEs y herramientas CLI con IA. En lugar de depender de un único asistente de IA para todo, oh-my-agent reparte el trabajo entre 32 paquetes de habilidades y 13 roles canónicos de despacho. Doce archivos de definición de subagentes versionados definen perfiles reutilizables para implementación, revisión, planificación, depuración, documentación, investigación e infraestructura. `research-explorer.md` se asigna al rol canónico `explore`; `orchestrator` es un rol de coordinación del runtime sin un archivo de definición independiente.
 
 OMA proporciona comprobaciones mecánicas cuando las invocas o cuando seleccionas un flujo de trabajo que las incluye. `oma verify agent <agent-type>` ejecuta las comprobaciones del tipo de agente seleccionado; `/ralph` añade verificación respaldada por artefactos y un bucle de [juez](./glossary.md#judge); los hooks Stop habilitados de los proveedores (la [puerta de parada](./glossary.md#stop-gate)) pueden mantener abierto un flujo de trabajo mientras se ejecutan sus comprobaciones configuradas. Cargar una habilidad por sí solo no establece la aceptación, y un prompt normal no ejecuta automáticamente todas las puertas del flujo de trabajo. Usa los criterios de aceptación del flujo de trabajo y los archivos resultantes para decidir qué está completo.
 
@@ -35,11 +35,11 @@ OMA asigna dominios a habilidades y dirige el trabajo de las tareas a agentes:
 
 ---
 
-## Catálogo actual: 33 habilidades, 12 definiciones y 20 flujos de trabajo
+## Catálogo actual: 32 habilidades, 12 definiciones y 20 flujos de trabajo
 
 El catálogo separa tres conceptos fáciles de confundir:
 
-- **[Habilidades](./glossary.md#skill)**: los 33 paquetes de conocimiento de dominio bajo `.agents/skills/*/SKILL.md`. Se enrutan desde la intención en lenguaje natural y cargan sus recursos progresivamente.
+- **[Habilidades](./glossary.md#skill)**: los 32 paquetes de conocimiento de dominio bajo `.agents/skills/*/SKILL.md`. Se enrutan desde la intención en lenguaje natural y cargan sus recursos progresivamente.
 - **[Definiciones de agentes](./glossary.md#agent-definition)**: los 12 archivos bajo `.agents/agents/`. Proporcionan personas de subagente nativas del proveedor y referencian una o más habilidades.
 - **[Flujos de trabajo](./glossary.md#workflow)**: las 20 definiciones de procesos bajo `.agents/workflows/`. Cuatro son [persistentes](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` y `ralph`); los demás producen un informe y no mantienen activo el modo persistente.
 
@@ -93,7 +93,6 @@ Los 12 archivos de definición versionados cubren los 13 roles de runtime median
 | **oma-translation** | Traducción contextual | El método de traducción tiene cuatro pasos: leer el significado y la sintaxis protegida, elegir el registro, reconstruir en el idioma objetivo y conservar el estilo del autor donde corresponda. Los perfiles por idioma (`resources/lang/{code}.md`) contienen reglas de registro y tipografía. Recursos: `translation-rubric.md`, `anti-ai-patterns.md`, `style-skills.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | Coordinador multiagente automatizado | Lanza subagentes CLI en paralelo, coordina mediante archivos duraderos de sesión, tablero, progreso y resultados, y supervisa los bucles de verificación. Valores predeterminados: MAX_PARALLEL 3 y MAX_RECOVERY_ATTEMPTS 3 (reintentos e hipótesis de exploración por tarea, incluido el intento original); el sondeo de progreso usa backoff acotado y solo cuando no hay notificaciones de finalización disponibles. Selecciona las referencias de habilidades de cada tarea y las registra como notas del coordinador. Incluye un bucle de revisión entre agentes y evidencia de sesión opcional. Recursos: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Gestión de configuración de software (SCM) + Git | Gestiona estrategias de ramas, flujos de merge/rebase/conflicto, worktrees, líneas base y seguimiento del estado de releases. También guía mensajes Conventional Commit con staging seguro; los trailers de coautor proceden de la configuración efectiva `scm.co_author` cuando está habilitada. |
-| **oma-coordination** | Reglas de coordinación compartidas | Reglas de coordinación para el trabajo multiagente: reutilización del plan, alineación de contratos, propiedad de los workspaces y handoff a QA. La cargan los flujos de trabajo `/work`, `/orchestrate` y `/ultrawork`, y también sirve para la coordinación manual paso a paso con `oma agent spawn`: reutilizar o crear el plan, lanzar tareas de la misma prioridad en workspaces separados, supervisar archivos de progreso/resultados acotados a la ejecución, alinear contratos API/datos antes del trabajo frontend/mobile y terminar con la revisión de QA. `oma-orchestration` es responsable de la ejecución automatizada. |
 
 ### Búsqueda, retrospectiva y procesamiento de documentos
 
@@ -165,7 +164,7 @@ Todo lo que oh-my-agent necesita vive en el directorio `.agents/`:
 ├── oma-config.yaml   # Shared preferences and provider/model settings
 ├── oma-config.cue    # Optional schema-backed configuration
 ├── mcp.json          # MCP server configuration
-├── skills/           # 33 skill directories + _shared resources
+├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
 ├── workflows/        # 20 workflow definitions
@@ -243,7 +242,6 @@ El host elige una habilidad a partir de los nombres y las descripciones de las h
 | Ideación solicitada o exploración de alternativas | oma-brainstorm |
 | Requisitos, dependencias, criterios de aceptación | oma-pm |
 | Ejecución paralela de especialistas solicitada | oma-orchestration |
-| Coordinación multiagente manual solicitada | oma-coordination |
 | Ramas de Git, commits, merges, historial del repositorio | oma-scm |
 
 Para otros dominios, el host selecciona entre las descripciones de las habilidades instaladas. El trabajo multidominio no tiene una cadena fija: primero se resuelve cualquier decisión de arquitectura o de producto pendiente, y el trabajo de backend y de cliente puede avanzar en paralelo una vez que su contrato de API compartido es utilizable.
@@ -301,7 +299,7 @@ El directorio `.agents/` sigue siendo la fuente de verdad. La instalación enlaz
 ## Qué sigue
 
 - **[Instalación](./installation.md)**: tres métodos de instalación, presets, configuración de CLIs y verificación.
-- **[Agentes](/docs/core-concepts/agents)**: inmersión en las 33 habilidades, 13 roles de despacho y la política de autorización y aclaración.
+- **[Agentes](/docs/core-concepts/agents)**: inmersión en las 32 habilidades, 13 roles de despacho y la política de autorización y aclaración.
 - **[Habilidades](/docs/core-concepts/skills)**: explicación de la arquitectura de dos capas.
 - **[Flujos de trabajo](/docs/core-concepts/workflows)**: los 20 flujos de trabajo con sus triggers y fases.
 - **[Guía de uso](/docs/guide/usage)**: ejemplos reales desde tareas individuales hasta orquestación completa.

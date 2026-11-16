@@ -42,7 +42,7 @@ Reviewers are read-only evaluators. Implementation and refactor **actions** (Pha
 
 ## Phase 0: Initialization (DO NOT SKIP)
 
-1. Read `.agents/skills/oma-coordination/SKILL.md` and apply its Guardrails.
+1. Read `.agents/skills/_shared/core/collaboration-policy.md` and apply its coordination rules.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md` (the rest of that file is the event schema reference) and emit required L1 decisions by calling `oma state emit` directly, as documented there.

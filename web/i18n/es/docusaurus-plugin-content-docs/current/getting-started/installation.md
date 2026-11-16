@@ -87,7 +87,7 @@ Elige el preset que se ajuste al trabajo que necesita el repositorio. Los nombre
 
 | Preset | Elígelo cuando el proyecto sea | Habilidades incluidas | Número |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Cualquier proyecto, o quieres que todos los flujos de trabajo funcionen desde el principio | Todas las habilidades del registro | 33 |
+| **all** | Cualquier proyecto, o quieres que todos los flujos de trabajo funcionen desde el principio | Todas las habilidades del registro | 32 |
 | **fullstack** | Clientes web y móviles con un backend e infraestructura de Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Un frontend web con un backend y una base de datos | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Una app móvil con un backend y una base de datos | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -113,12 +113,12 @@ Después de la instalación, lee la lista de habilidades seleccionadas y el info
 
 ### Flujos de trabajo que necesitan habilidades fuera de un preset {#workflows-that-need-skills-outside-a-preset}
 
-Todos los presets copian las definiciones de flujos de trabajo y agentes. Los comandos y prompts se exponen únicamente para los flujos de trabajo cuyas habilidades requeridas están disponibles. Por ejemplo, una instalación nueva de frontend deja `/work` no disponible porque le falta `oma-coordination`; sus habilidades existentes de PM y QA ya satisfacen los demás requisitos de entrada. El instalador informa de esa habilidad ausente sin cambiar a `all`.
+Todos los presets copian las definiciones de flujos de trabajo y agentes. Los comandos y prompts se exponen únicamente para los flujos de trabajo cuyas habilidades requeridas están disponibles. Por ejemplo, una instalación nueva de frontend deja `/orchestrate` no disponible porque le falta `oma-orchestration`, mientras que `/work`, `/ultrawork` y `/ralph` sí están disponibles: las habilidades de PM y QA del preset satisfacen sus requisitos de entrada. El instalador informa de la habilidad ausente sin cambiar a `all`.
 
 | Flujo de trabajo | Habilidades de entrada requeridas | Presets que las incluyen |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

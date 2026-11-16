@@ -239,7 +239,6 @@ Una habilidad responsable se encarga de una tarea acotada; añade un traspaso so
 | Ideación solicitada o exploración de alternativas | oma-brainstorm |
 | Requisitos, dependencias, criterios de aceptación | oma-pm |
 | Ejecución paralela de especialistas solicitada | oma-orchestration |
-| Coordinación multiagente manual solicitada | oma-coordination |
 | Ramas, commits, merges e historial del repositorio de Git | oma-scm |
 
 ### Dependencias entre habilidades {#dependencies-between-skills}

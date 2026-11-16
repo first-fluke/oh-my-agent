@@ -59,7 +59,7 @@ Führe nach der Installation `oma doctor` aus. [Deine ersten 5 Minuten](#your-fi
 |---|---|---|
 | **12 Spezialistenrollen** | PM, Architekt, Backend-, Frontend-, Mobile-, Datenbank- und Infra-Engineers, QA-Reviewer, Debugger, Refactorer, Docs-Kurator, Researcher ([lerne sie kennen](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **20 Workflows** | Slash Commands von `/brainstorm` und `/plan` bis `/review`, `/debug` und `/scm`. Die vier Multi-Agenten-Modi starten auch, wenn eine einfache Anfrage sie beim Namen nennt | „ultrawork: add rate limiting“ |
-| **33 Skills** | Domänenwissen, das nur geladen wird, wenn eine Aufgabe es braucht: UI, APIs, Schemas, Terraform, CI, Security, Git, Observability | lädt sich von selbst, z. B. „add a Terraform S3 bucket“ |
+| **32 Skills** | Domänenwissen, das nur geladen wird, wenn eine Aufgabe es braucht: UI, APIs, Schemas, Terraform, CI, Security, Git, Observability | lädt sich von selbst, z. B. „add a Terraform S3 bucket“ |
 | **Dateien, die du öffnen kannst** | Pläne, Design-Dokumente, API-Verträge, ADRs, Bug-Notizen, Ergebnisse pro Agent, Security-Nachweise, HTML-Explainer, Recaps | `ls .agents/results` |
 | **Research und Content** | Suche mit Quellenangaben, Marktforschung, Paper, Slide-Decks, MP4-Videos, Bilder, lokale Sprachausgabe, PDF/HWP zu Markdown | `/video`, `/convert` |
 | **Ein Ordner, 14 Runtimes** | Ein portables `.agents/`-Verzeichnis, geschrieben in die eigenen Konfigurationsdateien jeder Runtime | `oma link cursor` |
@@ -122,7 +122,7 @@ Damit werden die acht Skills des Frontend-Presets ausgewählt. Der Installer kon
 
 | Preset | Skills |
 |--------|--------|
-| **All** | **Alle 33 Skills** (empfohlen) |
+| **All** | **Alle 32 Skills** (empfohlen) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack ohne mobile und tf-infra |
 | Fullstack Mobile | Fullstack ohne frontend und tf-infra |
@@ -397,7 +397,7 @@ Agenten koordinieren sich über einfache Dateien in `.agents/state/`, ohne exter
 </details>
 
 <details>
-<summary><strong>Alle 33 Skills</strong></summary>
+<summary><strong>Alle 32 Skills</strong></summary>
 
 | Skill | Was er tut |
 |---|---|
@@ -405,7 +405,6 @@ Agenten koordinieren sich über einfache Dateien in `.agents/state/`, ohne exter
 | **oma-architecture** | Wägt Architektur-Trade-offs ab und zieht Modulgrenzen — mit ADR/ATAM/CBAM-Analyse |
 | **oma-backend** | Baut APIs, Authentifizierung und Datenzugriff in Python, Node.js oder Rust |
 | **oma-brainstorm** | Erkundet Ideen gemeinsam mit dir, bevor du dich aufs Bauen festlegst |
-| **oma-coordination** | Führt dich Schritt für Schritt durch die manuelle Koordination von PM-, Frontend-, Backend-, Mobile- und QA-Agenten |
 | **oma-db** | Entwirft Schemas, Migrationen, Indizes und Vector Stores |
 | **oma-debug** | Findet die Ursache, behebt den Bug und schreibt einen Regressionstest |
 | **oma-design** | Baut Design-Systeme mit Tokens, Barrierefreiheit und Responsive Layouts |

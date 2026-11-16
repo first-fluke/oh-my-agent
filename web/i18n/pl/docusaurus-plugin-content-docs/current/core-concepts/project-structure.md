@@ -11,7 +11,7 @@ Po instalacji oh-my-agent projekt zyskuje dwa podstawowe drzewa katalogów: `.ag
 
 ## Przykładowe drzewo katalogów {#representative-directory-tree}
 
-Poniższe drzewo szczegółowo pokazuje współdzielone zasoby i przykładowe umiejętności domenowe. Bieżący katalog zawiera 33 katalogi umiejętności; pominięte umiejętności stosują ten sam wzorzec `SKILL.md` oraz opcjonalnych katalogów `resources/`, `stack/` lub katalogów właściwych dla danej umiejętności. Gdy wygenerowany albo opcjonalny plik jest nieobecny, za źródło prawdy uznawaj aktywne drzewo `.agents/`.
+Poniższe drzewo szczegółowo pokazuje współdzielone zasoby i przykładowe umiejętności domenowe. Bieżący katalog zawiera 32 katalogi umiejętności; pominięte umiejętności stosują ten sam wzorzec `SKILL.md` oraz opcjonalnych katalogów `resources/`, `stack/` lub katalogów właściwych dla danej umiejętności. Gdy wygenerowany albo opcjonalny plik jest nieobecny, za źródło prawdy uznawaj aktywne drzewo `.agents/`.
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -281,7 +278,7 @@ Ta lista obejmuje najczęściej używane klucze. Obsługiwane klucze, ich typy i
 
 ### skills/ {#skills}
 
-Tu znajdują się specjalistyczne umiejętności. Bieżący katalog zawiera 33 katalogi umiejętności oraz zasoby `_shared`; preset `all` buduje się na podstawie tego aktywnego drzewa.
+Tu znajdują się specjalistyczne umiejętności. Bieżący katalog zawiera 32 katalogi umiejętności oraz zasoby `_shared`; preset `all` buduje się na podstawie tego aktywnego drzewa.
 
 **`_shared/`**: zasoby używane przez wszystkich agentów:
 - `core/`: polityka wykonywania, reguły inteligencji kodu, routing, ładowanie kontekstu, struktura promptów, protokół doprecyzowania, budżet kontekstu, ocena trudności, zasady jakości, podejście do testów, wykrywanie dostawcy, metryki sesji, wspólna checklista, wnioski i szablony kontraktów API

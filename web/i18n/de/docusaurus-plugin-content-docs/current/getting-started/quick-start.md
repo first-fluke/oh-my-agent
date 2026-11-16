@@ -100,6 +100,6 @@ Wenn eine verwaltete Aufgabe hängen bleibt, beginnen Sie mit `oma agent status 
 - [Setup wählen](./choose-setup.md) für einen einzelnen Skill, ein Laufzeit-Preset oder das Claude-Code-Plugin
 - [Wichtige Standardwerte](./important-defaults.md) für Vorrangregeln, Provider und Wiederherstellungsentscheidungen
 - [Installation](./installation.md) für Presets, Vendor-Einrichtung, globale Installationen und Updates
-- [Agenten](../core-concepts/agents.md) für die 33 Skill-Pakete und Dispatch-Rollen
+- [Agenten](../core-concepts/agents.md) für die 32 Skill-Pakete und Dispatch-Rollen
 - [Workflows](../core-concepts/workflows.md) für Planung, parallele Ausführung, QA und persistente Modi
 - [Fehlerbehebung](../guide/troubleshooting.md), wenn sich die Installation, ein Vendor oder ein Hook nicht wie erwartet verhält

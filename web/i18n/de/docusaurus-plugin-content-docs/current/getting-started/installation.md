@@ -86,7 +86,7 @@ Wählen Sie das Preset, das zur Arbeit im Repository passt. Die Skill-Namen unte
 
 | Preset | Passend, wenn das Projekt Folgendes umfasst | Enthaltene Skills | Anzahl |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Beliebige Projekte, oder jeder Workflow soll sofort funktionieren | Jeder Skill in der Registry | 33 |
+| **all** | Beliebige Projekte, oder jeder Workflow soll sofort funktionieren | Jeder Skill in der Registry | 32 |
 | **fullstack** | Web- und Mobile-Clients mit Backend und Terraform-Infrastruktur | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Ein Web-Frontend mit Backend und Datenbank | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Eine Mobile-App mit Backend und Datenbank | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -112,12 +112,12 @@ Lesen Sie nach der Installation die Liste der ausgewählten Skills und den Beric
 
 ### Workflows, die Skills außerhalb eines Presets benötigen {#workflows-that-need-skills-outside-a-preset}
 
-Jedes Preset kopiert die Workflow- und Agentendefinitionen. Befehle und Prompts werden nur für Workflows bereitgestellt, deren erforderliche Skills verfügbar sind. Eine frische Frontend-Installation lässt zum Beispiel `/work` nicht verfügbar, weil `oma-coordination` fehlt; die vorhandenen PM- und QA-Skills erfüllen die übrigen Einstiegsanforderungen bereits. Der Installer meldet diesen fehlenden Skill, ohne auf `all` umzuschalten.
+Jedes Preset kopiert die Workflow- und Agentendefinitionen. Befehle und Prompts werden nur für Workflows bereitgestellt, deren erforderliche Skills verfügbar sind. Eine frische Frontend-Installation lässt zum Beispiel `/orchestrate` nicht verfügbar, weil `oma-orchestration` fehlt, während `/work`, `/ultrawork` und `/ralph` verfügbar sind: Die PM- und QA-Skills des Presets erfüllen deren Einstiegsanforderungen. Der Installer meldet den fehlenden Skill, ohne auf `all` umzuschalten.
 
 | Workflow | Erforderliche Einstiegs-Skills | Presets, die sie enthalten |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

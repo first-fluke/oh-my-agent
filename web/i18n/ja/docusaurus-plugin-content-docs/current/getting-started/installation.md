@@ -87,7 +87,7 @@ bunx oh-my-agent@latest
 
 | プリセット | 選ぶ場面（プロジェクトの種類） | 含まれるスキル | 数 |
 |--------|-------------------------------|-----------------|-------|
-| **all** | 任意のプロジェクト、またはすべてのワークフローをそのまま使いたい場合 | レジストリ内のすべてのスキル | 33 |
+| **all** | 任意のプロジェクト、またはすべてのワークフローをそのまま使いたい場合 | レジストリ内のすべてのスキル | 32 |
 | **fullstack** | バックエンドと Terraform インフラを持つ Web とモバイルのクライアント | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | バックエンドとデータベースを持つ Web フロントエンド | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | バックエンドとデータベースを持つモバイルアプリ | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -113,12 +113,12 @@ oma install --preset frontend --yes
 
 ### プリセット外のスキルが必要なワークフロー {#workflows-that-need-skills-outside-a-preset}
 
-どのプリセットもワークフローとエージェント定義をすべてコピーします。ただし、コマンドやプロンプトが公開されるのは、必要なスキルが利用可能なワークフローだけです。たとえば、新規の `frontend` インストールでは `oma-coordination` がないため `/work` は利用できません（一方で既存の PM スキルと QA スキルがほかのエントリー要件を満たしています）。インストーラーは `all` へ切り替えずに、その不足スキルを報告します。
+どのプリセットもワークフローとエージェント定義をすべてコピーします。ただし、コマンドやプロンプトが公開されるのは、必要なスキルが利用可能なワークフローだけです。たとえば、新規の `frontend` インストールでは `oma-orchestration` がないため `/orchestrate` は利用できません。一方、`/work`、`/ultrawork`、`/ralph` は、プリセットに含まれる PM スキルと QA スキルがエントリー要件を満たすため利用できます。インストーラーは `all` へ切り替えずに、その不足スキルを報告します。
 
 | ワークフロー | 必須のエントリースキル | それらを含むプリセット |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

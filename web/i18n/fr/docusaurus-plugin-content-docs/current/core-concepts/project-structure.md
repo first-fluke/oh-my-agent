@@ -12,7 +12,7 @@ Après l'installation d'oh-my-agent, votre projet comprend deux arborescences pr
 
 ## Arborescence représentative {#representative-directory-tree}
 
-Le catalogue actuel comprend 33 répertoires de compétences ; les compétences omises suivent le même modèle `SKILL.md` avec des répertoires facultatifs `resources/`, `stack/` ou propres à la compétence. Considérez l'arborescence `.agents/` active comme l'autorité lorsqu'un fichier généré ou facultatif est absent.
+Le catalogue actuel comprend 32 répertoires de compétences ; les compétences omises suivent le même modèle `SKILL.md` avec des répertoires facultatifs `resources/`, `stack/` ou propres à la compétence. Considérez l'arborescence `.agents/` active comme l'autorité lorsqu'un fichier généré ou facultatif est absent.
 
 ```text
 your-project/
@@ -182,9 +182,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -282,7 +279,7 @@ Cette liste couvre les clés les plus courantes. Consultez la [référence de co
 
 ### skills/ {#skills}
 
-C'est ici que se trouve l'expertise des compétences. Le catalogue actuel comprend 33 répertoires de compétences et les ressources `_shared` ; le preset `all` est dérivé de cette arborescence active.
+C'est ici que se trouve l'expertise des compétences. Le catalogue actuel comprend 32 répertoires de compétences et les ressources `_shared` ; le preset `all` est dérivé de cette arborescence active.
 
 **`_shared/`** : ressources utilisées par tous les agents :
 - `core/` : politique d'exécution, règles d'intelligence du code, routage, chargement du contexte, structure des prompts, protocole de clarification, budget de contexte, évaluation de difficulté, principes de qualité, approche de test, détection des fournisseurs, métriques de session, checklist commune, leçons apprises et modèles de contrats d'API

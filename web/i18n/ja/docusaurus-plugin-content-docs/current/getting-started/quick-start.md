@@ -101,6 +101,6 @@ OMA は初期状態で `model_preset: auto`、コードインテリジェンス�
 - [セットアップを選ぶ](./choose-setup.md): スキル 1 つ、ランタイムプリセット、Claude Code プラグインの選択
 - [重要なデフォルト](./important-defaults.md): 優先順位、プロバイダー、復旧方法
 - [インストール](./installation.md): プリセット、ベンダー設定、グローバルインストール、更新
-- [エージェント](../core-concepts/agents.md): 33 個のスキルパッケージとディスパッチロール
+- [エージェント](../core-concepts/agents.md): 32 個のスキルパッケージとディスパッチロール
 - [ワークフロー](../core-concepts/workflows.md): 計画、並列実行、QA、永続モード
 - [トラブルシューティング](../guide/troubleshooting.md): インストール、ベンダー、フックが期待どおりに動かない場合

@@ -100,6 +100,6 @@ Se uma tarefa gerenciada parar, comece com `oma agent status <session-id> [agent
 - [Escolha uma configuração](./choose-setup.md) para uma skill, um preset de runtime ou o plugin do Claude Code
 - [Padrões importantes](./important-defaults.md) para precedência, providers e escolhas de recuperação
 - [Instalação](./installation.md) para presets, configuração de vendors, instalações globais e atualizações
-- [Agentes](../core-concepts/agents.md) para os 33 pacotes de skills e papéis de dispatch
+- [Agentes](../core-concepts/agents.md) para os 32 pacotes de skills e papéis de dispatch
 - [Workflows](../core-concepts/workflows.md) para planejamento, execução paralela, QA e modos persistentes
 - [Solução de problemas](../guide/troubleshooting.md) quando a instalação, um vendor ou um hook não se comporta como esperado

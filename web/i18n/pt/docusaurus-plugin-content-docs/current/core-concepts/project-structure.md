@@ -11,7 +11,7 @@ Depois de instalar o oh-my-agent, o projeto ganha duas árvores de diretórios p
 
 ## Árvore de diretórios representativa
 
-A árvore abaixo mostra em detalhe os recursos compartilhados e as skills de domínio representativas. O catálogo atual tem 33 diretórios de skills; as skills omitidas seguem o mesmo padrão de `SKILL.md` com `resources/`, `stack/` ou um diretório específico da skill opcional. Considere a árvore ativa de `.agents/` como autoridade quando um arquivo gerado ou opcional estiver ausente.
+A árvore abaixo mostra em detalhe os recursos compartilhados e as skills de domínio representativas. O catálogo atual tem 32 diretórios de skills; as skills omitidas seguem o mesmo padrão de `SKILL.md` com `resources/`, `stack/` ou um diretório específico da skill opcional. Considere a árvore ativa de `.agents/` como autoridade quando um arquivo gerado ou opcional estiver ausente.
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -281,7 +278,7 @@ Esta lista cobre as chaves mais comuns. Consulte a [referência de configuraçã
 
 ### skills/
 
-É onde fica a expertise das skills. O catálogo atual tem 33 diretórios de skills mais os recursos `_shared`; o preset `all` é derivado dessa árvore ativa.
+É onde fica a expertise das skills. O catálogo atual tem 32 diretórios de skills mais os recursos `_shared`; o preset `all` é derivado dessa árvore ativa.
 
 **`_shared/`**: recursos usados por todos os agentes:
 - `core/`: política de execução, regras de inteligência de código, roteamento, carregamento de contexto, estrutura de prompt, protocolo de clarificação, orçamento de contexto, avaliação de dificuldade, princípios de qualidade, abordagem de testes, detecção de vendor, métricas de sessão, checklist comum, lições aprendidas e templates de contratos de API

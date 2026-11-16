@@ -67,17 +67,17 @@ describe("workflow selective-install requirements", () => {
     );
     const selected = [...(PRESETS.frontend ?? [])];
     for (const name of selected) f.skill(name);
-    const state = inspectWorkflowAvailability(f.root, "work");
+    const state = inspectWorkflowAvailability(f.root, "orchestrate");
     expect(state.available).toBe(false);
-    expect(state.missingRequired).toContain("oma-coordination");
+    expect(state.missingRequired).toContain("oma-orchestration");
     createVendorWorkflowSymlinks(
       f.root,
       ["claude"],
       getInstalledWorkflowNames(f.root),
     );
-    expect(existsSync(join(f.root, ".claude/skills/work/SKILL.md"))).toBe(
-      false,
-    );
+    expect(
+      existsSync(join(f.root, ".claude/skills/orchestrate/SKILL.md")),
+    ).toBe(false);
     expect(readdirSync(join(f.root, ".agents/skills")).sort()).toEqual(
       selected.sort(),
     );
@@ -97,18 +97,20 @@ describe("workflow selective-install requirements", () => {
     ).toHaveLength(names.length);
   });
 
-  it("re-enables work after adding its one missing frontend prerequisite", () => {
+  it("re-enables orchestrate after adding its one missing frontend prerequisite", () => {
     const f = fixture(true);
     const selected = PRESETS.frontend ?? [];
     for (const name of selected) f.skill(name);
-    expect(inspectWorkflowAvailability(f.root, "work").missingRequired).toEqual(
-      ["oma-coordination"],
-    );
-    f.skill("oma-coordination");
-    expect(inspectWorkflowAvailability(f.root, "work").available).toBe(true);
     expect(
-      createVendorWorkflowSymlinks(f.root, ["claude"], ["work"]).created,
-    ).toEqual([".claude/skills/work"]);
+      inspectWorkflowAvailability(f.root, "orchestrate").missingRequired,
+    ).toEqual(["oma-orchestration"]);
+    f.skill("oma-orchestration");
+    expect(inspectWorkflowAvailability(f.root, "orchestrate").available).toBe(
+      true,
+    );
+    expect(
+      createVendorWorkflowSymlinks(f.root, ["claude"], ["orchestrate"]).created,
+    ).toEqual([".claude/skills/orchestrate"]);
     expect(readdirSync(join(f.root, ".agents/skills"))).toHaveLength(
       selected.length + 1,
     );
@@ -261,7 +263,7 @@ describe("workflow selective-install requirements", () => {
     );
     expect(inspectWorkflowAvailability(f.root, "work")).toMatchObject({
       available: false,
-      missingRequired: expect.arrayContaining(["oma-coordination"]),
+      missingRequired: expect.arrayContaining(["oma-pm"]),
     });
   });
 

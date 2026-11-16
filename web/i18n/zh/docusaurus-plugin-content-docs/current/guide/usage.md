@@ -1,7 +1,7 @@
 ---
 title: 使用指南
 sidebar_label: 使用 OMA
-description: OMA 使用指南，涵盖以读者为先的任务选择、单技能与多领域示例、工作流、自动检测、全部 33 个技能包、CLI 并行执行、仪表盘、默认值和故障恢复。
+description: OMA 使用指南，涵盖以读者为先的任务选择、单技能与多领域示例、工作流、自动检测、全部 32 个技能包、CLI 并行执行、仪表盘、默认值和故障恢复。
 ---
 
 # 如何使用 oh-my-agent
@@ -296,7 +296,7 @@ oma stats get
 
 ---
 
-## 全部 33 个技能：快速参考 {#all-33-skills-quick-reference}
+## 全部 32 个技能：快速参考 {#all-32-skills-quick-reference}
 
 安装器的 `all` 预设遵循当前注册表。表格按主要用途分组，每个技能仍可在边界处与其他技能协作。
 
@@ -306,7 +306,6 @@ oma stats get
 | **oma-architecture** | 系统边界、权衡、ADR | `.agents/results/architecture/` 中的报告；`docs/decisions/` 中的决策记录 |
 | **oma-backend** | API、认证、服务端逻辑、迁移 | 路由器/服务/仓库变更和验证 |
 | **oma-brainstorm** | 模糊想法和方案比较 | `docs/decisions/` 中的决策草案 |
-| **oma-coordination** | `/work`、`/orchestrate` 和 `/ultrawork` 的共享协调规则；手动逐步协调 | 计划复用、契约对齐、工作区所有权与 QA 交接指导 |
 | **oma-db** | 模式设计、ERD、查询调优、容量规划 | 模式文档、迁移和恢复计划 |
 | **oma-debug** | Bug 复现和根因分析 | 最小修复、回归证据和模式扫描 |
 | **oma-security** | 源码、智能体技能和 MCP 安全扫描；仅在用户提供且经过审查的运行时平台上开展渗透测试 | 经过验证的发现和扫描关卡配置 |

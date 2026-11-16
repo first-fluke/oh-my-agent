@@ -1,12 +1,12 @@
 ---
 title: はじめに
 sidebar_label: はじめに
-description: 33個のスキルパッケージ、12個のサブエージェント定義、段階的なスキル読み込み、IDEをまたぐ可搬性を備え、AIコーディングアシスタントを専門的なエンジニアリングチームに変える oh-my-agent の概要です。
+description: 32個のスキルパッケージ、12個のサブエージェント定義、段階的なスキル読み込み、IDEをまたぐ可搬性を備え、AIコーディングアシスタントを専門的なエンジニアリングチームに変える oh-my-agent の概要です。
 ---
 
 # はじめに
 
-oh-my-agent は、AI 搭載 IDE と CLI ツール向けのマルチエージェント・オーケストレーションフレームワークです。1つの AI アシスタントにすべてを任せるのではなく、33個のスキルパッケージと13個の標準ディスパッチロールに作業を振り分けます。12個のリポジトリ内サブエージェント定義ファイルが、実装、レビュー、計画、デバッグ、ドキュメント、リサーチ、インフラの役割を再利用できる形で提供します。`research-explorer.md` は標準の `explore` ロールに対応し、`orchestrator` は個別の定義ファイルを持たないランタイム調整ロールです。
+oh-my-agent は、AI 搭載 IDE と CLI ツール向けのマルチエージェント・オーケストレーションフレームワークです。1つの AI アシスタントにすべてを任せるのではなく、32個のスキルパッケージと13個の標準ディスパッチロールに作業を振り分けます。12個のリポジトリ内サブエージェント定義ファイルが、実装、レビュー、計画、デバッグ、ドキュメント、リサーチ、インフラの役割を再利用できる形で提供します。`research-explorer.md` は標準の `explore` ロールに対応し、`orchestrator` は個別の定義ファイルを持たないランタイム調整ロールです。
 
 OMA は、明示的に呼び出したとき、またはそのチェックを含むワークフローを選んだときに機械的なチェックを実行します。`oma verify agent <agent-type>` は選択したエージェント種別のチェックを実行し、`/ralph` は成果物を使った検証と [judge](./glossary.md#judge) ループを追加します。有効なベンダーの Stop フック（[停止ゲート](./glossary.md#stop-gate)）は、設定されたチェックが実行される間、ワークフローを継続できます。スキルを読み込んだだけでは受入は成立せず、通常のプロンプトだけで全ワークフローのゲートが自動実行されるわけでもありません。ワークフローの受入基準と生成されたファイルを使って、完了を判断してください。
 
@@ -34,11 +34,11 @@ OMA はスキルにドメインを割り当て、タスクをエージェント�
 
 ---
 
-## 現在のカタログ: 33スキル、12定義、20ワークフロー
+## 現在のカタログ: 32スキル、12定義、20ワークフロー
 
 カタログでは、混同しやすい3つを分けています。
 
-- **[スキル](./glossary.md#skill)**は `.agents/skills/*/SKILL.md` にある33個のドメイン知識パッケージです。自然言語の意図からルーティングし、リソースを段階的に読み込みます。
+- **[スキル](./glossary.md#skill)**は `.agents/skills/*/SKILL.md` にある32個のドメイン知識パッケージです。自然言語の意図からルーティングし、リソースを段階的に読み込みます。
 - **[エージェント定義](./glossary.md#agent-definition)**は `.agents/agents/` にある12個のファイルです。ベンダーのネイティブなサブエージェント人格を提供し、1つ以上のスキルを参照します。
 - **[ワークフロー](./glossary.md#workflow)**は `.agents/workflows/` にある20個のプロセス定義です。4つ（`orchestrate`、`work`、`ultrawork`、`ralph`）が[永続的](./glossary.md#persistent-workflow)で、残りはレポートまで実行して永続モードを維持しません。
 
@@ -92,7 +92,6 @@ OMA はスキルにドメインを割り当て、タスクをエージェント�
 | **oma-translation** | コンテキストに応じた翻訳 | 翻訳方法は、意味と保護対象の構文を読む、レジスターを選ぶ、ターゲット言語で再構成する、必要な場合は著者の文体を保つ、の4段階です。ターゲット言語別プロファイル（`resources/lang/{code}.md`）にレジスターとタイポグラフィの規則があります。リソースは `translation-rubric.md`、`anti-ai-patterns.md`、`style-skills.md`、`lang/{ko,ja,zh,en}.md` です。 |
 | **oma-orchestration** | 自動マルチエージェントコーディネーター | CLI サブエージェントを並列起動し、セッション、タスクボード、進捗、結果の永続ファイルで調整し、検証ループを監視します。デフォルトは `MAX_PARALLEL` が 3、`MAX_RECOVERY_ATTEMPTS` が 3（初回試行を含むタスクごとの再試行および探索仮説の上限）で、進捗ポーリングは完了通知が利用できない場合にのみ上限付きバックオフで行います。タスク単位のスキル参照を選択し、コーディネーターのメモとして記録します。エージェント間レビューと任意のセッションの証拠も含みます。リソースは `subagent-prompt-template.md`、`memory-schema.md` です。 |
 | **oma-scm** | ソフトウェア構成管理（SCM）と Git | ブランチ、merge/rebase/conflict、ワークツリー、ベースライン、リリース状態を扱います。安全なステージング付きの Conventional Commit メッセージも案内し、co-author の末尾情報は有効な `scm.co_author` 設定から取得します。 |
-| **oma-coordination** | 共有調整ルール | マルチエージェント作業の調整ルール（プランの再利用、契約の整合、ワークスペース所有権、QA ハンドオフ）を定義します。`/work`、`/orchestrate`、`/ultrawork` の各ワークフローで読み込まれ、`oma agent spawn` を使った段階的な手動調整にも使えます。プランの再利用または作成、同一優先度タスクの別ワークスペースでの起動、実行単位の進捗・結果ファイルの監視、Frontend/Mobile 作業前の API とデータ契約の整合、最終的な QA レビューまでを扱います。自動実行は `oma-orchestration` が担います。 |
 
 ### 検索、レトロスペクティブ、ドキュメント処理
 
@@ -164,7 +163,7 @@ oh-my-agent に必要なものはすべて `.agents/` ディレクトリにあ�
 ├── oma-config.yaml   # Shared preferences and provider/model settings
 ├── oma-config.cue    # Optional schema-backed configuration
 ├── mcp.json          # MCP server configuration
-├── skills/           # 33 skill directories + _shared resources
+├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
 ├── workflows/        # 20 workflow definitions
@@ -242,7 +241,6 @@ flowchart TD
 | 依頼されたアイデア出しや代替案の検討 | oma-brainstorm |
 | 要件、依存関係、受入基準 | oma-pm |
 | 依頼された専門エージェントの並列実行 | oma-orchestration |
-| 依頼された手動のマルチエージェント調整 | oma-coordination |
 | Git ブランチ、コミット、マージ、リポジトリ履歴 | oma-scm |
 
 その他のドメインでは、ホストがインストール済みスキルの説明から選びます。複数ドメインの作業に固定の順序はありません。未確定のアーキテクチャや製品の判断を先に解決し、共有する API コントラクトが使える状態になれば、バックエンドとクライアントの作業は並列に進められます。
@@ -301,7 +299,7 @@ oh-my-agent は Claude Code に限定されません。フック対応ベンダ�
 ## 次のステップ
 
 - **[インストール](./installation.md):** 3つのインストール方法、プリセット、CLI 設定、検証
-- **[エージェント](/docs/core-concepts/agents):** 33個のスキル、13個のディスパッチロール、承認と明確化のポリシーの詳細
+- **[エージェント](/docs/core-concepts/agents):** 32個のスキル、13個のディスパッチロール、承認と明確化のポリシーの詳細
 - **[スキル](/docs/core-concepts/skills):** 2層アーキテクチャの説明
 - **[ワークフロー](/docs/core-concepts/workflows):** トリガーとフェーズを含む20個のワークフロー
 - **[使い方ガイド](/docs/guide/usage):** 単一タスクから完全なオーケストレーションまでの実例

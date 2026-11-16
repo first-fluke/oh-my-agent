@@ -239,7 +239,6 @@ Ein zuständiger Skill bearbeitet eine eingegrenzte Aufgabe; eine Übergabe komm
 | Angeforderte Ideenfindung oder Erkundung von Alternativen | oma-brainstorm |
 | Anforderungen, Abhängigkeiten, Akzeptanzkriterien | oma-pm |
 | Angeforderte parallele Ausführung durch Spezialisten | oma-orchestration |
-| Angeforderte manuelle Multi-Agenten-Koordination | oma-coordination |
 | Git-Branches, Commits, Merges, Repository-Historie | oma-scm |
 
 ### Abhängigkeiten zwischen Skills {#dependencies-between-skills}

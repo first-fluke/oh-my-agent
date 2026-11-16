@@ -86,7 +86,7 @@ Kies de preset die past bij het werk dat de repository nodig heeft. In de onders
 
 | Preset | Kies deze voor | Inbegrepen skills | Aantal |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Elk project, of wanneer je wilt dat elke workflow direct werkt | Elke skill in het register | 33 |
+| **all** | Elk project, of wanneer je wilt dat elke workflow direct werkt | Elke skill in het register | 32 |
 | **fullstack** | Web- en mobiele clients met een backend en Terraform-infrastructuur | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Een webfrontend met een backend en database | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Een mobiele app met een backend en database | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -112,12 +112,12 @@ Lees na de installatie de lijst met geselecteerde skills en het rapport over wor
 
 ### Workflows die skills buiten een preset nodig hebben {#workflows-that-need-skills-outside-a-preset}
 
-Elke preset kopieert de workflow- en agentdefinities. Commando's en prompts worden alleen blootgesteld voor workflows waarvan de vereiste skills beschikbaar zijn. Een nieuwe frontend-installatie laat bijvoorbeeld `/work` onbeschikbaar omdat `oma-coordination` ontbreekt; de aanwezige PM- en QA-skills voldoen al aan de overige invoervereisten. De installer meldt die ontbrekende skill zonder over te schakelen naar `all`.
+Elke preset kopieert de workflow- en agentdefinities. Commando's en prompts worden alleen blootgesteld voor workflows waarvan de vereiste skills beschikbaar zijn. Een nieuwe frontend-installatie laat bijvoorbeeld `/orchestrate` onbeschikbaar omdat `oma-orchestration` ontbreekt, terwijl `/work`, `/ultrawork` en `/ralph` wel beschikbaar zijn: de PM- en QA-skills van de preset voldoen aan hun invoervereisten. De installer meldt de ontbrekende skill zonder over te schakelen naar `all`.
 
 | Workflow | Vereiste invoerskills | Presets die deze bevatten |
 |----------|-----------------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

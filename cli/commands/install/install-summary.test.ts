@@ -65,8 +65,9 @@ describe("install manifest summary", () => {
     expect(summary.installedSkills).toHaveLength(8);
     expect(summary.unavailableSelectedSkills).toEqual([]);
     expect(
-      summary.workflows.find((item) => item.name === "work")?.missingSkills,
-    ).toContain("oma-coordination");
+      summary.workflows.find((item) => item.name === "orchestrate")
+        ?.missingSkills,
+    ).toContain("oma-orchestration");
     expect(
       summary.workflows.find((item) => item.name === "docs")?.missingSkills,
     ).toContain("oma-docs");
@@ -78,20 +79,28 @@ describe("install manifest summary", () => {
     expect(lines).toContain(
       "Installed skill manifests: 8 (selected and retained)",
     );
-    expect(lines.some((line) => line.startsWith("/work: missing "))).toBe(true);
+    expect(
+      lines.some((line) => line.startsWith("/orchestrate: missing ")),
+    ).toBe(true);
     expect(
       lines.filter((line) => line.startsWith("Run oma doctor")),
     ).toHaveLength(1);
     expect(lines.join("\n")).toContain("conditional branches");
     expect(
-      summary.workflows.find((item) => item.name === "work")?.availability,
+      summary.workflows.find((item) => item.name === "orchestrate")
+        ?.availability,
     ).toMatchObject({
       available: false,
-      missingRequired: expect.arrayContaining(["oma-coordination"]),
+      missingRequired: expect.arrayContaining(["oma-orchestration"]),
     });
     expect(lines.join("\n")).toContain(
-      "/work disabled: install or repair required skills oma-coordination",
+      "/orchestrate disabled: install or repair required skills oma-orchestration",
     );
+    // Regression: /work depended on a skill that only carried shared rules,
+    // so a single-domain preset with PM and QA could not run it.
+    expect(
+      summary.workflows.find((item) => item.name === "work")?.availability,
+    ).toMatchObject({ available: true });
     expect(lines.join("\n")).toContain(
       "conditional skills (add when using that branch)",
     );
@@ -102,7 +111,7 @@ describe("install manifest summary", () => {
     const selected = PRESETS.frontend ?? [];
     for (const name of [
       ...selected,
-      "oma-coordination",
+      "oma-orchestration",
       "oma-docs",
       "oma-refactor",
     ])
@@ -113,8 +122,9 @@ describe("install manifest summary", () => {
     expect(summary.selectedSkills).toHaveLength(8);
     expect(summary.installedSkills).toHaveLength(11);
     expect(
-      summary.workflows.find((item) => item.name === "work")?.missingSkills,
-    ).not.toContain("oma-coordination");
+      summary.workflows.find((item) => item.name === "orchestrate")
+        ?.missingSkills,
+    ).not.toContain("oma-orchestration");
     expect(
       summary.workflows.find((item) => item.name === "docs")?.missingSkills,
     ).toEqual([]);

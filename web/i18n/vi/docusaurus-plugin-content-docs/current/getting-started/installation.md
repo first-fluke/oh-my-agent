@@ -86,7 +86,7 @@ Chọn preset khớp với công việc mà repository cần. Tên skill bên d�
 
 | Preset | Chọn khi project là | Skill bao gồm | Số lượng |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Bất kỳ project nào, hoặc khi bạn muốn mọi workflow hoạt động ngay | Mọi skill trong registry | 33 |
+| **all** | Bất kỳ project nào, hoặc khi bạn muốn mọi workflow hoạt động ngay | Mọi skill trong registry | 32 |
 | **fullstack** | Client web và mobile có backend và hạ tầng Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Web frontend có backend và database | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Ứng dụng mobile có backend và database | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -112,12 +112,12 @@ Sau khi cài, hãy đọc danh sách skill đã chọn và báo cáo workflow c�
 
 ### Workflow cần skill nằm ngoài preset {#workflows-that-need-skills-outside-a-preset}
 
-Mọi preset đều sao chép định nghĩa workflow và agent. Command và prompt chỉ được đưa ra cho workflow có đủ skill bắt buộc. Ví dụ, bản cài frontend mới để `/work` không dùng được vì thiếu `oma-coordination`; skill PM và QA hiện có đã đáp ứng các yêu cầu đầu vào còn lại. Installer báo skill còn thiếu mà không chuyển sang `all`.
+Mọi preset đều sao chép định nghĩa workflow và agent. Command và prompt chỉ được đưa ra cho workflow có đủ skill bắt buộc. Ví dụ, bản cài frontend mới để `/orchestrate` không dùng được vì thiếu `oma-orchestration`, trong khi `/work`, `/ultrawork` và `/ralph` vẫn dùng được: skill PM và QA của preset đã đáp ứng yêu cầu đầu vào của chúng. Installer báo skill còn thiếu mà không chuyển sang `all`.
 
 | Workflow | Skill đầu vào bắt buộc | Preset có các skill đó |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

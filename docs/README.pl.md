@@ -58,7 +58,7 @@ Po instalacji uruchom `oma doctor`. [Pierwsze 5 minut](#your-first-5-minutes) za
 |---|---|---|
 | **12 ról specjalistów** | PM, architekt, inżynierowie backendu, frontendu, mobile, baz danych i infrastruktury, recenzent QA, debuger, refaktoryzator, opiekun dokumentacji, badacz ([poznaj ich](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **20 workflowów** | Slash commands od `/brainstorm` i `/plan` po `/review`, `/debug` i `/scm`. Cztery tryby wieloagentowe uruchamiają się też wtedy, gdy zwykła prośba wymienia je po nazwie | „ultrawork: add rate limiting” |
-| **33 umiejętności** | Wiedza domenowa ładowana tylko wtedy, gdy zadanie jej potrzebuje: UI, API, schematy, Terraform, CI, bezpieczeństwo, git, obserwowalność | ładuje się sama, np. „add a Terraform S3 bucket” |
+| **32 umiejętności** | Wiedza domenowa ładowana tylko wtedy, gdy zadanie jej potrzebuje: UI, API, schematy, Terraform, CI, bezpieczeństwo, git, obserwowalność | ładuje się sama, np. „add a Terraform S3 bucket” |
 | **Pliki, które możesz otworzyć** | Plany, dokumenty projektowe, kontrakty API, ADR-y, notatki o błędach, wyniki per agent, dowody z audytu bezpieczeństwa, objaśniacze HTML, podsumowania | `ls .agents/results` |
 | **Research i treści** | Wyszukiwanie ze wskazaniem źródeł, badania rynku, publikacje naukowe, prezentacje, filmy MP4, obrazy, lokalny głos, PDF/HWP do Markdown | `/video`, `/convert` |
 | **Jeden katalog, 14 środowisk** | Jeden przenośny katalog `.agents/`, zapisywany do własnych plików konfiguracyjnych każdego środowiska | `oma link cursor` |
@@ -121,7 +121,7 @@ To wybiera osiem umiejętności presetu frontend. Instalator nadal konfiguruje r
 
 | Preset | Umiejętności |
 |--------|--------|
-| **All** | **Wszystkie 33 umiejętności** (zalecane) |
+| **All** | **Wszystkie 32 umiejętności** (zalecane) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack bez mobile i tf-infra |
 | Fullstack Mobile | Fullstack bez frontend i tf-infra |
@@ -396,7 +396,7 @@ Agenci koordynują się przez zwykłe pliki w `.agents/state/`, bez zewnętrznej
 </details>
 
 <details>
-<summary><strong>Wszystkie 33 skille</strong></summary>
+<summary><strong>Wszystkie 32 skille</strong></summary>
 
 | Skill | Co robi |
 |---|---|
@@ -404,7 +404,6 @@ Agenci koordynują się przez zwykłe pliki w `.agents/state/`, bez zewnętrznej
 | **oma-architecture** | Waży kompromisy architektoniczne i wyznacza granice modułów z analizą ADR/ATAM/CBAM |
 | **oma-backend** | Buduje API, uwierzytelnianie i dostęp do danych w Pythonie, Node.js lub Rust |
 | **oma-brainstorm** | Eksploruje pomysły razem z Tobą, zanim zaczniesz budować |
-| **oma-coordination** | Prowadzi krok po kroku ręczną koordynację agentów PM, frontend, backend, mobile i QA |
 | **oma-db** | Projektuje schematy, migracje, indeksy i vector stores |
 | **oma-debug** | Znajduje przyczynę błędu, naprawia go i pisze test regresji |
 | **oma-design** | Buduje design systemy z tokenami, dostępnością i responsywnymi layoutami |

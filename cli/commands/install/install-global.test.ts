@@ -347,7 +347,7 @@ describe("install --global: _install.json schema and meta", () => {
   });
 
   it.each([
-    { preset: undefined, count: 33 },
+    { preset: undefined, count: 32 },
     { preset: "frontend", count: 8 },
   ])(
     "installs $count skills through the CLI with preset=$preset",

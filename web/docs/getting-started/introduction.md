@@ -1,11 +1,11 @@
 ---
 title: Introduction
-description: A comprehensive overview of oh-my-agent, the multi-agent orchestration framework that turns AI coding assistants into specialized engineering teams with 33 skill packages, 12 subagent definitions, progressive skill loading, and cross-IDE portability.
+description: A comprehensive overview of oh-my-agent, the multi-agent orchestration framework that turns AI coding assistants into specialized engineering teams with 32 skill packages, 12 subagent definitions, progressive skill loading, and cross-IDE portability.
 ---
 
 # Introduction
 
-oh-my-agent is a multi-agent orchestration framework for AI-powered IDEs and CLI tools. Instead of relying on a single AI assistant for everything, oh-my-agent routes work across 33 skill packages and 13 canonical dispatch roles. Twelve checked-in subagent definition files provide the reusable implementation, review, planning, debugging, documentation, research, and infrastructure personas. `research-explorer.md` maps to the canonical `explore` role; `orchestrator` is a runtime coordination role without a separate definition file.
+oh-my-agent is a multi-agent orchestration framework for AI-powered IDEs and CLI tools. Instead of relying on a single AI assistant for everything, oh-my-agent routes work across 32 skill packages and 13 canonical dispatch roles. Twelve checked-in subagent definition files provide the reusable implementation, review, planning, debugging, documentation, research, and infrastructure personas. `research-explorer.md` maps to the canonical `explore` role; `orchestrator` is a runtime coordination role without a separate definition file.
 
 OMA provides mechanical checks when you invoke them or select a workflow that includes them. `oma verify agent <agent-type>` runs the checks for the selected agent type; `/ralph` adds artifact-backed verification and a [judge](./glossary.md#judge) loop; enabled vendor Stop hooks (the [stop gate](./glossary.md#stop-gate)) can keep a workflow open while its configured checks run. Skill loading alone does not establish acceptance, and a plain prompt does not automatically run every workflow gate. Use the workflow's acceptance criteria and the resulting files to decide what is complete.
 
@@ -35,11 +35,11 @@ OMA assigns domains to skills and routes task work to agents:
 
 ---
 
-## The current catalog: 33 skills, 12 definitions, 20 workflows
+## The current catalog: 32 skills, 12 definitions, 20 workflows
 
 The catalog separates three things that are easy to confuse:
 
-- **[Skills](./glossary.md#skill)** are the 33 domain knowledge packages under `.agents/skills/*/SKILL.md`. They route from natural-language intent and load their resources progressively.
+- **[Skills](./glossary.md#skill)** are the 32 domain knowledge packages under `.agents/skills/*/SKILL.md`. They route from natural-language intent and load their resources progressively.
 - **[Agent definitions](./glossary.md#agent-definition)** are the 12 files under `.agents/agents/`. They provide vendor-native subagent personas and reference one or more skills.
 - **[Workflows](./glossary.md#workflow)** are the 20 process definitions under `.agents/workflows/`. Four are [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork`, and `ralph`); the rest run to a report and do not keep persistent mode active.
 
@@ -93,7 +93,6 @@ The 12 checked-in definition files cover the 13 runtime roles through aliases: `
 | **oma-translation** | Context-aware translation | The translation method has four steps: read meaning and protected syntax, choose register, reconstruct in the target language, and preserve author style where it belongs. Per-target language profiles (`resources/lang/{code}.md`) carry register and typography rules. Resources: `translation-rubric.md`, `anti-ai-patterns.md`, `style-skills.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | Automated multi-agent coordinator | Spawns CLI subagents in parallel, coordinates through durable session, task-board, progress, and result files, and monitors verification loops. Defaults: MAX_PARALLEL 3 and MAX_RECOVERY_ATTEMPTS 3 (retries and exploration hypotheses per task, including the original attempt); progress polling uses bounded backoff and only when completion notifications are unavailable. Selects per-task skill references and records them as coordinator notes. Includes agent-to-agent review loop and optional session evidence. Resources: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | Software configuration management (SCM) + Git | Handles branching strategies, merge/rebase/conflict workflows, worktrees, baselines, and release-state tracking. Also guides Conventional Commit messages with safe staging; co-author trailers come from effective `scm.co_author` configuration when enabled. |
-| **oma-coordination** | Shared coordination rules | Coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the `/work`, `/orchestrate`, and `/ultrawork` workflows, and also usable for manual step-by-step coordination with `oma agent spawn`: reuse or create the plan, spawn same-priority tasks in separate workspaces, monitor run-scoped progress/result files, align API/data contracts before frontend/mobile work, and end with QA review. `oma-orchestration` owns automated execution. |
 
 ### Search, retrospective, and document processing
 
@@ -165,7 +164,7 @@ Everything oh-my-agent needs lives in the `.agents/` directory:
 ├── oma-config.yaml   # Shared preferences and provider/model settings
 ├── oma-config.cue    # Optional schema-backed configuration
 ├── mcp.json          # MCP server configuration
-├── skills/           # 33 skill directories + _shared resources
+├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
 ├── workflows/        # 20 workflow definitions
@@ -242,8 +241,7 @@ The host chooses a skill from the installed skills' names and descriptions. OMA'
 | Visual system, DESIGN.md, redesign direction | oma-design |
 | Requested ideation or alternative exploration | oma-brainstorm |
 | Requirements, dependencies, acceptance criteria | oma-pm |
-| Requested parallel specialist execution | oma-orchestration |
-| Requested manual multi-agent coordination | oma-coordination |
+| Requested parallel specialist execution, automated or step by step | oma-orchestration |
 | Git branches, commits, merges, repository history | oma-scm |
 
 For other domains, the host selects from the installed skill descriptions. Multi-domain work has no fixed chain: an unsettled architecture or product decision is resolved first, and backend and client work can proceed in parallel once their shared API contract is usable.
@@ -301,7 +299,7 @@ The `.agents/` directory remains the source of truth. Installation links or proj
 ## What is next
 
 - **[Installation](./installation.md)**: Three install methods, presets, CLI setup, and verification
-- **[Agents](/docs/core-concepts/agents)**: Deep dive into the 33 skills, 13 dispatch roles, and the authorization and clarification policy
+- **[Agents](/docs/core-concepts/agents)**: Deep dive into the 32 skills, 13 dispatch roles, and the authorization and clarification policy
 - **[Skills](/docs/core-concepts/skills)**: The two-layer architecture explained
 - **[Workflows](/docs/core-concepts/workflows)**: All 20 workflows with triggers and phases
 - **[Usage Guide](/docs/guide/usage)**: Real examples from single tasks to full orchestration

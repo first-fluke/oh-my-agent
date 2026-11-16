@@ -86,7 +86,7 @@ bunx oh-my-agent@latest
 
 | 预设 | 适用的项目 | 包含的技能 | 数量 |
 |--------|-------------------------------|-----------------|-------|
-| **all** | 任何项目，或希望所有工作流开箱即用 | 注册表中的全部技能 | 33 |
+| **all** | 任何项目，或希望所有工作流开箱即用 | 注册表中的全部技能 | 32 |
 | **fullstack** | 带后端和 Terraform 基础设施的 Web 与移动客户端 | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | 带后端和数据库的 Web 前端 | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | 带后端和数据库的移动应用 | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -112,12 +112,12 @@ oma install --preset frontend --yes
 
 ### 需要预设之外技能的工作流 {#workflows-that-need-skills-outside-a-preset}
 
-每个预设都会复制工作流和智能体定义，但只有所需技能可用的工作流才会公开对应的命令和提示词。例如，全新安装的 frontend 预设不会提供 `/work`，因为它缺少 `oma-coordination`；其已有的 PM 和 QA 技能已经满足其余入口要求。安装器会报告缺少的技能，而不会自动切换到 `all`。
+每个预设都会复制工作流和智能体定义，但只有所需技能可用的工作流才会公开对应的命令和提示词。例如，全新安装的 frontend 预设不会提供 `/orchestrate`，因为它缺少 `oma-orchestration`；而 `/work`、`/ultrawork` 和 `/ralph` 可以使用，因为该预设自带的 PM 和 QA 技能已经满足它们的入口要求。安装器会报告缺少的技能，而不会自动切换到 `all`。
 
 | 工作流 | 必需的入口技能 | 包含这些技能的预设 |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

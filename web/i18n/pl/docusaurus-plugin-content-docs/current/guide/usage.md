@@ -1,7 +1,7 @@
 ---
 title: Przewodnik użycia
 sidebar_label: Korzystanie z OMA
-description: Przewodnik użycia OMA obejmujący wybór zadań z myślą o czytelniku, przykłady dla jednej umiejętności i wielu domen, workflowy, automatyczne wykrywanie, wszystkie 33 pakiety umiejętności, równoległe wykonanie CLI, dashboardy, ustawienia domyślne i odzyskiwanie.
+description: Przewodnik użycia OMA obejmujący wybór zadań z myślą o czytelniku, przykłady dla jednej umiejętności i wielu domen, workflowy, automatyczne wykrywanie, wszystkie 32 pakiety umiejętności, równoległe wykonanie CLI, dashboardy, ustawienia domyślne i odzyskiwanie.
 ---
 
 # Jak używać oh-my-agent
@@ -296,7 +296,7 @@ Zdania takie jak „plan the authentication feature”, „fix the login bug”,
 
 ---
 
-## Wszystkie 33 umiejętności: szybka ściąga
+## Wszystkie 32 umiejętności: szybka ściąga
 
 Preset instalatora `all` korzysta z aktywnego rejestru. Tabela grupuje wszystkie bieżące umiejętności według głównego zastosowania; umiejętność nadal może współpracować z inną na granicy domen.
 
@@ -306,7 +306,6 @@ Preset instalatora `all` korzysta z aktywnego rejestru. Tabela grupuje wszystkie
 | **oma-architecture** | Granice systemu, kompromisy, ADR-y | Raporty w `.agents/results/architecture/`; zapisy decyzji w `docs/decisions/` |
 | **oma-backend** | API, auth, logika serwerowa, migracje | Zmiany routera/serwisu/repozytorium i weryfikacja |
 | **oma-brainstorm** | Niejednoznaczne pomysły i porównanie podejść | Szkic decyzji w `docs/decisions/` |
-| **oma-coordination** | Wspólne zasady koordynacji dla `/work`, `/orchestrate` i `/ultrawork`; ręczna koordynacja krok po kroku | Wskazówki dotyczące ponownego użycia planu, uzgadniania kontraktów, własności workspace'u i przekazania do QA |
 | **oma-db** | Projekt schematu, ERD, strojenie zapytań, planowanie pojemności | Dokumentacja schematu, migracje i plan odzyskiwania |
 | **oma-debug** | Odtwarzanie błędów i analiza przyczyny źródłowej | Minimalna poprawka, dowody regresji i skan wzorców |
 | **oma-security** | Skanowanie bezpieczeństwa kodu źródłowego, umiejętności agentów i MCP; testy penetracyjne wyłącznie na dostarczonej przez użytkownika i zweryfikowanej platformie uruchomieniowej | Zweryfikowane ustalenia i konfiguracja bramek skanowania |

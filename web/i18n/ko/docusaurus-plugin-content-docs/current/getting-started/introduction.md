@@ -1,11 +1,11 @@
 ---
 title: 소개
-description: oh-my-agent 종합 개요입니다. AI 코딩 어시스턴트를 33개 스킬 패키지, 12개 서브에이전트 정의, 점진적 스킬 로딩, 크로스 IDE 호환성을 갖춘 전문 엔지니어링 팀으로 만드는 멀티 에이전트 오케스트레이션 프레임워크입니다.
+description: oh-my-agent 종합 개요입니다. AI 코딩 어시스턴트를 32개 스킬 패키지, 12개 서브에이전트 정의, 점진적 스킬 로딩, 크로스 IDE 호환성을 갖춘 전문 엔지니어링 팀으로 만드는 멀티 에이전트 오케스트레이션 프레임워크입니다.
 ---
 
 # 소개
 
-oh-my-agent은 AI 기반 IDE 및 CLI 도구를 위한 멀티 에이전트 오케스트레이션 프레임워크입니다. 하나의 AI 어시스턴트에 모든 것을 맡기는 대신, 작업을 33개 스킬 패키지와 13개 표준 디스패치 역할로 라우팅합니다. 체크인된 서브에이전트 정의 파일 12개가 구현, 리뷰, 기획, 디버깅, 문서화, 연구, 인프라 페르소나를 제공합니다. `research-explorer.md`는 표준 `explore` 역할에 매핑되고 `orchestrator`는 별도 정의 파일이 없는 런타임 조율 역할입니다.
+oh-my-agent은 AI 기반 IDE 및 CLI 도구를 위한 멀티 에이전트 오케스트레이션 프레임워크입니다. 하나의 AI 어시스턴트에 모든 것을 맡기는 대신, 작업을 32개 스킬 패키지와 13개 표준 디스패치 역할로 라우팅합니다. 체크인된 서브에이전트 정의 파일 12개가 구현, 리뷰, 기획, 디버깅, 문서화, 연구, 인프라 페르소나를 제공합니다. `research-explorer.md`는 표준 `explore` 역할에 매핑되고 `orchestrator`는 별도 정의 파일이 없는 런타임 조율 역할입니다.
 
 OMA는 호출하거나 해당 검사를 포함하는 워크플로우를 선택했을 때 기계적 검사를 제공합니다. `oma verify agent <agent-type>`는 선택한 에이전트 유형의 검사를 실행하고, `/ralph`는 산출물 기반 검증과 [judge](./glossary.md#judge) 루프를 추가하며, 활성화된 벤더 Stop 훅([정지 게이트](./glossary.md#stop-gate))은 설정된 검사가 실행되는 동안 워크플로우를 유지할 수 있습니다. 스킬 로딩만으로 인수 기준이 생기지 않으며 일반 프롬프트가 모든 워크플로우 게이트를 자동으로 실행하지도 않습니다. 완료 여부는 워크플로우의 인수 기준과 생성된 파일로 판단하세요.
 
@@ -35,11 +35,11 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 ---
 
-## 현재 카탈로그: 스킬 33개, 정의 12개, 워크플로우 20개
+## 현재 카탈로그: 스킬 32개, 정의 12개, 워크플로우 20개
 
 카탈로그는 혼동하기 쉬운 세 가지 대상을 분리합니다.
 
-- **[스킬](./glossary.md#skill)**은 `.agents/skills/*/SKILL.md` 아래의 도메인 지식 패키지 33개입니다. 자연어 의도에서 라우팅되고 리소스를 점진적으로 로드합니다.
+- **[스킬](./glossary.md#skill)**은 `.agents/skills/*/SKILL.md` 아래의 도메인 지식 패키지 32개입니다. 자연어 의도에서 라우팅되고 리소스를 점진적으로 로드합니다.
 - **[에이전트 정의](./glossary.md#agent-definition)**는 `.agents/agents/` 아래의 파일 12개입니다. 벤더 네이티브 서브에이전트 페르소나를 제공하고 하나 이상의 스킬을 참조합니다.
 - **[워크플로우](./glossary.md#workflow)**는 `.agents/workflows/` 아래의 프로세스 정의 20개입니다. 4개(`orchestrate`, `work`, `ultrawork`, `ralph`)는 [지속 워크플로우](./glossary.md#persistent-workflow)이고 나머지는 보고서까지 실행한 뒤 지속 모드를 유지하지 않습니다.
 
@@ -93,7 +93,6 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 | **oma-translation** | 컨텍스트 인식 번역 | 번역 방법은 보호 구문과 의미를 읽고, 레지스터를 선택하고, 대상 언어로 재구성하고, 필요한 경우 저자 문체를 보존하는 네 단계입니다. 대상 언어별 프로파일(`resources/lang/{code}.md`)에 레지스터와 타이포그래피 규칙이 들어 있습니다. 리소스: `translation-rubric.md`, `anti-ai-patterns.md`, `style-skills.md`, `lang/{ko,ja,zh,en}.md`. |
 | **oma-orchestration** | 자동화된 멀티 에이전트 조율자 | CLI 서브에이전트를 병렬 스폰하고, 파일로 보존되는 세션·태스크 보드·진행·결과 파일을 통해 조율하며, 검증 루프를 모니터링합니다. 기본값: MAX_PARALLEL 3, MAX_RECOVERY_ATTEMPTS 3(원래 시도를 포함한 태스크당 재시도 및 탐색 가설 횟수). 진행 상황 폴링은 상한이 있는 백오프를 사용하며 완료 알림을 쓸 수 없을 때만 수행합니다. 태스크별 스킬 레퍼런스를 선택해 코디네이터 메모로 기록합니다. 에이전트 간 리뷰 루프와 선택적 세션 증거 포함. 리소스: `subagent-prompt-template.md`, `memory-schema.md`. |
 | **oma-scm** | 형상관리(SCM) + Git | 브랜치 전략, 머지/리베이스/충돌 해결, 워크트리, 베이스라인, 릴리스 상태 추적을 다룹니다. 안전한 스테이징과 Conventional Commit 메시지를 안내하며 co-author trailer는 활성화된 `scm.co_author` 설정에서 가져옵니다. |
-| **oma-coordination** | 공유 조율 규칙 | 멀티 에이전트 작업의 조율 규칙: 계획 재사용, 컨트랙트 정렬, 워크스페이스 소유권, QA 인계. `/work`, `/orchestrate`, `/ultrawork` 워크플로우가 로드하며, `oma agent spawn`을 쓰는 수동 단계별 조율에도 사용할 수 있습니다. 계획을 재사용하거나 만들고 같은 우선순위 태스크를 별도 워크스페이스에서 스폰하며 실행 범위가 지정된 진행·결과 파일을 모니터링하고 프론트엔드와 모바일 작업 전에 API·데이터 컨트랙트를 맞춘 뒤 QA 리뷰로 마무리합니다. 자동 실행은 `oma-orchestration`이 담당합니다. |
 
 ### 검색, 회고 및 문서 처리
 
@@ -165,7 +164,7 @@ oh-my-agent에 필요한 모든 것은 `.agents/` 디렉토리에 있습니다:
 ├── oma-config.yaml   # Shared preferences and provider/model settings
 ├── oma-config.cue    # Optional schema-backed configuration
 ├── mcp.json          # MCP server configuration
-├── skills/           # 33 skill directories + _shared resources
+├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
 ├── workflows/        # 20 workflow definitions
@@ -243,7 +242,6 @@ flowchart TD
 | 요청된 아이디어 탐색 또는 대안 탐색 | oma-brainstorm |
 | 요구사항, 의존성, 인수 기준 | oma-pm |
 | 요청된 병렬 전문가 실행 | oma-orchestration |
-| 요청된 수동 멀티 에이전트 조율 | oma-coordination |
 | Git 브랜치, 커밋, 머지, 저장소 이력 | oma-scm |
 
 그 밖의 도메인은 호스트가 설치된 스킬 설명에서 고릅니다. 여러 도메인에 걸친 작업에는 고정된 실행 순서가 없습니다. 정해지지 않은 아키텍처나 제품 결정을 먼저 해결하고, 공유 API 컨트랙트를 쓸 수 있게 되면 백엔드와 클라이언트 작업을 병렬로 진행할 수 있습니다.
@@ -301,7 +299,7 @@ oh-my-agent은 Claude Code에 한정되지 않습니다. 훅을 지원하는 벤
 ## 다음 단계
 
 - **[설치](./installation.md)**: 세 가지 설치 방법, 프리셋, CLI 설정, 검증
-- **[에이전트](/docs/core-concepts/agents)**: 33개 스킬, 13개 디스패치 역할, 승인과 명확화 정책 심층 분석
+- **[에이전트](/docs/core-concepts/agents)**: 32개 스킬, 13개 디스패치 역할, 승인과 명확화 정책 심층 분석
 - **[스킬](/docs/core-concepts/skills)**: 2계층 아키텍처 설명
 - **[워크플로우](/docs/core-concepts/workflows)**: 트리거와 단계가 포함된 20개 워크플로우
 - **[사용 가이드](/docs/guide/usage)**: 단일 태스크부터 전체 오케스트레이션까지 실제 예제

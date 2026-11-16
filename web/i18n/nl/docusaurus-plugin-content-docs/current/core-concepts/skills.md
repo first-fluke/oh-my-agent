@@ -239,7 +239,6 @@ Eén verantwoordelijke skill behandelt een afgebakende taak; voeg alleen een ove
 | Gevraagde ideevorming of verkenning van alternatieven | oma-brainstorm |
 | Requirements, afhankelijkheden, acceptatiecriteria | oma-pm |
 | Gevraagde parallelle uitvoering door specialisten | oma-orchestration |
-| Gevraagde handmatige multi-agentcoördinatie | oma-coordination |
 | Git-branches, commits, merges, repositoryhistorie | oma-scm |
 
 ### Afhankelijkheden tussen skills {#dependencies-between-skills}

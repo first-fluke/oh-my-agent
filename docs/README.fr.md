@@ -59,7 +59,7 @@ Les **workflows**, c'est ce que tu tapes (ou que tu dis, tout simplement). Ils f
 |---|---|---|
 | **12 rôles spécialisés** | PM, architecte, ingénieurs backend, frontend, mobile, base de données et infra, relecteur QA, débogueur, refactoriseur, curateur de docs, chercheur ([fais-leur connaissance](#meet-the-team)) | `/orchestrate build a TODO app with login` |
 | **20 workflows** | Des slash commands, de `/brainstorm` et `/plan` à `/review`, `/debug` et `/scm`. Les quatre modes multi-agents se lancent aussi quand une simple demande les nomme | « ultrawork: add rate limiting » |
-| **33 skills** | Du savoir-faire métier qui ne se charge que lorsqu'une tâche en a besoin : UI, APIs, schémas, Terraform, CI, sécurité, git, observabilité | se charge tout seul, p. ex. « add a Terraform S3 bucket » |
+| **32 skills** | Du savoir-faire métier qui ne se charge que lorsqu'une tâche en a besoin : UI, APIs, schémas, Terraform, CI, sécurité, git, observabilité | se charge tout seul, p. ex. « add a Terraform S3 bucket » |
 | **Des fichiers que tu peux ouvrir** | Plans, documents de conception, contrats d'API, ADR, notes de bug, résultats par agent, preuves de sécurité, explicateurs HTML, récapitulatifs | `ls .agents/results` |
 | **Recherche et contenu** | Recherche sourcée, études de marché, articles scientifiques, decks de slides, vidéos MP4, images, voix en local, PDF/HWP vers Markdown | `/video`, `/convert` |
 | **Un dossier, 14 runtimes** | Un seul répertoire `.agents/` portable, écrit dans les fichiers de configuration propres à chaque runtime | `oma link cursor` |
@@ -123,7 +123,7 @@ Cela sélectionne les huit skills du preset frontend. L'installateur configure q
 
 | Preset | Skills |
 |--------|--------|
-| **All** | **Les 33 skills** (recommandé) |
+| **All** | **Les 32 skills** (recommandé) |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack sans mobile ni tf-infra |
 | Fullstack Mobile | Fullstack sans frontend ni tf-infra |
@@ -398,7 +398,7 @@ Les agents se coordonnent via de simples fichiers dans `.agents/state/`, sans se
 </details>
 
 <details>
-<summary><strong>Les 33 skills</strong></summary>
+<summary><strong>Les 32 skills</strong></summary>
 
 | Skill | Ce qu'il fait |
 |---|---|
@@ -406,7 +406,6 @@ Les agents se coordonnent via de simples fichiers dans `.agents/state/`, sans se
 | **oma-architecture** | Évalue les arbitrages d'architecture et trace les frontières de modules avec une analyse ADR/ATAM/CBAM |
 | **oma-backend** | Construit des APIs, l'authentification et l'accès aux données en Python, Node.js ou Rust |
 | **oma-brainstorm** | Explore les idées avec toi avant que tu te lances dans la construction |
-| **oma-coordination** | Guide la coordination manuelle pas à pas des agents PM, frontend, backend, mobile et QA |
 | **oma-db** | Conçoit schémas, migrations, index et vector stores |
 | **oma-debug** | Identifie la cause racine, corrige le bug et écrit un test de régression |
 | **oma-design** | Construit des systèmes de design avec tokens, accessibilité et layouts responsive |

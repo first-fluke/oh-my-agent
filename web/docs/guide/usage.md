@@ -1,7 +1,7 @@
 ---
 title: Usage Guide
 sidebar_label: Using OMA
-description: Usage guide for OMA, covering reader-first task selection, single-skill and multi-domain examples, workflows, auto-detection, all 33 skill packages, parallel CLI execution, dashboards, defaults, and recovery.
+description: Usage guide for OMA, covering reader-first task selection, single-skill and multi-domain examples, workflows, auto-detection, all 32 skill packages, parallel CLI execution, dashboards, defaults, and recovery.
 ---
 
 # How to Use oh-my-agent
@@ -296,7 +296,7 @@ Sentences such as "plan the authentication feature", "fix the login bug", "do ev
 
 ---
 
-## All 33 skills: quick reference
+## All 32 skills: quick reference
 
 The installer’s `all` preset follows the live registry. The table groups every current skill by its primary use; a skill can still coordinate with another skill at a boundary.
 
@@ -306,7 +306,6 @@ The installer’s `all` preset follows the live registry. The table groups every
 | **oma-architecture** | System boundaries, tradeoffs, ADRs | Reports in `.agents/results/architecture/`; decision records in `docs/decisions/` |
 | **oma-backend** | APIs, auth, server logic, migrations | Router/service/repository changes and verification |
 | **oma-brainstorm** | Ambiguous ideas and approach comparison | Decision draft in `docs/decisions/` |
-| **oma-coordination** | Shared coordination rules for `/work`, `/orchestrate`, and `/ultrawork`; manual step-by-step coordination | Plan reuse, contract alignment, workspace ownership, and QA handoff guidance |
 | **oma-db** | Schema design, ERD, query tuning, capacity planning | Schema documentation, migrations, and recovery plan |
 | **oma-debug** | Bug reproduction and root cause analysis | Minimal fix, regression evidence, and pattern scan |
 | **oma-security** | Source, agent-skill, and MCP security scanning; penetration tests only on a user-supplied, reviewed runtime platform | Validated findings and scan-gate configuration |
@@ -320,7 +319,7 @@ The installer’s `all` preset follows the live registry. The table groups every
 | **oma-market** | Pain points, trends, competitor and discovery research | LAW-compliant research brief with frameworks |
 | **oma-mobile** | Flutter, React Native, Swift iOS, and Kotlin Android work | Mobile screens, state, platform integration, and tests |
 | **oma-observability** | Traces, metrics, logs, profiles, SLOs, incident forensics | Layered observability recommendation or implementation guidance |
-| **oma-orchestration** | Automated parallel agent execution | Coordinated plans, memory updates, and result collection |
+| **oma-orchestration** | Parallel agent execution, automated or one dispatch at a time | Coordinated plans, memory updates, and result collection |
 | **oma-pdf** | PDF conversion and OCR-aware extraction | Markdown with reading order, tables, lists, and images |
 | **oma-pm** | Requirements, task breakdown, API contracts | `.agents/results/plan-{sessionId}.json` and task board |
 | **oma-qa** | Security, performance, accessibility, and quality review | Findings report with severity and remediation evidence |

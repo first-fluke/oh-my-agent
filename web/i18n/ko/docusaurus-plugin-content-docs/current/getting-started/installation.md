@@ -86,7 +86,7 @@ bunx oh-my-agent@latest
 
 | 프리셋 | 이런 프로젝트일 때 선택 | 포함 스킬 | 개수 |
 |--------|-------------------------------|-----------------|-------|
-| **all** | 어떤 프로젝트든, 또는 모든 워크플로우가 바로 동작하길 원할 때 | 레지스트리의 모든 스킬 | 33 |
+| **all** | 어떤 프로젝트든, 또는 모든 워크플로우가 바로 동작하길 원할 때 | 레지스트리의 모든 스킬 | 32 |
 | **fullstack** | 백엔드와 Terraform 인프라를 갖춘 웹·모바일 클라이언트 | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | 백엔드와 데이터베이스를 갖춘 웹 프론트엔드 | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | 백엔드와 데이터베이스를 갖춘 모바일 앱 | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -112,12 +112,12 @@ oma install --preset frontend --yes
 
 ### 프리셋 밖의 스킬이 필요한 워크플로우 {#workflows-that-need-skills-outside-a-preset}
 
-모든 프리셋이 워크플로우와 에이전트 정의를 복사하지만, 명령과 프롬프트는 필수 스킬을 사용할 수 있는 워크플로우에 대해서만 노출됩니다. 예를 들어 새로 설치한 frontend 환경에서는 `oma-coordination`이 없기 때문에 `/work`를 사용할 수 없으며, 기존 PM과 QA 스킬만으로도 다른 진입 요구사항은 충족됩니다. 설치 프로그램은 `all`로 전환하지 않고 누락된 스킬을 보고합니다.
+모든 프리셋이 워크플로우와 에이전트 정의를 복사하지만, 명령과 프롬프트는 필수 스킬을 사용할 수 있는 워크플로우에 대해서만 노출됩니다. 예를 들어 새로 설치한 frontend 환경에서는 `oma-orchestration`이 없기 때문에 `/orchestrate`를 사용할 수 없지만, `/work`, `/ultrawork`, `/ralph`는 프리셋에 포함된 PM과 QA 스킬만으로 진입 요구사항이 충족되어 사용할 수 있습니다. 설치 프로그램은 `all`로 전환하지 않고 누락된 스킬을 보고합니다.
 
 | 워크플로우 | 필수 진입 스킬 | 포함하는 프리셋 |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

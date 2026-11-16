@@ -1,7 +1,7 @@
 ---
 title: Guia de uso
 sidebar_label: Usando o OMA
-description: "Guia de uso do OMA, cobrindo a seleção de tarefas orientada ao leitor, exemplos de skill única e de vários domínios, workflows, auto-detecção, todos os 33 pacotes de skills, execução paralela via CLI, dashboards, padrões e recuperação."
+description: "Guia de uso do OMA, cobrindo a seleção de tarefas orientada ao leitor, exemplos de skill única e de vários domínios, workflows, auto-detecção, todos os 32 pacotes de skills, execução paralela via CLI, dashboards, padrões e recuperação."
 ---
 
 # Como usar o oh-my-agent
@@ -296,7 +296,7 @@ Frases como "plan the authentication feature", "fix the login bug", "do everythi
 
 ---
 
-## Todas as 33 skills: referência rápida
+## Todas as 32 skills: referência rápida
 
 O preset `all` do instalador segue o registro ativo. A tabela agrupa cada skill atual pelo uso principal; uma skill ainda pode coordenar com outra em uma fronteira.
 
@@ -306,7 +306,6 @@ O preset `all` do instalador segue o registro ativo. A tabela agrupa cada skill 
 | **oma-architecture** | Fronteiras de sistema, tradeoffs e ADRs | Relatórios em `.agents/results/architecture/`; registros de decisão em `docs/decisions/` |
 | **oma-backend** | APIs, auth, lógica de servidor e migrações | Alterações de router/serviço/repositório e verificação |
 | **oma-brainstorm** | Ideias ambíguas e comparação de abordagens | Rascunho de decisão em `docs/decisions/` |
-| **oma-coordination** | Regras compartilhadas de coordenação para `/work`, `/orchestrate` e `/ultrawork`; coordenação manual passo a passo | Orientação sobre reutilização de plano, alinhamento de contratos, responsabilidade pelos workspaces e handoff para QA |
 | **oma-db** | Design de schema, ERD, ajuste de queries e planejamento de capacidade | Documentação de schema, migrações e plano de recuperação |
 | **oma-debug** | Reprodução de bugs e análise de causa raiz | Correção mínima, evidência de regressão e varredura de padrões |
 | **oma-security** | Varredura de segurança de código-fonte, skills de agentes e MCP; testes de penetração somente em uma plataforma de execução fornecida e revisada pelo usuário | Achados validados e configuração de gates de varredura |

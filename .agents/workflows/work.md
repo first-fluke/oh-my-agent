@@ -8,7 +8,6 @@ disable-model-invocation: true
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search only for paths outside this project or ignored paths when unavailable or timed out. Do not install a provider or track a repository automatically.
 - Use native file tools and `.agents/skills/_shared/runtime/memory-protocol.md` for durable coordination state; code-intelligence memory tools are not required.
-- **Read the oma-coordination skill BEFORE starting.** Read `.agents/skills/oma-coordination/SKILL.md` and follow its Guardrails.
 - **Follow the context-loading guide.** Read `.agents/skills/_shared/core/context-loading.md` and load only task-relevant resources.
 
 ---
@@ -27,7 +26,7 @@ The detected runtime vendor and each agent's target vendor determine how agents 
 
 ## Step 0: Preparation (DO NOT SKIP)
 
-1. Read `.agents/skills/oma-coordination/SKILL.md` and apply its Guardrails.
+1. Read `.agents/skills/_shared/core/collaboration-policy.md` and apply its coordination rules.
 2. Read `.agents/skills/_shared/core/context-loading.md` for resource loading strategy.
 3. Read `.agents/skills/_shared/runtime/memory-protocol.md` for memory protocol.
 4. Read the `Emitting Decisions` section of `.agents/skills/_shared/runtime/event-spec.md`; the rest of that file is the event schema reference.

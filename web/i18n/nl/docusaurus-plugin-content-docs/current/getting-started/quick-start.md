@@ -100,6 +100,6 @@ Als een beheerde taak vastloopt, begin je met `oma agent status <session-id> [ag
 - [Een setup kiezen](./choose-setup.md) voor één skill, een runtimepreset of de Claude Code-plugin
 - [Belangrijke standaardinstellingen](./important-defaults.md) voor voorrang, providers en herstelkeuzes
 - [Installatie](./installation.md) voor presets, vendorsetup, globale installaties en updates
-- [Agenten](../core-concepts/agents.md) voor de 33 skillpakketten en dispatchrollen
+- [Agenten](../core-concepts/agents.md) voor de 32 skillpakketten en dispatchrollen
 - [Workflows](../core-concepts/workflows.md) voor planning, parallelle uitvoering, QA en persistente modi
 - [Probleemoplossing](../guide/troubleshooting.md) wanneer de installatie, een vendor of een hook zich niet gedraagt zoals verwacht

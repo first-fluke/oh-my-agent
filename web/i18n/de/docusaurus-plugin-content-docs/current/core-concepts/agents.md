@@ -22,7 +22,6 @@ Diese Tabelle ist die maßgebliche Liste der installierten Skills. Sie wird von 
 | [`oma-architecture`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-architecture/SKILL.md) | Evaluate system boundaries and architectural tradeoffs. Use for architecture decisions, design reviews, and ADRs. |
 | [`oma-backend`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-backend/SKILL.md) | Implement server APIs, authentication, and application data access. Schema modeling and query tuning use oma-db. |
 | [`oma-brainstorm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-brainstorm/SKILL.md) | Explore goals, constraints, and alternative approaches before choosing a design. Use when the user requests ideation or design exploration. |
-| [`oma-coordination`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-coordination/SKILL.md) | Shared coordination rules for multi-agent work: plan reuse, contract alignment, workspace ownership, and QA handoff. Loaded by the /work, /orchestrate, and /ultrawork workflows; also use for manual step-by-step coordination. |
 | [`oma-db`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-db/SKILL.md) | Design schemas and migrations, tune queries, or plan vector retrieval and database operations. Application API implementation uses oma-backend. |
 | [`oma-debug`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-debug/SKILL.md) | Diagnose a reproducible failure, fix its cause, and verify the regression. Use for crashes, incorrect behavior, and failing tests. |
 | [`oma-design`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-design/SKILL.md) | Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions. |
@@ -35,7 +34,7 @@ Diese Tabelle ist die maßgebliche Liste der installierten Skills. Sie wird von 
 | [`oma-market`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-market/SKILL.md) | Research customer pain points, trends, and competitors through the OMA market engine. Use for market discovery or voice-of-customer analysis. |
 | [`oma-mobile`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-mobile/SKILL.md) | Implement Flutter, React Native, native Swift, or native Kotlin Android apps. Use for mobile screens, widgets, platform integrations, and application data flows. |
 | [`oma-observability`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-observability/SKILL.md) | Design or troubleshoot telemetry, SLOs, and incident diagnostics. Route to the relevant signal, system boundary, or vendor guide. |
-| [`oma-orchestration`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-orchestration/SKILL.md) | Dispatch and supervise parallel specialist agents with durable task state. Use when automated multi-agent execution is requested. |
+| [`oma-orchestration`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-orchestration/SKILL.md) | Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, or to coordinate agents step by step. |
 | [`oma-pdf`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-pdf/SKILL.md) | Extract PDF text, headings, tables, and images into Markdown using opendataloader-pdf. Use for PDF parsing, not PDF layout creation. |
 | [`oma-pm`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-pm/SKILL.md) | Turn product requirements into scoped tasks with dependencies and acceptance criteria. Use for implementation planning and prioritization. |
 | [`oma-qa`](https://github.com/first-fluke/oh-my-agent/blob/main/.agents/skills/oma-qa/SKILL.md) | Review changes for correctness, security, accessibility, and performance. Use for scoped quality reviews or verification plans; bug fixes use oma-debug. |
@@ -127,7 +126,7 @@ flowchart TD
 | **Qualität** | oma-qa | Sicherheitsaudit (OWASP), Performance, Barrierefreiheit (WCAG), Code-Qualitäts-Review |
 | **Debugging** | oma-debug | Bug-Reproduktion, Grundursachenanalyse, minimale Korrekturen, Regressionstests |
 | **Lokalisierung** | oma-translation | Kontextbewusste Übersetzung unter Bewahrung von Ton, Register und Fachbegriffen |
-| **Koordination** | oma-orchestration, oma-coordination | Automatisierte Multi-Agenten-Orchestrierung; gemeinsame Koordinationsregeln und manuelle schrittweise Koordination |
+| **Koordination** | oma-orchestration | Automatisierte Multi-Agenten-Orchestrierung; gemeinsame Koordinationsregeln und manuelle schrittweise Koordination |
 | **Git** | oma-scm | Conventional-Commits-Generierung, feature-basierte Commit-Aufteilung |
 | **Suche & Retrieval** | oma-search | Such-Router für externe Quellen mit Quellenangaben (Context7-Dokumente, Web-Provider, Remote-Code über `gh`/`glab`, Abruf bekannter URLs) |
 | **Retrospektive** | oma-recap | Werkzeugübergreifende Analyse von Konversationshistorien und themenbezogene Arbeitszusammenfassungen |
@@ -549,27 +548,6 @@ Dies sind Workflow-Standards; Modell-, Vendor-, Parallelitäts- und Budgeteinste
 - Die Nachricht in eine Datei schreiben und mit `git commit -F <message-file>` committen
 - Geteilte Historie nicht ohne ausdrückliche Autorisierung umschreiben; `--force-with-lease` verwenden, niemals einfaches `--force`
 - Co-Author-Trailer werden nur eingefügt, wenn die wirksame Konfiguration `scm.co_author` sie aktiviert und Name und E-Mail-Adresse bereitstellt.
-
----
-
-### oma-coordination
-
-**Domäne:** Gemeinsame Koordinationsregeln für Multi-Agenten-Arbeit: Plan-Wiederverwendung, Vertragsabstimmung, Workspace-Zuständigkeit und QA-Übergabe.
-
-**Einsatzbereich:** Jeder Workflow, der mehr als einen Spezialisten-Agenten dispatchet. `/work`, `/orchestrate` und `/ultrawork` laden diesen Skill und wenden seine Leitplanken an. Ebenfalls verwenden für manuelle, schrittweise Koordination, bei der Sie jeden Dispatch selbst steuern, sowie wenn Agenten sich einen API- oder Datenvertrag teilen.
-
-**Nicht verwenden bei:** Aufgaben in einer einzelnen Domäne (den Domänen-Agenten direkt verwenden). Automatisierter Dispatch, Überwachung und Verifikation gehören zu oma-orchestration; dieser Skill liefert nur die Regeln, die dabei angewendet werden.
-
-**Kernregeln:**
-- Einen gültigen Plan wiederverwenden; oma-pm nur aufrufen, wenn sich Zerlegung oder Verträge ändern müssen
-- Unabhängige Aufgaben derselben Prioritätsstufe parallel spawnen, jeweils in einem eigenen Workspace oder mit `--isolation worktree`
-- Verträge für geänderte API-Grenzen vor abhängiger Frontend- oder Mobile-Arbeit aktualisieren
-- QA-Review ist immer der letzte Schritt
-- Blockierende QA-Mängel und erforderliche Verifikationslücken an den zuständigen Agenten zurückgeben und anschließend die betroffenen Prüfungen erneut ausführen
-
-**Workflow:** Plan (wiederverwenden oder PM) → Spawn nach Prioritätsstufe → Überwachen → QA-Review → Probleme beheben → Ausliefern.
-
-**Unterschied zu oma-orchestration:** Coordination liefert die Regeln und führt durch einen manuellen Lauf, bei dem der Benutzer das Tempo steuert; der Orchestrator übernimmt die automatisierte Ausführung (Auflösung des Dispatch, Parallelitätslimit, Recovery-Budget und Review-Schleife).
 
 ---
 

@@ -135,34 +135,6 @@
         "zh": ["帮我想想", "一起想想办法", "给点灵感"]
       }
     },
-    "oma-coordination": {
-      "keywords": {
-        "*": [],
-        "en": [
-          "coordinate the agents",
-          "hand off to agent",
-          "multi agent workflow",
-          "run agents manually",
-          "multi agent coordination",
-          "coordinate agents",
-          "cli handoff",
-          "manual orchestration"
-        ],
-        "ko": [
-          "에이전트 조율",
-          "에이전트끼리 협업",
-          "수동으로 에이전트 돌려",
-          "에이전트 순서 잡아줘"
-        ],
-        "ja": [
-          "エージェントを調整",
-          "エージェント連携",
-          "手動でエージェント",
-          "エージェントの順序"
-        ],
-        "zh": ["协调代理", "代理之间协作", "手动跑代理", "代理之间衔接"]
-      }
-    },
     "oma-db": {
       "keywords": {
         "*": ["ERD", "vector db"],
@@ -716,21 +688,46 @@
           "multi agent orchestration",
           "spawn agents",
           "review loop",
-          "mcp memory coordination"
+          "mcp memory coordination",
+          "coordinate the agents",
+          "hand off to agent",
+          "multi agent workflow",
+          "run agents manually",
+          "multi agent coordination",
+          "coordinate agents",
+          "cli handoff",
+          "manual orchestration"
         ],
         "ko": [
           "에이전트 병렬 실행",
           "동시에 에이전트 돌려",
           "fan-out",
-          "리뷰 루프 돌려"
+          "리뷰 루프 돌려",
+          "에이전트 조율",
+          "에이전트끼리 협업",
+          "수동으로 에이전트 돌려",
+          "에이전트 순서 잡아줘"
         ],
         "ja": [
           "エージェント並列実行",
           "同時にエージェント",
           "fan-out",
-          "レビューループ"
+          "レビューループ",
+          "エージェントを調整",
+          "エージェント連携",
+          "手動でエージェント",
+          "エージェントの順序"
         ],
-        "zh": ["并行跑代理", "同时派发代理", "fan-out 任务", "评审循环"]
+        "zh": [
+          "并行跑代理",
+          "同时派发代理",
+          "fan-out 任务",
+          "评审循环",
+          "协调代理",
+          "代理之间协作",
+          "手动跑代理",
+          "代理之间衔接"
+        ]
       }
     },
     "oma-pdf": {

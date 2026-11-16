@@ -1,7 +1,7 @@
 ---
 title: Hướng dẫn sử dụng
 sidebar_label: Sử dụng OMA
-description: Hướng dẫn sử dụng OMA, bao quát cách chọn task theo người đọc, ví dụ skill đơn và đa lĩnh vực, workflow, tự động phát hiện, toàn bộ 33 gói skill, thực thi CLI song song, dashboard, mặc định và phục hồi.
+description: Hướng dẫn sử dụng OMA, bao quát cách chọn task theo người đọc, ví dụ skill đơn và đa lĩnh vực, workflow, tự động phát hiện, toàn bộ 32 gói skill, thực thi CLI song song, dashboard, mặc định và phục hồi.
 ---
 
 # Cách sử dụng oh-my-agent
@@ -296,7 +296,7 @@ Các câu như "plan the authentication feature", "fix the login bug", "do every
 
 ---
 
-## 33 skill: tham chiếu nhanh
+## 32 skill: tham chiếu nhanh
 
 Preset `all` của installer bám theo registry đang chạy. Bảng nhóm mọi skill hiện tại theo cách dùng chính; skill vẫn có thể phối hợp với skill khác ở ranh giới.
 
@@ -306,7 +306,6 @@ Preset `all` của installer bám theo registry đang chạy. Bảng nhóm mọi
 | **oma-architecture** | Ranh giới hệ thống, đánh đổi, ADR | Báo cáo trong `.agents/results/architecture/`; decision record trong `docs/decisions/` |
 | **oma-backend** | API, auth, logic server, migration | Thay đổi Router/Service/Repository và xác minh |
 | **oma-brainstorm** | Ý tưởng mơ hồ và so sánh hướng tiếp cận | Bản nháp quyết định trong `docs/decisions/` |
-| **oma-coordination** | Quy tắc điều phối dùng chung cho `/work`, `/orchestrate` và `/ultrawork`; điều phối thủ công từng bước | Tái sử dụng plan, đồng bộ contract, quyền sở hữu workspace và hướng dẫn bàn giao QA |
 | **oma-db** | Thiết kế schema, ERD, tuning query, capacity | Tài liệu schema, migration và kế hoạch phục hồi |
 | **oma-debug** | Tái hiện bug và phân tích nguyên nhân gốc | Sửa tối thiểu, evidence hồi quy và quét pattern |
 | **oma-security** | Quét bảo mật mã nguồn, agent skill và MCP; penetration test chỉ trên nền tảng runtime đã qua rà soát do người dùng cung cấp | Phát hiện đã xác thực và cấu hình scan gate |

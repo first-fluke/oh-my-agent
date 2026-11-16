@@ -53,4 +53,5 @@ export const migrateExample: Migration = {
 | 034 | `034-remove-tools-workflow.ts` | Removes the shipped `.agents/workflows/tools.md`; a project workflow that only reuses the file name is left alone |
 | 035 | `035-remove-mcp-tool-groups.ts` | Drops the unused `toolGroups` key from `.agents/mcp.json`; every other key is kept |
 | 036 | `036-remove-unscoped-rules.ts` | Removes the seven shipped rules that had no `globs` or `alwaysApply` (`backend`, `commit`, `debug`, `design`, `dev-workflow`, `market`, `quality`) and their generated `.claude/rules` and `.cursor/rules` copies, in the project and the home directory; a rule with another `description` is left alone |
+| 037 | `037-remove-coordination-skill.ts` | Removes the shipped `.agents/skills/oma-coordination/`; its rules live in `_shared/core/collaboration-policy.md` and its manual mode in `oma-orchestration`. A skill with another frontmatter `name` is left alone |
 <!-- oma-docs:ignore-end -->

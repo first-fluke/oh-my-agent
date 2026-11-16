@@ -100,6 +100,6 @@ Si une tâche gérée se bloque, commencez par `oma agent status <session-id> [a
 - [Choisir une configuration](./choose-setup.md) pour une seule compétence, un preset de runtime ou le plugin Claude Code
 - [Valeurs par défaut importantes](./important-defaults.md) pour la priorité, les fournisseurs et les choix de récupération
 - [Installation](./installation.md) pour les presets, la configuration des fournisseurs, les installations globales et les mises à jour
-- [Agents](../core-concepts/agents.md) pour les 33 paquets de compétences et les rôles de dispatch
+- [Agents](../core-concepts/agents.md) pour les 32 paquets de compétences et les rôles de dispatch
 - [Workflows](../core-concepts/workflows.md) pour la planification, l’exécution parallèle, l’assurance qualité et les modes persistants
 - [Dépannage](../guide/troubleshooting.md) lorsque l’installation, un fournisseur ou un hook ne se comporte pas comme prévu

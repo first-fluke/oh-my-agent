@@ -1,7 +1,7 @@
 ---
 title: Gebruiksgids
 sidebar_label: OMA gebruiken
-description: Gebruiksgids voor OMA met taakselectie vanuit de lezer, voorbeelden voor single-skill- en multi-domeintaken, workflows, autodetectie, alle 33 skillpakketten, parallelle CLI-uitvoering, dashboards, defaults en herstel.
+description: Gebruiksgids voor OMA met taakselectie vanuit de lezer, voorbeelden voor single-skill- en multi-domeintaken, workflows, autodetectie, alle 32 skillpakketten, parallelle CLI-uitvoering, dashboards, defaults en herstel.
 ---
 
 # oh-my-agent gebruiken
@@ -296,7 +296,7 @@ Zinnen zoals "plan the authentication feature", "fix the login bug", "do everyth
 
 ---
 
-## Alle 33 skills: snelreferentie
+## Alle 32 skills: snelreferentie
 
 De `all`-preset van de installer volgt de live registry. De tabel groepeert elke actuele skill op primair gebruik; een skill kan bij een grens nog steeds met een andere samenwerken.
 
@@ -306,7 +306,6 @@ De `all`-preset van de installer volgt de live registry. De tabel groepeert elke
 | **oma-architecture** | Systeemgrenzen, afwegingen, ADR's | Rapporten in `.agents/results/architecture/`; beslisrecords in `docs/decisions/` |
 | **oma-backend** | API's, auth, serverlogica, migraties | Router/service/repository-wijzigingen en verificatie |
 | **oma-brainstorm** | Ambigue ideeën en benaderingsvergelijking | Beslisconcept in `docs/decisions/` |
-| **oma-coordination** | Gedeelde coördinatieregels voor `/work`, `/orchestrate` en `/ultrawork`; handmatige stapsgewijze coördinatie | Richtlijnen voor planhergebruik, contractafstemming, workspace-eigendom en QA-overdracht |
 | **oma-db** | Schemadesign, ERD, querytuning, capaciteitsplanning | Schemasdocumentatie, migraties en herstelplan |
 | **oma-debug** | Bugreproductie en grondoorzaakanalyse | Minimale fix, regressiebewijs en patroonscan |
 | **oma-security** | Securityscans van broncode, agent-skills en MCP; penetratietests alleen op een door de gebruiker aangeleverd en beoordeeld runtimeplatform | Gevalideerde bevindingen en configuratie van scan-gates |

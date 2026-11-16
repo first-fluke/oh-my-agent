@@ -60,7 +60,7 @@ oh-my-agent（`oma`）は、Claude Code、Codex CLI、Cursor とほか 11 種類
 |---|---|---|
 | **12 の専門ロール** | PM、アーキテクト、バックエンド・フロントエンド・モバイル・データベース・インフラの各エンジニア、QA レビューアー、デバッガー、リファクタラー、ドキュメントキュレーター、リサーチャー（[チームを紹介](#meet-the-team)） | `/orchestrate build a TODO app with login` |
 | **20 のワークフロー** | `/brainstorm` や `/plan` から `/review`、`/debug`、`/scm` までのスラッシュコマンド。4 つのマルチエージェントモードは、普通の依頼で名前を挙げても始まります | "ultrawork: add rate limiting" |
-| **33 のスキル** | タスクが必要とするときだけ読み込まれるドメインのノウハウ: UI、API、スキーマ、Terraform、CI、セキュリティ、git、オブザーバビリティ | 自動で読み込まれる。例: "add a Terraform S3 bucket" |
+| **32 のスキル** | タスクが必要とするときだけ読み込まれるドメインのノウハウ: UI、API、スキーマ、Terraform、CI、セキュリティ、git、オブザーバビリティ | 自動で読み込まれる。例: "add a Terraform S3 bucket" |
 | **開いて確認できるファイル** | 計画、設計ドキュメント、API コントラクト、ADR、バグノート、エージェント別の結果、セキュリティのエビデンス、HTML 解説、振り返りサマリー | `ls .agents/results` |
 | **リサーチとコンテンツ** | 出典つき検索、市場調査、論文、スライドデッキ、MP4 動画、画像、ローカル音声、PDF/HWP から Markdown への変換 | `/video`、`/convert` |
 | **1 つのフォルダー、14 のランタイム** | 移植可能な `.agents/` ディレクトリ 1 つを、各ランタイム自身の設定ファイルに書き出す | `oma link cursor` |
@@ -124,7 +124,7 @@ oma install --preset frontend --yes
 
 | プリセット | スキル |
 |--------|--------|
-| **All** | **全 33 スキル**（推奨） |
+| **All** | **全 32 スキル**（推奨） |
 | Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack から mobile と tf-infra を除いたもの |
 | Fullstack Mobile | Fullstack から frontend と tf-infra を除いたもの |
@@ -399,7 +399,7 @@ Serena は LSP ベースのコードナビゲーションと診断を提供し�
 </details>
 
 <details>
-<summary><strong>全 33 スキル</strong></summary>
+<summary><strong>全 32 スキル</strong></summary>
 
 | スキル | 内容 |
 |---|---|
@@ -407,7 +407,6 @@ Serena は LSP ベースのコードナビゲーションと診断を提供し�
 | **oma-architecture** | アーキテクチャのトレードオフを評価してモジュール境界を定め、ADR/ATAM/CBAMで分析する |
 | **oma-backend** | Python、Node.js、RustでAPI、認証、データアクセスを構築する |
 | **oma-brainstorm** | 作り始める前に、いっしょにアイデアを探る |
-| **oma-coordination** | PM・フロントエンド・バックエンド・モバイル・QAエージェントの手動連携を段階的にガイドする |
 | **oma-db** | スキーマ、マイグレーション、インデックス、ベクトルストアを設計する |
 | **oma-debug** | 根本原因を特定してバグを修正し、リグレッションテストを書く |
 | **oma-design** | トークン、アクセシビリティ、レスポンシブレイアウトを備えたデザインシステムを構築する |

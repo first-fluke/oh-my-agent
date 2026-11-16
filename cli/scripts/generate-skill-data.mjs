@@ -19,7 +19,6 @@ const CATEGORY_OVERRIDES = {
   "oma-brainstorm": "coordination",
   "oma-pm": "coordination",
   "oma-qa": "coordination",
-  "oma-coordination": "coordination",
   "oma-orchestration": "coordination",
   "oma-tf-infra": "infrastructure",
   "oma-dev-workflow": "infrastructure",

@@ -1,11 +1,11 @@
 ---
 title: 简介
-description: 全面介绍 oh-my-agent。这个多智能体编排框架把 AI 编程助手变成专业工程团队，提供 33 个技能包、12 个子智能体定义、渐进式技能加载和跨 IDE 可移植性。
+description: 全面介绍 oh-my-agent。这个多智能体编排框架把 AI 编程助手变成专业工程团队，提供 32 个技能包、12 个子智能体定义、渐进式技能加载和跨 IDE 可移植性。
 ---
 
 # 简介
 
-oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架。它不把所有工作都交给同一个 AI 助手，而是把工作路由到 33 个技能包和 13 个规范调度角色。12 个已纳入版本控制的子智能体定义文件提供可复用的实现、审查、规划、调试、文档、研究和基础设施角色。`research-explorer.md` 映射到规范的 `explore` 角色；`orchestrator` 是运行时协调角色，没有单独的定义文件。
+oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架。它不把所有工作都交给同一个 AI 助手，而是把工作路由到 32 个技能包和 13 个规范调度角色。12 个已纳入版本控制的子智能体定义文件提供可复用的实现、审查、规划、调试、文档、研究和基础设施角色。`research-explorer.md` 映射到规范的 `explore` 角色；`orchestrator` 是运行时协调角色，没有单独的定义文件。
 
 只有在主动调用机械检查，或选择包含这些检查的工作流时，OMA 才会运行它们。`oma verify agent <agent-type>` 会运行选定智能体类型的检查；`/ralph` 会加入有产物支撑的验证和[judge](./glossary.md#judge) 循环；启用的供应商 Stop 钩子（即[停止关卡](./glossary.md#stop-gate)）可以在配置的检查运行期间保持工作流打开。仅加载技能并不代表已通过验收，普通提示也不会自动运行每个工作流关卡。请依据工作流的验收标准和生成的文件判断任务是否完成。
 
@@ -35,11 +35,11 @@ OMA 把领域分配给技能，并把任务工作路由给智能体：
 
 ---
 
-## 当前目录：33 个技能、12 个定义、20 个工作流 {#the-current-catalog-33-skills-12-definitions-20-workflows}
+## 当前目录：32 个技能、12 个定义、20 个工作流 {#the-current-catalog-32-skills-12-definitions-20-workflows}
 
 该目录将三个容易混淆的概念分开：
 
-- **[技能](./glossary.md#skill)**是 `.agents/skills/*/SKILL.md` 下的 33 个领域知识包。它们根据自然语言意图路由，并逐步加载资源。
+- **[技能](./glossary.md#skill)**是 `.agents/skills/*/SKILL.md` 下的 32 个领域知识包。它们根据自然语言意图路由，并逐步加载资源。
 - **[智能体定义](./glossary.md#agent-definition)**是 `.agents/agents/` 下的 12 个文件。它们提供供应商原生的子智能体角色，并引用一个或多个技能。
 - **[工作流](./glossary.md#workflow)**是 `.agents/workflows/` 下的 20 个流程定义。其中四个是[持久化工作流](./glossary.md#persistent-workflow)（`orchestrate`、`work`、`ultrawork` 和 `ralph`），其余工作流只生成报告，不会保持持久化模式。
 
@@ -93,7 +93,6 @@ OMA 把领域分配给技能，并把任务工作路由给智能体：
 | **oma-translation** | 上下文感知翻译 | 翻译方法分四步：阅读含义与受保护语法、选择语体、用目标语言重构、在适当位置保留作者风格。每种目标语言的配置档（`resources/lang/{code}.md`）记录语体和排版规则。资源：`translation-rubric.md`、`anti-ai-patterns.md`、`style-skills.md`、`lang/{ko,ja,zh,en}.md`。 |
 | **oma-orchestration** | 自动化多智能体协调器 | 并行启动 CLI 子智能体，通过持久的会话、任务板、进度和结果文件进行协调，并监控验证循环。默认值：MAX_PARALLEL 为 3，MAX_RECOVERY_ATTEMPTS 为 3（每个任务的重试和探索假设总数，包括首次尝试）；进度轮询使用有界退避，且仅在没有完成通知时进行。为每个任务选择技能参考资料，并将其记录为协调者备注。包含智能体间审查循环和可选的会话证据。资源：`subagent-prompt-template.md`、`memory-schema.md`。 |
 | **oma-scm** | 软件配置管理（SCM）与 Git | 处理分支策略、合并/变基/冲突工作流、工作区、基线和发布状态跟踪。还指导使用安全暂存的 Conventional Commit 消息；启用时，共同作者尾注来自有效的 `scm.co_author` 配置。 |
-| **oma-coordination** | 共享协调规则 | 多智能体工作的协调规则：计划复用、契约对齐、工作区归属和 QA 交接。由 `/work`、`/orchestrate` 和 `/ultrawork` 工作流加载，也可用于通过 `oma agent spawn` 进行手动分步协调：复用或创建计划，在独立工作区并行启动同优先级任务，监控按运行划分的进度和结果文件，在前端或移动端工作前对齐 API 与数据契约，最后进行 QA 审查。自动化执行由 `oma-orchestration` 负责。 |
 
 ### 搜索、回顾与文档处理 {#search-retrospective-and-document-processing}
 
@@ -167,7 +166,7 @@ oh-my-agent 所需的一切都位于 `.agents/` 目录中：
 ├── oma-config.yaml   # Shared preferences and provider/model settings
 ├── oma-config.cue    # Optional schema-backed configuration
 ├── mcp.json          # MCP server configuration
-├── skills/           # 33 skill directories + _shared resources
+├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
 ├── workflows/        # 20 workflow definitions
@@ -245,7 +244,6 @@ flowchart TD
 | 明确要求的构思或备选方案探索 | oma-brainstorm |
 | 需求、依赖关系、验收标准 | oma-pm |
 | 明确要求的并行专家执行 | oma-orchestration |
-| 明确要求的手动多智能体协调 | oma-coordination |
 | Git 分支、提交、合并、仓库历史 | oma-scm |
 
 其他领域由宿主根据已安装技能的描述选择。多领域工作没有固定链路：尚未确定的架构或产品决策先解决；一旦共享 API 契约可用，后端和客户端工作就可以并行推进。
@@ -303,7 +301,7 @@ oh-my-agent 不局限于 Claude Code。支持钩子的供应商共享 `oma hook 
 ## 接下来 {#what-is-next}
 
 - **[安装](./installation.md)**：三种安装方式、预设、CLI 设置和验证
-- **[智能体](/docs/core-concepts/agents)**：深入了解 33 个技能、13 个调度角色以及授权与澄清策略
+- **[智能体](/docs/core-concepts/agents)**：深入了解 32 个技能、13 个调度角色以及授权与澄清策略
 - **[技能](/docs/core-concepts/skills)**：了解两层架构
 - **[工作流](/docs/core-concepts/workflows)**：了解全部 20 个工作流及其触发器和阶段
 - **[使用指南](/docs/guide/usage)**：从单项任务到完整编排的真实示例

@@ -21,12 +21,12 @@ export const WORKFLOW_DEPENDENCIES: Readonly<
   docs: { required: ["oma-docs"], conditional: [] },
   explain: { required: ["oma-explanation"], conditional: [] },
   orchestrate: {
-    required: ["oma-coordination", "oma-orchestration", "oma-qa"],
+    required: ["oma-orchestration", "oma-qa"],
     conditional: ["oma-pm", "oma-refactor"],
   },
   plan: { required: ["oma-pm"], conditional: [] },
   ralph: {
-    required: ["oma-coordination", "oma-pm", "oma-qa"],
+    required: ["oma-pm", "oma-qa"],
     conditional: ["oma-refactor", "oma-scm"],
   },
   recap: { required: ["oma-recap"], conditional: [] },
@@ -39,7 +39,7 @@ export const WORKFLOW_DEPENDENCIES: Readonly<
     conditional: ["oma-frontend", "oma-backend", "oma-mobile"],
   },
   ultrawork: {
-    required: ["oma-coordination", "oma-pm", "oma-qa"],
+    required: ["oma-pm", "oma-qa"],
     conditional: ["oma-refactor", "oma-scm"],
   },
   video: {
@@ -47,7 +47,7 @@ export const WORKFLOW_DEPENDENCIES: Readonly<
     conditional: ["oma-image", "oma-voice", "oma-slide"],
   },
   work: {
-    required: ["oma-coordination", "oma-pm", "oma-qa"],
+    required: ["oma-pm", "oma-qa"],
     conditional: [
       "oma-backend",
       "oma-frontend",

@@ -101,6 +101,6 @@ OMA 默认使用 `model_preset: auto`、用于代码智能的 Serena、用于语
 - [选择设置](./choose-setup.md)，了解单个技能、运行时预设或 Claude Code 插件
 - [重要默认值](./important-defaults.md)，了解优先级、提供方和恢复选择
 - [安装](./installation.md)，了解预设、供应商设置、全局安装和更新
-- [智能体](../core-concepts/agents.md)，了解 33 个技能包和调度角色
+- [智能体](../core-concepts/agents.md)，了解 32 个技能包和调度角色
 - [工作流](../core-concepts/workflows.md)，了解规划、并行执行、QA 和持久化模式
 - [故障排查](../guide/troubleshooting.md)，在安装、供应商或钩子表现不符合预期时使用

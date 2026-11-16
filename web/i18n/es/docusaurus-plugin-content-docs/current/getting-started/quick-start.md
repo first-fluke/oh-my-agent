@@ -100,6 +100,6 @@ Si una tarea gestionada se atasca, empieza con `oma agent status <session-id> [a
 - [Elegir una configuración](./choose-setup.md) para una habilidad, un preset de runtime o el plugin de Claude Code
 - [Valores predeterminados importantes](./important-defaults.md) para la precedencia, los proveedores y las opciones de recuperación
 - [Instalación](./installation.md) para presets, configuración de proveedores, instalaciones globales y actualizaciones
-- [Agentes](../core-concepts/agents.md) para los 33 paquetes de habilidades y los roles de despacho
+- [Agentes](../core-concepts/agents.md) para los 32 paquetes de habilidades y los roles de despacho
 - [Flujos de trabajo](../core-concepts/workflows.md) para planificación, ejecución paralela, QA y modos persistentes
 - [Solución de problemas](../guide/troubleshooting.md) cuando la instalación, un proveedor o un hook no se comportan como se espera

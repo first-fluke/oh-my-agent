@@ -86,7 +86,7 @@ bunx oh-my-agent@latest
 
 | Пресет | Выбирайте, если проект — это | Включённые навыки | Количество |
 |--------|-------------------------------|-----------------|-------|
-| **all** | Любой проект, или вы хотите, чтобы все рабочие процессы работали сразу | Все навыки из реестра | 33 |
+| **all** | Любой проект, или вы хотите, чтобы все рабочие процессы работали сразу | Все навыки из реестра | 32 |
 | **fullstack** | Веб- и мобильные клиенты с backend и инфраструктурой Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Веб-frontend с backend и базой данных | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Мобильное приложение с backend и базой данных | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -112,12 +112,12 @@ oma install --preset frontend --yes
 
 ### Рабочие процессы, которым нужны навыки вне пресета {#workflows-that-need-skills-outside-a-preset}
 
-Каждый пресет копирует определения рабочих процессов и агентов. Команды и prompt открываются только для рабочих процессов, чьи требуемые навыки доступны. Например, свежая установка frontend оставляет `/work` недоступным, потому что в ней нет `oma-coordination`; уже имеющиеся навыки PM и QA удовлетворяют остальным требованиям входа. Установщик сообщает об этом недостающем навыке и не переключается на `all`.
+Каждый пресет копирует определения рабочих процессов и агентов. Команды и prompt открываются только для рабочих процессов, чьи требуемые навыки доступны. Например, свежая установка frontend оставляет `/orchestrate` недоступным, потому что в ней нет `oma-orchestration`, тогда как `/work`, `/ultrawork` и `/ralph` доступны: навыки PM и QA из пресета удовлетворяют их требованиям входа. Установщик сообщает о недостающем навыке и не переключается на `all`.
 
 | Рабочий процесс | Навыки, обязательные для входа | Пресеты, которые их включают |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |

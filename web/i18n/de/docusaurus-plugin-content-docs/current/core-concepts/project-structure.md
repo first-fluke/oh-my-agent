@@ -11,7 +11,7 @@ Nach der Installation von oh-my-agent erhält Ihr Projekt zwei zentrale Verzeich
 
 ## Repräsentativer Verzeichnisbaum {#representative-directory-tree}
 
-Der Verzeichnisbaum enthält gemeinsame Ressourcen und repräsentative Skills für verschiedene Domänen. Der aktuelle Katalog enthält 33 Skill-Verzeichnisse; ausgelassene Skills folgen demselben Muster aus `SKILL.md` und optionalen `resources/`, `stack/` oder skill-spezifischen Verzeichnissen. Maßgeblich ist immer der aktuelle `.agents/`-Baum, wenn eine generierte oder optionale Datei fehlt.
+Der Verzeichnisbaum enthält gemeinsame Ressourcen und repräsentative Skills für verschiedene Domänen. Der aktuelle Katalog enthält 32 Skill-Verzeichnisse; ausgelassene Skills folgen demselben Muster aus `SKILL.md` und optionalen `resources/`, `stack/` oder skill-spezifischen Verzeichnissen. Maßgeblich ist immer der aktuelle `.agents/`-Baum, wenn eine generierte oder optionale Datei fehlt.
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -282,7 +279,7 @@ Diese Liste deckt die gebräuchlichsten Schlüssel ab. Die unterstützten Schlü
 
 ### skills/
 
-Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 33 Skill-Verzeichnisse zusätzlich zu den gemeinsamen `_shared`-Ressourcen; das Preset `all` wird aus diesem aktuellen Baum abgeleitet.
+Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 32 Skill-Verzeichnisse zusätzlich zu den gemeinsamen `_shared`-Ressourcen; das Preset `all` wird aus diesem aktuellen Baum abgeleitet.
 
 **`_shared/`** enthält Ressourcen für alle Agenten:
 - `core/`: Ausführungsrichtlinie, Regeln für Code-Intelligence, Routing, Kontextladen, Prompt-Struktur, Klärungsprotokoll, Kontextbudget, Schwierigkeitsbewertung, Qualitätsprinzipien, Testansatz, Vendor-Erkennung, Sitzungsmetriken, gemeinsame Checkliste, Lessons Learned und Vorlagen für API-Verträge

@@ -239,7 +239,6 @@ Uma única skill responsável cuida de uma tarefa delimitada; acrescente um hand
 | Ideação solicitada ou exploração de alternativas | oma-brainstorm |
 | Requisitos, dependências, critérios de aceitação | oma-pm |
 | Execução paralela de especialistas solicitada | oma-orchestration |
-| Coordenação manual multiagente solicitada | oma-coordination |
 | Branches Git, commits, merges, histórico do repositório | oma-scm |
 
 ### Dependências entre skills

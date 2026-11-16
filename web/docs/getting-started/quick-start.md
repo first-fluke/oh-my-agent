@@ -108,6 +108,6 @@ If a managed task stalls, start with `oma agent status <session-id> [agent-id]`,
 - [Choose a setup](./choose-setup.md) for one skill, a runtime preset, or the Claude Code plugin
 - [Important Defaults](./important-defaults.md) for precedence, providers, and recovery choices
 - [Installation](./installation.md) for presets, vendor setup, global installs, and updates
-- [Agents](../core-concepts/agents.md) for the 33 skill packages and dispatch roles
+- [Agents](../core-concepts/agents.md) for the 32 skill packages and dispatch roles
 - [Workflows](../core-concepts/workflows.md) for planning, parallel execution, QA, and persistent modes
 - [Troubleshooting](../guide/troubleshooting.md) when the install, a vendor, or a hook does not behave as expected

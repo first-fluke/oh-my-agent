@@ -239,7 +239,6 @@ Zadaniem o określonym zakresie zajmuje się jedna właścicielska umiejętnoś�
 | Zlecona ideacja lub eksploracja alternatyw | oma-brainstorm |
 | Wymagania, zależności, kryteria akceptacji | oma-pm |
 | Zlecone równoległe wykonanie przez specjalistów | oma-orchestration |
-| Zlecona ręczna koordynacja wieloagentowa | oma-coordination |
 | Gałęzie Git, commity, scalenia, historia repozytorium | oma-scm |
 
 ### Zależności między umiejętnościami {#dependencies-between-skills}

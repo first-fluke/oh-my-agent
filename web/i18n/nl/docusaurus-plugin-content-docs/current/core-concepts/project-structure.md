@@ -11,7 +11,7 @@ Na de installatie van oh-my-agent krijgt je project twee kernbomen: `.agents/` (
 
 ## Representatieve directorystructuur
 
-De boom hieronder toont de gedeelde resources en representatieve domeinskills in detail. De huidige catalogus bevat 33 skilldirectories; weggelaten skills volgen hetzelfde patroon met `SKILL.md` plus optionele `resources/`, `stack/` of een skillspecifieke directory. Beschouw de live `.agents/`-boom als leidend wanneer een gegenereerd of optioneel bestand ontbreekt.
+De boom hieronder toont de gedeelde resources en representatieve domeinskills in detail. De huidige catalogus bevat 32 skilldirectories; weggelaten skills volgen hetzelfde patroon met `SKILL.md` plus optionele `resources/`, `stack/` of een skillspecifieke directory. Beschouw de live `.agents/`-boom als leidend wanneer een gegenereerd of optioneel bestand ontbreekt.
 
 ```text
 your-project/
@@ -181,9 +181,6 @@ your-project/
 │   │   │   └── resources/
 │   │   │       └── triz-lite.md
 │   │   │
-│   │   ├── oma-coordination/
-│   │   │   └── SKILL.md
-│   │   │
 │   │   └── oma-scm/
 │   │       ├── SKILL.md
 │   │       └── resources/
@@ -281,7 +278,7 @@ Deze lijst behandelt de meest gebruikte sleutels. Zie de [configuratiereferentie
 
 ### skills/
 
-Hier staat de skillkennis. De huidige catalogus bevat 33 skilldirectories plus gedeelde `_shared`-resources; de preset `all` wordt afgeleid van de live skillboom.
+Hier staat de skillkennis. De huidige catalogus bevat 32 skilldirectories plus gedeelde `_shared`-resources; de preset `all` wordt afgeleid van de live skillboom.
 
 **`_shared/`**: resources die alle agenten gebruiken:
 - `core/`: uitvoeringsbeleid, regels voor code-intelligence, routering, context loading, promptstructuur, clarification protocol, contextbudget, moeilijkheidsinschatting, kwaliteitsprincipes, testaanpak, vendordetectie, sessiemetrics, algemene checklist, lessons learned en API-contracttemplates

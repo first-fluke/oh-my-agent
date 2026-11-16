@@ -87,7 +87,7 @@ Choisissez le preset qui correspond au travail dont le dépôt a besoin. Les nom
 
 | Preset | Choisissez-le lorsque le projet est | Compétences incluses | Nombre |
 |--------|-------------------------------------|----------------------|--------|
-| **all** | N'importe quel projet, ou lorsque vous voulez que chaque workflow fonctionne d'emblée | Toutes les compétences du registre | 33 |
+| **all** | N'importe quel projet, ou lorsque vous voulez que chaque workflow fonctionne d'emblée | Toutes les compétences du registre | 32 |
 | **fullstack** | Des clients web et mobile avec un backend et une infrastructure Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
 | **fullstack-web** | Un frontend web avec un backend et une base de données | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
 | **fullstack-mobile** | Une application mobile avec un backend et une base de données | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
@@ -113,12 +113,12 @@ Après l'installation, consultez la liste des compétences sélectionnées et le
 
 ### Workflows nécessitant des compétences hors d'un preset {#workflows-that-need-skills-outside-a-preset}
 
-Chaque preset copie les définitions de workflows et d'agents. Les commandes et invites ne sont exposées que pour les workflows dont les compétences requises sont disponibles. Par exemple, une installation `frontend` neuve laisse `/work` indisponible faute d'`oma-coordination` ; ses compétences PM et QA existantes satisfont déjà les autres exigences d'entrée. L'installateur signale cette compétence manquante sans basculer vers `all`.
+Chaque preset copie les définitions de workflows et d'agents. Les commandes et invites ne sont exposées que pour les workflows dont les compétences requises sont disponibles. Par exemple, une installation `frontend` neuve laisse `/orchestrate` indisponible faute d'`oma-orchestration`, tandis que `/work`, `/ultrawork` et `/ralph` sont disponibles : les compétences PM et QA du preset satisfont leurs exigences d'entrée. L'installateur signale la compétence manquante sans basculer vers `all`.
 
 | Workflow | Compétences d'entrée requises | Presets qui les incluent |
 |----------|-------------------------------|------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-coordination, oma-pm, oma-qa | all |
-| `/orchestrate` | oma-coordination, oma-orchestration, oma-qa | all |
+| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
