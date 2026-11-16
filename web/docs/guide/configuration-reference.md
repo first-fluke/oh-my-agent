@@ -238,6 +238,7 @@ The managed `.agents/skills/oma-orchestration/config/cli-config.yaml` contains t
 | `prompt_flag` | string, or `none`/`null` to disable | Flag paired with the prompt; a positional prompt is used when disabled. |
 | `auto_approve_flag` | string | Vendor permission-bypass flag for writable runs. Suppressed in read-only mode. |
 | `read_only_flag` | string | Vendor read-only flag. If absent, the builder uses its vendor-specific fallback or warns. |
+| `edit_only_flag` | string | Vendor flag that approves file edits and nothing else, used by `--edit-only`. If absent, the builder uses its built-in mode; a vendor without one refuses the launch. A flag that approves every tool is rejected. |
 | `output_format_flag` | string | Flag that selects machine-readable output. |
 | `output_format` | string | Value paired with `output_format_flag`. |
 | `model_flag` | string | Flag paired with `default_model`. |

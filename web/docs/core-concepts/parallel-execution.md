@@ -37,6 +37,23 @@ oma agent spawn <agent-id> <prompt> <session-id> [options]
 | `--task-id <id>` | | Bind the spawn to a task ID from the session plan. |
 | `--isolation <mode>` | | `worktree` creates a fresh git worktree under the temporary OMA worktree directory. The worktree remains for review and merge/discard. |
 | `--read-only` | | Restrict the spawned agent to non-destructive tools. |
+| `--edit-only` | | Approve file edits and nothing else. The agent runs no commands, so the parent runs the checks. A vendor without such a mode refuses the launch. |
+| `--model-id <id>` | | Run on this model, spelled as the target CLI expects it. Replaces the configured plan for this spawn, including its effort and provider route. |
+
+`--read-only`, `--edit-only`, and neither are the three permission levels of a spawn. With neither, the agent runs with the vendor's auto-approve flag.
+
+| Vendor | `--edit-only` passes | Effect |
+|--------|----------------------|--------|
+| Claude Code | `--disallowedTools Bash --permission-mode acceptEdits` | Edits apply; shell is unavailable |
+| Grok | `--permission-mode acceptEdits --allow Edit --allow Write` | Edits apply; shell is refused |
+| Antigravity | `--mode accept-edits` | Edits apply; shell is refused |
+| Qwen Code | `--approval-mode auto-edit` | Edits apply; shell is unavailable. Qwen resets the mode in a folder it does not trust |
+| Kiro | `--trust-tools=fs_read,fs_write` | Edits apply; shell is refused |
+| Codex | `--sandbox workspace-write` | Codex has no tool-level rule: shell runs inside the sandbox, writes stay in the workspace, and the network is off |
+| pi | `--exclude-tools bash,powershell` | Shell tools are removed |
+| Cursor, OpenCode, Kilo, Kimi | (none) | Refused unless `vendors.<id>.edit_only_flag` names a restriction |
+
+The first six rows were run against the installed CLIs on 2026-11-16 (Claude Code 2.1.325, Grok 1.0.77, agy 1.5.9, Qwen Code 0.27.1, kiro-cli 3.2.1, Codex 0.167.1). Cursor is refused because its shell tool ran without `--force`, with and without `--sandbox enabled`. A vendor's own user-level allow rules still apply on top of these flags.
 
 ### Examples
 
@@ -58,6 +75,9 @@ oma agent spawn backend ./prompts/auth-api.md session-01 -w ./apps/api
 
 # Run inside an isolated git worktree (hypothesis spawn pattern)
 oma agent spawn backend "Try a Drizzle-based rewrite" session-01 --isolation worktree
+
+# Hand a task to a named vendor and model, with edits approved and nothing else
+oma agent spawn docs ./prompts/translate-intro.md session-01 --vendor grok --model-id grok-4.7 --edit-only
 ```
 
 ---
@@ -124,6 +144,45 @@ oma agent parallel --inline \
 ```
 
 The `--inline` flag parses each `agent:task` argument. Add a third colon-delimited path (`agent:task:workspace`) when the task needs a specific workspace. Without `--inline`, pass a YAML task file with `{tasks: [{id?, agent, task, workspace?}]}`. `--session-id` binds the results to an existing session and the task IDs from the YAML file.
+
+---
+
+## oma agent batch: one session per worklist item {#agentbatch-worklist}
+
+Use a batch when many items have the same shape, such as files to translate or modules to migrate. Each item is done when a command says so, not when an agent says so.
+
+```bash
+oma agent batch <agent-id> <prompt-template> --items <file> --check "<command>" [options]
+```
+
+- `--items` is a file with one item per line (`-` reads stdin). Blank lines and `#` comments are skipped and duplicates are dropped.
+- `--check` is a command that exits 0 when an item is done. `{item}` is replaced by the item in every argument; the command runs without a shell.
+- `<prompt-template>` is a file that contains `{item}`. Each session receives the rendered template, the check command, and the check's current output.
+
+The batch runs the check for every item first and skips the ones that pass. Each remaining item gets one agent session per attempt, and the parent runs the check again after the session. A clean agent exit does not count: only the check does. Running the same command again resumes the batch, because the check decides what is left.
+
+| Flag | Description |
+|------|-------------|
+| `--vendor <vendor>` | CLI vendor for every item |
+| `--fallback-vendors <vendors>` | Vendors to switch to, in order, when the current one keeps failing |
+| `--model-id <id>` | Model for the primary vendor; fallback vendors use their own configuration |
+| `--edit-only` | Approve file edits and nothing else |
+| `--concurrency <count>` | Sessions running at once (default 3) |
+| `--max-attempts <count>` | Sessions per item before it is reported as failed (default 2) |
+| `--dry-run` | Run the checks and report what would be dispatched |
+| `--session-id <id>`, `--workspace <path>`, `--timeout-seconds`, `--deadline` | Same meaning as for `oma agent spawn` |
+
+A vendor failure is a spawn that exits with a code other than 0 or 3, which means the vendor CLI itself failed (quota, authentication, crash). It does not consume an attempt. After two vendor failures in a row the batch moves to the next fallback vendor; with none left it stops and reports the remaining items as `not-run`, so an exhausted vendor is not fed the rest of the worklist.
+
+```bash
+# Fix lint errors one file per session; rerun the same command to resume
+oma agent batch frontend ./prompts/fix-lint.md \
+  --items ./files-with-lint-errors.txt \
+  --check "bunx biome check {item}" \
+  --vendor antigravity --fallback-vendors grok,claude --edit-only
+```
+
+The report is written to `.agents/results/batch-<timestamp>/report.json` with one entry per item: `already-passing`, `fixed`, `failed`, or `not-run`. The command exits 1 when any item is `failed` or `not-run`.
 
 ---
 

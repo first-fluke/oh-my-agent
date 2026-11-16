@@ -1,6 +1,6 @@
 ---
 name: oma-orchestration
-description: "Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, or to coordinate agents step by step."
+description: "Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, to coordinate agents step by step, or to hand a task to a named vendor or model."
 ---
 
 # Orchestration - Automated Multi-Agent Coordination
@@ -13,6 +13,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 ### Intent signature
 - User asks to orchestrate, run in parallel, automate multi-agent execution, or coordinate full-stack work end to end.
 - Task requires multiple specialist agents and a persistent review/remediation loop.
+- User names the agent, vendor, or model that should do a task.
 
 ### When to use
 - Complex feature requires multiple specialized agents working in parallel
@@ -20,6 +21,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 - Full-stack implementation spanning backend, frontend, mobile, and QA
 - User says "run it automatically", "run in parallel", or similar automation requests
 - User wants to coordinate the agents manually, approving each dispatch
+- User hands a task, or a worklist of same-shaped items, to another vendor's agent
 
 ### When NOT to use
 - Simple single-domain task -> use the specific agent directly
@@ -44,6 +46,7 @@ Automatically orchestrate multi-agent execution with task decomposition, native/
 
 ### Transitions
 - If the user wants step-by-step control, run the canonical path one dispatch at a time: present the next ready task, spawn it when the user says go, and report its result before the next.
+- If the user names a vendor or model for one task, or hands over a worklist of same-shaped items, follow Delegating to a named vendor instead of the phase sequence.
 - If native dispatch is available for current runtime/vendor, use it.
 - If vendors differ or native path is unavailable, use fallback spawn.
 - Record the dispatch path per target vendor with subject `orchestration.route-selection` per `../_shared/runtime/route-selection.md` (native or `oma agent spawn`, and the vendor match or unavailability that decided it).
@@ -73,7 +76,7 @@ Phase names refer to Workflow Phases below.
    ```bash
    oma agent spawn <agent-type> <prompt-file> <session-id> --task-id <task.id> -w <workspace>
    ```
-   Spawn options: `--vendor <vendor>` (CLI vendor override), `--isolation worktree` (git worktree per spawn), `--read-only` (non-destructive tools only, for review and QA passes).
+   Spawn options: `--vendor <vendor>` (CLI vendor override), `--model-id <id>` (model for this spawn), `--isolation worktree` (git worktree per spawn), `--read-only` (non-destructive tools only, for review and QA passes), `--edit-only` (file edits approved, nothing else).
 6. Run PHASE 4: monitor each run through completion notifications, or through its progress and result files when polling is the fallback.
 7. Run PHASE 4.5 for every completed agent: mechanical self-check, automated verify, then QA cross-review (Agent-to-Agent Review Loop).
    ```bash
@@ -92,6 +95,22 @@ Reads project configuration and writes the session, task-board, progress, and re
 4. Never exceed configured parallelism or the aggregate recovery budget. Ordinary retries and exploration hypotheses both consume it.
 5. Keep session state, task-board state, progress files, claims, and receipts aligned. Use the plan task ID on every spawn and native begin/finish path.
 6. Select references by task needs and confidence. Do not expand to all skills solely because one skill matches, or assume task-board metadata enforces runtime exposure.
+
+### Delegating to a named vendor
+When the user names who should do a task, dispatch it with `oma agent spawn`; do not write a launcher by hand. The delegate knows only the brief, so put the goal, the files, the constraints, and the check that proves the work into a prompt file.
+
+```bash
+oma agent spawn <agent-type> <prompt-file> <session-id> --vendor <vendor> --model-id <model> --edit-only
+```
+
+- **Permission**: use the narrowest mode the task allows. `--read-only` for inspection and review. `--edit-only` for edits: file edits are approved and nothing else, so the delegate runs no commands and the parent runs the checks. Omit both only when the task needs commands and the user accepted the vendor's auto-approve mode. A vendor without an edit-only mode refuses the flag; report that and ask before widening.
+- **Model**: `--model-id` takes the name the vendor CLI uses (`grok models`, `agy models`, `cursor-agent models`). It replaces the configured plan for that spawn.
+- **Worklist**: for many items of one shape (files to translate, modules to migrate), run one bounded session per item and let a command decide what is done:
+  ```bash
+  oma agent batch <agent-type> <prompt-template> --items <file> --check "<command with {item}>" --vendor <vendor> --fallback-vendors <v1,v2> --edit-only
+  ```
+  Items whose check already passes are skipped, the parent re-runs the check after each session, and a rerun resumes from what still fails. After two vendor failures in a row the batch moves to the next fallback vendor, or stops when none is left.
+- **Commits**: do not commit while delegates or subagents are editing the working tree. A pre-commit hook that stashes unstaged changes can discard their edits; the SCM guard refuses the commit while a subagent of the session is open.
 
 Current native executor paths:
 - Claude Code: Agent tool with `.claude/agents/{agent}.md` definitions (multiple Agent tool calls in one message run in parallel; results return synchronously — no polling)
