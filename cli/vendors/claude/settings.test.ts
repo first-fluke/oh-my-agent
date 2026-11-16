@@ -14,7 +14,6 @@ describe("Claude settings", () => {
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
           CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
           CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
           ENABLE_PROMPT_CACHING_1H: "1",
           DISABLE_PROMPT_CACHING: "1",
         },
@@ -43,7 +42,6 @@ describe("Claude settings", () => {
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
           CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
           CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
           ENABLE_PROMPT_CACHING_1H: "1",
         },
         skipDangerousModePermissionPrompt: true,
@@ -75,7 +73,6 @@ describe("Claude settings", () => {
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
           CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
           CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
           ENABLE_PROMPT_CACHING_1H: "1",
         },
         skipDangerousModePermissionPrompt: true,
@@ -98,7 +95,6 @@ describe("Claude settings", () => {
           CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
           CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
           CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-          CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
           ENABLE_PROMPT_CACHING_1H: "1",
         },
         skipDangerousModePermissionPrompt: true,
@@ -192,7 +188,6 @@ describe("Claude settings", () => {
             CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
             CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
             CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-            CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
             ENABLE_PROMPT_CACHING_1H: "1",
           },
           skipDangerousModePermissionPrompt: true,
@@ -217,7 +212,6 @@ describe("Claude settings", () => {
             CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
             CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
             CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-            CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
             ENABLE_PROMPT_CACHING_1H: "1",
           },
           skipDangerousModePermissionPrompt: true,
@@ -255,7 +249,6 @@ describe("T2.9 rename regression — applyClaudeSettings", () => {
         CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
         CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
         CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-        CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
         ENABLE_PROMPT_CACHING_1H: "1",
         DISABLE_TELEMETRY: "1",
       },
@@ -285,7 +278,6 @@ describe("T2.9 rename regression — applyClaudeSettings", () => {
         CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: "1",
         CLAUDE_CODE_DISABLE_AUTO_MEMORY: "1",
         CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "1",
-        CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "1",
         ENABLE_PROMPT_CACHING_1H: "1",
       },
       skipDangerousModePermissionPrompt: true,
@@ -363,14 +355,14 @@ describe("Claude settings never flip explicit user values", () => {
       ...fullyRecommended(),
       env: {
         ...(fullyRecommended().env as Record<string, string>),
-        CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "0",
+        CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS: "0",
         CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: "50",
       },
       cleanupPeriodDays: 30,
     };
     expect(needsClaudeSettingsUpdate(user)).toBe(false);
     const out = applyClaudeSettings(structuredClone(user));
-    expect(out.env.CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING).toBe("0");
+    expect(out.env.CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS).toBe("0");
     expect(out.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE).toBe("50");
     expect(out.cleanupPeriodDays).toBe(30);
   });
