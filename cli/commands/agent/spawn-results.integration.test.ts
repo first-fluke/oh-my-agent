@@ -247,7 +247,34 @@ describe("spawn structured result integration", () => {
       "-p",
       expect.any(String),
       undefined,
-      { readOnly: false, workspace: root },
+      { readOnly: false, editOnly: false, workspace: root },
+    );
+
+    child.emit("error", new Error("ENOENT"));
+    await expect(pending).resolves.toBeUndefined();
+  });
+
+  it("passes the edit-only restriction and the explicit model to dispatch planning", async () => {
+    const pending = parallelRun([`qa-reviewer:Review:${root}`], {
+      inline: true,
+      editOnly: true,
+      model: "vendor-model-x",
+    });
+    await vi.waitFor(() => expect(fakeSpawn).toHaveBeenCalledOnce());
+
+    expect(fakePlanDispatch).toHaveBeenCalledWith(
+      "qa-reviewer",
+      "codex",
+      {},
+      "-p",
+      expect.stringContaining("Edit-only result contract"),
+      undefined,
+      {
+        readOnly: false,
+        editOnly: true,
+        model: "vendor-model-x",
+        workspace: root,
+      },
     );
 
     child.emit("error", new Error("ENOENT"));
