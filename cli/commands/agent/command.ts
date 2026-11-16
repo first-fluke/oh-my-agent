@@ -1,5 +1,6 @@
 import type { Command } from "commander";
 import { runAction } from "../../utils/cli-framework.js";
+import { batchRun } from "./batch.js";
 import { runQwenBoard } from "./board.js";
 import { showAgentContext } from "./context.js";
 import { parallelRun, runParallelSupervisor } from "./parallel.js";
@@ -220,6 +221,55 @@ export function registerAgentCommands(program: Command): void {
           timeoutSeconds: options.timeoutSeconds,
           deadline: options.deadline,
         });
+      }),
+    );
+
+  program
+    .command("agent:batch <agent-id> <prompt-template>")
+    .description(
+      "Run one bounded agent session per worklist item until each item's check passes",
+    )
+    .requiredOption(
+      "--items <file>",
+      "Worklist: one item per line (- reads stdin; # starts a comment)",
+    )
+    .requiredOption(
+      "--check <command>",
+      "Command that exits 0 when an item is done; {item} is replaced by the item",
+    )
+    .option("--vendor <vendor>", "CLI vendor override for every item")
+    .option(
+      "--fallback-vendors <vendors>",
+      "Ordered, comma-separated vendors to switch to when the current one keeps failing",
+    )
+    .option(
+      "--model-id <id>",
+      "Run on this model, spelled as the primary vendor's CLI expects it",
+    )
+    .option(
+      "--edit-only",
+      "Approve file edits and nothing else (refuses a vendor without such a mode)",
+    )
+    .option("--concurrency <count>", "Agent sessions running at once", "3")
+    .option(
+      "--max-attempts <count>",
+      "Agent sessions per item before it is reported as failed",
+      "2",
+    )
+    .option("--session-id <id>", "Bind every run to this session")
+    .option("-w, --workspace <path>", "Working directory for checks and agents")
+    .option("--dry-run", "Run the checks and report what would be dispatched")
+    .option(
+      "--timeout-seconds <seconds>",
+      "Whole-batch time limit, including checks and retries",
+    )
+    .option(
+      "--deadline <timestamp>",
+      "Absolute batch deadline (ISO timestamp with timezone)",
+    )
+    .action(
+      runAction(async (agentId, promptTemplate, options) => {
+        await batchRun(agentId, promptTemplate, options);
       }),
     );
 
