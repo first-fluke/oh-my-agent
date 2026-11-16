@@ -1,5 +1,17 @@
 # Changelog
 
+## [20.46.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.45.2...cli-v20.46.0) (2026-11-16)
+
+
+### Features
+
+* **cli:** lift vendor resource limits on link ([b68adfa](https://github.com/first-fluke/oh-my-agent/commit/b68adfa75cf62a0334f57406c5ac5fab6e0f3621))
+
+
+### Bug Fixes
+
+* **claude:** drop the no-op adaptive thinking opt-out ([52565e8](https://github.com/first-fluke/oh-my-agent/commit/52565e821af22c2a9624133aa8546ab64a0aa1b2))
+
 ## [20.45.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.45.1...cli-v20.45.2) (2026-11-16)
 
 
