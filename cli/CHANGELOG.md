@@ -1,5 +1,15 @@
 # Changelog
 
+## [20.47.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.46.0...cli-v20.47.0) (2026-11-16)
+
+
+### Features
+
+* **agent:** add an edit-only permission level and a per-spawn model id ([454199f](https://github.com/first-fluke/oh-my-agent/commit/454199fd989098b39e7c21edb1ccfa4babe988f3))
+* **agent:** add oma agent batch for worklists ([81f3796](https://github.com/first-fluke/oh-my-agent/commit/81f3796dd4784e0dc6ae6b46426e50d9185e9fa1))
+* **hooks:** refuse a commit while a subagent is running ([52c1e1f](https://github.com/first-fluke/oh-my-agent/commit/52c1e1faad87de3e8bf76586364062a3e6235969))
+* **skills:** route a task handed to a named vendor to orchestration ([c583457](https://github.com/first-fluke/oh-my-agent/commit/c5834579224f5e56725cd382d8b7ac854cf23f5c))
+
 ## [20.46.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.45.2...cli-v20.46.0) (2026-11-16)
 
 
