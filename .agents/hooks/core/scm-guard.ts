@@ -1,11 +1,12 @@
-// PreToolUse hook — Block staging of likely-secret files (oma-scm enforcement).
+// PreToolUse hook — Block staging of likely-secret files (oma-scm enforcement),
+// and `git commit` while a subagent of the session is still running.
 // Enforces `scm.forbidden_patterns` from oma-config (legacy oma-scm
 // commit-config.yaml is still read as a fallback) mechanically:
 // before this hook the pattern list was advisory-only (model compliance).
 // Works with: Claude Code, Codex CLI, Cursor, Grok, Kimi, Kiro, Qwen Code.
 //
 // Scope decisions:
-//  - Only `git add` segments are guarded. Untracked secrets must pass through
+//  - For secrets, only `git add` segments are guarded. Untracked secrets must pass through
 //    `git add` to ever reach a commit (`git commit <path>` / `-a` only touch
 //    already-tracked files), so staging is the single choke point.
 //  - Broad staging (`git add -A` / `git add .`) is NOT blocked here: the rule
@@ -230,12 +231,64 @@ export function extractGitAddPaths(command: string): string[] {
   return extractGitAddSegments(command).flatMap((segment) => segment.paths);
 }
 
+// --- Commit while subagents run ---
+//
+// A pre-commit hook that stashes unstaged changes (hk, lint-staged, pre-commit)
+// rewrites the working tree for the length of the commit. A subagent writing to
+// the same tree in that window loses its edits when the stash is restored. The
+// host's SubagentStart/SubagentStop events are recorded by open-subagents.ts
+// (Claude Code, Codex, Copilot), so a commit made while one is open is refused.
+
+const BUSY_BYPASS_TOKEN = "OMA_SCM_ALLOW_BUSY=1";
+// Anchored at the segment start so `git log --grep commit` is not a commit.
+const GIT_COMMIT_RE =
+  /^(?:[-\w]+=\S+\s+)*git\s+(?:(?:-[cC]\s+\S+|--?[\w-]+(?:=\S+)?)\s+)*commit(?:\s|$)/;
+const BUSY_BYPASS_PREFIX_RE = new RegExp(
+  `^(?:[-\\w]+=\\S+\\s+)*${BUSY_BYPASS_TOKEN}\\s`,
+);
+/** True when a segment of the command runs `git commit` without the bypass. */
+export function hasGuardedGitCommit(command: string): boolean {
+  return command.split(SEGMENT_SPLIT_RE).some((raw) => {
+    const segment = raw.trim().replace(/^[({\s]+/, "");
+    return GIT_COMMIT_RE.test(segment) && !BUSY_BYPASS_PREFIX_RE.test(segment);
+  });
+}
+
+async function blockCommitWhileSubagentsRun(
+  command: string,
+  projectDir: string,
+  vendorSid: string | undefined,
+): Promise<HandlerResult | null> {
+  if (!hasGuardedGitCommit(command)) return null;
+  try {
+    // Loaded on demand: only a commit needs the open-subagent records.
+    const { listOpenSubagents } = await import("./open-subagents.ts");
+    const open = listOpenSubagents(projectDir, vendorSid).map(
+      (subagent) => subagent.agentType,
+    );
+    if (open.length === 0) return null;
+    return {
+      type: "block",
+      reason:
+        `[oma scm-guard] Blocked: ${open.length} subagent(s) are still running in this working tree (${open.join(", ")}). ` +
+        `A pre-commit hook that stashes unstaged changes can discard the edits they are writing. ` +
+        `Wait for them to finish or stop them, then commit. ` +
+        `If the user confirms they are not editing this tree, ` +
+        `re-run the commit segment prefixed with ${BUSY_BYPASS_TOKEN}.`,
+    };
+  } catch {
+    return null; // fail-open: unreadable records never block a commit
+  }
+}
+
 // ── Pure handler (canonical ABI) ─────────────────────────────
 
 /**
- * Pure decision function — blocks `git add` of likely-secret files.
+ * Pure decision function — blocks `git add` of likely-secret files, and
+ * `git commit` while a subagent of this session is still running.
  * Returns a `block` HandlerResult when a staged path matches
- * `forbidden_patterns` (minus `allowed_exceptions`), else `null` (fail-open).
+ * `forbidden_patterns` (minus `allowed_exceptions`) or a subagent is open,
+ * else `null` (fail-open).
  */
 export async function run(
   input: HookInput,
@@ -261,6 +314,9 @@ export async function run(
     | undefined;
   if (!command) return null;
   if (!/\bgit\b/.test(command)) return null;
+
+  const busy = await blockCommitWhileSubagentsRun(command, projectDir, ctx.sid);
+  if (busy) return busy;
 
   // The bypass applies per segment: only the `git add` env-prefixed by the
   // token is exempt; every other segment is still scanned.
