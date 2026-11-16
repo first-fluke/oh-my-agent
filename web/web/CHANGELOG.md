@@ -1,5 +1,13 @@
 # Changelog
 
+## [11.23.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.22.1...web-v11.23.0) (2026-11-16)
+
+
+### Features
+
+* **hooks:** refuse a commit while a subagent is running ([52c1e1f](https://github.com/first-fluke/oh-my-agent/commit/52c1e1faad87de3e8bf76586364062a3e6235969))
+* **skills:** route a task handed to a named vendor to orchestration ([c583457](https://github.com/first-fluke/oh-my-agent/commit/c5834579224f5e56725cd382d8b7ac854cf23f5c))
+
 ## [11.22.1](https://github.com/first-fluke/oh-my-agent/compare/web-v11.22.0...web-v11.22.1) (2026-11-16)
 
 
