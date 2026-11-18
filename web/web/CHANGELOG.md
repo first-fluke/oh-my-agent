@@ -1,5 +1,16 @@
 # Changelog
 
+## [12.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.23.0...web-v12.0.0) (2026-11-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **agent:** agy subagents and `oma image` require agy 1.5.10 or later; an older agy is refused with a prompt to run `agy update`.
+
+### Features
+
+* **agent:** run agy subagents over agy acp instead of print mode ([8dc42cd](https://github.com/first-fluke/oh-my-agent/commit/8dc42cd719414cd36a06dc3fca2cdff394291291))
+
 ## [11.23.0](https://github.com/first-fluke/oh-my-agent/compare/web-v11.22.1...web-v11.23.0) (2026-11-16)
 
 
