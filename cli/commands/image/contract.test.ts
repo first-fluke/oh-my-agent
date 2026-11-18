@@ -47,7 +47,7 @@ describe("manifest contract (schema v1)", () => {
       model: "gemini-2.5-flash-image",
       strategy: "unknown",
       strategy_attempts: [
-        { strategy: "agy-print", status: "failed", reason: "rate-limit" },
+        { strategy: "agy-acp", status: "failed", reason: "rate-limit" },
       ],
       files: [],
       duration_ms: 120,

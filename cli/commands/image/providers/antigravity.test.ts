@@ -188,17 +188,28 @@ describe("AntigravityProvider.health", () => {
     expect(h.hint).toMatch(/agy/);
   });
 
+  it("reports unhealthy when agy predates ACP background-subagent support", async () => {
+    vi.mocked(runCapture).mockResolvedValue({
+      code: 0,
+      stdout: "1.5.9\n",
+      stderr: "",
+    });
+    const h = await new AntigravityProvider().health();
+    if (h.ok) throw new Error("expected unhealthy");
+    expect(h.hint).toMatch(/agy update/);
+  });
+
   it("reports healthy when agy CLI is installed and exposes no model list", async () => {
     vi.mocked(runCapture).mockResolvedValue({
       code: 0,
-      stdout: "1.0.0\n",
+      stdout: "1.5.10\n",
       stderr: "",
     });
     const p = new AntigravityProvider();
     const h = await p.health();
     if (!h.ok) throw new Error(`expected healthy, got: ${h.hint}`);
     expect(h.supportedModels).toEqual([]);
-    expect(h.detail).toContain("Antigravity CLI 1.0.0");
+    expect(h.detail).toContain("Antigravity CLI 1.5.10");
     expect(h.detail).toContain("agy");
   });
 });
@@ -372,12 +383,10 @@ describe("AntigravityProvider.generate", () => {
     expect(results[0]?.filePath).toMatch(/\.jpg$/);
   });
 
-  // Regression for 21141241: agy's `-p` (= `--print`) is a VALUE flag — it
-  // consumes the NEXT argv token as the prompt. If `-p` leads the argv (as it
-  // once did), agy eats `--dangerously-skip-permissions` as the prompt value
-  // and the real instruction becomes a stray positional, so the prompt is
-  // never delivered. `-p` must sit immediately before the instruction.
-  it("passes -p immediately before the prompt, not leading the argv", async () => {
+  // agy runs over ACP through `oma agent:acp`; the agy argv follows the
+  // binary. Regression for 21141241: `-p` is a value flag, so it must sit
+  // immediately before the instruction and never lead the agy argv.
+  it("runs agy through the ACP driver with -p immediately before the prompt", async () => {
     let captured: readonly string[] = [];
     vi.mocked(runCapture).mockImplementation(async (_bin, args) => {
       captured = args;
@@ -407,14 +416,14 @@ describe("AntigravityProvider.generate", () => {
       signal: new AbortController().signal,
     });
 
-    const pIndex = captured.indexOf("-p");
-    expect(pIndex).toBeGreaterThanOrEqual(0);
-    // `-p` must be the second-to-last token, with the instruction as its value.
-    expect(pIndex).toBe(captured.length - 2);
-    expect(captured[pIndex + 1]).toContain("a red apple");
-    // The bug shipped `-p` first; lock that it never leads and never pairs with
-    // a flag instead of the prompt.
-    expect(captured[0]).toBe("--dangerously-skip-permissions");
-    expect(captured[pIndex + 1]).not.toBe("--dangerously-skip-permissions");
+    const driver = captured.indexOf("agent:acp");
+    expect(driver).toBeGreaterThanOrEqual(0);
+    const agyArgs = captured.slice(driver + 1);
+    expect(agyArgs[0]).toBe("agy");
+    expect(agyArgs[1]).toBe("--dangerously-skip-permissions");
+    expect(agyArgs).not.toContain("--print-timeout");
+    const pIndex = agyArgs.indexOf("-p");
+    expect(pIndex).toBe(agyArgs.length - 2);
+    expect(agyArgs[pIndex + 1]).toContain("a red apple");
   });
 });

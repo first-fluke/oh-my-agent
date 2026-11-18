@@ -9,6 +9,11 @@ import {
 } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import {
+  isSupportedAgyVersion,
+  MIN_AGY_ACP_VERSION,
+  wrapAgyInvocationForAcp,
+} from "../../../io/runtime-dispatch/agy-acp.js";
 import { buildOutputFilename, shortId } from "../naming.js";
 import type {
   GenerateInput,
@@ -40,6 +45,15 @@ export class AntigravityProvider implements VendorProvider {
             "Verify with: agy --version",
           ],
         },
+      };
+    }
+    const version = versionCheck.stdout.trim();
+    if (!isSupportedAgyVersion(version)) {
+      return {
+        ok: false,
+        reason: "other",
+        hint: `Antigravity CLI ${version} is too old; oma needs ${MIN_AGY_ACP_VERSION}+ (run: agy update)`,
+        setup: { steps: ["Run: agy update", "Verify with: agy --version"] },
       };
     }
     return {
@@ -87,19 +101,30 @@ export class AntigravityProvider implements VendorProvider {
         "--dangerously-skip-permissions",
         "--add-dir",
         input.outDir,
-        "--print-timeout",
-        `${Math.ceil(timeoutMs / 1000)}s`,
       ];
       if (refs) args.push("--add-dir", refs.dir);
       args.push("-p", instruction);
+      // Run over agy's ACP server through the same driver as agy subagents
+      // (io/runtime-dispatch/agy-acp.ts). The timeout is enforced here: on
+      // expiry the driver gets SIGTERM, cancels the session, and stops agy.
+      const invocation = wrapAgyInvocationForAcp({
+        command: "agy",
+        args,
+        env: process.env,
+      });
 
       const start = Date.now();
       // Force cwd to outDir so agy doesn't pick up a "recently active workspace"
       // (e.g., the project we ran `oma image` from) and confuse its agent loop
-      // with that workspace's CLAUDE.md / docs / test commands.
-      const res = await runCapture("agy", args, input.signal, timeoutMs, {
-        cwd: input.outDir,
-      });
+      // with that workspace's CLAUDE.md / docs / test commands. The ACP
+      // session is opened in this cwd.
+      const res = await runCapture(
+        invocation.command,
+        invocation.args,
+        input.signal,
+        timeoutMs,
+        { cwd: input.outDir },
+      );
       const durationMs = Date.now() - start;
 
       if (res.timedOut)
@@ -127,10 +152,10 @@ export class AntigravityProvider implements VendorProvider {
         results.push({
           vendor: this.name,
           model: "agy-internal",
-          strategy: "agy-print",
+          strategy: "agy-acp",
           strategyAttempts: [
             {
-              strategy: "agy-print",
+              strategy: "agy-acp",
               status: "ok",
               duration_ms: Math.round(durationMs / targets.length),
             },

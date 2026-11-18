@@ -27,7 +27,7 @@ The Antigravity CLI (`agy`) is an agentic CLI that runs against the user's Gemin
 | Auth | Sign-in via Gemini Code Assist account during `agy install` |
 | Health check | `agy --version` exits 0 — **install check only**. Sign-in state is not verified; a signed-out agy passes health and fails at generate time. |
 | Model selection | Opaque — chosen by agy's internal agent loop. Not exposed via flags, not recorded as a vendor-side promise. |
-| Transport | `agy -p --dangerously-skip-permissions --add-dir <outDir> --print-timeout <s> "<instruction>"` (spawn `cwd` is forced to `<outDir>` to prevent agy from inheriting a stale workspace context) |
+| Transport | `agy acp` (Agent Client Protocol) through `oma agent:acp agy --dangerously-skip-permissions --add-dir <outDir> -p "<instruction>"`; the ACP session opens in `<outDir>` (spawn `cwd`) so agy does not inherit a stale workspace context. `--timeout` is enforced by oma: the driver cancels the session and stops agy. |
 | Output bytes | Saved directly by agy to absolute paths embedded in the prompt; detected via PNG/JPEG/WebP/GIF magic bytes and renamed accordingly |
 | Sizes | Any `WxH` allowed by `size-guard.ts` (each edge ∈ [16, 3840], multiples of 16, aspect 1:3..3:1) or `auto`. The dimension is passed as an advisory hint in the prompt — agy may pick its own internal aspect. |
 
@@ -54,7 +54,7 @@ A credit-gated model without pollen balance fails as `invalid-input` (exit 4) wi
 Manifest field `strategy_attempts` is always an array of objects:
 
 ```
-{ "strategy": "codex-exec-oauth" | "agy-print" | "pollinations-http",
+{ "strategy": "codex-exec-oauth" | "agy-acp" | "pollinations-http",
   "status": "ok" | "skipped" | "failed",
   "reason"?: string,
   "duration_ms"?: number }
