@@ -4,7 +4,8 @@
  * An interactive agy (1.5.5) session in an untrusted folder first asks "Do
  * you trust the contents of this project?" and exits on "No"; workspace hooks
  * (`<root>/.agents/hooks.json`, where oma writes them) load only after trust.
- * `agy -p` is not gated.
+ * `agy -p` and `agy acp` are not gated: an `agy acp` session in an untrusted
+ * folder loads its workspace hooks without asking (agy 1.5.10).
  *
  * Trust is `trustedWorkspaces: string[]` in
  * `~/.gemini/antigravity-cli/settings.json` — a key on agy's persist

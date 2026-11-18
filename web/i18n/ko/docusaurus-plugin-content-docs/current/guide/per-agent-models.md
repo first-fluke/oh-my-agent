@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | 현재 런타임의 에이전트/모델 설정을 따르며 모델 또는 effort 플래그를 주입하지 않습니다. | 새 설치의 기본값 |
 | `free` | OMA가 스폰한 Codex, Claude 또는 Qwen 프로세스를 위한 특수 게이트웨이 모드이며, 빌트인 프리셋 레지스트리와 별도로 해석됩니다. | 로컬 FreeLLMAPI 게이트웨이 |
-| `antigravity` | 모든 에이전트가 Antigravity CLI(`agy`)를 사용합니다. 구현, 아키텍처, QA는 Gemini 4 Argon, 오케스트레이션, PM, 문서화, explore는 Gemini 3.8 Flash를 사용합니다. agy 1.1 이상에서는 OMA가 `agy models`의 표시 ID(예: `--model "Gemini 4 Argon (High)"`)를 전달하고 `effort`를 모델이 공개하는 tier로 매핑합니다. agy 1.0에는 `--model`이 없으므로 agy 자체 설정이 결정합니다. agy에는 `--thinking-budget`이 없습니다. | Antigravity CLI 사용자 |
+| `antigravity` | 모든 에이전트가 Antigravity CLI(`agy`)를 사용합니다. 구현, 아키텍처, QA는 Gemini 4 Argon, 오케스트레이션, PM, 문서화, explore는 Gemini 3.8 Flash를 사용합니다. OMA는 `agy models`의 표시 ID(예: `--model "Gemini 4 Argon (High)"`)를 `agy acp` 세션에 전달하고 `effort`를 모델이 공개하는 tier로 매핑합니다. agy에는 `--thinking-budget`이 없습니다. | Antigravity CLI 사용자 |
 | `claude` | 모든 에이전트가 Claude를 사용합니다. architecture는 Opus, explore는 Haiku, 그 외 모든 역할은 Sonnet | Claude Max 구독자 |
 | `codex` | 모든 에이전트가 OpenAI Codex(GPT-6.1 Terra가 대부분의 역할, GPT-6 Luna가 explore에 사용)를 effort 레벨과 함께 사용합니다. | ChatGPT Plus/Pro 사용자 |
 | `qwen` | 모든 에이전트가 Qwen Code를 사용합니다. 벤더가 일치하는 Qwen 세션은 생성된 네이티브 에이전트를 사용할 수 있고, 다른 런타임은 CLI 디스패치를 사용합니다. | 로컬 또는 자체 호스팅 추론 |

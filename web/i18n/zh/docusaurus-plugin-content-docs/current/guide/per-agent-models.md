@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | 遵循当前运行时的智能体和模型设置，不注入模型或推理强度标志 | 新安装的默认选项 |
 | `free` | OMA 生成的 Codex、Claude 或 Qwen 进程使用的特殊网关模式；它独立于内置预设注册表解析。 | 本地 FreeLLMAPI 网关 |
-| `antigravity` | 所有智能体使用 Antigravity CLI（`agy`）：实现、架构和 QA 使用 Gemini 4 Argon；编排、PM、文档和探索使用 Gemini 3.8 Flash。在 agy 1.1+ 上，OMA 传入 `agy models` 中的显示 ID（例如 `--model "Gemini 4 Argon (High)"`），并将 `effort` 映射到模型公开的档位。agy 1.0 没有 `--model`，因此由其自身配置决定。agy 没有 `--thinking-budget`。 | Antigravity CLI 用户 |
+| `antigravity` | 所有智能体使用 Antigravity CLI（`agy`）：实现、架构和 QA 使用 Gemini 4 Argon；编排、PM、文档和探索使用 Gemini 3.8 Flash。OMA 将 `agy models` 中的显示 ID（例如 `--model "Gemini 4 Argon (High)"`）传给 `agy acp` 会话，并将 `effort` 映射到模型公开的档位。agy 没有 `--thinking-budget`。 | Antigravity CLI 用户 |
 | `claude` | 所有智能体使用 Claude：架构使用 Opus，探索使用 Haiku，其他所有角色使用 Sonnet | Claude Max 订阅用户 |
 | `codex` | 所有智能体使用 OpenAI Codex（大多数角色使用 GPT-6.1 Terra，探索使用 GPT-6 Luna），并带有推理强度级别 | ChatGPT Plus/Pro 用户 |
 | `qwen` | 所有智能体使用 Qwen Code；与之匹配的 Qwen 会话可以使用生成的原生智能体，其他运行时使用 CLI 调度 | 本地或自托管推理 |

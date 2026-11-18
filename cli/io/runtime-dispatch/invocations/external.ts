@@ -6,7 +6,6 @@ import {
   splitArgs,
   type VendorConfig,
 } from "../../../platform/agent-config.js";
-import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
 import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
 import { resolveRestrictionArgs } from "../edit-only.js";
 import type { Invocation } from "../types.js";
@@ -308,28 +307,15 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
     optionArgs.push(vendorConfig.output_format_flag);
   }
 
-  // agy 1.0 had no `--model` flag — skip a vendorConfig model flag for the
-  // antigravity vendor unless the installed agy advertises support (1.1+).
-  // model_flag/default_model are checked FIRST so the caps probe only runs
-  // when a model flag would actually be emitted.
-  if (
-    vendorConfig.model_flag &&
-    vendorConfig.default_model &&
-    (vendor !== "antigravity" || detectAgyCaps().modelFlag)
-  ) {
+  if (vendorConfig.model_flag && vendorConfig.default_model) {
     optionArgs.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
 
   // agy confines file writes to its own trusted root (~/.gemini/antigravity-cli)
   // unless the workspace is granted explicitly, so a subagent can exit 0 with
-  // its artifacts outside the repo. Grant the workspace when agy supports it.
-  if (vendor === "antigravity" && workspace && detectAgyCaps().addDir) {
+  // its artifacts outside the repo.
+  if (vendor === "antigravity" && workspace) {
     optionArgs.push("--add-dir", workspace);
-  }
-
-  // Lift agy's 5m print-mode ceiling (see agyPrintTimeoutArgs).
-  if (vendor === "antigravity") {
-    optionArgs.push(...agyPrintTimeoutArgs());
   }
 
   if (vendorConfig.isolation_flags) {
@@ -371,12 +357,16 @@ const buildGenericExternalInvocation: ExternalInvocationBuilder = ({
     optionArgs.push("--dangerously-bypass-hook-trust");
   }
 
-  if (promptFlag) {
-    optionArgs.push(promptFlag, promptContent);
+  // agy runs through the ACP driver (agy-acp.ts), which reads the prompt from
+  // a print-mode prompt flag; a trailing positional would reach `agy acp`.
+  const effectivePromptFlag =
+    vendor === "antigravity" ? promptFlag || "-p" : promptFlag;
+  if (effectivePromptFlag) {
+    optionArgs.push(effectivePromptFlag, promptContent);
   }
 
   args.push(...optionArgs);
-  if (!promptFlag) {
+  if (!effectivePromptFlag) {
     args.push(promptContent);
   }
 

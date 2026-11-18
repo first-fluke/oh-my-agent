@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { planDispatch } from "../runtime-dispatch.js";
-import { primeAgyCaps, resetAgyCapsCache } from "./agy-caps.js";
 import { resolveEditOnlyArgs, resolveRestrictionArgs } from "./edit-only.js";
 import { buildExternalInvocation } from "./invocations/external.js";
 import {
@@ -23,14 +22,6 @@ const BLANKET = [
   "--dangerously-skip-permissions",
   "--dangerously-bypass-approvals-and-sandbox",
 ];
-
-beforeEach(() => {
-  primeAgyCaps({ modelFlag: true, addDir: true, modeFlag: true });
-});
-
-afterEach(() => {
-  resetAgyCapsCache();
-});
 
 describe("edit-only restriction", () => {
   it.each([
@@ -69,11 +60,6 @@ describe("edit-only restriction", () => {
       ).toThrow(/edit-only/i);
     },
   );
-
-  it("refuses antigravity when the installed agy has no --mode flag", () => {
-    primeAgyCaps({ modelFlag: true, addDir: true, modeFlag: false });
-    expect(() => resolveEditOnlyArgs("antigravity", {})).toThrow(/edit-only/i);
-  });
 
   it("uses a configured edit_only_flag for a vendor without a built-in mode", () => {
     const invocation = buildExternalInvocation(
@@ -242,15 +228,6 @@ describe("planDispatch with an explicit model", () => {
     );
     expect(invocation.args).toContain("requested");
     expect(invocation.args).not.toContain("configured");
-  });
-
-  it("refuses an explicit model when agy cannot select one", () => {
-    primeAgyCaps({ modelFlag: false, addDir: true, modeFlag: true });
-    expect(() =>
-      planDispatch("backend-engineer", "antigravity", {}, "-p", prompt, env, {
-        model: "requested",
-      }),
-    ).toThrow(/--model/);
   });
 
   it("refuses a blank model and an unknown vendor without a model flag", () => {

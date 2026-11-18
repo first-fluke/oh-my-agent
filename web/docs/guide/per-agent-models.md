@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | Follow the current runtime's agent/model settings without injecting a model or effort flag | Default for new installs |
 | `free` | Special gateway mode for OMA-spawned Codex, Claude, or Qwen processes; it is resolved separately from the built-in preset registry. | Local FreeLLMAPI gateway |
-| `antigravity` | All agents use Antigravity CLI (`agy`): Gemini 4 Argon for implementation, architecture, and QA; Gemini 3.8 Flash for orchestration, PM, documentation, and explore. On agy 1.1+, OMA passes the display ID from `agy models` (for example `--model "Gemini 4 Argon (High)"`) and maps `effort` to a tier the model publishes. agy 1.0 has no `--model`, so its own config decides. agy has no `--thinking-budget`. | Antigravity CLI users |
+| `antigravity` | All agents use Antigravity CLI (`agy`): Gemini 4 Argon for implementation, architecture, and QA; Gemini 3.8 Flash for orchestration, PM, documentation, and explore. OMA passes the display ID from `agy models` (for example `--model "Gemini 4 Argon (High)"`) to the `agy acp` session and maps `effort` to a tier the model publishes. agy has no `--thinking-budget`. | Antigravity CLI users |
 | `claude` | All agents use Claude: Opus for architecture, Haiku for explore, Sonnet for every other role | Claude Max subscription holders |
 | `codex` | All agents use OpenAI Codex (GPT-6.1 Terra for most roles, GPT-6 Luna for explore) with effort levels | ChatGPT Plus/Pro users |
 | `qwen` | All agents use Qwen Code; matching Qwen sessions can use generated native agents, and other runtimes use CLI dispatch | Local / self-hosted inference |

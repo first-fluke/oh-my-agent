@@ -52,7 +52,7 @@ Which hooks each runtime registers, from `.agents/hooks/variants/` and the vendo
 | CommandCode | `.commandcode/settings.json` | SessionStart, PostToolUse, Stop | no prompt hook | yes |
 | GitHub Copilot, Hermes, ZCode | none | none | no hooks | no hooks |
 
-Antigravity hooks fire only in interactive sessions; headless `agy --print` does not run them. Codex does not run `.codex/hooks.json` until you trust it once in its `/hooks` browser.
+Antigravity hooks fire in interactive sessions and in the `agy acp` sessions oma runs agy subagents in (verified on agy 1.5.10: `PreInvocation` per model call, `PostToolUse` per tool call); headless `agy --print` does not run them. oma runs agy subagents and `oma image` over `agy acp` and needs agy 1.5.10 or later (older releases withhold a background subagent's result from ACP clients); `oma doctor` flags an older agy. Codex does not run `.codex/hooks.json` until you trust it once in its `/hooks` browser.
 
 ## Vendor Adaptation
 
@@ -72,7 +72,7 @@ Abstract agent definitions in `.agents/agents/` are vendor-neutral (name, descri
 | Kiro CLI | `.kiro/agents/*.md` | Markdown | Native (`kiro-cli chat --agent <name>`) |
 | OpenCode | `.opencode/agents/*.md` | Markdown | `oma agent spawn --vendor opencode` (external) |
 | Qwen Code | `.qwen/agents/*.md` | Markdown | Qwen's Agent tool (`subagent_type`); `oma agent spawn` always runs Qwen as an external process |
-| Antigravity CLI | none (no generated files) | none | Native: `agy -p "@<agent> …"` |
+| Antigravity CLI | none (no generated files) | none | Native: `@<agent> …` prompt over `agy acp` (ACP) |
 | Kimi Code CLI | none | none | `oma agent spawn --vendor kimi` (external) |
 | pi | none (`.pi/prompts/*.md` are workflow prompts, not agents) | none | `oma agent spawn --vendor pi` (external); pi has no native subagent API |
 

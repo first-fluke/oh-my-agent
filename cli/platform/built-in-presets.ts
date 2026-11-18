@@ -18,7 +18,7 @@ import { getModelSpec } from "./model-registry.js";
 export const BUILT_IN_PRESETS: Record<BuiltInPresetKey, ModelPreset> = {
   antigravity: {
     description:
-      "Antigravity CLI (agy) — nominal Gemini 4 Argon for impl/architecture, Gemini 3.8 Flash for orchestration & explore (agy 1.0 has no `--model` flag, so the model is selected by agy's own config)",
+      "Antigravity CLI (agy) — Gemini 4 Argon for impl/architecture, Gemini 3.8 Flash for orchestration & explore (run over `agy acp`)",
     agent_defaults: {
       orchestrator: { model: "antigravity/gemini-3.8-flash" },
       architecture: { model: "antigravity/gemini-4-argon" },

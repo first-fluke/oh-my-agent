@@ -1,16 +1,15 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { EffortLevel, ModelSpec } from "../../platform/model-registry.js";
-import { primeAgyCaps, resetAgyCapsCache } from "./agy-caps.js";
 import { agyModelForEffort, buildAgentPlanArgs } from "./plan-args.js";
 import type { AgentPlan } from "./types.js";
 
 // ---------------------------------------------------------------------------
 // plan-args.test.ts — antigravity (agy) model resolution.
 //
-// Regression context: agy 1.1's `--model` accepts only the display IDs printed
-// by `agy models` ("Gemini 3.1 Pro (High)"). Passing the registry slug form
-// (`gemini-3.1-pro`) makes agy print `Error: invalid --model` and exit without
-// running the prompt, so every spawned antigravity subagent died immediately.
+// Regression context: agy models are addressed by the display IDs printed by
+// `agy models` ("Gemini 3.1 Pro (High)"); the registry slug form
+// (`gemini-3.1-pro`) matches no model, so the subagent dies before its prompt
+// runs (print mode: `Error: invalid --model`; ACP driver: `unknown model`).
 // ---------------------------------------------------------------------------
 
 function agyPlan(
@@ -50,6 +49,18 @@ describe("agyModelForEffort", () => {
     ).toBe("Gemini 3.1 Pro (Low)");
   });
 
+  it("uses the XHigh tier when agy publishes it (Gemini 4 Hydrogen)", () => {
+    expect(
+      agyModelForEffort(
+        agyPlan(
+          "Gemini 4 Hydrogen (High)",
+          ["low", "medium", "high", "xhigh"],
+          "xhigh",
+        ),
+      ),
+    ).toBe("Gemini 4 Hydrogen (XHigh)");
+  });
+
   it("collapses xhigh onto the published High tier", () => {
     expect(
       agyModelForEffort(
@@ -76,22 +87,11 @@ describe("agyModelForEffort", () => {
 });
 
 describe("buildAgentPlanArgs — antigravity", () => {
-  beforeEach(() => resetAgyCapsCache());
-  afterEach(() => resetAgyCapsCache());
-
   it("passes the agy display ID, never the slug form", () => {
-    primeAgyCaps({ modelFlag: true });
     const args = buildAgentPlanArgs(
       agyPlan("Gemini 3.1 Pro (High)", ["low", "high"]),
     );
     expect(args).toEqual(["--model", "Gemini 3.1 Pro (High)"]);
     expect(args).not.toContain("gemini-3.1-pro");
-  });
-
-  it("drops the model flag when agy predates it (agy 1.0)", () => {
-    primeAgyCaps({ modelFlag: false });
-    expect(
-      buildAgentPlanArgs(agyPlan("Gemini 3.1 Pro (High)", ["low", "high"])),
-    ).toEqual([]);
   });
 });

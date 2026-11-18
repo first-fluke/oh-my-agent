@@ -16,10 +16,6 @@ import {
 } from "../../io/owned-process.js";
 import { prepareAgentDispatch } from "../../io/runtime-dispatch/prepared-agent-dispatch.js";
 import {
-  targetVendorNeedsPty,
-  wrapInvocationWithPty,
-} from "../../io/runtime-dispatch/pty-wrap.js";
-import {
   checkCap,
   formatPromptMessage,
   loadQuotaCap,
@@ -387,8 +383,6 @@ export async function parallelRun(
           );
         }
 
-        // Workaround for agy's non-TTY stdout drop (antigravity-cli#76): run the
-        // subagent under a pseudo-terminal so its headless output is captured.
         let invocation = dispatch.invocation;
         let nativeSession: ReturnType<typeof prepareNativeSession>;
         try {
@@ -397,21 +391,6 @@ export async function parallelRun(
             invocation.args,
           );
           invocation = { ...invocation, args: nativeSession.args };
-          if (targetVendorNeedsPty(dispatch.targetVendor)) {
-            const pty = wrapInvocationWithPty(invocation);
-            invocation = pty.invocation;
-            if (pty.wrapped) {
-              console.log(
-                `    PTY: ${dispatch.targetVendor} run under script(1)`,
-              );
-            } else {
-              console.warn(
-                color.yellow(
-                  `[${idx}] ${dispatch.targetVendor} headless output may be empty: ${pty.unsupportedReason}`,
-                ),
-              );
-            }
-          }
         } catch (error) {
           prepared.cleanup();
           finishAgentRun(runRoot, run.runId, null);

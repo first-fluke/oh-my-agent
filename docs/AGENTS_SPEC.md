@@ -97,7 +97,7 @@ These definitions contain no vendor-specific fields (no Claude `allowed_tools`, 
 - `.codex/agents/*.toml` (Codex CLI, TOML format)
 - `.commandcode/agents/`, `.cursor/agents/`, `.grok/agents/`, `.kiro/agents/`, `.opencode/agents/`, `.qwen/agents/` (Markdown)
 
-Antigravity CLI gets no generated agent files; it dispatches natively with `agy -p "@<agent> …"`. See [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) for the full per-vendor table. The Gemini CLI vendor was removed: oma no longer generates `.gemini/agents/`.
+Antigravity CLI gets no generated agent files; it dispatches natively by sending `@<agent> …` to an `agy acp` (Agent Client Protocol) session. See [SUPPORTED_AGENTS.md](./SUPPORTED_AGENTS.md) for the full per-vendor table. The Gemini CLI vendor was removed: oma no longer generates `.gemini/agents/`.
 
 ## Workflows
 
@@ -188,7 +188,7 @@ Workflows resolve a target vendor per agent from `.agents/oma-config.yaml`.
   - Codex CLI -> `.codex/agents/*.toml`
   - Cursor -> `.cursor/agents/*.md`
   - Kiro CLI -> `.kiro/agents/*.md`
-  - Antigravity CLI -> `agy -p "@<agent> …"` (no generated files)
+  - Antigravity CLI -> `@<agent> …` over `agy acp` (no generated files)
 - If the task targets a different vendor, or the native path is unavailable, OMA falls back to `oma agent spawn`.
 
 ## Packaging Rules

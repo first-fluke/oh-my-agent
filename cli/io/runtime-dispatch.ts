@@ -1,6 +1,6 @@
 import { isOpencodeFamily } from "../constants/opencode-family.js";
 import type { VendorConfig } from "../platform/agent-config.js";
-import { detectAgyCaps } from "./runtime-dispatch/agy-caps.js";
+import { wrapAgyInvocationForAcp } from "./runtime-dispatch/agy-acp.js";
 import { persistCodexEffortToToml } from "./runtime-dispatch/codex-effort.js";
 import { ConfigError } from "./runtime-dispatch/config-error.js";
 import {
@@ -121,13 +121,6 @@ function vendorConfigWithModel(
   if (!modelFlag) {
     throw new ConfigError(
       `explicit model for vendor '${targetVendor}': no model flag is known; set vendors.${targetVendor}.model_flag.`,
-    );
-  }
-  // agy 1.0 has no `--model`; its builders drop the flag, which would run the
-  // task on a model the caller did not ask for.
-  if (targetVendor === "antigravity" && !detectAgyCaps().modelFlag) {
-    throw new ConfigError(
-      "explicit model for vendor 'antigravity': the installed agy has no --model flag.",
     );
   }
   return { ...vendorConfig, model_flag: modelFlag, default_model: model };
@@ -329,7 +322,11 @@ export function planDispatch(
         fromPreset: activePlan.providerFromPreset === true,
       });
     }
-    return { mode, runtimeVendor, targetVendor, reason, invocation: inv };
+    // agy subagents run over ACP (`agy acp`), never print mode: hand the
+    // finished agy argv to the OMA ACP driver (see agy-acp.ts).
+    const invocation =
+      targetVendor === "antigravity" ? wrapAgyInvocationForAcp(inv) : inv;
+    return { mode, runtimeVendor, targetVendor, reason, invocation };
   };
 
   // External subprocess dispatch. The opencode family resolves the per-agent

@@ -1,5 +1,4 @@
 import { splitArgs, type VendorConfig } from "../../platform/agent-config.js";
-import { detectAgyCaps } from "./agy-caps.js";
 import { ConfigError } from "./config-error.js";
 import { resolveReadOnlyArgs } from "./read-only.js";
 
@@ -78,7 +77,9 @@ function builtInEditOnlyArgs(vendor: string): string[] | undefined {
         "Write",
       ];
     case "antigravity":
-      return detectAgyCaps().modeFlag ? ["--mode", "accept-edits"] : undefined;
+      // Applied to the ACP session (session/set_mode) by the agy driver;
+      // the driver denies the shell permission requests that still arrive.
+      return ["--mode", "accept-edits"];
     case "qwen":
       return ["--approval-mode", "auto-edit"];
     case "kiro":

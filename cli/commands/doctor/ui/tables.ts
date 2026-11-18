@@ -1,5 +1,9 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import {
+  isSupportedAgyVersion,
+  MIN_AGY_ACP_VERSION,
+} from "../../../io/runtime-dispatch/agy-acp.js";
 import { AUTH_CHECKERS } from "../../../vendors/index.js";
 import type { DoctorReport } from "../types.js";
 import { visualPadEnd } from "./visual-width.js";
@@ -29,6 +33,15 @@ export function renderCliTable(report: DoctorReport): void {
         )
         .join("\n"),
       "Install missing CLIs",
+    );
+  }
+
+  // agy subagents and `oma image` run over `agy acp`, which needs 1.5.10+.
+  const agy = report.clis.find((cli) => cli.name === "antigravity");
+  if (agy?.installed && !isSupportedAgyVersion(agy.version)) {
+    p.note(
+      `${pc.yellow("⚠️")} agy ${agy.version} is older than ${MIN_AGY_ACP_VERSION}; oma runs agy subagents over \`agy acp\`, which needs ${MIN_AGY_ACP_VERSION}+\n${pc.dim("Fix: agy update")}`,
+      "Antigravity CLI",
     );
   }
 }

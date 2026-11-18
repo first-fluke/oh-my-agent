@@ -42,7 +42,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | 現在のランタイムのエージェントとモデル設定に従います。モデルや effort フラグは注入しません。 | 新規インストールのデフォルト |
 | `free` | OMA が起動する Codex、Claude、Qwen プロセス向けの特殊なゲートウェイモードです。組み込みプリセットレジストリとは別に解決されます。 | ローカルの FreeLLMAPI ゲートウェイ |
-| `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装、アーキテクチャ、QA には Gemini 4 Argon、オーケストレーション、PM、ドキュメント、探索には Gemini 3.8 Flash を使います。agy 1.1 以降では、OMA は `agy models` の表示 ID を渡し（例: `--model "Gemini 4 Argon (High)"`）、`effort` をモデルが公開している段階に対応付けます。agy 1.0 には `--model` がないため、agy 自身の設定で決まります。agy には `--thinking-budget` はありません。 | Antigravity CLI の利用者 |
+| `antigravity` | すべてのエージェントが Antigravity CLI（`agy`）を使います。実装、アーキテクチャ、QA には Gemini 4 Argon、オーケストレーション、PM、ドキュメント、探索には Gemini 3.8 Flash を使います。OMA は `agy models` の表示 ID（例: `--model "Gemini 4 Argon (High)"`）を `agy acp` セッションに渡し、`effort` をモデルが公開している段階に対応付けます。agy には `--thinking-budget` はありません。 | Antigravity CLI の利用者 |
 | `claude` | すべてのエージェントが Claude を使います。architecture は Opus、explore は Haiku、それ以外のロールはすべて Sonnet です。 | Claude Max の契約者 |
 | `codex` | ほとんどのロールでは GPT-6.1 Terra、explore では GPT-6 Luna を使う OpenAI Codex を、effort レベル付きで利用します。 | ChatGPT Plus/Pro の利用者 |
 | `qwen` | すべてのエージェントが Qwen Code を使います。ランタイムが一致する Qwen セッションでは生成されたネイティブエージェントを使え、ほかのランタイムでは CLI ディスパッチを使います。 | ローカルまたはセルフホスト推論 |

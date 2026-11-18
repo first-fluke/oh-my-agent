@@ -41,7 +41,7 @@ model_preset: auto
 |:----|:-----------|:---------|
 | `auto` | Theo setting agent/model của runtime hiện tại mà không inject model hoặc effort flag. | Mặc định cho install mới |
 | `free` | Gateway mode đặc biệt cho process Codex, Claude hoặc Qwen do OMA spawn; được resolve tách khỏi built-in preset registry. | Gateway FreeLLMAPI local |
-| `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 4 Argon cho implementation, architecture và QA; Gemini 3.8 Flash cho orchestration, PM, docs và explore. Trên agy 1.1+, OMA truyền display ID lấy từ `agy models` (ví dụ `--model "Gemini 4 Argon (High)"`) và map `effort` sang một tier mà model công bố. agy 1.0 không có `--model`, nên config riêng của nó quyết định. agy không có `--thinking-budget`. | Người dùng Antigravity CLI |
+| `antigravity` | Mọi agent dùng Antigravity CLI (`agy`): Gemini 4 Argon cho implementation, architecture và QA; Gemini 3.8 Flash cho orchestration, PM, docs và explore. OMA truyền display ID lấy từ `agy models` (ví dụ `--model "Gemini 4 Argon (High)"`) vào session `agy acp` và map `effort` sang một tier mà model công bố. agy không có `--thinking-budget`. | Người dùng Antigravity CLI |
 | `claude` | Mọi agent dùng Claude: Opus cho architecture, Haiku cho explore, Sonnet cho mọi role còn lại. | Người dùng thuê bao Claude Max |
 | `codex` | Mọi agent dùng OpenAI Codex (GPT-6.1 Terra cho phần lớn role, GPT-6 Luna cho explore) với effort level. | Người dùng ChatGPT Plus/Pro |
 | `qwen` | Mọi agent dùng Qwen Code; session Qwen khớp vendor có thể dùng native agent được sinh ra, còn runtime khác dùng CLI dispatch. | Inference local / self-hosted |

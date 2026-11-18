@@ -323,7 +323,9 @@ export function resolveHarnessExecutionManifest(
     env,
     dispatch.invocation.env,
   );
-  const command = dispatch.invocation.command;
+  // Probe and report the vendor CLI, not an OMA driver around it (agy → ACP).
+  const command =
+    dispatch.invocation.vendorCommand ?? dispatch.invocation.command;
   const probe =
     input.probeVersion === false
       ? null

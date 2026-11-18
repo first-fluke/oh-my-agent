@@ -25,16 +25,12 @@
  * 18.  buildAgentPlanArgs for Codex → -m args
  */
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   parseCodexConfig,
   serializeCodexConfig,
   setCodexReasoningEffort,
 } from "../vendors/codex/settings.js";
-import {
-  primeAgyCaps,
-  resetAgyCapsCache,
-} from "./runtime-dispatch/agy-caps.js";
 import {
   buildAgentPlanArgs,
   ConfigError,
@@ -594,29 +590,13 @@ describe("buildAgentPlanArgs — Qwen", () => {
 // ---------------------------------------------------------------------------
 
 describe("buildAgentPlanArgs — antigravity & unknown", () => {
-  afterEach(() => resetAgyCapsCache());
-
-  it("antigravity yields empty args when agy lacks --model (agy 1.0)", () => {
-    primeAgyCaps({ modelFlag: false, addDir: false });
+  it("antigravity passes --model {cliModel} (display name, mapped by the ACP driver)", () => {
     const basePlan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
     const antigravityPlan = {
       ...basePlan,
       cli: "antigravity" as const,
       cliModel: "Gemini 3.1 Pro (High)",
     };
-    expect(buildAgentPlanArgs(antigravityPlan)).toEqual([]);
-  });
-
-  it("antigravity passes --model {cliModel} when the installed agy supports it (1.1+)", () => {
-    primeAgyCaps({ modelFlag: true, addDir: true });
-    const basePlan = resolveAgentPlanFromConfig("backend", CODEX_ONLY_CONFIG);
-    const antigravityPlan = {
-      ...basePlan,
-      cli: "antigravity" as const,
-      cliModel: "Gemini 3.1 Pro (High)",
-    };
-    // agy only accepts `agy models` display IDs; the slug form makes it exit
-    // with `Error: invalid --model` before the prompt runs.
     expect(buildAgentPlanArgs(antigravityPlan)).toEqual([
       "--model",
       "Gemini 3.1 Pro (High)",

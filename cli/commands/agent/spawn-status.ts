@@ -20,10 +20,6 @@ import { loadUserConfig } from "../../io/runtime-dispatch/config-loader.js";
 import { detectRuntimeVendor } from "../../io/runtime-dispatch/detect.js";
 import { prepareAgentDispatch } from "../../io/runtime-dispatch/prepared-agent-dispatch.js";
 import {
-  targetVendorNeedsPty,
-  wrapInvocationWithPty,
-} from "../../io/runtime-dispatch/pty-wrap.js";
-import {
   checkCap,
   formatPromptMessage,
   loadQuotaCap,
@@ -478,8 +474,6 @@ export async function spawnAgent(
       );
     }
 
-    // Workaround for agy's non-TTY stdout drop (antigravity-cli#76): run the
-    // subagent under a pseudo-terminal so its headless output is captured.
     let invocation = dispatch.invocation;
     let nativeSession: ReturnType<typeof prepareNativeSession>;
     try {
@@ -488,23 +482,6 @@ export async function spawnAgent(
         invocation.args,
       );
       invocation = { ...invocation, args: nativeSession.args };
-      if (targetVendorNeedsPty(dispatch.targetVendor)) {
-        const pty = wrapInvocationWithPty(dispatch.invocation);
-        invocation = pty.invocation;
-        if (pty.wrapped) {
-          console.log(
-            color.dim(
-              `  PTY: ${dispatch.targetVendor} run under script(1) (non-TTY stdout workaround)`,
-            ),
-          );
-        } else {
-          console.warn(
-            color.yellow(
-              `[${agentId}] ${dispatch.targetVendor} headless output may be empty: ${pty.unsupportedReason}`,
-            ),
-          );
-        }
-      }
     } catch (error) {
       fs.closeSync(logStream);
       if (stderrStream !== logStream) fs.closeSync(stderrStream);

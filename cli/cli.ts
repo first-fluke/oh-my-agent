@@ -201,23 +201,33 @@ async function registerFullCli(): Promise<void> {
 // `oma bridge` gets the same treatment for memory rather than latency: it is a
 // long-lived stdio proxy that every MCP client session keeps (codex keeps
 // several), so the full tree would stay resident in each one all session.
-if (process.argv[2] === "hook" && process.argv[3] !== "probe") {
-  const { registerHook } = await import("./commands/hook/command.js");
-  registerHook(program);
-} else if (process.argv[2] === "bridge") {
-  const { registerBridge } = await import("./commands/bridge/command.js");
-  registerBridge(program);
+// `oma agent:acp` is the internal ACP driver every agy subagent runs under
+// (io/runtime-dispatch/agy-acp.ts). Its argv is agy's own flag set, passed
+// verbatim, so it bypasses Commander instead of being registered as a command.
+if (process.argv[2] === "agent:acp") {
+  const { runAgyAcp } = await import("./io/runtime-dispatch/agy-acp.js");
+  process.exitCode = await runAgyAcp(process.argv.slice(3));
 } else {
-  await registerFullCli();
-}
+  if (process.argv[2] === "hook" && process.argv[3] !== "probe") {
+    const { registerHook } = await import("./commands/hook/command.js");
+    registerHook(program);
+  } else if (process.argv[2] === "bridge") {
+    const { registerBridge } = await import("./commands/bridge/command.js");
+    registerBridge(program);
+  } else {
+    await registerFullCli();
+  }
 
-const { createCommandSurface } = await import("./utils/command-surface.js");
-commandSurface = createCommandSurface(program);
-try {
-  const argv = process.argv.slice(2);
-  if (!commandSurface.showHelp(argv))
-    await program.parseAsync(commandSurface.normalize(argv), { from: "user" });
-} catch (error) {
-  console.error(error instanceof Error ? error.message : String(error));
-  process.exitCode = 1;
+  const { createCommandSurface } = await import("./utils/command-surface.js");
+  commandSurface = createCommandSurface(program);
+  try {
+    const argv = process.argv.slice(2);
+    if (!commandSurface.showHelp(argv))
+      await program.parseAsync(commandSurface.normalize(argv), {
+        from: "user",
+      });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  }
 }

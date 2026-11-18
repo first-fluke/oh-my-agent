@@ -26,8 +26,10 @@
  *      booleans here (telemetry + feedback-survey opt-out by default; see
  *      installAntigravityHud).
  *
- * NOTE: agy hooks fire on the interactive execution loop; headless `agy --print`
- * does not run them, so live firing must be confirmed in an interactive session.
+ * NOTE: agy hooks fire on the interactive execution loop and in `agy acp`
+ * sessions, which is how oma runs agy subagents (verified on agy 1.5.10:
+ * PreInvocation per model call, PostToolUse per tool call). Headless
+ * `agy --print` does not run them.
  *
  * WINDOWS: agy runs every `command` string without a POSIX shell. A quoted
  * script path reaches bun with its quotes intact and fails with

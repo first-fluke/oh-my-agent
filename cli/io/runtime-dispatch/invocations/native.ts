@@ -1,5 +1,4 @@
 import type { VendorConfig } from "../../../platform/agent-config.js";
-import { agyPrintTimeoutArgs, detectAgyCaps } from "../agy-caps.js";
 import { resolveCodexAutoApproveArgs } from "../codex-flags.js";
 import { resolveRestrictionArgs } from "../edit-only.js";
 import type { Invocation } from "../types.js";
@@ -104,19 +103,19 @@ export function buildCodexNativeInvocation(
 }
 
 /**
- * Antigravity CLI (agy) headless mode: `agy [--dangerously-skip-permissions] -p "<prompt>"`.
+ * Antigravity CLI (agy) subagent argv, in agy's flag vocabulary:
+ * `agy [--dangerously-skip-permissions] [--model …] [--add-dir …] -p "<prompt>"`.
  *
- * Notes on the real binary:
- * - `-p` is a *value* flag — the prompt is its argument, not a trailing positional.
- * - agy 1.0 had no `--model`, `--add-dir`, or `--print-timeout`; 1.1 added all
- *   three. Each is gated on an `agy --help` probe (see agy-caps) so a 1.0 binary
- *   silently keeps the old config-driven behavior. There is still no
- *   `--thinking-budget`, so effort rides on the model's tier suffix.
- * - `--model` accepts only `agy models` display IDs ("Gemini 3.1 Pro (High)").
+ * planDispatch routes it through the ACP driver (`oma agent:acp`, see
+ * agy-acp.ts), which starts `agy acp` and applies `--model`/`--mode` to the
+ * ACP session; this argv is never run as print mode.
+ *
+ * - `--model` accepts an `agy models` display name ("Gemini 4 Argon (High)")
+ *   or an ACP model id ("gemini-4-argon-high").
  * - Auto-approve defaults to `--dangerously-skip-permissions`.
  *
  * Flag coverage is deliberately kept at parity with the external agy path in
- * invocations/external.ts — the two builders spawn the same binary, and a gap in
+ * invocations/external.ts — the two builders drive the same binary, and a gap in
  * one shows up as an agy subagent that behaves differently depending on which
  * runtime happened to launch it.
  *
@@ -145,26 +144,19 @@ export function buildAntigravityNativeInvocation(
     args.push("--dangerously-skip-permissions");
   }
 
-  // model_flag/default_model are checked FIRST so the caps probe only runs when
-  // a model flag would actually be emitted. When a per-agent plan is resolved,
-  // planDispatch strips default_model and appends the plan's own `--model`.
-  if (
-    vendorConfig.model_flag &&
-    vendorConfig.default_model &&
-    detectAgyCaps().modelFlag
-  ) {
+  // When a per-agent plan is resolved, planDispatch strips default_model and
+  // appends the plan's own `--model`.
+  if (vendorConfig.model_flag && vendorConfig.default_model) {
     args.push(vendorConfig.model_flag, vendorConfig.default_model);
   }
 
   // agy confines file writes to its own trusted root unless the workspace is
   // granted explicitly, so a subagent can exit 0 with its artifacts outside the
   // repo — and the orchestrator then finds no result file.
-  if (workspace && detectAgyCaps().addDir) {
+  if (workspace) {
     args.push("--add-dir", workspace);
   }
 
-  // Lift agy's 5m print-mode ceiling before the prompt (see agyPrintTimeoutArgs).
-  args.push(...agyPrintTimeoutArgs());
   args.push("-p", buildMentionPrompt(agentId, promptContent));
 
   return { command, args, env: { ...process.env } };

@@ -9,14 +9,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  primeAgyCaps,
-  resetAgyCapsCache,
-} from "./runtime-dispatch/agy-caps.js";
-import {
   buildExternalInvocation,
   detectRuntimeVendor,
   planDispatch,
 } from "./runtime-dispatch.js";
+
+/** The agy argv an ACP-driver invocation carries (`… agent:acp <agy> …`). */
+function agyArgv(args: string[]): string[] {
+  const index = args.indexOf("agent:acp");
+  expect(index).toBeGreaterThanOrEqual(0);
+  return args.slice(index + 1);
+}
 
 const minimalVendorConfig = {
   command: "oma-agent",
@@ -122,10 +125,7 @@ describe("planDispatch — forced-external runtimes", () => {
     expect(plan.reason).toBe("cross-vendor or unsupported native path");
   });
 
-  it("antigravity runtime + antigravity target → mode:'native' (agy)", () => {
-    // Pin the caps probe to agy 1.0 so the assertion is machine-independent
-    // (a real probe on a box with agy 1.1+ would legitimately add --model).
-    primeAgyCaps({ modelFlag: false, addDir: false });
+  it("antigravity runtime + antigravity target → mode:'native' over ACP", () => {
     const plan = planDispatch(
       "test-agent",
       "antigravity",
@@ -134,22 +134,23 @@ describe("planDispatch — forced-external runtimes", () => {
       "hello",
       { OMA_RUNTIME_VENDOR: "antigravity" },
     );
-    resetAgyCapsCache();
     expect(plan.mode).toBe("native");
     expect(plan.runtimeVendor).toBe("antigravity");
-    expect(plan.invocation.command).toBe("agy");
-    // agy 1.0 invocation: `agy --dangerously-skip-permissions -p "<prompt>"`
-    expect(plan.invocation.args).toContain("--dangerously-skip-permissions");
+    // agy never runs as print mode: the invocation is the OMA ACP driver with
+    // the agy argv after the binary.
+    expect(plan.invocation.vendorCommand).toBe("agy");
+    const args = agyArgv(plan.invocation.args);
+    expect(args[0]).toBe("agy");
+    expect(args).toContain("--dangerously-skip-permissions");
     // -p is a value flag; its argument must follow immediately.
-    const pIdx = plan.invocation.args.indexOf("-p");
+    const pIdx = args.indexOf("-p");
     expect(pIdx).toBeGreaterThanOrEqual(0);
-    expect(plan.invocation.args[pIdx + 1]).toMatch(/hello/);
-    // No `--model` or `--thinking-budget` — those flags do not exist in agy 1.0.
-    expect(plan.invocation.args).not.toContain("--model");
-    expect(plan.invocation.args).not.toContain("--thinking-budget");
+    expect(args[pIdx + 1]).toMatch(/hello/);
+    expect(args).not.toContain("--print-timeout");
+    expect(args).not.toContain("--thinking-budget");
   });
 
-  it("antigravity native dispatch appends --model when the installed agy supports it (1.1+)", () => {
+  it("antigravity native dispatch appends --model from the per-agent plan", () => {
     const root = mkdtempSync(join(tmpdir(), "oma-fixed-agy-"));
     mkdirSync(join(root, ".agents"));
     writeFileSync(
@@ -157,7 +158,6 @@ describe("planDispatch — forced-external runtimes", () => {
       "model_preset: antigravity\n",
     );
     const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue(root);
-    primeAgyCaps({ modelFlag: true, addDir: true });
     const plan = planDispatch(
       "test-agent",
       "antigravity",
@@ -166,20 +166,18 @@ describe("planDispatch — forced-external runtimes", () => {
       "hello",
       { OMA_RUNTIME_VENDOR: "antigravity" },
     );
-    resetAgyCapsCache();
     cwdSpy.mockRestore();
     rmSync(root, { recursive: true, force: true });
     expect(plan.mode).toBe("native");
     // Per-agent plan resolution (fixture → antigravity preset) supplies the
-    // model id; with caps present it must be forwarded as `--model <id>`.
-    expect(plan.invocation.args).toContain("--model");
+    // model; the ACP driver maps it onto the session model id.
+    expect(agyArgv(plan.invocation.args)).toContain("--model");
   });
 
-  // Parity with the external agy path: both builders spawn the same binary, so
+  // Parity with the external agy path: both builders drive the same binary, so
   // a flag present in only one makes an agy subagent behave differently
   // depending on which runtime launched it.
-  it("antigravity native dispatch grants --add-dir {workspace} when agy supports it", () => {
-    primeAgyCaps({ addDir: true });
+  it("antigravity native dispatch grants --add-dir {workspace}", () => {
     const plan = planDispatch(
       "test-agent",
       "antigravity",
@@ -189,47 +187,29 @@ describe("planDispatch — forced-external runtimes", () => {
       { OMA_RUNTIME_VENDOR: "antigravity" },
       { workspace: "/tmp/ws" },
     );
-    resetAgyCapsCache();
     expect(plan.mode).toBe("native");
-    const i = plan.invocation.args.indexOf("--add-dir");
+    const args = agyArgv(plan.invocation.args);
+    const i = args.indexOf("--add-dir");
     expect(i).toBeGreaterThan(-1);
-    expect(plan.invocation.args[i + 1]).toBe("/tmp/ws");
+    expect(args[i + 1]).toBe("/tmp/ws");
   });
 
-  it("antigravity native dispatch omits --add-dir when agy lacks it (agy 1.0)", () => {
-    primeAgyCaps({ addDir: false });
+  it("antigravity external dispatch also runs over ACP", () => {
     const plan = planDispatch(
       "test-agent",
       "antigravity",
       { prompt_flag: "-p" },
       "-p",
       "hello",
-      { OMA_RUNTIME_VENDOR: "antigravity" },
+      { OMA_RUNTIME_VENDOR: "claude" },
       { workspace: "/tmp/ws" },
     );
-    resetAgyCapsCache();
-    expect(plan.invocation.args).not.toContain("--add-dir");
-  });
-
-  // Regression: agy print mode aborts at its 5m default with no result, which
-  // surfaces to the orchestrator as a hang that crashed at exactly 5 minutes.
-  it("antigravity native dispatch raises agy's 5m print ceiling", () => {
-    primeAgyCaps({ printTimeout: true });
-    const plan = planDispatch(
-      "test-agent",
-      "antigravity",
-      { prompt_flag: "-p" },
-      "-p",
-      "hello",
-      { OMA_RUNTIME_VENDOR: "antigravity" },
-    );
-    resetAgyCapsCache();
-    const i = plan.invocation.args.indexOf("--print-timeout");
-    expect(i).toBeGreaterThan(-1);
-    expect(plan.invocation.args[i + 1]).toBe("30m");
-    // -p stays a value flag: the prompt must still follow it immediately.
-    const pIdx = plan.invocation.args.indexOf("-p");
-    expect(plan.invocation.args[pIdx + 1]).toMatch(/hello/);
+    expect(plan.mode).toBe("external");
+    expect(plan.invocation.vendorCommand).toBe("agy");
+    const args = agyArgv(plan.invocation.args);
+    expect(args[args.indexOf("--add-dir") + 1]).toBe("/tmp/ws");
+    expect(args[args.indexOf("-p") + 1]).toBe("hello");
+    expect(args).not.toContain("--print-timeout");
   });
 
   it("prints a WARN message when forced to external for qwen", () => {
@@ -692,61 +672,24 @@ describe("buildExternalInvocation — vendor branches", () => {
   });
 
   it("antigravity: command defaults to `agy` binary, auto_approve_flag falls back to --dangerously-skip-permissions", () => {
-    // Prime the caps cache so the builder does not shell out to the real `agy
-    // --help` for its --print-timeout probe.
-    primeAgyCaps({});
     const inv = buildExternalInvocation("antigravity", {}, "-p", "hi");
-    resetAgyCapsCache();
     expect(inv.command).toBe("agy");
     expect(inv.args).toContain("--dangerously-skip-permissions");
-  });
-
-  // Regression: agy print mode aborts at its 5m default with no result, which
-  // surfaces to the orchestrator as a hang that crashed at exactly 5 minutes.
-  it("antigravity: --print-timeout raises agy's 5m print ceiling", () => {
-    primeAgyCaps({ printTimeout: true });
-    const inv = buildExternalInvocation("antigravity", {}, "-p", "hi");
-    resetAgyCapsCache();
-    const i = inv.args.indexOf("--print-timeout");
-    expect(i).toBeGreaterThan(-1);
-    expect(inv.args[i + 1]).toBe("30m");
-  });
-
-  it("antigravity: no --print-timeout when agy lacks it (agy 1.0)", () => {
-    primeAgyCaps({ printTimeout: false });
-    const inv = buildExternalInvocation("antigravity", {}, "-p", "hi");
-    resetAgyCapsCache();
     expect(inv.args).not.toContain("--print-timeout");
   });
 
-  it("antigravity: stale `model_flag` in vendorConfig is dropped when agy lacks --model (agy 1.0)", () => {
-    primeAgyCaps({ modelFlag: false, addDir: false });
+  it("antigravity: vendorConfig model flag passes through", () => {
     const inv = buildExternalInvocation(
       "antigravity",
-      { model_flag: "--model", default_model: "gemini-3.1-pro" },
+      { model_flag: "--model", default_model: "Gemini 4 Argon (High)" },
       "-p",
       "hi",
     );
-    resetAgyCapsCache();
-    expect(inv.args).not.toContain("--model");
-    expect(inv.args).not.toContain("gemini-3.1-pro");
+    const i = inv.args.indexOf("--model");
+    expect(inv.args[i + 1]).toBe("Gemini 4 Argon (High)");
   });
 
-  it("antigravity: vendorConfig model flag passes through when agy supports --model (1.1+)", () => {
-    primeAgyCaps({ modelFlag: true, addDir: false });
-    const inv = buildExternalInvocation(
-      "antigravity",
-      { model_flag: "--model", default_model: "gemini-3.1-pro" },
-      "-p",
-      "hi",
-    );
-    resetAgyCapsCache();
-    expect(inv.args).toContain("--model");
-    expect(inv.args).toContain("gemini-3.1-pro");
-  });
-
-  it("antigravity: --add-dir {workspace} granted when agy supports it (tech-debt #7)", () => {
-    primeAgyCaps({ modelFlag: false, addDir: true });
+  it("antigravity: --add-dir {workspace} granted (tech-debt #7)", () => {
     const inv = buildExternalInvocation(
       "antigravity",
       {},
@@ -755,24 +698,16 @@ describe("buildExternalInvocation — vendor branches", () => {
       undefined,
       { workspace: "/tmp/ws" },
     );
-    resetAgyCapsCache();
     const i = inv.args.indexOf("--add-dir");
     expect(i).toBeGreaterThan(-1);
     expect(inv.args[i + 1]).toBe("/tmp/ws");
   });
 
-  it("antigravity: no --add-dir when agy lacks it (agy 1.0)", () => {
-    primeAgyCaps({ modelFlag: false, addDir: false });
-    const inv = buildExternalInvocation(
-      "antigravity",
-      {},
-      "-p",
-      "hi",
-      undefined,
-      { workspace: "/tmp/ws" },
-    );
-    resetAgyCapsCache();
-    expect(inv.args).not.toContain("--add-dir");
+  // The ACP driver reads the prompt from a print-mode prompt flag; a trailing
+  // positional would be forwarded to `agy acp` as an unknown argument.
+  it("antigravity: prompt_flag none still passes the prompt behind -p", () => {
+    const inv = buildExternalInvocation("antigravity", {}, null, "hi");
+    expect(inv.args.slice(-2)).toEqual(["-p", "hi"]);
   });
 
   it("isolation_flags split into argv tokens", () => {

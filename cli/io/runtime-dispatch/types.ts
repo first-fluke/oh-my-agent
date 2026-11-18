@@ -20,6 +20,11 @@ export type Invocation = {
   command: string;
   args: string[];
   env: NodeJS.ProcessEnv;
+  /**
+   * The vendor CLI binary when `command` is an OMA-owned driver around it
+   * (agy runs through `oma agent:acp`). Use it to report or probe the CLI.
+   */
+  vendorCommand?: string;
 };
 
 export type DispatchPlan = {
