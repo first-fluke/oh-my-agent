@@ -43,12 +43,12 @@ vendors:
     response_jq: ".output"
     isolation_method: "directory"
 
-  # Antigravity (agy) headless print mode: `agy -p "<prompt>"`.
-  # Models: run `agy models`. `--model` accepts ONLY those display names —
-  # a slug like `gemini-4-argon` makes agy exit with `Error: invalid --model`
-  # before running the prompt. The parenthesised tier is agy's effort dial.
-  # agy 1.0 had no --model / --add-dir / --print-timeout; oma probes
-  # `agy --help` once and drops whichever flags the installed binary lacks.
+  # Antigravity (agy) runs over its Agent Client Protocol server (`agy acp`).
+  # Flags use agy's own vocabulary; oma's ACP driver passes process flags
+  # (--add-dir, --dangerously-skip-permissions, …) to `agy acp` and applies
+  # --model / --mode / --effort to the session. Models: run `agy models`;
+  # `--model` takes a display name ("Gemini 4 Argon (High)") or an ACP model
+  # id ("gemini-4-argon-high"). The parenthesised tier is agy's effort dial.
   antigravity:
     command: agy
     prompt_flag: "-p"

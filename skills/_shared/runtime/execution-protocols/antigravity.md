@@ -4,4 +4,4 @@ Follow [Execution Policy](../../core/execution-policy.md) and [Agent Result Cont
 
 ## Headless dispatch
 
-For `agy -p`, ordinary stdout is not a durable completion record. Writable runs must produce the injected structured claim; read-only runs return the exact stdout JSON contract. Missing claims or failed checks cannot be reported as completed.
+For agy subagents (`oma agent spawn` runs them over `agy acp`), ordinary stdout is not a durable completion record. Writable runs must produce the injected structured claim; read-only runs return the exact stdout JSON contract. Missing claims or failed checks cannot be reported as completed.

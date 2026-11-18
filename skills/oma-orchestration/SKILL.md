@@ -120,7 +120,7 @@ Current native executor paths:
 - Codex: use the current session's exposed native subagent tool with the resolved custom role from `.codex/agents/*.toml` when supported; otherwise use `oma agent spawn`. Model tiering follows `references/_shared/core/vendor-detection.md`.
 - Antigravity and other runtimes: use `oma agent spawn` unless a native role-subagent path is verified for the target vendor (`references/_shared/core/vendor-detection.md`).
 
-`codex exec` and `agy -p` start external CLI sessions. An `@agent` string in a prompt does not establish native dispatch or apply a custom-role contract.
+`codex exec` and `agy acp` start external CLI sessions. An `@agent` string in a prompt does not establish native dispatch or apply a custom-role contract.
 
 ### Configuration
 
