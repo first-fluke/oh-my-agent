@@ -1,6 +1,6 @@
 {
   "name": "oh-my-agent",
-  "version": "20.47.0",
+  "version": "21.0.0",
   "description": "32 skills and 12 specialist agents that plan, build in parallel, review, and debug.",
   "author": {
     "name": "First Fluke"

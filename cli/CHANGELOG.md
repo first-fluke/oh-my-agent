@@ -1,5 +1,18 @@
 # Changelog
 
+## [21.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.47.0...cli-v21.0.0) (2026-11-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **agent:** agy subagents and `oma image` require agy 1.5.10 or later; an older agy is refused with a prompt to run `agy update`.
+
+### Features
+
+* **agent:** run agy subagents over agy acp instead of print mode ([8dc42cd](https://github.com/first-fluke/oh-my-agent/commit/8dc42cd719414cd36a06dc3fca2cdff394291291))
+* **image:** generate antigravity images over agy acp ([e7ea745](https://github.com/first-fluke/oh-my-agent/commit/e7ea745b5c2d9eb576bc47d1d1608e49a7a9422b))
+* **model:** add gemini 4 hydrogen to the antigravity registry ([b2abff6](https://github.com/first-fluke/oh-my-agent/commit/b2abff6f4075b4cfa77ffd4dff96d1a9bed39f42))
+
 ## [20.47.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.46.0...cli-v20.47.0) (2026-11-16)
 
 
