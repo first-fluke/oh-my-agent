@@ -25,6 +25,7 @@ describe("CORE_REGISTRY", () => {
     "openai/gpt-5.4-mini",
     "openai/gpt-5.3-codex",
     "antigravity/gemini-4-argon",
+    "antigravity/gemini-4-hydrogen",
     "antigravity/gemini-3.8-flash",
     "cursor/composer-2.5",
     "cursor/composer-2.5-fast",
@@ -40,9 +41,9 @@ describe("CORE_REGISTRY", () => {
     "kiro/auto",
   ] as const;
 
-  it("contains exactly 21 slugs (Anthropic 3, OpenAI 5, Antigravity 2, Cursor 5, Qwen 3, Kiro 3)", async () => {
+  it("contains exactly 30 slugs (Anthropic 6, OpenAI 9, Antigravity 3, Cursor 5, Qwen 4, Kiro 3)", async () => {
     const { CORE_REGISTRY } = await import("./model-registry.js");
-    expect(CORE_REGISTRY.size).toBe(29);
+    expect(CORE_REGISTRY.size).toBe(30);
   });
 
   it.each(EXPECTED_SLUGS)("includes slug: %s", async (slug) => {
@@ -414,7 +415,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     );
     try {
       const merged = reloadRegistry(emptyDir);
-      expect(merged.size).toBe(29);
+      expect(merged.size).toBe(30);
       expect(getModelSpec("anthropic/claude-opus-4-7")).toBeDefined();
       expect(CORE_REGISTRY.has("openai/gpt-5.4")).toBe(true);
     } finally {
@@ -430,7 +431,7 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     const dir = makeTempProjectDir(MALFORMED_YAML);
     try {
       const merged = reloadRegistry(dir);
-      expect(merged.size).toBe(29);
+      expect(merged.size).toBe(30);
       expect(getModelSpec("openai/gpt-5.4")).toBeDefined();
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });

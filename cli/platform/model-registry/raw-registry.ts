@@ -305,19 +305,16 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
   ],
 
   // -------------------------------------------------------------------------
-  // Antigravity (agy CLI) (2)
+  // Antigravity (agy CLI) (3)
   // -------------------------------------------------------------------------
-  // agy 1.0 has no `--model` flag — on that version these entries are nominal:
-  // they let users declare intent in oma-config.yaml and surface the right auth
-  // hint in `oma doctor`, but dispatch falls back to the config-driven default.
-  //
-  // agy 1.1+ DOES accept `--model`, but only the display-name IDs printed by
-  // `agy models` ("Gemini 4 Argon (High)") — a slug like `gemini-4-argon` is
-  // rejected with `Error: invalid --model`. `cli_model` therefore stores the
-  // exact display ID, tier included; the registry key stays slug-shaped because
-  // that is the user-facing form in oma-config.yaml. The parenthesised tier is
-  // agy's effort dial, so `supports.effort` lists the tiers agy actually
-  // publishes for that model and `agyModelForEffort` swaps the suffix.
+  // agy subagents run over ACP (`agy acp`); the driver resolves `--model`
+  // against the session's model list by display name ("Gemini 4 Argon (High)")
+  // or ACP id ("gemini-4-argon-high") and exits on anything else. `cli_model`
+  // stores the display name printed by `agy models`, tier included; the
+  // registry key stays slug-shaped because that is the user-facing form in
+  // oma-config.yaml. The parenthesised tier is agy's effort dial, so
+  // `supports.effort` lists the tiers agy publishes for that model (agy 1.5.10)
+  // and `agyModelForEffort` swaps the suffix.
   [
     "antigravity/gemini-4-argon",
     {
@@ -325,6 +322,27 @@ export const RAW_REGISTRY: ReadonlyMap<string, ModelSpec> = new Map([
       cli_model: "Gemini 4 Argon (High)",
       supports: {
         effort: { type: "granular", levels: ["low", "medium", "high"] },
+        apply_patch: false,
+        task_budget: false,
+        prompt_cache: true,
+        computer_use: false,
+        native_dispatch_from: ["antigravity"],
+        api_only: false,
+      },
+      auth_hint: "Requires Antigravity CLI sign-in (Google AI Pro tier)",
+      subscription_tier: "google_ai_pro",
+    } satisfies ModelSpec,
+  ],
+  [
+    "antigravity/gemini-4-hydrogen",
+    {
+      cli: "antigravity",
+      cli_model: "Gemini 4 Hydrogen (High)",
+      supports: {
+        effort: {
+          type: "granular",
+          levels: ["low", "medium", "high", "xhigh"],
+        },
         apply_patch: false,
         task_budget: false,
         prompt_cache: true,
