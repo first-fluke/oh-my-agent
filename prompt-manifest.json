@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "20.47.0",
-  "releaseDate": "2026-11-16T06:58:06.080Z",
+  "releaseDate": "2026-11-18T08:30:12.701Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -566,8 +566,8 @@
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/antigravity.md",
-      "sha256": "d04e7e8bc3c61f5e3eeff41bf0bac7ed0cde7daa1ee61e96b2ca21a2f909bd04",
-      "size": 605
+      "sha256": "6682b45c708f5ad881d6af008d43f3dd266e779d86d62bf15b3617d9766395a8",
+      "size": 655
     },
     {
       "path": ".agents/skills/_shared/runtime/execution-protocols/claude.md",
@@ -1166,8 +1166,8 @@
     },
     {
       "path": ".agents/skills/oma-image/resources/invocation.md",
-      "sha256": "82f4ce91c4ef8fc10a1149363677a87284ae77316731a9d79dfd8bc1d6b65ba7",
-      "size": 7701
+      "sha256": "ab6b61d3fc34c8829222218967f28d9103fc7c61bda1ce04d2602f06b14250f6",
+      "size": 7733
     },
     {
       "path": ".agents/skills/oma-image/resources/prompt-tips.md",
@@ -1176,8 +1176,8 @@
     },
     {
       "path": ".agents/skills/oma-image/resources/vendor-matrix.md",
-      "sha256": "35e03d49bb525781853a2444f4fbd521d66f72f74457f8bd848d89d955982892",
-      "size": 4861
+      "sha256": "dfe16e24dab0d71ef0e5fea82c0a8c34de79ff74d1d9e5fb191f6eeb2bce3fdf",
+      "size": 4980
     },
     {
       "path": ".agents/skills/oma-market/SKILL.md",
@@ -1496,13 +1496,13 @@
     },
     {
       "path": ".agents/skills/oma-orchestration/SKILL.md",
-      "sha256": "0bef899f58a825b0f387767902de50319114cd076d1f23b7f03719057999c242",
-      "size": 19278
+      "sha256": "bec080538114e710d732f8c2a903132adebea21ce4c08f944f3590270603e4e5",
+      "size": 19279
     },
     {
       "path": ".agents/skills/oma-orchestration/config/cli-config.yaml",
-      "sha256": "13ac9b429ae2d2f4395b237bfd26a326ce97fd5bb5474b84b4fb22d3fb8e531f",
-      "size": 3388
+      "sha256": "70c155d42d21cb086b916a6bbbaa2b7586321ee93534f0ad2e58bf3371122f1b",
+      "size": 3406
     },
     {
       "path": ".agents/skills/oma-orchestration/resources/memory-schema.md",
