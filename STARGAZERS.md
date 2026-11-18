@@ -11,7 +11,7 @@ summaries to spot which persona is churning.
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1468)
+## Current (1471)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -204,6 +204,7 @@ summaries to spot which persona is churning.
 - @callmejustdodo — 2026-02-26
 - @Cambera — 2026-08-20
 - @cammclain — 2026-09-12
+- @CarlosRubio2 — 2026-11-17
 - @carlosviniciusfs97 — 2026-08-13
 - @CatGaoGao — 2026-06-03
 - @caumil081-blip — 2026-07-13
@@ -331,6 +332,7 @@ summaries to spot which persona is churning.
 - @dotorimook — 2026-02-01
 - @doyoonkim12345 — 2026-02-03
 - @DRamaMercer — 2026-03-09
+- @DreamHouseKSH — 2026-11-18
 - @drewbitt — 2026-03-18
 - @DrMeosch — 2026-09-25
 - @dru519 — 2026-04-30
@@ -1343,6 +1345,7 @@ summaries to spot which persona is churning.
 - @uyaki — 2026-02-23
 - @vanilalatte03 — 2026-06-04
 - @veiman — 2026-03-26
+- @velodona — 2026-11-18
 - @verserdp — 2026-11-11
 - @verysys-pal — 2026-03-17
 - @vichhka-git — 2026-03-11
