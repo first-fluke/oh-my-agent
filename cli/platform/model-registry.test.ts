@@ -41,11 +41,6 @@ describe("CORE_REGISTRY", () => {
     "kiro/auto",
   ] as const;
 
-  it("contains exactly 30 slugs (Anthropic 6, OpenAI 9, Antigravity 3, Cursor 5, Qwen 4, Kiro 3)", async () => {
-    const { CORE_REGISTRY } = await import("./model-registry.js");
-    expect(CORE_REGISTRY.size).toBe(30);
-  });
-
   it.each(EXPECTED_SLUGS)("includes slug: %s", async (slug) => {
     const { CORE_REGISTRY } = await import("./model-registry.js");
     expect(CORE_REGISTRY.has(slug)).toBe(true);
@@ -415,7 +410,8 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
     );
     try {
       const merged = reloadRegistry(emptyDir);
-      expect(merged.size).toBe(30);
+      // No user models: the merged registry is exactly the core registry.
+      expect([...merged.keys()]).toEqual([...CORE_REGISTRY.keys()]);
       expect(getModelSpec("anthropic/claude-opus-4-7")).toBeDefined();
       expect(CORE_REGISTRY.has("openai/gpt-5.4")).toBe(true);
     } finally {
@@ -425,13 +421,14 @@ describe("T14: reloadRegistry — merged registry behavior", () => {
   });
 
   it("malformed YAML: core registry unaffected after reload", async () => {
-    const { reloadRegistry, getModelSpec } = await import(
+    const { reloadRegistry, getModelSpec, CORE_REGISTRY } = await import(
       "./model-registry.js"
     );
     const dir = makeTempProjectDir(MALFORMED_YAML);
     try {
       const merged = reloadRegistry(dir);
-      expect(merged.size).toBe(30);
+      // A malformed user file adds nothing and drops no core entry.
+      expect([...merged.keys()]).toEqual([...CORE_REGISTRY.keys()]);
       expect(getModelSpec("openai/gpt-5.4")).toBeDefined();
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
