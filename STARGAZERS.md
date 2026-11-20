@@ -5,9 +5,10 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-15 · 1 unstarred
+## 2026-11-20 · 2 unstarred
 
-- **@geek-79** · geek-ceo · 0 repos · 0 followers
+- **@robertoatila** · 0 repos · 0 followers
+- **@rvzaku** · 0 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -126,6 +127,7 @@ summaries to spot which persona is churning.
 - @astheboy — 2026-03-16
 - @asweeper1 — 2026-11-06
 - @asyncFlow-dad — 2026-04-24
+- @atharvmotghare — 2026-05-20
 - @avila2026 — 2026-09-03
 - @AXE-V — 2026-08-13
 - @Axelvrdn — 2026-05-20
@@ -349,6 +351,7 @@ summaries to spot which persona is churning.
 - @edgebyte-ai — 2026-04-26
 - @edward-rxc — 2026-07-02
 - @edwardssg69-max — 2026-09-29
+- @edx903 — 2026-11-19
 - @eeanzn — 2026-10-20
 - @eeuunn — 2026-04-18
 - @egaoneko — 2026-02-13
@@ -1124,7 +1127,6 @@ summaries to spot which persona is churning.
 - @rl-rossi — 2026-07-06
 - @Rlaslrbs — 2026-11-13
 - @roachesyan — 2026-05-11
-- @robertoatila — 2026-10-05
 - @robertpelloni — 2026-02-07
 - @robertvonk — 2026-05-08
 - @robinseo — 2026-02-03
@@ -1138,7 +1140,6 @@ summaries to spot which persona is churning.
 - @route99-roadRunner — 2026-02-02
 - @rpatino-cw — 2026-08-20
 - @runefor — 2026-05-21
-- @rvzaku — 2026-05-20
 - @RxScriptor — 2026-05-17
 - @ryan-haver — 2026-03-10
 - @ryankr — 2026-04-23
