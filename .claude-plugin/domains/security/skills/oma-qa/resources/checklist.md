@@ -58,6 +58,8 @@ checks that could not run as verification gaps, not passes or defect findings.
 
 ## Performance Checklist
 
+- [ ] Every reported number comes from before/after runs under the same recorded conditions, and the delta is attributable to the change under review; otherwise report it as unverified
+
 ### Backend Performance
 - [ ] Affected API latency meets the declared SLO at representative load
 - [ ] Database queries optimized (no N+1)
@@ -110,6 +112,7 @@ Check the changed UI against the WCAG 2.2 AA success criteria the project target
 - [ ] Edge cases covered
 - [ ] Error handling tested
 - [ ] Mocks used appropriately
+- [ ] Tests assert observable behavior; list tests that only pad coverage, pin implementation details, or are mostly mocks as cleanup candidates (report, do not delete)
 - [ ] Test duration and feedback time meet the project's check/CI budget
 - [ ] No flaky tests
 
@@ -161,6 +164,12 @@ Check the changed UI against the WCAG 2.2 AA success criteria the project target
 - [ ] User-friendly error messages
 - [ ] No silent failures
 - [ ] Graceful degradation
+- [ ] Fixes target the root cause: no guard, retry, fallback default, or value clamp added at the symptom site without an identified cause (such patterns get copied)
+
+### Diff Hygiene
+- [ ] No debug output, commented-out code, or leftover feature flags in the diff
+- [ ] New comments do not restate what the code does
+- [ ] No unused exports or dead branches introduced
 
 ---
 

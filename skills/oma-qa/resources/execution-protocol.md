@@ -36,7 +36,8 @@ document/configuration review does not require starting or building an app.
 
 - Web app with UI, Medium/Complex change: browser verification of the changed flows
 - API-only change: HTTP verification (curl/httpie) of the changed endpoints
-- Simple tasks (single file, no UI): skip
+- CLI or library change, including simple ones: run the changed command path or exported function (see CLI and Libraries)
+- No executable surface (docs, static config): skip
 - No available target, or starting one is outside the request: record the runtime checks as verification gaps
 
 ### Execution by App Type
@@ -112,6 +113,12 @@ Run the following checks with a selected, available server. Prefer a separate te
 #### Mobile Applications
 1. If emulator/simulator available: launch and interact
 2. If not: verify via API layer + widget test execution
+
+#### CLI and Libraries
+1. Run the changed command from source as a user would, or call the changed function in a one-off process (`node -e`, `bun -e`, `python -c`). Keep scratch scripts and outputs outside the repository.
+2. Cover the normal path and the edge cases the change touches: empty or missing input, invalid flags, missing config or env, non-TTY output, and a second run (idempotency) for commands with side effects.
+3. Check exit codes, stdout/stderr separation, and machine-readable output (`--json`) against the documented contract.
+4. For side-effecting commands, run in a temporary directory or with `--dry-run` when available, and inspect the resulting files.
 
 ### Recording Results
 
