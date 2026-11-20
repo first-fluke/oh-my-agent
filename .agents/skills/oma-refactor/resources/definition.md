@@ -63,6 +63,22 @@ Bug fixing (intentional behavior change) / performance optimization (different g
 - Layer axis: functional core vs imperative shell call for different forms and different test economics.
 - Convention axis: in brownfield, the coding guide and framework conventions beat "theoretically better" patterns - consistency is a component of analysability. Changing a convention is an architecture decision (ADR + lint ratchet for new code + module-wise migration), never a boy-scout edit.
 - Timing: Rule of Three - abstract after reuse evidence accumulates; speculative generality is a smell.
+- State: derive values instead of synchronizing copies; narrow state scope (return over mutation, local over field, module over global); route each repeated decision through one source.
+
+### Subtraction first
+Before restructuring, remove what nothing uses and collapse layers that add no decision: dead code, unused internal exports, retired flags, debug output; inline single-caller wrappers, single-implementation adapters/interfaces, and pass-through methods (Middle Man, Lazy Class). Then restructure what remains. "Unused" is proven by a reference search across the repository; anything exported from a published package or read by external consumers is contract (Hyrum) and follows the expand-contract route.
+
+## Provenance - why before remove
+Code whose reason is unknown is not deleted or reshaped. Recover the reason from history first:
+
+```bash
+git log -L <start>,<end>:<path>
+git log -S '<identifier>' --oneline
+git blame -w -C -L <start>,<end> <path>
+gh api repos/{owner}/{repo}/commits/<sha>/pulls
+```
+
+Read the linked PR description and review comments. Report recorded rationale (commit message, PR, review thread) separately from inference. If the reason stays unknown, keep the code, pin its behavior with a characterization test, and report the open question.
 
 ## Naming - operationalizing the unmeasured lever
 
@@ -89,10 +105,17 @@ Rename discipline:
 - Renames are engine-executed (LSP/IDE rename or a configured provider’s semantic rename tool), never find-replace; tests re-run regardless.
 - Goodhart applies here too: role vocabulary diagnoses; the terminal check is still "does the next reader understand this cheaper".
 
+Comments in the touched scope:
+- A comment that explains what the code does marks a naming or structure failure: rename, extract, or introduce a type until the comment is redundant, then delete it.
+- Delete section banners, commented-out code, and comments justifying a workaround. SATD markers are signals (see Triggers), not text to reword.
+- Keep only: license headers; short reasons for non-obvious behavior forced by external dependencies, platforms, or protocols; doc comments defining a public API contract; issue links for constraints code cannot express; formatter or justified lint directives; the entry-file split map (SKILL.md canonical workflow path step 8).
+- When unsure, delete.
+
 ## Execution contexts
 - **Greenfield**: refactoring is the third beat of TDD (Red -> Green -> Refactor) - minute-scale hygiene, net already exists.
 - **Brownfield**: order inverts - find a seam (minimal mechanical change to enable testing) -> characterization tests -> restructure. Large scale: Strangler Fig, Branch by Abstraction, Sprout Method - the system stays working at every point. The classification is per code fragment (coverage map), not per project.
 - **Stateful (data/API)**: git revert does not restore data. Mechanism: **Expand-Contract (parallel change)** - expand (old+new coexist) -> dual-write + backfill -> switch reads -> contract (remove old); feature flags are the standard switch. External consumers: semver + deprecation cycles as a staged contract-transfer protocol; the pattern vocabulary for that staging (Version Identifier, Two in Production, Aggressive Obsolescence, Limited Lifetime Guarantee - MAP evolution patterns, Zimmermann et al.) lives with `oma-architecture` (`resources/api-evolution.md`) - a published-contract change is an architecture decision, route there for the ADR.
+- **Internal (every consumer is in this repository)**: no parallel change. Migrate every caller and delete the old API in the same change; a compatibility shim left behind is an unfinished refactoring.
 - **Team concurrency**: big renames collide with every open branch - another reason for "small and frequent". Announce large refactorings + short merge windows; register bulk mechanical commits in `.git-blame-ignore-revs`; LSC (monorepo-wide atomic change + owner-split review) is incrementality at org scale.
 - **Regulated environments**: even behavior-preserving changes trigger re-verification/re-certification - economics invert; batch-per-release refactoring is the one legitimate exception to "continuous flow".
 
