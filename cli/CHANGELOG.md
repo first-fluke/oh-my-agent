@@ -1,5 +1,13 @@
 # Changelog
 
+## [21.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v21.0.0...cli-v21.0.1) (2026-11-20)
+
+
+### Documentation
+
+* **skills:** add cli runtime checks and patch detection to oma-qa ([d059294](https://github.com/first-fluke/oh-my-agent/commit/d05929446a69aa1b60d18f0268cccdb232d83ab2))
+* **skills:** add provenance and subtraction-first to oma-refactor ([3bf310d](https://github.com/first-fluke/oh-my-agent/commit/3bf310d87cb68ca8c8348de2597d6995c525172c))
+
 ## [21.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v20.47.0...cli-v21.0.0) (2026-11-18)
 
 
