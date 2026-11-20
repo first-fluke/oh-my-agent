@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "21.0.0",
-  "releaseDate": "2026-11-18T08:32:58.994Z",
+  "releaseDate": "2026-11-20T04:10:33.611Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -1581,8 +1581,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/checklist.md",
-      "sha256": "28cb565f275274524ce17d1d96fdbe1b3f457042d6cb7ca4825012a451f30489",
-      "size": 10026
+      "sha256": "d380792cb4a6eaf13649c40fe5fe63d7732cb4237d998063ab3f2062849a821e",
+      "size": 10751
     },
     {
       "path": ".agents/skills/oma-qa/resources/error-playbook.md",
@@ -1591,8 +1591,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/execution-protocol.md",
-      "sha256": "6022f362ccf90b710e65b6f0272ad56f51d1dc32276aaf51cd3a7db838574b0a",
-      "size": 10092
+      "sha256": "04becbfbcf0b36c90792a6801f2220875b8f7cf66844abe8a7a7ae88f68b77fd",
+      "size": 10901
     },
     {
       "path": ".agents/skills/oma-qa/resources/iso-quality.md",
@@ -1611,13 +1611,13 @@
     },
     {
       "path": ".agents/skills/oma-refactor/SKILL.md",
-      "sha256": "133cb8f41345be87b1e80d7b220bb5d7cb9057a3c79f89ef1838df5c4f6af966",
-      "size": 12595
+      "sha256": "162709db3dc7928796121cace92eb675e223aee8f0fe88ac36dcff8db43d996c",
+      "size": 12901
     },
     {
       "path": ".agents/skills/oma-refactor/resources/definition.md",
-      "sha256": "261e22f64b3c906ddeda096626aa2bc92eb0f72e0c1d2c08bcfd9cf4fcfd4528",
-      "size": 12330
+      "sha256": "eb5eae8b91affc4d3e0e4c28afa377a678f216672162e52fdd198f1ef5f4ac01",
+      "size": 14506
     },
     {
       "path": ".agents/skills/oma-refactor/resources/hotspots.py",
