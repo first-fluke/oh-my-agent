@@ -5,14 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-20 · 2 unstarred
+## 2026-11-22 · 1 unstarred
 
-- **@robertoatila** · 0 repos · 0 followers
-- **@rvzaku** · 0 repos · 0 followers
+- **@junghunchoi** · 최정훈 · 대한민국 · 29 repos · 1 followers
+  - 결과는 노력뒤에 온다!
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1472)
+## Current (1471)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -722,7 +722,6 @@ summaries to spot which persona is churning.
 - @jun-shoplive — 2026-02-02
 - @JuneKunst — 2026-04-15
 - @jungeunyooon — 2026-02-27
-- @junghunchoi — 2026-04-24
 - @JungLUA — 2026-08-16
 - @junhyeongheo — 2026-03-08
 - @JunhyungLee25 — 2026-04-24
