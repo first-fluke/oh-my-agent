@@ -5,10 +5,9 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-22 · 1 unstarred
+## 2026-11-24 · 1 unstarred
 
-- **@junghunchoi** · 최정훈 · 대한민국 · 29 repos · 1 followers
-  - 결과는 노력뒤에 온다!
+- **@oiloilo44** · 7 repos · 0 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
@@ -676,6 +675,7 @@ summaries to spot which persona is churning.
 - @ji-hun-park — 2026-02-02
 - @Jian-debug — 2026-05-23
 - @jianbangzhang — 2026-06-03
+- @jiangdc — 2026-11-23
 - @jiho1120 — 2026-03-17
 - @jihoon-seo — 2026-02-02
 - @JihoonRyu00 — 2026-11-12
@@ -1015,7 +1015,6 @@ summaries to spot which persona is churning.
 - @oguri78b — 2026-04-26
 - @OHTaEH — 2026-04-19
 - @ohyungkr — 2026-06-27
-- @oiloilo44 — 2026-04-30
 - @OKEunsu — 2026-04-19
 - @OldCoderIsMe — 2026-04-22
 - @oldtimerza — 2026-08-27
