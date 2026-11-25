@@ -1,7 +1,7 @@
 {
   "name": "oh-my-agent",
   "version": "21.1.0",
-  "releaseDate": "2026-11-25T11:20:24.237Z",
+  "releaseDate": "2026-11-25T11:52:07.170Z",
   "repository": "https://github.com/first-fluke/oh-my-agent",
   "files": [
     {
@@ -396,13 +396,13 @@
     },
     {
       "path": ".agents/oma-config.cue",
-      "sha256": "f146a4a2b299062554f4e4dca6f882fca457623784f7654ecac11d81294d345b",
-      "size": 15571
+      "sha256": "e3920df1248bf41b5be7ae2a2569390763c2ee07eeca730ecf72f4653e7ffc53",
+      "size": 15579
     },
     {
       "path": ".agents/oma-config.yaml",
-      "sha256": "317eaeefd4bbb71d06a930340c6c2415725642f792ec03e49f38d892c411a9f2",
-      "size": 33477
+      "sha256": "b98a0d775b7ce3f62dc90578da2d1770f857994acbad98d021fa58546f32f328",
+      "size": 33561
     },
     {
       "path": ".agents/plugins/marketplace.json",
@@ -901,8 +901,8 @@
     },
     {
       "path": ".agents/skills/oma-debug/resources/debugging-checklist.md",
-      "sha256": "f929b8d19834636e4d28e137827e0b438ea2d6105f6fabb24091a1dac080e373",
-      "size": 1857
+      "sha256": "1be8c7cc552a66ef985376aec34cb2a40d094e1b3c48230477f98a9c41ab9bbe",
+      "size": 2068
     },
     {
       "path": ".agents/skills/oma-debug/resources/error-playbook.md",
@@ -1096,8 +1096,8 @@
     },
     {
       "path": ".agents/skills/oma-frontend/resources/tech-stack.md",
-      "sha256": "e36ef4d3fba1bf47d5f6f6d86a8f7c9ff722fd32645ebce970885204e7bf0ed6",
-      "size": 8501
+      "sha256": "e7cf9e04116466bc74ec33ab8cc432c08e67778c48396555c798d5644a1f7b30",
+      "size": 8712
     },
     {
       "path": ".agents/skills/oma-hwp/SKILL.md",
@@ -1591,8 +1591,8 @@
     },
     {
       "path": ".agents/skills/oma-qa/resources/execution-protocol.md",
-      "sha256": "04becbfbcf0b36c90792a6801f2220875b8f7cf66844abe8a7a7ae88f68b77fd",
-      "size": 10901
+      "sha256": "d0a36b101852cc9478145b03d2003ac82087891c980e3df99c384db8f65e71dc",
+      "size": 11171
     },
     {
       "path": ".agents/skills/oma-qa/resources/iso-quality.md",
