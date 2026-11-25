@@ -1,5 +1,12 @@
 # Changelog
 
+## [21.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v21.1.0...cli-v21.2.0) (2026-11-25)
+
+
+### Features
+
+* **browser:** support ego lite as a browser selection ([b380533](https://github.com/first-fluke/oh-my-agent/commit/b380533f2b7536c24e3e48a3c4d93b6b2de17727))
+
 ## [21.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v21.0.1...cli-v21.1.0) (2026-11-25)
 
 
