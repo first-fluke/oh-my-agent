@@ -58,6 +58,11 @@ React 19 + recent `eslint-plugin-react-hooks` flag these as hard errors that bre
 - [ ] `useEffect` deps complete and stable: list every referenced reactive value; memoize object/array literals so dep identity does not change every render.
 - [ ] No prop-mirroring via effect: `useEffect(() => setX(derive(props)))` is always a bug; compute `x` in the render body or memoize.
 
+## State Placement
+- [ ] Every prop added or extended in this change was traced to its owner; no chain crosses 3 or more component boundaries through forward-only intermediates (`../../../rules/frontend.md` §Core Rules 7)
+- [ ] A chain at the limit was resolved by composition, TanStack Query / nuqs, or the project's Jotai/Zustand state — not deepened; a newly added state library is reported in the handoff
+- [ ] No new React Context for shared state
+
 ## Performance
 - [ ] No unnecessary re-renders (check with React DevTools Profiler)
 - [ ] Memoization matches the project's React Compiler setting: compiler ON (`reactCompiler` in `next.config.*`) → no hand-written `useMemo`/`useCallback`/`React.memo` in new code; compiler OFF → memoize manually (see `tech-stack.md` §React Compiler)

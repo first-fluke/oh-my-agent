@@ -16,7 +16,12 @@ Apply framework-specific rules only to that framework. Existing project choices 
 4. **Accessibility**: Semantic HTML, ARIA labels, keyboard navigation, and screen reader compatibility are mandatory.
 5. **Tool First**: Check for existing solutions and tools before coding.
 6. **Request proxy convention**: when the target project uses Next.js 16+ with `proxy.ts`, preserve that convention. Check the installed framework version and routing before recommending a file rename. Diagnose wiring from code and tests.
-7. **No Prop Drilling**: Avoid passing props beyond 3 levels. Use the project's client-state library (Jotai atoms or a Zustand store) instead. Avoid React Context.
+7. **No Prop Drilling**: A value that crosses 3 or more component boundaries from the component that owns it to the one that reads it, through intermediates that only forward it, is prop drilling — count the whole chain across files, not just the edited hop. Before adding or extending a prop, trace its chain to the owner. When the chain reaches the limit, resolve it in this order:
+   1. **Composition**: pass the rendered element through `children` or slot props so intermediates stop forwarding it.
+   2. **Right owner**: server data comes from TanStack Query and URL state from nuqs, read where it is needed.
+   3. **Client-state library**: genuine client-owned shared state goes into the project's Jotai atoms or Zustand store. If the project has neither, add one (choice per `oma-frontend` `resources/tech-stack.md` §Client State) and report it in the handoff; this is the sanctioned exception to the no-new-dependency default for scoped changes.
+
+   Do not deepen an existing chain to finish a scoped task. Avoid React Context. Props passed from a Server Component to a Client Component at the RSC boundary are not drilling.
 8. **Auth Boundary**: Client code must not import database adapters or server-only auth code. Keep server-side application logic in the project's existing server boundary.
 9. **Animation library**: preserve the project's existing animation library for scoped edits. For new motion-based implementations, use the `motion` package and `motion/react` imports.
 10. **Framework version**: preserve the installed framework and dependency ranges for scoped changes. Select versions when scaffolding or when an upgrade is explicitly requested; do not upgrade an existing app to satisfy a starter default.

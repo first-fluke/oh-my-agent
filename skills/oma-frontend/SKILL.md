@@ -91,6 +91,7 @@ Apply framework, library, architecture, and data-model defaults only when the ta
 4. **Self-describing file names**: every new file follows the File Naming convention in `../../rules/frontend.md` §Naming Conventions — domain + role readable from the basename alone (`order-summary-card.tsx`, `use-order-polling.ts`, `cart.atoms.ts`). Grab-bag names (`utils.ts`, `helpers.ts`, `misc.ts`) and version suffixes (`*-v2`, `*-final`) are banned.
 5. Use the project's Link prefetch policy; adjust specific routes only when measured behavior or the task requires it.
 6. **Angular projects follow `resources/angular-rules.md`**: standalone components + `OnPush` + signals-first, `inject()` DI, lazy routes, new control flow. **Any non-trivial RxJS pipeline MUST ship with a marble test (`TestScheduler` from `rxjs/testing`)** — a stream without a marble test fails review. React/Next.js-specific rules (shadcn workflow, `proxy.ts`, Libraries table below) do not apply in Angular projects.
+7. **No prop drilling**: before adding or extending a prop, trace its chain to the owning component (for example with `find_referencing_symbols`). A chain that crosses 3 or more component boundaries through forward-only intermediates is resolved by composition, then TanStack Query / nuqs, then the project's Jotai or Zustand state (added if the project has neither) — never by deepening the chain. Full rule: `../../rules/frontend.md` §Core Rules 7.
 
 ### Libraries
 

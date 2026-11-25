@@ -153,6 +153,7 @@ Check the changed UI against the WCAG 2.2 AA success criteria the project target
 - [ ] Dependency injection used
 - [ ] Data-access boundaries match the existing backend architecture
 - [ ] Component composition (frontend)
+- [ ] No prop drilling (frontend): trace changed props to their owner; a chain crossing 3 or more component boundaries through forward-only intermediates is a finding (`../../../rules/frontend.md` §Core Rules 7)
 
 ### Code Metrics
 - [ ] Complexity, size, and nesting meet project rules and allow the affected behavior to be understood and verified
