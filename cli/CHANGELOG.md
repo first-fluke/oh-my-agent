@@ -1,5 +1,12 @@
 # Changelog
 
+## [21.1.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v21.0.1...cli-v21.1.0) (2026-11-25)
+
+
+### Features
+
+* **frontend:** enforce prop drilling limit with resolution order ([34aee41](https://github.com/first-fluke/oh-my-agent/commit/34aee418a6a6b6d229876b1a5cc28b96255f08ad))
+
 ## [21.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v21.0.0...cli-v21.0.1) (2026-11-20)
 
 
