@@ -246,7 +246,7 @@ oma update --vendor claude,qwen
 oma update mcp --ci
 ```
 
-`oma update mcp` 有自己的 `--yes`、`--ci`、`--all` 和 `--vendor <vendors>` 选项。它为所选的项目级供应商选择受支持的浏览器 MCP 服务器（Aside、Chrome DevTools 或 Firefox DevTools）。
+`oma update mcp` 有自己的 `--yes`、`--ci`、`--all` 和 `--vendor <vendors>` 选项。它为所选的项目级供应商选择受支持的浏览器 MCP 服务器（Aside、Chrome DevTools、Firefox DevTools 或 ego lite CLI）。
 
 ### uninstall（卸载） {#uninstall}
 

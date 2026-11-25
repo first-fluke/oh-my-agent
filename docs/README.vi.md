@@ -372,7 +372,7 @@ Các pipeline này báo rõ khi thiếu nguồn hoặc key của vendor thay vì
 | Tìm kiếm web | Tìm kiếm native của runtime | Brave Search |
 | Code intelligence | Serena, một server dùng chung cho mỗi dự án | Gortex (thử nghiệm) |
 | Semantic memory | AgentMemory | Honcho (thử nghiệm), none |
-| Browser MCP | Aside | Chrome DevTools, Firefox DevTools |
+| Browser MCP | Aside | Chrome DevTools, Firefox DevTools, ego lite |
 
 Serena cung cấp khả năng điều hướng mã và chẩn đoán dựa trên LSP, bao gồm phản hồi sau khi chỉnh sửa native nếu được hỗ trợ. Việc chọn provider độc lập với runtime của agent; khả năng thay đổi tùy theo provider và host.
 

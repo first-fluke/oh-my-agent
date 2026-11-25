@@ -348,7 +348,7 @@ agents:
 | `agents` | map | いいえ | エージェントごとの部分オーバーライド（オブジェクト型の `AgentSpec`）。プリセットのデフォルトに浅くマージします。 |
 | `models` | map | いいえ | ユーザー定義のモデルスラッグ。以前は `models.yaml` に置かれていました。 |
 | `custom_presets` | map | いいえ | ユーザー定義のプリセット。組み込みプリセットから部分的に継承する `extends:` に対応します。 |
-| `mcp.devtools_browsers` | list | いいえ | DevTools MCP で使うブラウザー。`aside`、`chrome`、`firefox` を指定できます。省略すると既存の設定を保持し、`[]` はブラウザーサーバーを明示的に無効にします。 |
+| `mcp.devtools_browsers` | list | いいえ | DevTools MCP で使うブラウザー。`aside`、`chrome`、`ego`、`firefox` を指定できます。省略すると既存の設定を保持し、`[]` はブラウザーサーバーを明示的に無効にします。 |
 | `serena.mode` | string | いいえ | `bridge` はプロジェクトの Serena サーバーを共有するデフォルトです。`stdio` を選ぶとセッションごとに1プロセス起動します。 |
 | `serena.auto_update` | boolean | いいえ | `oma update` で Serena を更新するかどうか。デフォルトは `true` です。 |
 

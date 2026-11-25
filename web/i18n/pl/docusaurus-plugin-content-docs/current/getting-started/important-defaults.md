@@ -30,7 +30,7 @@ Wartości domyślne dobrano tak, aby pierwszy projekt był użyteczny, a konfigu
 | Strefa czasowa | systemowa strefa czasowa | Zaplanowane i raportowane godziny są zgodne z hostem, gdy `timezone` jest pominięte. | `timezone: Australia/Sydney` (albo inna nazwa IANA) |
 | Transport Sereny | `bridge` | Sesje współdzielą jeden serwer Sereny na projekt; niedostępny bridge przechodzi na stdio lokalne dla sesji. | `serena.mode: stdio` |
 | Automatyczna aktualizacja Sereny | włączona | `oma update` aktualizuje lokalne narzędzie Sereny, gdy jest to możliwe. | `serena.auto_update: false` |
-| Browser DevTools MCP | nieustawione | Istniejące wpisy przeglądarek są zachowywane; nowa instalacja interaktywna oferuje `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` albo `[]` |
+| Browser DevTools MCP | nieustawione | Istniejące wpisy przeglądarek są zachowywane; nowa instalacja interaktywna oferuje `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` albo `[]` |
 | Serena Reaper | ścieżka harmonogramu wyłączona | `serena_reaper.enabled: false` pozostawia okresowe sprzątanie nieaktywne. Interaktywne `oma serena reap` nadal działa. | `serena_reaper.enabled: true` oraz `oma serena reaper enable` |
 
 Nazwy dostawców i wartości domyślne pochodzą z loaderów runtime’u oraz promptów instalatora. Plik konfiguracji wygenerowany przez instalator zawiera komentarze dla dostępnych sekcji; użyj ich jako przewodnika po schemacie właściwym dla danej wersji.

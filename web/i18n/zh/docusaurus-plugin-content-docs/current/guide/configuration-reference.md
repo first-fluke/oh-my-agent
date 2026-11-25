@@ -58,7 +58,7 @@ oma doctor --profile
 | `diagnostic_feedback` | `enabled`、`host_diagnostics`、`timeout_ms` | 支持的终端宿主自动启用，`false`，`1400` | 比较原生文件编辑前后的 Serena 诊断；请参阅[诊断反馈](#diagnostic-feedback)。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` 的行为和扫描排除项。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP 传输和更新行为。 |
-| `mcp.devtools_browsers` | `aside`、`chrome`、`firefox` 或 `[]` | unset = 保留现有设置 | 协调时选择浏览器 DevTools MCP。明确的空列表会移除所选浏览器条目。 |
+| `mcp.devtools_browsers` | `aside`、`chrome`、`ego`、`firefox` 或 `[]` | unset = 保留现有设置 | 协调时选择浏览器 DevTools MCP。明确的空列表会移除所选浏览器条目。 |
 | `video` | 技能拥有的 sparse 映射 | 技能默认值；请参阅[视频生成](/docs/guide/video-generation) | 视频路由、供应商顺序、输出、成本、限制和 HyperFrames 刷新设置。 |
 | `image` | 技能拥有的 sparse 映射 | 技能默认值；请参阅[图像生成](/docs/guide/image-generation) | 图像供应商、尺寸、质量、输出、比较和成本设置。 |
 | `voice` | `backend`、`notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | `backend: auto`；其余键为技能默认值；请参阅[内容和研究工作流](/docs/guide/content-and-research#generate-speech-or-transcribe-audio) | 语音后端（`auto`、`voicebox`、`voicestudio`；`oma video` 旁白也使用此设置）、配置档、输出和长度设置。 |

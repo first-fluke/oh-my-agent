@@ -347,7 +347,7 @@ agents:
 | `agents` | map | Không | Override từng agent một phần (object-only `AgentSpec`). Merge nông lên default của preset. |
 | `models` | map | Không | Slug model do người dùng định nghĩa, trước đây nằm trong `models.yaml`. |
 | `custom_presets` | map | Không | Preset do người dùng định nghĩa. Hỗ trợ `extends:` để kế thừa một phần từ preset có sẵn. |
-| `mcp.devtools_browsers` | list | Không | Browser cho DevTools MCP: `aside`, `chrome` hoặc `firefox`. Bỏ trống để giữ setup hiện có; `[]` tắt rõ ràng browser server. |
+| `mcp.devtools_browsers` | list | Không | Browser cho DevTools MCP: `aside`, `chrome`, `ego` hoặc `firefox`. Bỏ trống để giữ setup hiện có; `[]` tắt rõ ràng browser server. |
 | `serena.mode` | string | Không | `bridge` chia sẻ Serena server theo project và là mặc định; `stdio` chọn một process cho mỗi session. |
 | `serena.auto_update` | boolean | Không | `oma update` có nâng cấp Serena hay không. Mặc định: `true`. |
 

@@ -369,7 +369,7 @@ oma install --preset frontend --yes
 | 웹 검색 | 런타임 네이티브 검색 | Brave Search |
 | 코드 인텔리전스 | Serena, 프로젝트당 공유 서버 하나 | Gortex(실험적) |
 | 시맨틱 메모리 | AgentMemory | Honcho(실험적), none |
-| 브라우저 MCP | Aside | Chrome DevTools, Firefox DevTools |
+| 브라우저 MCP | Aside | Chrome DevTools, Firefox DevTools, ego lite |
 
 Serena는 LSP 기반 코드 탐색과 진단을 제공하며, 지원되는 경우 네이티브 편집 피드백도 제공합니다. 프로바이더 선택은 에이전트 런타임과 별개이며, 기능은 프로바이더와 호스트에 따라 다릅니다.
 

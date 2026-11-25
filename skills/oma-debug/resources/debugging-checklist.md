@@ -38,7 +38,7 @@ this condensed form is sufficient:
 ## Tools Reference
 
 - **Code intelligence**: configured symbol, pattern, and reference tools; native search of paths outside this project or ignored paths as fallback
-- **Browser automation**: Browser verification uses the installed MCPs selected in `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), and Firefox DevTools MCP (`firefox`). Multiple selections are supported; use `oma update mcp` to change them. Discover the selected server’s actual tools before use; tool names and capabilities differ between servers. An empty selection disables browser MCP verification; report any unverified UI checks.
+- **Browser automation**: Browser verification uses the browsers selected in `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), Firefox DevTools MCP (`firefox`), and ego lite (`ego`). Multiple selections are supported; use `oma update mcp` to change them. For an MCP selection, discover the selected server’s actual tools before use; tool names and capabilities differ between servers. ego lite has no MCP server: run `ego-browser skill` and follow the guide it prints for the installed version; if `ego-browser` is missing, report it instead of installing ego lite. An empty selection disables browser verification; report any unverified UI checks.
 - **Git bisect**: Find when the bug was introduced
 
 ## Handoff

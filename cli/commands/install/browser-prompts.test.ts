@@ -22,6 +22,7 @@ it("offers Aside first and preselects it on a fresh install", async () => {
       options: [
         expect.objectContaining({ value: "aside" }),
         expect.objectContaining({ value: "chrome" }),
+        expect.objectContaining({ value: "ego" }),
         expect.objectContaining({ value: "firefox" }),
       ],
     }),
@@ -51,4 +52,13 @@ it("keeps a saved selection in non-interactive mode", async () => {
     "aside",
   ]);
   expect(prompts.multiselect).not.toHaveBeenCalled();
+});
+
+it("offers ego lite without preselecting it", async () => {
+  prompts.multiselect.mockResolvedValue(["ego"]);
+  expect(await promptDevToolsBrowsers(false, vi.fn())).toEqual(["ego"]);
+  const call = prompts.multiselect.mock.calls[0]?.[0] as {
+    initialValues: string[];
+  };
+  expect(call.initialValues).not.toContain("ego");
 });

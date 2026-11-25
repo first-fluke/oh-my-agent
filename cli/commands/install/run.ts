@@ -56,6 +56,7 @@ import {
 } from "../../utils/install-lock.js";
 import { loadProviders } from "../../utils/providers.js";
 import { ensureAsideInstalled } from "../../vendors/aside.js";
+import { reportEgoStatus } from "../../vendors/ego.js";
 import { link } from "../link/run.js";
 import { runMigrations } from "../migrations/index.js";
 import {
@@ -316,6 +317,7 @@ export async function install(options: InstallOptions = {}): Promise<void> {
     );
 
     await ensureAsideInstalled(devToolsBrowsers);
+    reportEgoStatus(devToolsBrowsers);
 
     const modelPreset = await promptModelPreset(
       installRoot,

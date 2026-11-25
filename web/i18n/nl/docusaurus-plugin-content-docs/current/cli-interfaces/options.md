@@ -774,7 +774,7 @@ Deze tabel wordt gegenereerd uit `oma describe`. Bewerk deze niet met de hand: v
 | `stats reset` | — | `--json`, `--output <format>` | Reset productivity metrics data |
 | `uninstall` | — | `--target <name>`, `--workflows-dir <path>`, `--dry-run`, `-y, --yes` | Remove oh-my-agent's owned files (preserves oma-config.yaml, mcp.json, and user-authored skills) |
 | `update` | — | `-f, --force`, `--with-new-skills`, `--ci`, `-y, --yes`, `--all`, `--vendor <vendors>` | Update skills to latest version from registry |
-| `update mcp` | — | `-y, --yes`, `--ci`, `--all`, `--vendor <vendors>` | Choose browser MCP servers (Aside, Chrome DevTools, Firefox DevTools) |
+| `update mcp` | — | `-y, --yes`, `--ci`, `--all`, `--vendor <vendors>` | Choose browsers (Aside, Chrome DevTools, Firefox DevTools MCP; ego lite CLI) |
 | `vault delete` | `<name>` | — | Remove a secret from the keychain and the index |
 | `vault get` | `<name>` | — | Print stored value to stdout (for: export KEY=$(oma vault get &lt;name&gt;)) |
 | `vault list` | — | `--json` | List stored secret names (values never displayed) |

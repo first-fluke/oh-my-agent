@@ -369,7 +369,7 @@ oma install --preset frontend --yes
 | ค้นหาเว็บ | การค้นหาเนทีฟของ runtime | Brave Search |
 | Code intelligence | Serena หนึ่งเซิร์ฟเวอร์ใช้ร่วมกันต่อโปรเจกต์ | Gortex (ทดลอง) |
 | Semantic memory | AgentMemory | Honcho (ทดลอง), none |
-| Browser MCP | Aside | Chrome DevTools, Firefox DevTools |
+| Browser MCP | Aside | Chrome DevTools, Firefox DevTools, ego lite |
 
 Serena ให้บริการนำทางโค้ดและวินิจฉัยปัญหาด้วย LSP รวมถึง feedback จากการแก้ไขแบบเนทีฟเมื่อรองรับ การเลือก provider แยกจาก runtime ของเอเจนต์ ความสามารถจะแตกต่างกันไปตาม provider และโฮสต์
 

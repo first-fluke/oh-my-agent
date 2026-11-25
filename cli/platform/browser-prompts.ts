@@ -31,6 +31,11 @@ export async function promptDevToolsBrowsers(
         hint: "npx -y chrome-devtools-mcp@latest --no-usage-statistics --isolated",
       },
       {
+        value: "ego",
+        label: "ego lite",
+        hint: "ego-browser CLI + skill, no MCP server (install ego lite from https://lite.ego.app/)",
+      },
+      {
         value: "firefox",
         label: "Firefox DevTools MCP",
         hint: "npx -y @mozilla/firefox-devtools-mcp@latest --autoProfile",

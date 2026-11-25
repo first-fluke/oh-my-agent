@@ -245,7 +245,7 @@ oma update --vendor claude,qwen
 oma update mcp --ci
 ```
 
-У `oma update mcp` есть собственные параметры `--yes`, `--ci`, `--all` и `--vendor <vendors>`. Команда выбирает поддерживаемые браузерные MCP-серверы (Aside, Chrome DevTools или Firefox DevTools) для выбранных вендоров уровня проекта.
+У `oma update mcp` есть собственные параметры `--yes`, `--ci`, `--all` и `--vendor <vendors>`. Команда выбирает поддерживаемые браузерные MCP-серверы (Aside, Chrome DevTools или Firefox DevTools; ego lite CLI) для выбранных вендоров уровня проекта.
 
 ### uninstall
 

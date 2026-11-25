@@ -347,7 +347,7 @@ agents:
 | `agents` | map | 선택 | 에이전트별 부분 오버라이드 (object 전용 `AgentSpec`). 프리셋 기본값 위에 얕게 병합됩니다. |
 | `models` | map | 선택 | 사용자 정의 모델 슬러그 (이전의 `models.yaml`에서 이동). |
 | `custom_presets` | map | 선택 | 사용자 정의 프리셋. 빌트인 프리셋을 부분 상속하는 `extends:`를 지원합니다. |
-| `mcp.devtools_browsers` | list | 선택 | DevTools MCP용 브라우저: `aside`, `chrome`, `firefox`. 생략하면 기존 설정을 유지하고 `[]`는 브라우저 서버를 명시적으로 비활성화합니다. |
+| `mcp.devtools_browsers` | list | 선택 | DevTools MCP용 브라우저: `aside`, `chrome`, `ego`, `firefox`. 생략하면 기존 설정을 유지하고 `[]`는 브라우저 서버를 명시적으로 비활성화합니다. |
 | `serena.mode` | string | 선택 | `bridge`는 프로젝트 Serena 서버를 공유하는 기본값이며 `stdio`는 세션마다 하나의 프로세스를 사용합니다. |
 | `serena.auto_update` | boolean | 선택 | `oma update`가 Serena를 업그레이드할지 결정합니다. 기본값 `true`입니다. |
 

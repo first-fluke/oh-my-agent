@@ -369,7 +369,7 @@ Deze pijplijnen melden een ontbrekende bron of vendor-sleutel in plaats van stil
 | Web zoeken | Runtime-native zoekfunctie | Brave Search |
 | Code-intelligence | Serena, één gedeelde server per project | Gortex (experimenteel) |
 | Semantisch geheugen | AgentMemory | Honcho (experimenteel), none |
-| Browser-MCP | Aside | Chrome DevTools, Firefox DevTools |
+| Browser-MCP | Aside | Chrome DevTools, Firefox DevTools, ego lite |
 
 Serena biedt LSP-gebaseerde codenavigatie en diagnostiek, inclusief feedback bij native bewerkingen waar dat wordt ondersteund. De providerkeuze staat los van de agentruntime; mogelijkheden verschillen per provider en host.
 

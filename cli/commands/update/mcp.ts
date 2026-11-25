@@ -13,6 +13,7 @@ import {
 } from "../../utils/install-lock.js";
 import { ensureAsideInstalled } from "../../vendors/aside.js";
 import { syncBrowserMcp } from "../../vendors/browser-mcp.js";
+import { reportEgoStatus } from "../../vendors/ego.js";
 import type { UpdateOptions } from "./types.js";
 import { resolveUpdateVendors } from "./vendors.js";
 
@@ -45,6 +46,7 @@ export async function updateMcp(options: UpdateOptions = {}): Promise<void> {
     const syncOptions = { global: getInstallMode() === "global" };
     syncBrowserMcp(root, browsers, vendors, { ...syncOptions, dryRun: true });
     await ensureAsideInstalled(browsers);
+    reportEgoStatus(browsers);
     saveDevToolsBrowsers(root, browsers);
     syncBrowserMcp(root, browsers, vendors, syncOptions);
     p.log.success(`Browser MCP servers: ${browsers.join(", ") || "none"}`);

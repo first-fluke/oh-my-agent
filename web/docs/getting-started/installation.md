@@ -395,7 +395,7 @@ agents:
 | `agents` | map | No | Partial per-agent overrides (object-only `AgentSpec`). Shallow-merged over preset defaults. |
 | `models` | map | No | User-defined model slugs, formerly in `models.yaml`. |
 | `custom_presets` | map | No | User-defined presets. Supports `extends:` for partial inheritance from a built-in preset. |
-| `mcp.devtools_browsers` | list | No | Browsers for DevTools MCP: `aside`, `chrome`, or `firefox`. Omitted preserves the existing setup; `[]` explicitly disables the browser server. |
+| `mcp.devtools_browsers` | list | No | Browsers for DevTools MCP: `aside`, `chrome`, `ego`, or `firefox`. Omitted preserves the existing setup; `[]` explicitly disables the browser server. |
 | `serena.mode` | string | No | `bridge` shares a project Serena server and is the default; `stdio` opts into one process per session. |
 | `serena.auto_update` | boolean | No | Whether `oma update` upgrades Serena. Default: `true`. |
 

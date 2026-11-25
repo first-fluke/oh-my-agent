@@ -245,7 +245,7 @@ oma update --vendor claude,qwen
 oma update mcp --ci
 ```
 
-`oma update mcp` heeft eigen opties `--yes`, `--ci`, `--all` en `--vendor <vendors>`. Het kiest ondersteunde browser-MCP-servers (Aside, Chrome DevTools of Firefox DevTools) voor de geselecteerde projectgebonden vendors.
+`oma update mcp` heeft eigen opties `--yes`, `--ci`, `--all` en `--vendor <vendors>`. Het kiest ondersteunde browser-MCP-servers (Aside, Chrome DevTools of Firefox DevTools; ego lite CLI) voor de geselecteerde projectgebonden vendors.
 
 ### uninstall
 

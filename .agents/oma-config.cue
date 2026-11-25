@@ -134,7 +134,7 @@ package config
 // ── 8. Browser DevTools MCP ─────────────────────────────────────────────────
 
 #McpConfig: {
-	devtools_browsers?: [...("aside" | "chrome" | "firefox")]
+	devtools_browsers?: [...("aside" | "chrome" | "ego" | "firefox")]
 	[string]: _
 }
 

@@ -63,7 +63,7 @@ oma doctor --profile
 | `diagnostic_feedback` | `enabled`、`host_diagnostics`、`timeout_ms` | 対応するターミナルホストでは自動、`false`、`1400` | ネイティブなファイル編集の前後で Serena の診断を比較します。[診断フィードバック](#diagnostic-feedback)を参照してください。 |
 | `docs` | `auto_verify`、`check_urls`、`exclude` | `false`、`true`、`[]` | `oma docs verify` の動作とスキャン除外。 |
 | `serena` | `mode: bridge\|stdio`、`auto_update` | `bridge`、`true` | Serena MCP のトランスポートと更新動作。 |
-| `mcp.devtools_browsers` | `aside`、`chrome`、`firefox`、または `[]` | 未設定 = 既存の設定をそのままにする | 調整時に使うブラウザー DevTools MCP の選択。空のリストを明示すると、選択したブラウザーのエントリを削除します。 |
+| `mcp.devtools_browsers` | `aside`、`chrome`、`ego`、`firefox`、または `[]` | 未設定 = 既存の設定をそのままにする | 調整時に使うブラウザー DevTools MCP の選択。空のリストを明示すると、選択したブラウザーのエントリを削除します。 |
 | `video` | スキルが所有する部分的なマップ | スキルのデフォルト。[動画生成](/docs/guide/video-generation)を参照 | 動画のルーティング、プロバイダー順、出力、コスト、上限、HyperFrames の更新設定。 |
 | `image` | スキルが所有する部分的なマップ | スキルのデフォルト。[画像生成](/docs/guide/image-generation)を参照 | 画像ベンダー、サイズ、品質、出力、比較、コストの設定。 |
 | `voice` | `backend`、`notification_profile`、`asset_profile`、`output_dir`、`auto_notify_after_sec`、`max_tts_chars`、`max_stt_minutes` | `backend: auto`。その他のキーはスキルのデフォルト。[コンテンツとリサーチのワークフロー](/docs/guide/content-and-research#generate-speech-or-transcribe-audio)を参照 | 音声バックエンド（`auto`、`voicebox`、`voicestudio`。`oma video` のナレーションも同じ設定を使用）、プロファイル、出力、長さの設定。 |

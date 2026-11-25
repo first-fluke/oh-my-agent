@@ -332,7 +332,8 @@ agents:
 # so an existing setup is never silently stripped. Set it to `[]` to remove them.
 #
 # mcp:
-#   devtools_browsers: [aside]      # aside | chrome | firefox; multiple or []
+#   devtools_browsers: [aside]      # aside | chrome | ego | firefox; multiple or []
+#   # ego = ego lite: CLI + skill (`ego-browser skill`), no MCP entry written
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 9. Documentation drift detection (oma-docs)

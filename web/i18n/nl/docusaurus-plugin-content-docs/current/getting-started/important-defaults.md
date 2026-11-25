@@ -29,7 +29,7 @@ De standaardinstellingen maken een eerste project bruikbaar en houden configurat
 | Tijdzone | systeemtijdzone | Geplande en gerapporteerde tijden volgen de host wanneer `timezone` ontbreekt. | `timezone: Australia/Sydney` (of een andere IANA-naam) |
 | Serena-transport | `bridge` | Sessies delen één Serena-server per project; een niet-beschikbare bridge valt terug op stdio per sessie. | `serena.mode: stdio` |
 | Automatische Serena-update | ingeschakeld | `oma update` werkt de lokale Serena-tool indien mogelijk bij. | `serena.auto_update: false` |
-| Browser DevTools MCP | niet ingesteld | Bestaande browservermeldingen blijven behouden; een nieuwe interactieve installatie biedt `aside` aan. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` of `[]` |
+| Browser DevTools MCP | niet ingesteld | Bestaande browservermeldingen blijven behouden; een nieuwe interactieve installatie biedt `aside` aan. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` of `[]` |
 | Serena Reaper | gepland pad uitgeschakeld | `serena_reaper.enabled: false` houdt periodiek opruimen uitgeschakeld. Interactief uitvoeren met `oma serena reap` blijft mogelijk. | `serena_reaper.enabled: true` plus `oma serena reaper enable` |
 
 De providernamen en standaardwaarden komen uit de runtime-loaders en installerprompts. Het configuratiebestand dat de installer maakt, bevat opmerkingen over de beschikbare secties; gebruik die opmerkingen als schema voor de betreffende versie.

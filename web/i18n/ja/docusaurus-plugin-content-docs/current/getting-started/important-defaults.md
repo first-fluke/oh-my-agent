@@ -27,7 +27,7 @@ description: ルーティング、モデル選択、プロバイダー、更新�
 | タイムゾーン | システムのタイムゾーン | `timezone` を省略すると、スケジュールと報告の時刻はホストに従います。 | `timezone: Australia/Sydney`（または別の IANA 名） |
 | Serena トランスポート | `bridge` | プロジェクトごとに 1 つの Serena サーバーを共有します。bridge が利用できない場合は、セッション単位の stdio にフォールバックします。 | `serena.mode: stdio` |
 | Serena 自動更新 | 有効 | 可能な場合、`oma update` がローカルの Serena ツールを更新します。 | `serena.auto_update: false` |
-| ブラウザー DevTools MCP | 未設定 | 既存のブラウザーエントリを保持します。初回の対話式インストールでは `aside` を提示します。 | `mcp.devtools_browsers: [aside]`、`[chrome]`、`[firefox]`、または `[]` |
+| ブラウザー DevTools MCP | 未設定 | 既存のブラウザーエントリを保持します。初回の対話式インストールでは `aside` を提示します。 | `mcp.devtools_browsers: [aside]`、`[chrome]`、`[firefox]`、`[ego]`、または `[]` |
 | Serena Reaper | スケジュール経路は無効 | `serena_reaper.enabled: false` のため、定期的な reap は無効です。対話式の `oma serena reap` は引き続き実行できます。 | `serena_reaper.enabled: true` と `oma serena reaper enable` |
 
 プロバイダー名とデフォルトは、実行時ローダーとインストーラーのプロンプトから決まります。インストーラーが生成する設定ファイルには利用可能なセクションのコメントが含まれます。バージョンごとのスキーマガイドとして、そのコメントを使ってください。

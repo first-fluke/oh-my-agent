@@ -1,6 +1,6 @@
 # Browser MCP selection
 
-`oma install` offers a multi-select for Aside, Chrome DevTools, and Firefox DevTools. Aside is selected by default. Use Space to toggle choices and Enter to continue; selecting none disables browser MCP servers. Reinstalling preselects the saved choices.
+`oma install` offers a multi-select for Aside, Chrome DevTools, Firefox DevTools, and ego lite. Aside is selected by default; ego lite is never preselected. Use Space to toggle choices and Enter to continue; selecting none disables browser MCP servers. Reinstalling preselects the saved choices.
 
 Run `oma update mcp` to change the selection without downloading a release or updating skills. `oma --global update mcp` changes the global installation. `--vendor codex,claude` limits which vendor configurations are updated. With `--yes` or `--ci`, the command keeps the saved selection, or chooses Aside when no preference exists.
 
@@ -8,7 +8,7 @@ The selection is saved under the existing preference key:
 
 ```yaml
 mcp:
-  devtools_browsers: [aside, chrome, firefox]
+  devtools_browsers: [aside, chrome, ego, firefox]
 ```
 
 An explicit `[]` means no browser MCP. Ordinary `oma update` and `oma link` reconcile the saved selection; an unset preference in an existing installation is left unchanged. Other MCP servers and settings are preserved. Deselected browser entries are removed from the targeted configurations.
@@ -29,6 +29,12 @@ Aside is registered as:
 ```
 
 `oma install` and `oma update mcp` automatically install a missing Aside CLI using `curl -fsSL https://releases.aside.com/install.sh | bash`. Existing installations are reused. Installation failures stop the command before saving the selection. If the installed executable is outside PATH, new MCP entries use its absolute path (`ASIDE_CLI_BIN_DIR/aside`, default `~/.local/bin/aside`). Chrome and Firefox use their existing `npx` launchers (`chrome-devtools-mcp@latest` and `@mozilla/firefox-devtools-mcp@latest`). OMA registers the MCP servers; it does not install browser applications.
+
+## ego lite
+
+ego lite (`ego`) is a Chromium browser for people and agents that ships a CLI instead of an MCP server. Selecting it writes no MCP entry in any vendor configuration; deselecting it removes nothing, because nothing was written. Agents use it through the `ego-browser` CLI: the browser-verification guidance in `oma-qa`, `oma-debug`, and `oma-frontend` tells them to run `ego-browser skill` and follow the guide it prints for the installed version.
+
+ego lite has no unattended installer. It is a GUI app for macOS and Windows from https://lite.ego.app/, and its first-run onboarding registers `ego-browser` (on macOS under `~/.local/bin`). `oma install` and `oma update mcp` therefore only check for the CLI on PATH and in `~/.local/bin`. When it is missing they print the install and onboarding steps and still save the selection; they never download ego lite or fail because of it. An `ego`-only selection does not add the pi MCP adapter package.
 
 ## Vendor coverage
 

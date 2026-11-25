@@ -371,7 +371,7 @@ Workflow запускает slash-команда. Обычная просьба 
 | Веб-поиск | Нативный поиск runtime | Brave Search |
 | Code intelligence | Serena, один общий сервер на проект | Gortex (экспериментально) |
 | Семантическая память | AgentMemory | Honcho (экспериментально), none |
-| Browser MCP | Aside | Chrome DevTools, Firefox DevTools |
+| Browser MCP | Aside | Chrome DevTools, Firefox DevTools, ego lite |
 
 Serena предоставляет навигацию по коду и диагностику на основе LSP, включая обратную связь после нативного редактирования, если она поддерживается. Выбор поставщика не зависит от среды выполнения агента; возможности различаются в зависимости от поставщика и хоста.
 

@@ -27,7 +27,7 @@ description: Значения oh-my-agent по умолчанию, влияющ�
 | Часовой пояс | системный часовой пояс | Время расписаний и отчётов следует host, если `timezone` не задан. | `timezone: Australia/Sydney` (или другое имя IANA) |
 | Транспорт Serena | `bridge` | Сессии используют один сервер Serena на проект; недоступный bridge переключается на stdio текущей сессии. | `serena.mode: stdio` |
 | Автообновление Serena | включено | `oma update` при возможности обновляет локальный инструмент Serena. | `serena.auto_update: false` |
-| Browser DevTools MCP | не задан | Существующие browser-записи сохраняются; новая интерактивная установка предлагает `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` или `[]` |
+| Browser DevTools MCP | не задан | Существующие browser-записи сохраняются; новая интерактивная установка предлагает `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` или `[]` |
 | Serena Reaper | путь расписания отключён | `serena_reaper.enabled: false` оставляет периодическую очистку выключенной. Интерактивная `oma serena reap` всё равно запускается. | `serena_reaper.enabled: true` и `oma serena reaper enable` |
 
 Имена провайдеров и значения по умолчанию поступают из загрузчика runtime и prompt установщика. Файл конфигурации, созданный установщиком, содержит комментарии к доступным разделам; используйте их как схему для конкретной версии.

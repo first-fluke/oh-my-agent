@@ -245,7 +245,7 @@ oma update --vendor claude,qwen
 oma update mcp --ci
 ```
 
-`oma update mcp` には独自の `--yes`、`--ci`、`--all`、`--vendor <vendors>` オプションがあります。選択したプロジェクト対象ベンダー向けに、対応ブラウザー MCP サーバー（Aside、Chrome DevTools、Firefox DevTools）を選択します。
+`oma update mcp` には独自の `--yes`、`--ci`、`--all`、`--vendor <vendors>` オプションがあります。選択したプロジェクト対象ベンダー向けに、対応ブラウザー MCP サーバー（Aside、Chrome DevTools、Firefox DevTools、ego lite CLI）を選択します。
 
 ### uninstall {#uninstall}
 

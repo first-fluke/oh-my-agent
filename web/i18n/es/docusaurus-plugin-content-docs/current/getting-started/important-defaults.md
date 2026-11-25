@@ -30,7 +30,7 @@ Los valores predeterminados están pensados para que el primer proyecto sea util
 | Zona horaria | zona horaria del sistema | Las horas programadas y mostradas siguen al host cuando se omite `timezone`. | `timezone: Australia/Sydney` (u otro nombre IANA) |
 | Transporte de Serena | `bridge` | Las sesiones comparten un servidor Serena por proyecto; si el bridge no está disponible, se usa stdio local de la sesión. | `serena.mode: stdio` |
 | Actualización automática de Serena | activada | `oma update` actualiza la herramienta local de Serena cuando es posible. | `serena.auto_update: false` |
-| MCP de DevTools del navegador | sin definir | Se conservan las entradas de navegador existentes; una instalación interactiva nueva ofrece `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` o `[]` |
+| MCP de DevTools del navegador | sin definir | Se conservan las entradas de navegador existentes; una instalación interactiva nueva ofrece `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` o `[]` |
 | Serena Reaper | ruta programada desactivada | `serena_reaper.enabled: false` mantiene desactivada la limpieza periódica. `oma serena reap` interactivo sigue funcionando. | `serena_reaper.enabled: true` y `oma serena reaper enable` |
 
 Los nombres y valores predeterminados de los proveedores proceden de los cargadores del runtime y de las preguntas del instalador. El archivo de configuración generado por el instalador incluye comentarios sobre las secciones disponibles; usa esos comentarios como guía del esquema para esa versión.

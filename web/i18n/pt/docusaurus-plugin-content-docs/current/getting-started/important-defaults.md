@@ -30,7 +30,7 @@ Os padrões são escolhidos para tornar o primeiro projeto utilizável e manter 
 | Fuso horário | fuso do sistema | Horários agendados e informados seguem o host quando `timezone` é omitido. | `timezone: Australia/Sydney` (ou outro nome IANA) |
 | Transporte Serena | `bridge` | Sessões compartilham um servidor Serena por projeto; uma bridge indisponível recorre a stdio local da sessão. | `serena.mode: stdio` |
 | Atualização automática do Serena | habilitada | `oma update` atualiza a ferramenta Serena local quando possível. | `serena.auto_update: false` |
-| MCP do Browser DevTools | não definido | Entradas existentes do navegador são preservadas; uma instalação interativa nova oferece `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` ou `[]` |
+| MCP do Browser DevTools | não definido | Entradas existentes do navegador são preservadas; uma instalação interativa nova oferece `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` ou `[]` |
 | Serena Reaper | caminho agendado desabilitado | `serena_reaper.enabled: false` mantém a limpeza periódica inativa. `oma serena reap` interativo continua funcionando. | `serena_reaper.enabled: true` e `oma serena reaper enable` |
 
 Os nomes e padrões dos providers vêm dos loaders de runtime e dos prompts do instalador. O arquivo de configuração gerado pelo instalador inclui comentários para as seções disponíveis; use esses comentários como guia do schema da versão.

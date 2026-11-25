@@ -27,7 +27,7 @@ Die Standardwerte machen ein neues Projekt sofort nutzbar und bewahren zugleich 
 | Zeitzone | Systemzeitzone | Geplante und gemeldete Zeiten folgen dem Host, wenn `timezone` fehlt. | `timezone: Australia/Sydney` (oder ein anderer IANA-Name) |
 | Serena-Transport | `bridge` | Sitzungen teilen sich einen Serena-Server pro Projekt; ist die Bridge nicht verfügbar, fällt OMA auf eine sitzungslokale stdio-Verbindung zurück. | `serena.mode: stdio` |
 | Serena-Auto-Update | aktiviert | `oma update` aktualisiert das lokale Serena-Tool, wenn möglich. | `serena.auto_update: false` |
-| Browser-DevTools-MCP | nicht gesetzt | Vorhandene Browser-Einträge bleiben erhalten; eine neue interaktive Installation bietet `aside` an. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` oder `[]` |
+| Browser-DevTools-MCP | nicht gesetzt | Vorhandene Browser-Einträge bleiben erhalten; eine neue interaktive Installation bietet `aside` an. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` oder `[]` |
 | Serena Reaper | geplanter Pfad deaktiviert | `serena_reaper.enabled: false` hält die regelmäßige Bereinigung inaktiv. Das interaktive `oma serena reap` läuft weiterhin. | `serena_reaper.enabled: true` plus `oma serena reaper enable` |
 
 Die Namen und Standardwerte der Provider stammen aus den Laufzeit-Loadern und den Installationsdialogen. Die vom Installer erzeugte Konfigurationsdatei enthält Kommentare zu den verfügbaren Abschnitten. Verwenden Sie diese Kommentare als versionsabhängigen Schema-Leitfaden.

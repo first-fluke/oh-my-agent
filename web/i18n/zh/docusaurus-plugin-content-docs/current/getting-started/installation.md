@@ -347,7 +347,7 @@ agents:
 | `agents` | map | 否 | 按智能体进行的部分覆盖（仅对象形式的 `AgentSpec`）。在预设默认值之上进行浅合并。 |
 | `models` | map | 否 | 用户定义的模型 slug，过去保存在 `models.yaml` 中。 |
 | `custom_presets` | map | 否 | 用户定义的预设。支持 `extends:`，可从内置预设部分继承。 |
-| `mcp.devtools_browsers` | list | 否 | DevTools MCP 使用的浏览器：`aside`、`chrome` 或 `firefox`。省略时保留现有设置；`[]` 会显式停用浏览器服务器。 |
+| `mcp.devtools_browsers` | list | 否 | DevTools MCP 使用的浏览器：`aside`、`chrome`、`ego` 或 `firefox`。省略时保留现有设置；`[]` 会显式停用浏览器服务器。 |
 | `serena.mode` | string | 否 | `bridge` 共享项目 Serena 服务器，也是默认值；`stdio` 选择每个会话启动一个进程。 |
 | `serena.auto_update` | boolean | 否 | `oma update` 是否升级 Serena。默认值：`true`。 |
 

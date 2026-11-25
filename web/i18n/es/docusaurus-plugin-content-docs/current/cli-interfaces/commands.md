@@ -245,7 +245,7 @@ oma update --vendor claude,qwen
 oma update mcp --ci
 ```
 
-`oma update mcp` tiene sus propias opciones `--yes`, `--ci`, `--all` y `--vendor <vendors>`. Selecciona servidores MCP de navegador compatibles (Aside, Chrome DevTools o Firefox DevTools) para los proveedores elegidos con alcance de proyecto.
+`oma update mcp` tiene sus propias opciones `--yes`, `--ci`, `--all` y `--vendor <vendors>`. Selecciona servidores MCP de navegador compatibles (Aside, Chrome DevTools o Firefox DevTools; ego lite CLI) para los proveedores elegidos con alcance de proyecto.
 
 ### uninstall
 

@@ -347,7 +347,7 @@ agents:
 | `agents` | map | Não | Overrides parciais por agente (o `AgentSpec` deve ser somente um objeto). Mesclados superficialmente sobre os padrões do preset. |
 | `models` | map | Não | Slugs de modelo definidos pelo usuário, anteriormente em `models.yaml`. |
 | `custom_presets` | map | Não | Presets definidos pelo usuário. Aceitam `extends:` para herança parcial de um preset integrado. |
-| `mcp.devtools_browsers` | list | Não | Navegadores para o MCP do DevTools: `aside`, `chrome` ou `firefox`. Omitir preserva a configuração existente; `[]` desativa explicitamente o servidor de navegador. |
+| `mcp.devtools_browsers` | list | Não | Navegadores para o MCP do DevTools: `aside`, `chrome`, `ego` ou `firefox`. Omitir preserva a configuração existente; `[]` desativa explicitamente o servidor de navegador. |
 | `serena.mode` | string | Não | `bridge` compartilha um servidor Serena do projeto e é o padrão; `stdio` opta por um processo por sessão. |
 | `serena.auto_update` | boolean | Não | Define se `oma update` atualiza o Serena. Padrão: `true`. |
 

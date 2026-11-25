@@ -28,7 +28,7 @@ sidebar_label: 重要默认值
 | 时区 | system time zone | 省略 `timezone` 时，计划任务和报告时间遵循宿主时区。 | `timezone: Australia/Sydney`（或其他 IANA 名称） |
 | Serena 传输 | `bridge` | 会话共享一个按项目划分的 Serena 服务器；bridge 不可用时回退到会话本地 stdio。 | `serena.mode: stdio` |
 | Serena 自动更新 | enabled | `oma update` 会在可能时升级本地 Serena 工具。 | `serena.auto_update: false` |
-| 浏览器 DevTools MCP | unset | 保留现有浏览器条目；新的交互式安装会提供 `aside`。 | `mcp.devtools_browsers: [aside]`、`[chrome]`、`[firefox]` 或 `[]` |
+| 浏览器 DevTools MCP | unset | 保留现有浏览器条目；新的交互式安装会提供 `aside`。 | `mcp.devtools_browsers: [aside]`、`[chrome]`、`[firefox]`、`[ego]` 或 `[]` |
 | Serena Reaper | scheduled path disabled | `serena_reaper.enabled: false` 会让定期回收保持停用。交互式 `oma serena reap` 仍会运行。 | `serena_reaper.enabled: true` 加 `oma serena reaper enable` |
 
 提供方名称和默认值来自运行时加载器与安装器提示。安装器生成的配置文件包含可用区块的注释；使用这些注释作为与版本对应的模式指南。

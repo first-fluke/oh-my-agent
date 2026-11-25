@@ -257,3 +257,21 @@ it("repairs default Aside launchers outside PATH without replacing custom option
   syncBrowserMcp(root, ["aside"], ["claude"]);
   expect(read(".mcp.json").mcpServers.aside?.command).toBe("/custom/aside");
 });
+
+it("writes no MCP entry and no pi adapter for an ego-only selection", () => {
+  write(
+    ".mcp.json",
+    JSON.stringify({
+      mcpServers: { aside: { command: "aside", args: ["mcp"] } },
+    }),
+  );
+  syncBrowserMcp(root, ["ego"], ["claude", "pi"]);
+  expect(read(".mcp.json").mcpServers).toEqual({});
+  expect(() => readFileSync(join(root, ".pi", "settings.json"))).toThrow();
+});
+
+it("keeps MCP entries for the other browsers when ego is also selected", () => {
+  syncBrowserMcp(root, ["aside", "ego"], ["claude"]);
+  const servers = read(".mcp.json").mcpServers;
+  expect(Object.keys(servers)).toEqual(["aside"]);
+});

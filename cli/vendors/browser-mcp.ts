@@ -101,7 +101,9 @@ export function syncBrowserMcp(
     if (change) changes.push(change);
   }
 
-  if (vendors.includes("pi") && browsers.length > 0) {
+  // ego lite writes no MCP entry, so it alone does not need the pi adapter.
+  const hasMcpBrowser = browsers.some((browser) => browser in SERVERS);
+  if (vendors.includes("pi") && hasMcpBrowser) {
     const path = options.global
       ? join(piAgentDir(options.home ?? homedir()), "settings.json")
       : join(root, ".pi", "settings.json");

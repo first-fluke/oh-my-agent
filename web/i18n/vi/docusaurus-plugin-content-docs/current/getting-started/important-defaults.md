@@ -27,7 +27,7 @@ Các mặc định được chọn để dự án đầu tiên có thể sử d�
 | Múi giờ | múi giờ hệ thống | Thời gian lập lịch và báo cáo theo host khi bỏ qua `timezone`. | `timezone: Australia/Sydney` (hoặc tên IANA khác) |
 | Serena transport | `bridge` | Các session dùng chung một Serena server theo project; bridge không khả dụng sẽ fallback sang stdio theo session. | `serena.mode: stdio` |
 | Serena auto-update | bật | `oma update` nâng cấp Serena cục bộ khi có thể. | `serena.auto_update: false` |
-| Browser DevTools MCP | chưa đặt | Giữ các browser entry hiện có; thiết lập tương tác mới đề xuất `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` hoặc `[]` |
+| Browser DevTools MCP | chưa đặt | Giữ các browser entry hiện có; thiết lập tương tác mới đề xuất `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` hoặc `[]` |
 | Serena Reaper | scheduled path tắt | `serena_reaper.enabled: false` giữ việc reap định kỳ không hoạt động. `oma serena reap` tương tác vẫn chạy. | `serena_reaper.enabled: true` cùng `oma serena reaper enable` |
 
 Tên và mặc định của provider đến từ runtime loader và installer prompt. File config do installer tạo có comment cho các section khả dụng; dùng các comment đó làm hướng dẫn schema theo phiên bản.

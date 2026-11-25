@@ -371,7 +371,7 @@ oma install --preset frontend --yes
 | 网络搜索 | 运行时原生搜索 | Brave Search |
 | 代码智能 | Serena，每个项目共用一个服务器 | Gortex（实验性） |
 | 语义记忆 | AgentMemory | Honcho（实验性）、none |
-| 浏览器 MCP | Aside | Chrome DevTools、Firefox DevTools |
+| 浏览器 MCP | Aside | Chrome DevTools、Firefox DevTools、ego lite |
 
 Serena 提供基于 LSP 的代码导航和诊断，并在支持时反馈原生编辑结果。能力提供商的选择独立于 agent 运行时；可用能力因提供商和宿主而异。
 

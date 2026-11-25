@@ -44,9 +44,9 @@ document/configuration review does not require starting or building an app.
 
 #### Web Applications
 
-Browser verification uses the installed MCPs selected in `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), and Firefox DevTools MCP (`firefox`). Multiple selections are supported; use `oma update mcp` to change them. Discover the selected server’s actual tools before use; tool names and capabilities differ between servers. An empty selection disables browser MCP verification; report any unverified UI checks.
+Browser verification uses the browsers selected in `mcp.devtools_browsers`: Aside (`aside`, default), Chrome DevTools MCP (`chrome`), Firefox DevTools MCP (`firefox`), and ego lite (`ego`). Multiple selections are supported; use `oma update mcp` to change them. For an MCP selection, discover the selected server’s actual tools before use; tool names and capabilities differ between servers. ego lite has no MCP server: run `ego-browser skill` and follow the guide it prints for the installed version; if `ego-browser` is missing, report it instead of installing ego lite. An empty selection disables browser verification; report any unverified UI checks.
 
-Run the following checks with a selected, available server. Prefer a separate test context when supported. The tool calls below are Chrome DevTools MCP examples only; for Aside and Firefox DevTools MCP, discover and use their supported equivalents. Record missing capabilities instead of silently changing servers.
+Run the following checks with a selected, available server. Prefer a separate test context when supported. The tool calls below are Chrome DevTools MCP examples only; for Aside and Firefox DevTools MCP, discover and use their supported equivalents, and for ego lite use the equivalents from `ego-browser skill`. Record missing capabilities instead of silently changing servers.
 
 1. Use the running target, or start the dev server when that is within the request (`bun run dev`, `uv run manage.py runserver`, etc.). Do not build.
 2. Open the app in an **isolated browser context** to avoid contaminating the user's session:
@@ -89,7 +89,7 @@ Run the following checks with a selected, available server. Prefer a separate te
    ```
    close_page(pageId)  → close isolated test pages after verification
    ```
-9. **Fallback** (no selected browser MCP available):
+9. **Fallback** (no selected browser available):
    - Use curl/httpie to hit rendered endpoints
    - Verify HTTP status codes and response bodies; record that HTTP checks do not verify browser interactions
    - Check redirects, auth flows, and error pages

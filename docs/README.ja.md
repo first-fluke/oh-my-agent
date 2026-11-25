@@ -372,7 +372,7 @@ oma install --preset frontend --yes
 | Web 検索 | ランタイム標準の検索 | Brave Search |
 | コードインテリジェンス | Serena（プロジェクトごとに共有サーバー 1 つ） | Gortex（実験的） |
 | セマンティックメモリー | AgentMemory | Honcho（実験的）、none |
-| ブラウザ MCP | Aside | Chrome DevTools、Firefox DevTools |
+| ブラウザ MCP | Aside | Chrome DevTools、Firefox DevTools、ego lite |
 
 Serena は LSP ベースのコードナビゲーションと診断を提供し、対応する場合はネイティブ編集のフィードバックも提供します。プロバイダーの選択はエージェントのランタイムとは独立しており、利用できる機能はプロバイダーとホストによって異なります。
 

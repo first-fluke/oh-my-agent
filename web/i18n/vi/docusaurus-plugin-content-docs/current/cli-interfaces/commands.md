@@ -245,7 +245,7 @@ oma update --vendor claude,qwen
 oma update mcp --ci
 ```
 
-`oma update mcp` có các tùy chọn `--yes`, `--ci`, `--all` và `--vendor <vendors>` riêng. Lệnh này chọn các browser MCP server được hỗ trợ (Aside, Chrome DevTools hoặc Firefox DevTools) cho các vendor phạm vi project đã chọn.
+`oma update mcp` có các tùy chọn `--yes`, `--ci`, `--all` và `--vendor <vendors>` riêng. Lệnh này chọn các browser MCP server được hỗ trợ (Aside, Chrome DevTools hoặc Firefox DevTools; ego lite CLI) cho các vendor phạm vi project đã chọn.
 
 ### uninstall
 

@@ -28,7 +28,8 @@ export const RECOMMENDED_ASIDE_MCP = {
   args: ["mcp"] as string[],
 } as const;
 
-export type DevToolsBrowser = "aside" | "chrome" | "firefox";
+/** `ego` (ego lite) is CLI + skill based: it writes no MCP entry. */
+export type DevToolsBrowser = "aside" | "chrome" | "ego" | "firefox";
 
 export function syncDevToolsMcp(
   installRoot: string,

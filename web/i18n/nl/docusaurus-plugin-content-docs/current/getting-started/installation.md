@@ -347,7 +347,7 @@ agents:
 | `agents` | map | Nee | Gedeeltelijke overschrijvingen per agent (alleen object-`AgentSpec`). Worden ondiep samengevoegd met de standaardwaarden van de preset. |
 | `models` | map | Nee | Door de gebruiker gedefinieerde modelslugs, voorheen in `models.yaml`. |
 | `custom_presets` | map | Nee | Door de gebruiker gedefinieerde presets. Ondersteunt `extends:` voor gedeeltelijke overerving van een ingebouwde preset. |
-| `mcp.devtools_browsers` | list | Nee | Browsers voor DevTools MCP: `aside`, `chrome` of `firefox`. Weggelaten betekent dat de bestaande setup behouden blijft; `[]` schakelt de browserserver expliciet uit. |
+| `mcp.devtools_browsers` | list | Nee | Browsers voor DevTools MCP: `aside`, `chrome`, `ego` of `firefox`. Weggelaten betekent dat de bestaande setup behouden blijft; `[]` schakelt de browserserver expliciet uit. |
 | `serena.mode` | string | Nee | `bridge` deelt een project-Serena-server en is de standaard; `stdio` kiest voor één proces per sessie. |
 | `serena.auto_update` | boolean | Nee | Of `oma update` Serena bijwerkt. Standaard: `true`. |
 

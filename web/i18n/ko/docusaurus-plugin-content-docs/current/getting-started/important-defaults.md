@@ -27,7 +27,7 @@ description: 라우팅, 모델 선택, 프로바이더, 업데이트, 텔레메�
 | 시간대 | 시스템 시간대 | `timezone`을 생략하면 예약 및 보고 시간이 호스트 시간대를 따릅니다. | `timezone: Australia/Sydney` 또는 다른 IANA 이름 |
 | Serena 전송 | `bridge` | 세션이 프로젝트별 Serena 서버 하나를 공유하며, 브리지를 사용할 수 없으면 세션별 stdio로 폴백합니다. | `serena.mode: stdio` |
 | Serena 자동 업데이트 | 활성화 | 가능한 경우 `oma update`가 로컬 Serena 도구를 업그레이드합니다. | `serena.auto_update: false` |
-| 브라우저 DevTools MCP | 설정되지 않음 | 기존 브라우저 항목을 유지하며, 새 대화형 설치에서는 `aside`를 제안합니다. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, 또는 `[]` |
+| 브라우저 DevTools MCP | 설정되지 않음 | 기존 브라우저 항목을 유지하며, 새 대화형 설치에서는 `aside`를 제안합니다. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]`, 또는 `[]` |
 | Serena Reaper | 예약 경로 비활성화 | `serena_reaper.enabled: false`이면 주기적인 정리가 비활성화됩니다. 대화형 `oma serena reap`은 계속 실행됩니다. | `serena_reaper.enabled: true`와 `oma serena reaper enable` |
 
 프로바이더 이름과 기본값은 런타임 로더와 설치 프로그램 프롬프트에서 가져옵니다. 설치 프로그램이 생성하는 설정 파일에는 사용 가능한 섹션의 주석이 포함되어 있으므로 해당 주석을 버전에 맞는 스키마 안내로 사용하세요.

@@ -27,7 +27,7 @@ Les valeurs par défaut sont choisies pour rendre un premier projet utilisable t
 | Fuseau horaire | fuseau horaire du système | Les heures planifiées et rapportées suivent l’hôte lorsque `timezone` est omis. | `timezone: Australia/Sydney` (ou un autre nom IANA) |
 | Transport Serena | `bridge` | Les sessions partagent un serveur Serena par projet ; un bridge indisponible revient au stdio local à la session. | `serena.mode: stdio` |
 | Mise à jour automatique de Serena | activée | `oma update` met à niveau l’outil Serena local lorsque c’est possible. | `serena.auto_update: false` |
-| MCP DevTools du navigateur | non défini | Les entrées de navigateur existantes sont conservées ; une nouvelle installation interactive propose `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]` ou `[]` |
+| MCP DevTools du navigateur | non défini | Les entrées de navigateur existantes sont conservées ; une nouvelle installation interactive propose `aside`. | `mcp.devtools_browsers: [aside]`, `[chrome]`, `[firefox]`, `[ego]` ou `[]` |
 | Reaper Serena | chemin planifié désactivé | `serena_reaper.enabled: false` laisse le nettoyage périodique inactif. `oma serena reap` interactif s’exécute toujours. | `serena_reaper.enabled: true` et `oma serena reaper enable` |
 
 Les noms et valeurs par défaut des fournisseurs proviennent des chargeurs d’exécution et des invites de l’installateur. Le fichier de configuration généré par l’installateur contient des commentaires pour les sections disponibles ; utilisez ces commentaires comme guide du schéma propre à la version.

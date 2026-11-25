@@ -369,7 +369,7 @@ Esses pipelines avisam quando falta uma fonte ou uma chave de vendor, em vez de 
 | Busca na web | Busca nativa do runtime | Brave Search |
 | Code intelligence | Serena, um servidor compartilhado por projeto | Gortex (experimental) |
 | Memória semântica | AgentMemory | Honcho (experimental), none |
-| Browser MCP | Aside | Chrome DevTools, Firefox DevTools |
+| Browser MCP | Aside | Chrome DevTools, Firefox DevTools, ego lite |
 
 Serena fornece navegação de código e diagnósticos baseados em LSP, incluindo retorno sobre edições nativas quando houver suporte. A seleção do provedor é independente do runtime do agente; os recursos variam conforme o provedor e o host.
 
