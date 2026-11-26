@@ -1,5 +1,16 @@
 # Changelog
 
+## [22.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v21.2.0...cli-v22.0.0) (2026-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **explain:** Removes `oma diagram`, `oma explain render --archify` / `--no-archify`, and the `diagram:` config section. Use the upstream `archify` skill route in `_shared/conditional/diagram-engine.md` instead.
+
+### Features
+
+* **explain:** route understand-anything and archify as skills ([74293f4](https://github.com/first-fluke/oh-my-agent/commit/74293f461a1768ce4dd7ce125d4cb1ec88dfda94))
+
 ## [21.2.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v21.1.0...cli-v21.2.0) (2026-11-25)
 
 
