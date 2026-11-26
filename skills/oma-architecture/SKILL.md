@@ -43,7 +43,7 @@ Analyze, compare, and document software architecture decisions with explicit tra
 - Architecture diagnosis, recommendation, comparison, prioritization, or ADR
 - Assumptions, tradeoffs, risks, and validation steps
 - A Mermaid context/container diagram when the decision changes structure (boundaries, dependencies, data flow)
-- When `oma diagram resolve` reports `engine: archify` (the normal case — oma auto-fetches the latest archify release), an interactive sibling `<artifact-stem>.archify.json` + `.archify.html` derived from that Mermaid (see `_shared/conditional/diagram-engine.md`)
+- When the upstream `archify` skill resolves (catalog or `bunx skills use tt-a1i/archify@archify`), an interactive sibling `<artifact-stem>.archify.json` + `.archify.html` derived from that Mermaid (see `_shared/conditional/diagram-engine.md`; no CLI, no config key)
 - When the diagram is a vendor-stack topology and the user wants logos or a poster, a `<artifact-stem>.stack.html` sibling from the upstream stack-diagram skill (stack route in `_shared/conditional/diagram-engine.md`; no CLI, no config key)
 - ADRs and retained recommendations for a selected approach in `docs/decisions/`, linked from `docs/decisions/index.md`
 - Run-specific reviews, diagnoses, CBAM analyses, and unselected comparison drafts in `.agents/results/architecture/`
@@ -83,7 +83,7 @@ outputs:
 - `resources/output-templates.md` for final artifact shapes
 - `resources/api-evolution.md` for published-contract versioning/deprecation decisions (MAP evolution patterns)
 - `resources/migration-patterns.md` for transition plans when the chosen architecture requires restructuring a live system
-- `_shared/conditional/diagram-engine.md` (+ `oma diagram resolve`) when a structural diagram is emitted — picks the route (archify vs Mermaid, or the upstream stack-diagram poster) and owns the validate/deliver loop
+- `_shared/conditional/diagram-engine.md` when a structural diagram is emitted — picks the route (`archify` vs Mermaid, or the upstream `stack-diagram` poster), loads the upstream skill from the catalog or `bunx skills use`, and owns the validate/deliver loop
 
 ## Structural Flow
 

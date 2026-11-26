@@ -16,7 +16,7 @@ graph LR
 
 Skip the diagram for non-structural decisions (e.g., a versioning policy).
 
-The Mermaid block is the text SSOT. When `oma diagram resolve --json` returns `engine: archify`, additionally derive an interactive artifact per `_shared/conditional/diagram-engine.md` and link it directly under the Mermaid block:
+The Mermaid block is the text SSOT. When the upstream `archify` skill resolves per `_shared/conditional/diagram-engine.md`, additionally derive an interactive artifact and link it directly under the Mermaid block:
 
 ```md
 Interactive: [adr-<topic>.archify.html](./adr-<topic>.archify.html)

@@ -51,8 +51,7 @@ Markdown prose, lists, tables, and component blocks.
   give its own (`## C Title`, `## B1 Title`), and ids must not repeat.
 - Panel attributes, all optional: `span=N` (width hint in grid columns; `span` equal to `cols`
   keeps the panel on its own row), `rows=N` (height in the plain grid), `note="…"` (small text
-  at the right of the head), `bare` (no head), `archify` (this panel's diagram feeds the
-  interactive sidecar, see section 5).
+  at the right of the head), `bare` (no head).
 - You do not place panels. The page measures every panel and packs rows so they fill the
   width with the least blank space, keeps the diagrams of one page at similar scales, and
   falls back to one column on a phone. A wide table or diagram gets a wider span by itself,
@@ -151,25 +150,14 @@ The renderer checks the prose (`style: warn` prints warnings, `strict` fails the
 When the render fails, the error names the draft line and prints the component's syntax and
 an example. Fix that line and render again.
 
-## 5. archify sidecar
+## 5. Opt-in archify sidecar
 
-`flow` and `sequence` blocks already hold a typed graph, so the renderer derives the archify
-spec itself:
-
-```bash
-oma explain render draft.md --archify      # or diagram.explain_sidecar: true in oma-config
-```
-
-- Source diagram: the first flow/sequence block of the panel marked `{archify}`, else the
-  first one in the draft. Mark the panel whose diagram is the main picture.
-- Output: `{stem}.archify.html` (and `.archify.json`) next to the page, linked by a plain
-  anchor under that panel and in the footer. Never embedded.
-- `flow` becomes an archify `architecture` grid and its groups become boundaries; `sequence`
-  becomes an archify `sequence` and its `== Phase ==` dividers become segments. Component
-  types come from the label and shape: name stores, queues, users, and UI as what they are.
-- A sidecar is an extra. If archify is not installed, the diagram is too small, or
-  `deliver` fails, the page is still written and the report says why. Do not hand-author a
-  spec to work around it unless the user asks; `--no-archify` skips it.
+When the user asks for an interactive `archify` diagram alongside the explainer, render the
+HTML page first, then follow `../references/_shared/conditional/diagram-engine.md` (`tt-a1i/archify@archify`
+via the runtime catalog or `bunx skills use`) to write `{stem}.archify.html` and
+`{stem}.archify.json` next to the page and link it with a plain relative Markdown link
+(`[Open interactive diagram](./{stem}.archify.html)`). Never embed it. A sidecar is an extra
+and never blocks delivery.
 
 ## 6. Change explainer drafts
 

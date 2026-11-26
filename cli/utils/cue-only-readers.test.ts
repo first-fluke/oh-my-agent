@@ -24,7 +24,7 @@ const CUE_CONFIG = {
   language: "ko",
   model_preset: "claude",
   providers: { code_intelligence: "gortex", semantic_memory: "none" },
-  diagram: { archify: { path: "/opt/archify" } },
+  market: { path: "/opt/last30days" },
 };
 
 describe("CUE-only project config readers", () => {
@@ -53,16 +53,16 @@ describe("CUE-only project config readers", () => {
 
   it("reads skill override sections from oma-config.cue", () => {
     expect(readRootOmaConfig(root)).toMatchObject({ language: "ko" });
-    expect(loadSkillSection(root, "diagram")).toEqual({
-      archify: { path: "/opt/archify" },
+    expect(loadSkillSection(root, "market")).toEqual({
+      path: "/opt/last30days",
     });
   });
 
   it("resolves skill sections from a nested working directory", () => {
     const nested = join(root, "apps", "web");
     mkdirSync(nested, { recursive: true });
-    expect(loadSkillSection(nested, "diagram")).toEqual({
-      archify: { path: "/opt/archify" },
+    expect(loadSkillSection(nested, "market")).toEqual({
+      path: "/opt/last30days",
     });
   });
 

@@ -38,7 +38,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-orchestration",
-      desc: `Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, or to coordinate agents step by step.`,
+      desc: `Dispatch and supervise parallel specialist agents with durable task state. Use for automated multi-agent execution, to coordinate agents step by step, or to hand a task to a named vendor or model.`,
     },
     {
       name: "oma-pm",
@@ -64,7 +64,7 @@ export const SKILLS: SkillsRegistry = {
     },
     {
       name: "oma-explanation",
-      desc: `Create an offline HTML explanation of a code change (diff, PR, branch) or of a topic, system, or question. Use when a visual walkthrough document is requested.`,
+      desc: `Create an offline HTML explanation of a code change (diff, PR, branch) or topic, or route codebase knowledge-graph, interactive dashboard, onboarding, domain-flow, and wiki-graph requests to Understand-Anything.`,
     },
     {
       name: "oma-hwp",

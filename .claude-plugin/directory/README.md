@@ -32,7 +32,7 @@ This plugin adds 32 skills and 12 specialist agents. Claude loads a skill only w
 - **oma-design** Define or review a visual system, DESIGN.md, or redesign direction. Use for typography, layout, color, motion, and interaction design decisions.
 - **oma-dev-workflow** Configure development tasks, git hooks, CI/CD, or release automation. Use when creating or fixing a repository development workflow.
 - **oma-docs** Check documentation references, sync docs to code changes, and detect translation drift. Use for documentation maintenance in a repository.
-- **oma-explanation** Create an offline HTML explanation of a code change (diff, PR, branch) or of a topic, system, or question. Use when a visual walkthrough document is requested.
+- **oma-explanation** Create an offline HTML explanation of a code change (diff, PR, branch) or topic, or route codebase knowledge-graph, interactive dashboard, onboarding, domain-flow, and wiki-graph requests to Understand-Anything.
 - **oma-frontend** Implement or modify web UI in React, Next.js, or Angular. Use for components, pages, styles, forms, and frontend state or data flows.
 - **oma-hwp** Convert Hangul HWP, HWPX, or HWPML documents to Markdown with kordoc. Use for text, table, and image extraction from these formats.
 - **oma-image** Generate raster images or reference-guided variations through the OMA image CLI. Use for image assets or explicit vendor comparisons; pixel editing uses an editor.

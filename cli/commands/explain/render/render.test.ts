@@ -3,7 +3,6 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { validateHtmlContent } from "../validate.js";
-import { inferComponentType, toArchifySpec } from "./archify.js";
 import {
   artifactDate,
   artifactSlug,
@@ -46,7 +45,7 @@ describe("parseDraft", () => {
   it("reads frontmatter, the lead, and one panel per heading", () => {
     const parsed = parseDraft(
       draft(
-        'Lead text.\n\n## First {span=2 note="n" archify}\n\nBody.\n\n```flow LR\nA -> B\n```\n\n## Second\n\nMore.',
+        'Lead text.\n\n## First {span=2 note="n"}\n\nBody.\n\n```flow LR\nA -> B\n```\n\n## Second\n\nMore.',
         "title: T\nsubtitle: S\ncols: 2\nowner: me",
       ),
     );
@@ -58,7 +57,6 @@ describe("parseDraft", () => {
       title: "First",
       span: 2,
       note: "n",
-      archify: true,
     });
     expect(parsed.panels[0]?.blocks[1]).toMatchObject({
       type: "component",
@@ -219,18 +217,6 @@ describe("renderDraft", () => {
     expect(() =>
       renderDraft(draft("## P\n\nx", "title: T\nstyle: loud")),
     ).toThrow(/style must be one of/);
-  });
-
-  it("links the sidecar from the panel that owns the diagram", () => {
-    const source = draft(
-      "## One\n\n```flow\nA -> B\n```\n\n## Two {archify}\n\n```sequence\nA -> B: hi\n```",
-    );
-    const { html } = renderDraft(source, { sidecarHref: "./x.archify.html" });
-    const second = html.slice(html.indexOf('id="panel-b"'));
-    expect(second).toContain('class="oe-archify" href="./x.archify.html"');
-    expect(html.slice(0, html.indexOf('id="panel-b"'))).not.toContain(
-      'oe-archify"',
-    );
   });
 
   it("keeps the draft in the page, even one that contains </script>", () => {
@@ -406,7 +392,6 @@ describe("lintDraft", () => {
     const code = await runExplainRender({
       source: draft("## P\n\nWe utilize it.", "title: T\nstyle: strict"),
       out,
-      archify: false,
       cwd: dir,
     });
     log.mockRestore();
@@ -466,81 +451,6 @@ describe("planRows", () => {
   it("falls back to one panel per row when the input is unusable", () => {
     const plan = planRows({ width: 0, panels: [text(), text()] });
     expect(plan.rows.map((row) => row.columns[0]?.panels)).toEqual([[0], [1]]);
-  });
-});
-
-describe("archify sidecar spec", () => {
-  it("derives an architecture grid from a flow", () => {
-    const { diagrams } = renderDraft(
-      draft(
-        "## P\n\n```flow LR\n(User) -> API -> [(DB)]\nAPI --> Queue: event\n```",
-      ),
-    );
-    const built = toArchifySpec(diagrams[0]?.model as never, {
-      title: "T",
-      output: "x.archify.html",
-      quality: "standard",
-    });
-    expect(built?.type).toBe("architecture");
-    const spec = built?.spec as {
-      components: Array<{ id: string; type: string; row: number; col: number }>;
-      connections: Array<{
-        from: string;
-        to: string;
-        variant: string;
-        label?: string;
-      }>;
-    };
-    expect(spec.components.map((c) => [c.type, c.col])).toEqual([
-      ["external", 0],
-      ["backend", 1],
-      ["database", 2],
-      ["messagebus", 2],
-    ]);
-    const cells = spec.components.map((c) => `${c.row}:${c.col}`);
-    expect(new Set(cells).size).toBe(cells.length);
-    for (const component of spec.components) {
-      expect(component.id).toMatch(/^[a-zA-Z][a-zA-Z0-9_-]*$/);
-    }
-    expect(spec.connections[2]).toMatchObject({
-      variant: "dashed",
-      label: "event",
-    });
-  });
-
-  it("derives a sequence, marks returns, and drops self messages", () => {
-    const { diagrams } = renderDraft(
-      draft(
-        "## P\n\n```sequence\nA -> B: call\nB -> B: think\nB --> A: result\nB --> C: notify\n```",
-      ),
-    );
-    const built = toArchifySpec(diagrams[0]?.model as never, {
-      title: "T",
-      output: "x.archify.html",
-      quality: "showcase",
-    });
-    const spec = built?.spec as {
-      messages: Array<{ y: number; variant: string }>;
-    };
-    expect(spec.messages.map((message) => message.variant)).toEqual([
-      "default",
-      "return",
-      "dashed",
-    ]);
-    expect(spec.messages[0]?.y).toBeGreaterThanOrEqual(160);
-  });
-
-  it("gives up on a diagram archify cannot draw", () => {
-    const { diagrams } = renderDraft(draft("## P\n\n```flow\nOnly\n```"));
-    expect(
-      toArchifySpec(diagrams[0]?.model as never, {
-        title: "T",
-        output: "x.html",
-        quality: "standard",
-      }),
-    ).toBeUndefined();
-    expect(inferComponentType("사용자")).toBe("external");
-    expect(inferComponentType("anything", "cylinder")).toBe("database");
   });
 });
 
@@ -604,7 +514,6 @@ describe("explain artifact date", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const code = await runExplainRender({
       source: draft("## One\n\nfirst", "title: Sample page"),
-      archify: false,
       json: true,
       cwd: dir,
     });
@@ -633,7 +542,6 @@ describe("explain render / patch", () => {
         "## One\n\nfirst\n\n## Two\n\nsecond",
         "title: Sample page\ntheme: card",
       ),
-      archify: false,
       json: true,
       cwd: dir,
     });
@@ -1173,34 +1081,5 @@ describe("patch by title and sidecar details", () => {
     expect(() => patchDraft(source, "B", "## One\n\nx\n\n## Two\n\ny")).toThrow(
       /exactly one ## heading/,
     );
-  });
-
-  it("maps flow groups to archify boundaries and phases to segments", () => {
-    const flowModel = renderDraft(
-      draft("## P\n\n```flow\nA -> B -> C\ngroup Core: A, B\n```"),
-    ).diagrams[0]?.model;
-    const architecture = toArchifySpec(flowModel as never, {
-      title: "T",
-      output: "x.archify.html",
-      quality: "standard",
-    })?.spec as { boundaries: Array<{ label: string; wraps: string[] }> };
-    expect(architecture.boundaries).toEqual([
-      { kind: "region", label: "Core", wraps: ["a", "b"] },
-    ]);
-    const sequenceModel = renderDraft(
-      draft(
-        "## P\n\n```sequence\nA -> B: one\n== Later ==\nB -> B: self\nB --> A: two\n```",
-      ),
-    ).diagrams[0]?.model;
-    const spec = toArchifySpec(sequenceModel as never, {
-      title: "T",
-      output: "x.archify.html",
-      quality: "standard",
-    })?.spec as {
-      segments: Array<{ label: string; from: number; to: number }>;
-    };
-    expect(spec.segments).toHaveLength(1);
-    expect(spec.segments[0]).toMatchObject({ label: "Later" });
-    expect(spec.segments[0]?.from).toBeLessThan(spec.segments[0]?.to ?? 0);
   });
 });

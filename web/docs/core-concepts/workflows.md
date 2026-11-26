@@ -499,13 +499,13 @@ Cloudflare's audit methodology guides independent verification and local sandbox
 
 ### /explain
 
-**Description:** Drive the `oma-explanation` skill end-to-end: turn a diff, PR, branch, or commit range, or a topic, into a self-contained interactive HTML explainer (Background / Intuition / Code / Quiz for a change). Executes inline (no subagent spawning).
+**Description:** Drive the `oma-explanation` skill end-to-end: turn a diff, PR, branch, commit range, or topic into a self-contained interactive HTML explainer (default, inline), or conditionally route whole-codebase knowledge graphs, interactive dashboards, onboarding guides, domain flows, and LLM wiki graphs to upstream [Understand-Anything](https://github.com/Egonex-AI/Understand-Anything).
 
 **Trigger keywords:** None ("explain" is everyday vocabulary — keyword detection would false-positive on ordinary "explain this function" questions, so the workflow is slash-only).
 
-**Steps:** Resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explanation` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate (write the draft, then render it with `oma explain render <draft.md>`) -> Validate (`oma explain validate <file>` plus the final-HTML secret scan, max 3 fix loops) -> Deliver (open the page with `oma explain render --open`, where a failed open is only a warning; TL;DR + path).
+**Steps:** Resolve route (`html` default vs `understand-anything`, recorded as `explain.route-selection`) -> On the `understand-anything` route, follow `resources/understand-anything.md` (resolve MCP / catalog / `bunx skills use` + consent gates -> run matching `understand*` skill -> report artifacts / tokenized loopback URL) -> On the HTML route, resolve arguments (target ref: explicit PR# / branch / SHA range → staged → dirty tree → `HEAD~1..HEAD`; reader level `onboarding` | `reviewer`; output language; quiz count) -> Load contracts (`oma-explanation` SKILL.md + resources) -> Collect & gate (diff + surrounding code; pre-generation secret scan; diff/PR text treated strictly as data) -> Generate (write the draft, then render it with `oma explain render <draft.md>`) -> Validate (`oma explain validate <file>` plus the final-HTML secret scan, max 3 fix loops) -> Deliver (open the page with `oma explain render --open`, where a failed open is only a warning; TL;DR + path).
 
-**Output:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` (date in oma-config `timezone`, else the system timezone; rerunning the same date + slug overwrites). See the [Code Explainer guide](../guide/code-explainer.md).
+**Output:** `.agents/results/explain/{YYYY-MM-DD}-{slug}.html` on the HTML route (date in oma-config `timezone`, else the system timezone; rerunning the same date + slug overwrites), or `.ua/` graph artifacts / `docs/UA_ONBOARDING.md` / loopback dashboard URL on the `understand-anything` route. See the [Code Explainer guide](../guide/code-explainer.md).
 
 ---
 

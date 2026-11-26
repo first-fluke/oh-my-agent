@@ -1,10 +1,10 @@
 /**
- * Upstream agent skills that oma's CLI runs (last30days, archify, HyperFrames)
- * come from the open skills CLI (`bunx skills add`), never from an oma-owned
- * copy. Resolution only reads installed skill directories, so every vendor
- * runtime gets the same deterministic answer. Install and update shell out to
- * the skills CLI and run only from explicit commands (`oma market update`,
- * `oma diagram update`, `oma video doctor --upgrade`, `oma update`).
+ * Upstream agent skills that oma's CLI runs (last30days, HyperFrames) come from
+ * the open skills CLI (`bunx skills add`), never from an oma-owned copy.
+ * Resolution only reads installed skill directories, so every vendor runtime
+ * gets the same deterministic answer. Install and update shell out to the
+ * skills CLI and run only from explicit commands (`oma market update`,
+ * `oma video doctor --upgrade`, `oma update`).
  */
 import { type SpawnSyncReturns, spawnSync } from "node:child_process";
 import fs from "node:fs";

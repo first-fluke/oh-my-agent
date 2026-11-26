@@ -24,8 +24,6 @@ export interface DraftPanel {
   note?: string;
   /** No title bar. */
   bare: boolean;
-  /** Preferred source of the interactive archify sidecar. */
-  archify: boolean;
   blocks: DraftBlock[];
 }
 
@@ -126,7 +124,7 @@ export function parseAttrs(text: string): Record<string, string | true> {
   return attrs;
 }
 
-/** `## A Title {span=2 note="…" bare archify}` → title, optional id, attributes. */
+/** `## A Title {span=2 note="…" bare}` → title, optional id, attributes. */
 export function parsePanelHead(
   head: string,
   line: number,
@@ -152,7 +150,6 @@ export function parsePanelHead(
     rows: count("rows"),
     note: typeof note === "string" ? note : undefined,
     bare: attrs.bare === true,
-    archify: attrs.archify === true,
     blocks: [],
   };
 }

@@ -22,7 +22,7 @@ Choose the smallest command that answers the question you have. Each command bel
 | Generate an image | `oma image generate "<prompt>" --output json` | Image paths and a manifest under `.agents/results/images/`. |
 | Plan or render video | `oma video generate "<brief>" --dry-run` | A run directory with planning artifacts; compose and render only after the composition is authored. |
 | Make an interactive code explainer | `/explain` | A validated self-contained HTML artifact under `.agents/results/explain/`. |
-| Resolve a diagram engine | `oma diagram resolve --output json` | The selected Mermaid or archify engine and its reason. |
+| Validate an HTML explainer | `oma explain validate <file>` | Deterministic self-contained HTML check. |
 | Research community signals | `oma market detect-trap "<topic>"` | A preflight result; continue with `oma market resolve --output json` and the upstream run only when it passes. |
 | Convert or inspect a paper | `oma scholar search "<query>"` | Search results from Knows, OpenAlex, or Semantic Scholar; fetch a sidecar with `oma scholar get`. |
 | Build a slide deck | `oma slide create --output-dir <dir>` | A working directory that can be authored, validated, bundled, and exported. |
@@ -1823,7 +1823,7 @@ oma scholar lint paper.knows.yaml
 `/explain` is the authoring workflow. The CLI renders the draft that the workflow writes and validates the result:
 
 ```bash
-oma explain render draft.md --archify
+oma explain render draft.md
 oma explain render draft.md --template doc --theme card
 oma explain lint draft.md
 oma explain components flow
@@ -1832,23 +1832,9 @@ oma explain validate .agents/results/explain/2026-09-09-change.html
 oma explain validate --input-dir .agents/results/explain --output json --report-file .agents/results/explain/report.json
 ```
 
-`render` turns a Markdown draft (a file, or stdin with `-`) into one self-contained HTML page at `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; `--output-file` picks another path. The draft holds content only: one panel per `## ` heading, plus component blocks (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). The renderer computes the diagram layout, packs the panels into rows, and applies the theme (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` sets the prose check, and `strict` fails the render on any warning. `--archify` derives an interactive archify diagram from a `flow` or `sequence` block and links it; when that step fails, the page is still written. `components [name]` prints the syntax of a component. `patch` replaces one panel from the draft embedded in the page. `render --template sheet|doc` chooses between a grid of panels and one column with a contents list. `lint` checks the prose of a draft without rendering it.
+`render` turns a Markdown draft (a file, or stdin with `-`) into one self-contained HTML page at `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`; `--output-file` picks another path. The draft holds content only: one panel per `## ` heading, plus component blocks (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`). The renderer computes the diagram layout, packs the panels into rows, and applies the theme (`--theme blueprint|card`, `--mode auto|light|dark`). `--style off|warn|strict` sets the prose check, and `strict` fails the render on any warning. `components [name]` prints the syntax of a component. `patch` replaces one panel from the draft embedded in the page. `render --template sheet|doc` chooses between a grid of panels and one column with a contents list. `lint` checks the prose of a draft without rendering it.
 
 Pass a file or `--input-dir`, not both. Validation covers the self-contained HTML contract and reports machine-readable failures; it does not judge the accuracy of the explanation. See [Code Explainer](../guide/code-explainer.md).
-
-### diagram
-
-Resolve the engine before a workflow emits a structural diagram:
-
-```text
-oma diagram resolve --output json
-oma diagram resolve --engine mermaid --offline
-oma diagram update
-oma diagram archify validate architecture <stem>.archify.json --quality showcase --json
-oma diagram archify deliver architecture <stem>.archify.json <stem>.archify.html --quality showcase --json
-```
-
-`diagram resolve` accepts `--engine auto|archify|mermaid`, `--refresh`, and `--offline`. `diagram update` refreshes the managed archify copy. `diagram archify` forwards the remaining arguments to the resolved upstream executable and propagates its exit code. Mermaid remains the Markdown source of truth; the HTML is a derived artifact. See [Diagram Engine](../guide/diagram-engine.md).
 
 ## State, model, and memory inspection
 

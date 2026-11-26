@@ -1,23 +1,24 @@
 ---
 title: "Guide: Code Explainer"
 sidebar_label: Code Explainers
-description: Complete guide to oh-my-agent's /explain workflow and oma-explanation skill — turns a diff, PR, branch, commit range, or a topic into a self-contained interactive HTML document, covering the two modes, ref resolution, reader levels, the draft-to-render pipeline, the secret gates, the validation checklist, and edge cases.
+description: Complete guide to oh-my-agent's /explain workflow and oma-explanation skill — turns a diff, PR, branch, commit range, or a topic into a self-contained interactive HTML document, or routes codebase knowledge-graph, dashboard, onboarding, domain-flow, and wiki-graph requests to upstream Understand-Anything.
 ---
 
 # Code Explainer
 
-`/explain` turns a code change into a self-contained HTML document that explains what changed and why. The page includes skippable background for newcomers, a core-intuition section with toy data, a comprehension-ordered code walkthrough, and an accessible quiz with five questions by default. The offline-capable `.html` file includes diagrams and callouts, is saved under `.agents/results/explain/`, and is validated against a deterministic checklist before delivery.
+`/explain` turns a code change into a self-contained HTML document that explains what changed and why. The page includes skippable background for newcomers, a core-intuition section with toy data, a comprehension-ordered code walkthrough, and an accessible quiz with five questions by default. The offline-capable `.html` file includes diagrams and callouts, is saved under `.agents/results/explain/`, and is validated against a deterministic checklist before delivery. For whole-codebase exploration, interactive knowledge-graph dashboards, guided onboarding tours, business domain flows, or Karpathy-pattern LLM wikis, `/explain` conditionally routes to upstream [Understand-Anything](https://github.com/Egonex-AI/Understand-Anything).
 
-The `/explain` workflow does not auto-activate from natural language because "explain" is everyday vocabulary. Keyword detection excludes the term, as it does `/convert`. Say `/explain` explicitly, or ask another skill to produce an "explainer document" as a delegated output. A prompt that names an explainer ("html explainer", "walkthrough document") gets an advisory `oma-explanation` skill hint, which does not start the workflow.
+The `/explain` workflow does not auto-activate from natural language because "explain" is everyday vocabulary. Keyword detection excludes the term, as it does `/convert`. Say `/explain` explicitly, or ask another skill to produce an "explainer document" as a delegated output. A prompt that names an explainer ("html explainer", "walkthrough document", "understand-anything", "codebase knowledge graph") gets an advisory `oma-explanation` skill hint, which does not start the workflow.
 
-## Two modes
+## Two routes (and HTML modes)
 
-| Mode | You type | Needs git | What the page explains |
+| Route / Mode | You type | Needs git | What it produces |
 |---|---|---|---|
-| Change | `/explain`, `/explain #640`, `/explain a..b`, `/explain <branch>` | yes (`gh` for PR refs) | A code change: Background, Intuition, Code, Quiz |
-| Topic | `/explain how does session windowing work` (text that resolves to no PR, branch, or SHA range) | no | A concept, a system, or the answer to a question, as a one-page visual sheet: a lead answer, then panels of diagrams, tables, and short prose |
+| HTML — Change (default) | `/explain`, `/explain #640`, `/explain a..b`, `/explain <branch>` | yes (`gh` for PR refs) | One offline HTML page explaining a code change: Background, Intuition, Code, Quiz |
+| HTML — Topic | `/explain how does session windowing work` (text that resolves to no PR, branch, or SHA range) | no | One offline visual HTML sheet explaining a concept, system, or question |
+| Knowledge graph (`understand-anything`) | `/explain codebase knowledge graph`, `/explain dashboard`, `/explain onboard`, `/explain domain flows`, `/explain wiki ~/notes` | optional (for freshness / diff overlay) | Upstream `Understand-Anything` knowledge graph under `.ua/`, onboarding guide (`docs/UA_ONBOARDING.md`), diff overlay, or a loopback dashboard (`127.0.0.1`) |
 
-If the text could be either a branch name or a subject, the workflow checks it as a git ref first; a ref wins.
+On the HTML route, if the text could be either a branch name or a subject, the workflow checks it as a git ref first; a ref wins.
 
 ---
 
@@ -114,7 +115,7 @@ The agent writes a Markdown draft, and `oma explain render` turns it into the pa
 
 | Command | Use |
 |---|---|
-| `oma explain render draft.md` | Render a draft (a file, or stdin) to `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`. Options include `--template sheet\|doc`, `--theme`, `--mode`, `--archify`, and `--open`. |
+| `oma explain render draft.md` | Render a draft (a file, or stdin) to `.agents/results/explain/{YYYY-MM-DD}-{slug}.html`. Options include `--template sheet\|doc`, `--theme`, `--mode`, and `--open`. |
 | `oma explain lint draft.md` | Check the prose without rendering (`--style strict` exits 1 on a warning). |
 | `oma explain components [name]` | List the components a draft can use (`flow`, `sequence`, `tree`, `timeline`, `limits`, `annot`, `kv`, `callout`, `quiz`), or print one component's syntax. |
 | `oma explain patch <page.html> --panel <id>` | Replace one panel of a rendered page (by letter or title) and keep the rest. |
@@ -191,7 +192,21 @@ The date follows `timezone` in oma-config, falling back to the system timezone w
 
 ## Optional archify sidecar
 
-When either `diagram.explain_sidecar: true` is set in `oma-config.yaml` or you ask for it (`/explain 640 with archify`), `/explain` renders with `--archify`: it derives an interactive `{date}-{slug}.archify.html` from a `flow` or `sequence` block of the draft and links it with a plain anchor. It is never embedded — the explainer stays a single self-contained file — and a sidecar failure never blocks delivery. See [Diagram Engine](./diagram-engine.md#explain).
+When you ask for it in the prompt (`/explain 640 with archify`), `/explain` resolves the upstream `tt-a1i/archify@archify` skill via `.agents/skills/_shared/conditional/diagram-engine.md` (catalog or `bunx skills use`), writes `{date}-{slug}.archify.html` (+ `.archify.json`) beside the explainer, and links it with a plain relative anchor. It is never embedded — the explainer stays a single self-contained file — and a sidecar failure never blocks delivery. See [Diagram Engine](./diagram-engine.md#explain).
+
+---
+
+## Interactive knowledge graphs (Understand-Anything route)
+
+When you ask for a whole-codebase interactive knowledge graph, a visual graph dashboard, a codebase onboarding guide/tour, business domain flow extraction, a Karpathy-pattern LLM wiki graph, or graph-backed Q&A / file deep-dive / blast-radius diff overlay (including when `.ua/knowledge-graph.json` or legacy `.understand-anything/knowledge-graph.json` already exists), `oma-explanation` routes to upstream [Egonex-AI/Understand-Anything](https://github.com/Egonex-AI/Understand-Anything) (MIT). Single-file offline HTML walkthroughs and quizzes stay on the default HTML route above; there is no extra `oma explain` CLI subcommand or config key.
+
+- **Operation mapping:** routes to the matching upstream skill (`understand`, `understand-dashboard`, `understand-chat`, `understand-explain`, `understand-diff`, `understand-onboard`, `understand-domain`, `understand-knowledge`, or explicit-only `understand-figma`) and records `explain.route-selection`.
+- **Resolution:** checks an already-connected `@understand-anything/mcp` server (read-only over existing graphs), then the runtime skill catalog and existing plugin roots (`CLAUDE_PLUGIN_ROOT`, `~/.understand-anything-plugin`, `~/.understand-anything/repo/understand-anything-plugin`), and falls back to `bunx skills use https://github.com/Egonex-AI/Understand-Anything/tree/main/understand-anything-plugin/skills/<skill>` without `--agent`.
+- **Consent and runtime limits:** graph-reading skills (`chat`, `explain`, `diff`, `onboard`) only need an existing `$UA_DIR/knowledge-graph.json`. Graph generation, domain/wiki/Figma analysis, and the dashboard need the full plugin checkout (`agents/`, `packages/core`, `packages/dashboard`), using `bun` / `bunx` (plus Node.js ≥ 22 for upstream helper scripts) instead of `pnpm` / `npx`. OMA never clones the repo, runs upstream installers, builds `@understand-anything/core`, or downloads the release viewer tarball without your consent, and warns before a token-heavy full-repo scan.
+- **Dashboard safety:** the dashboard binds strictly to `127.0.0.1`, requires its one-time `?token=` query parameter (always included in the delivery report), and stops cleanly when no longer needed.
+- **Fallback:** if the plugin or prerequisites are unavailable or installation is declined, `/explain` offers the built-in offline HTML route (`oma explain render`) for a scoped diff or topic.
+
+Full routing and consent contract: `.agents/skills/oma-explanation/resources/understand-anything.md`.
 
 ## Edge cases
 

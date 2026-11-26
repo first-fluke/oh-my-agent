@@ -1,28 +1,19 @@
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import color from "picocolors";
-import {
-  ARCHIFY_ENV_NO_UPDATE,
-  loadDiagramConfig,
-  resolveDiagramEngine,
-} from "../../../platform/diagram-engine.js";
 import { loadTimezone } from "../../../utils/config.js";
 import { openUrl } from "../../../utils/open-url.js";
-import { type ArchifyQuality, toArchifySpec } from "./archify.js";
 import { COMPONENTS, findComponent } from "./components/index.js";
 import { DraftError, parseDraft } from "./draft.js";
 import { formatWarning } from "./lint.js";
 import {
   extractDraftSource,
-  type PanelDiagram,
   patchDraft,
   type RenderOptions,
   type RenderResult,
   readPageSettings,
   renderDraft,
-  sidecarSource,
 } from "./render.js";
 
 export interface ExplainRenderOptions {
@@ -34,23 +25,13 @@ export interface ExplainRenderOptions {
   style?: string;
   lang?: string;
   open?: boolean;
-  /** true / false from the flag; undefined defers to `diagram.explain_sidecar`. */
-  archify?: boolean;
   json?: boolean;
   cwd?: string;
   /** Test seam: the draft text, instead of reading `file` or stdin. */
   source?: string;
 }
 
-export interface SidecarReport {
-  status: "linked" | "skipped" | "failed";
-  file?: string;
-  spec?: string;
-  reason?: string;
-}
-
 const RESULTS_DIR = path.join(".agents", "results", "explain");
-const SIDECAR_TIMEOUT_MS = 120_000;
 
 /**
  * Today in the project's timezone (`timezone` in oma-config, else the system
@@ -121,106 +102,6 @@ function draftLabel(opts: { file?: string }): string {
   return opts.file && opts.file !== "-" ? opts.file : "draft";
 }
 
-/**
- * Build the archify sidecar next to the page. Never throws: a sidecar is an
- * extra, and the page is complete without it.
- */
-async function buildSidecar(
-  diagram: PanelDiagram,
-  title: string,
-  htmlPath: string,
-  cwd: string,
-): Promise<SidecarReport> {
-  const resolution = await resolveDiagramEngine({ cwd });
-  if (!resolution.archify) {
-    return { status: "skipped", reason: resolution.reason };
-  }
-  const dir = path.dirname(htmlPath);
-  const stem = path.basename(htmlPath).replace(/\.html$/i, "");
-  const specName = `${stem}.archify.json`;
-  const outName = `${stem}.archify.html`;
-  // Showcase asks for more than a derived spec always carries; fall back to
-  // standard once rather than drop the sidecar.
-  const qualities: ArchifyQuality[] =
-    resolution.quality === "showcase" ? ["showcase", "standard"] : ["standard"];
-  let reason = "";
-  for (const quality of qualities) {
-    const built = toArchifySpec(diagram.model, {
-      title: `${title} — ${diagram.title}`,
-      output: outName,
-      quality,
-    });
-    if (!built) {
-      return {
-        status: "skipped",
-        reason: "the diagram is too small or too large for an archify view",
-      };
-    }
-    fs.writeFileSync(
-      path.join(dir, specName),
-      `${JSON.stringify(built.spec, null, 2)}\n`,
-    );
-    const run = spawnSync(
-      process.execPath,
-      [
-        resolution.archify.bin,
-        "deliver",
-        built.type,
-        specName,
-        outName,
-        "--quality",
-        quality,
-        "--json",
-      ],
-      {
-        cwd: dir,
-        encoding: "utf-8",
-        timeout: SIDECAR_TIMEOUT_MS,
-        env: { ...process.env, [ARCHIFY_ENV_NO_UPDATE]: "1" },
-      },
-    );
-    if (run.status === 0 && fs.existsSync(path.join(dir, outName))) {
-      return {
-        status: "linked",
-        file: path.join(dir, outName),
-        spec: path.join(dir, specName),
-        reason:
-          `archify ${resolution.archify.version ?? ""} ${built.type}, ${quality}`.replace(
-            /\s+/g,
-            " ",
-          ),
-      };
-    }
-    reason = firstDiagnostic(run.stdout, run.stderr, run.error);
-  }
-  return {
-    status: "failed",
-    spec: path.join(dir, specName),
-    reason: reason || "archify deliver did not produce the file",
-  };
-}
-
-function firstDiagnostic(
-  stdout: string | null,
-  stderr: string | null,
-  error?: Error,
-): string {
-  if (error) return error.message;
-  try {
-    const receipt = JSON.parse(stdout ?? "") as {
-      errors?: Array<{ message?: string; code?: string }>;
-      error?: string;
-    };
-    const first = receipt.errors?.[0];
-    if (first) return [first.code, first.message].filter(Boolean).join(": ");
-    if (receipt.error) return receipt.error;
-  } catch {
-    // Not a JSON receipt; fall through to the raw text.
-  }
-  const text = `${stderr ?? ""}\n${stdout ?? ""}`.trim();
-  return text.split("\n")[0]?.slice(0, 240) ?? "";
-}
-
 function reportDraftError(
   error: unknown,
   label: string,
@@ -241,7 +122,6 @@ function reportDraftError(
 function finish(
   result: RenderResult,
   outPath: string,
-  sidecar: SidecarReport | undefined,
   opts: { json?: boolean; open?: boolean },
   label: string,
 ): number {
@@ -265,7 +145,6 @@ function finish(
             title: panel.title,
           })),
           warnings: result.warnings,
-          sidecar,
         },
         null,
         2,
@@ -283,17 +162,6 @@ function finish(
       );
     } else {
       console.log(`${color.green("✔")} ${outPath}`);
-      if (sidecar?.status === "linked" && !sidecar.file) {
-        console.log(color.dim(`  archify sidecar: ${sidecar.reason}`));
-      } else if (sidecar?.status === "linked") {
-        console.log(
-          `  interactive diagram: ${sidecar.file} (${sidecar.reason})`,
-        );
-      } else if (sidecar) {
-        console.log(
-          color.dim(`  archify sidecar ${sidecar.status}: ${sidecar.reason}`),
-        );
-      }
     }
   }
   if (strict) return 1;
@@ -336,36 +204,7 @@ export async function runExplainRender(
         `${date}-${artifactSlug(meta.slug, meta.title, opts.file)}.html`,
       ),
   );
-
-  let sidecar: SidecarReport | undefined;
-  const wanted = opts.archify ?? loadDiagramConfig(cwd).explain_sidecar;
-  const strict = result.style === "strict" && result.warnings.length > 0;
-  if (wanted && !strict) {
-    const diagram = sidecarSource(result.diagrams);
-    if (!diagram) {
-      sidecar = {
-        status: "skipped",
-        reason: "the draft has no flow or sequence block",
-      };
-    } else {
-      fs.mkdirSync(path.dirname(outPath), { recursive: true });
-      try {
-        sidecar = await buildSidecar(diagram, meta.title, outPath, cwd);
-      } catch (error) {
-        sidecar = {
-          status: "failed",
-          reason: error instanceof Error ? error.message : String(error),
-        };
-      }
-      if (sidecar.status === "linked" && sidecar.file) {
-        result = renderDraft(source, {
-          ...renderOptions,
-          sidecarHref: `./${path.basename(sidecar.file)}`,
-        });
-      }
-    }
-  }
-  return finish(result, outPath, sidecar, opts, label);
+  return finish(result, outPath, opts, label);
 }
 
 export interface ExplainPatchOptions {
@@ -386,7 +225,6 @@ export async function runExplainPatch(
   const json = opts.json === true;
   const htmlPath = path.resolve(cwd, opts.html);
   let result: RenderResult;
-  let hadSidecar = false;
   try {
     const html = fs.readFileSync(htmlPath, "utf-8");
     const draft = extractDraftSource(html);
@@ -401,7 +239,6 @@ export async function runExplainPatch(
     );
     // The page keeps the look it was rendered with.
     const settings = readPageSettings(html);
-    hadSidecar = settings.sidecarHref !== undefined;
     result = renderDraft(patchDraft(draft, opts.panel, replacement), {
       ...settings,
       date: artifactDate(cwd),
@@ -409,15 +246,8 @@ export async function runExplainPatch(
   } catch (error) {
     return reportDraftError(error, draftLabel(opts), json);
   }
-  const sidecar: SidecarReport | undefined = hadSidecar
-    ? {
-        status: "linked",
-        reason:
-          "kept the existing sidecar; run `oma explain render --archify` again if the diagram changed",
-      }
-    : undefined;
   // Warning lines count from the top of the draft embedded in the page.
-  return finish(result, htmlPath, sidecar, opts, `${opts.html} (draft)`);
+  return finish(result, htmlPath, opts, `${opts.html} (draft)`);
 }
 
 export interface ExplainLintOptions {

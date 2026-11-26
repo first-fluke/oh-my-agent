@@ -71,7 +71,7 @@ The following keys are read by the current runtime schema or by shipped OMA cons
 | `hwp` | `format`, `version.*`, `output.*` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#extract-hwp-family-documents) | Kordoc format, version channel, and output location. |
 | `pdf` | `format`, `image_output`, `image_format`, `use_struct_tree`, `ocr.*`, `output.*` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#extract-pdf-content) | PDF extraction, OCR, image, and overwrite settings. |
 | `scholar` | `base_url` | skill default; see [Content and Research Workflows](/docs/guide/content-and-research#search-and-validate-scholarly-material) | Knows endpoint host; protocol shape remains skill-owned. |
-| `diagram` | `engine`, `explain_sidecar`, `archify.path`, `archify.quality`, `archify.open` | skill default; see [Diagram Engine](/docs/guide/diagram-engine) | Mermaid/archify selection and archify pin/quality settings. The retired `archify.managed`, `archify.channel`, and `archify.check_interval_min` are ignored with a notice, and `oma update` removes them. |
+| `diagram` | *(retired)* | — | Retired: `archify` now resolves directly as an upstream agent skill via the runtime catalog or `bunx skills use tt-a1i/archify@archify` (see [Diagram Engine](/docs/guide/diagram-engine)). Existing keys are ignored. |
 | `market` | `path`, `python`, `save_dir` | skill default; see [Market Research](/docs/guide/market-research) | last30days engine pin, interpreter, and result location. The retired `managed`, `channel`, and `check_interval_min` are ignored with a notice, and `oma update` removes them. |
 
 The shipped template also contains consumer-owned blocks. Their current keys and defaults are:

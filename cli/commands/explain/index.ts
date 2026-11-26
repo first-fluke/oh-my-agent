@@ -81,11 +81,6 @@ export function registerExplainCommand(program: Command): void {
       "--lang <code>",
       "Page language: en | ko | ja | zh (default: detected)",
     )
-    .option("--archify", "Also build and link an interactive archify diagram")
-    .option(
-      "--no-archify",
-      "Skip the archify diagram even when the config enables it",
-    )
     .option("--open", "Open the page in the browser");
   addOutputOptions(renderCmd);
   renderCmd.action(
@@ -99,7 +94,6 @@ export function registerExplainCommand(program: Command): void {
           mode?: string;
           style?: string;
           lang?: string;
-          archify?: boolean;
           open?: boolean;
           json?: boolean;
         },

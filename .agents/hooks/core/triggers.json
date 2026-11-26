@@ -1416,18 +1416,31 @@
     },
     "oma-explanation": {
       "keywords": {
-        "*": ["explainer"],
+        "*": ["explainer", "understand-anything"],
         "en": [
           "html explainer",
           "explainer document",
           "visual walkthrough",
           "walkthrough document",
           "explain this diff as a page",
-          "explain this pr as a document"
+          "explain this pr as a document",
+          "codebase knowledge graph",
+          "understand dashboard"
         ],
-        "ko": ["해설 문서", "설명서 만들어", "코드 해설", "변경 해설"],
-        "ja": ["コード解説", "解説ページ", "解説ドキュメント"],
-        "zh": ["代码讲解", "讲解文档", "讲解页面"]
+        "ko": [
+          "해설 문서",
+          "설명서 만들어",
+          "코드 해설",
+          "변경 해설",
+          "코드베이스 지식 그래프"
+        ],
+        "ja": [
+          "コード解説",
+          "解説ページ",
+          "解説ドキュメント",
+          "コードベース知識グラフ"
+        ],
+        "zh": ["代码讲解", "讲解文档", "讲解页面", "代码库知识图谱"]
       }
     },
     "oma-scholar": {

@@ -269,21 +269,6 @@ package config
 	base_url?: string
 }
 
-#DiagramConfig: {
-	engine?:          "auto" | "archify" | "mermaid"
-	explain_sidecar?: bool
-	archify?: {
-		// Deprecated: ignored since archify became a skills-CLI install
-		// (`oma diagram update`). Kept so existing configs still validate.
-		managed?:            bool
-		channel?:            "stable" | "main"
-		check_interval_min?: int & >=0
-		path?:               null | string
-		quality?:            "showcase" | "standard"
-		open?:               bool
-	}
-}
-
 #MarketConfig: {
 	// Deprecated: ignored since last30days became a skills-CLI install
 	// (`oma market update`). Kept so existing configs still validate.
@@ -383,7 +368,6 @@ package config
 	hwp?:     #HwpConfig
 	pdf?:     #PdfConfig
 	scholar?: #ScholarConfig
-	diagram?: #DiagramConfig
 	market?:  #MarketConfig
 
 	// 12. Refactor guard hook

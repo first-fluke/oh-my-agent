@@ -19,7 +19,7 @@ export interface RenderContext {
   labels: { flow: string; sequence: string; colon: string; separator: string };
 }
 
-/** Graph a flow block describes; the archify sidecar is derived from it. */
+/** Parsed graph model for a flow block. */
 export interface FlowModel {
   kind: "flow";
   direction: "TB" | "LR" | "BT" | "RL";

@@ -537,27 +537,6 @@ scm:
 # scholar:
 #   base_url: https://knows.academy
 
-# ── diagram (oma-architecture / oma-explanation) ─────────────────────────────
-# Which engine renders architecture / sequence / data-flow diagrams.
-#   auto     — archify (tt-a1i/archify) whenever it can be resolved, else Mermaid
-#   archify  — require archify; `oma diagram resolve` exits 1 when unresolvable
-#   mermaid  — never call archify
-# archify is installed through the skills CLI (`oma diagram update` installs or
-# updates it). Resolution order: archify.path → ARCHIFY_HOME → user-installed
-# skill dirs (.agents/.claude/.codex/.cursor/.qwen/.kiro/skills).
-# Mermaid stays the text SSOT inside ADR / recommendation Markdown either way;
-# archify adds a sibling `<name>.archify.json` + `<name>.archify.html`.
-# Inspect with `oma diagram resolve --json`; force a refresh with
-# `oma diagram update`. Defaults: DEFAULT_DIAGRAM_CONFIG in
-# cli/platform/diagram-engine.ts.
-# diagram:
-#   engine: auto
-#   explain_sidecar: false          # /explain also writes an archify sidecar
-#   archify:
-#     path: null                    # explicit install dir (pin)
-#     quality: showcase             # showcase | standard (validate/deliver --quality)
-#     open: false                   # pass --open to deliver for a local preview
-
 # ── market (oma-market) ──────────────────────────────────────────────────────
 # Community-signal research runs on the upstream mvanhorn/last30days engine,
 # installed through the skills CLI (`oma market update` installs or updates it).

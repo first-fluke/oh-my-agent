@@ -340,28 +340,38 @@ OMA는 route 선택, 인터프리터·`init --dir`·이미지 경로·원본 전
 
 ## oma-explanation
 
-근거: [SKILL.md](../../skills/oma-explanation/SKILL.md), [초안 규약](../../skills/oma-explanation/resources/draft-format.md), [HTML 계약](../../skills/oma-explanation/resources/html-contract.md).
+근거: [SKILL.md](../../skills/oma-explanation/SKILL.md), [초안 규약](../../skills/oma-explanation/resources/draft-format.md), [HTML 계약](../../skills/oma-explanation/resources/html-contract.md), [Understand-Anything 라우트](../../skills/oma-explanation/resources/understand-anything.md), [upstream Understand-Anything](https://github.com/Egonex-AI/Understand-Anything).
 
 ```text
 oma-explanation
 ├── skills
-│   └── none delegated in the current scope
+│   ├── Egonex-AI/Understand-Anything (understand*): conditional knowledge-graph route (load-and-follow)
+│   └── tt-a1i/archify@archify: optional opt-in interactive diagram sidecar (load-and-follow)
 ├── CLI
 │   ├── oma explain render / lint / components / patch / validate
-│   ├── git / gh: conditional change and PR input
-│   └── oma diagram resolve: optional archify sidecar route
+│   ├── bunx skills use https://github.com/Egonex-AI/Understand-Anything/tree/main/understand-anything-plugin/skills/<skill>: catalog fallback
+│   ├── bunx skills use tt-a1i/archify@archify: catalog fallback for opt-in archify sidecar
+│   └── git / gh: conditional change and PR input
 ├── MCP
-│   └── no fixed server declared
+│   └── @understand-anything/mcp: optional already-connected read-only graph query / dashboard surface
 ├── capabilities
 │   └── configured code intelligence: conditional, transport-dependent
-└── OMA-owned specs
-    ├── draft-format.md: Markdown input language
-    ├── document-structure.md: explanation content
-    ├── html-contract.md: standalone output and validation
-    └── shared diagram-engine.md: optional diagram integration
+├── OMA-owned specs
+│   ├── draft-format.md: Markdown input language
+│   ├── document-structure.md: explanation content
+│   ├── html-contract.md: standalone output and validation
+│   ├── understand-anything.md: route selection, PLUGIN_ROOT/MCP resolution, consent gates, delivery
+│   └── shared diagram-engine.md: optional archify sidecar skill protocol
+└── Upstream-owned specs (understand-anything / archify)
+    ├── understand-anything-plugin/skills/understand*: multi-agent analysis, chat, diff overlay, explain, onboard, domain, wiki, dashboard
+    ├── understand-anything-plugin/agents/: analysis and review subagent definitions
+    ├── packages/core / packages/dashboard / packages/viewer: static analysis, graph schema, and loopback dashboard
+    └── archify SKILL.md / schemas/ / bin/archify.mjs: opt-in interactive diagram sidecar
 ```
 
-설명 초안과 렌더러의 역할을 구분한다. archify는 opt-in 연결이며, 기본 HTML과 선택적 sidecar의 결과를 각각 기록한다.
+기본 경로는 단일 오프라인 HTML 설명서(`oma explain render`)다. 설명 초안과 렌더러의 역할을 구분하며 archify는 opt-in 연결이다. 전체 코드베이스 지식 그래프, 인터랙티브 대시보드, 온보딩 가이드·투어, 비즈니스 도메인 플로우, Karpathy 패턴 LLM 위키 그래프, 또는 기존 `.ua/knowledge-graph.json` 기반 질의·심층 해설·diff 영향 오버레이 요청은 `understand-anything` 라우트로 분기하고 `explain.route-selection` 결정을 기록한다.
+
+runtime skill catalog와 기존 플러그인 설치(`CLAUDE_PLUGIN_ROOT`, `~/.understand-anything-plugin`, `~/.understand-anything/repo/understand-anything-plugin` 등)를 먼저 확인하고, 없으면 `bunx skills use`를 `--agent` 없이 실행해 지침을 읽는다. 그래프 생성·대시보드·도메인·위키·Figma 작업에는 전체 `PLUGIN_ROOT`(`agents/`, `packages/core`, `packages/dashboard`)가 필요하며, 패키지 설치·빌드·뷰어 실행은 `bun`/`bunx`로 치환하되 플러그인 클론·설치·`bun` 빌드·릴리스 뷰어 다운로드는 사용자 동의 없이 실행하지 않는다. 대시보드는 `127.0.0.1` loopback과 `?token=` URL을 유지하며, 설치/빌드가 거절되거나 불가하면 기본 HTML 설명서 폴백을 안내한다.
 
 ## oma-recap
 

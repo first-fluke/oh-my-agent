@@ -201,7 +201,6 @@ li>ul,li>ol{margin-top:4px}
 blockquote{margin:0;padding:8px 14px;border-left:3px solid var(--oe-accent);background:var(--oe-accent-soft);border-radius:0 var(--oe-radius) var(--oe-radius) 0}
 .oe-fn-ref{font-size:.75em;color:var(--oe-muted)}
 .oe-footnotes{font-size:.8125rem;color:var(--oe-muted);border-top:1px solid var(--oe-line);padding-top:8px}
-.oe-archify{display:inline-flex;align-items:center;gap:6px;font-size:.875rem;font-weight:600}
 
 table{border-collapse:collapse;width:100%;font-size:.9375rem}
 th,td{min-width:4.5em;padding:7px 10px;border-bottom:1px solid var(--oe-line);text-align:left;vertical-align:top}
