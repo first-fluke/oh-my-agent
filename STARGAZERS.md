@@ -5,13 +5,14 @@ Only commits when the list changes. Unstargazer entries include profile
 summaries to spot which persona is churning.
 
 <!-- unstars-start -->
-## 2026-11-24 · 1 unstarred
+## 2026-11-27 · 2 unstarred
 
-- **@oiloilo44** · 7 repos · 0 followers
+- **@sungchul-bindo** · Sungchul Park · Bindo · 0 repos · 0 followers
+- **@tobilife** · 3 repos · 9 followers
 <!-- unstars-end -->
 
 <!-- current-start -->
-## Current (1478)
+## Current (1479)
 
 - @05hhh35 — 2026-03-07
 - @0617Allience — 2026-05-23
@@ -291,6 +292,7 @@ summaries to spot which persona is churning.
 - @dbensmith — 2026-09-19
 - @dbswhd — 2026-06-09
 - @dbydd — 2026-03-20
+- @dczapka — 2026-11-26
 - @ddx2r — 2026-04-19
 - @dearjunyeolryu — 2026-03-09
 - @debop — 2026-04-25
@@ -333,6 +335,7 @@ summaries to spot which persona is churning.
 - @dooee — 2026-09-09
 - @dooohun — 2026-02-05
 - @dotorimook — 2026-02-01
+- @doubaomyname — 2026-11-26
 - @doyoonkim12345 — 2026-02-03
 - @DRamaMercer — 2026-03-09
 - @DreamHouseKSH — 2026-11-18
@@ -1264,7 +1267,6 @@ summaries to spot which persona is churning.
 - @suetin — 2026-05-24
 - @suhyoung89pro — 2026-05-21
 - @sumhwang-onepredict — 2026-04-22
-- @sungchul-bindo — 2026-04-10
 - @sungjunlee — 2026-06-21
 - @Sunjija — 2026-11-12
 - @superbjl — 2026-05-07
@@ -1313,7 +1315,6 @@ summaries to spot which persona is churning.
 - @tkersey — 2026-03-17
 - @tkredbaron — 2026-05-27
 - @tobbawi — 2026-05-01
-- @tobilife — 2026-10-26
 - @Tojaman — 2026-04-26
 - @tomkim007 — 2026-05-17
 - @tommy-ca — 2026-06-20
@@ -1349,6 +1350,7 @@ summaries to spot which persona is churning.
 - @Universe-Coin — 2026-05-08
 - @UnseenWizzard — 2026-03-30
 - @urimeee — 2026-11-13
+- @uverse-4gsr — 2026-11-26
 - @uyaki — 2026-02-23
 - @vanilalatte03 — 2026-06-04
 - @veiman — 2026-03-26
