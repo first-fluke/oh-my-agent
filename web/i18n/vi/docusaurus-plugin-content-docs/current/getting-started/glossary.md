@@ -33,7 +33,7 @@ Model preset là giá trị `model_preset` trong `.agents/oma-config.yaml` (ho�
 
 ### Workflow liên tục {#persistent-workflow}
 
-Workflow liên tục tiếp tục chạy qua nhiều lượt cho đến khi công việc xong hoặc bạn vô hiệu hóa nó. Các workflow liên tục là `/orchestrate`, `/work`, `/ultrawork` và `/ralph`, và chỉ lời gọi tường minh mới kích hoạt chế độ liên tục. Trong khi một workflow đang hoạt động, hook đưa lại `[OMA PERSISTENT MODE: ...]` vào mỗi prompt, và Stop hook chặn session kết thúc cho đến khi đạt giới hạn tăng cường hoặc hết thời gian chờ do trạng thái cũ. Nói `workflow done` để vô hiệu hóa. Xem [Cơ chế chế độ liên tục](../core-concepts/workflows.md#persistent-mode-mechanics).
+Workflow liên tục tiếp tục chạy qua nhiều lượt cho đến khi công việc xong hoặc bạn vô hiệu hóa nó. Các workflow liên tục là `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` và alias đã ngừng khuyến nghị `/ralph`, và chỉ lời gọi tường minh mới kích hoạt chế độ liên tục. Trong khi một workflow đang hoạt động, hook đưa lại `[OMA PERSISTENT MODE: ...]` vào mỗi prompt, và Stop hook chặn session kết thúc cho đến khi đạt giới hạn tăng cường hoặc hết thời gian chờ do trạng thái cũ. Nói `workflow done` để vô hiệu hóa. Xem [Cơ chế chế độ liên tục](../core-concepts/workflows.md#persistent-mode-mechanics).
 
 ### Stop gate {#stop-gate}
 
@@ -70,7 +70,7 @@ Event log là bản ghi chỉ-nối-thêm (append-only) của một session OMA,
 
 ### Judge {#judge}
 
-"Judge" có hai nghĩa. Trong `/ralph`, judge là phase sau mỗi lần lặp ultrawork, kiểm tra từng tiêu chí hoàn thành so với trạng thái thực tế của project và ghi PASS, FAIL, REGRESSED hoặc BLOCKED. Một agent được spawn riêng với context mới thực hiện phase này, nên orchestrator không tự chấm công việc của chính mình. Trong đánh giá và tối ưu skill, `judge` là loại checker mặc định: một model chấm output của một arm theo rubric và trả về PASS hoặc FAIL. Xem [/ralph](../core-concepts/workflows.md#ralph) và [checker judge](../guide/skill-eval.md#judge-default).
+"Judge" có hai nghĩa. Trong `/oma-mode`, judge là bước sau mỗi lần lặp, kiểm tra từng tiêu chí hoàn thành so với trạng thái thực tế của project và ghi PASS, FAIL, REGRESSED hoặc BLOCKED. Một agent được spawn riêng với context mới thực hiện bước này, nên session đã làm công việc đó không tự chấm điểm nó. Trong đánh giá và tối ưu skill, `judge` là loại checker mặc định: một model chấm output của một arm theo rubric và trả về PASS hoặc FAIL. Xem [/oma-mode](../core-concepts/workflows.md#oma-mode) và [checker judge](../guide/skill-eval.md#judge-default).
 
 ### Cross-context review (CCR) {#cross-context-review-ccr}
 

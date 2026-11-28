@@ -88,13 +88,13 @@ Choisissez le preset qui correspond au travail dont le dépôt a besoin. Les nom
 | Preset | Choisissez-le lorsque le projet est | Compétences incluses | Nombre |
 |--------|-------------------------------------|----------------------|--------|
 | **all** | N'importe quel projet, ou lorsque vous voulez que chaque workflow fonctionne d'emblée | Toutes les compétences du registre | 32 |
-| **fullstack** | Des clients web et mobile avec un backend et une infrastructure Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | Un frontend web avec un backend et une base de données | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | Une application mobile avec un backend et une base de données | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | Une interface web uniquement | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | Une API ou un service avec une base de données | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | Une application mobile uniquement | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | Du travail d'infrastructure, de CI/CD et d'observabilité | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | Des clients web et mobile avec un backend et une infrastructure Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | Un frontend web avec un backend et une base de données | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | Une application mobile avec un backend et une base de données | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | Une interface web uniquement | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | Une API ou un service avec une base de données | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | Une application mobile uniquement | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | Du travail d'infrastructure, de CI/CD et d'observabilité | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | De l'analyse de sécurité, de la revue de code et de la remédiation | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Des articles, des études de marché et la conversion PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Des ressources de design, des images, de la voix et du contenu rédigé | design, image, voice, academic-writing, translation, scm | 6 |
@@ -113,12 +113,13 @@ Après l'installation, consultez la liste des compétences sélectionnées et le
 
 ### Workflows nécessitant des compétences hors d'un preset {#workflows-that-need-skills-outside-a-preset}
 
-Chaque preset copie les définitions de workflows et d'agents. Les commandes et invites ne sont exposées que pour les workflows dont les compétences requises sont disponibles. Par exemple, une installation `frontend` neuve laisse `/orchestrate` indisponible faute d'`oma-orchestration`, tandis que `/work`, `/ultrawork` et `/ralph` sont disponibles : les compétences PM et QA du preset satisfont leurs exigences d'entrée. L'installateur signale la compétence manquante sans basculer vers `all`.
+Chaque preset copie les définitions de workflows et d'agents. Les commandes et invites ne sont exposées que pour les workflows dont les compétences requises sont disponibles. Par exemple, une installation `frontend` neuve laisse `/docs` indisponible faute d'`oma-docs`, tandis que `/orchestrate`, `/work` et `/ultrawork` sont disponibles : les compétences PM, QA et orchestration du preset satisfont leurs exigences d'entrée. L'installateur signale la compétence manquante sans basculer vers `all`.
 
 | Workflow | Compétences d'entrée requises | Presets qui les incluent |
 |----------|-------------------------------|------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | aucune | tous les presets |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -143,7 +144,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-Les entrées de domaine contiennent 8 compétences frontend, 6 compétences sécurité ou 8 compétences recherche ainsi qu'une sélection d'agents natifs correspondante. Leur amorçage de session transmet ce preset à l'installateur du runtime. La configuration partagée du runtime et les compétences déjà installées suivent le comportement de l'installateur décrit ci-dessus. L'entrée `oma` conserve le plugin complet. Les mêmes racines de domaine sont déclarées dans le catalogue du marketplace Codex généré ainsi que dans les catalogues Grok Build et ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` sur l'arborescence émise ou l'archive de release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode et Kimi Code (`/plugins install`) lisent chacun leur propre manifeste généré ; consultez [Hôtes de plugins compatibles Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) pour les étapes exactes par hôte.
+Les entrées de domaine contiennent 9 compétences frontend, 6 compétences sécurité ou 8 compétences recherche ainsi qu'une sélection d'agents natifs correspondante. Leur amorçage de session transmet ce preset à l'installateur du runtime. La configuration partagée du runtime et les compétences déjà installées suivent le comportement de l'installateur décrit ci-dessus. L'entrée `oma` conserve le plugin complet. Les mêmes racines de domaine sont déclarées dans le catalogue du marketplace Codex généré ainsi que dans les catalogues Grok Build et ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` sur l'arborescence émise ou l'archive de release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode et Kimi Code (`/plugins install`) lisent chacun leur propre manifeste généré ; consultez [Hôtes de plugins compatibles Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) pour les étapes exactes par hôte.
 
 Les jobs CI épinglés des hôtes enregistrent le marketplace local sur des runners neufs, installent les entrées de domaine et inspectent l'inventaire résultant. Ces vérifications s'exécutent sans appels de modèle. Les identifiants d'exécution, les fournisseurs externes et la réussite d'une première tâche nécessitent toujours leur propre vérification. Les contrôles de release exigent aussi que les deux manifestes de chaque racine de domaine correspondent à la version de la CLI et disposent d'un outil de mise à jour Release Please.
 

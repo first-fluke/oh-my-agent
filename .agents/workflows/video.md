@@ -4,7 +4,6 @@ description: Agent-native, key-optional video generation workflow that turns a b
 disable-model-invocation: true
 ---
 
-- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - **Key-optional by default (oma-backend core rule 11).** The baseline path uses **zero external API keys**: the agent writes the script, oma-voice does TTS, oma-image does visuals, captions are key-free, HyperFrames composites. Every paid upgrade (Pexels stock, Pixelle AIGC) sits behind a key-free fallback and is **off by default**. Never disable the fallback to force a real call, and never silently drop a requested real path.
 - **Determinism boundary = `render-spec.json` + asset files (+ seed + embedded Pretendard).** "Reproducible from script/assets, not from brief." Never edit assets or render-spec by hand after generation; re-run the stage that produced them.
@@ -48,11 +47,11 @@ For `demo`, resolve the recording path first. Use `--source file --capture <path
 - **Guardrail**: default `cost.guardrail_usd: 0.20`, set under `video:` in `.agents/oma-config.yaml` (shipped defaults live in the CLI). Any provider whose estimated cost meets or exceeds the guardrail requires spend authorization (`-y` / `--yes` backed by existing authorization and the Step 4 decision). Reuse an existing authorization covering that provider and amount. `--max-usd <n>` overrides the threshold.
 - **Key-optional pairs** (real path is gated; fallback is always wired):
 
-  | capability | real (key/resource) | key-free fallback | deferred marker |
+  | capability | real (key/resource) | key-free fallback | real path |
   |------|------|------|------|
-  | stock video | Pexels (`PEXELS_API_KEY`) | static oma-image stills | `TODO(oma-deferred): pexels` |
-  | AIGC video | Pixelle-MCP + RunningHub (`RUNNINGHUB_API_KEY`) | oma-image stills | `TODO(oma-deferred): pixelle` |
-  | caption timing | voicebox-stt (MCP `voicebox_transcribe` → REST) or voicestudio-stt (`/v1/audio/transcriptions`) | estimate | `TODO(oma-deferred): whisper-cpp` |
+  | stock video | Pexels (`PEXELS_API_KEY`) | static oma-image stills | wired |
+  | AIGC video | Pixelle-MCP + RunningHub (`RUNNINGHUB_API_KEY`) | oma-image stills | not wired: a selected scene gets a placeholder |
+  | caption timing | voicebox-stt (MCP `voicebox_transcribe` → REST) or voicestudio-stt (`/v1/audio/transcriptions`) | estimate | wired; no local whisper.cpp hop |
   | music mixing | Strudel offline render (`oma video doctor --install-strudel`) | render without music | — |
   | premium TTS | (not needed — oma-voice is local) | — | — |
 

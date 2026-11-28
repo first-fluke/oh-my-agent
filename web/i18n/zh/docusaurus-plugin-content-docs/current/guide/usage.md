@@ -9,11 +9,11 @@ description: OMA 使用指南，涵盖以读者为先的任务选择、单技能
 ## 快速上手 {#quick-start}
 
 1. 在选定的 AI IDE 或 CLI 中打开项目（Claude Code、Codex CLI、Cursor、Antigravity、OpenCode、Kimi、Kiro、Qwen 或其他受支持的宿主）
-2. 选定的宿主可以从 `.agents/skills/` 加载[技能](../getting-started/glossary.md#skill)；启用的钩子会根据自然语言关键词添加技能提示，且仅在输入斜杠命令（或 4 种持久化模式对应的名称）时启动[工作流](../getting-started/glossary.md#workflow)
+2. 选定的宿主可以从 `.agents/skills/` 加载[技能](../getting-started/glossary.md#skill)；启用的钩子会根据自然语言关键词添加技能提示，且仅在输入斜杠命令（或 5 种持久化模式对应的名称）时启动[工作流](../getting-started/glossary.md#workflow)
 3. 用自然语言描述想完成的事情。宿主或选定的工作流会将任务路由到相关技能
 4. 对于多智能体工作，使用 `/work` 或 `/orchestrate`
 
-单领域任务不需要任何特殊语法。参见[技能和工作流选择指南](/docs/core-concepts/workflows#choosing-a-skill-or-workflow)，在单技能、`/work`、`/orchestrate`、`/ultrawork` 和 `/ralph` 之间选择。设置请参阅[快速开始](../getting-started/quick-start.md)，更改供应商前请阅读[重要默认值](../getting-started/important-defaults.md)。
+单领域任务不需要任何特殊语法。参见[技能和工作流选择指南](/docs/core-concepts/workflows#choosing-a-skill-or-workflow)，在单技能、`/oma-mode`、`/work`、`/orchestrate`、`/ultrawork` 和 `/ralph` 之间选择。设置请参阅[快速开始](../getting-started/quick-start.md)，更改供应商前请阅读[重要默认值](../getting-started/important-defaults.md)。
 
 ## 选择指南 {#pick-a-guide}
 
@@ -245,8 +245,9 @@ oma stats get
 
 | 命令 | 类型 | 功能 | 何时使用 |
 |------|------|------|---------|
+| `/oma-mode` | 持久化 | 接收目标，选择路由并运行，持续到完成条件成立或触及上限 | 想把目标交出去，而不是自己挑选工作流时 |
 | `/orchestrate` | 持久化 | 加载或创建计划，然后分派并行执行，同时监控和验证 | 适合自动并行协调的独立任务 |
-| `/work` | 持久化 | 在授权范围内逐步完成多领域规划、实现和 QA | 跨越多个领域、需要协调交付的功能 |
+| `/work` | 持久化 | 在授权范围内完成 PM 规划、并行实现，以及对整体结果的一轮 QA | 功能跨越多个领域，且想要由 PM 主导的流程时 |
 | `/ultrawork` | 持久化 | 包含 5 个阶段、17 个步骤和 12 个隔离审查检查点的质量工作流 | 最高质量交付，生产关键代码 |
 | `/plan` | 非持久化 | PM 驱动的任务分解、API 契约，以及在 `docs/plans/work/` 中跟踪计划产物（顺序命名 `NNN-name.md`，使用 Status 字段管理生命周期） | 复杂多智能体工作之前，或需要跟踪进度和决策日志的复杂功能 |
 | `/brainstorm` | 非持久化 | 结合 2 到 3 个方案进行方法探索，并在 `docs/decisions/` 中生成草案 | 确定实现方案之前 |
@@ -264,13 +265,13 @@ oma stats get
 | `/recap` | 非持久化 | 汇总受支持的 AI 工具历史中的工作 | 每日或周期回顾 |
 | `/schedule` | 非持久化 | 注册重复性智能体作业 | 夜间回顾、扫描或维护 |
 | `/video` | 非持久化 | 从脚本、旁白和视觉素材合成可复现视频 | 短视频、讲解视频和演示 |
-| `/ralph` | 持久化 | 反复执行 ultrawork，由提示驱动的 judge 判定，并带循环安全措施 | 明确要求重复执行，直到机械可验证的完成标准通过 |
+| `/ralph` | 持久化 | `/oma-mode` 的已弃用别名 | `/oma-mode` |
 
 ---
 
 ## 自动检测示例 {#auto-detection-examples}
 
-关键词钩子只会启动 4 种持久化模式，并且只在提示明确点出模式名称时触发。其他工作流都从各自的斜杠命令启动。
+关键词钩子只会启动 5 种持久化模式，并且只在提示明确点出模式名称时触发。其他工作流都从各自的斜杠命令启动。
 
 | 你输入 | 检测到的工作流 | 语言 |
 |--------|------------------|----------|
@@ -435,7 +436,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | 仪表盘显示“No agents detected yet” | 智能体尚未写入记忆，或仪表盘监视的是另一个目录 | 等待第一个进度文件出现；在项目根目录运行，或传入 `--project-root <path>` |
 | `oma dashboard web` 退出并提示“port 9847 is already in use” | 其他进程占用了该端口 | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA 报告有 50 多个问题 | 大型代码库的首次审查通常如此 | 优先处理 CRITICAL 和 HIGH 严重性问题。将 MEDIUM/LOW 记录到后续迭代。 |
-| 仅提及某个持久化模式的名称却启动了该模式 | 提示在问题或代码块之外提到了 `orchestrate`、`ultrawork`、`work mode` 或 `ralph` | 输入“workflow done”以释放该模式。建议反馈误触发以便持续改进。 |
+| 仅提及某个持久化模式的名称却启动了该模式 | 提示在问题或代码块之外提到了 `oma-mode`、`orchestrate`、`ultrawork`、`work mode` 或 `ralph` | 输入“workflow done”以释放该模式。建议反馈误触发以便持续改进。 |
 | 持久化工作流无法停止 | 状态文件仍然存在 | 在聊天中说“workflow done”，或从 `.agents/state/` 手动删除状态文件 |
 | 智能体因 HIGH 澄清而阻塞 | 需求过于含糊 | 提供智能体要求的具体答案，然后重新运行 |
 | MCP 工具无法使用 | Serena 未配置或未运行 | 运行 `oma doctor` 检查 MCP 配置 |

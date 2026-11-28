@@ -73,7 +73,6 @@ Use `--help` de cada família ou `oma describe <path>` para conhecer a gramátic
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
-| `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
@@ -768,7 +767,7 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set {#goal-set}
 
-Associa um contrato de objetivo a um workflow persistente ativo (orchestrate, ultrawork, work, ralph). O contrato é aplicado mecanicamente pelo hook Stop do modo persistente: o encerramento deixa de depender apenas do julgamento do modelo.
+Associa um contrato de objetivo a um workflow persistente ativo (oma-mode, orchestrate, ultrawork, work, ralph). O contrato é aplicado mecanicamente pelo hook Stop do modo persistente: o encerramento deixa de depender apenas do julgamento do modelo.
 
 ```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]

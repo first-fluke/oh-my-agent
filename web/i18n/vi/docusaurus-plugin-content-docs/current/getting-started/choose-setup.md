@@ -45,11 +45,11 @@ Bản cài CLI đã có thể bắt đầu từ lệnh thứ hai. Dùng `oma ins
 | `frontend` | Lập kế hoạch một trang cài đặt, rồi triển khai form | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Lập kế hoạch một endpoint API có xác thực | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Tìm bài báo và so sánh bằng chứng | Yêu cầu tìm tài liệu có trích dẫn |
-| `all` | Phối hợp một tính năng qua UI, API và dữ liệu | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Phối hợp một tính năng qua UI, API và dữ liệu | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 [Các named preset](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) được `--preset` chấp nhận. Tên không xác định, giá trị rỗng hoặc `custom` bị từ chối trước khi cài. Để chọn từng skill, chạy `oma install` tương tác và chọn Custom. Không có `--preset`, thiết lập không giám sát `--yes`/CI chọn `all`.
 
-Preset frontend chọn tám skill. Preset chọn nội dung skill; installer vẫn thiết lập file dùng chung, mọi định nghĩa workflow và agent, hook và provider. Một số workflow cần skill nằm ngoài preset domain. Kiểm tra [dependency của workflow](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) trước khi dùng, hoặc chọn `all` cho mọi workflow. Preset nhỏ hơn trên bản cài đã có không xóa các skill khác.
+Preset frontend chọn chín skill. Preset chọn nội dung skill; installer vẫn thiết lập file dùng chung, mọi định nghĩa workflow và agent, hook và provider. Một số workflow cần skill nằm ngoài preset domain. Kiểm tra [dependency của workflow](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) trước khi dùng, hoặc chọn `all` cho mọi workflow. Preset nhỏ hơn trên bản cài đã có không xóa các skill khác.
 
 Lựa chọn provider độc lập với preset. Ví dụ, thêm `--semantic-memory none` khi project không cần dịch vụ semantic-memory. Xem [tác dụng của cài đặt](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default) để biết các file và tích hợp khác mà runtime cấu hình.
 

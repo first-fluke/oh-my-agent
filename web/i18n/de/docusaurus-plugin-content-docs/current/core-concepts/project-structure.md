@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -300,7 +301,7 @@ Hier liegt das Fachwissen der Skills. Der aktuelle Katalog enthält 32 Skill-Ver
 - Schrittweises Ausführungsprotokoll
 - Gate-Definitionen für persistente Workflows
 
-Persistente Workflows sind `orchestrate.md`, `work.md`, `ultrawork.md` und `ralph.md`. Zu den nicht persistenten Workflows gehören `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` und `video.md`.
+Persistente Workflows sind `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md` und `ralph.md`. Zu den nicht persistenten Workflows gehören `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` und `video.md`.
 
 ### agents/
 
@@ -494,7 +495,7 @@ Hier schreiben Agenten während Orchestrierungssitzungen ihren Fortschritt. Dies
 | `lessons-{sessionId}.md` | Orchestrator | Durch Versuchsbelege gestützte Erkenntnisse (bedingt) |
 | `session-work.md` | Work-Workflow | Sitzungsstatus des Work-Workflows |
 | `session-ultrawork.md` | Ultrawork-Workflow | Sitzungsstatus des Ultrawork-Workflows |
-| `session-ralph-{sessionId}.md` | Ralph-Workflow | Kriterien, Iterationsprotokolle und Judge-Ergebnisse für einen Ralph-Lauf |
+| `session-oma-mode-{sessionId}.md` | oma-mode-Workflow | Kriterien, Iterationsprotokolle und Judge-Ergebnisse für einen Lauf |
 | `session-cost-{sessionId}.md` | System | Spawn-Kostentelemetrie pro Sitzung |
 | `archive/metrics-{date}.md` | System | Archivierte Sitzungsmetriken (Aufbewahrung 30 Tage) |
 

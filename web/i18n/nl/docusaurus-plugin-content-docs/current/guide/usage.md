@@ -9,11 +9,11 @@ description: Gebruiksgids voor OMA met taakselectie vanuit de lezer, voorbeelden
 ## Snelstart
 
 1. Open je project in een geselecteerde AI-IDE of CLI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen of een andere ondersteunde host).
-2. De geselecteerde host kan [skills](../getting-started/glossary.md#skill) uit `.agents/skills/` laden; ingeschakelde hooks voegen skillhints toe op basis van natural-language-keywords en starten een [workflow](../getting-started/glossary.md#workflow) alleen via het slash-commando of, voor de vier persistente modi, via de naam van de modus.
+2. De geselecteerde host kan [skills](../getting-started/glossary.md#skill) uit `.agents/skills/` laden; ingeschakelde hooks voegen skillhints toe op basis van natural-language-keywords en starten een [workflow](../getting-started/glossary.md#workflow) alleen via het slash-commando of, voor de vijf persistente modi, via de naam van de modus.
 3. Beschrijf in natuurlijke taal wat je wilt. De host of de geselecteerde workflow routeert de taak naar de relevante skill.
 4. Gebruik voor multi-agentwerk `/work` of `/orchestrate`.
 
-Voor single-domaintaken is geen speciale syntax nodig. Gebruik de [gids voor skill- en workflowselectie](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) om te kiezen tussen één skill, `/work`, `/orchestrate`, `/ultrawork` en `/ralph`. Zie [Snel starten](../getting-started/quick-start.md) voor de setup en [Belangrijke standaardinstellingen](../getting-started/important-defaults.md) vóór je providers wijzigt.
+Voor single-domaintaken is geen speciale syntax nodig. Gebruik de [gids voor skill- en workflowselectie](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) om te kiezen tussen één skill, `/oma-mode`, `/work`, `/ultrawork`, `/ralph` en `/orchestrate`. Zie [Snel starten](../getting-started/quick-start.md) voor de setup en [Belangrijke standaardinstellingen](../getting-started/important-defaults.md) vóór je providers wijzigt.
 
 ## Kies een gids
 
@@ -245,8 +245,9 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 
 | Commando | Type | Wat het doet | Wanneer gebruiken |
 |---------|------|-------------|---------|
+| `/oma-mode` | Persistent | Neemt een doel aan, kiest de route, voert die uit en gaat door tot aan de eindvoorwaarde is voldaan of een limiet is bereikt | Wanneer je een doel wilt overdragen in plaats van een workflow te kiezen |
 | `/orchestrate` | Persistent | Laadt of maakt een plan en delegeert daarna parallelle uitvoering met monitoring en verificatie | Onafhankelijke taken geschikt voor automatische parallelle coördinatie |
-| `/work` | Persistent | Stapsgewijze planning, implementatie en QA over meerdere domeinen binnen de geautoriseerde scope | Features over meerdere domeinen die gecoördineerde levering nodig hebben |
+| `/work` | Persistent | PM-plan, parallelle implementatie en één QA-ronde over het hele resultaat, binnen de geautoriseerde scope | Features over meerdere domeinen wanneer je de door de PM geleide flow wilt |
 | `/ultrawork` | Persistent | Kwaliteitsworkflow met 5 fasen, 17 stappen en 12 geïsoleerde reviewcheckpoints | Maximale kwaliteit, productie-kritieke code |
 | `/plan` | Niet-persistent | PM-gestuurde taakdecompositie, API-contracten en bijgehouden planartefacten in `docs/plans/work/` (sequentiële `NNN-name.md`, veld Status voor levenscyclus) | Vóór complex multi-agentwerk; complexe features met bijgehouden voortgang en beslislogs |
 | `/brainstorm` | Niet-persistent | Verkenning van aanpakken met 2-3 voorstellen en een concept in `docs/decisions/` | Vóór je een implementatieaanpak vastlegt |
@@ -264,13 +265,13 @@ Cross-vendor taken en `model_preset: free` gebruiken `oma agent spawn`. Native d
 | `/recap` | Niet-persistent | Werk samenvatten uit ondersteunde AI-toolgeschiedenissen | Dagelijkse of periodieke retrospective |
 | `/schedule` | Niet-persistent | Terugkerende agentjobs registreren | Nachtelijke recaps, scans of housekeeping |
 | `/video` | Niet-persistent | Reproduceerbare video's samenstellen uit script, narratie en visuals | Shorts, explainers en demo's |
-| `/ralph` | Persistent | Ultrawork herhaald uitvoeren met een geprompte judge en lusbeveiligingen | Expliciet herhalen tot mechanische voltooiingscriteria slagen |
+| `/ralph` | Persistent | Verouderde alias van `/oma-mode` | `/oma-mode` |
 
 ---
 
 ## Voorbeelden van autodetectie
 
-De keyword-hook start alleen vier persistente modi, en alleen wanneer de prompt de modus bij naam noemt. Andere workflows starten via hun slash-commando.
+De keyword-hook start alleen vijf persistente modi, en alleen wanneer de prompt de modus bij naam noemt. Andere workflows starten via hun slash-commando.
 
 | Je typt | Gedetecteerde workflow | Taal |
 |----------|------------------|----------|
@@ -435,7 +436,7 @@ Veelvoorkomende problemen staan hieronder. Zie [Probleemoplossing](./troubleshoo
 | Dashboard toont "No agents detected yet" | Agenten hebben nog niet naar geheugen geschreven, of het dashboard bewaakt een andere directory | Wacht op het eerste progressbestand; draai vanuit de projectroot of geef `--project-root <path>` mee |
 | `oma dashboard web` stopt met "port 9847 is already in use" | Een ander proces bezet de poort | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA-rapport heeft 50+ issues | Normaal bij een eerste review van grote codebases | Richt je eerst op CRITICAL en HIGH. Documenteer MEDIUM/LOW voor latere sprints |
-| Een persistente modus start terwijl je alleen de naam noemde | De prompt noemt `orchestrate`, `ultrawork`, `work mode` of `ralph` buiten een vraag of codeblok | Zeg "workflow done" om de modus vrij te geven. Meld false triggers ter verbetering |
+| Een persistente modus start terwijl je alleen de naam noemde | De prompt noemt `oma-mode`, `orchestrate`, `ultrawork`, `work mode` of `ralph` buiten een vraag of codeblok | Zeg "workflow done" om de modus vrij te geven. Meld false triggers ter verbetering |
 | Persistente workflow stopt niet | Statusbestand bestaat nog | Zeg "workflow done" in de chat, of verwijder het statusbestand handmatig uit `.agents/state/` |
 | Agent is geblokkeerd op HIGH-clarification | Requirements zijn te ambigue | Geef de gevraagde antwoorden en voer daarna opnieuw uit |
 | MCP-tools werken niet | Serena is niet geconfigureerd of draait niet | Voer `oma doctor` uit om de MCP-configuratie te controleren |

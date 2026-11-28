@@ -73,7 +73,6 @@ Gebruik `--help` van een familie of `oma describe <path>` voor de exacte argumen
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
-| `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
@@ -791,7 +790,7 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set
 
-Koppel een doelcontract aan een actieve persistente workflow (orchestrate, ultrawork, work, ralph). Het contract wordt mechanisch afgedwongen door de Stop-hook van de persistente modus; voltooiing is daardoor geen inschatting van het model.
+Koppel een doelcontract aan een actieve persistente workflow (oma-mode, orchestrate, ultrawork, work, ralph). Het contract wordt mechanisch afgedwongen door de Stop-hook van de persistente modus; voltooiing is daardoor geen inschatting van het model.
 
 ```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]

@@ -82,9 +82,9 @@ export class TimedCaptionProvider implements CaptionProvider {
   ): Promise<string[] | null> {
     void _text;
     void _opts;
-    // TODO(oma-deferred): oma-translation — translate each caption line to
-    // opts.locale before writing srt/vtt (still key-free / agent-as-key). Until
-    // the translator surface is wired, fall back to the source locale.
+    // The oma-translation surface is not wired into this process, so caption
+    // lines are never translated to opts.locale here: null selects the
+    // source-locale fallback for srt/vtt.
     return null;
   }
 }

@@ -33,7 +33,7 @@ De modelpreset is de waarde `model_preset` in `.agents/oma-config.yaml` (of `.cu
 
 ### Persistente workflow {#persistent-workflow}
 
-Een persistente workflow blijft over meerdere beurten doorlopen tot het werk klaar is of jij hem deactiveert. De persistente workflows zijn `/orchestrate`, `/work`, `/ultrawork` en `/ralph`, en alleen een expliciete aanroep activeert de persistente modus. Zolang er een actief is, injecteert een hook bij elke prompt opnieuw `[OMA PERSISTENT MODE: ...]`, en de Stop-hook voorkomt dat de sessie eindigt tot een reinforcementlimiet of staleness-timeout is bereikt. Zeg `workflow done` om hem te deactiveren. Zie [Mechaniek van de persistente modus](../core-concepts/workflows.md#persistent-mode-mechanics).
+Een persistente workflow blijft over meerdere beurten doorlopen tot het werk klaar is of jij hem deactiveert. De persistente workflows zijn `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` en de verouderde alias `/ralph`, en alleen een expliciete aanroep activeert de persistente modus. Zolang er een actief is, injecteert een hook bij elke prompt opnieuw `[OMA PERSISTENT MODE: ...]`, en de Stop-hook voorkomt dat de sessie eindigt tot een reinforcementlimiet of staleness-timeout is bereikt. Zeg `workflow done` om hem te deactiveren. Zie [Mechaniek van de persistente modus](../core-concepts/workflows.md#persistent-mode-mechanics).
 
 ### Stop gate {#stop-gate}
 
@@ -70,7 +70,7 @@ Het eventlog is het append-only verslag van een OMA-sessie, opgeslagen als `even
 
 ### Judge {#judge}
 
-"Judge" heeft twee betekenissen. In `/ralph` is de judge de fase na elke ultrawork-iteratie die elk voltooiingscriterium toetst aan de werkelijke projectstatus en PASS, FAIL, REGRESSED of BLOCKED vastlegt. Een apart gespawnde agent met verse context voert die fase uit, zodat de orchestrator zijn eigen werk niet beoordeelt. Bij skillevaluatie en -optimalisatie is `judge` het standaardtype checker: een model beoordeelt de output van een arm aan de hand van een rubric en geeft PASS of FAIL terug. Zie [/ralph](../core-concepts/workflows.md#ralph) en [de judge-checker](../guide/skill-eval.md#judge-default).
+"Judge" heeft twee betekenissen. In `/oma-mode` is de judge de stap na elke iteratie die elk voltooiingscriterium toetst aan de werkelijke projectstatus en PASS, FAIL, REGRESSED of BLOCKED vastlegt. Een apart gespawnde agent met verse context voert die stap uit, zodat de sessie die het werk heeft gedaan het niet zelf beoordeelt. Bij skillevaluatie en -optimalisatie is `judge` het standaardtype checker: een model beoordeelt de output van een arm aan de hand van een rubric en geeft PASS of FAIL terug. Zie [/oma-mode](../core-concepts/workflows.md#oma-mode) en [de judge-checker](../guide/skill-eval.md#judge-default).
 
 ### Cross-context review (CCR) {#cross-context-review-ccr}
 

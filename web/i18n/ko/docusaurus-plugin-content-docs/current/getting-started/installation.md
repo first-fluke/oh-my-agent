@@ -87,13 +87,13 @@ bunx oh-my-agent@latest
 | 프리셋 | 이런 프로젝트일 때 선택 | 포함 스킬 | 개수 |
 |--------|-------------------------------|-----------------|-------|
 | **all** | 어떤 프로젝트든, 또는 모든 워크플로우가 바로 동작하길 원할 때 | 레지스트리의 모든 스킬 | 32 |
-| **fullstack** | 백엔드와 Terraform 인프라를 갖춘 웹·모바일 클라이언트 | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | 백엔드와 데이터베이스를 갖춘 웹 프론트엔드 | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | 백엔드와 데이터베이스를 갖춘 모바일 앱 | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | 웹 UI만 | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | 데이터베이스를 갖춘 API 또는 서비스 | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | 모바일 앱만 | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | 인프라, CI/CD, 관측성(observability) 작업 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | 백엔드와 Terraform 인프라를 갖춘 웹·모바일 클라이언트 | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | 백엔드와 데이터베이스를 갖춘 웹 프론트엔드 | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | 백엔드와 데이터베이스를 갖춘 모바일 앱 | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | 웹 UI만 | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | 데이터베이스를 갖춘 API 또는 서비스 | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | 모바일 앱만 | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | 인프라, CI/CD, 관측성(observability) 작업 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | 보안 스캔, 코드 리뷰, 수정 | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | 논문, 시장 조사, PDF/HWP 변환 | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | 디자인 에셋, 이미지, 음성, 글 콘텐츠 | design, image, voice, academic-writing, translation, scm | 6 |
@@ -112,12 +112,13 @@ oma install --preset frontend --yes
 
 ### 프리셋 밖의 스킬이 필요한 워크플로우 {#workflows-that-need-skills-outside-a-preset}
 
-모든 프리셋이 워크플로우와 에이전트 정의를 복사하지만, 명령과 프롬프트는 필수 스킬을 사용할 수 있는 워크플로우에 대해서만 노출됩니다. 예를 들어 새로 설치한 frontend 환경에서는 `oma-orchestration`이 없기 때문에 `/orchestrate`를 사용할 수 없지만, `/work`, `/ultrawork`, `/ralph`는 프리셋에 포함된 PM과 QA 스킬만으로 진입 요구사항이 충족되어 사용할 수 있습니다. 설치 프로그램은 `all`로 전환하지 않고 누락된 스킬을 보고합니다.
+모든 프리셋이 워크플로우와 에이전트 정의를 복사하지만, 명령과 프롬프트는 필수 스킬을 사용할 수 있는 워크플로우에 대해서만 노출됩니다. 예를 들어 새로 설치한 frontend 환경에서는 `oma-docs`가 없기 때문에 `/docs`를 사용할 수 없지만, `/orchestrate`, `/work`, `/ultrawork`는 프리셋에 포함된 PM, QA, orchestration 스킬만으로 진입 요구사항이 충족되어 사용할 수 있습니다. 설치 프로그램은 `all`로 전환하지 않고 누락된 스킬을 보고합니다.
 
 | 워크플로우 | 필수 진입 스킬 | 포함하는 프리셋 |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | 없음 | 모든 프리셋 |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -142,7 +143,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-도메인 엔트리는 각각 frontend 8개, security 6개, research 8개 스킬과 이에 맞는 네이티브 에이전트 구성을 포함합니다. 세션 부트스트랩은 해당 프리셋을 런타임 설치 프로그램에 전달합니다. 공유 런타임 설정과 기존에 설치된 스킬은 위에서 설명한 설치 프로그램 동작을 따릅니다. `oma` 엔트리는 전체 플러그인을 유지합니다. 생성된 Codex 마켓플레이스 카탈로그와 Grok Build 및 ZCode 카탈로그에도 동일한 도메인 루트가 선언됩니다. Antigravity CLI(생성된 트리 또는 `oma-antigravity-plugin.tar.gz` 릴리스 산출물에 대한 `agy plugin install ./antigravity-plugin`), Grok Build CLI, ZCode, Kimi Code(`/plugins install`)는 각각 자체 생성된 매니페스트를 읽습니다. 호스트별 정확한 절차는 [Claude 호환 플러그인 호스트](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)를 참고하세요.
+도메인 엔트리는 각각 frontend 9개, security 6개, research 8개 스킬과 이에 맞는 네이티브 에이전트 구성을 포함합니다. 세션 부트스트랩은 해당 프리셋을 런타임 설치 프로그램에 전달합니다. 공유 런타임 설정과 기존에 설치된 스킬은 위에서 설명한 설치 프로그램 동작을 따릅니다. `oma` 엔트리는 전체 플러그인을 유지합니다. 생성된 Codex 마켓플레이스 카탈로그와 Grok Build 및 ZCode 카탈로그에도 동일한 도메인 루트가 선언됩니다. Antigravity CLI(생성된 트리 또는 `oma-antigravity-plugin.tar.gz` 릴리스 산출물에 대한 `agy plugin install ./antigravity-plugin`), Grok Build CLI, ZCode, Kimi Code(`/plugins install`)는 각각 자체 생성된 매니페스트를 읽습니다. 호스트별 정확한 절차는 [Claude 호환 플러그인 호스트](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)를 참고하세요.
 
 고정된 호스트 CI 작업은 새 러너에서 로컬 마켓플레이스를 등록하고, 도메인 엔트리를 설치한 뒤, 생성된 인벤토리를 검사합니다. 이러한 검사는 모델 호출 없이 실행됩니다. 런타임 자격 증명, 외부 프로바이더, 첫 태스크의 성공 여부는 여전히 별도 검증이 필요합니다. 릴리스 검사에서는 모든 도메인 루트의 두 매니페스트가 CLI 버전과 일치하고 Release Please 버전 업데이터를 갖추었는지도 요구합니다.
 

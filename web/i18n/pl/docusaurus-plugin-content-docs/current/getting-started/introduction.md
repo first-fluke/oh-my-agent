@@ -7,7 +7,7 @@ description: Kompleksowy przegląd oh-my-agent — wieloagentowego frameworka or
 
 oh-my-agent to wieloagentowy framework orkiestracji dla IDE i narzędzi CLI opartych na AI. Zamiast polegać na jednym asystencie AI do wszystkiego, oh-my-agent kieruje pracę przez 32 pakiety umiejętności i 13 kanonicznych ról dispatchu. Dwanaście plików definicji subagentów znajdujących się w repozytorium dostarcza wielokrotnego użytku persony do implementacji, review, planowania, debugowania, dokumentacji, badań i infrastruktury. `research-explorer.md` mapuje się na kanoniczną rolę `explore`; `orchestrator` jest rolą koordynacji runtime'u bez osobnego pliku definicji.
 
-OMA wykonuje mechaniczne kontrole, gdy je wywołasz lub wybierzesz workflow, który je zawiera. `oma verify agent <agent-type>` uruchamia kontrole dla wybranego typu agenta; `/ralph` dodaje weryfikację opartą na artefaktach i pętlę [sędziego](./glossary.md#judge); włączone hooki Stop dostawcy ([bramka zatrzymania](./glossary.md#stop-gate)) mogą utrzymywać workflow otwarty, dopóki wykonywane są jego skonfigurowane kontrole. Samo ładowanie umiejętności nie ustanawia akceptacji, a zwykły prompt nie uruchamia automatycznie każdej bramki workflowu. Użyj kryteriów akceptacji workflowu i powstałych plików, aby zdecydować, co jest ukończone.
+OMA wykonuje mechaniczne kontrole, gdy je wywołasz lub wybierzesz workflow, który je zawiera. `oma verify agent <agent-type>` uruchamia kontrole dla wybranego typu agenta; `/oma-mode` dodaje pętlę [sędziego](./glossary.md#judge) nad kryteriami ukończenia; włączone hooki Stop dostawcy ([bramka zatrzymania](./glossary.md#stop-gate)) mogą utrzymywać workflow otwarty, dopóki wykonywane są jego skonfigurowane kontrole. Samo ładowanie umiejętności nie ustanawia akceptacji, a zwykły prompt nie uruchamia automatycznie każdej bramki workflowu. Użyj kryteriów akceptacji workflowu i powstałych plików, aby zdecydować, co jest ukończone.
 
 Cały system znajduje się w przenośnym katalogu `.agents/` wewnątrz projektu. Możesz przełączać się między Claude Code, Codex CLI, Antigravity CLI lub IDE, Cursorem, OpenCode i innymi obsługiwanymi narzędziami, a konfiguracja agentów podróżuje razem z kodem.
 
@@ -33,13 +33,13 @@ OMA przypisuje domeny umiejętnościom i kieruje pracę nad zadaniem do agentów
 
 ---
 
-## Obecny katalog: 32 umiejętności, 12 definicji, 20 workflowów {#the-current-catalog-32-skills-12-definitions-20-workflows}
+## Obecny katalog: 32 umiejętności, 12 definicji, 21 workflowów {#the-current-catalog-32-skills-12-definitions-21-workflows}
 
 Katalog rozdziela trzy rzeczy, które łatwo pomylić:
 
 - **[Umiejętności](./glossary.md#skill)** to 32 pakiety wiedzy domenowej w `.agents/skills/*/SKILL.md`. Kierują na podstawie intencji wyrażonej naturalnym językiem i progresywnie ładują zasoby.
 - **[Definicje agentów](./glossary.md#agent-definition)** to 12 plików w `.agents/agents/`. Dostarczają natywne dla dostawcy persony subagentów i odwołują się do co najmniej jednej umiejętności.
-- **[Workflowy](./glossary.md#workflow)** to 20 definicji procesów w `.agents/workflows/`. Cztery są [trwałe](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu trwałego.
+- **[Workflowy](./glossary.md#workflow)** to 21 definicji procesów w `.agents/workflows/`. Pięć jest [trwałych](./glossary.md#persistent-workflow) (`oma-mode`, `orchestrate`, `work`, `ultrawork` i `ralph`); pozostałe kończą się raportem i nie utrzymują aktywnego trybu trwałego.
 
 Poniższe sekcje zachowują szczegółowy katalog umiejętności. Gdy nazwa albo opis się zmienia, rozstrzygający jest frontmatter bieżącego `SKILL.md`.
 
@@ -167,7 +167,7 @@ Wszystko, czego potrzebuje oh-my-agent, znajduje się w katalogu `.agents/`:
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -210,18 +210,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Źródła: `.agents/hooks/core/keyword-detector.ts` (pomijanie poleceń slash, dopasowywanie jawnej nazwy trybu), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` oraz pliki workflowów w `.agents/workflows/`. Nie każdy workflow ma każdą bramkę: `/orchestrate` uruchamia skrypt weryfikacji, `/review` uruchamia przegląd QA, a `/ralph` dodaje [sędziego](./glossary.md#judge).
+Źródła: `.agents/hooks/core/keyword-detector.ts` (pomijanie poleceń slash, dopasowywanie jawnej nazwy trybu), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` oraz pliki workflowów w `.agents/workflows/`. Nie każdy workflow ma każdą bramkę: `/orchestrate` uruchamia skrypt weryfikacji, `/review` uruchamia przegląd QA, a `/oma-mode` dodaje [sędziego](./glossary.md#judge).
 
 ---
 
@@ -264,7 +264,7 @@ HUD korzysta z `.claude/hooks/hud.ts` i funkcji hooka `statusLine` Claude Code.
 Workflow uruchamia polecenie slash. Dla zwykłego zapytania system hooków oh-my-agent skanuje wejście względem tabel słów kluczowych w `.agents/hooks/core/triggers.json` (wbudowanych w plik binarny `oma` i współdzielonych przez każdego dostawcę), które obejmują 11 języków (angielski, koreański, japoński, chiński, hiszpański, francuski, niemiecki, portugalski, rosyjski, niderlandzki i polski).
 
 - **Podpowiedzi umiejętności** (np. „run a security audit”) → injector umiejętności wskazuje maksymalnie trzy pasujące umiejętności; notatka ma charakter doradczy i nie uruchamia żadnego workflowu
-- **Workflowy trwałe** (`orchestrate`, `work`, `ultrawork`, `ralph`) → uruchamiają się ze zwykłego tekstu tylko wtedy, gdy prompt używa jawnej nazwy workflowu (na przykład `ultrawork: add rate limiting`)
+- **Workflowy trwałe** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → uruchamiają się ze zwykłego tekstu tylko wtedy, gdy prompt używa jawnej nazwy workflowu (na przykład `ultrawork: add rate limiting`)
 - **Każdy inny workflow** → uruchamia się wyłącznie ze swojego `/command`
 - **Dane informacyjne** (np. „what is orchestrate?”) → odfiltrowane, nie uruchamiają workflowu
 - **Jawne `/command`** → hook pomija wykrywanie, aby uniknąć duplikacji
@@ -301,5 +301,5 @@ Katalog `.agents/` pozostaje źródłem prawdy. Instalacja tworzy dowiązania lu
 - **[Instalacja](./installation.md)**: trzy metody instalacji, presety, konfiguracja CLI i weryfikacja
 - **[Agenci](/docs/core-concepts/agents)**: szczegółowe omówienie 32 umiejętności, 13 ról dispatchu oraz polityki autoryzacji i doprecyzowania
 - **[Umiejętności](/docs/core-concepts/skills)**: wyjaśnienie architektury dwuwarstwowej
-- **[Workflowy](/docs/core-concepts/workflows)**: wszystkie 20 workflowów z wyzwalaczami i fazami
+- **[Workflowy](/docs/core-concepts/workflows)**: wszystkie 21 workflowów z wyzwalaczami i fazami
 - **[Przewodnik użycia](/docs/guide/usage)**: rzeczywiste przykłady od pojedynczych zadań po pełną orkiestrację

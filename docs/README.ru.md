@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 [Руководство по установке для агента](./agent-install.md) описывает неинтерактивную настройку и проверку. Если вы и есть агент, прочитайте это руководство и выполните установку.
 
-Затем откройте агента и наберите `/orchestrate build a TODO app with login`.
+Затем откройте агента и наберите `/oma-mode build a TODO app with login`.
 
 oh-my-agent (`oma`) превращает Claude Code, Codex CLI, Cursor и ещё 11 агентов для программирования в команду. Планировщик разбивает работу, инженеры ведут разработку параллельно, ревьюер проверяет результат, а отладчик устраняет корневую причину.
 
@@ -43,7 +43,7 @@ oh-my-agent (`oma`) превращает Claude Code, Codex CLI, Cursor и ещ�
 | [Спроектировать экран админки](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
 | [Исправить падающий тест](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | Проверить границы системы | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
-| Запустить всю команду | [Установите oma](#install) | `/orchestrate add login to this app` |
+| Запустить всю команду | [Установите oma](#install) | `/oma-mode add login to this app` |
 
 Выполните команду `skills use` в терминале агента. Она загружает один этот навык. Для полной команды с рабочими процессами [установите oma](#install). Остальные варианты описаны в разделе [Выбор настройки](../web/docs/getting-started/choose-setup.md).
 
@@ -57,8 +57,8 @@ oh-my-agent (`oma`) превращает Claude Code, Codex CLI, Cursor и ещ�
 
 | | Что это даёт | Попробуйте |
 |---|---|---|
-| **12 ролей-специалистов** | PM, архитектор, инженеры бэкенда, фронтенда, мобильной разработки, баз данных и инфраструктуры, QA-ревьюер, отладчик, рефакторщик, куратор документации, исследователь ([знакомьтесь](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **20 workflow** | Slash-команды от `/brainstorm` и `/plan` до `/review`, `/debug` и `/scm`. Четыре мультиагентных режима запускаются и тогда, когда обычная просьба называет их по имени | «ultrawork: add rate limiting» |
+| **12 ролей-специалистов** | PM, архитектор, инженеры бэкенда, фронтенда, мобильной разработки, баз данных и инфраструктуры, QA-ревьюер, отладчик, рефакторщик, куратор документации, исследователь ([знакомьтесь](#meet-the-team)) | `/oma-mode build a TODO app with login` |
+| **21 workflow** | Slash-команды от `/brainstorm` и `/plan` до `/review`, `/debug` и `/scm`. Пять persistent-режимов запускаются и тогда, когда обычная просьба называет их по имени | «ultrawork: add rate limiting» |
 | **32 навыка** | Знания по областям, которые загружаются, только когда они нужны задаче: UI, API, схемы, Terraform, CI, безопасность, git, observability | загружаются сами, например «add a Terraform S3 bucket» |
 | **Файлы, которые можно открыть** | Планы, дизайн-документы, API-контракты, ADR, заметки о багах, результаты по агентам, доказательства проверок безопасности, HTML-разборы, сводки | `ls .agents/results` |
 | **Исследования и контент** | Поиск со ссылками на источники, исследование рынка, научные статьи, презентации, MP4-видео, изображения, локальный голос, PDF/HWP в Markdown | `/video`, `/convert` |
@@ -97,7 +97,7 @@ oma
 oma install --preset frontend --yes
 ```
 
-Так выбираются восемь навыков пресета frontend. Установщик всё равно настраивает runtime, провайдеров и общие файлы рабочих процессов и сохраняет ранее установленные навыки. Свой набор доступен в интерактивном установщике. См. [значения пресетов](../web/docs/getting-started/installation.md#presets) и [зависимости рабочих процессов](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
+Так выбираются девять навыков пресета frontend. Установщик всё равно настраивает runtime, провайдеров и общие файлы рабочих процессов и сохраняет ранее установленные навыки. Свой набор доступен в интерактивном установщике. См. [значения пресетов](../web/docs/getting-started/installation.md#presets) и [зависимости рабочих процессов](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 <details>
 <summary>Что ещё установщик делает по умолчанию</summary>
@@ -124,18 +124,18 @@ oma install --preset frontend --yes
 | Пресет | Навыки |
 |--------|--------|
 | **All** | **Все 32 навыка** (рекомендуется) |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack без mobile и tf-infra |
 | Fullstack Mobile | Fullstack без frontend и tf-infra |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | Выбор навыков по одному |
 
-Из именованных пресетов только `All` включает coordination, orchestration, docs, security, refactor, explanation, recap, video, slide и skill-creation (или выберите их в `Custom`). В Research и Content нет навыков, на которых построены `/plan`, `/review`, `/debug`, `/architecture` и `/brainstorm`. См. [Workflows, которым нужны навыки вне пресета](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
+Из именованных пресетов только `All` включает docs, security, refactor, explanation, recap, video, slide и skill-creation (или выберите их в `Custom`). В Research и Content нет навыков, на которых построены `/plan`, `/review`, `/debug`, `/architecture` и `/brainstorm`. См. [Workflows, которым нужны навыки вне пресета](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 </details>
 
@@ -158,7 +158,7 @@ oma install --preset frontend --yes
 
 4. **Проверьте результат.** Сообщённые ветка и изменения должны совпасть с выводом Git. Загрузка инструкций или завершение установки сами по себе не доказывают, что эта задача выполнилась.
 
-Для более крупной работы выберите рабочий процесс, чьи указанные навыки установлены. Начните с `/plan`, если навык планирования установлен, затем продолжите с `/work` или `/orchestrate`, когда их зависимости доступны.
+Для более крупной работы выберите рабочий процесс, чьи указанные навыки установлены. `/oma-mode` принимает цель, описанную обычными словами, и сам выбирает рабочий процесс; раздел [Как команда работает вместе](#how-the-team-works-together) сравнивает командные рабочие процессы.
 
 <a id="meet-the-team"></a>
 ## Знакомьтесь с командой
@@ -182,7 +182,7 @@ oma install --preset frontend --yes
 | **Куратор документации** (`docs-curator`) | oma-docs | `/docs` или «verify docs» | `docs/generated/doc-refs.json` и одобренные вами патчи документации |
 | **Исследователь** (`research-explorer`) | oma-search, oma-market, oma-scholar | исследовательский запрос | Источники со ссылками и сведениями об их происхождении; рыночные обзоры в `.agents/results/market/` |
 
-Инженеру инфраструктуры (`tf-infra-engineer`) предписано спрашивать разрешения перед любым `apply` или `destroy`, который что-то разрушает или затрагивает production. У остальных навыков (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, контент и медиа) нет отдельной роли. Ваш агент загружает их сам, а для большинства из них skill injector подсказывает нужный по вашему промпту.
+Инженеру инфраструктуры (`tf-infra-engineer`) предписано спрашивать разрешения перед любым `apply` или `destroy`, который что-то разрушает или затрагивает production. У остальных навыков (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, orchestration, skill-creation, контент и медиа) нет отдельной роли. Ваш агент загружает их сам, а для большинства из них skill injector подсказывает нужный по вашему промпту.
 
 </details>
 
@@ -193,7 +193,7 @@ oma install --preset frontend --yes
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -204,21 +204,21 @@ oma install --preset frontend --yes
 
 | Что нужно | Запуск | Чем заканчивается |
 |---|---|---|
+| Назвать цель и доверить ведение работы oma | `/oma-mode` | Выбирает маршрут, выполняет его, не спрашивая, какой использовать, и продолжает, пока судья со свежим контекстом не подтвердит выполнение каждого критерия завершения; останавливается с частичным отчётом, если критерии заблокированы, или после 5 итераций |
 | Только план | `/plan` | Файл плана для работы в нескольких областях или прямая рекомендация для небольшой работы |
-| Разработка под руководством PM, за которой вы следите шаг за шагом | `/work` | PM, затем инженеры уровень за уровнем, затем QA. Находки CRITICAL и HIGH уходят в цикл исправлений (до 5 циклов) |
-| Параллельная разработка без вашего участия | `/orchestrate` | Готовыми считаются только задачи, чьи проверки прошли; у каждой задачи до 3 попыток, после чего она помечается как частично выполненная или проваленная |
-| Рабочий процесс из пяти фаз | `/ultrawork` | Пять фаз с гейтами (PLAN, IMPL, VERIFY, REFINE, SHIP); каждое ревью проходит в свежей сессии ревьюера |
-| «Не останавливайся, пока всё действительно не готово» | `/ralph` | Повторяет `/ultrawork` с отдельно запущенным судьёй со свежим контекстом, пока не пройдут все критерии; останавливается с частичным отчётом, если критерии заблокированы, или после 5 итераций |
+| Фича, которая затрагивает несколько областей: план, разработка и ревью за один запуск | `/work` | PM пишет план и показывает его вам, инженеры ведут разработку параллельно, уровень за уровнем, затем QA проверяет всё вместе. Находки CRITICAL и HIGH уходят в цикл исправлений (до 5 циклов) |
+| Та же разработка, но с ревью на каждом этапе | `/ultrawork` | Пять фаз с гейтами (PLAN, IMPL, VERIFY, REFINE, SHIP) и 12 ревью; каждое ревью проходит в свежей сессии ревьюера |
+| Выполнить уже готовый план | `/orchestrate` | Выполняет план из `/plan` в том виде, в каком он написан, и проверяет каждую задачу отдельно. Готовыми считаются только задачи, чьи проверки прошли; у каждой задачи до 3 попыток, после чего она помечается как частично выполненная или проваленная |
 | Команда по расписанию | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Один Markdown-лог на каждый запуск в `~/.oma/schedule/runs/<id>/` |
 
 Workflow запускает slash-команда. Обычная просьба его не запускает, но в runtime с prompt-хуком она всё равно получает подсказку о навыках: наборы ключевых слов, охватывающие до 11 языков, сопоставляются с промптом и направляют вашего агента к подходящим навыкам («run a security audit» подключает `oma-qa`). Подсказка носит рекомендательный характер, а ключевые слова внутри блоков кода игнорируются.
 
-`/orchestrate`, `/work`, `/ultrawork` и `/ralph` становятся **persistent**, когда вы вызываете их по имени в виде slash-команды или обычным текстом («ultrawork: add rate limiting»). Тогда при попытке остановиться раньше времени агент возвращается к работе (до 5 раз или в течение 2 часов), пока вы не скажете **«workflow done»**. Только эти четыре workflow можно запустить обычной фразой, и только по имени.
+`/oma-mode`, `/work`, `/ultrawork`, `/ralph` и `/orchestrate` становятся **persistent**, когда вы вызываете их по имени в виде slash-команды или обычным текстом («ultrawork: add rate limiting»). Тогда при попытке остановиться раньше времени агент возвращается к работе (до 5 раз или в течение 2 часов), пока вы не скажете **«workflow done»**. Только эти пять workflow можно запустить обычной фразой, и только по имени.
 
 **Измерено, с оговорками.** В [бенчмарке](../benchmarks/README.md) (один промпт, Claude Code с пятью разными наборами дополнений, включая вариант без них, `claude-opus-4-6`, по одному прогону на каждый) oma набрал 80.6 против 70.7 у обычного Claude Code при стоимости в 1.7 раза выше ($4.04 против $2.37) и времени в 1.8 раза больше.
 
 <details>
-<summary>Все 20 workflow</summary>
+<summary>Все 21 workflow</summary>
 
 | Команда | Что делает |
 |---------|--------------|
@@ -230,9 +230,10 @@ Workflow запускает slash-команда. Обычная просьба 
 | `/design` | Определяет рамки дизайн-задачи и выдаёт находки, DESIGN.md или токены через oma-design |
 | `/docs` | Находит битые ссылки в документации и предлагает патчи для документов, затронутых diff |
 | `/explain` | Превращает diff, PR, ветку или тему в автономный интерактивный HTML-разбор |
+| `/oma-mode` | Принимает цель, выбирает маршрут, выполняет его и продолжает, пока цель не будет достигнута или не сработает лимит (persistent) |
 | `/orchestrate` | Запускает агентов параллельно, координирует их через файловое состояние и проверяет результат (persistent) |
 | `/plan` | Разбивает фичу на приоритизированные задачи с API-контрактами |
-| `/ralph` | Повторяет `/ultrawork` с отдельно запущенным судьёй, до 5 итераций (persistent) |
+| `/ralph` | Устаревший псевдоним `/oma-mode` (persistent) |
 | `/recap` | Подводит итог истории ваших диалогов с ИИ за день или период |
 | `/review` | Проверяет безопасность (OWASP Top 10), производительность, доступность (WCAG 2.2 AA) и качество кода |
 | `/schedule` | Регистрирует задание агента, которое запускается с повторяющимся интервалом |
@@ -337,7 +338,7 @@ Workflow запускает slash-команда. Обычная просьба 
 
 | Hook | Что делает | Как отключить / лимит |
 |---|---|---|
-| Запуск по ключевому слову | Запускает `/orchestrate`, `/work`, `/ultrawork` или `/ralph`, когда обычная просьба называет его по имени | Вопросы, вставленный текст и блоки кода пропускаются |
+| Запуск по ключевому слову | Запускает `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` или `/ralph`, когда обычная просьба называет его по имени | Вопросы, вставленный текст и блоки кода пропускаются |
 | Skill injector | Направляет агента к нужным для промпта навыкам | Приостанавливается, пока активен persistent workflow |
 | Stop-гейт | Возвращает persistent workflow к работе; с `oma goal set --gate test` остановка разрешается, когда этот скрипт завершается с кодом 0 в пределах 25 с | Скажите «workflow done»; кроме того, он снимается после 5 блокировок или через 2 часа |
 | Refactor guard | При остановке отмечает отредактированные файлы длиннее 500 строк для `refactor-engineer` | Включается явно: `refactor_guard.enabled` |

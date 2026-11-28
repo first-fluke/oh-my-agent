@@ -40,9 +40,9 @@ export class AgentScriptProvider implements ScriptProvider {
       // The agent supplied a richer script; trust it but keep the contract.
       return { ...injected, schemaVersion: VIDEO_SCHEMA_VERSION };
     }
-    // TODO(oma-deferred): MPT-LLM — when --compositor mpt + an LLM key is
-    // provisioned, route script generation through MoneyPrinterTurbo's
-    // custom-script endpoint instead of this deterministic skeleton.
+    // No LLM route is wired here, including MoneyPrinterTurbo's custom-script
+    // endpoint under --compositor mpt: a script the agent did not supply is
+    // always this deterministic skeleton.
     return buildSkeletonScript(brief, opts);
   }
 }

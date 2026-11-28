@@ -10,6 +10,7 @@ export const DOMAIN_PRESETS = {
       "oma-frontend",
       "oma-pm",
       "oma-qa",
+      "oma-orchestration",
       "oma-debug",
       "oma-scm",
     ],

@@ -85,7 +85,8 @@ describe("VideoOrchestrator", () => {
     expect(renderSpec.seed).toBe(42);
     // The output filename slug is derived from the script title.
     expect(renderSpec.slug).toBe("explain-the-local-test-runner");
-    // TODO(oma-deferred): music — never a dangling mode-string file ref.
+    // Without a rendered music file the spec omits music; it never carries a
+    // dangling mode-string file ref.
     expect(renderSpec.audio.music).toBeUndefined();
     expect(manifest.exitCode).toBe(0);
     expect(manifest.outputs.video).toBeUndefined();

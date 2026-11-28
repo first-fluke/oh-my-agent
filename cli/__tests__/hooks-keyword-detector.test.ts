@@ -2298,9 +2298,41 @@ memory was written by Serena into its internal store.
       });
     }
 
+    // Regression: a question whose '?' was not the last character of the
+    // line lost its question status, so asking about a workflow started it.
+    const questionsAboutAMode = [
+      "문서에서 왜 orchestrate 를 전면에 내세우는거임? 참나",
+      "Why does the README lead with orchestrate? That seems odd to me",
+      "ultrawork는 뭐가 다른 거야? 궁금하네",
+      "How is ralph different from ultrawork? Asking before I pick one",
+      "랄프 베리파이가 뭘 베리파이하는데",
+      "ultrawork는 뭐가 다른 거야",
+    ];
+    for (const prompt of questionsAboutAMode) {
+      it(`a question about a mode does not start it: ${prompt}`, async () => {
+        expect(await runPrompt(prompt)).toBeNull();
+        expect(stateWrites()).toEqual([]);
+      });
+    }
+
+    it("a command after a question still starts the named mode", async () => {
+      const context = contextOf(
+        await runPrompt("Why is CI red? ultrawork a fix for the login test"),
+      );
+      expect(context).toContain("[OMA WORKFLOW: ULTRAWORK]");
+    });
+
+    it("a Korean imperative with a question clause still starts the named mode", async () => {
+      const context = contextOf(
+        await runPrompt("왜 실패하는지 ultrawork로 고쳐줘"),
+      );
+      expect(context).toContain("[OMA WORKFLOW: ULTRAWORK]");
+    });
+
     // Regression: a typed slash command returned before activation, so
     // `/ultrawork …` never wrote the state file the Stop hook enforces.
     const slashInvocations: Array<[string, string]> = [
+      ["/oma-mode add login to this app", "oma-mode"],
       ["/ultrawork add rate limiting to POST /login", "ultrawork"],
       ["/orchestrate", "orchestrate"],
       ["/work build the settings page", "work"],
@@ -2427,8 +2459,9 @@ memory was written by Serena into its internal store.
       liveConfig = mod.default as unknown as typeof liveConfig;
     });
 
-    it("routes only the four persistent modes, each by an explicit name", () => {
+    it("routes only the five persistent modes, each by an explicit name", () => {
       expect(Object.keys(liveConfig.workflows).sort()).toEqual([
+        "oma-mode",
         "orchestrate",
         "ralph",
         "ultrawork",

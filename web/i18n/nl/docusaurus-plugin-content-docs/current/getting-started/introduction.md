@@ -7,7 +7,7 @@ description: Een uitgebreid overzicht van oh-my-agent, het multi-agent-orchestra
 
 oh-my-agent is een multi-agent-orchestratieframework voor AI-aangedreven IDE's en CLI-tools. In plaats van voor alles op één AI-assistent te vertrouwen, routeert oh-my-agent werk langs 32 skillpakketten en 13 canonieke dispatchrollen. Twaalf ingecheckte subagentdefinitiebestanden leveren herbruikbare persona's voor implementatie, review, planning, debugging, documentatie, onderzoek en infrastructuur. `research-explorer.md` wordt gekoppeld aan de canonieke rol `explore`; `orchestrator` is een runtime-coördinatierol zonder afzonderlijk definitiebestand.
 
-OMA biedt mechanische controles wanneer je ze aanroept of een workflow selecteert die ze bevat. `oma verify agent <agent-type>` voert de controles uit voor het geselecteerde agenttype; `/ralph` voegt verificatie met artefacten en een [judge](./glossary.md#judge)-lus toe; ingeschakelde Stop-hooks van vendors (de [stop gate](./glossary.md#stop-gate)) kunnen een workflow openhouden terwijl de geconfigureerde controles draaien. Alleen skills laden stelt geen acceptatie vast en een gewone prompt voert niet automatisch elke workflowgate uit. Gebruik de acceptatiecriteria van de workflow en de resulterende bestanden om te bepalen wat voltooid is.
+OMA biedt mechanische controles wanneer je ze aanroept of een workflow selecteert die ze bevat. `oma verify agent <agent-type>` voert de controles uit voor het geselecteerde agenttype; `/oma-mode` voegt een [judge](./glossary.md#judge)-lus over voltooiingscriteria toe; ingeschakelde Stop-hooks van vendors (de [stop gate](./glossary.md#stop-gate)) kunnen een workflow openhouden terwijl de geconfigureerde controles draaien. Alleen skills laden stelt geen acceptatie vast en een gewone prompt voert niet automatisch elke workflowgate uit. Gebruik de acceptatiecriteria van de workflow en de resulterende bestanden om te bepalen wat voltooid is.
 
 Het volledige systeem staat in een draagbare `.agents/`-directory binnen je project. Schakel tussen Claude Code, Codex CLI, Antigravity CLI of IDE, Cursor, OpenCode en andere ondersteunde tools; je agentconfiguratie reist met je code mee.
 
@@ -35,13 +35,13 @@ OMA wijst domeinen toe aan skills en routeert taakwerk naar agenten:
 
 ---
 
-## De huidige catalogus: 32 skills, 12 definities, 20 workflows
+## De huidige catalogus: 32 skills, 12 definities, 21 workflows
 
 De catalogus scheidt drie zaken die gemakkelijk door elkaar raken:
 
 - **[Skills](./glossary.md#skill)** zijn de 32 domeinkennis-pakketten onder `.agents/skills/*/SKILL.md`. Ze routeren vanuit natuurlijke taal en laden hun resources progressief.
 - **[Agentdefinities](./glossary.md#agent-definition)** zijn de 12 bestanden onder `.agents/agents/`. Ze leveren vendor-native subagentpersona's en verwijzen naar één of meer skills.
-- **[Workflows](./glossary.md#workflow)** zijn de 20 procesdefinities onder `.agents/workflows/`. Vier zijn [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` en `ralph`); de overige draaien tot een rapport en houden geen persistente modus actief.
+- **[Workflows](./glossary.md#workflow)** zijn de 21 procesdefinities onder `.agents/workflows/`. Vijf zijn [persistent](./glossary.md#persistent-workflow) (`oma-mode`, `orchestrate`, `work`, `ultrawork` en `ralph`); de overige draaien tot een rapport en houden geen persistente modus actief.
 
 De onderstaande secties behouden de gedetailleerde skillcatalogus. Wanneer een naam of beschrijving verandert, is de live frontmatter van `SKILL.md` leidend.
 
@@ -167,7 +167,7 @@ Alles wat oh-my-agent nodig heeft, staat in de directory `.agents/`:
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -210,18 +210,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Bronnen: `.agents/hooks/core/keyword-detector.ts` (overslaan van slashcommando's, expliciete matching op modusnaam), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` en de workflowbestanden onder `.agents/workflows/`. Niet elke workflow heeft elke gate: `/orchestrate` draait het verify-script, `/review` draait QA-review en `/ralph` voegt de [judge](./glossary.md#judge) toe.
+Bronnen: `.agents/hooks/core/keyword-detector.ts` (overslaan van slashcommando's, expliciete matching op modusnaam), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` en de workflowbestanden onder `.agents/workflows/`. Niet elke workflow heeft elke gate: `/orchestrate` draait het verify-script, `/review` draait QA-review en `/oma-mode` voegt de [judge](./glossary.md#judge) toe.
 
 ---
 
@@ -264,7 +264,7 @@ De HUD wordt aangedreven door `.claude/hooks/hud.ts` met de `statusLine`-hookfun
 Een slashcommando start een workflow. Bij een gewone aanvraag scant het hooksysteem van oh-my-agent de invoer tegen de trefwoordtabellen in `.agents/hooks/core/triggers.json` (ingebouwd in de `oma`-binary en gedeeld door elke vendor), met ondersteuning voor 11 talen (Engels, Koreaans, Japans, Chinees, Spaans, Frans, Duits, Portugees, Russisch, Nederlands en Pools).
 
 - **Skillhints** (bijvoorbeeld "run a security audit") → de skill-injector noemt maximaal drie bijpassende skills; de notitie is adviserend en start geen workflow
-- **Persistente workflows** (`orchestrate`, `work`, `ultrawork`, `ralph`) → starten vanuit gewone tekst alleen wanneer de prompt de expliciete naam van de workflow gebruikt (bijvoorbeeld `ultrawork: add rate limiting`)
+- **Persistente workflows** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → starten vanuit gewone tekst alleen wanneer de prompt de expliciete naam van de workflow gebruikt (bijvoorbeeld `ultrawork: add rate limiting`)
 - **Elke andere workflow** → start alleen vanaf het bijbehorende `/command`
 - **Informatieve invoer** (bijvoorbeeld "what is orchestrate?") → wordt eruit gefilterd; er wordt geen workflow geactiveerd
 - **Expliciete `/command`** → de hook slaat detectie over om dubbele activatie te voorkomen
@@ -301,5 +301,5 @@ De directory `.agents/` blijft de bron van waarheid. De installatie linkt of pro
 - **[Installatie](./installation.md)**: drie installatiemethoden, presets, CLI-setup en verificatie
 - **[Agenten](/docs/core-concepts/agents)**: uitgebreide uitleg van de 32 skills, 13 dispatchrollen en het autorisatie- en verduidelijkingsbeleid
 - **[Skills](/docs/core-concepts/skills)**: uitleg van de architectuur met twee lagen
-- **[Workflows](/docs/core-concepts/workflows)**: alle 20 workflows met triggers en fasen
+- **[Workflows](/docs/core-concepts/workflows)**: alle 21 workflows met triggers en fasen
 - **[Gebruiksgids](/docs/guide/usage)**: praktijkvoorbeelden van enkele taken tot volledige orchestratie

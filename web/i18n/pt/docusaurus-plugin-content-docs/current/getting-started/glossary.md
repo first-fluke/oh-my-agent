@@ -33,7 +33,7 @@ O preset de modelo é o valor de `model_preset` em `.agents/oma-config.yaml` (ou
 
 ### Workflow persistente {#persistent-workflow}
 
-Um workflow persistente continua em execução entre turnos até que seu trabalho termine ou você o desative. Os workflows persistentes são `/orchestrate`, `/work`, `/ultrawork` e `/ralph`, e somente uma invocação explícita ativa o modo persistente. Enquanto um deles está ativo, um hook reinjeta `[OMA PERSISTENT MODE: ...]` a cada prompt, e o hook Stop impede que a sessão termine até que um limite de reforço ou um timeout por inatividade seja atingido. Diga `workflow done` para desativá-lo. Consulte [Mecânica do modo persistente](../core-concepts/workflows.md#persistent-mode-mechanics).
+Um workflow persistente continua em execução entre turnos até que seu trabalho termine ou você o desative. Os workflows persistentes são `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` e o alias obsoleto `/ralph`, e somente uma invocação explícita ativa o modo persistente. Enquanto um deles está ativo, um hook reinjeta `[OMA PERSISTENT MODE: ...]` a cada prompt, e o hook Stop impede que a sessão termine até que um limite de reforço ou um timeout por inatividade seja atingido. Diga `workflow done` para desativá-lo. Consulte [Mecânica do modo persistente](../core-concepts/workflows.md#persistent-mode-mechanics).
 
 ### Portão de parada {#stop-gate}
 
@@ -70,7 +70,7 @@ O log de eventos é o registro append-only de uma sessão do OMA, armazenado com
 
 ### Juiz {#judge}
 
-"Juiz" tem dois significados. No `/ralph`, o juiz é a fase posterior a cada iteração do ultrawork que verifica cada critério de conclusão contra o estado real do projeto e registra PASS, FAIL, REGRESSED ou BLOCKED. Um agente iniciado separadamente, com contexto novo, executa essa fase, para que o orquestrador não avalie o próprio trabalho. Na avaliação e otimização de skills, `judge` é o tipo de verificador padrão: um modelo avalia a saída de um braço com base em uma rubrica e retorna PASS ou FAIL. Consulte [/ralph](../core-concepts/workflows.md#ralph) e [o verificador judge](../guide/skill-eval.md#judge-default).
+"Juiz" tem dois significados. No `/oma-mode`, o juiz é a etapa após cada iteração que verifica cada critério de conclusão contra o estado real do projeto e registra PASS, FAIL, REGRESSED ou BLOCKED. Um agente iniciado separadamente, com contexto novo, executa essa etapa, para que a sessão que fez o trabalho não avalie a si mesma. Na avaliação e otimização de skills, `judge` é o tipo de verificador padrão: um modelo avalia a saída de um braço com base em uma rubrica e retorna PASS ou FAIL. Consulte [/oma-mode](../core-concepts/workflows.md#oma-mode) e [o verificador judge](../guide/skill-eval.md#judge-default).
 
 ### Revisão entre contextos (CCR) {#cross-context-review-ccr}
 

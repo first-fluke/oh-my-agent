@@ -283,7 +283,7 @@ Les identifiants de session déterminent :
 
 6. **Itérer avec des relancements.** Si la sortie d’un agent doit être affinée, le relancer avec la tâche d’origine et le contexte de correction. Ne pas créer une nouvelle session.
 
-7. **Commencer par `/work` en cas de doute.** Le workflow work guide le processus étape par étape, avec confirmation de l’utilisateur à chaque porte.
+7. **Commencer par `/oma-mode` en cas de doute.** Il choisit la route à partir de votre objectif. Choisissez `/work` si vous voulez le déroulement mené par le PM, avec un seul passage QA sur l’ensemble du résultat.
 
 ### À éviter
 

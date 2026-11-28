@@ -33,7 +33,7 @@ Das Modell-Preset ist der Wert `model_preset` in `.agents/oma-config.yaml` (oder
 
 ### Persistenter Workflow {#persistent-workflow}
 
-Ein persistenter Workflow läuft über mehrere Gesprächszüge weiter, bis seine Arbeit erledigt ist oder Sie ihn deaktivieren. Die persistenten Workflows sind `/orchestrate`, `/work`, `/ultrawork` und `/ralph`, und nur ein expliziter Aufruf aktiviert den persistenten Modus. Solange einer aktiv ist, injiziert ein Hook bei jedem Prompt erneut `[OMA PERSISTENT MODE: ...]`, und der Stop-Hook verhindert das Ende der Sitzung, bis ein Verstärkungslimit oder ein Inaktivitäts-Timeout erreicht ist. Sagen Sie `workflow done`, um ihn zu deaktivieren. Siehe [Mechanik des persistenten Modus](../core-concepts/workflows.md#persistent-mode-mechanics).
+Ein persistenter Workflow läuft über mehrere Gesprächszüge weiter, bis seine Arbeit erledigt ist oder Sie ihn deaktivieren. Die persistenten Workflows sind `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` und der veraltete Alias `/ralph`, und nur ein expliziter Aufruf aktiviert den persistenten Modus. Solange einer aktiv ist, injiziert ein Hook bei jedem Prompt erneut `[OMA PERSISTENT MODE: ...]`, und der Stop-Hook verhindert das Ende der Sitzung, bis ein Verstärkungslimit oder ein Inaktivitäts-Timeout erreicht ist. Sagen Sie `workflow done`, um ihn zu deaktivieren. Siehe [Mechanik des persistenten Modus](../core-concepts/workflows.md#persistent-mode-mechanics).
 
 ### Stop-Gate {#stop-gate}
 
@@ -70,7 +70,7 @@ Das Ereignisprotokoll ist der nur anhängbare Verlauf einer OMA-Sitzung, gespeic
 
 ### Judge {#judge}
 
-„Judge“ hat zwei Bedeutungen. In `/ralph` ist der Judge die Phase nach jeder ultrawork-Iteration, die jedes Abschlusskriterium gegen den tatsächlichen Projektzustand prüft und PASS, FAIL, REGRESSED oder BLOCKED festhält. Ein separat gestarteter Agent mit frischem Kontext führt sie aus, damit der Orchestrator seine eigene Arbeit nicht selbst bewertet. Bei der Evaluierung und Optimierung von Skills ist `judge` der Standard-Prüfertyp: Ein Modell bewertet die Ausgabe eines Arms anhand einer Rubrik und gibt PASS oder FAIL zurück. Siehe [/ralph](../core-concepts/workflows.md#ralph) und [den Judge-Prüfer](../guide/skill-eval.md#judge-default).
+„Judge“ hat zwei Bedeutungen. In `/oma-mode` ist der Judge der Schritt nach jeder Iteration, der jedes Abschlusskriterium gegen den tatsächlichen Projektzustand prüft und PASS, FAIL, REGRESSED oder BLOCKED festhält. Ein separat gestarteter Agent mit frischem Kontext führt ihn aus, damit die Sitzung, die die Arbeit ausgeführt hat, diese nicht selbst bewertet. Bei der Evaluierung und Optimierung von Skills ist `judge` der Standard-Prüfertyp: Ein Modell bewertet die Ausgabe eines Arms anhand einer Rubrik und gibt PASS oder FAIL zurück. Siehe [/oma-mode](../core-concepts/workflows.md#oma-mode) und [den Judge-Prüfer](../guide/skill-eval.md#judge-default).
 
 ### Cross-Context Review (CCR) {#cross-context-review-ccr}
 

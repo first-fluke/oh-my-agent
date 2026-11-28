@@ -9,11 +9,11 @@ description: Hướng dẫn sử dụng OMA, bao quát cách chọn task theo ng
 ## Bắt đầu nhanh
 
 1. Mở project trong IDE hoặc CLI hỗ trợ AI đã chọn (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen hoặc host được hỗ trợ khác)
-2. Host đã chọn có thể tải [skill](../getting-started/glossary.md#skill) từ `.agents/skills/`; hook đã bật thêm gợi ý skill từ từ khóa ngôn ngữ tự nhiên, và chỉ khởi động [workflow](../getting-started/glossary.md#workflow) từ lệnh slash hoặc, với bốn chế độ liên tục, từ tên của chế độ đó
+2. Host đã chọn có thể tải [skill](../getting-started/glossary.md#skill) từ `.agents/skills/`; hook đã bật thêm gợi ý skill từ từ khóa ngôn ngữ tự nhiên, và chỉ khởi động [workflow](../getting-started/glossary.md#workflow) từ lệnh slash hoặc, với năm chế độ liên tục, từ tên của chế độ đó
 3. Mô tả điều bạn muốn bằng ngôn ngữ tự nhiên. Host hoặc workflow đã chọn định tuyến task tới skill phù hợp
 4. Với công việc đa agent, dùng `/work` hoặc `/orchestrate`
 
-Task đơn lĩnh vực không cần cú pháp đặc biệt. Dùng [hướng dẫn chọn skill và workflow](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) để chọn giữa skill đơn, `/work`, `/orchestrate`, `/ultrawork` và `/ralph`. Xem [Quick Start](../getting-started/quick-start.md) để setup và [Important Defaults](../getting-started/important-defaults.md) trước khi đổi provider.
+Task đơn lĩnh vực không cần cú pháp đặc biệt. Dùng [hướng dẫn chọn skill và workflow](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) để chọn giữa skill đơn, `/oma-mode`, `/work`, `/ultrawork`, `/ralph` và `/orchestrate`. Xem [Quick Start](../getting-started/quick-start.md) để setup và [Important Defaults](../getting-started/important-defaults.md) trước khi đổi provider.
 
 ## Chọn hướng dẫn
 
@@ -245,8 +245,9 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 
 | Lệnh | Loại | Chức năng | Khi dùng |
 |---------|------|-------------|-------------|
+| `/oma-mode` | Liên tục | Nhận một mục tiêu, chọn route, chạy nó và tiếp tục đến khi điều kiện hoàn thành được thỏa hoặc chạm một giới hạn | Khi bạn muốn giao một mục tiêu thay vì tự chọn workflow |
 | `/orchestrate` | Liên tục | Tải hoặc tạo plan, sau đó giao thực thi song song kèm giám sát và xác minh | Task độc lập phù hợp điều phối song song tự động |
-| `/work` | Liên tục | Lập kế hoạch, triển khai và QA đa lĩnh vực từng bước trong phạm vi được cho phép | Tính năng đa lĩnh vực cần giao hàng có điều phối |
+| `/work` | Liên tục | PM lập plan, triển khai song song và một lượt QA trên toàn bộ kết quả, trong phạm vi được cho phép | Tính năng trải trên nhiều lĩnh vực khi bạn muốn luồng do PM dẫn dắt |
 | `/ultrawork` | Liên tục | Workflow chất lượng 5 giai đoạn, 17 bước, 12 checkpoint review cô lập | Giao hàng chất lượng tối đa, mã production-critical |
 | `/plan` | Không liên tục | Phân tách task do PM dẫn dắt, API contract và artifact plan trong `docs/plans/work/` (`NNN-name.md` tuần tự, trường Status theo lifecycle) | Trước công việc đa agent phức tạp; tính năng phức tạp cần theo dõi và log quyết định |
 | `/brainstorm` | Không liên tục | Khám phá hướng tiếp cận với 2-3 đề xuất và một bản nháp trong `docs/decisions/` | Trước khi cam kết hướng triển khai |
@@ -264,13 +265,13 @@ Task khác vendor và `model_preset: free` dùng `oma agent spawn`. Native dispa
 | `/recap` | Không liên tục | Tóm tắt công việc qua lịch sử các tool AI được hỗ trợ | Retrospective theo ngày hoặc kỳ |
 | `/schedule` | Không liên tục | Đăng ký job agent lặp lại | Recap, scan hoặc housekeeping ban đêm |
 | `/video` | Không liên tục | Soạn video có thể tái lập từ script, narration và visual | Shorts, explainer và demo |
-| `/ralph` | Liên tục | Lặp ultrawork với judge được prompt và cơ chế bảo vệ vòng lặp | Khi muốn lặp tới khi tiêu chí hoàn thành kiểm chứng được bằng máy đạt |
+| `/ralph` | Liên tục | Alias đã ngừng khuyến nghị của `/oma-mode` | `/oma-mode` |
 
 ---
 
 ## Ví dụ tự động phát hiện
 
-Hook từ khóa chỉ khởi động bốn chế độ persistent, và chỉ khi prompt gọi đúng tên chế độ. Các workflow khác khởi động từ lệnh slash của chúng.
+Hook từ khóa chỉ khởi động năm chế độ persistent, và chỉ khi prompt gọi đúng tên chế độ. Các workflow khác khởi động từ lệnh slash của chúng.
 
 | Bạn nhập | Workflow phát hiện | Ngôn ngữ |
 |----------|-------------------|----------|
@@ -435,7 +436,7 @@ Các vấn đề thường gặp được liệt kê bên dưới. Với thông 
 | Dashboard hiện "No agents detected yet" | Agent chưa ghi vào memory, hoặc dashboard đang theo dõi thư mục khác | Đợi file progress đầu tiên; chạy từ project root hoặc truyền `--project-root <path>` |
 | `oma dashboard web` thoát với "port 9847 is already in use" | Process khác đang giữ port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | Báo cáo QA có hơn 50 vấn đề | Bình thường ở lần review đầu của codebase lớn | Tập trung CRITICAL và HIGH trước. Ghi MEDIUM/LOW cho sprint tương lai. |
-| Một chế độ liên tục khởi động khi bạn chỉ nhắc đến tên của nó | Prompt nêu `orchestrate`, `ultrawork`, `work mode` hoặc `ralph` ngoài câu hỏi hoặc code block | Nói "workflow done" để tắt nó. Ghi nhận false trigger để cải thiện. |
+| Một chế độ liên tục khởi động khi bạn chỉ nhắc đến tên của nó | Prompt nêu `oma-mode`, `orchestrate`, `ultrawork`, `work mode` hoặc `ralph` ngoài câu hỏi hoặc code block | Nói "workflow done" để tắt nó. Ghi nhận false trigger để cải thiện. |
 | Workflow liên tục không dừng | File trạng thái vẫn tồn tại | Nói "workflow done" trong chat hoặc xóa thủ công file trạng thái từ `.agents/state/` |
 | Agent bị chặn ở clarification HIGH | Yêu cầu quá mơ hồ | Cung cấp câu trả lời cụ thể agent yêu cầu, rồi chạy lại |
 | Tool MCP không hoạt động | Serena chưa cấu hình hoặc chưa chạy | Chạy `oma doctor` để xác minh cấu hình MCP |

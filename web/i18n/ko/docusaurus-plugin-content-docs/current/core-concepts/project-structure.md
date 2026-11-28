@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ your-project/
 - 단계별 실행 프로토콜
 - 게이트 정의 (지속 워크플로우용)
 
-지속 워크플로우: `orchestrate.md`, `work.md`, `ultrawork.md`, `ralph.md`.
+지속 워크플로우: `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md`, `ralph.md`.
 비지속 워크플로우에는 `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md`, `video.md`가 포함됩니다.
 
 ### agents/
@@ -489,7 +490,7 @@ echo '{"cwd":"/path/to/project"}' \
 | `lessons-{sessionId}.md` | 오케스트레이터 | 실험 증거로 뒷받침되는 교훈 (조건부) |
 | `session-work.md` | Work 워크플로우 | Work 전용 세션 상태 |
 | `session-ultrawork.md` | Ultrawork 워크플로우 | Ultrawork 전용 단계 추적 |
-| `session-ralph-{sessionId}.md` | Ralph 워크플로우 | Ralph 실행 1회의 기준, 반복 기록, judge 결과 |
+| `session-oma-mode-{sessionId}.md` | oma-mode 워크플로우 | 실행 1회의 기준, 반복 기록, judge 결과 |
 | `session-cost-{sessionId}.md` | 시스템 | 세션별 스폰 비용 텔레메트리 |
 | `archive/metrics-{date}.md` | 시스템 | 보관된 세션 메트릭 (30일 보존) |
 

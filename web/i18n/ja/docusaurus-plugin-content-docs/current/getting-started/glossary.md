@@ -33,7 +33,7 @@ description: oh-my-agent の用語を短く定義します。スキル、ワー�
 
 ### 永続ワークフロー {#persistent-workflow}
 
-永続ワークフローは、作業が終わるか無効化されるまで、ターンをまたいで実行を続けます。永続ワークフローは `/orchestrate`、`/work`、`/ultrawork`、`/ralph` で、永続モードを有効にするのは明示的な呼び出しだけです。有効な間は、フックがプロンプトのたびに `[OMA PERSISTENT MODE: ...]` を再注入し、Stop フックは再強化の上限または古さのタイムアウトに達するまでセッションの終了をブロックします。無効化するには `workflow done` と伝えます。詳しくは[永続モードの仕組み](../core-concepts/workflows.md#persistent-mode-mechanics)を参照してください。
+永続ワークフローは、作業が終わるか無効化されるまで、ターンをまたいで実行を続けます。永続ワークフローは `/oma-mode`、`/orchestrate`、`/work`、`/ultrawork`、および非推奨エイリアスの `/ralph` で、永続モードを有効にするのは明示的な呼び出しだけです。有効な間は、フックがプロンプトのたびに `[OMA PERSISTENT MODE: ...]` を再注入し、Stop フックは再強化の上限または古さのタイムアウトに達するまでセッションの終了をブロックします。無効化するには `workflow done` と伝えます。詳しくは[永続モードの仕組み](../core-concepts/workflows.md#persistent-mode-mechanics)を参照してください。
 
 ### 停止ゲート {#stop-gate}
 
@@ -70,7 +70,7 @@ flowchart LR
 
 ### judge {#judge}
 
-「judge」には 2 つの意味があります。`/ralph` での judge は、ultrawork の各イテレーションの後に、すべての完了基準を実際のプロジェクト状態に照らして確認し、PASS、FAIL、REGRESSED、BLOCKED を記録するフェーズです。新しいコンテキストで別途スポーンされたエージェントがこれを実行するため、オーケストレーターが自分の作業を自分で採点することはありません。スキルの評価と最適化では、`judge` はデフォルトのチェッカータイプです。モデルがルーブリックに照らしてアームの出力を採点し、PASS または FAIL を返します。詳しくは [/ralph](../core-concepts/workflows.md#ralph) と [judge チェッカー](../guide/skill-eval.md#judge-default)を参照してください。
+「judge」には 2 つの意味があります。`/oma-mode` での judge は、各イテレーションの後にすべての完了基準を実際のプロジェクト状態に照らして確認し、PASS、FAIL、REGRESSED、BLOCKED を記録するステップです。新しいコンテキストで別途スポーンされたエージェントがこれを実行するため、作業を行ったセッション自身が採点することはありません。スキルの評価と最適化では、`judge` はデフォルトのチェッカータイプです。モデルがルーブリックに照らしてアームの出力を採点し、PASS または FAIL を返します。詳しくは [/oma-mode](../core-concepts/workflows.md#oma-mode) と [judge チェッカー](../guide/skill-eval.md#judge-default)を参照してください。
 
 ### クロスコンテキストレビュー（CCR） {#cross-context-review-ccr}
 

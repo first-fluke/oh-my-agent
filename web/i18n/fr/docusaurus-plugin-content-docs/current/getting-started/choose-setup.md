@@ -45,11 +45,11 @@ Une installation de CLI déjà présente peut commencer à la deuxième commande
 | `frontend` | Planifier une page de réglages, puis implémenter son formulaire | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Planifier un endpoint d’API authentifié | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Trouver des articles et comparer leurs preuves | Demander une recherche bibliographique citée |
-| `all` | Coordonner une fonctionnalité à travers l’interface, l’API et les données | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Coordonner une fonctionnalité à travers l’interface, l’API et les données | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 Les [presets nommés](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) sont acceptés par `--preset`. Un nom inconnu, une valeur vide ou `custom` est rejeté avant l’installation. Pour sélectionner des compétences individuellement, lancez `oma install` de façon interactive et choisissez Custom. Sans `--preset`, une configuration non interactive `--yes`/CI sélectionne `all`.
 
-Le preset frontend sélectionne huit compétences. Les presets sélectionnent le contenu des compétences ; l’installateur met toujours en place les fichiers partagés, toutes les définitions de workflows et d’agents, les hooks et les fournisseurs. Certains workflows ont besoin de compétences hors d’un preset de domaine. Vérifiez les [dépendances des workflows](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) avant de les utiliser, ou sélectionnez `all` pour chaque workflow. Un preset plus restreint sur une installation existante ne retire pas les autres compétences.
+Le preset frontend sélectionne neuf compétences. Les presets sélectionnent le contenu des compétences ; l’installateur met toujours en place les fichiers partagés, toutes les définitions de workflows et d’agents, les hooks et les fournisseurs. Certains workflows ont besoin de compétences hors d’un preset de domaine. Vérifiez les [dépendances des workflows](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) avant de les utiliser, ou sélectionnez `all` pour chaque workflow. Un preset plus restreint sur une installation existante ne retire pas les autres compétences.
 
 Les choix de fournisseurs sont indépendants des presets. Par exemple, ajoutez `--semantic-memory none` lorsque le projet n’a pas besoin d’un service de mémoire sémantique. Consultez les [effets de l’installation](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default) pour les autres fichiers et intégrations que le runtime configure.
 

@@ -1,22 +1,23 @@
 ---
 title: ワークフロー
-description: oh-my-agent の 20 ワークフローを網羅するリファレンスです。スラッシュコマンド、永続・非永続モード、11 言語のトリガーキーワード、フェーズとステップ、読み書きするファイル、`triggers.json` と `keyword-detector.ts` による自動検出、情報パターンのフィルターリング、永続モードの状態管理を説明します。
+description: oh-my-agent の 21 ワークフローを網羅するリファレンスです。スラッシュコマンド、永続・非永続モード、11 言語のトリガーキーワード、フェーズとステップ、読み書きするファイル、`triggers.json` と `keyword-detector.ts` による自動検出、情報パターンのフィルターリング、永続モードの状態管理を説明します。
 ---
 
 # ワークフロー
 
-ワークフローは、スラッシュコマンドで開始する、構造化された複数ステップのプロセスです。4 つの永続モードは、通常の依頼で名前を挙げたときにも始まります。単一フェーズのユーティリティから、5 フェーズの複雑な品質ゲートまで、エージェントがタスクでどう協力するかを定義します。
+ワークフローは、スラッシュコマンドで開始する、構造化された複数ステップのプロセスです。5 つの永続モードは、通常の依頼で名前を挙げたときにも始まります。単一フェーズのユーティリティから、5 フェーズの複雑な品質ゲートまで、エージェントがタスクでどう協力するかを定義します。
 
-20 個のワークフローがあり、そのうち 4 個は[永続的](../getting-started/glossary.md#persistent-workflow)です。永続ワークフローは状態を維持し、誤って中断されません。
+21 個のワークフローがあり、そのうち 5 個は[永続的](../getting-started/glossary.md#persistent-workflow)です。永続ワークフローは状態を維持し、誤って中断されません。
 
 ## ワークフロー一覧
 
 | ワークフロー | 用途 | 永続 |
 |---|---|---|
-| [`/orchestrate`](#orchestrate) | プランに基づく自動並列エージェント実行と検証ループ | はい |
-| [`/work`](#work) | 複数ドメインの段階的な調整：計画、実装、QA、修正 | はい |
+| [`/oma-mode`](#oma-mode) | 自律モード：目標を伝えるとルートを選んで実行し、目標を達成するまで続ける | はい |
+| [`/work`](#work) | 複数ドメインの構築を 1 回の実行で：PM のプラン、並列実装、結果全体の QA、修正ループ | はい |
 | [`/ultrawork`](#ultrawork) | 12 個の分離レビューステップを持つ 5 フェーズの品質ワークフロー | はい |
-| [`/ralph`](#ralph) | 機械的に検証できる基準が通るまで ultrawork を繰り返す | はい |
+| [`/ralph`](#ralph) | `/oma-mode` の非推奨エイリアス | はい |
+| [`/orchestrate`](#orchestrate) | 既存プランの実行：並列ディスパッチとタスクごとの検証 | はい |
 | [`/plan`](#plan) | 依存関係と API コントラクトを含む PM のタスク分解 | いいえ |
 | [`/brainstorm`](#brainstorm) | 計画前のデザインファーストのアイデア出し | いいえ |
 | [`/architecture`](#architecture) | アーキテクチャの意思決定、レビュー、ADR | いいえ |
@@ -43,14 +44,14 @@ description: oh-my-agent の 20 ワークフローを網羅するリファレン
 | タスクに必要なこと | 選択 | 例 |
 |---|---|---|
 | エージェントの調整を伴わない 1 つのドメイン | [単一スキル](/docs/guide/single-skill) | API エンドポイントを追加し、バリデーションをテストする |
-| 計画、実装、QA を段階的に行う複数ドメイン | `/work` | API 変更と Web / モバイルクライアントを調整する |
-| 独立したタスクの自動委任と並列実行 | `/orchestrate` | 依存関係を解決してからバックエンドとフロントエンドを並列実装する |
+| ワークフローを選ばずに、完了まで任せたい目標 | `/oma-mode` | このアプリにログインを追加し、チェックが通るまで続ける |
+| 1 回の実行で計画、実装、レビューまで行う複数ドメイン | `/work` | API 変更と Web / モバイルクライアントを調整する |
 | 明示的に依頼された包括的な品質プロセス | `/ultrawork` | 計画、実装、検証、改善、リリース準備のレビューを一通り実行する |
-| 機械的に検証できる基準を満たすまで繰り返すという明示的な依頼 | `/ralph` | ループのセーフガード内で、指定した回帰チェックが通るまで実装と judge による検証を繰り返す |
+| 書かれたとおりに実行し、タスクごとに個別に検証したいプラン | `/orchestrate` | `/plan` のタスクを並列実行し、タスクごとに completed、partial、failed のいずれかの状態を得る |
 
-`/orchestrate` は、エージェントをスポーンする前に使えるプランをロードするか、`/plan` で作成します。先に `/plan` を実行する必要はありません。既存のプランがあるかどうかで `/work` と `/orchestrate` を区別せず、作業をどう調整したいかで選びます。どちらも独立したタスクを並列実行できます。
+`/work` と `/orchestrate` は、どちらも独立したタスクを並列実行します。違いは、プランの出どころと結果の確認方法です。`/work` では、PM が新しいプランを書いて提示し、実装後に QA が結果全体をレビューし、CRITICAL と HIGH の指摘を修正ループに送ります。`/orchestrate` は使えるプランをロードし、なければ `/plan` で作成するため、先に `/plan` を実行する必要はありません。最初のディスパッチの時点でそのプランを固定し、タスクを 1 つずつ個別に検証します。試行回数を使い切ったタスクは partial または failed として報告します。迷う場合は `/oma-mode` から始めます。`/oma-mode` はこれらのルートから代わりに選びます。PM 主導で結果全体を 1 回の QA でレビューする流れにしたい場合は `/work` を、プランが固まっている場合は `/orchestrate` を直接選びます。
 
-受入基準とテストは単一スキルのタスクにも含めます。それだけでは `/ralph` は必要になりません。Ralph は各イテレーションで ultrawork の全プロセスと judge による判定を実行するため、検証ループを繰り返したい場合に選びます。セーフガードが適用されると、未完了またはブロックされた作業を残して停止することがあります。
+受入基準とテストは単一スキルのタスクにも含めます。`/oma-mode` はそれらを完了基準として記録し、各イテレーションの後に独立した judge がすべての基準を再確認します。上限に達すると、未完了またはブロックされた作業を残して停止することがあります。
 
 この表は選択の助言であり、自動ワークフロールーターではありません。ホストエージェントは適切な方法を推奨できますが、ワークフローを推奨・説明するだけでは実行を開始しません。スラッシュコマンドが明示的な選択です。キーワード検出フックが有効なら、情報を尋ねる入力のフィルターに該当しない限り、設定済みキーワードまたはパターンへの一致でも起動します。検出器はドメイン数を分類せず、プランの準備状況も確認せず、この表を優先順位アルゴリズムとしても使いません。
 
@@ -62,64 +63,36 @@ description: oh-my-agent の 20 ワークフローを網羅するリファレン
 
 永続ワークフローはすべてのタスクが完了するまで続きます。`.agents/state/` に状態を保持し、明示的に無効化するまで各ユーザーメッセージに `[OMA PERSISTENT MODE: ...]` コンテキストを再注入します。
 
-永続モードが始まるのは、**明示的な呼び出し**があったときだけです。明示的な呼び出しとは、ワークフローのスラッシュコマンド（`/ultrawork`、または `/oma:ultrawork` のような名前空間付きの形式）か、平文で書いたワークフロー自身の名前を指します（`triggers.json` の `explicit` リスト："orchestrate" とその一覧にある翻訳、"ultrawork"/"ulw"、"work mode"/"work workflow"、"ralph"/"랄프"）。キーワードフックが、それ以外の文からワークフローを開くことはありません。
+永続モードが始まるのは、**明示的な呼び出し**があったときだけです。明示的な呼び出しとは、ワークフローのスラッシュコマンド（`/ultrawork`、または `/oma:ultrawork` のような名前空間付きの形式）か、平文で書いたワークフロー自身の名前を指します（`triggers.json` の `explicit` リスト："oma-mode"、"orchestrate" とその一覧にある翻訳、"ultrawork"/"ulw"、"work mode"/"work workflow"、"ralph"/"랄프"）。キーワードフックが、それ以外の文からワークフローを開くことはありません。
 
-### /orchestrate
+### /oma-mode
 
-**説明：** CLI による自動並列エージェント実行です。サブエージェントを CLI でスポーンし、永続的な実行状態と受領記録で調整し、進捗を監視して検証ループを実行します。
+**説明：** 自律モードです。目標を伝えると、ルートを選び、どのワークフローを使うかを尋ねずに実行し、独立した judge がすべての完了基準を PASS と判定するか上限に達するまで続けます。
 
-**永続：** はい。状態ファイルは `.agents/state/orchestrate-state-{sessionId}.json` です。
+**永続：** はい。状態ファイルは `.agents/state/oma-mode-state-{sessionId}.json` です。
 
 **トリガーキーワード：**
 
 | 言語 | キーワード |
 |----------|----------|
-| 明示的な呼び出し（永続） | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-
-"do everything"、"전부 해줘"、"build me an app" のような文では、このワークフローは始まりません。
+| 明示的な呼び出し（永続） | "oma-mode" |
 
 **ステップ：**
 
-1. **Step 0、準備：** coordination スキル、context-loading ガイド、memory protocol を読み、ベンダーを検出します。
-2. **Step 1、プランのロード/作成：** `.agents/results/plan-{sessionId}.json`、次に最新の `plan-*.json` を確認します。プランがない場合、またはエージェント、優先度ティア、依存関係、受入基準のいずれかが欠けていて実行可能でない場合は、同じセッション ID を保ったまま `/plan` にインラインで作成を委任します。プランを提示し、既存の承認を引き継ぎます。委任前に確認するのは、重要な未決定事項または新しい承認が必要な場合だけです。
-3. **Step 2、セッションの初期化：** `oma-config.yaml` をロードし、CLI マッピング表を表示します。プラン作成時のセッション ID を再利用するか、`session-YYYYMMDD-HHMMSS` を生成します。タスクごとに、インストール済みスキルのインテントシグネチャと照合して、必要なスキルリファレンスを選びます。確信を持って一致したスキルが 1 つあれば十分です。設定済みのメモリストアに `orchestrator-session-{sessionId}.md` と `task-board-{sessionId}.md` を作成し、各タスクで選んだリファレンスと選択の理由をそこに記録します。これらはコーディネーターのメモであり、ランチャーが強制することはありません。
-4. **Step 3、エージェントのスポーン：** 優先度ティアごとに（低い番号から順に、ティア 1、次にティア 2 と進みます）、ベンダーに適した方法でエージェントをスポーンします。同じランタイムとベンダーならネイティブサブエージェントを使い、外部または異なるベンダーなら `oma agent spawn` を使います。各エージェントは、タスク、API コントラクト、選択されたリファレンスとそのロード条件を受け取ります。MAX_PARALLEL（デフォルト 3）を超えません。
-5. **Step 4、モニタリング：** `oma agent status` でプロセスの状態を確認します。ホストの完了通知を優先し、通知がない場合は、変更のあった実行単位の `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` を上限付きバックオフでポーリングします。構造化された受領記録を読み、タスクボードを更新します。完了、失敗、クラッシュを監視します。
-6. **Step 5、検証：** 完了したエージェントごとに、機械的なセルフチェック（lint、型チェック、テスト、diff の範囲。最大 3 サイクル）を実行し、次に `verify.sh {agent-type} {workspace}` を実行します（対象は backend、frontend、mobile、qa、debug、pm で、それ以外のエージェントタイプは `SKIP` を記録します）。最後に QA クロスレビューを行います。verify に失敗したら、エラーのコンテキストを付けて再スポーンします。失敗が続く場合は別の仮説を検討する理由になり得ますが、元の試行、各再試行、各仮説は、同じ合計の復旧予算（`max_attempts`、元の試行を含めてデフォルト 3）を消費します。予算で比較ラウンドを賄えない場合は、未解決の証拠を保全します。
-7. **Step 6、収集：** 実行単位の結果ファイルと構造化された申告を読み、サマリーを作成します。
-8. **Step 7、最終レポート：** セッションサマリーを提示します。実験を実施した場合は証拠と判断をまとめ、教訓を記録するのは再利用できる原因が特定できた場合に限ります。
+1. **Step 1、目標を読む：** 求める成果、明示的な選択や上限、および完了条件を特定します。完了条件は、judge が実行できる検証をそれぞれ備えた完了基準（指定されたチェック。指定がなければ、説明された動作から導いたチェック）として記述し、最初のルートを実行する前に固定します。
+2. **Step 2、ルートを選ぶ：** 最初に一致した行を採用します。名前で指定されたワークフローまたはスキル、質問には読み取り専用の回答、誤った動作には `/debug`、レビューには `/review`、プランだけなら `/plan`、その成果を担当する別のワークフロー、明示的に依頼された場合に限り `/ultrawork`、不確実性が高く事前の計画が当てにならない大規模・横断的な変更には **Open-ended**（`open-ended-protocol.md` に従い、最優先リスクの検証と検証ハーネス構築を先に行い、独立して着地できる単位へ分解）、1 つのエージェントで完了できる変更には担当者を 1 つ（担当スキルのスペシャリストサブエージェント、該当ロールがなければこのセッション）、複数のスペシャリストが独立して構築できる部分に分かれる変更や単一エージェントのコンテキストに収まらない変更には `/orchestrate` の順です。`oma-orchestration` がインストールされていない場合、変更は `/work` に送ります。`/work` も使えない場合は担当スキルに送ります。
+3. **Step 3、表明と記録：** `Route:` 行を 1 行出力し、選択をルーティングの判断として記録します。確認は待ちません。
+4. **Step 4、実行：** 選択したワークフロー、Open-ended シーケンス、またはスキルに、変更を加えずそのまま従います。作業が別の行に当たると分かった場合は、新しい `Route:` 行を出力してルートを切り替えます。 ルートの各ステップや単位は名前のままタスクリストにコピーされ、完了、または理由付きのスキップとして記録されます。
+5. **Step 5、判定と継続：** 新しいコンテキストで別途ディスパッチされた judge が、すべての基準の検証を実行し、PASS、FAIL、REGRESSED、BLOCKED のいずれかを記録します。すべて PASS なら実行を終了します。FAIL または REGRESSED の基準がある場合は、残りの作業だけを対象に次のイテレーションを開始します。実行は 5 回のイテレーション後、またはルートが自身の試行予算、コスト上限、期限に達した時点で停止します。このモードが、その上限を回避するために別のルートを始めることはありません。
+6. **Step 6、レポート：** 通ったルート、変更、各基準の最終状態と judge の根拠、残っている作業を、`anti-ai-prose.md` に沿って無駄な修飾のない簡潔な文章で報告します。その後、セッションが停止できるように永続モードを終了します。
 
-```mermaid
-flowchart TD
-  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
-  S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task references, task board"]
-  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
-  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
-  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
-  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
-  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
-  QA -->|"FAIL: findings back to the agent"| SC
-  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
-  S6 --> S7(["Step 7: final report"])
-  VS -->|FAIL| CL{"classify the failure"}
-  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
-  CL -->|product| BG{"attempts left in max_attempts?"}
-  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
-  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
-  QA -.->|"review limit reached"| STOP
-```
-
-**読み込むファイル：** `.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、実行単位の進捗/結果ファイル、構造化された受領記録。
-**書き込むファイル：** 設定済みメモリストアの実行単位のセッション/タスクボード状態、構造化された受領記録と申告、最終レポート。
-
-**使用すべき場合：** 自動調整で最大限の並列処理が必要な大規模プロジェクト。
+**使用すべき場合：** ワークフローを選ぶ代わりに目標を任せたい場合。ネイティブの `/goal` ループを備えるホスト（Claude Code や Codex CLI など）では、`/oma-mode` の judge レポートですべての基準が通過することを停止条件に設定し、`/goal` で外側の再試行を駆動できます。公開、デプロイ、破壊的な操作、明示した予算を超える支出、ビルドには、引き続きユーザーの承認が必要です。
 
 ---
 
 ### /work
 
-**説明：** 複数ドメインの作業を段階的に調整します。PM が最初に計画し、エージェントが承認済みの範囲で実行し、QA レビューと問題修正を続けます。
+**説明：** 複数ドメインの作業のためのチームワークフローです。PM が最初に計画し、エージェントが承認済みの範囲で実行し、QA レビューと問題修正を続けます。
 
 **永続：** はい。状態ファイルは `.agents/state/work-state-{sessionId}.json` です。
 
@@ -143,7 +116,7 @@ flowchart TD
 8. **Step 6.1、計測（条件付き）：** 定義された比較が必要な場合に、ベースラインを記録します。
 9. **Step 7、反復：** CRITICAL / HIGH の問題があれば担当エージェントを再スポーンします。同じ問題が 2 回続いたら Exploration Loop を起動します。
 
-**使用すべき場合：** 複数ドメインにまたがり、計画・実装・QA を段階的に調整したい機能。
+**使用すべき場合：** 複数ドメインにまたがる機能で、PM 主導の流れにしたい場合。1 回の実行で計画し、並列で構築し、結果全体をレビューします。
 
 ---
 
@@ -218,7 +191,7 @@ flowchart TD
 
 ### /ralph
 
-**説明：** 自己参照型の永続実行ループです。ultrawork を [judge](../getting-started/glossary.md#judge) で包み、各イテレーション後に完了基準を確認します。すべての基準が PASS なら完全完了、PASS と BLOCKED だけが残るなら部分完了を報告し、セーフガードが発動したら停止します。
+**説明：** [`/oma-mode`](#oma-mode) の非推奨エイリアスです。`/ultrawork` をラップしなくなりました。以前担当していた完了基準、独立した [judge](../getting-started/glossary.md#judge)、5 回のイテレーション上限は、現在 `/oma-mode` の一部になっています。
 
 **永続：** はい。状態ファイルは `.agents/state/ralph-state-{sessionId}.json` です。
 
@@ -228,41 +201,62 @@ flowchart TD
 |------|-----------|
 | 明示的な呼び出し（永続） | "ralph", "랄프" |
 
-単独の再開フレーズ（"keep going"、"carry on"、"계속해"、"続けて"、"продолжай" など）や、完了を求める言い回し（"don't stop"、"끝까지 해"）では、このワークフローは始まりません。
+**動作内容：** 2 つの設定を固定した状態で `/oma-mode` を実行します。最初のルートを実行する前に必ず完了基準を定義し、単一の指定された編集を含め、プロジェクトを変更したすべてのイテレーションで judge による判定を行います。
 
-**フェーズ：**
+**使用すべき場合：** 代わりに `/oma-mode` を使用してください。この変更に伴い、`oma ralph verify` コマンドと、それが実行していた ultrawork の成果物ゲートは削除されました。
 
-1. **Phase 0、INIT：** 前提（context-loading、memory protocol、judge protocol）をロードします。テストのアサーション、出力ファイルを生成しない型チェック、終了コード、ファイルの存在など、機械的に検証できる完了基準を定義して記録します。ビルドチェックは明示的に依頼された場合だけ含めます。基準を提示して承認済みの範囲で続行し、`max_iterations: 5` でセッションを初期化します。
-2. **Phase 1、EXEC：** ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）を、Ralph のセッション ID のもとで 1 回のイテレーションとして実行します。続いて成果物ゲート `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>` を実行します。ゲートに失敗した場合、そのイテレーションは実行されなかったものとして扱います。Ralph は違反を記録し、作業を修復してからゲートを再実行します。
-3. **Phase 2、JUDGE：** judge が、承認済みのチェックを実行してファイルの存在を確認し、各完了基準を実際のプロジェクト状態に照らして確認します。ワークフローのプロンプトは、オーケストレーターに対して、基準だけを伝えた新しいコンテキストの別エージェントとして judge をスポーンするよう指示します。スポーンを機械的に確認する仕組みはありません。サブエージェントをスポーンできないランタイムには、インラインで判定して `ralph.judge-inline-fallback` を記録するよう指示します。根拠と、PASS、FAIL、REGRESSED、BLOCKED の基準状態を記録します。
-4. **判定ゲート：** すべての基準が PASS なら完全完了を報告します。PASS と BLOCKED だけなら部分完了を報告します。FAIL または REGRESSED があれば、セーフガードの範囲内で失敗のコンテキストを次のイテレーションへ渡します。
-5. **Phase 3、REPLAN：** 次のイテレーションの対象を FAIL と REGRESSED の項目に絞り（diff を踏まえて診断します）、BLOCKED の項目はスキップし、PASS の基準は judge の確認範囲に残します。その後 Phase 1 に戻ります。
-6. **セーフガード：** `current_iteration >= max_iterations`（デフォルト 5）に達するとループを停止します。同じ根本原因で 3 回連続して失敗した基準は BLOCKED となり、再試行されません（スタック検出）。
+---
+
+### /orchestrate
+
+**説明：** CLI による自動並列エージェント実行です。サブエージェントを CLI でスポーンし、永続的な実行状態と受領記録で調整し、進捗を監視して検証ループを実行します。
+
+**永続：** はい。状態ファイルは `.agents/state/orchestrate-state-{sessionId}.json` です。
+
+**トリガーキーワード：**
+
+| 言語 | キーワード |
+|----------|----------|
+| 明示的な呼び出し（永続） | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+
+"do everything"、"전부 해줘"、"build me an app" のような文では、このワークフローは始まりません。
+
+**ステップ：**
+
+1. **Step 0、準備：** coordination スキル、context-loading ガイド、memory protocol を読み、ベンダーを検出します。
+2. **Step 1、プランのロード/作成：** `.agents/results/plan-{sessionId}.json`、次に最新の `plan-*.json` を確認します。プランがない場合、またはエージェント、優先度ティア、依存関係、受入基準のいずれかが欠けていて実行可能でない場合は、同じセッション ID を保ったまま `/plan` にインラインで作成を委任します。プランを提示し、既存の承認を引き継ぎます。委任前に確認するのは、重要な未決定事項または新しい承認が必要な場合だけです。
+3. **Step 2、セッションの初期化：** `oma-config.yaml` をロードし、CLI マッピング表を表示します。プラン作成時のセッション ID を再利用するか、`session-YYYYMMDD-HHMMSS` を生成します。タスクごとに、インストール済みスキルのインテントシグネチャと照合して、必要なスキルリファレンスを選びます。確信を持って一致したスキルが 1 つあれば十分です。設定済みのメモリストアに `orchestrator-session-{sessionId}.md` と `task-board-{sessionId}.md` を作成し、各タスクで選んだリファレンスと選択の理由をそこに記録します。これらはコーディネーターのメモであり、ランチャーが強制することはありません。
+4. **Step 3、エージェントのスポーン：** 優先度ティアごとに（低い番号から順に、ティア 1、次にティア 2 と進みます）、ベンダーに適した方法でエージェントをスポーンします。同じランタイムとベンダーならネイティブサブエージェントを使い、外部または異なるベンダーなら `oma agent spawn` を使います。各エージェントは、タスク、API コントラクト、選択されたリファレンスとそのロード条件を受け取ります。MAX_PARALLEL（デフォルト 3）を超えません。
+5. **Step 4、モニタリング：** `oma agent status` でプロセスの状態を確認します。ホストの完了通知を優先し、通知がない場合は、変更のあった実行単位の `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` を上限付きバックオフでポーリングします。構造化された受領記録を読み、タスクボードを更新します。完了、失敗、クラッシュを監視します。
+6. **Step 5、検証：** 完了したエージェントごとに、機械的なセルフチェック（lint、型チェック、テスト、diff の範囲。最大 3 サイクル）を実行し、次に `verify.sh {agent-type} {workspace}` を実行します（対象は backend、frontend、mobile、qa、debug、pm で、それ以外のエージェントタイプは `SKIP` を記録します）。最後に QA クロスレビューを行います。verify に失敗したら、エラーのコンテキストを付けて再スポーンします。失敗が続く場合は別の仮説を検討する理由になり得ますが、元の試行、各再試行、各仮説は、同じ合計の復旧予算（`max_attempts`、元の試行を含めてデフォルト 3）を消費します。予算で比較ラウンドを賄えない場合は、未解決の証拠を保全します。
+7. **Step 6、収集：** 実行単位の結果ファイルと構造化された申告を読み、サマリーを作成します。
+8. **Step 7、最終レポート：** セッションサマリーを提示します。実験を実施した場合は証拠と判断をまとめ、教訓を記録するのは再利用できる原因が特定できた場合に限ります。
 
 ```mermaid
 flowchart TD
-  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
-  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
-  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
-  REPAIR --> GATE
-  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
-  JUDGE --> VERDICT{"verdict"}
-  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
-  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
-  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
-  LIMIT -->|yes| SAFE(["Safeguard report"])
-  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
-  REPLAN --> EXEC
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task references, task board"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
 ```
 
-judge ノードは Phase 2 で説明した、プロンプトで指示される judge です。ワークフローはオーケストレーターに新しいコンテキストで judge をスポーンするよう指示し、サブエージェントをスポーンできないランタイムはインラインで判定してフォールバックを記録します。
+**読み込むファイル：** `.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、実行単位の進捗/結果ファイル、構造化された受領記録。
+**書き込むファイル：** 設定済みメモリストアの実行単位のセッション/タスクボード状態、構造化された受領記録と申告、最終レポート。
 
-**/ultrawork との主な違い：** Ultrawork は 5 フェーズのプロセスを実行し、フェーズのゲートに失敗すると再試行します。Ralph は ultrawork をリトライループに包み、プロンプトで指示された judge がプロジェクトの証拠に照らしてすべての基準を再検証します。ループは完全完了、ブロックされた作業を残す部分完了、またはセーフガードレポートで終了します。
-
-**読み込むファイル：** `.agents/workflows/ralph/resources/judge-protocol.md`、ultrawork の全ファイル。
-**書き込むファイル：** `session-ralph-{sessionId}.md`（メモリ）、イテレーションログ、最終レポート。
-
-**使用すべき場合：** 機械的に検証できる完了基準に対して、実行と judge による再検証を繰り返すことを明示的に希望する場合。テストがあるだけでは Ralph は必要ありません。各イテレーションで ultrawork 全体を実行し、セーフガードを考慮します。
+**使用すべき場合：** すでに固まっているプランを実行する場合。通常は `/plan` の直後で、タスクを個別に検証し、タスクごとの状態を得たいときに使います。結果全体に対する QA は行わずに終了するため、必要な場合は後から `/review` を実行します。
 
 ---
 
@@ -524,7 +518,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 |--------|--------|-----------|
 | **対象** | エージェントの専門知識（何を知っているか） | 調整されたプロセス（どう協力するか） |
 | **場所** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **起動** | ホストがスキルの名前と説明に照合する。スキルインジェクターがヒントを追加することもある | スラッシュコマンド。`orchestrate`、`ultrawork`、`work`、`ralph` は、プロンプトがモード名を挙げたときにも始まる |
+| **起動** | ホストがスキルの名前と説明に照合する。スキルインジェクターがヒントを追加することもある | スラッシュコマンド。`oma-mode`、`orchestrate`、`ultrawork`、`work`、`ralph` は、プロンプトがモード名を挙げたときにも始まる |
 | **範囲** | 単一ドメインの実行 | 複数ステップ、多くの場合は複数エージェント |
 | **例** | 「React コンポーネントを作る」 | 「計画 -> 実装 -> レビュー -> コミット」 |
 
@@ -536,7 +530,7 @@ Cloudflare の監査手法を、独立した検証とローカルサンドボッ
 
 oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` フックを使います。ベンダーの設定は単一の `<hookDir>/oma-hook.sh --vendor <v> --event <e>` エントリを登録し、処理チェーンをインプロセスで実行する `oma hook run` へルーティングします。チェーンは次の 3 つで構成されます。
 
-1. **`triggers.json`**（`.agents/hooks/core/triggers.json`、`oma` バイナリに埋め込み）：`workflows` テーブルがキーワードでルーティングするのは `orchestrate`、`ultrawork`、`work`、`ralph` だけで、それも各モードの明示的な名前による場合に限ります。スキルのキーワードヒントは同じファイルにあり、変更はありません。
+1. **`triggers.json`**（`.agents/hooks/core/triggers.json`、`oma` バイナリに埋め込み）：`workflows` テーブルがキーワードでルーティングするのは `oma-mode`、`orchestrate`、`ultrawork`、`work`、`ralph` だけで、それも各モードの明示的な名前による場合に限ります。スキルのキーワードヒントは同じファイルにあり、変更はありません。
 2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：ユーザー入力をこれらの明示的な名前と照合し、ワークフローの起動コンテキストを注入する TypeScript ロジックです。
 3. **`persistent-mode.ts`**（`.agents/hooks/core/persistent-mode.ts`）：状態ファイルを確認して永続ワークフローの実行を強制し、ワークフローコンテキストを再注入します。
 
@@ -544,7 +538,7 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 1. ユーザーがプロンプトを入力します。
 2. フックは、プロンプトが `/command` で始まるかを確認します（始まる場合はキーワードの注入をスキップし、コマンドがワークフローをロードします）。永続ワークフローのスラッシュコマンドは、この場合もそのモードの状態ファイルを書き込みます。
-3. フックが入力をサニタイズし（コードブロック、引用符付き文字列、貼り付けたシステムエコーブロックを除去）、`.agents/hooks/core/triggers.json` の `workflows` のキーワードリストをスキャンします。これらのリストに含まれるのは、`orchestrate`、`ultrawork`、`work`、`ralph` の明示的な名前だけです。強化ガードは、同じワークフローが直近 60 秒で 2 回以上起動していれば再トリガーを抑制します。
+3. フックが入力をサニタイズし（コードブロック、引用符付き文字列、貼り付けたシステムエコーブロックを除去）、`.agents/hooks/core/triggers.json` の `workflows` のキーワードリストをスキャンします。これらのリストに含まれるのは、`oma-mode`、`orchestrate`、`ultrawork`、`work`、`ralph` の明示的な名前だけです。強化ガードは、同じワークフローが直近 60 秒で 2 回以上起動していれば再トリガーを抑制します。
 4. 一致があれば、入力が情報パターンにも一致するか確認します。
 5. 情報を求める入力（例：「what is orchestrate?」）ならフィルターし、ワークフローを起動しません。
 6. 明示的な名前が一致した場合は `[OMA WORKFLOW: {workflow-name}]` を注入し、そのワークフローをすぐに開始するようエージェントに指示します。複数の明示的な名前が一致した場合は、最も長いキーワードが優先され、次に宣言順で決まります。
@@ -609,7 +603,7 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 ### キーワードフックが開かないワークフロー
 
-`orchestrate`、`ultrawork`、`work`、`ralph` 以外のワークフローは、すべてスラッシュコマンドから開始します。手順ファイルは `.agents/workflows/` に残ります。`excludedWorkflows` には `stack-set`、`schedule`、`convert` が含まれるため、後からキーワードバンクが追加されても、この 3 つにはルーティングできません。`/explain` は、"explain" が日常語であるためスラッシュ専用のままです。同じファイルにあるスキルのキーワードヒントは別の仕組みで、引き続きスキルのコンテキストを注入します。
+`oma-mode`、`orchestrate`、`ultrawork`、`work`、`ralph` 以外のワークフローは、すべてスラッシュコマンドから開始します。手順ファイルは `.agents/workflows/` に残ります。`excludedWorkflows` には `stack-set`、`schedule`、`convert` が含まれるため、後からキーワードバンクが追加されても、この 3 つにはルーティングできません。`/explain` は、"explain" が日常語であるためスラッシュ専用のままです。同じファイルにあるスキルのキーワードヒントは別の仕組みで、引き続きスキルのコンテキストを注入します。
 
 ---
 
@@ -617,10 +611,11 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 
 ### 状態ファイル
 
-永続ワークフロー（orchestrate、ultrawork、work、ralph）は、明示的に呼び出されたとき、`.agents/state/` に状態ファイルを作成します（[永続ワークフロー](#persistent-workflows)を参照）。
+永続ワークフロー（oma-mode、orchestrate、ultrawork、work、ralph）は、明示的に呼び出されたとき、`.agents/state/` に状態ファイルを作成します（[永続ワークフロー](#persistent-workflows)を参照）。
 
 ```text
 .agents/state/
+├── oma-mode-state-{sessionId}.json
 ├── orchestrate-state-{sessionId}.json
 ├── ultrawork-state-{sessionId}.json
 ├── work-state-{sessionId}.json
@@ -659,13 +654,13 @@ oh-my-agent は各ユーザーメッセージの処理前に `UserPromptSubmit` 
 | 目的 | シーケンス |
 |------|----------|
 | 単一ドメインの機能 | タスクを説明 → 関連スキル → 実装 → 対象を絞った検証 |
+| 最初から最後まで任せる目標 | `/oma-mode` → ルートを選択 → 完了条件が満たされるまで続行 → レポート |
 | 複雑なマルチドメインプロジェクト | `/work` → PM が計画 → 承認済みの範囲でレビュー → エージェントをスポーン → QA レビュー → 問題を修正 → レポート |
-| 自動並列実装 | `/orchestrate` → プランをロードまたは作成 → 依存関係を解決 → 独立したタスクをスポーン → 検証 → レポート |
+| 固まったプランの実行 | `/plan` → タスク分解 → `/orchestrate` → 依存関係を解決 → 独立したタスクをスポーン → タスクごとに検証 → レポート |
 | 最高品質のデリバリー | `/ultrawork` → PLAN（プラン + 3 レビュー） → IMPL → VERIFY（3 レビュー） → REFINE（2 レビュー + 3 リファクタリング） → SHIP（4 レビュー） |
 | バグ調査 | `/debug` → 再現 → 根本原因 → 最小限の修正 → 回帰テスト → 類似パターンの調査 |
 | デザインから実装へ | `/brainstorm` → 設計ドキュメント → `/plan` → タスク分解 → `/orchestrate` → 並列実装 → `/review` → `/scm` |
 | 新しいコードベースのセットアップ | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
-| judge による検証を伴う反復実行 | `/ralph` → 基準を定義 → ultrawork → 成果物ゲート → judge → 必要に応じて繰り返し → 完了、部分完了、またはセーフガードレポート |
 
 ---
 

@@ -92,6 +92,7 @@ describe("oma-architecture skill", () => {
 
     expect(triggers.workflows.architecture).toBeUndefined();
     expect(Object.keys(triggers.workflows).sort()).toEqual([
+      "oma-mode",
       "orchestrate",
       "ralph",
       "ultrawork",

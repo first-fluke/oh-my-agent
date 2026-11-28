@@ -67,9 +67,14 @@ describe("workflow selective-install requirements", () => {
     );
     const selected = [...(PRESETS.frontend ?? [])];
     for (const name of selected) f.skill(name);
-    const state = inspectWorkflowAvailability(f.root, "orchestrate");
+    // Every preset with PM and QA carries oma-orchestration, so /orchestrate
+    // is exposed there; /docs stays an All-only workflow.
+    expect(inspectWorkflowAvailability(f.root, "orchestrate").available).toBe(
+      true,
+    );
+    const state = inspectWorkflowAvailability(f.root, "docs");
     expect(state.available).toBe(false);
-    expect(state.missingRequired).toContain("oma-orchestration");
+    expect(state.missingRequired).toContain("oma-docs");
     createVendorWorkflowSymlinks(
       f.root,
       ["claude"],
@@ -77,7 +82,10 @@ describe("workflow selective-install requirements", () => {
     );
     expect(
       existsSync(join(f.root, ".claude/skills/orchestrate/SKILL.md")),
-    ).toBe(false);
+    ).toBe(true);
+    expect(existsSync(join(f.root, ".claude/skills/docs/SKILL.md"))).toBe(
+      false,
+    );
     expect(readdirSync(join(f.root, ".agents/skills")).sort()).toEqual(
       selected.sort(),
     );
@@ -97,20 +105,18 @@ describe("workflow selective-install requirements", () => {
     ).toHaveLength(names.length);
   });
 
-  it("re-enables orchestrate after adding its one missing frontend prerequisite", () => {
+  it("re-enables docs after adding its one missing frontend prerequisite", () => {
     const f = fixture(true);
     const selected = PRESETS.frontend ?? [];
     for (const name of selected) f.skill(name);
-    expect(
-      inspectWorkflowAvailability(f.root, "orchestrate").missingRequired,
-    ).toEqual(["oma-orchestration"]);
-    f.skill("oma-orchestration");
-    expect(inspectWorkflowAvailability(f.root, "orchestrate").available).toBe(
-      true,
+    expect(inspectWorkflowAvailability(f.root, "docs").missingRequired).toEqual(
+      ["oma-docs"],
     );
+    f.skill("oma-docs");
+    expect(inspectWorkflowAvailability(f.root, "docs").available).toBe(true);
     expect(
-      createVendorWorkflowSymlinks(f.root, ["claude"], ["orchestrate"]).created,
-    ).toEqual([".claude/skills/orchestrate"]);
+      createVendorWorkflowSymlinks(f.root, ["claude"], ["docs"]).created,
+    ).toEqual([".claude/skills/docs"]);
     expect(readdirSync(join(f.root, ".agents/skills"))).toHaveLength(
       selected.length + 1,
     );

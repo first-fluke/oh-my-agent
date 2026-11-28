@@ -60,11 +60,11 @@ export function detectRuntimeVendor(
     return "kilo";
   }
 
-  // TODO(oma-deferred): add env-based opencode session detection when opencode
-  // sets a confirmed session env var. The only OPENCODE_* vars found in the
-  // binary at detection time are OPENCODE_SERVER_PASSWORD / OPENCODE_SERVER_USERNAME
-  // (server auth), which must NOT be used for runtime detection. Use explicit
-  // `OMA_RUNTIME_VENDOR=opencode` or `-m opencode` to select this runtime.
+  // opencode is not detected from the environment: it sets no confirmed
+  // session env var. The only OPENCODE_* vars found in its binary are
+  // OPENCODE_SERVER_PASSWORD / OPENCODE_SERVER_USERNAME (server auth), which
+  // must NOT be used for runtime detection. Select this runtime explicitly with
+  // `OMA_RUNTIME_VENDOR=opencode` or `-m opencode`.
 
   if (env.PI_CODING_AGENT === "true" || env.PI_CODING_AGENT === "1") {
     return "pi";

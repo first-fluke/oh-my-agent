@@ -283,7 +283,7 @@ Os IDs de sessão determinam:
 
 6. **Itere recriando agentes.** Se a saída de um agente precisar de refinamento, recrie-o com a tarefa original e o contexto da correção. Não inicie uma sessão nova.
 
-7. **Comece com `/work` se estiver em dúvida.** O workflow `/work` guia você pelo processo, passo a passo, com confirmação do usuário em cada portão.
+7. **Comece com `/oma-mode` se estiver em dúvida.** Ele escolhe a rota a partir do seu objetivo. Escolha `/work` quando quiser o fluxo conduzido pelo PM com uma passagem de QA sobre o resultado inteiro.
 
 ### Não faça
 

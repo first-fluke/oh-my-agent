@@ -348,7 +348,7 @@ describe("install --global: _install.json schema and meta", () => {
 
   it.each([
     { preset: undefined, count: 32 },
-    { preset: "frontend", count: 8 },
+    { preset: "frontend", count: 9 },
   ])(
     "installs $count skills through the CLI with preset=$preset",
     async ({ preset, count }) => {
@@ -393,7 +393,7 @@ describe("install --global: _install.json schema and meta", () => {
     const installedNote = promptState.note.mock.calls.find(
       (args) => args[1] === "Installed",
     )?.[0];
-    expect(installedNote).toContain("Selected skills: 8");
+    expect(installedNote).toContain("Selected skills: 9");
     expect(installedNote).toContain("Installed skill manifests:");
     expect(installedNote).toContain("Workflow referenced skill manifests:");
   });

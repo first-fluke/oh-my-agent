@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ Tu znajdują się specjalistyczne umiejętności. Bieżący katalog zawiera 32 k
 - protokół wykonywania krok po kroku
 - definicje bramek (dla workflowów trwałych)
 
-Workflowy trwałe: `orchestrate.md`, `work.md`, `ultrawork.md` i `ralph.md`.
+Workflowy trwałe: `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md` i `ralph.md`.
 Workflowy nietrwałe obejmują `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` i `video.md`.
 
 ### agents/ {#agents}
@@ -491,7 +492,7 @@ Tu agenci zapisują postęp podczas sesji orkiestracji. To kanoniczny magazyn pa
 | `lessons-{sessionId}.md` | Orchestrator | Wnioski poparte dowodami z eksperymentów (warunkowo) |
 | `session-work.md` | Workflow work | Stan sesji właściwy dla workflowu work |
 | `session-ultrawork.md` | Workflow ultrawork | Śledzenie faz workflowu ultrawork |
-| `session-ralph-{sessionId}.md` | Workflow ralph | Kryteria, zapisy iteracji i wyniki sędziego dla jednego uruchomienia Ralpha |
+| `session-oma-mode-{sessionId}.md` | Workflow oma-mode | Kryteria, zapisy iteracji i wyniki sędziego dla jednego uruchomienia |
 | `session-cost-{sessionId}.md` | System | Telemetria kosztu uruchomień dla sesji |
 | `archive/metrics-{date}.md` | System | Zarchiwizowane metryki sesji (retencja 30 dni) |
 

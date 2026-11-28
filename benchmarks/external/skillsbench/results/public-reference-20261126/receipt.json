@@ -1,0 +1,192 @@
+{
+  "registry_sha256": "7635fd1d5e4bbca688506432c433ed337c30d1a0ab65124ae84d024c76c23ee6",
+  "reference": {
+    "harness": "Codex",
+    "models": [
+      "Codex (GPT-5.5)"
+    ],
+    "trials_per_task": 3
+  },
+  "oma_run": {
+    "condition": "fixed-oma-snapshot-host-agent-driving-task-container",
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "high",
+    "oma_snapshot_version": "20.10.3",
+    "global_plugins": "Host global plugins remained available"
+  },
+  "comparable": false,
+  "why_not_comparable": "Different model generation and run path; one OMA trial per task; host plugins were available to the OMA run.",
+  "overall": {
+    "tasks": 84,
+    "oma_pass": 0.488,
+    "reference_bare_pass": 0.437,
+    "reference_curated_skills_pass": 0.639
+  },
+  "oma_skill_read": {
+    "tasks": 38,
+    "oma_pass": 0.474,
+    "reference_bare_pass": 0.368,
+    "reference_curated_skills_pass": 0.544
+  },
+  "no_oma_skill_read": {
+    "tasks": 46,
+    "oma_pass": 0.5,
+    "reference_bare_pass": 0.493,
+    "reference_curated_skills_pass": 0.717
+  },
+  "non_oma_skill_read": 37,
+  "by_category": {
+    "software-engineering": {
+      "tasks": 15,
+      "oma_pass": 0.333,
+      "reference_bare_pass": 0.378,
+      "reference_curated_skills_pass": 0.533
+    },
+    "industrial-physical-systems": {
+      "tasks": 14,
+      "oma_pass": 0.5,
+      "reference_bare_pass": 0.405,
+      "reference_curated_skills_pass": 0.619
+    },
+    "office-white-collar": {
+      "tasks": 14,
+      "oma_pass": 0.786,
+      "reference_bare_pass": 0.643,
+      "reference_curated_skills_pass": 0.69
+    },
+    "natural-science": {
+      "tasks": 14,
+      "oma_pass": 0.5,
+      "reference_bare_pass": 0.381,
+      "reference_curated_skills_pass": 0.762
+    },
+    "finance-economics": {
+      "tasks": 9,
+      "oma_pass": 0.222,
+      "reference_bare_pass": 0.296,
+      "reference_curated_skills_pass": 0.407
+    },
+    "mathematics-or-formal-reasoning": {
+      "tasks": 8,
+      "oma_pass": 0.75,
+      "reference_bare_pass": 0.625,
+      "reference_curated_skills_pass": 0.833
+    },
+    "cybersecurity": {
+      "tasks": 5,
+      "oma_pass": 0.4,
+      "reference_bare_pass": 0.4,
+      "reference_curated_skills_pass": 0.8
+    },
+    "media-content-production": {
+      "tasks": 5,
+      "oma_pass": 0.2,
+      "reference_bare_pass": 0.267,
+      "reference_curated_skills_pass": 0.467
+    }
+  },
+  "by_oma_skill": {
+    "oma-search": {
+      "tasks": 11,
+      "oma_pass": 0.636,
+      "reference_bare_pass": 0.424,
+      "reference_curated_skills_pass": 0.667
+    },
+    "oma-pdf": {
+      "tasks": 6,
+      "oma_pass": 0.333,
+      "reference_bare_pass": 0.222,
+      "reference_curated_skills_pass": 0.556
+    },
+    "oma-qa": {
+      "tasks": 5,
+      "oma_pass": 0.4,
+      "reference_bare_pass": 0.533,
+      "reference_curated_skills_pass": 0.467
+    },
+    "oma-debug": {
+      "tasks": 4,
+      "oma_pass": 0.5,
+      "reference_bare_pass": 0.25,
+      "reference_curated_skills_pass": 0.5
+    },
+    "oma-backend": {
+      "tasks": 4,
+      "oma_pass": 0.5,
+      "reference_bare_pass": 0.333,
+      "reference_curated_skills_pass": 0.5
+    },
+    "oma-video": {
+      "tasks": 4,
+      "oma_pass": 0.25,
+      "reference_bare_pass": 0.167,
+      "reference_curated_skills_pass": 0.167
+    },
+    "oma-frontend": {
+      "tasks": 3,
+      "oma_pass": 0.333,
+      "reference_bare_pass": 0.222,
+      "reference_curated_skills_pass": 0.444
+    },
+    "oma-security": {
+      "tasks": 2,
+      "oma_pass": 0.5,
+      "reference_bare_pass": 0.333,
+      "reference_curated_skills_pass": 0.833
+    },
+    "oma-observability": {
+      "tasks": 1,
+      "oma_pass": 0.0,
+      "reference_bare_pass": 0.0,
+      "reference_curated_skills_pass": 0.0
+    },
+    "oma-scholar": {
+      "tasks": 1,
+      "oma_pass": 1.0,
+      "reference_bare_pass": 1.0,
+      "reference_curated_skills_pass": 1.0
+    },
+    "oma-translation": {
+      "tasks": 1,
+      "oma_pass": 0.0,
+      "reference_bare_pass": 0.333,
+      "reference_curated_skills_pass": 0.333
+    },
+    "oma-voice": {
+      "tasks": 1,
+      "oma_pass": 0.0,
+      "reference_bare_pass": 0.333,
+      "reference_curated_skills_pass": 0.333
+    },
+    "oma-refactor": {
+      "tasks": 1,
+      "oma_pass": 1.0,
+      "reference_bare_pass": 1.0,
+      "reference_curated_skills_pass": 1.0
+    },
+    "oma-slide": {
+      "tasks": 1,
+      "oma_pass": 1.0,
+      "reference_bare_pass": 1.0,
+      "reference_curated_skills_pass": 1.0
+    }
+  },
+  "failed_where_reference_bare_always_passed": [
+    "ada-bathroom-plan-repair",
+    "adaptive-cruise-control",
+    "energy-ac-optimal-power-flow",
+    "financial-modeling-qa",
+    "jax-computing-basics",
+    "pddl-tpp-planning",
+    "syzkaller-ppdev-syzlang"
+  ],
+  "passed_where_reference_bare_never_passed": [
+    "court-form-filling",
+    "crystallographic-wyckoff-position-analysis",
+    "energy-unit-commitment",
+    "glm-lake-mendota",
+    "grid-dispatch-operator",
+    "pddl-airport-planning",
+    "travel-planning"
+  ]
+}

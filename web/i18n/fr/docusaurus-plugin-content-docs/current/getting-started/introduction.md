@@ -8,7 +8,7 @@ description: Vue d'ensemble complète d'oh-my-agent, le framework d'orchestratio
 
 oh-my-agent est un framework d'orchestration multi-agents pour les IDE et outils CLI propulsés par l'IA. Au lieu de dépendre d'un seul assistant IA pour tout, oh-my-agent répartit le travail entre 32 paquets de compétences et 13 rôles canoniques de dispatch. Douze fichiers de définition de sous-agents versionnés fournissent des personas réutilisables pour l'implémentation, la revue, la planification, le débogage, la documentation, la recherche et l'infrastructure. `research-explorer.md` correspond au rôle canonique `explore` ; `orchestrator` est un rôle de coordination du runtime sans fichier de définition distinct.
 
-OMA effectue des vérifications mécaniques lorsque vous les appelez ou que vous sélectionnez un workflow qui les inclut. `oma verify agent <agent-type>` exécute les vérifications du type d'agent sélectionné ; `/ralph` ajoute une vérification fondée sur les artefacts et une boucle de [juge](./glossary.md#judge) ; les hooks Stop des fournisseurs activés (la [porte d'arrêt](./glossary.md#stop-gate)) peuvent maintenir un workflow ouvert pendant l'exécution de ses vérifications configurées. Le simple chargement d'une compétence ne constitue pas une acceptation, et un prompt ordinaire n'exécute pas automatiquement toutes les portes du workflow. Appuyez-vous sur les critères d'acceptation du workflow et sur les fichiers produits pour décider de ce qui est terminé.
+OMA effectue des vérifications mécaniques lorsque vous les appelez ou que vous sélectionnez un workflow qui les inclut. `oma verify agent <agent-type>` exécute les vérifications du type d'agent sélectionné ; `/oma-mode` ajoute une boucle de [juge](./glossary.md#judge) sur les critères de fin ; les hooks Stop des fournisseurs activés (la [porte d'arrêt](./glossary.md#stop-gate)) peuvent maintenir un workflow ouvert pendant l'exécution de ses vérifications configurées. Le simple chargement d'une compétence ne constitue pas une acceptation, et un prompt ordinaire n'exécute pas automatiquement toutes les portes du workflow. Appuyez-vous sur les critères d'acceptation du workflow et sur les fichiers produits pour décider de ce qui est terminé.
 
 L'ensemble du système réside dans un répertoire `.agents/` portable au sein de votre projet. Passez de Claude Code à Codex CLI, Antigravity CLI ou IDE, Cursor, OpenCode et d'autres outils pris en charge : la configuration de vos agents reste avec votre code.
 
@@ -34,13 +34,13 @@ oh-my-agent résout ce problème par la spécialisation :
 
 ---
 
-## Le catalogue actuel : 32 compétences, 12 définitions, 20 workflows {#the-current-catalog-32-skills-12-definitions-20-workflows}
+## Le catalogue actuel : 32 compétences, 12 définitions, 21 workflows {#the-current-catalog-32-skills-12-definitions-21-workflows}
 
 Le catalogue sépare trois éléments qu'il est facile de confondre :
 
 - **Les [compétences](./glossary.md#skill)** sont les 32 paquets de connaissances de domaine sous `.agents/skills/*/SKILL.md`. Elles partent d'une intention en langage naturel et chargent progressivement leurs ressources.
 - **Les [définitions d'agents](./glossary.md#agent-definition)** sont les 12 fichiers sous `.agents/agents/`. Elles fournissent des personas de sous-agents propres aux fournisseurs et référencent une ou plusieurs compétences.
-- **Les [workflows](./glossary.md#workflow)** sont les 20 définitions de processus sous `.agents/workflows/`. Quatre sont [persistants](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` et `ralph`) ; les autres produisent un rapport sans maintenir un mode persistant actif.
+- **Les [workflows](./glossary.md#workflow)** sont les 21 définitions de processus sous `.agents/workflows/`. Cinq sont [persistants](./glossary.md#persistent-workflow) (`oma-mode`, `orchestrate`, `work`, `ultrawork` et `ralph`) ; les autres produisent un rapport sans maintenir un mode persistant actif.
 
 Les sections suivantes conservent le catalogue détaillé des compétences. Lorsqu'un nom ou une description change, le frontmatter du fichier `SKILL.md` actif fait foi.
 
@@ -166,7 +166,7 @@ Tout ce dont oh-my-agent a besoin réside dans le répertoire `.agents/` :
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -209,18 +209,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Sources : `.agents/hooks/core/keyword-detector.ts` (saut des commandes slash, correspondance des déclencheurs, suggestion persistante), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` et les fichiers de workflow sous `.agents/workflows/`. Tous les workflows n'ont pas toutes les portes : `/orchestrate` exécute le script de vérification, `/review` exécute la revue QA et `/ralph` ajoute le [juge](./glossary.md#judge).
+Sources : `.agents/hooks/core/keyword-detector.ts` (saut des commandes slash, correspondance des déclencheurs, suggestion persistante), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` et les fichiers de workflow sous `.agents/workflows/`. Tous les workflows n'ont pas toutes les portes : `/orchestrate` exécute le script de vérification, `/review` exécute la revue QA et `/oma-mode` ajoute le [juge](./glossary.md#judge).
 
 ---
 
@@ -263,7 +263,7 @@ Le HUD est alimenté par `.claude/hooks/hud.ts` grâce à la fonctionnalité `st
 Une commande slash démarre un workflow. Pour une demande simple, le système de hooks d'oh-my-agent analyse votre saisie à partir des tables de mots-clés définies dans `.agents/hooks/core/triggers.json` (intégré au binaire `oma` et partagé par tous les fournisseurs), qui couvrent 11 langues (anglais, coréen, japonais, chinois, espagnol, français, allemand, portugais, russe, néerlandais et polonais).
 
 - **Indices de compétence** (par exemple « run a security audit ») → l'injecteur de compétences cite jusqu'à trois compétences correspondantes ; la note est informative et ne démarre aucun workflow
-- **Workflows persistants** (`orchestrate`, `work`, `ultrawork`, `ralph`) → ne démarrent depuis du texte libre que lorsque le prompt utilise le nom explicite du workflow (par exemple `ultrawork: add rate limiting`)
+- **Workflows persistants** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → ne démarrent depuis du texte libre que lorsque le prompt utilise le nom explicite du workflow (par exemple `ultrawork: add rate limiting`)
 - **Tous les autres workflows** → démarrent uniquement depuis leur `/command`
 - **Saisie informationnelle** (par exemple « what is orchestrate? ») → filtrée, aucun workflow déclenché
 - **`/command` explicite** → le hook ignore la détection pour éviter les doublons
@@ -300,5 +300,5 @@ Le répertoire `.agents/` reste la source de vérité. L'installation lie ou pro
 - **[Installation](./installation.md)** : trois méthodes d'installation, presets, configuration CLI et vérification
 - **[Agents](/docs/core-concepts/agents)** : plongée dans les 32 compétences, les 13 rôles de dispatch et la politique d'autorisation et de clarification
 - **[Compétences](/docs/core-concepts/skills)** : explication de l'architecture en deux couches
-- **[Workflows](/docs/core-concepts/workflows)** : les 20 workflows, leurs déclencheurs et leurs phases
+- **[Workflows](/docs/core-concepts/workflows)** : les 21 workflows, leurs déclencheurs et leurs phases
 - **[Guide d'utilisation](/docs/guide/usage)** : exemples réels, de la tâche unique à l'orchestration complète

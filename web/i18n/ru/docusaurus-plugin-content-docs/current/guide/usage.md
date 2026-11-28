@@ -9,11 +9,11 @@ description: "Руководство по OMA: выбор задачи с учё
 ## Быстрый старт
 
 1. Откройте проект в выбранной IDE или CLI с поддержкой AI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen или другом поддерживаемом host)
-2. Выбранный host загружает [навыки](../getting-started/glossary.md#skill) из `.agents/skills/`; включённые hooks добавляют подсказки навыков по ключевым словам естественного языка и запускают [рабочий процесс](../getting-started/glossary.md#workflow) только по его slash-команде либо, для четырёх постоянных режимов, по его имени
+2. Выбранный host загружает [навыки](../getting-started/glossary.md#skill) из `.agents/skills/`; включённые hooks добавляют подсказки навыков по ключевым словам естественного языка и запускают [рабочий процесс](../getting-started/glossary.md#workflow) только по его slash-команде либо, для пяти постоянных режимов, по его имени
 3. Опишите желаемый результат естественным языком. Host или выбранный workflow направит задачу в подходящий skill
 4. Для работы нескольких агентов используйте `/work` или `/orchestrate`
 
-Для задачи одного домена специальный синтаксис не нужен. Используйте [руководство выбора навыка и рабочего процесса](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), чтобы выбрать один skill, `/work`, `/orchestrate`, `/ultrawork` или `/ralph`. Для установки см. [Быстрый старт](../getting-started/quick-start.md), а перед сменой провайдеров — [Важные defaults](../getting-started/important-defaults.md).
+Для задачи одного домена специальный синтаксис не нужен. Используйте [руководство выбора навыка и рабочего процесса](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), чтобы выбрать один skill, `/oma-mode`, `/work`, `/ultrawork`, `/ralph` или `/orchestrate`. Для установки см. [Быстрый старт](../getting-started/quick-start.md), а перед сменой провайдеров — [Важные defaults](../getting-started/important-defaults.md).
 
 ## Выбор руководства
 
@@ -245,8 +245,9 @@ oma stats get
 
 | Команда | Тип | Что делает | Когда использовать |
 |---------|------|-------------|-------------|
+| `/oma-mode` | Persistent | Принимает цель, выбирает маршрут, выполняет его и продолжает, пока не выполнится условие завершения или не сработает лимит | Когда вы хотите передать цель, а не выбирать workflow |
 | `/orchestrate` | Persistent | Загружает или создаёт план, затем делегирует параллельное выполнение с мониторингом и проверкой | Независимые задачи для автоматической параллельной координации |
-| `/work` | Persistent | Пошаговое планирование, реализация и QA в нескольких доменах в пределах разрешённого scope | Фичи нескольких доменов, требующие координации |
+| `/work` | Persistent | План PM, параллельная реализация и один проход QA по всему результату в пределах разрешённого scope | Фичи нескольких доменов, когда нужен процесс под руководством PM |
 | `/ultrawork` | Persistent | 5-фазный workflow качества, 17 шагов и 12 изолированных review checkpoints | Доставка максимального качества и production-critical code |
 | `/plan` | Non-persistent | PM task breakdown, API contracts и tracked plan artifacts в `docs/plans/work/` (последовательные `NNN-name.md`, поле Status для lifecycle) | Перед сложной multi-agent работой и feature с журналом решений |
 | `/brainstorm` | Non-persistent | Design-first ideation с 2–3 предложениями подходов | Перед выбором подхода реализации |
@@ -264,7 +265,7 @@ oma stats get
 | `/recap` | Non-persistent | Суммирует работу по истории поддерживаемых AI tools | Daily или period retrospectives |
 | `/schedule` | Non-persistent | Регистрирует recurring agent jobs | Nightly recap, scans или housekeeping |
 | `/video` | Non-persistent | Создаёт воспроизводимое видео из script, narration и visuals | Shorts, explainers и demos |
-| `/ralph` | Persistent | Повторяет ultrawork с judge, работающим по prompt, и loop safeguards | Явный запрос повторять выполнение до механически проверяемых критериев |
+| `/ralph` | Persistent | Устаревший псевдоним `/oma-mode` | `/oma-mode` |
 
 ---
 
@@ -433,7 +434,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | Dashboard показывает "No agents detected yet" | Агенты ещё не записали память, или dashboard наблюдает за другим каталогом | Дождитесь первого progress-файла; запускайте из корня проекта или передайте `--project-root <path>` |
 | `oma dashboard web` завершается с "port 9847 is already in use" | Порт занят другим процессом | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA report содержит 50+ issues | Для первого review большой codebase это нормально | Сначала разберите CRITICAL и HIGH; MEDIUM/LOW задокументируйте для будущих sprint |
-| Постоянный режим запускается, когда вы лишь упомянули его имя | Промпт называет `orchestrate`, `ultrawork`, `work mode` или `ralph` вне вопроса и code block | Скажите «workflow done», чтобы его выключить. Сообщите о false triggers для улучшения. |
+| Постоянный режим запускается, когда вы лишь упомянули его имя | Промпт называет `oma-mode`, `orchestrate`, `ultrawork`, `work mode` или `ralph` вне вопроса и code block | Скажите «workflow done», чтобы его выключить. Сообщите о false triggers для улучшения. |
 | Persistent workflow не останавливается | Файл state всё ещё существует | Скажите в чате "workflow done" или вручную удалите state file из `.agents/state/` |
 | Агент заблокирован на HIGH clarification | Требования слишком неоднозначны | Дайте конкретные ответы, которые запросил агент, и запустите снова |
 | MCP tools не работают | Serena не настроена или не запущена | Выполните `oma doctor` для проверки MCP config |

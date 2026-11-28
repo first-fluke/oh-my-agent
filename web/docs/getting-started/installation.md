@@ -95,13 +95,13 @@ Pick the preset that matches the work the repository needs. Skill names below dr
 | Preset | Choose it when the project is | Skills included | Count |
 |--------|-------------------------------|-----------------|-------|
 | **all** | Any project, or you want every workflow to work out of the box | Every skill in the registry | 32 |
-| **fullstack** | Web and mobile clients with a backend and Terraform infrastructure | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | A web frontend with a backend and database | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | A mobile app with a backend and database | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | A web UI only | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | An API or service with a database | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | A mobile app only | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | Infrastructure, CI/CD, and observability work | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | Web and mobile clients with a backend and Terraform infrastructure | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | A web frontend with a backend and database | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | A mobile app with a backend and database | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | A web UI only | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | An API or service with a database | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | A mobile app only | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | Infrastructure, CI/CD, and observability work | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | Security scanning, code review, and remediation | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Papers, market research, and PDF/HWP conversion | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Design assets, images, voice, and written content | design, image, voice, academic-writing, translation, scm | 6 |
@@ -134,15 +134,16 @@ still need their own checks.
 
 Every preset copies the workflow and agent definitions. Commands and prompts are
 exposed only for workflows whose required skills are available. For example, a
-fresh frontend installation leaves `/orchestrate` unavailable because it lacks
-`oma-orchestration`, while `/work`, `/ultrawork`, and `/ralph` are available: the
-preset's PM and QA skills satisfy their entry requirements. The installer reports
-the missing skill without switching to `all`.
+fresh frontend installation leaves `/docs` unavailable because it lacks
+`oma-docs`, while `/orchestrate`, `/work`, and `/ultrawork` are
+available: the preset's PM, QA, and orchestration skills satisfy their entry
+requirements. The installer reports the missing skill without switching to `all`.
 
 | Workflow | Required entry skills | Presets that include them |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | none | every preset |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -175,7 +176,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-The domain entries contain 8 frontend, 6 security, or 8 research skills and a
+The domain entries contain 9 frontend, 6 security, or 8 research skills and a
 matching native agent selection. Their session bootstrap passes that preset to
 the runtime installer. Shared runtime setup and existing installed skills follow
 the installer behavior described above. The `oma` entry retains the full plugin.

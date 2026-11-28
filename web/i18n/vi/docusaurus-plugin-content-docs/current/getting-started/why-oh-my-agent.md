@@ -12,7 +12,7 @@ oh-my-agent bổ sung một lớp do repository sở hữu quanh các CLI agent 
 OMA phù hợp khi bạn cần một hoặc nhiều điều sau:
 
 - **Nhiều host hoặc vendor agent.** `model_preset: auto` dùng cấu hình native của runtime hiện tại. Preset cố định và preset tùy chỉnh có thể định tuyến role tới vendor khác; `oma agent spawn` xử lý dispatch không native.
-- **Workflow team có thể lặp lại.** `/work` xử lý một task có phạm vi, `/orchestrate` điều phối công việc được ủy quyền, `/ultrawork` chạy công việc song song kèm bước review, còn `/ralph` lặp lại task với phase judge rõ ràng.
+- **Workflow team có thể lặp lại.** `/oma-mode` nhận một mục tiêu, chọn route và để một judge độc lập kiểm tra kết quả, `/work` lập plan, build và review một tính năng đa lĩnh vực, `/ultrawork` thêm một lượt review cô lập ở mọi giai đoạn, còn `/orchestrate` chạy một plan đã có với xác minh theo từng task.
 - **Instruction do repository sở hữu.** Skill, workflow, rule và định nghĩa agent nằm cạnh mã nguồn. `oma link` chiếu các tệp đã chọn sang định dạng của vendor được hỗ trợ.
 - **Kiểm tra cơ học và kết quả bền vững.** Lần chạy agent có thể ghi receipt status và result có cấu trúc, còn `oma verify agent <agent-type>` và `oma docs verify` cung cấp các kiểm tra rõ ràng.
 
@@ -22,7 +22,7 @@ Nếu project chỉ dùng một host và không cần skill, workflow hoặc đ�
 
 Chạy `oma verify agent <agent-type> --workspace <path>` khi muốn kiểm tra role backend, frontend, mobile, QA, debug hoặc planning. Verifier kết hợp các kiểm tra tĩnh với lệnh đã cấu hình như test, type check, SQL check hoặc `flutter analyze`; xem [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). Báo cáo hiển thị kết quả của từng kiểm tra. Việc các kiểm tra này pass không chứng minh feature đáp ứng yêu cầu sản phẩm hoặc domain, nên vẫn cần review tiêu chí chấp nhận của task.
 
-`/ralph` thêm một phase [judge](./glossary.md#judge) riêng khi bạn chọn workflow đó. Nó kiểm tra lại tiêu chí đã khai báo qua nhiều iteration và ghi artifact của workflow; đây không phải cổng chạy cho mọi prompt thông thường. Việc tải skill cũng không khởi động mọi workflow hay lệnh xác minh.
+`/oma-mode` thêm một bước [judge](./glossary.md#judge) riêng khi bạn chọn workflow đó. Nó kiểm tra lại tiêu chí đã khai báo sau mỗi lần lặp; đây không phải cổng chạy cho mọi prompt thông thường. Việc tải skill cũng không khởi động mọi workflow hay lệnh xác minh.
 
 ## Dispatch vẫn hiển thị rõ {#dispatch-remains-visible}
 
@@ -43,5 +43,5 @@ Xem thảo luận định vị ban đầu tại [issue #155](https://github.com/
 - [Quick Start](./quick-start.md): cài đặt, kiểm tra thiết lập và chạy một task có phạm vi
 - [Important Defaults](./important-defaults.md): những gì installer bật sẵn và cách thay đổi
 - [Cài đặt](./installation.md#presets): chọn skill preset bao quát các workflow bạn định dùng
-- [Các workflow](../core-concepts/workflows.md): khi nào dùng `/work`, `/orchestrate`, `/ultrawork` và `/ralph`
+- [Các workflow](../core-concepts/workflows.md): khi nào dùng `/oma-mode`, `/work`, `/ultrawork` và `/orchestrate`
 - [Troubleshooting](../guide/troubleshooting.md): cách khắc phục sự cố cài đặt, vendor và hook

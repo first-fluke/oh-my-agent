@@ -45,11 +45,11 @@ oma doctor
 | `frontend` | 规划一个设置页，然后实现它的表单 | `/plan`、`/design`、`/review`、`/debug` |
 | `backend` | 规划一个需要认证的 API 端点 | `/plan`、`/architecture`、`/review`、`/debug` |
 | `research` | 查找论文并比较它们的证据 | 请求一次带引用的文献检索 |
-| `all` | 协调一项跨越 UI、API 和数据的功能 | `/orchestrate`、`/work`、`/ultrawork`、`/ralph` |
+| `all` | 协调一项跨越 UI、API 和数据的功能 | `/oma-mode`、`/orchestrate`、`/work`、`/ultrawork` |
 
 `--preset` 接受[具名预设](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets)。未知名称、空值或 `custom` 会在安装前被拒绝。要单独选择技能，请交互运行 `oma install` 并选择 Custom。不带 `--preset` 时，无人值守的 `--yes` 或 CI 设置会选择 `all`。
 
-frontend 预设选择八个技能。预设选择的是技能内容；安装器仍会设置共享文件、全部工作流和智能体定义、钩子以及提供方。有些工作流需要领域预设之外的技能。使用前请查看[工作流依赖](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)，或选择 `all` 以覆盖每个工作流。在已有安装上使用更小的预设，不会移除其他技能。
+frontend 预设选择九个技能。预设选择的是技能内容；安装器仍会设置共享文件、全部工作流和智能体定义、钩子以及提供方。有些工作流需要领域预设之外的技能。使用前请查看[工作流依赖](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)，或选择 `all` 以覆盖每个工作流。在已有安装上使用更小的预设，不会移除其他技能。
 
 提供方选择与预设无关。例如，项目不需要语义记忆服务时，加上 `--semantic-memory none`。运行时还会配置的其他文件和集成，见[安装器的效果](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default)。
 

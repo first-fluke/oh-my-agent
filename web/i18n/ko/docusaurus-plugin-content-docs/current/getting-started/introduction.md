@@ -7,7 +7,7 @@ description: oh-my-agent 종합 개요입니다. AI 코딩 어시스턴트를 32
 
 oh-my-agent은 AI 기반 IDE 및 CLI 도구를 위한 멀티 에이전트 오케스트레이션 프레임워크입니다. 하나의 AI 어시스턴트에 모든 것을 맡기는 대신, 작업을 32개 스킬 패키지와 13개 표준 디스패치 역할로 라우팅합니다. 체크인된 서브에이전트 정의 파일 12개가 구현, 리뷰, 기획, 디버깅, 문서화, 연구, 인프라 페르소나를 제공합니다. `research-explorer.md`는 표준 `explore` 역할에 매핑되고 `orchestrator`는 별도 정의 파일이 없는 런타임 조율 역할입니다.
 
-OMA는 호출하거나 해당 검사를 포함하는 워크플로우를 선택했을 때 기계적 검사를 제공합니다. `oma verify agent <agent-type>`는 선택한 에이전트 유형의 검사를 실행하고, `/ralph`는 산출물 기반 검증과 [judge](./glossary.md#judge) 루프를 추가하며, 활성화된 벤더 Stop 훅([정지 게이트](./glossary.md#stop-gate))은 설정된 검사가 실행되는 동안 워크플로우를 유지할 수 있습니다. 스킬 로딩만으로 인수 기준이 생기지 않으며 일반 프롬프트가 모든 워크플로우 게이트를 자동으로 실행하지도 않습니다. 완료 여부는 워크플로우의 인수 기준과 생성된 파일로 판단하세요.
+OMA는 호출하거나 해당 검사를 포함하는 워크플로우를 선택했을 때 기계적 검사를 제공합니다. `oma verify agent <agent-type>`는 선택한 에이전트 유형의 검사를 실행하고, `/oma-mode`는 완료 기준을 점검하는 [judge](./glossary.md#judge) 루프를 추가하며, 활성화된 벤더 Stop 훅([정지 게이트](./glossary.md#stop-gate))은 설정된 검사가 실행되는 동안 워크플로우를 유지할 수 있습니다. 스킬 로딩만으로 인수 기준이 생기지 않으며 일반 프롬프트가 모든 워크플로우 게이트를 자동으로 실행하지도 않습니다. 완료 여부는 워크플로우의 인수 기준과 생성된 파일로 판단하세요.
 
 전체 시스템은 프로젝트 내부의 이식 가능한 `.agents/` 디렉토리에 존재합니다. Claude Code, Codex CLI, Antigravity CLI 또는 IDE, Cursor, OpenCode, 기타 지원 도구 사이를 전환해도 에이전트 설정이 코드와 함께 이동합니다.
 
@@ -35,13 +35,13 @@ OMA는 도메인을 스킬에 할당하고 작업을 에이전트에 라우팅�
 
 ---
 
-## 현재 카탈로그: 스킬 32개, 정의 12개, 워크플로우 20개
+## 현재 카탈로그: 스킬 32개, 정의 12개, 워크플로우 21개
 
 카탈로그는 혼동하기 쉬운 세 가지 대상을 분리합니다.
 
 - **[스킬](./glossary.md#skill)**은 `.agents/skills/*/SKILL.md` 아래의 도메인 지식 패키지 32개입니다. 자연어 의도에서 라우팅되고 리소스를 점진적으로 로드합니다.
 - **[에이전트 정의](./glossary.md#agent-definition)**는 `.agents/agents/` 아래의 파일 12개입니다. 벤더 네이티브 서브에이전트 페르소나를 제공하고 하나 이상의 스킬을 참조합니다.
-- **[워크플로우](./glossary.md#workflow)**는 `.agents/workflows/` 아래의 프로세스 정의 20개입니다. 4개(`orchestrate`, `work`, `ultrawork`, `ralph`)는 [지속 워크플로우](./glossary.md#persistent-workflow)이고 나머지는 보고서까지 실행한 뒤 지속 모드를 유지하지 않습니다.
+- **[워크플로우](./glossary.md#workflow)**는 `.agents/workflows/` 아래의 프로세스 정의 21개입니다. 5개(`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`)는 [지속 워크플로우](./glossary.md#persistent-workflow)이고 나머지는 보고서까지 실행한 뒤 지속 모드를 유지하지 않습니다.
 
 아래 섹션은 자세한 스킬 카탈로그를 유지합니다. 이름이나 설명이 달라질 때는 실제 `SKILL.md` 프론트매터를 기준으로 삼으세요.
 
@@ -167,7 +167,7 @@ oh-my-agent에 필요한 모든 것은 `.agents/` 디렉토리에 있습니다:
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -210,18 +210,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-출처: `.agents/hooks/core/keyword-detector.ts`(슬래시 명령 건너뛰기, 명시적 모드 이름 매칭), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts`, 그리고 `.agents/workflows/` 아래의 워크플로우 파일입니다. 모든 워크플로우에 모든 게이트가 있는 것은 아닙니다. `/orchestrate`는 검증 스크립트를, `/review`는 QA 리뷰를 실행하고, `/ralph`는 [judge](./glossary.md#judge)를 추가합니다.
+출처: `.agents/hooks/core/keyword-detector.ts`(슬래시 명령 건너뛰기, 명시적 모드 이름 매칭), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts`, 그리고 `.agents/workflows/` 아래의 워크플로우 파일입니다. 모든 워크플로우에 모든 게이트가 있는 것은 아닙니다. `/orchestrate`는 검증 스크립트를, `/review`는 QA 리뷰를 실행하고, `/oma-mode`는 [judge](./glossary.md#judge)를 추가합니다.
 
 ---
 
@@ -264,7 +264,7 @@ HUD는 `.claude/hooks/hud.ts`에서 Claude Code의 `statusLine` 훅 기능을 �
 슬래시 명령은 워크플로우를 시작합니다. 평범한 요청의 경우 oh-my-agent의 훅 시스템이 `.agents/hooks/core/triggers.json`의 키워드 테이블과 입력을 대조하며, 이 테이블은 `oma` 바이너리에 인라인되어 모든 벤더가 공유합니다. 11개 언어를 다룹니다 (한국어, 영어, 일본어, 중국어, 스페인어, 프랑스어, 독일어, 포르투갈어, 러시아어, 네덜란드어, 폴란드어).
 
 - **스킬 힌트** (예: "보안 감사 실행해줘") → 스킬 인젝터가 일치하는 스킬을 최대 3개까지 알려 줌. 이 안내는 권고 사항이며 워크플로우를 시작하지 않음
-- **지속 워크플로우** (`orchestrate`, `work`, `ultrawork`, `ralph`) → 프롬프트가 워크플로우의 명시적 이름을 쓸 때만 평문에서 시작 (예: `ultrawork: add rate limiting`)
+- **지속 워크플로우** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → 프롬프트가 워크플로우의 명시적 이름을 쓸 때만 평문에서 시작 (예: `ultrawork: add rate limiting`)
 - **그 밖의 모든 워크플로우** → 해당 `/command`로만 시작
 - **정보 요청 입력** (예: "orchestrate가 뭐야?") → 필터링, 워크플로우를 트리거하지 않음
 - **명시적 `/command`** → 중복 방지를 위해 훅이 감지 건너뜀
@@ -301,5 +301,5 @@ oh-my-agent은 Claude Code에 한정되지 않습니다. 훅을 지원하는 벤
 - **[설치](./installation.md)**: 세 가지 설치 방법, 프리셋, CLI 설정, 검증
 - **[에이전트](/docs/core-concepts/agents)**: 32개 스킬, 13개 디스패치 역할, 승인과 명확화 정책 심층 분석
 - **[스킬](/docs/core-concepts/skills)**: 2계층 아키텍처 설명
-- **[워크플로우](/docs/core-concepts/workflows)**: 트리거와 단계가 포함된 20개 워크플로우
+- **[워크플로우](/docs/core-concepts/workflows)**: 트리거와 단계가 포함된 21개 워크플로우
 - **[사용 가이드](/docs/guide/usage)**: 단일 태스크부터 전체 오케스트레이션까지 실제 예제

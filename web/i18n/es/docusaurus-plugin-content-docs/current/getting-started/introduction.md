@@ -7,7 +7,7 @@ description: Descripción completa de oh-my-agent, el framework de orquestación
 
 oh-my-agent es un framework de orquestación multiagente para IDEs y herramientas CLI con IA. En lugar de depender de un único asistente de IA para todo, oh-my-agent reparte el trabajo entre 32 paquetes de habilidades y 13 roles canónicos de despacho. Doce archivos de definición de subagentes versionados definen perfiles reutilizables para implementación, revisión, planificación, depuración, documentación, investigación e infraestructura. `research-explorer.md` se asigna al rol canónico `explore`; `orchestrator` es un rol de coordinación del runtime sin un archivo de definición independiente.
 
-OMA proporciona comprobaciones mecánicas cuando las invocas o cuando seleccionas un flujo de trabajo que las incluye. `oma verify agent <agent-type>` ejecuta las comprobaciones del tipo de agente seleccionado; `/ralph` añade verificación respaldada por artefactos y un bucle de [juez](./glossary.md#judge); los hooks Stop habilitados de los proveedores (la [puerta de parada](./glossary.md#stop-gate)) pueden mantener abierto un flujo de trabajo mientras se ejecutan sus comprobaciones configuradas. Cargar una habilidad por sí solo no establece la aceptación, y un prompt normal no ejecuta automáticamente todas las puertas del flujo de trabajo. Usa los criterios de aceptación del flujo de trabajo y los archivos resultantes para decidir qué está completo.
+OMA proporciona comprobaciones mecánicas cuando las invocas o cuando seleccionas un flujo de trabajo que las incluye. `oma verify agent <agent-type>` ejecuta las comprobaciones del tipo de agente seleccionado; `/oma-mode` añade un bucle de [juez](./glossary.md#judge) sobre criterios de finalización; los hooks Stop habilitados de los proveedores (la [puerta de parada](./glossary.md#stop-gate)) pueden mantener abierto un flujo de trabajo mientras se ejecutan sus comprobaciones configuradas. Cargar una habilidad por sí solo no establece la aceptación, y un prompt normal no ejecuta automáticamente todas las puertas del flujo de trabajo. Usa los criterios de aceptación del flujo de trabajo y los archivos resultantes para decidir qué está completo.
 
 Todo el sistema vive en un directorio `.agents/` portable dentro de tu proyecto. Puedes cambiar entre Claude Code, Codex CLI, Antigravity CLI o IDE, Cursor, OpenCode y otras herramientas compatibles, y la configuración de tus agentes viaja con el código.
 
@@ -35,13 +35,13 @@ OMA asigna dominios a habilidades y dirige el trabajo de las tareas a agentes:
 
 ---
 
-## Catálogo actual: 32 habilidades, 12 definiciones y 20 flujos de trabajo
+## Catálogo actual: 32 habilidades, 12 definiciones y 21 flujos de trabajo
 
 El catálogo separa tres conceptos fáciles de confundir:
 
 - **[Habilidades](./glossary.md#skill)**: los 32 paquetes de conocimiento de dominio bajo `.agents/skills/*/SKILL.md`. Se enrutan desde la intención en lenguaje natural y cargan sus recursos progresivamente.
 - **[Definiciones de agentes](./glossary.md#agent-definition)**: los 12 archivos bajo `.agents/agents/`. Proporcionan personas de subagente nativas del proveedor y referencian una o más habilidades.
-- **[Flujos de trabajo](./glossary.md#workflow)**: las 20 definiciones de procesos bajo `.agents/workflows/`. Cuatro son [persistentes](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` y `ralph`); los demás producen un informe y no mantienen activo el modo persistente.
+- **[Flujos de trabajo](./glossary.md#workflow)**: las 21 definiciones de procesos bajo `.agents/workflows/`. Cinco son [persistentes](./glossary.md#persistent-workflow) (`oma-mode`, `orchestrate`, `work`, `ultrawork` y `ralph`); los demás producen un informe y no mantienen activo el modo persistente.
 
 Las secciones siguientes conservan el catálogo detallado de habilidades. Cuando cambia un nombre o una descripción, el frontmatter de `SKILL.md` activo es la autoridad.
 
@@ -167,7 +167,7 @@ Todo lo que oh-my-agent necesita vive en el directorio `.agents/`:
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -210,18 +210,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Fuentes: `.agents/hooks/core/keyword-detector.ts` (omisión de comandos slash, coincidencia explícita del nombre del modo), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` y los archivos de flujo de trabajo bajo `.agents/workflows/`. No todos los flujos de trabajo tienen todas las puertas: `/orchestrate` ejecuta el script de verificación, `/review` ejecuta la revisión de QA y `/ralph` añade el [juez](./glossary.md#judge).
+Fuentes: `.agents/hooks/core/keyword-detector.ts` (omisión de comandos slash, coincidencia explícita del nombre del modo), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` y los archivos de flujo de trabajo bajo `.agents/workflows/`. No todos los flujos de trabajo tienen todas las puertas: `/orchestrate` ejecuta el script de verificación, `/review` ejecuta la revisión de QA y `/oma-mode` añade el [juez](./glossary.md#judge).
 
 ---
 
@@ -264,7 +264,7 @@ El HUD usa `.claude/hooks/hud.ts` mediante la funcionalidad `statusLine` de Clau
 Un comando slash inicia un flujo de trabajo. Para una solicitud en lenguaje natural, el sistema de hooks de oh-my-agent compara la entrada con las tablas de palabras clave de `.agents/hooks/core/triggers.json` (integradas en el binario `oma` y compartidas por todos los proveedores), que cubren 11 idiomas (inglés, coreano, japonés, chino, español, francés, alemán, portugués, ruso, neerlandés y polaco).
 
 - **Sugerencias de habilidades** (por ejemplo, "run a security audit") → el inyector de habilidades nombra hasta tres habilidades coincidentes; la nota es orientativa y no inicia ningún flujo de trabajo.
-- **Flujos de trabajo persistentes** (`orchestrate`, `work`, `ultrawork`, `ralph`) → se inician desde texto plano solo cuando el prompt usa el nombre explícito del flujo de trabajo (por ejemplo `ultrawork: add rate limiting`).
+- **Flujos de trabajo persistentes** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → se inician desde texto plano solo cuando el prompt usa el nombre explícito del flujo de trabajo (por ejemplo `ultrawork: add rate limiting`).
 - **Todos los demás flujos de trabajo** → se inician solo desde su `/command`.
 - **Entrada informativa** (por ejemplo, "what is orchestrate?") → se filtra y no activa ningún flujo de trabajo.
 - **`/command` explícito** → el hook omite la detección para evitar duplicados.
@@ -301,5 +301,5 @@ El directorio `.agents/` sigue siendo la fuente de verdad. La instalación enlaz
 - **[Instalación](./installation.md)**: tres métodos de instalación, presets, configuración de CLIs y verificación.
 - **[Agentes](/docs/core-concepts/agents)**: inmersión en las 32 habilidades, 13 roles de despacho y la política de autorización y aclaración.
 - **[Habilidades](/docs/core-concepts/skills)**: explicación de la arquitectura de dos capas.
-- **[Flujos de trabajo](/docs/core-concepts/workflows)**: los 20 flujos de trabajo con sus triggers y fases.
+- **[Flujos de trabajo](/docs/core-concepts/workflows)**: los 21 flujos de trabajo con sus triggers y fases.
 - **[Guía de uso](/docs/guide/usage)**: ejemplos reales desde tareas individuales hasta orquestación completa.

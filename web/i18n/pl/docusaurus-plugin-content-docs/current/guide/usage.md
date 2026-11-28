@@ -9,11 +9,11 @@ description: Przewodnik użycia OMA obejmujący wybór zadań z myślą o czytel
 ## Szybki start
 
 1. Otwórz projekt w wybranym IDE lub CLI z obsługą AI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen albo innym obsługiwanym hoście)
-2. Wybrany host może ładować [umiejętności](../getting-started/glossary.md#skill) z `.agents/skills/`; włączone hooki dodają podpowiedzi umiejętności na podstawie słów kluczowych w języku naturalnym i uruchamiają [workflow](../getting-started/glossary.md#workflow) wyłącznie z jego komendy slash albo — dla czterech trybów trwałych — z jego nazwy
+2. Wybrany host może ładować [umiejętności](../getting-started/glossary.md#skill) z `.agents/skills/`; włączone hooki dodają podpowiedzi umiejętności na podstawie słów kluczowych w języku naturalnym i uruchamiają [workflow](../getting-started/glossary.md#workflow) wyłącznie z jego komendy slash albo — dla pięciu trybów trwałych — z jego nazwy
 3. Opisz w języku naturalnym, czego chcesz. Host albo wybrany workflow skieruje zadanie do właściwej umiejętności
 4. Przy pracy wieloagentowej użyj `/work` albo `/orchestrate`
 
-Zadania w jednej domenie nie wymagają specjalnej składni. Skorzystaj z [przewodnika wyboru umiejętności i workflowu](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), aby wybrać między pojedynczą umiejętnością, `/work`, `/orchestrate`, `/ultrawork` i `/ralph`. Konfigurację znajdziesz w [Szybkim starcie](../getting-started/quick-start.md), a przed zmianą dostawców przeczytaj [Ważne ustawienia domyślne](../getting-started/important-defaults.md).
+Zadania w jednej domenie nie wymagają specjalnej składni. Skorzystaj z [przewodnika wyboru umiejętności i workflowu](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), aby wybrać między pojedynczą umiejętnością, `/oma-mode`, `/work`, `/ultrawork`, `/ralph` i `/orchestrate`. Konfigurację znajdziesz w [Szybkim starcie](../getting-started/quick-start.md), a przed zmianą dostawców przeczytaj [Ważne ustawienia domyślne](../getting-started/important-defaults.md).
 
 ## Wybierz przewodnik
 
@@ -245,8 +245,9 @@ Zadania między dostawcami oraz `model_preset: free` używają `oma agent spawn`
 
 | Komenda | Typ | Co robi | Kiedy używać |
 |---------|------|---------|-------------|
+| `/oma-mode` | Trwały | Przyjmuje cel, wybiera trasę, wykonuje ją i kontynuuje, aż warunek zakończenia zostanie spełniony albo zostanie osiągnięty limit | Gdy chcesz przekazać cel, zamiast wybierać workflow |
 | `/orchestrate` | Trwały | Ładuje albo tworzy plan, następnie deleguje wykonanie równoległe z monitorowaniem i weryfikacją | Niezależne zadania pasujące do automatycznej koordynacji równoległej |
-| `/work` | Trwały | Planowanie wielodomenowe krok po kroku, implementacja i QA w autoryzowanym zakresie | Funkcje obejmujące wiele domen i wymagające skoordynowanego dostarczenia |
+| `/work` | Trwały | Plan PM, równoległa implementacja i jeden przebieg QA dla całego wyniku, w autoryzowanym zakresie | Funkcje obejmujące wiele domen, gdy chcesz przepływu prowadzonego przez PM |
 | `/ultrawork` | Trwały | 5-fazowy, 17-krokowy workflow jakości z 12 odizolowanymi punktami przeglądu | Dostarczenie o maksymalnej jakości, kod krytyczny dla produkcji |
 | `/plan` | Nietrwały | Podział zadań prowadzony przez PM, kontrakty API i śledzone artefakty planu w `docs/plans/work/` (sekwencyjne `NNN-name.md`, pole Status dla cyklu życia) | Przed złożoną pracą wieloagentową; złożone funkcje wymagające śledzonego postępu i logów decyzji |
 | `/brainstorm` | Nietrwały | Eksploracja podejść z 2–3 propozycjami i szkicem w `docs/decisions/` | Przed wyborem podejścia implementacyjnego |
@@ -264,13 +265,13 @@ Zadania między dostawcami oraz `model_preset: free` używają `oma agent spawn`
 | `/recap` | Nietrwały | Podsumowanie pracy z historii obsługiwanych narzędzi AI | Retrospektywa dnia lub okresu |
 | `/schedule` | Nietrwały | Rejestrowanie cyklicznych zadań agentów | Nocne podsumowania, skany albo porządki |
 | `/video` | Nietrwały | Komponowanie odtwarzalnych filmów ze skryptów, narracji i wizualiów | Shorts, objaśnienia i demonstracje |
-| `/ralph` | Trwały | Wielokrotne wykonanie ultrawork z sędzią uruchamianym promptem i zabezpieczeniami pętli | Jawne żądanie powtarzania wykonania do spełnienia mechanicznych kryteriów ukończenia |
+| `/ralph` | Trwały | Przestarzały alias `/oma-mode` | `/oma-mode` |
 
 ---
 
 ## Przykłady automatycznego wykrywania
 
-Hook słów kluczowych uruchamia tylko cztery tryby trwałe i tylko wtedy, gdy prompt wymienia nazwę trybu. Pozostałe workflowy startują ze swojego polecenia slash.
+Hook słów kluczowych uruchamia tylko pięć trybów trwałych i tylko wtedy, gdy prompt wymienia nazwę trybu. Pozostałe workflowy startują ze swojego polecenia slash.
 
 | Wpisujesz | Wykryty workflow | Język |
 |----------|------------------|----------|
@@ -435,7 +436,7 @@ Typowe problemy opisano poniżej. Komunikaty błędów, nieudane wyniki uruchomi
 | Dashboard pokazuje „No agents detected yet” | Agenci nie zapisali jeszcze nic w pamięci albo dashboard obserwuje inny katalog | Poczekaj na pierwszy plik postępu; uruchom z katalogu głównego projektu albo przekaż `--project-root <path>` |
 | `oma dashboard web` kończy się komunikatem „port 9847 is already in use” | Inny proces zajmuje port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | Raport QA ma ponad 50 problemów | To normalne przy pierwszym przeglądzie dużej bazy kodu | Najpierw zajmij się ważnością CRITICAL i HIGH. MEDIUM/LOW zapisz na przyszłe sprinty. |
-| Tryb trwały uruchamia się, gdy tylko wspomnisz jego nazwę | Prompt wymienia `orchestrate`, `ultrawork`, `work mode` albo `ralph` poza pytaniem lub blokiem kodu | Napisz „workflow done”, aby go zakończyć. Zgłaszaj fałszywe wyzwolenia do poprawy. |
+| Tryb trwały uruchamia się, gdy tylko wspomnisz jego nazwę | Prompt wymienia `oma-mode`, `orchestrate`, `ultrawork`, `work mode` albo `ralph` poza pytaniem lub blokiem kodu | Napisz „workflow done”, aby go zakończyć. Zgłaszaj fałszywe wyzwolenia do poprawy. |
 | Trwałego workflowu nie da się zatrzymać | Plik stanu nadal istnieje | Napisz na czacie „workflow done” albo ręcznie usuń plik stanu z `.agents/state/` |
 | Agent blokuje się na doprecyzowaniu HIGH | Wymagania są zbyt niejednoznaczne | Podaj konkretne odpowiedzi, o które poprosił agent, a następnie uruchom ponownie |
 | Narzędzia MCP nie działają | Serena nie jest skonfigurowana albo nie działa | Uruchom `oma doctor`, aby zweryfikować konfigurację MCP |

@@ -1,22 +1,23 @@
 ---
 title: 工作流
-description: OMA 全部 20 个工作流的完整参考，涵盖斜杠命令、持久化与非持久化模式、11 种语言的触发关键词、阶段和步骤、读写文件、通过 triggers.json 与 keyword-detector.ts 实现的自动检测、信息性模式过滤，以及持久化模式的状态管理。
+description: OMA 全部 21 个工作流的完整参考，涵盖斜杠命令、持久化与非持久化模式、11 种语言的触发关键词、阶段和步骤、读写文件、通过 triggers.json 与 keyword-detector.ts 实现的自动检测、信息性模式过滤，以及持久化模式的状态管理。
 ---
 
 # 工作流
 
-工作流是由斜杠命令启动的结构化多步骤流程；四种持久化模式在普通请求点名时也会启动。它们定义智能体如何协作处理任务，范围从单阶段工具到包含 5 个阶段的复杂质量关卡。
+工作流是由斜杠命令启动的结构化多步骤流程；五种持久化模式在普通请求点名时也会启动。它们定义智能体如何协作处理任务，范围从单阶段工具到包含 5 个阶段的复杂质量关卡。
 
-共有 20 个工作流，其中 4 个是[持久化工作流](../getting-started/glossary.md#persistent-workflow)（会维护状态，不能被意外中断）。
+共有 21 个工作流，其中 5 个是[持久化工作流](../getting-started/glossary.md#persistent-workflow)（会维护状态，不能被意外中断）。
 
 ## 工作流概览 {#workflows-at-a-glance}
 
 | 工作流 | 用途 | 持久化 |
 |---|---|---|
-| [`/orchestrate`](#orchestrate) | 基于计划自动并行执行智能体，并运行验证循环 | 是 |
-| [`/work`](#work) | 逐步协调多个领域：规划、实现、QA、修复 | 是 |
+| [`/oma-mode`](#oma-mode) | 自主模式：说出目标，它会选定路由、运行，并持续到目标达成 | 是 |
+| [`/work`](#work) | 一次运行完成多领域构建：PM 规划、并行实现、对整体结果做 QA、修复循环 | 是 |
 | [`/ultrawork`](#ultrawork) | 包含 12 个隔离审查步骤的 5 阶段质量工作流 | 是 |
-| [`/ralph`](#ralph) | 反复执行 ultrawork，直到机械可验证的标准通过 | 是 |
+| [`/ralph`](#ralph) | `/oma-mode` 的已弃用别名 | 是 |
+| [`/orchestrate`](#orchestrate) | 执行已有计划：并行分派，逐任务验证 | 是 |
 | [`/plan`](#plan) | PM 任务分解，包含依赖关系和 API 契约 | 否 |
 | [`/brainstorm`](#brainstorm) | 规划前以设计为先的创意探索 | 否 |
 | [`/architecture`](#architecture) | 架构决策、评审和 ADR | 否 |
@@ -43,14 +44,14 @@ description: OMA 全部 20 个工作流的完整参考，涵盖斜杠命令、�
 | 任务需求 | 选择 | 示例 |
 |---|---|---|
 | 单一领域，无需协调智能体 | [单技能](/docs/guide/single-skill) | 添加 API 端点并测试输入验证 |
-| 多个领域，需要逐步规划、实现和 QA | `/work` | 协调 API 变更及其 Web 和移动端客户端的修改 |
-| 自动分派独立任务，并行执行 | `/orchestrate` | 解决依赖关系后并行实现后端和前端任务 |
+| 想让目标一路做到完成，而不必自己选工作流 | `/oma-mode` | 为这个应用添加登录，并持续推进直到检查通过 |
+| 多个领域，在一次运行中完成规划、实现和审查 | `/work` | 协调 API 变更及其 Web 和移动端客户端的修改 |
 | 明确要求完整的质量流程 | `/ultrawork` | 完整执行规划、实现、验证、改进和发布就绪审查 |
-| 明确要求反复执行，直到机械可验证的标准通过 | `/ralph` | 在循环安全措施允许的范围内，反复实现并由 judge 验证，直到指定的回归检查通过 |
+| 计划需要原样执行，且每个任务单独验证 | `/orchestrate` | 并行运行 `/plan` 产出的任务，并为每个任务得到 completed、partial 或 failed 状态 |
 
-`/orchestrate` 会先加载可用计划，或通过 `/plan` 创建计划，再启动智能体。你无需先运行 `/plan`。因此，是否已有计划并不是 `/work` 和 `/orchestrate` 的区别；应根据所需的协调方式选择。两者都能并行执行独立任务。
+`/work` 和 `/orchestrate` 都能并行执行独立任务。两者的区别在于计划从何而来，以及如何检查结果。`/work` 让 PM 编写新计划并展示出来，实现完成后由 QA 审查整体结果，并将 CRITICAL 和 HIGH 级发现送入修复循环。`/orchestrate` 会加载可用计划，没有时则通过 `/plan` 创建，因此你无需先运行 `/plan`。它在首次分派时冻结该计划，并逐个验证每个任务；尝试次数用尽的任务会报告为 partial 或 failed。拿不准时从 `/oma-mode` 开始：它会替你在这些路由中选择。想要由 PM 主导、并对整体结果做一轮 QA 的流程时选 `/work`；计划已经确定时直接用 `/orchestrate`。
 
-单技能任务也需要验收标准和测试。仅有这些要求不意味着要用 `/ralph`：Ralph 每次迭代都会执行完整的 ultrawork 流程，并进行一轮 judge 检查，适合明确需要这种重复验证循环的任务。安全措施触发时，即使还有未完成或受阻的工作，循环也可能停止。
+单技能任务同样需要验收标准和测试。`/oma-mode` 会将它们记录为完成标准，并在每次迭代后由独立的 judge 重新检查每项标准。触及上限时，即使还有未完成或受阻的工作，运行也可能停止。
 
 此表提供选择建议，并非自动工作流路由器。宿主智能体可以推荐合适的方式；推荐或解释工作流不会启动它。斜杠命令可以明确选择工作流。启用关键词检测钩子后，匹配配置中的关键词或模式也可能激活工作流，但仍受信息性查询过滤规则约束。检测器不会判断领域数量、检查计划是否可执行，也不会把此表用作优先级算法。
 
@@ -62,62 +63,34 @@ description: OMA 全部 20 个工作流的完整参考，涵盖斜杠命令、�
 
 持久化工作流持续运行直到所有任务完成。它们在 `.agents/state/` 中维护状态，并在每条用户消息中重新注入 `[OMA PERSISTENT MODE: ...]` 上下文，直到显式停用。
 
-只有**显式调用**才会启动持久化模式：工作流的斜杠命令（`/ultrawork`，或带命名空间的形式，例如 `/oma:ultrawork`），或以纯文本写出的工作流自己的名称（`triggers.json` 中的 `explicit` 列表：“orchestrate”及其列出的各语言译名、“ultrawork”/“ulw”、“work mode”/“work workflow”、“ralph”/“랄프”）。关键词钩子不会从任何其他句子打开工作流。
+只有**显式调用**才会启动持久化模式：工作流的斜杠命令（`/ultrawork`，或带命名空间的形式，例如 `/oma:ultrawork`），或以纯文本写出的工作流自己的名称（`triggers.json` 中的 `explicit` 列表：“oma-mode”、“orchestrate”及其列出的各语言译名、“ultrawork”/“ulw”、“work mode”/“work workflow”、“ralph”/“랄프”）。关键词钩子不会从任何其他句子打开工作流。
 
-### /orchestrate
+### /oma-mode
 
-**说明**：基于 CLI 的自动化并行智能体执行。通过 CLI 启动子智能体，使用持久化运行状态和回执协调它们，监控进度并运行验证循环。
+**说明：** 自主模式。你说出目标；它会选定路由，不询问使用哪个工作流就开始运行，并持续到独立的 judge 通过每项完成标准或触及某项上限。
 
-**持久化：** 是。状态文件：`.agents/state/orchestrate-state-{sessionId}.json`。
+**持久化：** 是。状态文件：`.agents/state/oma-mode-state-{sessionId}.json`。
 
 **触发关键词：**
 | 语言 | 关键词 |
 |------|-------|
-| 显式（持久） | "orchestrate"、"オーケストレート"、"orquestar"、"orchestrer"、"orchestrieren"、"orquestrar"、"оркестровать"、"orkestreren"、"orkiestrować" |
-
-“do everything”、“전부 해줘”或“build me an app”这样的句子不会启动此工作流。
+| 显式（持久） | "oma-mode" |
 
 **步骤：**
-1. **步骤 0，准备**：读取协调技能、上下文加载指南和记忆协议。检测供应商。
-2. **步骤 1，加载或创建计划**：先检查 `.agents/results/plan-{sessionId}.json`，再检查最新的 `plan-*.json`。如果没有计划，或计划尚不可执行（任务缺少智能体、优先级层、依赖关系或验收标准），则在当前流程中内联委派 `/plan` 创建计划，并沿用同一会话 ID。展示计划并沿用已有授权；只有缺少关键决策或需要新增授权时，才在委派前询问。
-3. **步骤 2，初始化会话**：加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`）。为每个任务选择所需的技能参考资料，方法是将任务与已安装技能的意图签名进行匹配；有一个可信匹配的技能就足够。在配置的记忆存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`，并在其中记录每个任务选定的参考资料和选择原因。这些是协调者备注；启动器不会强制执行它们。
-4. **步骤 3，启动智能体**：按优先级层依次处理（从最低层开始：先第 1 层，再第 2 层，依此类推），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。每个智能体会收到自己的任务、API 契约，以及为它选定的参考资料及其加载条件。绝不超过 MAX_PARALLEL（默认 3）。
-5. **步骤 4，监控**：用 `oma agent status` 检查进程健康状况。优先使用宿主的完成通知；否则以有界退避轮询运行范围内发生变化的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件，读取结构化回执，并更新任务板。留意完成、失败和崩溃。
-6. **步骤 5，验证**：对每个完成的智能体，先运行机械自检（lint、类型检查、测试、diff 范围；最多 3 轮），再运行 `verify.sh {agent-type} {workspace}`（支持 backend、frontend、mobile、qa、debug 和 pm；其他智能体类型记录 `SKIP`），然后进行 QA 交叉审查。验证失败时，带上错误上下文重新启动。反复失败时，可以考虑尝试其他假设，但首次尝试、每次重试和每个假设共用同一份恢复总预算（`max_attempts`，默认 3 次，含首次尝试）。如果预算不足以支撑一轮对比，则保留未解决的证据。
-7. **步骤 6，收集**：读取运行范围内的结果文件和结构化声明，然后编写摘要。
-8. **步骤 7，最终报告**：呈现会话摘要。如果运行了实验，则总结证据和决策；仅在确认了可复用的原因时才记录经验教训。
+1. **步骤 1：读取目标** 确定预期结果、任何明确的选择或上限，以及完成条件；完成条件写为一组完成标准，每项标准都带有可供 judge 执行的验证（你点名的检查，否则是从你描述的行为推导出的检查）。这些标准在首个路由运行前固定。
+2. **步骤 2：选择路由** 第一个匹配的行生效：点名的工作流或技能；提问走只读回答；行为不正确走 `/debug`；审查走 `/review`；只要计划走 `/plan`；结果归其他工作流负责时走该工作流；`/ultrawork` 仅在明确要求时使用；存在关键未知数、无法靠前置计划可靠推进的大型或跨切面变更走 **Open-ended**（按 `open-ended-protocol.md` 先验证风险最高的未知数、先搭建验证框架、再拆分为可独立落地的原子单元）；单个 agent 能完成的变更交给唯一负责方：负责技能对应的专家子 agent，没有该角色时由本会话处理；各部分可由不同专家独立构建、或超出单个智能体上下文容量的变更走 `/orchestrate`。未安装 `oma-orchestration` 时，变更交给 `/work`；`/work` 也不可用时交给负责的技能。
+3. **步骤 3：声明并记录** 输出一行 `Route:`，并将这次选择记录为路由决策。不等待确认。
+4. **步骤 4：运行** 原样遵循选定的工作流、Open-ended 序列或技能。如果实际工作属于另一行，则用新的 `Route:` 行重新路由。路由的每个步骤或单元都会按原名复制到任务列表中，并标记为已完成，或标记为已跳过并注明原因。
+5. **步骤 5：评判与继续** 另行调度、拥有全新上下文的 judge 执行每项标准的验证，并记录 PASS、FAIL、REGRESSED 或 BLOCKED。全部 PASS 即结束运行；存在 FAIL 或 REGRESSED 标准时，仅针对剩余工作开始下一轮迭代。运行在满 5 轮迭代后，或在某个路由达到自身的尝试次数预算、成本上限或截止时间时停止；该模式绝不会为了绕过这一上限而启动另一个路由。
+6. **步骤 6：报告** 走过的路由、变更、每项标准的最终状态及 judge 提供的证据，以及剩余事项，并参照 `anti-ai-prose.md` 去除空话和套话。随后该模式结束持久化模式，会话即可停止。
 
-```mermaid
-flowchart TD
-  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
-  S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task references, task board"]
-  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
-  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
-  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
-  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
-  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
-  QA -->|"FAIL: findings back to the agent"| SC
-  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
-  S6 --> S7(["Step 7: final report"])
-  VS -->|FAIL| CL{"classify the failure"}
-  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
-  CL -->|product| BG{"attempts left in max_attempts?"}
-  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
-  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
-  QA -.->|"review limit reached"| STOP
-```
-
-**读取文件：**`.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、运行范围内的进度和结果文件，以及结构化运行回执。
-**写入文件**：配置的记忆存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
-
-**何时使用**：需要最大并行度和自动化协调的大型项目。
+**何时使用：** 想把目标交出去，而不是自己挑选工作流时。在提供原生 `/goal` 循环的宿主（例如 Claude Code 和 Codex CLI）上，可以将停止条件设为 `/oma-mode` judge 报告通过每项标准，从而用 `/goal` 驱动外层重试。发布、部署、破坏性操作、超出既定预算的开销以及构建仍需你授权。
 
 ---
 
 ### /work
 
-**说明：** 逐步多领域协调。PM 先规划，然后智能体在授权范围内执行，接着完成 QA 审查和问题修复。
+**说明：** 面向多领域工作的团队工作流。PM 先规划，然后智能体在授权范围内执行，接着完成 QA 审查和问题修复。
 
 **持久化：** 是。状态文件：`.agents/state/work-state-{sessionId}.json`。
 
@@ -139,7 +112,7 @@ flowchart TD
 8. **步骤 6.1：测量**（条件）：需要做明确定义的对比时，记录基线。
 9. **步骤 7：迭代** 如果发现 CRITICAL/HIGH 问题，重新启动责任智能体。如果同一问题在 2 次尝试后仍存在，激活探索循环。
 
-**何时使用：** 功能跨越多个领域，需要逐步协调规划、实现和 QA。
+**何时使用：** 功能跨越多个领域，且想要由 PM 主导的流程时：它在一次运行中完成规划、并行构建，并审查整体结果。
 
 ---
 
@@ -212,7 +185,7 @@ flowchart TD
 
 ### /ralph
 
-**说明：** 持久化的自引用执行循环。用 [judge](../getting-started/glossary.md#judge) 包装 ultrawork，在每次迭代后检查完成标准。所有标准通过时报告全部完成，只剩已通过和受阻的标准时报告部分完成，安全措施触发时则停止。
+**说明：** [`/oma-mode`](#oma-mode) 的已弃用别名。它不再包装 `/ultrawork`。它过去负责的完成标准、独立 [judge](../getting-started/glossary.md#judge) 和 5 轮迭代上限现已并入 `/oma-mode`。
 
 **持久化：** 是。状态文件：`.agents/state/ralph-state-{sessionId}.json`。
 
@@ -221,40 +194,60 @@ flowchart TD
 |------|-------|
 | 显式（持久） | "ralph", "랄프" |
 
-单独的续接用语（“keep going”、“carry on”、“계속해”、“続けて”、“продолжай”等）和表示做到完成的说法（“don't stop”、“끝까지 해”）都不会启动此工作流。
+**功能：** 以两项固定设置运行 `/oma-mode`：在首个路由运行前始终定义完成标准，并且对每一次修改了项目的迭代都运行 judge，包括单次指定的编辑。
 
-**阶段：**
-1. **Phase 0：INIT** 加载前置条件（context-loading、记忆协议、judge 协议）。定义并记录机械可验证的完成标准，例如测试断言、不生成产物的类型检查、退出码或文件是否存在。只有明确要求时才纳入构建检查。展示标准，并在授权范围内继续执行。以 `max_iterations: 5` 初始化会话。
-2. **Phase 1：EXEC** 在 Ralph 的会话 ID 下，将 ultrawork（PLAN → IMPL → VERIFY → REFINE → SHIP）作为一次迭代执行。随后运行产物关卡 `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`。如果关卡失败，本次迭代视为未执行：Ralph 记录违规，修复工作，然后重新运行关卡。
-3. **Phase 2：JUDGE** judge 将每个完成标准与项目实际状态核对（运行已授权的检查，并验证文件是否存在）。工作流提示会要求编排器将 judge 作为单独的智能体启动，使用全新上下文，并只向其说明完成标准；但没有任何机制能确认它确实已被启动。无法启动子智能体的运行时会被告知在流程内直接评判，并记录 `ralph.judge-inline-fallback`。记录证据和标准状态，包括 PASS、FAIL、REGRESSED 或 BLOCKED。
-4. **决策关卡：** 若所有标准 PASS → 报告全部完成。若只剩 PASS 和 BLOCKED → 报告部分完成。若存在 FAIL 或 REGRESSED → 在安全措施允许的范围内，将失败上下文带入下一次迭代。
-5. **Phase 3：REPLAN** 将下一次迭代收窄到 FAIL 项和 REGRESSED 项（基于 diff 诊断），跳过 BLOCKED 项，并将 PASS 标准保留在 judge 的检查范围内。然后返回 Phase 1。
-6. **安全措施：** 当 `current_iteration >= max_iterations`（默认 5）时，循环停止。同一标准因相同根本原因连续失败 3 次时，会变为 BLOCKED 且不再重试（卡住检测）。
+**何时使用：** 请改用 `/oma-mode`。`oma ralph verify` 命令及其运行的 ultrawork 产物关卡已随本次变更移除。
+
+---
+
+### /orchestrate
+
+**说明**：基于 CLI 的自动化并行智能体执行。通过 CLI 启动子智能体，使用持久化运行状态和回执协调它们，监控进度并运行验证循环。
+
+**持久化：** 是。状态文件：`.agents/state/orchestrate-state-{sessionId}.json`。
+
+**触发关键词：**
+| 语言 | 关键词 |
+|------|-------|
+| 显式（持久） | "orchestrate"、"オーケストレート"、"orquestar"、"orchestrer"、"orchestrieren"、"orquestrar"、"оркестровать"、"orkestreren"、"orkiestrować" |
+
+“do everything”、“전부 해줘”或“build me an app”这样的句子不会启动此工作流。
+
+**步骤：**
+1. **步骤 0，准备**：读取协调技能、上下文加载指南和记忆协议。检测供应商。
+2. **步骤 1，加载或创建计划**：先检查 `.agents/results/plan-{sessionId}.json`，再检查最新的 `plan-*.json`。如果没有计划，或计划尚不可执行（任务缺少智能体、优先级层、依赖关系或验收标准），则在当前流程中内联委派 `/plan` 创建计划，并沿用同一会话 ID。展示计划并沿用已有授权；只有缺少关键决策或需要新增授权时，才在委派前询问。
+3. **步骤 2，初始化会话**：加载 `oma-config.yaml`，显示 CLI 映射表，沿用创建计划时的会话 ID，或生成新的会话 ID（`session-YYYYMMDD-HHMMSS`）。为每个任务选择所需的技能参考资料，方法是将任务与已安装技能的意图签名进行匹配；有一个可信匹配的技能就足够。在配置的记忆存储中创建 `orchestrator-session-{sessionId}.md` 和 `task-board-{sessionId}.md`，并在其中记录每个任务选定的参考资料和选择原因。这些是协调者备注；启动器不会强制执行它们。
+4. **步骤 3，启动智能体**：按优先级层依次处理（从最低层开始：先第 1 层，再第 2 层，依此类推），使用供应商适配的方法启动智能体（当前运行时和目标供应商相同时使用原生子智能体；外部或跨供应商工作使用 `oma agent spawn`）。每个智能体会收到自己的任务、API 契约，以及为它选定的参考资料及其加载条件。绝不超过 MAX_PARALLEL（默认 3）。
+5. **步骤 4，监控**：用 `oma agent status` 检查进程健康状况。优先使用宿主的完成通知；否则以有界退避轮询运行范围内发生变化的 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 文件，读取结构化回执，并更新任务板。留意完成、失败和崩溃。
+6. **步骤 5，验证**：对每个完成的智能体，先运行机械自检（lint、类型检查、测试、diff 范围；最多 3 轮），再运行 `verify.sh {agent-type} {workspace}`（支持 backend、frontend、mobile、qa、debug 和 pm；其他智能体类型记录 `SKIP`），然后进行 QA 交叉审查。验证失败时，带上错误上下文重新启动。反复失败时，可以考虑尝试其他假设，但首次尝试、每次重试和每个假设共用同一份恢复总预算（`max_attempts`，默认 3 次，含首次尝试）。如果预算不足以支撑一轮对比，则保留未解决的证据。
+7. **步骤 6，收集**：读取运行范围内的结果文件和结构化声明，然后编写摘要。
+8. **步骤 7，最终报告**：呈现会话摘要。如果运行了实验，则总结证据和决策；仅在确认了可复用的原因时才记录经验教训。
 
 ```mermaid
 flowchart TD
-  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
-  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
-  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
-  REPAIR --> GATE
-  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
-  JUDGE --> VERDICT{"verdict"}
-  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
-  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
-  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
-  LIMIT -->|yes| SAFE(["Safeguard report"])
-  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
-  REPLAN --> EXEC
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task references, task board"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
 ```
 
-judge 节点就是 Phase 2 所述、通过提示驱动的 judge：工作流要求编排器以全新上下文启动它；无法启动子智能体的运行时会在流程内直接评判，并记录这一回退。
+**读取文件：**`.agents/results/plan-{sessionId}.json`、`.agents/oma-config.yaml`、运行范围内的进度和结果文件，以及结构化运行回执。
+**写入文件**：配置的记忆存储中的运行范围会话和任务板状态、结构化回执和声明，以及最终报告。
 
-**与 /ultrawork 的主要区别：** Ultrawork 执行 5 阶段流程，阶段关卡失败时会重试。Ralph 将 ultrawork 包装在重试循环中，由提示驱动的 judge 依据项目证据重新验证每个标准。循环结束时会给出全部完成报告、针对受阻工作的部分完成报告，或安全措施报告。
-
-**读取文件：** `.agents/workflows/ralph/resources/judge-protocol.md`，以及所有 ultrawork 文件。
-**写入文件：** `session-ralph-{sessionId}.md`（记忆）、迭代日志、最终报告。
-
-**何时使用：** 明确需要反复执行，并由 judge 依据机械可验证的完成标准重新验证时。仅有测试要求并不需要 Ralph；选择时应考虑每次迭代都包含完整的 ultrawork 流程，以及循环本身的安全措施。
+**何时使用**：执行已经确定的计划，通常紧接在 `/plan` 之后，适合需要逐个验证每个任务并得到每个任务状态的情况。它结束时不会对整体结果做 QA；需要时请在之后运行 `/review`。
 
 ---
 
@@ -515,7 +508,7 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 |--------|--------|-----------|
 | **定义** | 智能体的专业知识（智能体知道什么） | 编排流程（智能体如何协作） |
 | **位置** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **激活方式** | 宿主匹配技能名称和描述；技能注入器可能添加提示 | 斜杠命令。提示点名模式时，`orchestrate`、`ultrawork`、`work` 和 `ralph` 也会启动 |
+| **激活方式** | 宿主匹配技能名称和描述；技能注入器可能添加提示 | 斜杠命令。提示点名模式时，`oma-mode`、`orchestrate`、`ultrawork`、`work` 和 `ralph` 也会启动 |
 | **范围** | 单领域执行 | 多步骤，通常涉及多个智能体 |
 | **示例** | “构建 React 组件” | “规划功能 -> 构建 -> 审查 -> 提交” |
 
@@ -527,7 +520,7 @@ Cloudflare 审计方法用于指导独立验证和本地沙箱复现。这并非
 
 oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运行。供应商设置会注册一个 `<hookDir>/oma-hook.sh --vendor <v> --event <e>` 入口，将请求路由到 `oma hook run`，由处理器链在进程内运行。处理器链包括：
 
-1. **`triggers.json`**（`.agents/hooks/core/triggers.json`，内联在 `oma` 二进制中）：`workflows` 表只对 `orchestrate`、`ultrawork`、`work` 和 `ralph` 做关键词路由，而且只按各模式的显式名称。技能关键词提示位于同一文件中，保持不变。
+1. **`triggers.json`**（`.agents/hooks/core/triggers.json`，内联在 `oma` 二进制中）：`workflows` 表只对 `oma-mode`、`orchestrate`、`ultrawork`、`work` 和 `ralph` 做关键词路由，而且只按各模式的显式名称。技能关键词提示位于同一文件中，保持不变。
 2. **`keyword-detector.ts`**（`.agents/hooks/core/keyword-detector.ts`）：对照这些显式名称扫描用户输入，并注入工作流激活上下文的 TypeScript 逻辑。
 3. **`persistent-mode.ts`**（`.agents/hooks/core/persistent-mode.ts`）：检查活跃状态文件并重新注入工作流上下文，以强制执行持久化工作流。
 
@@ -535,7 +528,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 
 1. 用户输入提示。
 2. 钩子检查提示是否以 `/command` 开头（如果是，则跳过关键词注入；由该命令加载工作流）。持久化工作流的斜杠命令仍会写入该模式的状态文件。
-3. 钩子会清理输入（去除代码块、引号字符串和粘贴的系统回显块），然后扫描 `.agents/hooks/core/triggers.json` 中的 `workflows` 关键词列表。这些列表只包含 `orchestrate`、`ultrawork`、`work` 和 `ralph` 的显式名称。如果同一工作流在最近 60 秒内已触发 2 次或更多次，强化保护机制会抑制再次触发。
+3. 钩子会清理输入（去除代码块、引号字符串和粘贴的系统回显块），然后扫描 `.agents/hooks/core/triggers.json` 中的 `workflows` 关键词列表。这些列表只包含 `oma-mode`、`orchestrate`、`ultrawork`、`work` 和 `ralph` 的显式名称。如果同一工作流在最近 60 秒内已触发 2 次或更多次，强化保护机制会抑制再次触发。
 4. 如果找到匹配项，检查输入是否匹配信息性模式。
 5. 如果属于信息性问题（例如“什么是 orchestrate？”），将其过滤，不触发工作流。
 6. 如果显式名称匹配，注入 `[OMA WORKFLOW: {workflow-name}]`，并让智能体立即启动该工作流。多个显式名称同时匹配时，最长的关键词优先，其次按声明顺序。
@@ -600,7 +593,7 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 
 ### 关键词钩子不会打开的工作流 {#workflows-the-keyword-hook-does-not-open}
 
-除 `orchestrate`、`ultrawork`、`work` 和 `ralph` 之外，每个工作流都从其斜杠命令启动。流程文件仍位于 `.agents/workflows/`。`excludedWorkflows` 列出 `stack-set`、`schedule` 和 `convert`，因此即使日后为它们添加了关键词库，也无法路由这三个工作流。`/explain` 保持仅限斜杠调用，因为“explain”是日常词语。同一文件中的技能关键词提示是独立的，仍会注入技能上下文。
+除 `oma-mode`、`orchestrate`、`ultrawork`、`work` 和 `ralph` 之外，每个工作流都从其斜杠命令启动。流程文件仍位于 `.agents/workflows/`。`excludedWorkflows` 列出 `stack-set`、`schedule` 和 `convert`，因此即使日后为它们添加了关键词库，也无法路由这三个工作流。`/explain` 保持仅限斜杠调用，因为“explain”是日常词语。同一文件中的技能关键词提示是独立的，仍会注入技能上下文。
 
 ---
 
@@ -608,10 +601,11 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 
 ### 状态文件 {#state-files}
 
-持久化工作流（orchestrate、ultrawork、work、ralph）在被显式调用时会在 `.agents/state/` 中创建状态文件（参见[持久化工作流](#persistent-workflows)）：
+持久化工作流（oma-mode、orchestrate、ultrawork、work、ralph）在被显式调用时会在 `.agents/state/` 中创建状态文件（参见[持久化工作流](#persistent-workflows)）：
 
 ```text
 .agents/state/
+├── oma-mode-state-{sessionId}.json
 ├── orchestrate-state-{sessionId}.json
 ├── ultrawork-state-{sessionId}.json
 ├── work-state-{sessionId}.json
@@ -650,13 +644,13 @@ oh-my-agent 使用 `UserPromptSubmit` 钩子，在处理每条用户消息前运
 | 目标 | 序列 |
 |------|----------|
 | 单领域功能 | 描述任务 → 相关技能 → 实现 → 针对性验证 |
+| 把目标从头到尾交出去 | `/oma-mode` → 选择路由 → 持续到完成条件成立 → 报告 |
 | 复杂多领域项目 | `/work` → PM 规划 → 在授权范围内审查 → 启动智能体 → QA 审查 → 修复问题 → 报告 |
-| 自动并行实现 | `/orchestrate` → 加载或创建计划 → 解析依赖关系 → 启动独立任务 → 验证 → 报告 |
+| 执行已确定的计划 | `/plan` → 任务分解 → `/orchestrate` → 解析依赖关系 → 启动独立任务 → 逐任务验证 → 报告 |
 | 最高质量交付 | `/ultrawork` → PLAN（计划 + 3 次审查）→ IMPL → VERIFY（3 次审查）→ REFINE（2 次审查 + 3 个重构操作）→ SHIP（4 次审查） |
 | Bug 调查 | `/debug` → 复现 → 根本原因 → 最小修复 → 回归测试 → 类似模式扫描 |
 | 设计到实现的流水线 | `/brainstorm` → 设计文档 → `/plan` → 任务分解 → `/orchestrate` → 并行实现 → `/review` → `/scm` |
 | 新代码库设置 | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
-| 反复执行并由 judge 验证 | `/ralph` → 定义标准 → ultrawork → 产物关卡 → judge → 按需重复 → 全部完成、部分完成或安全措施报告 |
 
 ---
 

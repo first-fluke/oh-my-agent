@@ -9,11 +9,11 @@ description: Guía de uso de OMA para elegir tareas según el lector, con ejempl
 ## Inicio rápido
 
 1. Abre tu proyecto en una IDE o CLI con IA compatible (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen u otro host compatible).
-2. El host seleccionado puede cargar [habilidades](../getting-started/glossary.md#skill) desde `.agents/skills/`; los hooks habilitados añaden sugerencias de habilidades a partir de palabras clave en lenguaje natural e inician un [flujo](../getting-started/glossary.md#workflow) solo desde su comando slash o, en el caso de los cuatro modos persistentes, desde su nombre.
+2. El host seleccionado puede cargar [habilidades](../getting-started/glossary.md#skill) desde `.agents/skills/`; los hooks habilitados añaden sugerencias de habilidades a partir de palabras clave en lenguaje natural e inician un [flujo](../getting-started/glossary.md#workflow) solo desde su comando slash o, en el caso de los cinco modos persistentes, desde su nombre.
 3. Describe lo que necesitas en lenguaje natural. El host o el flujo seleccionado enruta la tarea a la habilidad correspondiente.
 4. Para trabajo multiagente, usa `/work` u `/orchestrate`.
 
-Las tareas de un solo dominio no requieren una sintaxis especial. Usa la [guía para elegir habilidades y flujos](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) para elegir entre una habilidad individual, `/work`, `/orchestrate`, `/ultrawork` y `/ralph`. Consulta [Inicio rápido](../getting-started/quick-start.md) para la configuración y [Valores predeterminados importantes](../getting-started/important-defaults.md) antes de cambiar proveedores.
+Las tareas de un solo dominio no requieren una sintaxis especial. Usa la [guía para elegir habilidades y flujos](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) para elegir entre una habilidad individual, `/oma-mode`, `/work`, `/ultrawork`, `/ralph` y `/orchestrate`. Consulta [Inicio rápido](../getting-started/quick-start.md) para la configuración y [Valores predeterminados importantes](../getting-started/important-defaults.md) antes de cambiar proveedores.
 
 ## Elige una guía
 
@@ -245,8 +245,9 @@ Las tareas entre proveedores y `model_preset: free` usan `oma agent spawn`. El d
 
 | Comando | Tipo | Qué hace | Cuándo usarlo |
 |---------|------|----------|---------------|
+| `/oma-mode` | Persistente | Recibe un objetivo, selecciona la ruta, la ejecuta y continúa hasta que se cumple la condición de finalización o se alcanza un límite | Cuando quieres entregar un objetivo en lugar de elegir un flujo |
 | `/orchestrate` | Persistente | Carga o crea un plan y delega la ejecución paralela con monitoreo y verificación | Tareas independientes aptas para coordinación paralela automatizada |
-| `/work` | Persistente | Planificación, implementación y QA multidominio paso a paso dentro del alcance autorizado | Funcionalidades que cruzan dominios y requieren entrega coordinada |
+| `/work` | Persistente | Plan del PM, implementación en paralelo y una sola pasada de QA sobre el resultado completo, dentro del alcance autorizado | Funcionalidades que cruzan dominios, cuando quieres el flujo dirigido por el PM |
 | `/ultrawork` | Persistente | Flujo de calidad en 5 fases y 17 pasos con 12 checkpoints de revisión aislados | Entregas de máxima calidad y código crítico para producción |
 | `/plan` | No persistente | Desglose dirigido por PM, contratos de API y artefactos de plan rastreados en `docs/plans/work/` (secuenciales `NNN-name.md`, campo Status para el ciclo de vida) | Antes de trabajo multiagente complejo; funcionalidades complejas con progreso y decisiones registradas |
 | `/brainstorm` | No persistente | Exploración de enfoques con 2-3 propuestas y un borrador en `docs/decisions/` | Antes de comprometerse con un enfoque de implementación |
@@ -264,13 +265,13 @@ Las tareas entre proveedores y `model_preset: free` usan `oma agent spawn`. El d
 | `/recap` | No persistente | Resumir trabajo de historiales de herramientas de IA compatibles | Recaps diarios o de períodos |
 | `/schedule` | No persistente | Registrar trabajos recurrentes de agentes | Recaps nocturnos, escaneos o mantenimiento |
 | `/video` | No persistente | Componer vídeos reproducibles desde guion, narración y visuales | Shorts, explainers y demos |
-| `/ralph` | Persistente | Ejecución ultrawork repetida con un juez mediante prompt y salvaguardas de bucle | Repetir explícitamente hasta que pasen criterios mecánicos |
+| `/ralph` | Persistente | Alias obsoleto de `/oma-mode` | `/oma-mode` |
 
 ---
 
 ## Ejemplos de autodetección
 
-El hook de palabras clave solo inicia cuatro modos persistentes, y solo cuando el prompt nombra el modo. Los demás flujos se inician desde su comando slash.
+El hook de palabras clave solo inicia cinco modos persistentes, y solo cuando el prompt nombra el modo. Los demás flujos se inician desde su comando slash.
 
 | Escribes | Flujo detectado | Idioma |
 |----------|-----------------|--------|
@@ -435,7 +436,7 @@ A continuación se muestran los problemas comunes. Para mensajes de error, fallo
 | El dashboard muestra "No agents detected yet" | Los agentes aún no han escrito en memoria, o el dashboard observa otro directorio | Espera al primer archivo de progreso; ejecuta desde la raíz del proyecto o pasa `--project-root <path>` |
 | `oma dashboard web` termina con "port 9847 is already in use" | Otro proceso ocupa el puerto | `DASHBOARD_PORT=8080 oma dashboard web` |
 | El informe QA tiene más de 50 problemas | Es normal en la primera revisión de un código grande | Atiende primero CRITICAL y HIGH; documenta MEDIUM/LOW para sprints futuros |
-| Un modo persistente se inicia cuando solo mencionaste su nombre | El prompt nombra `orchestrate`, `ultrawork`, `work mode` o `ralph` fuera de una pregunta o de un bloque de código | Di "workflow done" para liberarlo e informa de los falsos disparos para mejorar el sistema |
+| Un modo persistente se inicia cuando solo mencionaste su nombre | El prompt nombra `oma-mode`, `orchestrate`, `ultrawork`, `work mode` o `ralph` fuera de una pregunta o de un bloque de código | Di "workflow done" para liberarlo e informa de los falsos disparos para mejorar el sistema |
 | El flujo de trabajo persistente no se detiene | El archivo de estado todavía existe | Di "workflow done" en el chat o elimina manualmente el archivo de estado de `.agents/state/` |
 | El agente está bloqueado en una aclaración HIGH | Requisitos demasiado ambiguos | Responde las preguntas concretas del agente y vuelve a ejecutarlo |
 | Las herramientas MCP no funcionan | Serena no está configurado o en ejecución | Ejecuta `oma doctor` para verificar la configuración MCP |

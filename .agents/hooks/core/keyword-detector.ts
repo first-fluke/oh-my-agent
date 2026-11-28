@@ -583,7 +583,7 @@ export function isPastedContent(
  * compound technical token is a reference to an ARTIFACT (CLI subcommand,
  * file, property, path segment), not a request to run the workflow:
  *
- *   `oma ralph verify`            keyword + ':' + word  (CLI subcommand)
+ *   `ralph:verify`                keyword + ':' + word  (CLI subcommand)
  *   `ralph.md`, `ralph.exec-tier` keyword + '.' + word  (file / property)
  *   `.agents/workflows/ralph`     word + '/' + keyword  (path segment)
  *
@@ -688,10 +688,71 @@ const QUESTION_PATTERNS: RegExp[] = [
 // loose contains — suppressing a question that merely contains a workflow name
 // is exactly the desired behaviour.
 const INTERROGATIVE_WORD =
-  /(?:왜|어째서|어떻게|무슨|무엇|뭐|뭔|뭣|어디|언제|누가|누구|어느|버그|문제|에러|맞나|인가|인지|맞아|인가요|\bwhy\b|\bwhats?\b|\bhow\b|\bwhen\b|\bwhere\b|\bwhich\b|\bwhose\b|\bbug\b|\bissue\b|\bproblem\b|\berror\b)/i;
+  /(?:왜|어째서|어떻게|무슨|무엇|뭐|뭘|뭔|뭣|어디|언제|누가|누구|어느|버그|문제|에러|맞나|인가|인지|맞아|인가요|\bwhy\b|\bwhats?\b|\bhow\b|\bwhen\b|\bwhere\b|\bwhich\b|\bwhose\b|\bbug\b|\bissue\b|\bproblem\b|\berror\b)/i;
+
+// Korean conversational questions frequently omit '?'. Pair an explicit Korean
+// interrogative word with a question/explanatory sentence ending so imperative
+// requests that include a question clause ("왜 실패하는지 ultrawork로 고쳐줘")
+// are not suppressed.
+const KO_INTERROGATIVE_WORD =
+  /(?:왜|어째서|어떻게|무슨|무엇|뭐|뭘|뭔|뭣|어디|언제|누가|누구|어느)/;
+const KO_QUESTION_ENDING =
+  /(?:는데|은데|인데|건데|뭔데|한데|된데|거야|거임|건가|인가|인가요|인지|냐|냐고|나요|까요|가요|을까|ㄹ까)\s*$/;
+
+function isKoreanQuestionSentence(sentence: string): boolean {
+  const trimmed = sentence.trim();
+  return (
+    KO_INTERROGATIVE_WORD.test(trimmed) && KO_QUESTION_ENDING.test(trimmed)
+  );
+}
 
 function isInterrogativeSentence(line: string): boolean {
   return /\?\s*$/.test(line) && INTERROGATIVE_WORD.test(line);
+}
+
+// Sentence terminators in NFKC-normalized text. A '?' or '.' glued to the next
+// character ("page?id=1", "ralph.md", "v1.2") is not a terminator.
+const SENTENCE_END = /\?(?=\s|$|["')\]}])|!(?=\s|$)|\.(?=\s|$)|。|\n/g;
+
+/**
+ * True when the keyword at `matchIndex` sits inside an interrogative sentence:
+ * either ending with '?' and carrying an interrogative word, or a Korean
+ * question sentence without '?' (interrogative word + question ending).
+ * isAnalyticalQuestion only sees a '?' that closes the first or last line, so a
+ * question followed by an aside ("왜 orchestrate를 내세우는 거임? 참나") lost
+ * its question status and started the workflow. The check is per sentence: a
+ * command after a question ("Why is CI red? ultrawork a fix") is its own
+ * sentence and still fires, and a polite explicit invocation with no
+ * interrogative word ("ultrawork로 해줄래?") is unaffected.
+ */
+export function isInsideInterrogativeSentence(
+  text: string,
+  matchIndex: number,
+  matchLength: number,
+): boolean {
+  // buildPatterns boundaries capture one non-word char on each side of the
+  // keyword (e.g. " orchestrate?"), so peel non-word punctuation/whitespace
+  // off the ends to locate the keyword token itself before scanning terminators.
+  const raw = text.slice(matchIndex, matchIndex + matchLength);
+  const leading = raw.match(/^[^\p{L}\p{N}_-]+/u)?.[0].length ?? 0;
+  const trailing = raw.match(/[^\p{L}\p{N}_-]+$/u)?.[0].length ?? 0;
+  const tokenStart = matchIndex + leading;
+  const tokenEnd = Math.max(tokenStart, matchIndex + matchLength - trailing);
+
+  let start = 0;
+  for (const end of text.matchAll(SENTENCE_END)) {
+    if (end.index + end[0].length <= tokenStart) {
+      start = end.index + end[0].length;
+      continue;
+    }
+    if (end.index < tokenEnd) continue;
+    const sentence = text.slice(start, end.index);
+    if (end[0] === "?") {
+      return INTERROGATIVE_WORD.test(sentence);
+    }
+    return isKoreanQuestionSentence(sentence);
+  }
+  return isKoreanQuestionSentence(text.slice(start));
 }
 
 function firstAndLastLines(prompt: string): [string, string] {
@@ -1317,6 +1378,10 @@ export async function run(
       // A persistent workflow inferred from natural language inside a
       // question is not a request to start it.
       const questionGated = def.persistent && !explicit && questionLike;
+      // Neither is a workflow name that a question asks about, explicit or not.
+      const askedAbout =
+        def.persistent &&
+        isInsideInterrogativeSentence(cleaned, match.index, match[0].length);
 
       candidates.push({
         workflow,
@@ -1327,7 +1392,8 @@ export async function run(
         keywordLength: text.length,
         isMultiWord: /\s/.test(text),
         declarationIndex,
-        suppressed: informational || pasted || reinforced || questionGated,
+        suppressed:
+          informational || pasted || reinforced || questionGated || askedAbout,
         explicit,
       });
     };

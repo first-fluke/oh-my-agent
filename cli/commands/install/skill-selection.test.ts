@@ -7,12 +7,14 @@ describe("resolvePresetSkills", () => {
     expect(resolvePresetSkills()).toBeUndefined();
   });
 
-  it("selects the eight frontend skills instead of all thirty-two", () => {
+  it("selects the frontend preset's skills instead of the full registry", () => {
     const selected = resolvePresetSkills("frontend");
-    expect(selected).toHaveLength(8);
+    expect(selected).toEqual(PRESETS.frontend);
     expect(selected).toContain("oma-frontend");
     expect(selected).not.toContain("oma-backend");
-    expect(resolvePresetSkills("all")).toHaveLength(32);
+    const all = resolvePresetSkills("all");
+    expect(all).toEqual(PRESETS.all);
+    expect(selected?.length).toBeLessThan(all?.length ?? 0);
   });
 
   it.each(["unknown-preset", "custom", "", "__proto__", "toString"])(
@@ -23,9 +25,10 @@ describe("resolvePresetSkills", () => {
   );
 
   it("returns an independent selection so callers cannot change the registry", () => {
+    const registered = [...(PRESETS.frontend ?? [])];
     const selected = resolvePresetSkills("frontend");
     selected?.pop();
-    expect(PRESETS.frontend).toHaveLength(8);
-    expect(resolvePresetSkills("frontend")).toHaveLength(8);
+    expect(PRESETS.frontend).toEqual(registered);
+    expect(resolvePresetSkills("frontend")).toEqual(registered);
   });
 });

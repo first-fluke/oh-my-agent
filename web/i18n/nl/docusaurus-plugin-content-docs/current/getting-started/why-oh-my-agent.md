@@ -12,7 +12,7 @@ oh-my-agent voegt een repository-eigen laag toe rond de agent-CLI's die je team 
 OMA past goed wanneer je een of meer van deze dingen nodig hebt:
 
 - **Meerdere agenthosts of vendors.** `model_preset: auto` gebruikt de native configuratie van de huidige runtime. Vaste en aangepaste presets kunnen rollen naar andere vendors routeren; `oma agent spawn` verzorgt dispatch die niet native is.
-- **Een herhaalbare teamworkflow.** `/work` behandelt één afgebakende taak, `/orchestrate` coördineert gedelegeerd werk, `/ultrawork` voert parallel werk met reviewstappen uit en `/ralph` herhaalt een taak met een expliciete judge-fase.
+- **Een herhaalbare teamworkflow.** `/oma-mode` neemt een doel aan, kiest de route en laat een onafhankelijke judge het resultaat controleren, `/work` plant, bouwt en reviewt een feature over meerdere domeinen, `/ultrawork` voegt in elke fase een geïsoleerde review toe en `/orchestrate` voert een bestaand plan uit met verificatie per taak.
 - **Instructies die bij de repository horen.** Skills, workflows, regels en agentdefinities staan naast de code. `oma link` projecteert de geselecteerde bestanden naar indelingen van ondersteunde vendors.
 - **Mechanische controles en blijvende resultaten.** Agentruns kunnen gestructureerde status- en resultaatreceipts schrijven, terwijl `oma verify agent <agent-type>` en `oma docs verify` expliciete controles bieden.
 
@@ -22,7 +22,7 @@ Als een project één host gebruikt en geen gedeelde skills, workflows of vendor
 
 Voer `oma verify agent <agent-type> --workspace <path>` uit wanneer je de controles voor een backend-, frontend-, mobile-, QA-, debug- of planningsrol wilt uitvoeren. De verifier combineert statische inspecties met geconfigureerde commando's, zoals tests, typechecks, SQL-controles of `flutter analyze`; zie [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). Het rapport toont het resultaat van elke controle. Als deze controles slagen, is daarmee nog niet vastgesteld dat een feature aan de product- of domeinvereisten voldoet; review daarom ook de acceptatiecriteria van de taak.
 
-`/ralph` voegt een afzonderlijke [judge](./glossary.md#judge)-fase toe wanneer je die workflow selecteert. De workflow controleert de vastgelegde criteria opnieuw in elke iteratie en registreert de workflowartefacten; dit is geen gate die bij elke gewone prompt draait. Het laden van skills start evenmin elke workflow of elk verificatiecommando.
+`/oma-mode` voegt een afzonderlijke [judge](./glossary.md#judge)-stap toe wanneer je die workflow selecteert. De workflow controleert de vastgelegde criteria opnieuw na elke iteratie; dit is geen gate die bij elke gewone prompt draait. Het laden van skills start evenmin elke workflow of elk verificatiecommando.
 
 ## Dispatch blijft zichtbaar
 
@@ -43,5 +43,5 @@ Voor de oorspronkelijke positioneringsdiscussie zie [issue #155](https://github.
 - [Snel starten](./quick-start.md): installeer, controleer de setup en voer één afgebakende taak uit
 - [Belangrijke standaardinstellingen](./important-defaults.md): wat de installer inschakelt en hoe je dat wijzigt
 - [Installatie](./installation.md#presets): kies een skillpreset die de workflows dekt die je wilt gebruiken
-- [Workflows](../core-concepts/workflows.md): wanneer je `/work`, `/orchestrate`, `/ultrawork` en `/ralph` gebruikt
+- [Workflows](../core-concepts/workflows.md): wanneer je `/oma-mode`, `/work`, `/ultrawork` en `/orchestrate` gebruikt
 - [Probleemoplossing](../guide/troubleshooting.md): oplossingen voor problemen met installatie, vendors en hooks

@@ -37,6 +37,22 @@ Replay 환경 준비의 각 `RUN`은 원래 과제의 `environment.build_timeout
 
 `recover_grade.py`는 초기 채점 환경 오류가 난 두 BugSwarm 과제의 저장된 패치·설명 파일을 SHA-256으로 확인하고, 원래 base image digest와 과제 환경에 복원해 공식 채점기만 실행한다. 모델은 호출하지 않는다. 별도 출력 디렉터리와 원본 시도 경로를 기록하며, 이전 venv·캐시·빌드 산출물은 복원하지 않는다. `--promote`는 실제 점수가 나온 경우에만 과제별 receipt를 갱신한다. 전체 checkpoint는 중앙 실행기가 작업 경계에서 합친다.
 
+## 공개 결과와의 과제별 대조
+
+이 실행에는 bare 대조군이 없다. `compare_public.py`는 모델 호출 없이 채점된 84개 과제를 SkillsBench 공개 결과 registry([고정 commit](https://github.com/benchflow-ai/skillsbench-trajectories/blob/cb640f73cdea8c67422cae3cc37b913a7c080871/website-data/results-registry.json))의 Codex 행과 과제 단위로 맞춘다. [결과](results/public-reference-20261126/receipt.json)는 참고치이며 통제된 비교가 아니다. 공개 행은 이전 세대 모델(GPT-5.5)과 공식 러너를 쓰고 과제당 3회이며, 이 실행은 과제당 1회다.
+
+| 조건 | 통과율 (84개) |
+|---|---:|
+| 이 실행: OMA + Codex (`gpt-6.1-sol`, high) | 48.8% (Wilson 95% 38.4–59.3) |
+| 공개: Codex (GPT-5.5), 스킬 없음 | 43.7% |
+| 공개: Codex (GPT-5.5), 과제별 큐레이션 스킬 | 63.9% |
+
+- OMA 스킬을 하나라도 읽은 38개 과제는 47.4%로, 같은 과제의 공개 bare 36.8%보다 높다. 읽지 않은 46개는 50.0%로 공개 bare 49.3%와 같다.
+- 범주별로는 software-engineering(33.3% vs bare 37.8%), finance-economics(22.2% vs 29.6%), media-content-production(20.0% vs 26.7%)이 공개 bare보다 낮다.
+- 84개 중 37개에서 agent가 호스트 전역 플러그인의 스킬(`spreadsheets`, `pdf` 등)을 읽었다. 따라서 이 실행은 순수 OMA 조건이 아니다.
+
+통제된 bare 대 OMA 비교는 [`harbor-paired`](../harbor-paired/README.md) 트랙에서 한다.
+
 ## 기존 단일 과제 smoke
 
 SkillsBench v1.1의 `dialogue-parser` 한 과제를 실제 실행하고 공식 채점기로 채점했다.

@@ -9,11 +9,11 @@ description: "Guide d’utilisation d’OMA : choisir une tâche en fonction du 
 ## Démarrage rapide
 
 1. Ouvrez votre projet dans un IDE ou CLI doté d’une IA (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen ou tout autre hôte pris en charge).
-2. L’hôte sélectionné peut charger les [compétences](../getting-started/glossary.md#skill) depuis `.agents/skills/` ; les hooks activés ajoutent des indices de compétences à partir de mots-clés en langage naturel et ne démarrent un [workflow](../getting-started/glossary.md#workflow) qu’à partir de sa commande slash ou, pour les quatre modes persistants, de son nom.
+2. L’hôte sélectionné peut charger les [compétences](../getting-started/glossary.md#skill) depuis `.agents/skills/` ; les hooks activés ajoutent des indices de compétences à partir de mots-clés en langage naturel et ne démarrent un [workflow](../getting-started/glossary.md#workflow) qu’à partir de sa commande slash ou, pour les cinq modes persistants, de son nom.
 3. Décrivez ce que vous voulez en langage naturel. L’hôte ou le workflow sélectionné route la tâche vers la compétence pertinente.
 4. Pour un travail multi-agents, utilisez `/work` ou `/orchestrate`.
 
-Les tâches dans un seul domaine ne nécessitent aucune syntaxe spéciale. Utilisez le [guide de sélection des compétences et workflows](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) pour choisir entre une compétence unique, `/work`, `/orchestrate`, `/ultrawork` et `/ralph`. Consultez le [Démarrage rapide](../getting-started/quick-start.md) pour la configuration et les [Valeurs par défaut importantes](../getting-started/important-defaults.md) avant de changer de fournisseur.
+Les tâches dans un seul domaine ne nécessitent aucune syntaxe spéciale. Utilisez le [guide de sélection des compétences et workflows](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) pour choisir entre une compétence unique, `/oma-mode`, `/work`, `/ultrawork`, `/ralph` et `/orchestrate`. Consultez le [Démarrage rapide](../getting-started/quick-start.md) pour la configuration et les [Valeurs par défaut importantes](../getting-started/important-defaults.md) avant de changer de fournisseur.
 
 ## Choisir un guide
 
@@ -245,8 +245,9 @@ Les tâches inter-fournisseurs et `model_preset: free` utilisent `oma agent spaw
 
 | Commande | Type | Fonction | Quand l’utiliser |
 |----------|------|----------|------------------|
+| `/oma-mode` | Persistant | Prend un objectif, sélectionne la route, l’exécute et continue jusqu’à ce que la condition de fin soit remplie ou qu’une limite soit atteinte | Lorsque vous voulez confier un objectif au lieu de choisir un workflow |
 | `/orchestrate` | Persistant | Charge ou crée un plan, puis délègue l’exécution parallèle avec surveillance et vérification | Tâches indépendantes adaptées à une coordination parallèle automatisée |
-| `/work` | Persistant | Planification, implémentation et QA multi-domaines étape par étape dans le périmètre autorisé | Fonctionnalités couvrant plusieurs domaines qui nécessitent une livraison coordonnée |
+| `/work` | Persistant | Plan du PM, implémentation parallèle et un seul passage QA sur l’ensemble du résultat, dans le périmètre autorisé | Fonctionnalités couvrant plusieurs domaines, lorsque vous voulez le déroulement mené par le PM |
 | `/ultrawork` | Persistant | Workflow qualité en 5 phases et 17 étapes avec 12 points de contrôle isolés | Livraison de qualité maximale, code critique pour la production |
 | `/plan` | Non persistant | Découpage PM, contrats API et artefacts suivis dans `docs/plans/work/` (`NNN-name.md` séquentiels, champ Status) | Avant tout travail multi-agents complexe ; fonctionnalités complexes avec suivi et journal de décisions |
 | `/brainstorm` | Non persistant | Idéation centrée sur le design avec 2 ou 3 propositions | Avant de choisir une approche d’implémentation |
@@ -264,13 +265,13 @@ Les tâches inter-fournisseurs et `model_preset: free` utilisent `oma agent spaw
 | `/recap` | Non persistant | Résumer le travail dans les historiques des outils IA pris en charge | Récapitulatif quotidien ou périodique |
 | `/schedule` | Non persistant | Enregistrer des jobs récurrents d’agents | Récaps, scans ou maintenance nocturnes |
 | `/video` | Non persistant | Composer des vidéos reproductibles à partir de scripts, narration et visuels | Shorts, explications et démonstrations |
-| `/ralph` | Persistant | Exécution ultrawork répétée avec un juge lancé par prompt et des garde-fous de boucle | Demande explicite de répéter jusqu’à des critères mécaniques de fin |
+| `/ralph` | Persistant | Alias obsolète de `/oma-mode` | `/oma-mode` |
 
 ---
 
 ## Exemples de détection automatique
 
-Le hook de mots-clés ne démarre que quatre modes persistants, et uniquement lorsque le prompt nomme le mode. Les autres workflows démarrent depuis leur commande slash.
+Le hook de mots-clés ne démarre que cinq modes persistants, et uniquement lorsque le prompt nomme le mode. Les autres workflows démarrent depuis leur commande slash.
 
 | Vous saisissez | Workflow détecté | Langue |
 |----------------|------------------|--------|
@@ -435,7 +436,7 @@ Les problèmes courants sont listés ci-dessous. Pour les messages d’erreur, l
 | Le dashboard affiche « No agents detected yet » | Les agents n’ont pas encore écrit en mémoire, ou le dashboard surveille un autre répertoire | Attendre le premier fichier de progression ; lancer depuis la racine du projet ou passer `--project-root <path>` |
 | `oma dashboard web` se termine avec « port 9847 is already in use » | Un autre processus occupe le port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | Le rapport QA contient plus de 50 problèmes | Normal lors d’une première revue d’un codebase important | Traiter d’abord les sévérités CRITICAL et HIGH ; documenter MEDIUM/LOW pour les prochains sprints |
-| Un mode persistant démarre alors que vous avez seulement mentionné son nom | Le prompt nomme `orchestrate`, `ultrawork`, `work mode` ou `ralph` en dehors d’une question ou d’un bloc de code | Dire « workflow done » pour le libérer. Signaler les faux déclenchements pour améliorer le système. |
+| Un mode persistant démarre alors que vous avez seulement mentionné son nom | Le prompt nomme `oma-mode`, `orchestrate`, `ultrawork`, `work mode` ou `ralph` en dehors d’une question ou d’un bloc de code | Dire « workflow done » pour le libérer. Signaler les faux déclenchements pour améliorer le système. |
 | Le workflow persistant ne s’arrête pas | Le fichier d’état existe encore | Dire « workflow done » dans le chat ou supprimer manuellement le fichier d’état dans `.agents/state/` |
 | Agent bloqué sur une clarification HIGH | Exigences trop ambiguës | Fournir les réponses demandées, puis relancer |
 | Outils MCP inopérants | Serena mal configuré ou arrêté | Exécuter `oma doctor` pour vérifier la configuration MCP |

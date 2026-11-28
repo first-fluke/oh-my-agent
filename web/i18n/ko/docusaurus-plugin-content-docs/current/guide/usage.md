@@ -9,11 +9,11 @@ description: OMA 사용 가이드입니다. 독자 관점의 태스크 선택, �
 ## 빠른 시작
 
 1. 선택한 AI IDE 또는 CLI에서 프로젝트를 엽니다 (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen 또는 지원되는 다른 호스트)
-2. 선택한 호스트가 `.agents/skills/`의 [스킬](../getting-started/glossary.md#skill)을 읽을 수 있고, 활성화된 훅은 자연어 키워드로 스킬 힌트를 추가하며 [워크플로우](../getting-started/glossary.md#workflow)는 해당 슬래시 커맨드로만, 네 가지 지속 모드의 경우에는 그 이름으로도 시작합니다
+2. 선택한 호스트가 `.agents/skills/`의 [스킬](../getting-started/glossary.md#skill)을 읽을 수 있고, 활성화된 훅은 자연어 키워드로 스킬 힌트를 추가하며 [워크플로우](../getting-started/glossary.md#workflow)는 해당 슬래시 커맨드로만, 다섯 가지 지속 모드의 경우에는 그 이름으로도 시작합니다
 3. 원하는 것을 자연어로 설명하면 호스트 또는 선택한 워크플로우가 관련 스킬로 라우팅합니다
 4. 멀티 에이전트 작업에는 `/work` 또는 `/orchestrate`를 사용합니다
 
-단일 도메인 태스크에는 특별한 구문이 필요 없습니다. [스킬과 워크플로우 선택 가이드](/docs/core-concepts/workflows#choosing-a-skill-or-workflow)를 참고해 단일 스킬, `/work`, `/orchestrate`, `/ultrawork`, `/ralph` 중에서 선택합니다. 설정 방법은 [빠른 시작](../getting-started/quick-start.md)을 보고, 프로바이더를 바꾸기 전에는 [중요한 기본값](../getting-started/important-defaults.md)을 확인하세요.
+단일 도메인 태스크에는 특별한 구문이 필요 없습니다. [스킬과 워크플로우 선택 가이드](/docs/core-concepts/workflows#choosing-a-skill-or-workflow)를 참고해 단일 스킬, `/oma-mode`, `/work`, `/ultrawork`, `/ralph`, `/orchestrate` 중에서 선택합니다. 설정 방법은 [빠른 시작](../getting-started/quick-start.md)을 보고, 프로바이더를 바꾸기 전에는 [중요한 기본값](../getting-started/important-defaults.md)을 확인하세요.
 
 ## 가이드 선택
 
@@ -245,8 +245,9 @@ oma stats get
 
 | 명령 | 유형 | 기능 | 사용 시기 |
 |---------|------|-------------|-------------|
+| `/oma-mode` | 지속 | 목표를 받아 경로를 선택하고 실행하며, 종료 조건이 충족되거나 한도에 도달할 때까지 계속 진행합니다 | 워크플로우를 고르는 대신 목표를 맡기고 싶을 때 |
 | `/orchestrate` | 지속 | 계획을 불러오거나 생성한 뒤 병렬 실행을 위임하고 모니터링·검증합니다 | 자동 병렬 조율에 적합한 독립 태스크 |
-| `/work` | 지속 | 승인된 범위 안에서 단계별 멀티 도메인 계획, 구현, QA를 진행합니다 | 여러 도메인에 걸쳐 조율된 전달이 필요한 기능 |
+| `/work` | 지속 | 승인된 범위 안에서 PM 계획, 병렬 구현, 전체 결과에 대한 QA 한 번을 진행합니다 | 여러 도메인에 걸친 기능에서 PM이 주도하는 흐름을 원할 때 |
 | `/ultrawork` | 지속 | 5단계, 17스텝 품질 워크플로우와 12개 격리된 리뷰 체크포인트를 실행합니다 | 최대 품질이 필요한 전달, 프로덕션에 중요한 코드 |
 | `/plan` | 비지속 | PM 주도 태스크 분해, API 컨트랙트, `docs/plans/work/`의 추적 계획 산출물(순번 `NNN-name.md`, 수명 주기를 나타내는 Status 필드)를 만듭니다 | 복잡한 멀티 에이전트 작업 전, 진행과 결정 로그를 추적해야 하는 복잡한 기능 |
 | `/brainstorm` | 비지속 | 2~3가지 제안과 `docs/decisions/`의 초안으로 접근 방식을 탐색합니다 | 구현 접근 방식을 정하기 전 |
@@ -264,13 +265,13 @@ oma stats get
 | `/recap` | 비지속 | 지원되는 AI 도구 이력에서 작업을 요약합니다 | 일일 또는 기간별 회고 |
 | `/schedule` | 비지속 | 반복 에이전트 작업을 등록합니다 | 야간 회고, 스캔 또는 정기 관리 작업 |
 | `/video` | 비지속 | 스크립트, 내레이션, 시각 자료로 재현 가능한 영상을 구성합니다 | 숏폼, 설명 영상, 데모 |
-| `/ralph` | 지속 | 프롬프트로 지시한 judge와 루프 안전장치를 갖춘 ultrawork를 반복 실행합니다 | 기계적인 완료 기준을 통과할 때까지 반복하라는 명시적 요청 |
+| `/ralph` | 지속 | 사용 중단된 `/oma-mode` 별칭 | `/oma-mode` |
 
 ---
 
 ## 자동 감지 예제
 
-키워드 훅은 네 가지 지속 모드만 시작하고, 프롬프트가 그 모드의 이름을 말할 때만 시작합니다. 나머지 워크플로우는 슬래시 커맨드로 시작합니다.
+키워드 훅은 다섯 가지 지속 모드만 시작하고, 프롬프트가 그 모드의 이름을 말할 때만 시작합니다. 나머지 워크플로우는 슬래시 커맨드로 시작합니다.
 
 | 입력 | 감지된 워크플로우 | 언어 |
 |----------|------------------|----------|
@@ -435,7 +436,7 @@ oma dashboard web        # prints http://127.0.0.1:9847/; open it in a browser
 | 대시보드에 "No agents detected yet" 표시 | 에이전트가 아직 메모리에 쓰지 않았거나, 대시보드가 다른 디렉토리를 감시함 | 첫 진행 파일을 기다리고, 프로젝트 루트에서 실행하거나 `--project-root <path>` 전달 |
 | `oma dashboard web`이 "port 9847 is already in use"로 종료됨 | 다른 프로세스가 포트를 점유 중 | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA 보고서에 50개 이상 이슈 | 대규모 코드베이스의 첫 리뷰에서는 정상 | CRITICAL과 HIGH 심각도에 집중. MEDIUM/LOW는 향후 스프린트를 위해 문서화. |
-| 이름만 언급했는데 지속 모드가 시작됨 | 프롬프트가 질문이나 코드 블록 밖에서 `orchestrate`, `ultrawork`, `work mode`, `ralph`를 언급함 | "workflow done"이라고 말해 해제. 개선을 위해 오탐 보고. |
+| 이름만 언급했는데 지속 모드가 시작됨 | 프롬프트가 질문이나 코드 블록 밖에서 `oma-mode`, `orchestrate`, `ultrawork`, `work mode`, `ralph`를 언급함 | "workflow done"이라고 말해 해제. 개선을 위해 오탐 보고. |
 | 지속 워크플로우가 중단되지 않음 | 상태 파일이 여전히 존재 | 채팅에서 "workflow done"이라고 말하거나 `.agents/state/`에서 상태 파일 수동 삭제 |
 | 에이전트가 HIGH 명확화로 차단됨 | 요구사항이 너무 모호 | 에이전트가 요청한 구체적인 답변 제공 후 재실행 |
 | MCP 도구가 작동하지 않음 | Serena가 설정되지 않았거나 실행 중이지 않음 | `oma doctor`로 MCP 설정 확인 |

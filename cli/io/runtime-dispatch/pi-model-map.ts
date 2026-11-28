@@ -21,8 +21,9 @@ const PI_RUNNABLE_PROVIDERS = new Set(["anthropic", "openai", "google"]);
  * mixed) and google-owned model slugs, not CLI-proprietary owners (cursor /
  * kiro / qwen / antigravity).
  *
- * TODO(oma-deferred): pi's catalog is release-tracked and auth-gated; verify
- * unresolved slugs at runtime via `pi --list-models` (see doctor probe).
+ * This mapping does not validate the slug: pi's catalog is release-tracked and
+ * auth-gated, so an unknown slug fails in pi at run time. `pi --list-models`
+ * (see doctor probe) lists what the authenticated catalog accepts.
  */
 export function toPiModel(slug: string): string {
   const slashIdx = slug.indexOf("/");

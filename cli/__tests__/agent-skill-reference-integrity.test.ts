@@ -27,6 +27,7 @@ const REPO_ROOT = join(__dirname, "..", "..");
 const NON_SKILL_TOKENS = new Set([
   "oma-config", // .agents/oma-config.{yaml,cue}
   "oma-deferred", // `TODO(oma-deferred)` marker convention
+  "oma-mode", // the /oma-mode router workflow, not a skill
 ]);
 
 // Skills referenced by path that OMA documents as optional, user-installed

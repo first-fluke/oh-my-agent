@@ -1,22 +1,23 @@
 ---
 title: Workflows
-description: Volledige referentie voor alle 20 oh-my-agent-workflows, met slashcommando's, persistente en niet-persistente modi, trigger-keywords in 11 talen, fasen en stappen, gelezen en geschreven bestanden, autodetectie via triggers.json en keyword-detector.ts, filtering van informatieve patronen en statebeheer voor persistente modi.
+description: Volledige referentie voor alle 21 oh-my-agent-workflows, met slashcommando's, persistente en niet-persistente modi, trigger-keywords in 11 talen, fasen en stappen, gelezen en geschreven bestanden, autodetectie via triggers.json en keyword-detector.ts, filtering van informatieve patronen en statebeheer voor persistente modi.
 ---
 
 # Workflows
 
-Workflows zijn processen met meerdere stappen die door slashcommando's worden gestart; de vier persistente modi starten ook wanneer een gewoon verzoek ze bij naam noemt. Ze beschrijven hoe agenten taken uitvoeren, van eenstapstaken tot kwaliteitsworkflows met vijf fasen.
+Workflows zijn processen met meerdere stappen die door slashcommando's worden gestart; de vijf persistente modi starten ook wanneer een gewoon verzoek ze bij naam noemt. Ze beschrijven hoe agenten taken uitvoeren, van eenstapstaken tot kwaliteitsworkflows met vijf fasen.
 
-Er zijn 20 workflows, waarvan 4 [persistent](../getting-started/glossary.md#persistent-workflow) zijn (ze houden status bij en kunnen niet per ongeluk worden onderbroken).
+Er zijn 21 workflows, waarvan 5 [persistent](../getting-started/glossary.md#persistent-workflow) zijn (ze houden status bij en kunnen niet per ongeluk worden onderbroken).
 
 ## Workflows in één oogopslag
 
 | Workflow | Gebruik voor | Persistent |
 |---|---|---|
-| [`/orchestrate`](#orchestrate) | Geautomatiseerde parallelle agentuitvoering op basis van een plan, met verificatielussen | Ja |
-| [`/work`](#work) | Stapsgewijze coördinatie over meerdere domeinen: plannen, implementeren, QA, herstellen | Ja |
+| [`/oma-mode`](#oma-mode) | Autonome modus: geef een doel op en de modus kiest de route, voert die uit en gaat door tot het doel is gehaald | Ja |
+| [`/work`](#work) | Een build over meerdere domeinen in één run: PM-plan, parallelle implementatie, QA van het hele resultaat, fixlus | Ja |
 | [`/ultrawork`](#ultrawork) | De kwaliteitsworkflow met 5 fasen en 12 geïsoleerde reviewstappen | Ja |
-| [`/ralph`](#ralph) | Ultrawork herhalen tot mechanisch verifieerbare criteria slagen | Ja |
+| [`/ralph`](#ralph) | Verouderde alias van `/oma-mode` | Ja |
+| [`/orchestrate`](#orchestrate) | Een bestaand plan uitvoeren: parallelle dispatch met verificatie per taak | Ja |
 | [`/plan`](#plan) | PM-taakopdeling met afhankelijkheden en API-contracten | Nee |
 | [`/brainstorm`](#brainstorm) | Design-first ideevorming vóór de planning | Nee |
 | [`/architecture`](#architecture) | Architectuurbeslissingen, reviews en ADR's | Nee |
@@ -43,14 +44,14 @@ Kies op basis van de coördinatie en verificatie die de taak nodig heeft. Heb je
 | Wat de taak nodig heeft | Kies | Voorbeeld |
 |---|---|---|
 | Eén domein zonder agentcoördinatie | [Single skill](/docs/guide/single-skill) | Een API-endpoint toevoegen en de validatie testen |
-| Meerdere domeinen met stapsgewijze planning, implementatie en QA | `/work` | Een API-wijziging coördineren met web- en mobileclients |
-| Onafhankelijke taken automatisch parallel delegeren | `/orchestrate` | Backend- en frontendtaken parallel uitvoeren nadat afhankelijkheden zijn opgelost |
+| Een doel dat je tot het einde wilt laten uitvoeren zonder een workflow te kiezen | `/oma-mode` | Login aan deze app toevoegen en doorgaan tot de checks slagen |
+| Meerdere domeinen, in één run gepland, geïmplementeerd en gereviewd | `/work` | Een API-wijziging coördineren met web- en mobileclients |
 | Expliciet gevraagde uitgebreide kwaliteitsaanpak | `/ultrawork` | Volledige reviews voor planning, implementatie, verificatie, verfijning en releasegereedheid uitvoeren |
-| Expliciet gevraagd herhalen tot mechanisch verifieerbare criteria slagen | `/ralph` | Implementatie en verificatie door de judge herhalen tot de opgegeven regressiechecks slagen, binnen de lusbeveiligingen |
+| Een plan dat moet worden uitgevoerd zoals het is geschreven, waarbij elke taak afzonderlijk wordt geverifieerd | `/orchestrate` | De taken uit `/plan` parallel uitvoeren en per taak een status krijgen: voltooid, gedeeltelijk of mislukt |
 
-`/orchestrate` laadt een bruikbaar plan of maakt er een via `/plan` voordat agenten worden gespawnd. `/plan` vooraf draaien is dus niet nodig. Een bestaand plan onderscheidt `/work` niet van `/orchestrate`; kies op basis van de gewenste coördinatie. Beide kunnen onafhankelijke taken parallel uitvoeren.
+`/work` en `/orchestrate` voeren allebei onafhankelijke taken parallel uit. Ze verschillen in waar het plan vandaan komt en hoe het resultaat wordt gecontroleerd. Bij `/work` schrijft de PM een nieuw plan en presenteert dat, reviewt QA na de implementatie het hele resultaat en gaan CRITICAL- en HIGH-bevindingen een fixlus in. `/orchestrate` laadt een bruikbaar plan, of maakt er een via `/plan` als er geen is; `/plan` vooraf draaien is dus niet nodig. De workflow bevriest dat plan bij de eerste dispatch en verifieert elke taak afzonderlijk; een taak waarvan de pogingen op zijn, wordt als gedeeltelijk of mislukt gerapporteerd. Begin bij twijfel met `/oma-mode`: die kiest voor je uit deze routes. Kies `/work` wanneer je de door de PM geleide flow met één QA-ronde over het hele resultaat wilt, en direct `/orchestrate` wanneer het plan vaststaat.
 
-Acceptatiecriteria en tests horen ook bij single-skilltaken. Alleen hun aanwezigheid activeert `/ralph` niet: elke Ralph-iteratie voert het volledige ultraworkproces en een judge-ronde uit. Kies Ralph dus wanneer je die herhaalde verificatielus wilt. Safeguards kunnen de workflow met onvolledig of geblokkeerd werk laten stoppen.
+Acceptatiecriteria en tests horen ook bij single-skilltaken. `/oma-mode` legt ze vast als voltooiingscriteria en laat een onafhankelijke judge elk criterium na elke iteratie opnieuw controleren. De modus kan met onvolledig of geblokkeerd werk stoppen wanneer zijn limieten gelden.
 
 Deze tabel is advies voor selectie en geen automatische router. De hostagent kan een passende aanpak adviseren; een workflow aanbevelen of uitleggen start hem niet. Een slashcommando selecteert er expliciet één. Wanneer de keyword-detection-hook aanstaat, kunnen overeenkomende geconfigureerde keywords of patronen er ook één activeren, onder voorbehoud van de filters voor informatieve vragen. De detector classificeert niet hoeveel domeinen een verzoek heeft, controleert niet of een plan klaar is en gebruikt de tabel niet als prioriteitsalgoritme.
 
@@ -62,62 +63,34 @@ Planreview hergebruikt de autorisatie die al voor de taak is gegeven. Agenten vr
 
 Persistente workflows blijven lopen totdat alle taken klaar zijn. Ze bewaren state in `.agents/state/` en injecteren bij elk gebruikersbericht opnieuw context met `[OMA PERSISTENT MODE: ...]` totdat ze expliciet worden gedeactiveerd.
 
-De persistente modus start alleen bij een **expliciete aanroep**: het slashcommando van de workflow (`/ultrawork`, of een vorm met namespace zoals `/oma:ultrawork`), of de eigen naam van de workflow in gewone tekst (de lijst `explicit` in `triggers.json`: "orchestrate" en de daar vermelde vertalingen, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). De keyword-hook opent een workflow niet vanuit een andere zin.
+De persistente modus start alleen bij een **expliciete aanroep**: het slashcommando van de workflow (`/ultrawork`, of een vorm met namespace zoals `/oma:ultrawork`), of de eigen naam van de workflow in gewone tekst (de lijst `explicit` in `triggers.json`: "oma-mode", "orchestrate" en de daar vermelde vertalingen, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). De keyword-hook opent een workflow niet vanuit een andere zin.
 
-### /orchestrate
+### /oma-mode
 
-**Beschrijving:** Geautomatiseerde parallelle agentuitvoering via de CLI. Spawnt subagenten via de CLI, coördineert via duurzame runstate en receipts, bewaakt voortgang en draait verificatielussen.
+**Beschrijving:** Autonome modus. Je geeft een doel op; de modus kiest de route, voert die uit zonder te vragen welke workflow moet worden gebruikt, en gaat door totdat een onafhankelijke judge elk voltooiingscriterium goedkeurt of een limiet is bereikt.
 
-**Persistent:** Ja. Statusbestand: `.agents/state/orchestrate-state-{sessionId}.json`.
+**Persistent:** Ja. Statusbestand: `.agents/state/oma-mode-state-{sessionId}.json`.
 
 **Trigger-keywords:**
 | Taal | Keywords |
 |----------|----------|
-| Explicit (persistent) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-
-Zinnen als "do everything", "전부 해줘" of "build me an app" starten deze workflow niet.
+| Explicit (persistent) | "oma-mode" |
 
 **Stappen:**
-1. **Stap 0, Preparation:** Lees de coördinatieskill, context-loading guide en memory protocol. Detecteer de vendor.
-2. **Stap 1, Load/Create Plan:** Controleer `.agents/results/plan-{sessionId}.json` en daarna het meest recente `plan-*.json`. Is er geen plan — of is het plan niet uitvoeringsklaar (taak mist agent, prioriteitstier, afhankelijkheden of acceptatiecriteria) — delegeer dan inline naar `/plan` om er één te maken met dezelfde sessie-ID. Presenteer het plan, hergebruik bestaande autorisatie en vraag alleen vóór delegatie naar een materiële ontbrekende beslissing of nieuwe autorisatie.
-3. **Stap 2, Initialize Session:** Laad `oma-config.yaml`, toon de CLI-mappingstabel en hergebruik de sessie-ID uit het plan of genereer er één (`session-YYYYMMDD-HHMMSS`). Selecteer voor elke taak de skillreferenties die de taak nodig heeft door de taak te vergelijken met de intentsignaturen van de geïnstalleerde skills; één skill die met vertrouwen matcht, is genoeg. Maak `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` in de geconfigureerde geheugenopslag en leg daar per taak de geselecteerde referenties en de reden voor de selectie vast. Dit zijn coördinatornotities; de launcher dwingt ze niet af.
-4. **Stap 3, Spawn Agents:** Spawn voor elke prioriteitstier (laagste eerst: tier 1, daarna tier 2 enzovoort) agenten via de passende vendormethode (native subagenten wanneer huidige runtime en doelvendor overeenkomen; `oma agent spawn` voor externe of cross-vendor taken). Elke agent krijgt zijn taak, de API-contracten en zijn geselecteerde referenties met hun laadvoorwaarden. Overschrijd MAX_PARALLEL (standaard 3) nooit.
-5. **Stap 4, Monitor:** Controleer de procesgezondheid met `oma agent status`. Geef de voorkeur aan voltooiingsmeldingen van de host; poll anders gewijzigde rungebonden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-bestanden met begrensde backoff, lees de gestructureerde receipts en werk het task board bij. Let op voltooiingen, fouten en crashes.
-6. **Stap 5, Verify:** Draai per voltooide agent eerst een mechanische self-check (lint, typecheck, tests, diff-scope; maximaal 3 cycli), daarna `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug en pm; andere agenttypes registreren `SKIP`) en vervolgens een QA-cross-review. Faalt de verificatie, dan spawn je opnieuw met foutcontext. Herhaalde mislukkingen kunnen alternatieve hypotheses rechtvaardigen, maar de oorspronkelijke poging, elke retry en elke hypothese putten uit hetzelfde gezamenlijke herstelbudget (`max_attempts`, standaard 3 inclusief de oorspronkelijke poging). Bewaar onopgeloste evidence als het budget een vergelijkingsronde niet kan dekken.
-7. **Stap 6, Collect:** Lees rungebonden resultaatbestanden en gestructureerde claims en stel de samenvatting op.
-8. **Stap 7, Final Report:** Presenteer de sessiesamenvatting. Als er experimenten zijn uitgevoerd, vat dan evidence en beslissingen samen; leg lessons alleen vast wanneer een herbruikbare oorzaak is vastgesteld.
+1. **Stap 1, Het doel lezen:** Bepaal het resultaat, elke expliciete keuze of limiet en de eindvoorwaarde, uitgeschreven als voltooiingscriteria die elk een verificatie bevatten die een judge kan uitvoeren (de check die je hebt genoemd, anders checks afgeleid uit het gedrag dat je hebt beschreven). De criteria worden vastgelegd voordat de eerste route draait.
+2. **Stap 2, De route kiezen:** De eerste rij die past, wint: een genoemde workflow of skill; een alleen-lezen antwoord op een vraag; `/debug` bij onjuist gedrag; `/review` voor een review; `/plan` voor alleen een plan; een andere workflow die verantwoordelijk is voor het resultaat; `/ultrawork` alleen op expliciet verzoek; **Open-ended** (`open-ended-protocol.md`) voor een grote, zeer onzekere of domeinoverstijgende wijziging waarvan de onbekenden een betrouwbaar plan vooraf verhinderen (meest risicovolle onbekenden eerst, verificatieharnas eerst, atomaire afzonderlijk opleverbare eenheden); één eigenaar voor een wijziging die één agent kan afronden: de specialistische subagent voor de verantwoordelijke skill, of deze sessie wanneer zo'n rol niet bestaat; `/orchestrate` voor een wijziging waarvan verschillende specialisten de delen onafhankelijk kunnen bouwen, of een wijziging die te groot is voor de context van één agent. Is `oma-orchestration` niet geïnstalleerd, dan gaat de wijziging naar `/work`, en naar de verantwoordelijke skill wanneer ook `/work` niet beschikbaar is.
+3. **Stap 3, Melden en vastleggen:** Print één `Route:`-regel en leg de keuze vast als routingbeslissing. De modus wacht niet op bevestiging.
+4. **Stap 4, Uitvoeren:** Volg de gekozen workflow, open-ended-reeks of skill ongewijzigd. Routeer opnieuw met een nieuwe `Route:`-regel wanneer het werk bij een andere rij blijkt te horen. Elke stap of eenheid van de route wordt met zijn naam naar de takenlijst gekopieerd en als voltooid gemarkeerd, of als overgeslagen met de reden.
+5. **Stap 5, Beoordelen en doorgaan:** Een apart gedispatchte judge met verse context voert de verificatie van elk criterium uit en legt PASS, FAIL, REGRESSED of BLOCKED vast. Als alles PASS is, eindigt de run; bij een FAIL- of REGRESSED-criterium start de volgende iteratie alleen voor het resterende werk. De run stopt na 5 iteraties, of wanneer een route zijn eigen pogingenbudget, kostenplafond of deadline bereikt; de modus start nooit een andere route om die limiet te omzeilen.
+6. **Stap 6, Rapporteren:** Gevolgde routes, wijzigingen, de eindstatus van elk criterium met het bewijs van de judge, en wat er overblijft, nagekeken op `anti-ai-prose.md` voor directe tekst zonder opvulling. Daarna beëindigt de modus de persistente modus, zodat de sessie kan stoppen.
 
-```mermaid
-flowchart TD
-  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
-  S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task references, task board"]
-  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
-  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
-  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
-  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
-  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
-  QA -->|"FAIL: findings back to the agent"| SC
-  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
-  S6 --> S7(["Step 7: final report"])
-  VS -->|FAIL| CL{"classify the failure"}
-  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
-  CL -->|product| BG{"attempts left in max_attempts?"}
-  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
-  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
-  QA -.->|"review limit reached"| STOP
-```
-
-**Bestanden gelezen:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, rungebonden voortgangs- en resultaatbestanden en gestructureerde runreceipts.
-**Bestanden geschreven:** rungebonden sessie- en task-board-state in de geconfigureerde geheugenopslag, gestructureerde receipts en claims en het eindrapport.
-
-**Wanneer gebruiken:** Grote projecten die maximale paralleliteit met geautomatiseerde coördinatie nodig hebben.
+**Wanneer gebruiken:** Wanneer je een doel wilt overdragen in plaats van een workflow te kiezen. Op hosts met een native `/goal`-lus (zoals Claude Code en Codex CLI) kun je buitenste retries met `/goal` aansturen door de stopvoorwaarde in te stellen op een `/oma-mode`-judgerapport waarin elk criterium slaagt. Publiceren, deployen, destructieve acties, uitgaven boven een opgegeven budget en builds vereisen nog steeds jouw autorisatie.
 
 ---
 
 ### /work
 
-**Beschrijving:** Stapsgewijze coördinatie over meerdere domeinen. PM plant eerst, daarna voeren agenten uit binnen de geautoriseerde scope, gevolgd door QA-review en probleemoplossing.
+**Beschrijving:** De teamworkflow voor werk over meerdere domeinen. PM plant eerst, daarna voeren agenten uit binnen de geautoriseerde scope, gevolgd door QA-review en probleemoplossing.
 
 **Persistent:** Ja. Statusbestand: `.agents/state/work-state-{sessionId}.json`.
 
@@ -139,7 +112,7 @@ Het losse woord "work" is geen trigger — het is gewone woordenschat ("Does thi
 8. **Stap 6.1, Measurements** (conditioneel): Registreer een baseline wanneer een gedefinieerde vergelijking nodig is.
 9. **Stap 7, Iterate:** Bij CRITICAL/HIGH-issues spawn je de verantwoordelijke agent opnieuw. Blijft hetzelfde probleem na 2 pogingen bestaan, activeer dan de Exploration Loop.
 
-**Wanneer gebruiken:** Features die meerdere domeinen overspannen en planning, implementatie en QA stap voor stap moeten coördineren.
+**Wanneer gebruiken:** Features die meerdere domeinen overspannen, wanneer je de door de PM geleide flow wilt: de workflow plant, bouwt parallel en reviewt het hele resultaat in één run.
 
 ---
 
@@ -212,7 +185,7 @@ flowchart TD
 
 ### /ralph
 
-**Beschrijving:** Persistente zelfreferentiële uitvoeringslus. Omwikkelt ultrawork met een [judge](../getting-started/glossary.md#judge) die na elke iteratie de voltooiingscriteria controleert. Meldt volledige voltooiing wanneer alle criteria slagen, gedeeltelijke voltooiing wanneer alleen geslaagde en geblokkeerde criteria overblijven, of stopt wanneer safeguards afgaan.
+**Beschrijving:** Verouderde alias van [`/oma-mode`](#oma-mode). De workflow omwikkelt `/ultrawork` niet langer. De voltooiingscriteria, de onafhankelijke [judge](../getting-started/glossary.md#judge) en de limiet van 5 iteraties die deze workflow eerder beheerde, zijn nu onderdeel van `/oma-mode`.
 
 **Persistent:** Ja. Statusbestand: `.agents/state/ralph-state-{sessionId}.json`.
 
@@ -221,40 +194,60 @@ flowchart TD
 |----------|----------|
 | Explicit (persistent) | "ralph", "랄프" |
 
-Losse hervatfrases ("keep going", "carry on", "계속해", "続けて", "продолжай", …) en voltooiingsformuleringen ("don't stop", "끝까지 해") starten deze workflow niet.
+**Wat het doet:** Voert `/oma-mode` uit met twee vaste instellingen: voltooiingscriteria worden altijd gedefinieerd voordat de eerste route draait, en elke iteratie die het project heeft gewijzigd wordt beoordeeld, inclusief een enkele gevraagde bewerking.
 
-**Fasen:**
-1. **Fase 0, INIT:** Laad prerequisites (context-loading, memory protocol, judge protocol). Definieer en registreer mechanisch verifieerbare voltooiingscriteria, zoals testassertions, typechecks zonder emit, exitcodes of het bestaan van bestanden. Voeg buildchecks alleen toe wanneer die expliciet zijn gevraagd. Toon de criteria en ga verder binnen de geautoriseerde scope. Initialiseer de sessie met `max_iterations: 5`.
-2. **Fase 1, EXEC:** Voer ultrawork uit (PLAN → IMPL → VERIFY → REFINE → SHIP) als één iteratie onder de sessie-ID van Ralph. Draai daarna de artefactgate `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`. Faalt die, dan telt de iteratie als niet uitgevoerd: Ralph registreert de overtreding, herstelt het werk en draait de gate opnieuw.
-3. **Fase 2, JUDGE:** Een judge controleert elk voltooiingscriterium tegen de werkelijke projectstatus (voer geautoriseerde checks uit en verifieer het bestaan van bestanden). De workflowprompt draagt de orchestrator op de judge als aparte agent met verse context te spawnen, alleen geïnformeerd over de criteria; niets bevestigt die spawn mechanisch, en een runtime die geen subagenten kan spawnen krijgt de instructie inline te beoordelen en `ralph.judge-inline-fallback` te registreren. Registreer bewijs en criteriumstatus: PASS, FAIL, REGRESSED of BLOCKED.
-4. **Beslissingsgate:** Als alle criteria PASS zijn → meld volledige voltooiing. Als alleen PASS en BLOCKED overblijven → meld gedeeltelijke voltooiing. Bij FAIL of REGRESSED voer je de foutcontext aan de volgende iteratie toe, onder voorbehoud van safeguards.
-5. **Fase 3, REPLAN:** Beperk de volgende iteratie tot FAIL- en REGRESSED-items (diff-bewuste diagnose), sla BLOCKED-items over en houd PASS-criteria binnen de scope van de judge. Ga terug naar fase 1.
-6. **Safeguards:** De lus stopt als `current_iteration >= max_iterations` (standaard 5). Een criterium dat 3 opeenvolgende keren faalt door dezelfde oorzaak wordt BLOCKED en niet opnieuw geprobeerd (stuck detection).
+**Wanneer gebruiken:** Gebruik in plaats daarvan `/oma-mode`. Het commando `oma ralph verify` en de ultrawork-artefactgate die het uitvoerde, zijn met deze wijziging verwijderd.
+
+---
+
+### /orchestrate
+
+**Beschrijving:** Geautomatiseerde parallelle agentuitvoering via de CLI. Spawnt subagenten via de CLI, coördineert via duurzame runstate en receipts, bewaakt voortgang en draait verificatielussen.
+
+**Persistent:** Ja. Statusbestand: `.agents/state/orchestrate-state-{sessionId}.json`.
+
+**Trigger-keywords:**
+| Taal | Keywords |
+|----------|----------|
+| Explicit (persistent) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+
+Zinnen als "do everything", "전부 해줘" of "build me an app" starten deze workflow niet.
+
+**Stappen:**
+1. **Stap 0, Preparation:** Lees de coördinatieskill, context-loading guide en memory protocol. Detecteer de vendor.
+2. **Stap 1, Load/Create Plan:** Controleer `.agents/results/plan-{sessionId}.json` en daarna het meest recente `plan-*.json`. Is er geen plan — of is het plan niet uitvoeringsklaar (taak mist agent, prioriteitstier, afhankelijkheden of acceptatiecriteria) — delegeer dan inline naar `/plan` om er één te maken met dezelfde sessie-ID. Presenteer het plan, hergebruik bestaande autorisatie en vraag alleen vóór delegatie naar een materiële ontbrekende beslissing of nieuwe autorisatie.
+3. **Stap 2, Initialize Session:** Laad `oma-config.yaml`, toon de CLI-mappingstabel en hergebruik de sessie-ID uit het plan of genereer er één (`session-YYYYMMDD-HHMMSS`). Selecteer voor elke taak de skillreferenties die de taak nodig heeft door de taak te vergelijken met de intentsignaturen van de geïnstalleerde skills; één skill die met vertrouwen matcht, is genoeg. Maak `orchestrator-session-{sessionId}.md` en `task-board-{sessionId}.md` in de geconfigureerde geheugenopslag en leg daar per taak de geselecteerde referenties en de reden voor de selectie vast. Dit zijn coördinatornotities; de launcher dwingt ze niet af.
+4. **Stap 3, Spawn Agents:** Spawn voor elke prioriteitstier (laagste eerst: tier 1, daarna tier 2 enzovoort) agenten via de passende vendormethode (native subagenten wanneer huidige runtime en doelvendor overeenkomen; `oma agent spawn` voor externe of cross-vendor taken). Elke agent krijgt zijn taak, de API-contracten en zijn geselecteerde referenties met hun laadvoorwaarden. Overschrijd MAX_PARALLEL (standaard 3) nooit.
+5. **Stap 4, Monitor:** Controleer de procesgezondheid met `oma agent status`. Geef de voorkeur aan voltooiingsmeldingen van de host; poll anders gewijzigde rungebonden `progress-{agentId}-{taskId}-{runId}-{sessionId}.md`-bestanden met begrensde backoff, lees de gestructureerde receipts en werk het task board bij. Let op voltooiingen, fouten en crashes.
+6. **Stap 5, Verify:** Draai per voltooide agent eerst een mechanische self-check (lint, typecheck, tests, diff-scope; maximaal 3 cycli), daarna `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug en pm; andere agenttypes registreren `SKIP`) en vervolgens een QA-cross-review. Faalt de verificatie, dan spawn je opnieuw met foutcontext. Herhaalde mislukkingen kunnen alternatieve hypotheses rechtvaardigen, maar de oorspronkelijke poging, elke retry en elke hypothese putten uit hetzelfde gezamenlijke herstelbudget (`max_attempts`, standaard 3 inclusief de oorspronkelijke poging). Bewaar onopgeloste evidence als het budget een vergelijkingsronde niet kan dekken.
+7. **Stap 6, Collect:** Lees rungebonden resultaatbestanden en gestructureerde claims en stel de samenvatting op.
+8. **Stap 7, Final Report:** Presenteer de sessiesamenvatting. Als er experimenten zijn uitgevoerd, vat dan evidence en beslissingen samen; leg lessons alleen vast wanneer een herbruikbare oorzaak is vastgesteld.
 
 ```mermaid
 flowchart TD
-  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
-  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
-  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
-  REPAIR --> GATE
-  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
-  JUDGE --> VERDICT{"verdict"}
-  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
-  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
-  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
-  LIMIT -->|yes| SAFE(["Safeguard report"])
-  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
-  REPLAN --> EXEC
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task references, task board"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
 ```
 
-De judge-node is de via de prompt aangestuurde judge uit fase 2: de workflow draagt de orchestrator op hem met verse context te spawnen, en een runtime die geen subagenten kan spawnen beoordeelt inline en registreert de fallback.
+**Bestanden gelezen:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, rungebonden voortgangs- en resultaatbestanden en gestructureerde runreceipts.
+**Bestanden geschreven:** rungebonden sessie- en task-board-state in de geconfigureerde geheugenopslag, gestructureerde receipts en claims en het eindrapport.
 
-**Belangrijkste verschil met /ultrawork:** Ultrawork voert een proces met 5 fasen uit en retryt bij een falende gate. Ralph wikkelt ultrawork in een retrylus met een via de prompt aangestuurde judge die elk criterium opnieuw tegen projectevidence verifieert. De lus eindigt met een volledig rapport, een gedeeltelijk rapport voor geblokkeerd werk of een safeguardrapport.
-
-**Bestanden gelezen:** `.agents/workflows/ralph/resources/judge-protocol.md`, alle ultraworkbestanden.
-**Bestanden geschreven:** `session-ralph-{sessionId}.md` (geheugen), iteratielogs en eindrapport.
-
-**Wanneer gebruiken:** Wanneer je expliciet herhaalde uitvoering en herverificatie door de judge tegen mechanische voltooiingscriteria wilt. Tests alleen vereisen Ralph niet; reken op het volledige ultraworkproces per iteratie en op de safeguards.
+**Wanneer gebruiken:** Een plan uitvoeren dat al vaststaat, meestal direct na `/plan`, wanneer je elke taak afzonderlijk wilt laten verifiëren en een status per taak wilt. De workflow eindigt zonder QA-ronde over het hele resultaat; draai daarna `/review` wanneer je die nodig hebt.
 
 ---
 
@@ -515,7 +508,7 @@ De auditmethodiek van Cloudflare geeft richting aan onafhankelijke verificatie e
 |--------|--------|-----------|
 | **Wat het zijn** | Agentexpertise (wat een agent weet) | Georchestreerde processen (hoe agenten samenwerken) |
 | **Locatie** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **Activatie** | De host matcht de naam en beschrijving van de skill; de skill-injector kan hints toevoegen | Slashcommando. `orchestrate`, `ultrawork`, `work` en `ralph` starten ook wanneer de prompt de modus noemt |
+| **Activatie** | De host matcht de naam en beschrijving van de skill; de skill-injector kan hints toevoegen | Slashcommando. `oma-mode`, `orchestrate`, `ultrawork`, `work` en `ralph` starten ook wanneer de prompt de modus noemt |
 | **Scope** | Uitvoering binnen één domein | Proces met meerdere stappen, vaak met meerdere agenten |
 | **Voorbeelden** | "Build a React component" | "Plan the feature -> build -> review -> commit" |
 
@@ -527,7 +520,7 @@ De auditmethodiek van Cloudflare geeft richting aan onafhankelijke verificatie e
 
 oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruikersbericht wordt verwerkt. De settings van de vendor registreren één `<hookDir>/oma-hook.sh --vendor <v> --event <e>`-entry die naar `oma hook run` routeert; de handlerketen draait in-process. De keten bestaat uit:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, inline in de `oma`-binary): de tabel `workflows` routeert via keywords alleen `orchestrate`, `ultrawork`, `work` en `ralph`, en alleen op de expliciete naam van elke modus. Keywordhints voor skills staan in hetzelfde bestand en zijn ongewijzigd.
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, inline in de `oma`-binary): de tabel `workflows` routeert via keywords alleen `oma-mode`, `orchestrate`, `ultrawork`, `work` en `ralph`, en alleen op de expliciete naam van elke modus. Keywordhints voor skills staan in hetzelfde bestand en zijn ongewijzigd.
 2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): TypeScriptlogica die gebruikersinvoer tegen die expliciete namen scant en workflowactivatiecontext injecteert.
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): dwingt persistente workflowuitvoering af door actieve statusbestanden te controleren en workflowcontext opnieuw te injecteren.
 
@@ -535,7 +528,7 @@ oh-my-agent gebruikt een `UserPromptSubmit`-hook die draait voordat elk gebruike
 
 1. De gebruiker typt een prompt.
 2. De hook controleert of de prompt met een `/command` begint (zo ja, keywordinjectie overslaan; het commando laadt de workflow). Een persistent slashcommando schrijft nog steeds het statusbestand van die modus.
-3. De hook saneert de invoer (codeblokken, geciteerde strings en geplakte system-echo-blokken strippen) en scant daarna de keywordlijsten onder `workflows` in `.agents/hooks/core/triggers.json`. Die lijsten bevatten alleen de expliciete namen van `orchestrate`, `ultrawork`, `work` en `ralph`. Een reinforcement guard onderdrukt retriggers wanneer dezelfde workflow in de afgelopen 60 seconden 2+ keer is geactiveerd.
+3. De hook saneert de invoer (codeblokken, geciteerde strings en geplakte system-echo-blokken strippen) en scant daarna de keywordlijsten onder `workflows` in `.agents/hooks/core/triggers.json`. Die lijsten bevatten alleen de expliciete namen van `oma-mode`, `orchestrate`, `ultrawork`, `work` en `ralph`. Een reinforcement guard onderdrukt retriggers wanneer dezelfde workflow in de afgelopen 60 seconden 2+ keer is geactiveerd.
 4. Als er een match is, controleer je of de invoer bij informatieve patronen past.
 5. Is de vraag informatief (bijvoorbeeld "what is orchestrate?"), filter die dan weg (geen workflowtrigger).
 6. Matcht de expliciete naam, injecteer dan `[OMA WORKFLOW: {workflow-name}]` en draag de agent op die workflow direct te starten. Als meerdere expliciete namen matchen, wint het langste keyword en daarna de declaratievolgorde.
@@ -598,7 +591,7 @@ Als de invoer zowel een expliciete modusnaam als een informatief patroon matcht,
 
 ### Workflows die de keyword-hook niet opent {#workflows-the-keyword-hook-does-not-open}
 
-Elke workflow behalve `orchestrate`, `ultrawork`, `work` en `ralph` start vanuit zijn slashcommando. Het procedurebestand blijft in `.agents/workflows/` staan. `excludedWorkflows` noemt `stack-set`, `schedule` en `convert`, zodat een keywordbank die drie niet kan routeren, ook niet als er later een wordt toegevoegd. `/explain` blijft slash-only omdat "explain" alledaagse taal is. Keywordhints voor skills in hetzelfde bestand staan daar los van en injecteren nog steeds skillcontext.
+Elke workflow behalve `oma-mode`, `orchestrate`, `ultrawork`, `work` en `ralph` start vanuit zijn slashcommando. Het procedurebestand blijft in `.agents/workflows/` staan. `excludedWorkflows` noemt `stack-set`, `schedule` en `convert`, zodat een keywordbank die drie niet kan routeren, ook niet als er later een wordt toegevoegd. `/explain` blijft slash-only omdat "explain" alledaagse taal is. Keywordhints voor skills in hetzelfde bestand staan daar los van en injecteren nog steeds skillcontext.
 
 ---
 
@@ -606,10 +599,11 @@ Elke workflow behalve `orchestrate`, `ultrawork`, `work` en `ralph` start vanuit
 
 ### Statusbestanden
 
-Persistente workflows (orchestrate, ultrawork, work, ralph) maken statusbestanden in `.agents/state/` wanneer ze expliciet worden aangeroepen (zie [Persistente workflows](#persistent-workflows)):
+Persistente workflows (oma-mode, orchestrate, ultrawork, work, ralph) maken statusbestanden in `.agents/state/` wanneer ze expliciet worden aangeroepen (zie [Persistente workflows](#persistent-workflows)):
 
 ```text
 .agents/state/
+├── oma-mode-state-{sessionId}.json
 ├── orchestrate-state-{sessionId}.json
 ├── ultrawork-state-{sessionId}.json
 ├── work-state-{sessionId}.json
@@ -647,13 +641,13 @@ De workflow kan ook natuurlijk eindigen wanneer alle stappen klaar zijn en de la
 | Doel | Sequentie |
 |------|----------|
 | Feature binnen één domein | Taak beschrijven → relevante skill → implementeren → gerichte verificatie |
+| Een doel dat je van begin tot eind overdraagt | `/oma-mode` → route kiezen → doorgaan tot aan de eindvoorwaarde is voldaan → rapport |
 | Complex multi-domeinproject | `/work` → PM plant → review binnen geautoriseerde scope → agenten spawnen → QA reviewt → issues herstellen → rapport |
-| Geautomatiseerde parallelle implementatie | `/orchestrate` → plan laden of maken → afhankelijkheden oplossen → onafhankelijke taken spawnen → verifiëren → rapport |
+| Een vaststaand plan uitvoeren | `/plan` → taakopdeling → `/orchestrate` → afhankelijkheden oplossen → onafhankelijke taken spawnen → elke taak verifiëren → rapport |
 | Oplevering met maximale kwaliteit | `/ultrawork` → PLAN (plan + 3 reviews) → IMPL → VERIFY (3 reviews) → REFINE (2 reviews + 3 refactoracties) → SHIP (4 reviews) |
 | Bugonderzoek | `/debug` → reproduceren → grondoorzaak → minimale fix → regressietest → scan op vergelijkbare patronen |
 | Van design naar implementatie | `/brainstorm` → ontwerpdocument → `/plan` → taakopdeling → `/orchestrate` → parallelle implementatie → `/review` → `/scm` |
 | Nieuwe codebase instellen | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
-| Herhaalde uitvoering met verificatie door de judge | `/ralph` → criteria definiëren → ultrawork → artefactgate → judge → zo nodig herhalen → volledig rapport, gedeeltelijk rapport of safeguardrapport |
 
 ---
 

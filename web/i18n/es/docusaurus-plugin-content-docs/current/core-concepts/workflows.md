@@ -1,22 +1,23 @@
 ---
 title: Flujos de trabajo
-description: Referencia completa de los 20 flujos de trabajo de oh-my-agent, incluidos los comandos slash, los modos persistente y no persistente, las palabras clave de activación en 11 idiomas, las fases y los pasos, los archivos que se leen y escriben, la autodetección mediante triggers.json y keyword-detector.ts, el filtrado de patrones informativos y la gestión del estado del modo persistente.
+description: Referencia completa de los 21 flujos de trabajo de oh-my-agent, incluidos los comandos slash, los modos persistente y no persistente, las palabras clave de activación en 11 idiomas, las fases y los pasos, los archivos que se leen y escriben, la autodetección mediante triggers.json y keyword-detector.ts, el filtrado de patrones informativos y la gestión del estado del modo persistente.
 ---
 
 # Flujos de trabajo
 
-Los flujos de trabajo son procesos estructurados de varios pasos que se inician mediante comandos slash; los cuatro modos persistentes también se inician cuando una solicitud en texto plano los nombra. Definen cómo colaboran los agentes en las tareas, desde utilidades de una sola fase hasta puertas de calidad complejas de 5 fases.
+Los flujos de trabajo son procesos estructurados de varios pasos que se inician mediante comandos slash; los cinco modos persistentes también se inician cuando una solicitud en texto plano los nombra. Definen cómo colaboran los agentes en las tareas, desde utilidades de una sola fase hasta puertas de calidad complejas de 5 fases.
 
-Hay 20 flujos de trabajo, 4 de ellos [persistentes](../getting-started/glossary.md#persistent-workflow) (mantienen el estado y no se pueden interrumpir accidentalmente).
+Hay 21 flujos de trabajo, 5 de ellos [persistentes](../getting-started/glossary.md#persistent-workflow) (mantienen el estado y no se pueden interrumpir accidentalmente).
 
 ## Flujos de trabajo de un vistazo
 
 | Flujo | Úsalo para | Persistente |
 |---|---|---|
-| [`/orchestrate`](#orchestrate) | Ejecución paralela automatizada de agentes a partir de un plan, con bucles de verificación | Sí |
-| [`/work`](#work) | Coordinación multidominio paso a paso: planificar, implementar, QA y corregir | Sí |
+| [`/oma-mode`](#oma-mode) | Modo autónomo: planteas un objetivo y él elige la ruta, la ejecuta y continúa hasta que se cumple el objetivo | Sí |
+| [`/work`](#work) | Un desarrollo multidominio en una sola ejecución: plan del PM, implementación en paralelo, QA del resultado completo y bucle de corrección | Sí |
 | [`/ultrawork`](#ultrawork) | El flujo de calidad de 5 fases con 12 pasos de revisión aislados | Sí |
-| [`/ralph`](#ralph) | Repetir ultrawork hasta que pasen criterios verificables mecánicamente | Sí |
+| [`/ralph`](#ralph) | Alias obsoleto de `/oma-mode` | Sí |
+| [`/orchestrate`](#orchestrate) | Ejecutar un plan existente: despacho en paralelo con verificación por tarea | Sí |
 | [`/plan`](#plan) | Desglose de tareas del PM con dependencias y contratos de API | No |
 | [`/brainstorm`](#brainstorm) | Ideación centrada en el diseño antes de planificar | No |
 | [`/architecture`](#architecture) | Decisiones de arquitectura, revisiones y ADRs | No |
@@ -43,14 +44,14 @@ Elige según la coordinación y la verificación que necesite la tarea. Si ya ha
 | Necesidad de la tarea | Elige | Ejemplo |
 |-----------------------|-------|---------|
 | Un solo dominio sin coordinación entre agentes | [Habilidad individual](/docs/guide/single-skill) | Añadir un endpoint de API y probar su validación |
-| Varios dominios con planificación, implementación y QA paso a paso | `/work` | Coordinar un cambio de API con sus clientes web y mobile |
-| Delegación automatizada de tareas independientes en paralelo | `/orchestrate` | Implementar tareas de backend y frontend en paralelo después de resolver las dependencias |
+| Un objetivo que quieres llevar hasta el final sin elegir un flujo | `/oma-mode` | Añadir inicio de sesión a esta aplicación y seguir hasta que pasen las comprobaciones |
+| Varios dominios, planificados, implementados y revisados en una sola ejecución | `/work` | Coordinar un cambio de API con sus clientes web y mobile |
 | Un proceso completo de calidad solicitado explícitamente | `/ultrawork` | Ejecutar las revisiones completas de planificación, implementación, verificación, refinamiento y preparación para la publicación |
-| Una solicitud explícita de repetir la ejecución hasta que pasen criterios verificables mecánicamente | `/ralph` | Repetir la implementación y la verificación del juez hasta que pasen las comprobaciones de regresión indicadas, dentro de las salvaguardas del bucle |
+| Un plan que debe ejecutarse tal como está escrito, con cada tarea verificada por separado | `/orchestrate` | Ejecutar en paralelo las tareas de `/plan` y obtener para cada una un estado completado, parcial o fallido |
 
-`/orchestrate` carga un plan utilizable o crea uno mediante `/plan` antes de generar agentes. No necesitas ejecutar `/plan` primero. La existencia de un plan no distingue, por tanto, `/work` de `/orchestrate`; elige según cómo quieras coordinar el trabajo. Ambos pueden ejecutar tareas independientes en paralelo.
+Tanto `/work` como `/orchestrate` ejecutan tareas independientes en paralelo. Se diferencian en el origen del plan y en cómo se comprueba el resultado. En `/work`, el PM escribe un plan nuevo y lo presenta, QA revisa el resultado completo después de la implementación y los hallazgos CRITICAL y HIGH entran en un bucle de corrección. `/orchestrate` carga un plan utilizable, o crea uno mediante `/plan` cuando no existe ninguno, así que no necesitas ejecutar `/plan` primero. Congela ese plan en el primer despacho y verifica cada tarea por separado; una tarea que agota sus intentos se informa como parcial o fallida. Si tienes dudas, empieza con `/oma-mode`: elige entre estas rutas por ti. Elige `/work` cuando quieras el flujo dirigido por el PM con una sola pasada de QA sobre el resultado completo, y `/orchestrate` directamente cuando el plan ya esté cerrado.
 
-Los criterios de aceptación y las pruebas también forman parte de las tareas con una sola habilidad. Su presencia por sí sola no requiere `/ralph`: cada iteración de Ralph ejecuta el proceso completo de ultrawork y una pasada del juez, así que elígelo cuando quieras ese bucle de verificación repetida. Puede detenerse con trabajo incompleto o bloqueado cuando se aplican las salvaguardas.
+Los criterios de aceptación y las pruebas también forman parte de las tareas con una sola habilidad. `/oma-mode` los registra como criterios de finalización y hace que un juez independiente vuelva a comprobar cada criterio después de cada iteración. Puede detenerse con trabajo incompleto o bloqueado cuando se aplican sus límites.
 
 Esta tabla es una recomendación de selección, no un enrutador automático de flujos. El agente host puede recomendar un enfoque adecuado; recomendar o explicar un flujo no lo inicia. Un comando slash lo selecciona explícitamente. Cuando el hook de detección de palabras clave está habilitado, las coincidencias con palabras clave o patrones configurados también pueden activar un flujo, sujeto a sus filtros de consultas informativas. El detector no clasifica la cantidad de dominios, no comprueba si el plan está listo ni aplica la tabla como algoritmo de prioridades.
 
@@ -62,62 +63,34 @@ La revisión del plan reutiliza la autorización ya concedida para la tarea. Los
 
 Los flujos de trabajo persistentes continúan ejecutándose hasta que todas las tareas terminan. Mantienen el estado en `.agents/state/` y vuelven a inyectar el contexto `[OMA PERSISTENT MODE: ...]` en cada mensaje del usuario hasta que se desactivan explícitamente.
 
-El modo persistente solo se inicia con una **invocación explícita**: el comando slash del flujo (`/ultrawork`, o una forma con namespace como `/oma:ultrawork`), o el propio nombre del flujo en texto plano (la lista `explicit` de `triggers.json`: `"orchestrate"` y las traducciones listadas, `"ultrawork"`/`"ulw"`, `"work mode"`/`"work workflow"`, `"ralph"`/`"랄프"`). El hook de palabras clave no abre ningún flujo desde ninguna otra frase.
+El modo persistente solo se inicia con una **invocación explícita**: el comando slash del flujo (`/ultrawork`, o una forma con namespace como `/oma:ultrawork`), o el propio nombre del flujo en texto plano (la lista `explicit` de `triggers.json`: `"oma-mode"`, `"orchestrate"` y las traducciones listadas, `"ultrawork"`/`"ulw"`, `"work mode"`/`"work workflow"`, `"ralph"`/`"랄프"`). El hook de palabras clave no abre ningún flujo desde ninguna otra frase.
 
-### /orchestrate
+### /oma-mode
 
-**Descripción:** Ejecución paralela automatizada de agentes basada en CLI. Genera subagentes mediante CLI, coordina con estado de ejecución y registros de verificación persistentes, monitorea el progreso y ejecuta bucles de verificación.
+**Descripción:** Modo autónomo. Planteas un objetivo; él selecciona la ruta, la ejecuta sin preguntar qué flujo usar y continúa hasta que un juez independiente aprueba todos los criterios de finalización o se alcanza un límite.
 
-**Persistente:** Sí. Archivo de estado: `.agents/state/orchestrate-state-{sessionId}.json`.
+**Persistente:** Sí. Archivo de estado: `.agents/state/oma-mode-state-{sessionId}.json`.
 
 **Palabras clave de activación:**
 | Idioma | Palabras clave |
 |--------|----------------|
-| Explícita (persistente) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-
-Frases como `"do everything"`, `"전부 해줘"` o `"build me an app"` no inician este flujo.
+| Explícita (persistente) | "oma-mode" |
 
 **Pasos:**
-1. **Paso 0, Preparación:** Lee la habilidad de coordinación, la guía de carga de contexto y el protocolo de memoria. Detecta el proveedor.
-2. **Paso 1, Cargar o crear el plan:** Comprueba `.agents/results/plan-{sessionId}.json` y después el `plan-*.json` más reciente. Si no existe ninguno, o el plan no está listo para ejecutarse (a una tarea le falta agente, nivel de prioridad, dependencias o criterios de aceptación), delega en `/plan` dentro del mismo flujo para crear uno conservando el mismo ID de sesión. Presenta el plan y reutiliza la autorización existente; pregunta solo por una decisión relevante o una autorización nueva antes de delegar.
-3. **Paso 2, Inicializar la sesión:** Carga `oma-config.yaml`, muestra la tabla de asignación de CLI y reutiliza el ID de sesión creado con el plan o genera uno (`session-YYYYMMDD-HHMMSS`). Para cada tarea, selecciona las referencias de habilidades que necesita comparando la tarea con las firmas de intención de las habilidades instaladas; basta una habilidad coincidente con confianza. Crea `orchestrator-session-{sessionId}.md` y `task-board-{sessionId}.md` en el almacén de memoria configurado y registra allí las referencias seleccionadas para cada tarea y el motivo de la selección. Estas son notas para el coordinador; el lanzador no las impone.
-4. **Paso 3, Generar agentes:** Para cada nivel de prioridad (de menor a mayor: primero el nivel 1, después el nivel 2, y así sucesivamente), genera agentes mediante el método apropiado del proveedor (subagentes nativos cuando el runtime actual y el proveedor de destino coinciden; `oma agent spawn` para trabajo externo o entre proveedores). Cada agente recibe su tarea, los contratos de API y sus referencias seleccionadas con sus condiciones de carga. No superes MAX_PARALLEL (3 por defecto).
-5. **Paso 4, Monitorear:** Comprueba la salud de los procesos con `oma agent status`. Prefiere las notificaciones de finalización del host; en caso contrario, sondea con backoff acotado los archivos con ámbito de ejecución `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` que hayan cambiado, lee los registros de verificación estructurados y actualiza el task board. Vigila completaciones, fallos y crashes.
-6. **Paso 5, Verificar:** Para cada agente completado, ejecuta una autocomprobación mecánica (lint, typecheck, pruebas y alcance del diff; hasta 3 ciclos), después `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug y pm; los demás tipos de agente registran `SKIP`) y, por último, una revisión cruzada de QA. Si falla la verificación, vuelve a generarlo con el contexto del error. Los fallos repetidos pueden justificar hipótesis alternativas, pero el intento original, cada reintento y cada hipótesis consumen el mismo presupuesto de recuperación agregado (`max_attempts`, 3 por defecto incluido el intento original). Conserva la evidencia sin resolver si el presupuesto no alcanza para una ronda de comparación.
-7. **Paso 6, Recopilar:** Lee los archivos de resultados de ámbito de ejecución y las declaraciones de resultados estructuradas, y compila el resumen.
-8. **Paso 7, Informe final:** Presenta el resumen de la sesión. Si se ejecutaron experimentos, resume la evidencia y las decisiones; captura lecciones solo cuando se haya establecido una causa reutilizable.
+1. **Paso 1, Leer el objetivo:** Identifica el resultado, cualquier elección o límite explícito y la condición de finalización, escrita como criterios de finalización que llevan cada uno una verificación que un juez pueda ejecutar (la comprobación que indicaste o, si no, comprobaciones derivadas del comportamiento que describiste). Los criterios quedan fijados antes de que se ejecute la primera ruta.
+2. **Paso 2, Seleccionar la ruta:** Gana la primera fila que coincide: un flujo o una habilidad nombrados; una respuesta de solo lectura para una pregunta; `/debug` para un comportamiento incorrecto; `/review` para una revisión; `/plan` para solo un plan; otro flujo al que corresponde el resultado; `/ultrawork` solo cuando se solicita explícitamente; **Open-ended** (`open-ended-protocol.md`) para un cambio grande, de alta incertidumbre o transversal cuyas incógnitas impiden un plan fiable por adelantado (primero las incógnitas más arriesgadas, primero el arnés de verificación, unidades atómicas integrables); un único responsable para un cambio que un solo agente puede terminar: el subagente especialista de la habilidad responsable, o esta sesión cuando no existe ese rol; `/orchestrate` para un cambio cuyas partes pueden construir de forma independiente distintos especialistas, o demasiado grande para el contexto de un solo agente. Cuando `oma-orchestration` no está instalada, el cambio va a `/work`, y a la habilidad responsable cuando `/work` tampoco está disponible.
+3. **Paso 3, Declarar y registrar:** Imprime una línea `Route:` y registra la selección como decisión de enrutamiento. No espera confirmación.
+4. **Paso 4, Ejecutar:** Sigue sin cambios el flujo, la secuencia open-ended o la habilidad seleccionados. Vuelve a enrutar con una nueva línea `Route:` cuando el trabajo resulta pertenecer a otra fila. Cada paso o unidad de la ruta se copia por su nombre en la lista de tareas y se marca como hecho, o como omitido con su motivo.
+5. **Paso 5, Juzgar y continuar:** Un juez lanzado por separado con contexto nuevo ejecuta la verificación de cada criterio y registra PASS, FAIL, REGRESSED o BLOCKED. Si todos son PASS, la ejecución termina; un criterio FAIL o REGRESSED inicia la siguiente iteración solo sobre el trabajo restante. La ejecución se detiene tras 5 iteraciones, o cuando una ruta alcanza su propio presupuesto de intentos, su límite de coste o su fecha límite; el modo nunca inicia otra ruta para sortear ese límite.
+6. **Paso 6, Informe:** Rutas seguidas, cambios, estado final de cada criterio con la evidencia del juez y lo que queda pendiente, revisado según `anti-ai-prose.md` para mantener una prosa directa y sin relleno. Después, el modo finaliza el modo persistente para que la sesión pueda detenerse.
 
-```mermaid
-flowchart TD
-  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
-  S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task references, task board"]
-  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
-  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
-  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
-  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
-  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
-  QA -->|"FAIL: findings back to the agent"| SC
-  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
-  S6 --> S7(["Step 7: final report"])
-  VS -->|FAIL| CL{"classify the failure"}
-  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
-  CL -->|product| BG{"attempts left in max_attempts?"}
-  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
-  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
-  QA -.->|"review limit reached"| STOP
-```
-
-**Archivos leídos:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, archivos de progreso y resultados de ámbito de ejecución y registros de verificación estructurados de ejecución.
-**Archivos escritos:** estado de sesión y task board de ámbito de ejecución en el almacén de memoria configurado, registros de verificación y declaraciones de resultados estructuradas y el informe final.
-
-**Cuándo usar:** Proyectos grandes que requieren el máximo paralelismo con coordinación automatizada.
+**Cuándo usar:** Cuando quieres entregar un objetivo en lugar de elegir un flujo. En hosts con un bucle nativo `/goal` (como Claude Code y Codex CLI), puedes gestionar los reintentos externos con `/goal` fijando como condición de parada que el informe del juez de `/oma-mode` apruebe todos los criterios. La publicación, el despliegue, las acciones destructivas, el gasto por encima de un presupuesto indicado y los builds siguen necesitando tu autorización.
 
 ---
 
 ### /work
 
-**Descripción:** Coordinación multidominio paso a paso. PM planifica primero, después los agentes ejecutan dentro del alcance autorizado y finalmente QA revisa y se corrigen los problemas.
+**Descripción:** El flujo de equipo para el trabajo multidominio. PM planifica primero, después los agentes ejecutan dentro del alcance autorizado y finalmente QA revisa y se corrigen los problemas.
 
 **Persistente:** Sí. Archivo de estado: `.agents/state/work-state-{sessionId}.json`.
 
@@ -139,7 +112,7 @@ La palabra `"work"` por sí sola no es un activador: es vocabulario normal ("Doe
 8. **Paso 6.1, Mediciones** (condicional): Registra una línea base cuando se necesita una comparación definida.
 9. **Paso 7, Iterar:** Si aparecen problemas CRITICAL/HIGH, vuelve a generar los agentes responsables. Si el mismo problema persiste tras 2 intentos, activa Exploration Loop.
 
-**Cuándo usar:** Funcionalidades que abarcan varios dominios y en las que quieres coordinación paso a paso de la planificación, la implementación y la QA.
+**Cuándo usar:** Funcionalidades que abarcan varios dominios, cuando quieres el flujo dirigido por el PM: planifica, construye en paralelo y revisa el resultado completo en una sola ejecución.
 
 ---
 
@@ -212,7 +185,7 @@ flowchart TD
 
 ### /ralph
 
-**Descripción:** Bucle persistente de ejecución autorreferente. Envuelve ultrawork con un [juez](../getting-started/glossary.md#judge) que comprueba los criterios de finalización después de cada iteración. Informa de finalización completa cuando todos pasan, de finalización parcial cuando solo quedan criterios PASS y BLOCKED, o se detiene cuando se activan las salvaguardas.
+**Descripción:** Alias obsoleto de [`/oma-mode`](#oma-mode). Ya no envuelve `/ultrawork`. Los criterios de finalización, el [juez](../getting-started/glossary.md#judge) independiente y el límite de 5 iteraciones que antes gestionaba ahora forman parte de `/oma-mode`.
 
 **Persistente:** Sí. Archivo de estado: `.agents/state/ralph-state-{sessionId}.json`.
 
@@ -221,40 +194,60 @@ flowchart TD
 |--------|----------------|
 | Explícita (persistente) | "ralph", "랄프" |
 
-Las frases sueltas para reanudar ("keep going", "carry on", "계속해", "続けて", "продолжай", …) y las frases de finalización ("don't stop", "끝까지 해") no inician este flujo.
+**Qué hace:** Ejecuta `/oma-mode` con dos ajustes fijos: los criterios de finalización se definen siempre antes de que se ejecute la primera ruta, y cada iteración que haya modificado el proyecto pasa por el juez, incluso un único cambio indicado explícitamente.
 
-**Fases:**
-1. **Fase 0, INIT:** Carga los prerrequisitos (carga de contexto, protocolo de memoria y protocolo del juez). Define y registra criterios de finalización verificables mecánicamente, como aserciones de pruebas, comprobaciones de tipos que no emiten archivos, códigos de salida o existencia de archivos. Incluye comprobaciones de build solo cuando se solicitan explícitamente. Muestra los criterios y continúa dentro del alcance autorizado. Inicializa la sesión con `max_iterations: 5`.
-2. **Fase 1, EXEC:** Ejecuta ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) como una sola iteración con el ID de sesión de Ralph. Después ejecuta la puerta de artefactos `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`. Si falla, la iteración cuenta como no realizada: Ralph registra la infracción, repara el trabajo y vuelve a ejecutar la puerta.
-3. **Fase 2, JUDGE:** Un juez comprueba cada criterio contra el estado real del proyecto (ejecuta comprobaciones autorizadas y verifica la existencia de archivos). El prompt del flujo indica al orquestador que genere el juez como un agente aparte con contexto nuevo, informado solo de los criterios; nada confirma mecánicamente esa generación, y a un runtime que no puede generar subagentes se le indica que juzgue inline y registre `ralph.judge-inline-fallback`. Registra la evidencia y el estado del criterio, incluyendo PASS, FAIL, REGRESSED o BLOCKED.
-4. **Puerta de decisión:** Si todos los criterios son PASS → informa de finalización completa. Si solo quedan PASS y BLOCKED → informa de finalización parcial. Si hay FAIL o REGRESSED → devuelve el contexto del fallo a la siguiente iteración, sujeto a las salvaguardas.
-5. **Fase 3, REPLAN:** Limita la siguiente iteración a los elementos FAIL y REGRESSED (diagnóstico basado en el diff), omite los elementos BLOCKED y mantiene los criterios PASS dentro del alcance del juez. Vuelve a la fase 1.
-6. **Salvaguardas:** El bucle se detiene si `current_iteration >= max_iterations` (5 por defecto). Un criterio que falla 3 veces consecutivas por la misma causa raíz pasa a BLOCKED y no se reintenta (detección de atasco).
+**Cuándo usar:** Usa `/oma-mode` en su lugar. El comando `oma ralph verify` y la puerta de artefactos de ultrawork que ejecutaba se eliminaron con este cambio.
+
+---
+
+### /orchestrate
+
+**Descripción:** Ejecución paralela automatizada de agentes basada en CLI. Genera subagentes mediante CLI, coordina con estado de ejecución y registros de verificación persistentes, monitorea el progreso y ejecuta bucles de verificación.
+
+**Persistente:** Sí. Archivo de estado: `.agents/state/orchestrate-state-{sessionId}.json`.
+
+**Palabras clave de activación:**
+| Idioma | Palabras clave |
+|--------|----------------|
+| Explícita (persistente) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+
+Frases como `"do everything"`, `"전부 해줘"` o `"build me an app"` no inician este flujo.
+
+**Pasos:**
+1. **Paso 0, Preparación:** Lee la habilidad de coordinación, la guía de carga de contexto y el protocolo de memoria. Detecta el proveedor.
+2. **Paso 1, Cargar o crear el plan:** Comprueba `.agents/results/plan-{sessionId}.json` y después el `plan-*.json` más reciente. Si no existe ninguno, o el plan no está listo para ejecutarse (a una tarea le falta agente, nivel de prioridad, dependencias o criterios de aceptación), delega en `/plan` dentro del mismo flujo para crear uno conservando el mismo ID de sesión. Presenta el plan y reutiliza la autorización existente; pregunta solo por una decisión relevante o una autorización nueva antes de delegar.
+3. **Paso 2, Inicializar la sesión:** Carga `oma-config.yaml`, muestra la tabla de asignación de CLI y reutiliza el ID de sesión creado con el plan o genera uno (`session-YYYYMMDD-HHMMSS`). Para cada tarea, selecciona las referencias de habilidades que necesita comparando la tarea con las firmas de intención de las habilidades instaladas; basta una habilidad coincidente con confianza. Crea `orchestrator-session-{sessionId}.md` y `task-board-{sessionId}.md` en el almacén de memoria configurado y registra allí las referencias seleccionadas para cada tarea y el motivo de la selección. Estas son notas para el coordinador; el lanzador no las impone.
+4. **Paso 3, Generar agentes:** Para cada nivel de prioridad (de menor a mayor: primero el nivel 1, después el nivel 2, y así sucesivamente), genera agentes mediante el método apropiado del proveedor (subagentes nativos cuando el runtime actual y el proveedor de destino coinciden; `oma agent spawn` para trabajo externo o entre proveedores). Cada agente recibe su tarea, los contratos de API y sus referencias seleccionadas con sus condiciones de carga. No superes MAX_PARALLEL (3 por defecto).
+5. **Paso 4, Monitorear:** Comprueba la salud de los procesos con `oma agent status`. Prefiere las notificaciones de finalización del host; en caso contrario, sondea con backoff acotado los archivos con ámbito de ejecución `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` que hayan cambiado, lee los registros de verificación estructurados y actualiza el task board. Vigila completaciones, fallos y crashes.
+6. **Paso 5, Verificar:** Para cada agente completado, ejecuta una autocomprobación mecánica (lint, typecheck, pruebas y alcance del diff; hasta 3 ciclos), después `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug y pm; los demás tipos de agente registran `SKIP`) y, por último, una revisión cruzada de QA. Si falla la verificación, vuelve a generarlo con el contexto del error. Los fallos repetidos pueden justificar hipótesis alternativas, pero el intento original, cada reintento y cada hipótesis consumen el mismo presupuesto de recuperación agregado (`max_attempts`, 3 por defecto incluido el intento original). Conserva la evidencia sin resolver si el presupuesto no alcanza para una ronda de comparación.
+7. **Paso 6, Recopilar:** Lee los archivos de resultados de ámbito de ejecución y las declaraciones de resultados estructuradas, y compila el resumen.
+8. **Paso 7, Informe final:** Presenta el resumen de la sesión. Si se ejecutaron experimentos, resume la evidencia y las decisiones; captura lecciones solo cuando se haya establecido una causa reutilizable.
 
 ```mermaid
 flowchart TD
-  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
-  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
-  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
-  REPAIR --> GATE
-  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
-  JUDGE --> VERDICT{"verdict"}
-  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
-  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
-  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
-  LIMIT -->|yes| SAFE(["Safeguard report"])
-  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
-  REPLAN --> EXEC
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task references, task board"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
 ```
 
-El nodo del juez es el juez que se genera por indicación del prompt, descrito en la fase 2: el flujo indica al orquestador que lo genere con contexto nuevo, y un runtime que no puede generar subagentes juzga inline y registra el recurso alternativo.
+**Archivos leídos:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, archivos de progreso y resultados de ámbito de ejecución y registros de verificación estructurados de ejecución.
+**Archivos escritos:** estado de sesión y task board de ámbito de ejecución en el almacén de memoria configurado, registros de verificación y declaraciones de resultados estructuradas y el informe final.
 
-**Diferencia principal con /ultrawork:** Ultrawork ejecuta un proceso de 5 fases con reintentos cuando falla una puerta. Ralph envuelve ultrawork en un bucle de reintentos con un juez, generado por indicación del prompt, que vuelve a verificar cada criterio contra la evidencia del proyecto. El bucle termina con un informe de finalización completa, un informe de finalización parcial para el trabajo bloqueado o un informe de salvaguarda.
-
-**Archivos leídos:** `.agents/workflows/ralph/resources/judge-protocol.md`, todos los archivos de ultrawork.
-**Archivos escritos:** `session-ralph-{sessionId}.md` (memoria), registros de iteración e informe final.
-
-**Cuándo usar:** Cuando quieres explícitamente una ejecución repetida y una nueva verificación del juez contra criterios de finalización mecánicos. Las pruebas por sí solas no requieren Ralph; considera todo el proceso ultrawork en cada iteración y sus salvaguardas.
+**Cuándo usar:** Para ejecutar un plan que ya está cerrado, normalmente justo después de `/plan`, cuando quieres que cada tarea se verifique por separado y un estado por tarea. Termina sin una pasada de QA sobre el resultado completo; ejecuta `/review` después cuando la necesites.
 
 ---
 
@@ -515,7 +508,7 @@ La metodología de auditoría de Cloudflare guía la verificación independiente
 |---------|-------------|-------------------|
 | **Qué son** | Experiencia del agente (lo que sabe un agente) | Procesos orquestados (cómo colaboran los agentes) |
 | **Ubicación** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **Activación** | El host empareja el nombre y la descripción de la habilidad; el inyector de habilidades puede añadir sugerencias | Comando slash. `orchestrate`, `ultrawork`, `work` y `ralph` también se inician cuando el prompt nombra el modo |
+| **Activación** | El host empareja el nombre y la descripción de la habilidad; el inyector de habilidades puede añadir sugerencias | Comando slash. `oma-mode`, `orchestrate`, `ultrawork`, `work` y `ralph` también se inician cuando el prompt nombra el modo |
 | **Alcance** | Ejecución de un solo dominio | Varios pasos, a menudo con varios agentes |
 | **Ejemplos** | "Build a React component" | "Plan the feature -> build -> review -> commit" |
 
@@ -527,7 +520,7 @@ La metodología de auditoría de Cloudflare guía la verificación independiente
 
 oh-my-agent usa un hook `UserPromptSubmit` que se ejecuta antes de procesar cada mensaje del usuario. La configuración del proveedor registra una única entrada `<hookDir>/oma-hook.sh --vendor <v> --event <e>` que enruta a `oma hook run`, donde la cadena de handlers se ejecuta en proceso. La cadena consta de:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, integrado en el binario `oma`): la tabla `workflows` enruta por palabras clave solo `orchestrate`, `ultrawork`, `work` y `ralph`, y únicamente mediante el nombre explícito de cada modo. Las sugerencias por palabras clave para habilidades residen en el mismo archivo y no cambian.
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, integrado en el binario `oma`): la tabla `workflows` enruta por palabras clave solo `oma-mode`, `orchestrate`, `ultrawork`, `work` y `ralph`, y únicamente mediante el nombre explícito de cada modo. Las sugerencias por palabras clave para habilidades residen en el mismo archivo y no cambian.
 
 2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): lógica TypeScript que compara la entrada del usuario con esos nombres explícitos e inyecta el contexto de activación del flujo.
 
@@ -537,7 +530,7 @@ oh-my-agent usa un hook `UserPromptSubmit` que se ejecuta antes de procesar cada
 
 1. El usuario escribe un prompt.
 2. El hook comprueba si el prompt empieza con un `/command` (si es así, omite la inyección de palabras clave; el comando carga el flujo). Un comando slash persistente sigue escribiendo el archivo de estado de ese modo.
-3. El hook sanea la entrada (quita bloques de código, cadenas entre comillas y bloques pegados de eco del sistema) y después busca en las listas de palabras clave de `workflows` dentro de `.agents/hooks/core/triggers.json`. Esas listas solo contienen los nombres explícitos de `orchestrate`, `ultrawork`, `work` y `ralph`. Un guard de refuerzo suprime reactivaciones cuando el mismo flujo se disparó 2 o más veces en los últimos 60 segundos.
+3. El hook sanea la entrada (quita bloques de código, cadenas entre comillas y bloques pegados de eco del sistema) y después busca en las listas de palabras clave de `workflows` dentro de `.agents/hooks/core/triggers.json`. Esas listas solo contienen los nombres explícitos de `oma-mode`, `orchestrate`, `ultrawork`, `work` y `ralph`. Un guard de refuerzo suprime reactivaciones cuando el mismo flujo se disparó 2 o más veces en los últimos 60 segundos.
 4. Si encuentra una coincidencia, comprueba si la entrada coincide con patrones informativos.
 5. Si es informativa (por ejemplo, "what is orchestrate?"), la filtra (no activa flujos).
 6. Si el nombre explícito coincide, inyecta `[OMA WORKFLOW: {workflow-name}]` e indica al agente que inicie ese flujo de inmediato. Cuando coinciden varios nombres explícitos, gana la palabra clave más larga y después el orden de declaración.
@@ -600,7 +593,7 @@ Si la entrada coincide tanto con un nombre explícito de modo como con un patró
 
 ### Flujos de trabajo que el hook de palabras clave no abre
 
-Todo flujo distinto de `orchestrate`, `ultrawork`, `work` y `ralph` se inicia desde su comando slash. El archivo de procedimiento permanece en `.agents/workflows/`. `excludedWorkflows` nombra `stack-set`, `schedule` y `convert`, de modo que un banco de palabras clave no puede enrutar esos tres aunque se añada uno más adelante. `/explain` permanece solo por slash porque `"explain"` es vocabulario cotidiano. Las sugerencias por palabras clave para habilidades en el mismo archivo van aparte y siguen inyectando el contexto de la habilidad.
+Todo flujo distinto de `oma-mode`, `orchestrate`, `ultrawork`, `work` y `ralph` se inicia desde su comando slash. El archivo de procedimiento permanece en `.agents/workflows/`. `excludedWorkflows` nombra `stack-set`, `schedule` y `convert`, de modo que un banco de palabras clave no puede enrutar esos tres aunque se añada uno más adelante. `/explain` permanece solo por slash porque `"explain"` es vocabulario cotidiano. Las sugerencias por palabras clave para habilidades en el mismo archivo van aparte y siguen inyectando el contexto de la habilidad.
 
 ---
 
@@ -608,10 +601,11 @@ Todo flujo distinto de `orchestrate`, `ultrawork`, `work` y `ralph` se inicia de
 
 ### Archivos de estado
 
-Los flujos persistentes (orchestrate, ultrawork, work, ralph) crean archivos de estado en `.agents/state/` cuando se invocan explícitamente (consulta [Flujos de trabajo persistentes](#persistent-workflows)):
+Los flujos persistentes (oma-mode, orchestrate, ultrawork, work, ralph) crean archivos de estado en `.agents/state/` cuando se invocan explícitamente (consulta [Flujos de trabajo persistentes](#persistent-workflows)):
 
 ```text
 .agents/state/
+├── oma-mode-state-{sessionId}.json
 ├── orchestrate-state-{sessionId}.json
 ├── ultrawork-state-{sessionId}.json
 ├── work-state-{sessionId}.json
@@ -649,13 +643,13 @@ El flujo también puede terminar de forma natural cuando se completan todos los 
 | Objetivo | Secuencia |
 |----------|-----------|
 | Funcionalidad de un solo dominio | Describe la tarea → habilidad correspondiente → implementación → verificación focalizada |
+| Un objetivo entregado de principio a fin | `/oma-mode` → seleccionar la ruta → continuar hasta que se cumple la condición de finalización → informe |
 | Proyecto multidominio complejo | `/work` → el PM planifica → revisión dentro del alcance autorizado → se generan los agentes → QA revisa → corrección de problemas → informe |
-| Implementación paralela automatizada | `/orchestrate` → cargar o crear el plan → resolver dependencias → generar tareas independientes → verificar → informe |
+| Ejecutar un plan cerrado | `/plan` → desglose de tareas → `/orchestrate` → resolver dependencias → generar tareas independientes → verificar cada tarea → informe |
 | Entrega de máxima calidad | `/ultrawork` → PLAN (plan + 3 revisiones) → IMPL → VERIFY (3 revisiones) → REFINE (2 revisiones + 3 acciones de refactorización) → SHIP (4 revisiones) |
 | Investigación de bugs | `/debug` → reproducir → causa raíz → corrección mínima → prueba de regresión → búsqueda de patrones similares |
 | Pipeline de diseño a implementación | `/brainstorm` → documento de diseño → `/plan` → desglose de tareas → `/orchestrate` → implementación en paralelo → `/review` → `/scm` |
 | Configuración de un código base nuevo | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
-| Ejecución repetida con verificación del juez | `/ralph` → definir criterios → ultrawork → puerta de artefactos → juez → repetir según sea necesario → informe de finalización completa, finalización parcial o salvaguarda |
 
 ---
 

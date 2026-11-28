@@ -45,11 +45,11 @@ CLI가 이미 설치되어 있으면 두 번째 명령부터 시작할 수 있�
 | `frontend` | 설정 페이지를 계획한 다음 폼을 구현 | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | 인증이 있는 API 엔드포인트를 계획 | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | 논문을 찾고 근거를 비교 | 인용을 단 문헌 검색을 요청 |
-| `all` | UI, API, 데이터에 걸친 기능을 조율 | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | UI, API, 데이터에 걸친 기능을 조율 | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 `--preset`은 [이름이 있는 프리셋](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets)을 받습니다. 알 수 없는 이름, 빈 값, `custom`은 설치 전에 거부됩니다. 스킬을 하나씩 고르려면 `oma install`을 대화형으로 실행하고 Custom을 선택합니다. `--preset`이 없으면 무인 `--yes`/CI 설정은 `all`을 고릅니다.
 
-frontend 프리셋은 스킬 8개를 선택합니다. 프리셋이 고르는 것은 스킬 내용입니다. 설치 프로그램은 공유 파일, 모든 워크플로우와 에이전트 정의, 훅, 프로바이더를 그대로 설정합니다. 일부 워크플로우는 도메인 프리셋 밖의 스킬이 필요합니다. 사용하기 전에 [워크플로우 의존성](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)을 확인하거나, 모든 워크플로우를 쓰려면 `all`을 선택하세요. 이미 설치된 환경에 더 작은 프리셋을 적용해도 다른 스킬은 제거되지 않습니다.
+frontend 프리셋은 스킬 9개를 선택합니다. 프리셋이 고르는 것은 스킬 내용입니다. 설치 프로그램은 공유 파일, 모든 워크플로우와 에이전트 정의, 훅, 프로바이더를 그대로 설정합니다. 일부 워크플로우는 도메인 프리셋 밖의 스킬이 필요합니다. 사용하기 전에 [워크플로우 의존성](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)을 확인하거나, 모든 워크플로우를 쓰려면 `all`을 선택하세요. 이미 설치된 환경에 더 작은 프리셋을 적용해도 다른 스킬은 제거되지 않습니다.
 
 프로바이더 선택은 프리셋과 독립입니다. 예를 들어 프로젝트에 시맨틱 메모리 서비스가 필요 없으면 `--semantic-memory none`을 추가합니다. 런타임이 설정하는 다른 파일과 통합은 [설치 프로그램이 함께 하는 일](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default)을 참고하세요.
 

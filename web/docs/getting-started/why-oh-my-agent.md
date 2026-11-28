@@ -12,7 +12,7 @@ oh-my-agent adds a repository-owned layer around the agent CLIs your team alread
 OMA is a useful fit when you need one or more of these:
 
 - **Several agent hosts or vendors.** `model_preset: auto` uses the current runtime's native configuration. Fixed and custom presets can route roles to other vendors; `oma agent spawn` handles non-native dispatch.
-- **A repeatable team workflow.** `/work` handles one scoped task, `/orchestrate` coordinates delegated work, `/ultrawork` runs parallel work with review steps, and `/ralph` repeats a task with an explicit judge phase.
+- **A repeatable team workflow.** `/oma-mode` takes a goal, picks the route, and has an independent judge check the result, `/work` plans, builds, and reviews a multi-domain feature, `/ultrawork` adds an isolated review at every stage, and `/orchestrate` runs an existing plan with per-task verification.
 - **Repository-owned instructions.** Skills, workflows, rules, and agent definitions live beside the code. `oma link` projects the selected files into supported vendor formats.
 - **Mechanical checks and durable results.** Agent runs can write structured status and result receipts, while `oma verify agent <agent-type>` and `oma docs verify` provide explicit checks.
 
@@ -22,7 +22,7 @@ If a project uses one host and does not need shared skills, workflows, or vendor
 
 Run `oma verify agent <agent-type> --workspace <path>` when you want the checks for a backend, frontend, mobile, QA, debug, or planning role. The verifier combines static inspections with configured commands such as tests, type checks, SQL checks, or `flutter analyze`; see [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). The report shows the result of each check. Passing these checks does not establish that a feature meets its product or domain requirements, so the task's acceptance criteria still need review.
 
-`/ralph` adds a separate [judge](./glossary.md#judge) phase when you select that workflow. It rechecks the declared criteria across iterations and records the workflow artifacts; it is not a gate that runs for every ordinary prompt. Skill loading also does not start every workflow or verification command.
+`/oma-mode` adds a separate [judge](./glossary.md#judge) step when you select that workflow. It rechecks the declared criteria after each iteration; it is not a gate that runs for every ordinary prompt. Skill loading also does not start every workflow or verification command.
 
 ## Dispatch remains visible
 
@@ -43,5 +43,5 @@ For the original positioning discussion, see [issue #155](https://github.com/fir
 - [Quick Start](./quick-start.md): install, check the setup, and run one scoped task
 - [Important Defaults](./important-defaults.md): what the installer turns on and how to change it
 - [Installation](./installation.md#presets): pick a skill preset that covers the workflows you plan to use
-- [Workflows](../core-concepts/workflows.md): when to use `/work`, `/orchestrate`, `/ultrawork`, and `/ralph`
+- [Workflows](../core-concepts/workflows.md): when to use `/oma-mode`, `/work`, `/ultrawork`, and `/orchestrate`
 - [Troubleshooting](../guide/troubleshooting.md): fixes for install, vendor, and hook problems

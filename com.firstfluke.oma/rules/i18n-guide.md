@@ -69,11 +69,7 @@ Workflows that translate user-facing content should respect this setting via the
 
 ## Workflow Integration
 
-All workflows follow these rules. The line at the top of each workflow restates the priority:
-
-```
-- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
-```
+All workflows follow these rules. Workflow files do not restate them: the priority reaches every session through this always-applied rule and the response-language line in the generated `AGENTS.md` / `CLAUDE.md`.
 
 > ARB-based localization (ARB as the single cross-platform source of truth for
 > UI strings) is a path-scoped rule — see `i18n-arb.md`, which loads only when

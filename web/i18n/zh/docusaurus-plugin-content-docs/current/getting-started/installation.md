@@ -87,13 +87,13 @@ bunx oh-my-agent@latest
 | 预设 | 适用的项目 | 包含的技能 | 数量 |
 |--------|-------------------------------|-----------------|-------|
 | **all** | 任何项目，或希望所有工作流开箱即用 | 注册表中的全部技能 | 32 |
-| **fullstack** | 带后端和 Terraform 基础设施的 Web 与移动客户端 | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | 带后端和数据库的 Web 前端 | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | 带后端和数据库的移动应用 | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | 仅 Web UI | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | 带数据库的 API 或服务 | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | 仅移动应用 | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | 基础设施、CI/CD 和可观测性工作 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | 带后端和 Terraform 基础设施的 Web 与移动客户端 | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | 带后端和数据库的 Web 前端 | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | 带后端和数据库的移动应用 | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | 仅 Web UI | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | 带数据库的 API 或服务 | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | 仅移动应用 | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | 基础设施、CI/CD 和可观测性工作 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | 安全扫描、代码审查和修复 | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | 论文、市场研究以及 PDF/HWP 转换 | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | 设计素材、图像、语音和文字内容 | design, image, voice, academic-writing, translation, scm | 6 |
@@ -112,12 +112,13 @@ oma install --preset frontend --yes
 
 ### 需要预设之外技能的工作流 {#workflows-that-need-skills-outside-a-preset}
 
-每个预设都会复制工作流和智能体定义，但只有所需技能可用的工作流才会公开对应的命令和提示词。例如，全新安装的 frontend 预设不会提供 `/orchestrate`，因为它缺少 `oma-orchestration`；而 `/work`、`/ultrawork` 和 `/ralph` 可以使用，因为该预设自带的 PM 和 QA 技能已经满足它们的入口要求。安装器会报告缺少的技能，而不会自动切换到 `all`。
+每个预设都会复制工作流和智能体定义，但只有所需技能可用的工作流才会公开对应的命令和提示词。例如，全新安装的 frontend 预设不会提供 `/docs`，因为它缺少 `oma-docs`；而 `/orchestrate`、`/work` 和 `/ultrawork` 可以使用，因为该预设自带的 PM、QA 和 orchestration 技能已经满足它们的入口要求。安装器会报告缺少的技能，而不会自动切换到 `all`。
 
 | 工作流 | 必需的入口技能 | 包含这些技能的预设 |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | 无 | 所有预设 |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -142,7 +143,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-领域入口包含 8 个 frontend、6 个 security 或 8 个 research 技能以及匹配的原生智能体选择。它们的会话引导程序会把该预设传给运行时安装器。共享运行时设置和现有已安装技能遵循上述安装器行为。`oma` 入口则保留完整插件。生成的 Codex 市场目录以及 Grok Build 和 ZCode 目录中也声明了相同的领域根入口。Antigravity CLI（对生成目录或 `oma-antigravity-plugin.tar.gz` 发布产物执行 `agy plugin install ./antigravity-plugin`）、Grok Build CLI、ZCode 和 Kimi Code（`/plugins install`）各自读取生成的清单；各宿主的具体步骤见[兼容 Claude 的插件宿主](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)。
+领域入口包含 9 个 frontend、6 个 security 或 8 个 research 技能以及匹配的原生智能体选择。它们的会话引导程序会把该预设传给运行时安装器。共享运行时设置和现有已安装技能遵循上述安装器行为。`oma` 入口则保留完整插件。生成的 Codex 市场目录以及 Grok Build 和 ZCode 目录中也声明了相同的领域根入口。Antigravity CLI（对生成目录或 `oma-antigravity-plugin.tar.gz` 发布产物执行 `agy plugin install ./antigravity-plugin`）、Grok Build CLI、ZCode 和 Kimi Code（`/plugins install`）各自读取生成的清单；各宿主的具体步骤见[兼容 Claude 的插件宿主](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts)。
 
 固定版本的宿主 CI 作业会在全新 runner 上注册本地市场、安装领域入口并检查生成的清单。这些检查不调用模型。运行时凭据、外部提供方以及首个任务的成功执行仍需各自验证。发布检查还要求每个领域根入口中的两份清单都与 CLI 版本一致，并配有 Release Please 版本更新器。
 

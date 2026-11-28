@@ -284,7 +284,7 @@ Los IDs de sesión determinan:
 
 6. **Itera volviendo a generar agentes.** Si el resultado de un agente necesita ajustes, vuelve a generarlo con la tarea original y el contexto de la corrección. No empieces una sesión nueva.
 
-7. **Empieza con `/work` si tienes dudas.** El flujo `/work` te guía paso a paso por el proceso, con confirmación del usuario en cada puerta.
+7. **Empieza con `/oma-mode` si tienes dudas.** Elige la ruta a partir de tu objetivo. Elige `/work` cuando quieras el flujo dirigido por el PM con una sola pasada de QA sobre el resultado completo.
 
 ### No hacer
 

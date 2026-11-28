@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ your-project/
 - пошаговый протокол выполнения
 - определения шлюзов (для постоянных рабочих процессов)
 
-Постоянные рабочие процессы: `orchestrate.md`, `work.md`, `ultrawork.md` и `ralph.md`.
+Постоянные рабочие процессы: `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md` и `ralph.md`.
 Непостоянные рабочие процессы включают `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` и `video.md`.
 
 ### agents/
@@ -489,7 +490,7 @@ echo '{"cwd":"/path/to/project"}' \
 | `lessons-{sessionId}.md` | Orchestrator | Уроки, подтверждённые доказательствами экспериментов (условно) |
 | `session-work.md` | Work workflow | Состояние рабочей сессии |
 | `session-ultrawork.md` | Ultrawork workflow | Отслеживание фаз Ultrawork |
-| `session-ralph-{sessionId}.md` | Ralph workflow | Критерии, записи итераций и результаты judge для одного запуска Ralph |
+| `session-oma-mode-{sessionId}.md` | oma-mode workflow | Критерии, записи итераций и результаты judge для одного запуска |
 | `session-cost-{sessionId}.md` | System | Телеметрия стоимости каждого запуска |
 | `archive/metrics-{date}.md` | System | Архивные метрики сессий (хранятся 30 дней) |
 

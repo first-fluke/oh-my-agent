@@ -12,7 +12,7 @@ oh-my-agent 在团队已经使用的智能体 CLI 周围增加了一层由仓库
 在以下情况中，只要符合一项，OMA 就很适合：
 
 - **使用多个智能体主机或供应商。** `model_preset: auto` 使用当前运行时的原生配置。固定预设和自定义预设可以把角色路由到其他供应商；`oma agent spawn` 负责非原生调度。
-- **需要可重复的团队工作流。** `/work` 处理一个范围明确的任务，`/orchestrate` 协调委派工作，`/ultrawork` 并行执行并加入审查步骤，`/ralph` 带着明确的 judge 阶段重复执行任务。
+- **需要可重复的团队工作流。** `/oma-mode` 接收目标、选定路由，并由独立的 judge 检查结果，`/work` 规划、构建并审查跨多个领域的功能，`/ultrawork` 在每个阶段加入隔离的审查，`/orchestrate` 执行已有计划并逐任务验证。
 - **需要由仓库管理的指令。** 技能、工作流、规则和智能体定义与代码并列保存。`oma link` 会把选定文件投影为受支持供应商的格式。
 - **需要机械检查和持久结果。** 智能体运行可以写入结构化状态与结果回执，`oma verify agent <agent-type>` 和 `oma docs verify` 则提供明确检查。
 
@@ -22,7 +22,7 @@ oh-my-agent 在团队已经使用的智能体 CLI 周围增加了一层由仓库
 
 当你需要后端、前端、移动端、QA、调试或规划角色的检查时，运行 `oma verify agent <agent-type> --workspace <path>`。验证器会把静态检查与已配置的测试、类型检查、SQL 检查或 `flutter analyze` 等命令结合起来，详见 [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts)。报告会显示每项检查的结果。检查通过并不代表功能符合产品或领域要求，因此仍需审查任务的验收标准。
 
-选择 `/ralph` 工作流时，它会加入单独的 [judge](./glossary.md#judge) 阶段，在多次迭代中重新检查已声明的标准并记录工作流产物。它不会成为每条普通提示都会运行的关卡。加载技能也不会启动所有工作流或验证命令。
+选择 `/oma-mode` 工作流时，它会加入单独的 [judge](./glossary.md#judge) 步骤，在每次迭代后重新检查已声明的标准。它不会成为每条普通提示都会运行的关卡。加载技能也不会启动所有工作流或验证命令。
 
 ## 调度过程保持可见 {#dispatch-remains-visible}
 
@@ -43,5 +43,5 @@ OMA 为团队提供一个共同位置，用于定义路由、执行步骤、检�
 - [快速开始](./quick-start.md)：安装、检查设置，并运行一个范围明确的任务
 - [重要默认值](./important-defaults.md)：安装器会启用哪些功能，以及如何修改
 - [安装](./installation.md#presets)：选择能覆盖你计划使用的工作流的技能预设
-- [工作流](../core-concepts/workflows.md)：何时使用 `/work`、`/orchestrate`、`/ultrawork` 和 `/ralph`
+- [工作流](../core-concepts/workflows.md)：何时使用 `/oma-mode`、`/work`、`/ultrawork` 和 `/orchestrate`
 - [故障排查](../guide/troubleshooting.md)：安装、供应商和钩子问题的解决方法

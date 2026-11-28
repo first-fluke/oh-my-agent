@@ -45,11 +45,11 @@ Istniejąca instalacja CLI może zacząć od drugiego polecenia. Użyj `oma inst
 | `frontend` | Zaplanuj stronę ustawień, a następnie zaimplementuj jej formularz | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Zaplanuj uwierzytelniony endpoint API | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Znajdź artykuły i porównaj ich dowody | Poproś o wyszukiwanie literatury z cytowaniami |
-| `all` | Skoordynuj funkcję obejmującą UI, API i dane | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Skoordynuj funkcję obejmującą UI, API i dane | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 [Nazwane presety](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) są przyjmowane przez `--preset`. Nieznana nazwa, pusta wartość albo `custom` są odrzucane przed instalacją. Aby wybrać pojedyncze umiejętności, uruchom `oma install` interaktywnie i wybierz Custom. Bez `--preset` nienadzorowana konfiguracja `--yes`/CI wybiera `all`.
 
-Preset frontend wybiera osiem umiejętności. Presety wybierają treść umiejętności; instalator nadal konfiguruje pliki współdzielone, wszystkie definicje workflowów i agentów, hooki oraz dostawców. Niektóre workflowy potrzebują umiejętności spoza presetu domenowego. Sprawdź [zależności workflowów](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) przed ich użyciem albo wybierz `all` dla każdego workflowu. Mniejszy preset na istniejącej instalacji nie usuwa innych umiejętności.
+Preset frontend wybiera dziewięć umiejętności. Presety wybierają treść umiejętności; instalator nadal konfiguruje pliki współdzielone, wszystkie definicje workflowów i agentów, hooki oraz dostawców. Niektóre workflowy potrzebują umiejętności spoza presetu domenowego. Sprawdź [zależności workflowów](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) przed ich użyciem albo wybierz `all` dla każdego workflowu. Mniejszy preset na istniejącej instalacji nie usuwa innych umiejętności.
 
 Wybór dostawców jest niezależny od presetów. Na przykład dodaj `--semantic-memory none`, gdy projekt nie potrzebuje usługi pamięci semantycznej. Zobacz [skutki instalacji](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default), aby poznać pozostałe pliki i integracje konfigurowane przez runtime.
 

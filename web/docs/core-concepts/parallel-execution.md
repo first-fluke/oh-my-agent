@@ -342,7 +342,7 @@ Session IDs determine:
 
 6. **Iterate with re-spawns.** If an agent's output needs refinement, re-spawn it with the original task plus correction context. Do not start a new session.
 
-7. **Start with `/work` if unsure.** The work workflow guides you through the process step by step with user confirmation at each gate.
+7. **Start with `/oma-mode` if unsure.** It picks the route from your goal. Choose `/work` when you want the PM-led flow with one QA pass on the whole result.
 
 ### Do not
 

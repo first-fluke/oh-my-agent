@@ -4,7 +4,6 @@ description: Ultrawork - high-quality 5-phase development workflow with 12 revie
 disable-model-invocation: true
 ---
 
-- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover configured tools; if the provider is unavailable or times out, use native search only for paths outside this project or ignored paths. Do not install or track repositories automatically.
 - Persist coordination artifacts through the file-memory contract in `.agents/skills/_shared/runtime/memory-protocol.md`; it is independent of code-intelligence MCP tools.
@@ -50,7 +49,7 @@ Reviewers are read-only evaluators. Implementation and refactor **actions** (Pha
 6. Read `.agents/skills/_shared/core/quality-principles.md` (scope and verification guidance)
 7. Read `.agents/workflows/ultrawork/resources/phase-gates.md` (gate definitions)
 8. Resolve the session ID:
-   - If a caller workflow (e.g. `/ralph`) delegated to ultrawork with an existing `sessionId`, **reuse it verbatim** — plan tasks, claims, and receipts must carry that session/task/run identity so artifact verification matches.
+   - If a caller workflow (e.g. `/oma-mode`) delegated to ultrawork with an existing `sessionId`, **reuse it verbatim** — plan tasks, claims, and receipts must carry that session/task/run identity so artifact verification matches.
    - Otherwise generate one now (format: `YYYYMMDD-HHmmss`).
 9. Record session start using memory write tool:
    - Create `session-ultrawork.md` in the memory base path
@@ -93,7 +92,7 @@ Evaluate [the canonical PLAN_GATE](ultrawork/resources/phase-gates.md#plan_gate)
 
 **On gate pass**:
 1. Use memory edit tool to record phase completion in `session-ultrawork.md`.
-2. Emit the chosen plan with its actual scope authorization and gate evidence. Use the current plan revision as `instanceId`; inside Ralph, include the current iteration in that identity:
+2. Emit the chosen plan with its actual scope authorization and gate evidence. Use the current plan revision as `instanceId`; inside a caller's iteration loop, include the current iteration in that identity:
    ```bash
    oma state emit "decision.made" '{"subject":"ultrawork.plan-approved","instanceId":"<iteration and plan revision>","decision":"Implement <chosen plan option and scoped task IDs>.","rationale":"<existing scope authorization and why PLAN_GATE evidence supports this option>","evidence":["<plan artifact path>","<gate/review evidence paths>"]}'
    ```

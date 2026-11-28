@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 [คู่มือติดตั้งสำหรับเอเจนต์](./agent-install.md) ครอบคลุมการตั้งค่าแบบไม่โต้ตอบและการตรวจสอบ ถ้าคุณคือเอเจนต์ ให้อ่านคู่มือนั้นแล้วทำการติดตั้ง
 
-จากนั้นเปิดเอเจนต์แล้วพิมพ์ `/orchestrate build a TODO app with login`
+จากนั้นเปิดเอเจนต์แล้วพิมพ์ `/oma-mode build a TODO app with login`
 
 oh-my-agent (`oma`) เปลี่ยน Claude Code, Codex CLI, Cursor และเอเจนต์เขียนโค้ดอีก 11 ตัวให้เป็นทีม ผู้วางแผนแบ่งงาน วิศวกรสร้างแบบขนาน ผู้รีวิวตรวจผลลัพธ์ และผู้ดีบักแก้ที่สาเหตุต้นตอ
 
@@ -42,7 +42,7 @@ oh-my-agent (`oma`) เปลี่ยน Claude Code, Codex CLI, Cursor แล�
 | [ออกแบบหน้าแอดมิน](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
 | [แก้เทสต์ที่ล้มเหลว](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | รีวิวขอบเขตของระบบ | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
-| รันทั้งทีม | [ติดตั้ง oma](#install) | `/orchestrate add login to this app` |
+| รันทั้งทีม | [ติดตั้ง oma](#install) | `/oma-mode add login to this app` |
 
 รันคำสั่ง `skills use` ในเทอร์มินัลของเอเจนต์ คำสั่งนี้โหลด skill นั้นเพียงตัวเดียว สำหรับทั้งทีมพร้อมเวิร์กโฟลว์ ให้[ติดตั้ง oma](#install) ทางเลือกอื่นอยู่ใน[เลือกวิธีตั้งค่า](../web/docs/getting-started/choose-setup.md)
 
@@ -56,8 +56,8 @@ oh-my-agent (`oma`) เปลี่ยน Claude Code, Codex CLI, Cursor แล�
 
 | | สิ่งที่คุณได้ | ลองใช้ |
 |---|---|---|
-| **12 บทบาทผู้เชี่ยวชาญ** | PM, สถาปนิก, วิศวกร backend, frontend, mobile, ฐานข้อมูล และ infra, ผู้รีวิว QA, ผู้ดีบัก, ผู้รีแฟกเตอร์, ผู้ดูแลเอกสาร, นักวิจัย ([รู้จักพวกเขา](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **20 เวิร์กโฟลว์** | คำสั่ง slash ตั้งแต่ `/brainstorm` และ `/plan` ไปจนถึง `/review`, `/debug` และ `/scm` ส่วนโหมดหลายเอเจนต์ทั้งสี่ยังเริ่มได้เมื่อคำขอธรรมดาเรียกชื่อโหมดนั้น | "ultrawork: add rate limiting" |
+| **12 บทบาทผู้เชี่ยวชาญ** | PM, สถาปนิก, วิศวกร backend, frontend, mobile, ฐานข้อมูล และ infra, ผู้รีวิว QA, ผู้ดีบัก, ผู้รีแฟกเตอร์, ผู้ดูแลเอกสาร, นักวิจัย ([รู้จักพวกเขา](#meet-the-team)) | `/oma-mode build a TODO app with login` |
+| **21 เวิร์กโฟลว์** | คำสั่ง slash ตั้งแต่ `/brainstorm` และ `/plan` ไปจนถึง `/review`, `/debug` และ `/scm` ส่วนโหมด persistent ทั้งห้ายังเริ่มได้เมื่อคำขอธรรมดาเรียกชื่อโหมดนั้น | "ultrawork: add rate limiting" |
 | **32 skill** | ความรู้เฉพาะโดเมนที่โหลดเฉพาะเมื่องานต้องใช้: UI, API, schema, Terraform, CI, ความปลอดภัย, git, observability | โหลดเอง เช่น "add a Terraform S3 bucket" |
 | **ไฟล์ที่คุณเปิดดูได้** | แผนงาน เอกสารดีไซน์ API contract, ADR บันทึกบัค ผลลัพธ์รายเอเจนต์ หลักฐานด้านความปลอดภัย เอกสารอธิบาย HTML และสรุปงาน | `ls .agents/results` |
 | **งานวิจัยและคอนเทนต์** | การค้นหาพร้อมแหล่งอ้างอิง วิจัยตลาด งานวิจัยวิชาการ สไลด์ วิดีโอ MP4 ภาพ เสียงบนเครื่อง และการแปลง PDF/HWP เป็น Markdown | `/video`, `/convert` |
@@ -95,7 +95,7 @@ oma
 oma install --preset frontend --yes
 ```
 
-คำสั่งนี้เลือก skill แปดตัวของ preset frontend ตัวติดตั้งยังตั้งค่า runtime, provider และไฟล์เวิร์กโฟลว์ที่ใช้ร่วมกัน และเก็บ skill ที่ติดตั้งไว้ก่อนหน้า การเลือกแบบ Custom ทำได้ในตัวติดตั้งแบบอินเทอร์แอกทีฟ ดู [ค่า preset](../web/docs/getting-started/installation.md#presets) และ [การพึ่งพาของเวิร์กโฟลว์](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)
+คำสั่งนี้เลือก skill เก้าตัวของ preset frontend ตัวติดตั้งยังตั้งค่า runtime, provider และไฟล์เวิร์กโฟลว์ที่ใช้ร่วมกัน และเก็บ skill ที่ติดตั้งไว้ก่อนหน้า การเลือกแบบ Custom ทำได้ในตัวติดตั้งแบบอินเทอร์แอกทีฟ ดู [ค่า preset](../web/docs/getting-started/installation.md#presets) และ [การพึ่งพาของเวิร์กโฟลว์](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)
 
 <details>
 <summary>สิ่งที่ตัวติดตั้งทำเพิ่มเติมโดยค่าเริ่มต้น</summary>
@@ -122,18 +122,18 @@ oma install --preset frontend --yes
 | Preset | Skill |
 |--------|--------|
 | **All** | **Skill ทั้ง 32 ตัว** (แนะนำ) |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack โดยไม่มี mobile และ tf-infra |
 | Fullstack Mobile | Fullstack โดยไม่มี frontend และ tf-infra |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | เลือก skill ทีละตัว |
 
-ในบรรดา preset ที่มีชื่อ มีเพียง `All` ที่รวม coordination, orchestration, docs, security, refactor, explanation, recap, video, slide และ skill-creation (หรือเลือกเองได้ใน `Custom`) ส่วน Research และ Content ไม่มี skill ที่อยู่เบื้องหลัง `/plan`, `/review`, `/debug`, `/architecture` และ `/brainstorm` ดู [เวิร์กโฟลว์ที่ต้องใช้ skill นอก preset](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)
+ในบรรดา preset ที่มีชื่อ มีเพียง `All` ที่รวม docs, security, refactor, explanation, recap, video, slide และ skill-creation (หรือเลือกเองได้ใน `Custom`) ส่วน Research และ Content ไม่มี skill ที่อยู่เบื้องหลัง `/plan`, `/review`, `/debug`, `/architecture` และ `/brainstorm` ดู [เวิร์กโฟลว์ที่ต้องใช้ skill นอก preset](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)
 
 </details>
 
@@ -156,7 +156,7 @@ oma install --preset frontend --yes
 
 4. **ตรวจผลลัพธ์** branch และการเปลี่ยนแปลงที่รายงานควรตรงกับเอาต์พุตของ Git การโหลดคำสั่งหรือการติดตั้งที่เสร็จแล้วยังไม่ได้ยืนยันว่างานนี้รันไปแล้ว
 
-สำหรับงานที่ใหญ่ขึ้น ให้เลือกเวิร์กโฟลว์ที่ skill ซึ่งอ้างอิงไว้ถูกติดตั้งแล้ว เมื่อมี skill สำหรับวางแผน ให้เริ่มที่ `/plan` จากนั้นไปต่อด้วย `/work` หรือ `/orchestrate` เมื่อ dependency ของสองเวิร์กโฟลว์นั้นพร้อม
+สำหรับงานที่ใหญ่ขึ้น ให้เลือกเวิร์กโฟลว์ที่ skill ซึ่งอ้างอิงไว้ถูกติดตั้งแล้ว `/oma-mode` รับเป้าหมายที่บอกเป็นภาษาธรรมดาแล้วเลือกเวิร์กโฟลว์ให้คุณ ส่วน[ทีมทำงานร่วมกันอย่างไร](#how-the-team-works-together) เปรียบเทียบเวิร์กโฟลว์ของทีม
 
 <a id="meet-the-team"></a>
 ## รู้จักทีม
@@ -180,7 +180,7 @@ oma install --preset frontend --yes
 | **ผู้ดูแลเอกสาร** (`docs-curator`) | oma-docs | `/docs` หรือ "verify docs" | `docs/generated/doc-refs.json` และแพตช์เอกสารที่คุณอนุมัติ |
 | **นักวิจัย** (`research-explorer`) | oma-search, oma-market, oma-scholar | คำขอด้านการวิจัย | แหล่งอ้างอิงพร้อมที่มาของแต่ละแหล่ง และสรุปตลาดใน `.agents/results/market/` |
 
-วิศวกร infra (`tf-infra-engineer`) ถูกกำหนดให้ถามก่อน `apply` หรือ `destroy` ใดๆ ที่ทำลายข้อมูลหรือกระทบ production ส่วน skill ที่เหลือ (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation รวมถึงคอนเทนต์และมีเดีย) ไม่มีบทบาทประจำ เอเจนต์ของคุณจะโหลดเอง และสำหรับ skill ส่วนใหญ่ ตัว skill injector จะแนะนำ skill ที่เหมาะสมจาก prompt ของคุณ
+วิศวกร infra (`tf-infra-engineer`) ถูกกำหนดให้ถามก่อน `apply` หรือ `destroy` ใดๆ ที่ทำลายข้อมูลหรือกระทบ production ส่วน skill ที่เหลือ (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, orchestration, skill-creation รวมถึงคอนเทนต์และมีเดีย) ไม่มีบทบาทประจำ เอเจนต์ของคุณจะโหลดเอง และสำหรับ skill ส่วนใหญ่ ตัว skill injector จะแนะนำ skill ที่เหมาะสมจาก prompt ของคุณ
 
 </details>
 
@@ -191,7 +191,7 @@ oma install --preset frontend --yes
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -202,21 +202,21 @@ oma install --preset frontend --yes
 
 | คุณต้องการ | รัน | จบอย่างไร |
 |---|---|---|
+| บอกเป้าหมายแล้วให้ oma เป็นผู้ขับเคลื่อน | `/oma-mode` | เลือกเส้นทาง รันเส้นทางนั้นโดยไม่ถามว่าจะใช้ตัวไหน และทำต่อจนกว่าผู้ตัดสินที่มีคอนเท็กซ์ใหม่จะให้ผ่านทุกเกณฑ์การเสร็จสิ้น และจะหยุดพร้อมรายงานบางส่วนเมื่อเกณฑ์ติดขัดหรือครบ 5 iteration |
 | แค่แผนงาน | `/plan` | ไฟล์แผนสำหรับงานหลายส่วน หรือคำแนะนำโดยตรงสำหรับงานเล็ก |
-| การสร้างที่ PM เป็นผู้นำ โดยคุณติดตามทีละขั้น | `/work` | PM ก่อน จากนั้นวิศวกรทีละ tier แล้วจึง QA ผลการตรวจระดับ CRITICAL และ HIGH จะเข้าลูปแก้ไข (สูงสุด 5 รอบ) |
-| การสร้างแบบขนานที่ปล่อยให้ทำเอง | `/orchestrate` | นับว่าเสร็จเฉพาะงานที่ผ่านการตรวจ แต่ละงานลองได้สูงสุด 3 ครั้ง จากนั้นจะถูกทำเครื่องหมายเป็น partial หรือ failed |
-| เวิร์กโฟลว์ 5 เฟส | `/ultrawork` | 5 เฟสที่มี gate (PLAN, IMPL, VERIFY, REFINE, SHIP) ทุกการรีวิวรันในเซสชันผู้รีวิวใหม่ |
-| "อย่าหยุดจนกว่าจะเสร็จจริง" | `/ralph` | ทำ `/ultrawork` ซ้ำโดยมีผู้ตัดสินที่ spawn แยกต่างหากและมีคอนเท็กซ์ใหม่ จนกว่าทุกเกณฑ์จะผ่าน และจะหยุดพร้อมรายงานบางส่วนเมื่อเกณฑ์ติดขัดหรือครบ 5 iteration |
+| ฟีเจอร์ที่ครอบคลุมหลายส่วน โดยวางแผน สร้าง และรีวิวจบในการรันครั้งเดียว | `/work` | PM เขียนแผนแล้วแสดงให้คุณดู วิศวกรสร้างแบบขนานทีละ tier จากนั้น QA รีวิวทุกอย่างรวมกัน ผลการตรวจระดับ CRITICAL และ HIGH จะเข้าลูปแก้ไข (สูงสุด 5 รอบ) |
+| การสร้างแบบเดียวกัน แต่มีการรีวิวในทุกขั้น | `/ultrawork` | 5 เฟสที่มี gate (PLAN, IMPL, VERIFY, REFINE, SHIP) พร้อมการรีวิว 12 ครั้ง ทุกการรีวิวรันในเซสชันผู้รีวิวใหม่ |
+| รันแผนที่คุณมีอยู่แล้ว | `/orchestrate` | รันแผนจาก `/plan` ตามที่เขียนไว้ และตรวจแต่ละงานแยกกัน นับว่าเสร็จเฉพาะงานที่ผ่านการตรวจ แต่ละงานลองได้สูงสุด 3 ครั้ง จากนั้นจะถูกทำเครื่องหมายเป็น partial หรือ failed |
 | ทีมที่ทำงานตามเวลาที่ตั้งไว้ | `oma schedule create qa-reviewer "review open PRs" --every 2h` | log แบบ Markdown หนึ่งไฟล์ต่อการรันใน `~/.oma/schedule/runs/<id>/` |
 
 คำสั่ง slash เป็นตัวเริ่มเวิร์กโฟลว์ ส่วนคำขอธรรมดาไม่ได้เริ่มเวิร์กโฟลว์ แต่บน runtime ที่มี prompt hook คำขอนั้นยังได้รับคำแนะนำ skill อยู่ โดยคลังคำสำคัญสูงสุด 11 ภาษาจะจับคู่กับ prompt แล้วชี้ให้เอเจนต์ของคุณใช้ skill ที่ตรงกัน ("run a security audit" จะดึง `oma-qa` เข้ามา) คำแนะนำนี้ไม่มีผลบังคับ และคำสำคัญที่อยู่ในบล็อกโค้ดจะถูกละเว้น
 
-`/orchestrate`, `/work`, `/ultrawork` และ `/ralph` เป็นแบบ **persistent** เมื่อคุณเรียกด้วยชื่อ ไม่ว่าจะเป็นคำสั่ง slash หรือข้อความธรรมดา ("ultrawork: add rate limiting") จากนั้นเมื่อเอเจนต์พยายามหยุดก่อนเวลา มันจะถูกส่งกลับไปทำงานต่อ (สูงสุด 5 ครั้งหรือ 2 ชั่วโมง) จนกว่าคุณจะพูดว่า **"workflow done"** มีเพียงสี่เวิร์กโฟลว์นี้เท่านั้นที่ประโยคธรรมดาเริ่มได้ และต้องเรียกด้วยชื่อเท่านั้น
+`/oma-mode`, `/work`, `/ultrawork`, `/ralph` และ `/orchestrate` เป็นแบบ **persistent** เมื่อคุณเรียกด้วยชื่อ ไม่ว่าจะเป็นคำสั่ง slash หรือข้อความธรรมดา ("ultrawork: add rate limiting") จากนั้นเมื่อเอเจนต์พยายามหยุดก่อนเวลา มันจะถูกส่งกลับไปทำงานต่อ (สูงสุด 5 ครั้งหรือ 2 ชั่วโมง) จนกว่าคุณจะพูดว่า **"workflow done"** มีเพียงห้าเวิร์กโฟลว์นี้เท่านั้นที่ประโยคธรรมดาเริ่มได้ และต้องเรียกด้วยชื่อเท่านั้น
 
 **วัดผลแล้ว แต่มีข้อควรระวัง** ใน[เบนช์มาร์ก](../benchmarks/README.md) (prompt เดียว, Claude Code กับการตั้งค่าส่วนเสริม 5 แบบ รวมถึงแบบไม่มีส่วนเสริม, `claude-opus-4-6`, บิลด์แบบละหนึ่งครั้ง) oma ได้คะแนน 80.6 เทียบกับ 70.7 ของ Claude Code แบบปกติ โดยมีค่าใช้จ่ายสูงกว่า 1.7 เท่า ($4.04 เทียบกับ $2.37) และใช้เวลามากกว่า 1.8 เท่า
 
 <details>
-<summary>เวิร์กโฟลว์ทั้ง 20 ตัว</summary>
+<summary>เวิร์กโฟลว์ทั้ง 21 ตัว</summary>
 
 | คำสั่ง | หน้าที่ |
 |---------|--------------|
@@ -228,9 +228,10 @@ oma install --preset frontend --yes
 | `/design` | กำหนดขอบเขตงานดีไซน์ แล้วส่งมอบผลการตรวจ, DESIGN.md หรือ tokens ผ่าน oma-design |
 | `/docs` | หา reference ในเอกสารที่เสีย และเสนอแพตช์สำหรับเอกสารที่ diff ไปแตะ |
 | `/explain` | แปลง diff, PR, branch หรือหัวข้อใดๆ เป็นเอกสารอธิบาย HTML แบบอินเทอร์แอกทีฟในไฟล์เดียว |
+| `/oma-mode` | รับเป้าหมาย เลือกเส้นทาง รันเส้นทางนั้น และทำต่อจนกว่าจะบรรลุเป้าหมายหรือถึงขีดจำกัด (persistent) |
 | `/orchestrate` | รันเอเจนต์แบบขนาน ประสานงานผ่านสถานะในไฟล์ และตรวจสอบผลลัพธ์ (persistent) |
 | `/plan` | ย่อยฟีเจอร์เป็นงานที่จัดลำดับความสำคัญแล้วพร้อม API contract |
-| `/ralph` | ทำ `/ultrawork` ซ้ำโดยมีผู้ตัดสินที่ spawn แยกต่างหาก สูงสุด 5 iteration (persistent) |
+| `/ralph` | alias ที่เลิกแนะนำแล้วของ `/oma-mode` (persistent) |
 | `/recap` | สรุปประวัติการสนทนากับ AI ของคุณในหนึ่งวันหรือช่วงเวลาหนึ่ง |
 | `/review` | รีวิวความปลอดภัย (OWASP Top 10) ประสิทธิภาพ accessibility (WCAG 2.2 AA) และคุณภาพโค้ด |
 | `/schedule` | ลงทะเบียนงานเอเจนต์ให้รันซ้ำตามรอบเวลาที่กำหนด |
@@ -335,7 +336,7 @@ oma install --preset frontend --yes
 
 | Hook | หน้าที่ | วิธีปิด / ขีดจำกัด |
 |---|---|---|
-| เริ่มด้วยคำสำคัญ | เริ่ม `/orchestrate`, `/work`, `/ultrawork` หรือ `/ralph` เมื่อคำขอธรรมดาเรียกชื่อเวิร์กโฟลว์นั้น | ข้ามคำถาม ข้อความที่วางมา และบล็อกโค้ด |
+| เริ่มด้วยคำสำคัญ | เริ่ม `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` หรือ `/ralph` เมื่อคำขอธรรมดาเรียกชื่อเวิร์กโฟลว์นั้น | ข้ามคำถาม ข้อความที่วางมา และบล็อกโค้ด |
 | Skill injector | ชี้ให้เอเจนต์ของคุณใช้ skill ที่เหมาะกับ prompt | หยุดชั่วคราวขณะที่ persistent workflow ทำงานอยู่ |
 | Stop gate | ส่ง persistent workflow กลับไปทำงานต่อ เมื่อใช้ `oma goal set --gate test` จะอนุญาตให้หยุดเมื่อสคริปต์นั้นจบด้วย exit code 0 ภายใน 25 วินาที | พูดว่า "workflow done" นอกจากนี้ยังปลดเองหลังบล็อกครบ 5 ครั้งหรือ 2 ชั่วโมง |
 | Refactor guard | ตอนหยุด จะชี้ไฟล์ที่แก้ไขซึ่งยาวเกิน 500 บรรทัดให้ `refactor-engineer` | ต้องเปิดเอง: `refactor_guard.enabled` |

@@ -290,10 +290,9 @@ function timingFromSegments(
   source: "voicebox-stt" | "voicestudio-stt",
 ): Timing {
   if (segments.length === 0) {
-    // TODO(oma-deferred): whisper-cpp — a local whisper.cpp transcription
-    // hop could sit here before the estimate (enum value already reserved
-    // in Timing.source). Until wired, degrade straight to estimated timing
-    // while still keeping the real audio file.
+    // No local transcription hop runs here (Timing.source reserves a
+    // whisper.cpp value, but nothing produces it): degrade straight to
+    // estimated timing while still keeping the real audio file.
     const est = estimateSegments(lines);
     return {
       schemaVersion: VIDEO_SCHEMA_VERSION,

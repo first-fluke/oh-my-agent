@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 [Przewodnik instalacji dla agenta](./agent-install.md) opisuje konfigurację bez interakcji i weryfikację. Jeśli jesteś tym agentem, przeczytaj ten przewodnik i przeprowadź instalację.
 
-Następnie otwórz agenta i wpisz `/orchestrate build a TODO app with login`.
+Następnie otwórz agenta i wpisz `/oma-mode build a TODO app with login`.
 
 oh-my-agent (`oma`) zamienia Claude Code, Codex CLI, Cursor i 11 innych agentów kodujących w zespół. Planista dzieli pracę, inżynierowie budują równolegle, recenzent sprawdza wynik, a debuger naprawia przyczynę.
 
@@ -42,7 +42,7 @@ Wybierz zadanie. Załaduj jedną umiejętność do agenta, którego już używas
 | [Projekt ekranu administracyjnego](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
 | [Naprawa padającego testu](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | Przegląd granic systemu | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
-| Uruchom cały zespół | [Zainstaluj oma](#install) | `/orchestrate add login to this app` |
+| Uruchom cały zespół | [Zainstaluj oma](#install) | `/oma-mode add login to this app` |
 
 Uruchom polecenie `skills use` w terminalu agenta. Ładuje ono tę jedną umiejętność. Pełny zespół z workflowami daje [instalacja oma](#install). Pozostałe opcje są w [Wybierz konfigurację](../web/docs/getting-started/choose-setup.md).
 
@@ -56,8 +56,8 @@ Po instalacji uruchom `oma doctor`. [Pierwsze 5 minut](#your-first-5-minutes) za
 
 | | Co daje | Wypróbuj |
 |---|---|---|
-| **12 ról specjalistów** | PM, architekt, inżynierowie backendu, frontendu, mobile, baz danych i infrastruktury, recenzent QA, debuger, refaktoryzator, opiekun dokumentacji, badacz ([poznaj ich](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **20 workflowów** | Slash commands od `/brainstorm` i `/plan` po `/review`, `/debug` i `/scm`. Cztery tryby wieloagentowe uruchamiają się też wtedy, gdy zwykła prośba wymienia je po nazwie | „ultrawork: add rate limiting” |
+| **12 ról specjalistów** | PM, architekt, inżynierowie backendu, frontendu, mobile, baz danych i infrastruktury, recenzent QA, debuger, refaktoryzator, opiekun dokumentacji, badacz ([poznaj ich](#meet-the-team)) | `/oma-mode build a TODO app with login` |
+| **21 workflowów** | Slash commands od `/brainstorm` i `/plan` po `/review`, `/debug` i `/scm`. Pięć trybów persystentnych uruchamia się też wtedy, gdy zwykła prośba wymienia je po nazwie | „ultrawork: add rate limiting” |
 | **32 umiejętności** | Wiedza domenowa ładowana tylko wtedy, gdy zadanie jej potrzebuje: UI, API, schematy, Terraform, CI, bezpieczeństwo, git, obserwowalność | ładuje się sama, np. „add a Terraform S3 bucket” |
 | **Pliki, które możesz otworzyć** | Plany, dokumenty projektowe, kontrakty API, ADR-y, notatki o błędach, wyniki per agent, dowody z audytu bezpieczeństwa, objaśniacze HTML, podsumowania | `ls .agents/results` |
 | **Research i treści** | Wyszukiwanie ze wskazaniem źródeł, badania rynku, publikacje naukowe, prezentacje, filmy MP4, obrazy, lokalny głos, PDF/HWP do Markdown | `/video`, `/convert` |
@@ -122,18 +122,18 @@ To wybiera osiem umiejętności presetu frontend. Instalator nadal konfiguruje r
 | Preset | Umiejętności |
 |--------|--------|
 | **All** | **Wszystkie 32 umiejętności** (zalecane) |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack bez mobile i tf-infra |
 | Fullstack Mobile | Fullstack bez frontend i tf-infra |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | Wybierasz umiejętności pojedynczo |
 
-Spośród nazwanych presetów tylko `All` zawiera coordination, orchestration, docs, security, refactor, explanation, recap, video, slide i skill-creation (możesz też wybrać je w `Custom`). W presetach Research i Content brakuje umiejętności, na których opierają się `/plan`, `/review`, `/debug`, `/architecture` i `/brainstorm`. Zobacz [Workflowy wymagające umiejętności spoza presetu](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
+Spośród nazwanych presetów tylko `All` zawiera docs, security, refactor, explanation, recap, video, slide i skill-creation (możesz też wybrać je w `Custom`). W presetach Research i Content brakuje umiejętności, na których opierają się `/plan`, `/review`, `/debug`, `/architecture` i `/brainstorm`. Zobacz [Workflowy wymagające umiejętności spoza presetu](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 </details>
 
@@ -156,7 +156,7 @@ Spośród nazwanych presetów tylko `All` zawiera coordination, orchestration, d
 
 4. **Sprawdź wynik.** Zgłoszona gałąź i zmiany powinny zgadzać się z wyjściem Git. Załadowanie instrukcji albo dokończenie instalacji nie oznacza, że to zadanie zostało wykonane.
 
-Do większej pracy wybierz workflow, którego przywoływane umiejętności są zainstalowane. Zacznij od `/plan`, gdy umiejętność planowania jest obecna, a potem kontynuuj przez `/work` albo `/orchestrate`, gdy ich zależności są dostępne.
+Do większej pracy wybierz workflow, którego przywoływane umiejętności są zainstalowane. `/oma-mode` przyjmuje cel podany zwykłym zdaniem i sam dobiera workflow; sekcja [Jak zespół współpracuje](#how-the-team-works-together) porównuje workflowy zespołu.
 
 <a id="meet-the-team"></a>
 ## Poznaj zespół
@@ -180,7 +180,7 @@ Zespołem kieruje Twój własny agent. W `/work`, `/orchestrate` i `/ultrawork` 
 | **Opiekun dokumentacji** (`docs-curator`) | oma-docs | `/docs` albo „verify docs” | `docs/generated/doc-refs.json` i poprawki dokumentacji, które zatwierdzisz |
 | **Badacz** (`research-explorer`) | oma-search, oma-market, oma-scholar | prośba o research | Cytowane źródła ze wskazaniem ich pochodzenia; briefy rynkowe w `.agents/results/market/` |
 
-Inżynier infrastruktury (`tf-infra-engineer`) ma polecenie pytać przed każdym destrukcyjnym lub produkcyjnym `apply` albo `destroy`. Pozostałe umiejętności (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, treści i media) nie mają dedykowanej roli. Agent ładuje je sam, a dla większości z nich skill injector podpowiada właściwą na podstawie Twojego promptu.
+Inżynier infrastruktury (`tf-infra-engineer`) ma polecenie pytać przed każdym destrukcyjnym lub produkcyjnym `apply` albo `destroy`. Pozostałe umiejętności (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, orchestration, skill-creation, treści i media) nie mają dedykowanej roli. Agent ładuje je sam, a dla większości z nich skill injector podpowiada właściwą na podstawie Twojego promptu.
 
 </details>
 
@@ -191,7 +191,7 @@ Inżynier infrastruktury (`tf-infra-engineer`) ma polecenie pytać przed każdym
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -202,21 +202,21 @@ Każdy krok przekazuje plik następnemu. `/brainstorm` zapisuje projekt, który 
 
 | Czego chcesz | Uruchom | Jak się kończy |
 |---|---|---|
+| Podać cel i pozwolić oma poprowadzić pracę | `/oma-mode` | Wybiera trasę, wykonuje ją bez pytania, której użyć, i kontynuuje, aż sędzia ze świeżym kontekstem zaliczy każde kryterium ukończenia; zatrzymuje się z raportem częściowym, gdy kryteria są zablokowane, albo po 5 iteracjach |
 | Tylko planu | `/plan` | Plik planu dla pracy obejmującej wiele obszarów albo bezpośrednia rekomendacja dla małej pracy |
-| Budowy prowadzonej przez PM, którą śledzisz krok po kroku | `/work` | PM, potem inżynierowie poziom po poziomie, potem QA. Ustalenia CRITICAL i HIGH trafiają do pętli poprawek (do 5 cykli) |
-| Równoległej budowy bez Twojego udziału | `/orchestrate` | Za wykonane uznaje się tylko zadania, których sprawdzenia przechodzą; każde zadanie ma do 3 prób, a potem zostaje oznaczone jako częściowe lub nieudane |
-| Workflowu z pięcioma fazami | `/ultrawork` | Pięć faz z bramkami (PLAN, IMPL, VERIFY, REFINE, SHIP); każdy przegląd odbywa się w świeżej sesji recenzenta |
-| „Nie przestawaj, dopóki naprawdę nie skończysz” | `/ralph` | Powtarza `/ultrawork` z osobno uruchamianym sędzią ze świeżym kontekstem, aż każde kryterium przejdzie; zatrzymuje się z raportem częściowym, gdy kryteria są zablokowane, albo po 5 iteracjach |
+| Funkcjonalności obejmującej kilka obszarów, zaplanowanej, zbudowanej i przejrzanej w jednym przebiegu | `/work` | PM pisze plan i pokazuje Ci go, inżynierowie budują równolegle poziom po poziomie, a potem QA przegląda całość naraz. Ustalenia CRITICAL i HIGH trafiają do pętli poprawek (do 5 cykli) |
+| Tej samej budowy z przeglądem na każdym etapie | `/ultrawork` | Pięć faz z bramkami (PLAN, IMPL, VERIFY, REFINE, SHIP) i 12 przeglądów; każdy przegląd odbywa się w świeżej sesji recenzenta |
+| Wykonania planu, który już masz | `/orchestrate` | Wykonuje plan z `/plan` tak, jak został zapisany, i sprawdza każde zadanie osobno. Za wykonane uznaje się tylko zadania, których sprawdzenia przechodzą; każde zadanie ma do 3 prób, a potem zostaje oznaczone jako częściowe lub nieudane |
 | Zespołu działającego według harmonogramu | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Jeden log Markdown na przebieg w `~/.oma/schedule/runs/<id>/` |
 
 Workflow uruchamia slash command. Zwykła prośba go nie uruchamia, ale w środowiskach z prompt hookiem i tak dostaje podpowiedź umiejętności: banki słów kluczowych w maksymalnie 11 językach dopasowują prompt i wskazują agentowi pasujące umiejętności („run a security audit” przywołuje `oma-qa`). Podpowiedź ma charakter doradczy, a słowa kluczowe w blokach kodu są ignorowane.
 
-`/orchestrate`, `/work`, `/ultrawork` i `/ralph` są **persystentne**, gdy wywołujesz je po nazwie, jako slash command albo zwykłym tekstem („ultrawork: add rate limiting”). Agent jest wtedy odsyłany do pracy, gdy próbuje zatrzymać się zbyt wcześnie (najwyżej 5 razy lub przez najwyżej 2 godziny), dopóki nie powiesz **„workflow done”**. Tylko te cztery workflowy można uruchomić zwykłym zdaniem, i to wyłącznie po nazwie.
+`/oma-mode`, `/work`, `/ultrawork`, `/ralph` i `/orchestrate` są **persystentne**, gdy wywołujesz je po nazwie, jako slash command albo zwykłym tekstem („ultrawork: add rate limiting”). Agent jest wtedy odsyłany do pracy, gdy próbuje zatrzymać się zbyt wcześnie (najwyżej 5 razy lub przez najwyżej 2 godziny), dopóki nie powiesz **„workflow done”**. Tylko tych pięć workflowów można uruchomić zwykłym zdaniem, i to wyłącznie po nazwie.
 
 **Zmierzono, z zastrzeżeniami.** W [benchmarku](../benchmarks/README.md) (jeden prompt, Claude Code w pięciu różnych konfiguracjach dodatków, w tym bez dodatków, `claude-opus-4-6`, po jednym buildzie) oma uzyskało 80.6 wobec 70.7 dla czystego Claude Code, przy 1.7x koszcie ($4.04 vs $2.37) i 1.8x czasie.
 
 <details>
-<summary>Wszystkie 20 workflowów</summary>
+<summary>Wszystkie 21 workflowów</summary>
 
 | Komenda | Co robi |
 |---------|--------------|
@@ -228,9 +228,10 @@ Workflow uruchamia slash command. Zwykła prośba go nie uruchamia, ale w środo
 | `/design` | Określa zakres zadania projektowego i dostarcza ustalenia, DESIGN.md lub tokeny za pomocą oma-design |
 | `/docs` | Znajduje zepsute odwołania w dokumentacji i proponuje poprawki dla dokumentów, których dotknął diff |
 | `/explain` | Zamienia diff, PR, gałąź lub temat w samodzielny, interaktywny objaśniacz HTML |
+| `/oma-mode` | Przyjmuje cel, wybiera trasę, wykonuje ją i kontynuuje do osiągnięcia celu albo limitu (persystentny) |
 | `/orchestrate` | Uruchamia agentów równolegle, koordynuje ich przez stan w plikach i weryfikuje wynik (persystentny) |
 | `/plan` | Rozbija funkcjonalność na zadania z priorytetami i kontraktami API |
-| `/ralph` | Powtarza `/ultrawork` z osobno uruchamianym sędzią, maksymalnie 5 iteracji (persystentny) |
+| `/ralph` | Przestarzały alias `/oma-mode` (persystentny) |
 | `/recap` | Podsumowuje historię Twoich rozmów z AI z danego dnia lub okresu |
 | `/review` | Przegląda bezpieczeństwo (OWASP Top 10), wydajność, dostępność (WCAG 2.2 AA) i jakość kodu |
 | `/schedule` | Rejestruje zadanie agenta uruchamiane cyklicznie w zadanym interwale |
@@ -335,7 +336,7 @@ Te pipeline'y zgłaszają brak źródła lub klucza dostawcy, zamiast po cichu z
 
 | Hook | Co robi | Wyłączenie / limit |
 |---|---|---|
-| Start po słowie kluczowym | Uruchamia `/orchestrate`, `/work`, `/ultrawork` lub `/ralph`, gdy zwykła prośba wymienia go po nazwie | Pytania, wklejony tekst i bloki kodu są pomijane |
+| Start po słowie kluczowym | Uruchamia `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` lub `/ralph`, gdy zwykła prośba wymienia go po nazwie | Pytania, wklejony tekst i bloki kodu są pomijane |
 | Skill injector | Wskazuje agentowi właściwe umiejętności dla promptu | Wstrzymany, gdy aktywny jest persystentny workflow |
 | Bramka Stop | Odsyła persystentny workflow do pracy; z `oma goal set --gate test` zatrzymanie jest dozwolone, gdy ten skrypt zakończy się kodem 0 w ciągu 25 s | Powiedz „workflow done”; hook przestaje też blokować po 5 blokadach albo 2 godzinach |
 | Strażnik refaktoryzacji | Przy zatrzymaniu oznacza dla `refactor-engineer` edytowane pliki dłuższe niż 500 linii | Opt-in: `refactor_guard.enabled` |

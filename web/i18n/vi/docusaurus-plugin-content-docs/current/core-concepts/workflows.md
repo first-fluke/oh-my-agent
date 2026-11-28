@@ -1,22 +1,23 @@
 ---
 title: Các workflow
-description: Tham chiếu đầy đủ cho 20 workflow oh-my-agent, gồm lệnh slash, chế độ liên tục và không liên tục, từ khóa trigger bằng 11 ngôn ngữ, các giai đoạn và bước, file đọc và ghi, cơ chế phát hiện tự động qua triggers.json và keyword-detector.ts, lọc mẫu thông tin và quản lý trạng thái chế độ liên tục.
+description: Tham chiếu đầy đủ cho 21 workflow oh-my-agent, gồm lệnh slash, chế độ liên tục và không liên tục, từ khóa trigger bằng 11 ngôn ngữ, các giai đoạn và bước, file đọc và ghi, cơ chế phát hiện tự động qua triggers.json và keyword-detector.ts, lọc mẫu thông tin và quản lý trạng thái chế độ liên tục.
 ---
 
 # Các workflow
 
-Workflow là quy trình nhiều bước có cấu trúc, được khởi động bằng lệnh slash; bốn chế độ liên tục cũng khởi động khi một yêu cầu thông thường gọi tên chúng. Chúng định nghĩa cách agent cộng tác trong task, từ tiện ích một giai đoạn đến cổng chất lượng phức tạp 5 giai đoạn.
+Workflow là quy trình nhiều bước có cấu trúc, được khởi động bằng lệnh slash; năm chế độ liên tục cũng khởi động khi một yêu cầu thông thường gọi tên chúng. Chúng định nghĩa cách agent cộng tác trong task, từ tiện ích một giai đoạn đến cổng chất lượng phức tạp 5 giai đoạn.
 
-Có 20 workflow, trong đó 4 workflow là [liên tục](../getting-started/glossary.md#persistent-workflow) (duy trì trạng thái và không thể bị ngắt do vô tình).
+Có 21 workflow, trong đó 5 workflow là [liên tục](../getting-started/glossary.md#persistent-workflow) (duy trì trạng thái và không thể bị ngắt do vô tình).
 
 ## Tổng quan các workflow {#workflows-at-a-glance}
 
 | Workflow | Dùng cho | Liên tục |
 |---|---|---|
-| [`/orchestrate`](#orchestrate) | Thực thi agent song song tự động từ một plan, có vòng xác minh | Có |
-| [`/work`](#work) | Điều phối đa lĩnh vực từng bước: lập plan, triển khai, QA, sửa lỗi | Có |
+| [`/oma-mode`](#oma-mode) | Chế độ tự chủ: nêu mục tiêu, nó chọn route, chạy và tiếp tục đến khi đạt mục tiêu | Có |
+| [`/work`](#work) | Một lần build đa lĩnh vực trong một lần chạy: PM lập plan, triển khai song song, QA toàn bộ kết quả, vòng sửa lỗi | Có |
 | [`/ultrawork`](#ultrawork) | Workflow chất lượng 5 phase với 12 bước review cô lập | Có |
-| [`/ralph`](#ralph) | Lặp lại ultrawork đến khi các tiêu chí kiểm chứng được bằng máy đều pass | Có |
+| [`/ralph`](#ralph) | Alias đã ngừng khuyến nghị của `/oma-mode` | Có |
+| [`/orchestrate`](#orchestrate) | Chạy một plan đã có: dispatch song song, xác minh theo từng task | Có |
 | [`/plan`](#plan) | Phân rã task do PM thực hiện, kèm dependency và API contract | Không |
 | [`/brainstorm`](#brainstorm) | Ideation ưu tiên thiết kế trước khi lập plan | Không |
 | [`/architecture`](#architecture) | Quyết định kiến trúc, review kiến trúc và ADR | Không |
@@ -43,14 +44,14 @@ Chọn theo nhu cầu điều phối và xác minh của task. Nếu đã chọn
 | Nhu cầu của task | Lựa chọn | Ví dụ |
 |---|---|---|
 | Một lĩnh vực, không cần phối hợp giữa các agent | [Skill đơn](/docs/guide/single-skill) | Thêm API endpoint và kiểm thử validation |
-| Nhiều lĩnh vực, cần lập kế hoạch, triển khai và QA từng bước | `/work` | Điều phối thay đổi API cùng các client web và mobile |
-| Tự động giao task độc lập để chạy song song | `/orchestrate` | Triển khai task backend và frontend song song sau khi giải quyết phụ thuộc |
+| Một mục tiêu bạn muốn được thực hiện đến cùng mà không phải chọn workflow | `/oma-mode` | Thêm đăng nhập vào ứng dụng này và tiếp tục đến khi các kiểm tra pass |
+| Nhiều lĩnh vực, được lập kế hoạch, triển khai và review trong một lần chạy | `/work` | Điều phối thay đổi API cùng các client web và mobile |
 | Yêu cầu rõ ràng về quy trình chất lượng toàn diện | `/ultrawork` | Thực hiện đầy đủ các bước lập kế hoạch, triển khai, xác minh, tinh chỉnh và đánh giá mức độ sẵn sàng phát hành |
-| Yêu cầu rõ ràng về việc lặp lại thực thi đến khi đạt tiêu chí kiểm chứng được bằng máy | `/ralph` | Lặp lại triển khai và xác minh bằng judge đến khi các kiểm tra hồi quy đã chỉ định đều pass, trong giới hạn bảo vệ của vòng lặp |
+| Một kế hoạch cần chạy đúng như đã viết, từng task được xác minh riêng | `/orchestrate` | Chạy song song các task từ `/plan` và nhận trạng thái completed, partial hoặc failed cho từng task |
 
-`/orchestrate` tải kế hoạch dùng được hoặc tạo kế hoạch qua `/plan` trước khi spawn agent. Bạn không cần chạy `/plan` trước. Vì vậy, việc đã có kế hoạch không phải là điểm phân biệt `/work` và `/orchestrate`; hãy chọn theo cách bạn muốn điều phối công việc. Cả hai đều có thể chạy task độc lập song song.
+`/work` và `/orchestrate` đều chạy task độc lập song song. Chúng khác nhau ở chỗ kế hoạch đến từ đâu và kết quả được kiểm tra thế nào. `/work` để PM viết một kế hoạch mới và trình bày nó, cho QA review toàn bộ kết quả sau khi triển khai, và đưa các phát hiện CRITICAL và HIGH vào vòng sửa lỗi. `/orchestrate` tải kế hoạch dùng được, hoặc tạo kế hoạch qua `/plan` khi chưa có, nên bạn không cần chạy `/plan` trước. Nó đóng băng kế hoạch đó ở lần dispatch đầu tiên và xác minh riêng từng task; task hết số lần thử được báo cáo là partial hoặc failed. Khi chưa chắc, hãy bắt đầu với `/oma-mode`: nó chọn giữa các route này thay bạn. Chọn `/work` khi bạn muốn luồng do PM dẫn dắt với một lượt QA trên toàn bộ kết quả, và dùng trực tiếp `/orchestrate` khi kế hoạch đã chốt.
 
-Tiêu chí chấp nhận và test cũng thuộc công việc dùng skill đơn. Chỉ có các tiêu chí này không có nghĩa là cần `/ralph`: mỗi lần lặp Ralph chạy toàn bộ quy trình ultrawork và một lượt judge, nên hãy chọn khi bạn muốn lặp lại vòng xác minh đó. Vòng lặp có thể dừng khi còn công việc chưa hoàn thành hoặc bị chặn nếu cơ chế bảo vệ áp dụng.
+Tiêu chí chấp nhận và test cũng thuộc công việc dùng skill đơn. `/oma-mode` ghi nhận chúng thành tiêu chí hoàn thành và để một judge độc lập kiểm tra lại từng tiêu chí sau mỗi lần lặp. Nó có thể dừng khi còn công việc chưa hoàn thành hoặc bị chặn nếu các giới hạn của nó áp dụng.
 
 Bảng này hướng dẫn lựa chọn, không phải bộ định tuyến workflow tự động. Agent chính có thể đề xuất cách làm phù hợp; việc đề xuất hoặc giải thích workflow không khởi chạy nó. Lệnh slash chọn workflow một cách tường minh. Khi hook phát hiện từ khóa được bật, việc khớp từ khóa hoặc mẫu đã cấu hình cũng có thể kích hoạt workflow, tùy bộ lọc câu hỏi thông tin. Bộ phát hiện không phân loại số lĩnh vực, kiểm tra kế hoạch đã sẵn sàng hay dùng bảng này làm thuật toán ưu tiên.
 
@@ -62,62 +63,34 @@ Việc đánh giá kế hoạch kế thừa quyền đã được cấp cho task
 
 Workflow liên tục tiếp tục chạy cho đến khi tất cả task hoàn thành. Chúng duy trì trạng thái trong `.agents/state/` và đưa lại ngữ cảnh `[OMA PERSISTENT MODE: ...]` vào mỗi tin nhắn người dùng cho đến khi được vô hiệu hóa tường minh.
 
-Chế độ liên tục chỉ bắt đầu khi có **lời gọi tường minh**: slash command của workflow (`/ultrawork`, hoặc dạng có namespace như `/oma:ultrawork`), hoặc chính tên của workflow dưới dạng văn bản thường (danh sách `explicit` trong `triggers.json`: "orchestrate" và các bản dịch được liệt kê của nó, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). Hook từ khóa không mở workflow từ bất kỳ câu nào khác.
+Chế độ liên tục chỉ bắt đầu khi có **lời gọi tường minh**: slash command của workflow (`/ultrawork`, hoặc dạng có namespace như `/oma:ultrawork`), hoặc chính tên của workflow dưới dạng văn bản thường (danh sách `explicit` trong `triggers.json`: "oma-mode", "orchestrate" và các bản dịch được liệt kê của nó, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). Hook từ khóa không mở workflow từ bất kỳ câu nào khác.
 
-### /orchestrate
+### /oma-mode
 
-**Mô tả:** Thực thi agent song song tự động qua CLI. Workflow spawn subagent bằng CLI, điều phối qua run state và receipt bền vững, giám sát tiến trình và chạy các vòng xác minh.
+**Mô tả:** Chế độ tự chủ. Bạn nêu mục tiêu; nó chọn route, chạy mà không hỏi nên dùng workflow nào, và tiếp tục cho đến khi một judge độc lập đánh pass mọi tiêu chí hoàn thành hoặc chạm một giới hạn.
 
-**Liên tục:** Có. File trạng thái: `.agents/state/orchestrate-state-{sessionId}.json`.
+**Liên tục:** Có. File trạng thái: `.agents/state/oma-mode-state-{sessionId}.json`.
 
 **Từ khóa trigger:**
 | Ngôn ngữ | Từ khóa |
 |----------|----------|
-| Tường minh (liên tục) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-
-Các câu như "do everything", "전부 해줘" hay "build me an app" không khởi động workflow này.
+| Tường minh (liên tục) | "oma-mode" |
 
 **Các bước:**
-1. **Bước 0, Chuẩn bị:** Đọc skill coordination, hướng dẫn context-loading và memory protocol. Phát hiện vendor.
-2. **Bước 1, Tải/tạo plan:** Kiểm tra `.agents/results/plan-{sessionId}.json` rồi đến `plan-*.json` mới nhất. Nếu không có plan, hoặc plan chưa sẵn sàng để thực thi (task thiếu agent, tier ưu tiên, dependency hoặc acceptance criteria), giao `/plan` inline để tạo plan với cùng session ID. Trình bày plan và dùng lại quyền đã cấp; chỉ hỏi khi thiếu quyết định quan trọng hoặc cần quyền mới trước khi giao.
-3. **Bước 2, Khởi tạo session:** Tải `oma-config.yaml`, hiển thị bảng ánh xạ CLI, và dùng session ID từ lúc tạo plan hoặc tạo ID mới (`session-YYYYMMDD-HHMMSS`). Với mỗi task, chọn các tham chiếu skill mà task cần bằng cách so khớp task với intent signature của các skill đã cài; một skill khớp với độ tin cậy cao là đủ. Tạo `orchestrator-session-{sessionId}.md` và `task-board-{sessionId}.md` trong memory store đã cấu hình, rồi ghi vào đó các tham chiếu đã chọn của từng task cùng lý do lựa chọn. Đây là ghi chú của coordinator; launcher không cưỡng chế chúng.
-4. **Bước 3, Spawn agent:** Với từng tier ưu tiên (thấp nhất trước: tier 1, rồi tier 2, v.v.), spawn agent bằng phương thức phù hợp vendor (subagent native khi runtime hiện tại và vendor đích trùng nhau; `oma agent spawn` cho vendor ngoài hoặc khác vendor). Mỗi agent nhận task của mình, các API contract và các tham chiếu đã chọn kèm điều kiện tải của chúng. Không vượt quá MAX_PARALLEL (mặc định 3).
-5. **Bước 4, Giám sát:** Kiểm tra tình trạng process bằng `oma agent status`. Ưu tiên thông báo hoàn thành từ host; nếu không có, poll các file `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` theo run đã thay đổi với backoff có giới hạn, đọc các receipt có cấu trúc và cập nhật task board. Theo dõi hoàn thành, thất bại và crash.
-6. **Bước 5, Xác minh:** Với mỗi agent hoàn tất, chạy self-check cơ học (lint, typecheck, test, phạm vi diff; tối đa 3 vòng), sau đó `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug và pm; các loại agent khác ghi `SKIP`), rồi QA cross-review. Khi verify thất bại, spawn lại với ngữ cảnh lỗi. Thất bại lặp lại có thể là lý do để thử các giả thuyết thay thế, nhưng lần thử ban đầu, mỗi lần thử lại và mỗi giả thuyết đều tiêu tốn cùng một ngân sách phục hồi tổng (`max_attempts`, mặc định 3 kể cả lần đầu). Giữ lại bằng chứng chưa được giải quyết nếu ngân sách không đủ cho một vòng so sánh.
-7. **Bước 6, Thu thập:** Đọc file result theo run và claim có cấu trúc, rồi biên soạn tóm tắt.
-8. **Bước 7, Báo cáo cuối:** Trình bày tóm tắt session. Nếu đã chạy thí nghiệm, hãy tóm tắt bằng chứng và các quyết định; chỉ ghi lại bài học khi đã xác lập được nguyên nhân có thể tái sử dụng.
+1. **Bước 1, Đọc mục tiêu:** Xác định kết quả mong muốn, mọi lựa chọn hoặc giới hạn tường minh, và điều kiện hoàn thành được viết dưới dạng các tiêu chí hoàn thành mà mỗi tiêu chí đều kèm một kiểm tra judge có thể thực thi (kiểm tra bạn nêu tên, nếu không thì các kiểm tra suy ra từ hành vi bạn mô tả). Các tiêu chí được cố định trước khi route đầu tiên chạy.
+2. **Bước 2, Chọn route:** Hàng khớp đầu tiên thắng: workflow hoặc skill được nêu tên; câu trả lời chỉ đọc cho một câu hỏi; `/debug` cho hành vi sai; `/review` cho một lượt review; `/plan` khi chỉ cần plan; workflow khác sở hữu kết quả đó; `/ultrawork` chỉ khi được yêu cầu rõ; **Open-ended** (`open-ended-protocol.md`) cho một thay đổi lớn, có độ bất định cao hoặc xuyên suốt nhiều phần mà các ẩn số khiến kế hoạch định trước không đáng tin cậy (kiểm chứng ẩn số rủi ro nhất trước, dựng khung kiểm tra trước, tách thành các đơn vị nhỏ có thể gộp độc lập); một chủ sở hữu duy nhất cho một thay đổi mà một agent có thể hoàn tất: subagent chuyên trách của skill phụ trách, hoặc phiên này khi không có vai trò đó; `/orchestrate` cho một thay đổi có các phần mà những chuyên gia khác nhau có thể xây dựng độc lập, hoặc quá lớn đối với context của một agent. Khi `oma-orchestration` chưa được cài, thay đổi được chuyển sang `/work`, và sang skill phụ trách khi `/work` cũng không khả dụng.
+3. **Bước 3, Nêu và ghi lại:** In một dòng `Route:` và ghi lựa chọn đó thành một quyết định định tuyến. Nó không chờ xác nhận.
+4. **Bước 4, Chạy:** Làm theo workflow, chuỗi open-ended hoặc skill đã chọn, không thay đổi gì. Định tuyến lại bằng một dòng `Route:` mới khi công việc hóa ra thuộc về một hàng khác. Mỗi bước hoặc đơn vị của route được sao chép nguyên tên vào danh sách task và được đánh dấu là hoàn thành, hoặc bỏ qua kèm lý do.
+5. **Bước 5, Judge và tiếp tục:** Một judge được dispatch riêng với context mới sẽ thực thi kiểm tra của từng tiêu chí và ghi nhận PASS, FAIL, REGRESSED hoặc BLOCKED. Tất cả PASS sẽ kết thúc lần chạy; một tiêu chí FAIL hoặc REGRESSED bắt đầu lần lặp kế tiếp chỉ trên phần việc còn lại. Lần chạy dừng sau 5 lần lặp, hoặc khi một route chạm ngân sách số lần thử, giới hạn chi phí hoặc deadline của chính nó; chế độ này không bao giờ khởi động route khác để vượt qua giới hạn đó.
+6. **Bước 6, Báo cáo:** Các route đã đi, các thay đổi, trạng thái cuối cùng của từng tiêu chí kèm bằng chứng từ judge, và phần còn lại, được biên tập theo `anti-ai-prose.md` để câu chữ trực diện và không rườm rà. Sau đó chế độ này kết thúc chế độ liên tục để session có thể dừng.
 
-```mermaid
-flowchart TD
-  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
-  S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task references, task board"]
-  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
-  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
-  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
-  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
-  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
-  QA -->|"FAIL: findings back to the agent"| SC
-  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
-  S6 --> S7(["Step 7: final report"])
-  VS -->|FAIL| CL{"classify the failure"}
-  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
-  CL -->|product| BG{"attempts left in max_attempts?"}
-  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
-  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
-  QA -.->|"review limit reached"| STOP
-```
-
-**File đọc:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, file progress/result theo run và receipt run có cấu trúc.
-**File ghi:** state session/task-board theo run trong memory store đã cấu hình, receipt và claim có cấu trúc, cùng báo cáo cuối.
-
-**Khi sử dụng:** Dự án lớn cần mức song song tối đa cùng điều phối tự động.
+**Khi sử dụng:** Khi bạn muốn giao một mục tiêu thay vì tự chọn workflow. Trên các host có vòng lặp `/goal` native (như Claude Code và Codex CLI), bạn có thể điều khiển các lần thử lại bên ngoài bằng `/goal` bằng cách đặt điều kiện dừng là báo cáo judge của `/oma-mode` đánh pass mọi tiêu chí. Publishing, deployment, hành động phá hủy, chi tiêu vượt ngân sách đã nêu và build vẫn cần bạn cấp quyền.
 
 ---
 
 ### /work
 
-**Mô tả:** Điều phối đa lĩnh vực từng bước. PM lập plan trước, agent thực thi trong phạm vi được cấp quyền, sau đó QA review và khắc phục vấn đề.
+**Mô tả:** Workflow của đội cho công việc đa lĩnh vực. PM lập plan trước, agent thực thi trong phạm vi được cấp quyền, sau đó QA review và khắc phục vấn đề.
 
 **Liên tục:** Có. File trạng thái: `.agents/state/work-state-{sessionId}.json`.
 
@@ -139,7 +112,7 @@ Từ trần "work" không phải là trigger — đó là từ vựng thông th�
 8. **Bước 6.1, Đo lường** (tùy điều kiện): Ghi baseline khi cần một phép so sánh đã được xác định.
 9. **Bước 7, Lặp:** Nếu có vấn đề CRITICAL/HIGH, spawn lại agent chịu trách nhiệm. Nếu cùng vấn đề còn sau 2 lần thử, bật Exploration Loop.
 
-**Khi sử dụng:** Feature trải trên nhiều lĩnh vực khi cần điều phối lập plan, triển khai và QA từng bước.
+**Khi sử dụng:** Feature trải trên nhiều lĩnh vực, khi bạn muốn luồng do PM dẫn dắt: nó lập plan, build song song và review toàn bộ kết quả trong một lần chạy.
 
 ---
 
@@ -212,7 +185,7 @@ flowchart TD
 
 ### /ralph
 
-**Mô tả:** Vòng lặp thực thi tự tham chiếu liên tục. Bọc ultrawork bằng một [judge](../getting-started/glossary.md#judge) kiểm tra tiêu chí hoàn thành sau mỗi lần lặp. Báo cáo hoàn thành đầy đủ khi mọi tiêu chí pass, hoàn thành một phần khi chỉ còn tiêu chí đã pass và bị chặn, hoặc dừng khi safeguard kích hoạt.
+**Mô tả:** Alias đã ngừng khuyến nghị của [`/oma-mode`](#oma-mode). Nó không còn bọc `/ultrawork` nữa. Các tiêu chí hoàn thành, [judge](../getting-started/glossary.md#judge) độc lập và giới hạn 5 lần lặp mà nó từng sở hữu nay là một phần của `/oma-mode`.
 
 **Liên tục:** Có. File trạng thái: `.agents/state/ralph-state-{sessionId}.json`.
 
@@ -221,40 +194,60 @@ flowchart TD
 |----------|----------|
 | Tường minh (liên tục) | "ralph", "랄프" |
 
-Các cụm từ tiếp tục trần ("keep going", "carry on", "계속해", "続けて", "продолжай", …) và các cách diễn đạt về việc hoàn thành ("don't stop", "끝까지 해") không khởi động workflow này.
+**Chức năng:** Chạy `/oma-mode` với hai thiết lập cố định: tiêu chí hoàn thành luôn được định nghĩa trước khi route đầu tiên chạy, và mọi lần lặp có thay đổi project đều được judge kiểm tra, bao gồm cả một chỉnh sửa đơn lẻ được nêu rõ.
 
-**Các phase:**
-1. **Phase 0, INIT:** Tải prerequisite (context-loading, memory protocol, judge protocol). Định nghĩa và ghi tiêu chí hoàn thành có thể kiểm chứng bằng máy, chẳng hạn test assertion, type check không tạo output, exit code hoặc sự tồn tại của file. Chỉ thêm check build khi được yêu cầu rõ. Hiển thị tiêu chí và tiếp tục trong phạm vi quyền đã cấp. Khởi tạo session với `max_iterations: 5`.
-2. **Phase 1, EXEC:** Chạy ultrawork (PLAN → IMPL → VERIFY → REFINE → SHIP) như một lần lặp dưới session ID của Ralph. Sau đó chạy artifact gate `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`. Nếu gate thất bại, lần lặp được tính là chưa thực hiện: Ralph ghi lại vi phạm, sửa công việc và chạy lại gate.
-3. **Phase 2, JUDGE:** Judge đối chiếu từng tiêu chí hoàn thành với trạng thái project thực tế (chạy check được phép và xác minh file tồn tại). Prompt của workflow yêu cầu orchestrator spawn judge thành một agent riêng với context mới, chỉ được thông báo về các tiêu chí; không có cơ chế nào xác nhận việc spawn một cách cơ học, và runtime không thể spawn subagent được yêu cầu judge inline và ghi `ralph.judge-inline-fallback`. Ghi bằng chứng và trạng thái tiêu chí, gồm PASS, FAIL, REGRESSED hoặc BLOCKED.
-4. **Cổng quyết định:** Nếu mọi tiêu chí PASS → báo cáo hoàn thành đầy đủ. Nếu chỉ còn PASS và BLOCKED → báo cáo hoàn thành một phần. Nếu có FAIL hoặc REGRESSED → chuyển ngữ cảnh thất bại vào lần lặp kế tiếp, theo safeguard.
-5. **Phase 3, REPLAN:** Thu hẹp lần lặp kế tiếp vào các mục FAIL và REGRESSED (chẩn đoán dựa trên diff), bỏ qua mục BLOCKED và giữ các tiêu chí PASS trong phạm vi của judge. Quay lại Phase 1.
-6. **Safeguard:** Dừng loop khi `current_iteration >= max_iterations` (mặc định 5). Tiêu chí fail 3 lần liên tiếp với cùng nguyên nhân gốc trở thành BLOCKED và không được thử lại (phát hiện bị kẹt).
+**Khi sử dụng:** Hãy dùng `/oma-mode` thay thế. Lệnh `oma ralph verify` và artifact gate của ultrawork mà nó từng chạy đã bị gỡ bỏ cùng thay đổi này.
+
+---
+
+### /orchestrate
+
+**Mô tả:** Thực thi agent song song tự động qua CLI. Workflow spawn subagent bằng CLI, điều phối qua run state và receipt bền vững, giám sát tiến trình và chạy các vòng xác minh.
+
+**Liên tục:** Có. File trạng thái: `.agents/state/orchestrate-state-{sessionId}.json`.
+
+**Từ khóa trigger:**
+| Ngôn ngữ | Từ khóa |
+|----------|----------|
+| Tường minh (liên tục) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+
+Các câu như "do everything", "전부 해줘" hay "build me an app" không khởi động workflow này.
+
+**Các bước:**
+1. **Bước 0, Chuẩn bị:** Đọc skill coordination, hướng dẫn context-loading và memory protocol. Phát hiện vendor.
+2. **Bước 1, Tải/tạo plan:** Kiểm tra `.agents/results/plan-{sessionId}.json` rồi đến `plan-*.json` mới nhất. Nếu không có plan, hoặc plan chưa sẵn sàng để thực thi (task thiếu agent, tier ưu tiên, dependency hoặc acceptance criteria), giao `/plan` inline để tạo plan với cùng session ID. Trình bày plan và dùng lại quyền đã cấp; chỉ hỏi khi thiếu quyết định quan trọng hoặc cần quyền mới trước khi giao.
+3. **Bước 2, Khởi tạo session:** Tải `oma-config.yaml`, hiển thị bảng ánh xạ CLI, và dùng session ID từ lúc tạo plan hoặc tạo ID mới (`session-YYYYMMDD-HHMMSS`). Với mỗi task, chọn các tham chiếu skill mà task cần bằng cách so khớp task với intent signature của các skill đã cài; một skill khớp với độ tin cậy cao là đủ. Tạo `orchestrator-session-{sessionId}.md` và `task-board-{sessionId}.md` trong memory store đã cấu hình, rồi ghi vào đó các tham chiếu đã chọn của từng task cùng lý do lựa chọn. Đây là ghi chú của coordinator; launcher không cưỡng chế chúng.
+4. **Bước 3, Spawn agent:** Với từng tier ưu tiên (thấp nhất trước: tier 1, rồi tier 2, v.v.), spawn agent bằng phương thức phù hợp vendor (subagent native khi runtime hiện tại và vendor đích trùng nhau; `oma agent spawn` cho vendor ngoài hoặc khác vendor). Mỗi agent nhận task của mình, các API contract và các tham chiếu đã chọn kèm điều kiện tải của chúng. Không vượt quá MAX_PARALLEL (mặc định 3).
+5. **Bước 4, Giám sát:** Kiểm tra tình trạng process bằng `oma agent status`. Ưu tiên thông báo hoàn thành từ host; nếu không có, poll các file `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` theo run đã thay đổi với backoff có giới hạn, đọc các receipt có cấu trúc và cập nhật task board. Theo dõi hoàn thành, thất bại và crash.
+6. **Bước 5, Xác minh:** Với mỗi agent hoàn tất, chạy self-check cơ học (lint, typecheck, test, phạm vi diff; tối đa 3 vòng), sau đó `verify.sh {agent-type} {workspace}` (backend, frontend, mobile, qa, debug và pm; các loại agent khác ghi `SKIP`), rồi QA cross-review. Khi verify thất bại, spawn lại với ngữ cảnh lỗi. Thất bại lặp lại có thể là lý do để thử các giả thuyết thay thế, nhưng lần thử ban đầu, mỗi lần thử lại và mỗi giả thuyết đều tiêu tốn cùng một ngân sách phục hồi tổng (`max_attempts`, mặc định 3 kể cả lần đầu). Giữ lại bằng chứng chưa được giải quyết nếu ngân sách không đủ cho một vòng so sánh.
+7. **Bước 6, Thu thập:** Đọc file result theo run và claim có cấu trúc, rồi biên soạn tóm tắt.
+8. **Bước 7, Báo cáo cuối:** Trình bày tóm tắt session. Nếu đã chạy thí nghiệm, hãy tóm tắt bằng chứng và các quyết định; chỉ ghi lại bài học khi đã xác lập được nguyên nhân có thể tái sử dụng.
 
 ```mermaid
 flowchart TD
-  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
-  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
-  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
-  REPAIR --> GATE
-  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
-  JUDGE --> VERDICT{"verdict"}
-  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
-  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
-  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
-  LIMIT -->|yes| SAFE(["Safeguard report"])
-  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
-  REPLAN --> EXEC
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task references, task board"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
 ```
 
-Nút judge là judge được chỉ định qua prompt như mô tả ở Phase 2: workflow yêu cầu orchestrator spawn nó với context mới, còn runtime không thể spawn subagent sẽ judge inline và ghi lại fallback.
+**File đọc:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, file progress/result theo run và receipt run có cấu trúc.
+**File ghi:** state session/task-board theo run trong memory store đã cấu hình, receipt và claim có cấu trúc, cùng báo cáo cuối.
 
-**Khác biệt chính với /ultrawork:** Ultrawork chạy quy trình 5 phase và thử lại khi gate của một phase thất bại. Ralph bọc ultrawork trong loop retry với một judge được chỉ định qua prompt, xác minh lại mọi tiêu chí theo bằng chứng của project. Loop kết thúc bằng báo cáo hoàn thành đầy đủ, báo cáo hoàn thành một phần cho công việc bị chặn hoặc báo cáo safeguard.
-
-**File đọc:** `.agents/workflows/ralph/resources/judge-protocol.md` và toàn bộ file ultrawork.
-**File ghi:** `session-ralph-{sessionId}.md` (memory), log từng lần lặp và báo cáo cuối.
-
-**Khi sử dụng:** Khi bạn yêu cầu rõ việc thực thi lặp lại và judge xác minh lại theo tiêu chí hoàn thành cơ học. Chỉ có test không bắt buộc Ralph; cần tính toàn bộ quy trình ultrawork và safeguard trong mỗi lần lặp.
+**Khi sử dụng:** Chạy một plan đã chốt, thường ngay sau `/plan`, khi bạn muốn từng task được xác minh riêng và có trạng thái cho từng task. Nó kết thúc mà không có lượt QA trên toàn bộ kết quả; hãy chạy `/review` sau đó khi bạn cần.
 
 ---
 
@@ -515,7 +508,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 |--------|--------|-----------|
 | **Là gì** | Chuyên môn agent (agent biết gì) | Quy trình điều phối (agent làm việc cùng nhau thế nào) |
 | **Vị trí** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **Kích hoạt** | Host so khớp tên và mô tả của skill; skill injector có thể thêm gợi ý | Lệnh slash. `orchestrate`, `ultrawork`, `work` và `ralph` cũng khởi động khi prompt gọi tên chế độ đó |
+| **Kích hoạt** | Host so khớp tên và mô tả của skill; skill injector có thể thêm gợi ý | Lệnh slash. `oma-mode`, `orchestrate`, `ultrawork`, `work` và `ralph` cũng khởi động khi prompt gọi tên chế độ đó |
 | **Phạm vi** | Thực thi đơn lĩnh vực | Nhiều bước, thường đa agent |
 | **Ví dụ** | "Build a React component" | "Plan the feature -> build -> review -> commit" |
 
@@ -527,7 +520,7 @@ Phương pháp kiểm toán của Cloudflare hướng dẫn việc xác minh đ�
 
 oh-my-agent dùng hook `UserPromptSubmit` chạy trước khi mỗi tin nhắn người dùng được xử lý. Setting của vendor đăng ký một entry duy nhất `<hookDir>/oma-hook.sh --vendor <v> --event <e>` định tuyến vào `oma hook run`, nơi chuỗi handler chạy trong process. Chuỗi này gồm:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, được inline vào binary `oma`): Bảng `workflows` chỉ định tuyến theo từ khóa cho `orchestrate`, `ultrawork`, `work` và `ralph`, và chỉ theo tên tường minh của từng chế độ. Gợi ý từ khóa của skill nằm trong cùng file và không thay đổi.
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, được inline vào binary `oma`): Bảng `workflows` chỉ định tuyến theo từ khóa cho `oma-mode`, `orchestrate`, `ultrawork`, `work` và `ralph`, và chỉ theo tên tường minh của từng chế độ. Gợi ý từ khóa của skill nằm trong cùng file và không thay đổi.
 
 2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): Logic TypeScript quét đầu vào người dùng so với các tên tường minh đó và đưa ngữ cảnh kích hoạt workflow vào.
 
@@ -537,7 +530,7 @@ oh-my-agent dùng hook `UserPromptSubmit` chạy trước khi mỗi tin nhắn n
 
 1. Người dùng nhập prompt
 2. Hook kiểm tra xem prompt có bắt đầu bằng một `/command` hay không (nếu có, bỏ qua việc đưa từ khóa vào; chính lệnh đó tải workflow). Slash command của workflow liên tục vẫn ghi file trạng thái của chế độ đó
-3. Hook làm sạch đầu vào (loại bỏ code block, chuỗi trích dẫn, các khối system-echo đã dán) rồi quét các danh sách keyword của `workflows` trong `.agents/hooks/core/triggers.json`. Các danh sách đó chỉ chứa tên tường minh của `orchestrate`, `ultrawork`, `work` và `ralph`. Một lớp bảo vệ tăng cường ngăn việc kích hoạt lại nếu cùng một workflow đã trigger từ 2 lần trở lên trong 60 giây gần nhất.
+3. Hook làm sạch đầu vào (loại bỏ code block, chuỗi trích dẫn, các khối system-echo đã dán) rồi quét các danh sách keyword của `workflows` trong `.agents/hooks/core/triggers.json`. Các danh sách đó chỉ chứa tên tường minh của `oma-mode`, `orchestrate`, `ultrawork`, `work` và `ralph`. Một lớp bảo vệ tăng cường ngăn việc kích hoạt lại nếu cùng một workflow đã trigger từ 2 lần trở lên trong 60 giây gần nhất.
 4. Nếu tìm thấy khớp, kiểm tra xem đầu vào có khớp các mẫu thông tin hay không
 5. Nếu mang tính thông tin (ví dụ: "what is orchestrate?"), lọc ra (không workflow nào được kích hoạt)
 6. Nếu tên tường minh khớp, đưa `[OMA WORKFLOW: {workflow-name}]` vào và yêu cầu agent khởi động workflow đó ngay. Khi nhiều tên tường minh cùng khớp, từ khóa dài nhất thắng, sau đó đến thứ tự khai báo
@@ -600,7 +593,7 @@ Nếu đầu vào khớp cả một tên chế độ tường minh và mẫu th�
 
 ### Workflow mà hook từ khóa không mở {#workflows-the-keyword-hook-does-not-open}
 
-Mọi workflow ngoài `orchestrate`, `ultrawork`, `work` và `ralph` đều khởi động từ slash command của nó. File quy trình vẫn nằm trong `.agents/workflows/`. `excludedWorkflows` nêu tên `stack-set`, `schedule` và `convert`, nên một bộ từ khóa không thể định tuyến ba workflow đó ngay cả khi được thêm vào sau này. `/explain` vẫn chỉ gọi bằng slash vì "explain" là từ vựng thường ngày. Gợi ý từ khóa của skill trong cùng file là phần riêng biệt và vẫn đưa ngữ cảnh skill vào.
+Mọi workflow ngoài `oma-mode`, `orchestrate`, `ultrawork`, `work` và `ralph` đều khởi động từ slash command của nó. File quy trình vẫn nằm trong `.agents/workflows/`. `excludedWorkflows` nêu tên `stack-set`, `schedule` và `convert`, nên một bộ từ khóa không thể định tuyến ba workflow đó ngay cả khi được thêm vào sau này. `/explain` vẫn chỉ gọi bằng slash vì "explain" là từ vựng thường ngày. Gợi ý từ khóa của skill trong cùng file là phần riêng biệt và vẫn đưa ngữ cảnh skill vào.
 
 ---
 
@@ -608,10 +601,11 @@ Mọi workflow ngoài `orchestrate`, `ultrawork`, `work` và `ralph` đều kh�
 
 ### File trạng thái {#state-files}
 
-Workflow liên tục (orchestrate, ultrawork, work, ralph) tạo file trạng thái trong `.agents/state/` khi được gọi tường minh (xem [Các workflow liên tục](#persistent-workflows)):
+Workflow liên tục (oma-mode, orchestrate, ultrawork, work, ralph) tạo file trạng thái trong `.agents/state/` khi được gọi tường minh (xem [Các workflow liên tục](#persistent-workflows)):
 
 ```text
 .agents/state/
+├── oma-mode-state-{sessionId}.json
 ├── orchestrate-state-{sessionId}.json
 ├── ultrawork-state-{sessionId}.json
 ├── work-state-{sessionId}.json
@@ -649,13 +643,13 @@ Workflow cũng có thể kết thúc tự nhiên khi mọi bước hoàn tất v
 | Mục tiêu | Chuỗi |
 |------|----------|
 | Tính năng đơn lĩnh vực | Mô tả task → skill liên quan → triển khai → xác minh tập trung |
+| Một mục tiêu được giao trọn từ đầu đến cuối | `/oma-mode` → chọn route → tiếp tục đến khi điều kiện hoàn thành được thỏa → báo cáo |
 | Dự án đa lĩnh vực phức tạp | `/work` → PM lập plan → review trong phạm vi được cấp quyền → spawn agent → QA review → sửa vấn đề → báo cáo |
-| Triển khai song song tự động | `/orchestrate` → tải hoặc tạo plan → giải quyết dependency → spawn task độc lập → xác minh → báo cáo |
+| Chạy một plan đã chốt | `/plan` → phân rã task → `/orchestrate` → giải quyết dependency → spawn task độc lập → xác minh từng task → báo cáo |
 | Phân phối chất lượng tối đa | `/ultrawork` → PLAN (plan + 3 review) → IMPL → VERIFY (3 review) → REFINE (2 review + 3 thao tác refactor) → SHIP (4 review) |
 | Điều tra lỗi | `/debug` → tái hiện → nguyên nhân gốc → sửa tối thiểu → regression test → quét pattern tương tự |
 | Pipeline từ thiết kế đến triển khai | `/brainstorm` → tài liệu design → `/plan` → phân rã task → `/orchestrate` → triển khai song song → `/review` → `/scm` |
 | Khởi tạo codebase mới | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
-| Lặp lại thực thi với xác minh bằng judge | `/ralph` → định nghĩa tiêu chí → ultrawork → artifact gate → judge → lặp lại khi cần → báo cáo hoàn thành, hoàn thành một phần hoặc safeguard |
 
 ---
 

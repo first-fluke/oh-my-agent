@@ -46,6 +46,13 @@
         "*": ["ralph"],
         "ko": ["랄프"]
       }
+    },
+    "oma-mode": {
+      "persistent": true,
+      "explicit": ["oma-mode"],
+      "keywords": {
+        "*": ["oma-mode"]
+      }
     }
   },
   "skills": {

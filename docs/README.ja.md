@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 [エージェント向けインストールガイド](./agent-install.md) は、非対話のセットアップと確認を扱います。あなたがエージェントなら、そのガイドを読んでインストールを実行してください。
 
-その後、エージェントを開いて `/orchestrate build a TODO app with login` と入力します。
+その後、エージェントを開いて `/oma-mode build a TODO app with login` と入力します。
 
 oh-my-agent（`oma`）は、Claude Code、Codex CLI、Cursor とほか 11 種類のコーディングエージェントをチームに変えます。プランナーが作業を分解し、エンジニアが並列で構築し、レビューアーが結果を確認し、デバッガーが根本原因を修正します。
 
@@ -43,7 +43,7 @@ oh-my-agent（`oma`）は、Claude Code、Codex CLI、Cursor とほか 11 種類
 | [管理画面を設計する](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | 管理画面の階層とテーブルの密度をレビューしてください。 |
 | [失敗するテストを直す](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | このテストの失敗を再現し、原因を修正し、影響するチェックを実行してください。 |
 | システムの境界をレビューする | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | API とワーカーの境界をレビューしてください。 |
-| チーム全体を動かす | [oma をインストールする](#install) | `/orchestrate add login to this app` |
+| チーム全体を動かす | [oma をインストールする](#install) | `/oma-mode add login to this app` |
 
 `skills use` コマンドは、エージェントのターミナルで実行します。指定したスキルが 1 つ読み込まれます。ワークフロー付きのチーム全体が必要なら、[oma をインストール](#install) してください。ほかの選択肢は [セットアップを選ぶ](../web/docs/getting-started/choose-setup.md) にあります。
 
@@ -58,8 +58,8 @@ oh-my-agent（`oma`）は、Claude Code、Codex CLI、Cursor とほか 11 種類
 
 | | 得られるもの | 試してみる |
 |---|---|---|
-| **12 の専門ロール** | PM、アーキテクト、バックエンド・フロントエンド・モバイル・データベース・インフラの各エンジニア、QA レビューアー、デバッガー、リファクタラー、ドキュメントキュレーター、リサーチャー（[チームを紹介](#meet-the-team)） | `/orchestrate build a TODO app with login` |
-| **20 のワークフロー** | `/brainstorm` や `/plan` から `/review`、`/debug`、`/scm` までのスラッシュコマンド。4 つのマルチエージェントモードは、普通の依頼で名前を挙げても始まります | "ultrawork: add rate limiting" |
+| **12 の専門ロール** | PM、アーキテクト、バックエンド・フロントエンド・モバイル・データベース・インフラの各エンジニア、QA レビューアー、デバッガー、リファクタラー、ドキュメントキュレーター、リサーチャー（[チームを紹介](#meet-the-team)） | `/oma-mode build a TODO app with login` |
+| **21 のワークフロー** | `/brainstorm` や `/plan` から `/review`、`/debug`、`/scm` までのスラッシュコマンド。5 つの persistent モードは、普通の依頼で名前を挙げても始まります | "ultrawork: add rate limiting" |
 | **32 のスキル** | タスクが必要とするときだけ読み込まれるドメインのノウハウ: UI、API、スキーマ、Terraform、CI、セキュリティ、git、オブザーバビリティ | 自動で読み込まれる。例: "add a Terraform S3 bucket" |
 | **開いて確認できるファイル** | 計画、設計ドキュメント、API コントラクト、ADR、バグノート、エージェント別の結果、セキュリティのエビデンス、HTML 解説、振り返りサマリー | `ls .agents/results` |
 | **リサーチとコンテンツ** | 出典つき検索、市場調査、論文、スライドデッキ、MP4 動画、画像、ローカル音声、PDF/HWP から Markdown への変換 | `/video`、`/convert` |
@@ -98,7 +98,7 @@ Windows ではインストーラーに Antigravity、Hermes、Kimi が表示さ�
 oma install --preset frontend --yes
 ```
 
-これで frontend プリセットの 8 つのスキルが選ばれます。インストーラーは、ランタイム、プロバイダー、共有ワークフローのファイルも設定し、以前インストールしたスキルは残します。対話式インストーラーでは、個別に選べます。[プリセットの値](../web/docs/getting-started/installation.md#presets) と [ワークフローの依存関係](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset) を参照してください。
+これで frontend プリセットの 9 つのスキルが選ばれます。インストーラーは、ランタイム、プロバイダー、共有ワークフローのファイルも設定し、以前インストールしたスキルは残します。対話式インストーラーでは、個別に選べます。[プリセットの値](../web/docs/getting-started/installation.md#presets) と [ワークフローの依存関係](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset) を参照してください。
 
 <details>
 <summary>インストーラーがデフォルトでほかに行うこと</summary>
@@ -125,18 +125,18 @@ oma install --preset frontend --yes
 | プリセット | スキル |
 |--------|--------|
 | **All** | **全 32 スキル**（推奨） |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack から mobile と tf-infra を除いたもの |
 | Fullstack Mobile | Fullstack から frontend と tf-infra を除いたもの |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | スキルを 1 つずつ選択 |
 
-名前付きのプリセットのうち、coordination、orchestration、docs、security、refactor、explanation、recap、video、slide、skill-creation を含むのは `All` だけです（または `Custom` で個別に選んでください）。Research と Content には、`/plan`、`/review`、`/debug`、`/architecture`、`/brainstorm` が使うスキルが含まれていません。詳しくは [プリセット外のスキルが必要なワークフロー](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset) を参照してください。
+名前付きのプリセットのうち、docs、security、refactor、explanation、recap、video、slide、skill-creation を含むのは `All` だけです（または `Custom` で個別に選んでください）。Research と Content には、`/plan`、`/review`、`/debug`、`/architecture`、`/brainstorm` が使うスキルが含まれていません。詳しくは [プリセット外のスキルが必要なワークフロー](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset) を参照してください。
 
 </details>
 
@@ -159,7 +159,7 @@ oma install --preset frontend --yes
 
 4. **結果を確認します。** 報告されたブランチと変更は、Git の出力と一致するはずです。読み込み手順を終えることや、インストールを完了することは、このタスクが実行されたことを意味しません。
 
-より大きな作業では、参照するスキルがインストール済みのワークフローを選んでください。計画スキルがあるときは `/plan` から始め、依存が揃っていれば `/work` または `/orchestrate` に進みます。
+より大きな作業では、参照するスキルがインストール済みのワークフローを選んでください。`/oma-mode` は普通の文で書いた目標を受け取り、ワークフローを代わりに選びます。[チームの連携のしかた](#how-the-team-works-together) で、チームのワークフローを比較しています。
 
 <a id="meet-the-team"></a>
 ## チームの紹介
@@ -183,7 +183,7 @@ oma install --preset frontend --yes
 | **ドキュメントキュレーター** (`docs-curator`) | oma-docs | `/docs`、または "verify docs" | `docs/generated/doc-refs.json` と、承認したドキュメントパッチ |
 | **リサーチャー** (`research-explorer`) | oma-search, oma-market, oma-scholar | リサーチの依頼 | 出所つきの出典。市場ブリーフは `.agents/results/market/` |
 
-インフラエンジニア（`tf-infra-engineer`）は、破壊的な、または本番環境に対する `apply` や `destroy` の前に必ず確認するよう指示されています。残りのスキル（brainstorm、security、scm、dev-workflow、observability、explanation、recap、translation、coordination、orchestration、skill-creation、コンテンツとメディア）には専任のロールがありません。エージェントが自分で読み込み、その多くはスキルインジェクターがプロンプトから適切なものを提案します。
+インフラエンジニア（`tf-infra-engineer`）は、破壊的な、または本番環境に対する `apply` や `destroy` の前に必ず確認するよう指示されています。残りのスキル（brainstorm、security、scm、dev-workflow、observability、explanation、recap、translation、orchestration、skill-creation、コンテンツとメディア）には専任のロールがありません。エージェントが自分で読み込み、その多くはスキルインジェクターがプロンプトから適切なものを提案します。
 
 </details>
 
@@ -194,7 +194,7 @@ oma install --preset frontend --yes
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -205,21 +205,21 @@ oma install --preset frontend --yes
 
 | やりたいこと | 実行 | 終わり方 |
 |---|---|---|
+| 目標を伝えて、あとは oma に任せる | `/oma-mode` | ルートを選び、どれを使うかを尋ねずに実行し、まっさらなコンテキストの judge がすべての完了基準を PASS と判定するまで続行。基準がブロックされたとき、または 5 回の iteration 後は部分的なレポートを出して停止 |
 | 計画だけ | `/plan` | 複数領域の作業なら計画ファイル、小さな作業なら直接の推奨案 |
-| ステップごとに追いかける PM 主導の構築 | `/work` | PM、次にティアごとのエンジニア、最後に QA。CRITICAL と HIGH の指摘は修正ループへ（最大 5 サイクル） |
-| 任せきりの並列構築 | `/orchestrate` | チェックが通ったタスクだけを完了とみなす。各タスクは最大 3 回試行し、その後 partial または failed とマーク |
-| 5 段階のワークフロー | `/ultrawork` | ゲート付きの 5 フェーズ（PLAN、IMPL、VERIFY、REFINE、SHIP）。レビューはすべて新しいレビューアーセッションで実行 |
-| 「本当に終わるまで止まらないで」 | `/ralph` | 別途 spawn した、まっさらなコンテキストの judge がすべての基準を PASS と判定するまで `/ultrawork` を繰り返す。基準がブロックされたとき、または 5 回の iteration 後は部分的なレポートを出して停止 |
+| 複数領域にまたがる機能を、1 回の実行で計画・構築・レビュー | `/work` | PM が計画を書いて提示し、エンジニアがティアごとに並列で構築し、最後に QA が全体をまとめてレビュー。CRITICAL と HIGH の指摘は修正ループへ（最大 5 サイクル） |
+| 同じ構築に、段階ごとのレビューを加えたもの | `/ultrawork` | ゲート付きの 5 フェーズ（PLAN、IMPL、VERIFY、REFINE、SHIP）と 12 回のレビュー。レビューはすべて新しいレビューアーセッションで実行 |
+| すでにある計画を実行する | `/orchestrate` | `/plan` の計画を書かれたとおりに実行し、タスクを 1 つずつ個別にチェック。チェックが通ったタスクだけを完了とみなす。各タスクは最大 3 回試行し、その後 partial または failed とマーク |
 | タイマーで動くチーム | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 実行ごとに `~/.oma/schedule/runs/<id>/` に Markdown ログを 1 つ |
 
 ワークフローはスラッシュコマンドで始まります。普通の依頼では始まりませんが、プロンプト hook のあるランタイムではスキルのヒントが付きます。最大 11 言語のキーワードバンクがプロンプトと照合され、一致するスキルをエージェントに示します（「run a security audit」なら `oma-qa` が示されます）。ヒントは助言にとどまり、コードブロック内のキーワードは無視されます。
 
-`/orchestrate`、`/work`、`/ultrawork`、`/ralph` は、スラッシュコマンドでも平文（「ultrawork: add rate limiting」）でも、名前で呼び出すと **persistent** になります。その場合、エージェントが早めに終了しようとすると、「**workflow done**」と言うまで作業に戻されます（最大 5 回または 2 時間）。平文で始められるワークフローはこの 4 つだけで、それも名前で呼び出した場合に限ります。
+`/oma-mode`、`/work`、`/ultrawork`、`/ralph`、`/orchestrate` は、スラッシュコマンドでも平文（「ultrawork: add rate limiting」）でも、名前で呼び出すと **persistent** になります。その場合、エージェントが早めに終了しようとすると、「**workflow done**」と言うまで作業に戻されます（最大 5 回または 2 時間）。平文で始められるワークフローはこの 5 つだけで、それも名前で呼び出した場合に限ります。
 
 **計測結果と注意点。** [ベンチマーク](../benchmarks/README.md)（プロンプト 1 つ、素の構成を含むアドオン構成の異なる 5 種類の Claude Code、`claude-opus-4-6`、それぞれ 1 回のビルド）では、oma は素の Claude Code の 70.7 に対して 80.6 を記録しました。コストは 1.7 倍（$4.04 対 $2.37）、時間は 1.8 倍でした。
 
 <details>
-<summary>全 20 ワークフロー</summary>
+<summary>全 21 ワークフロー</summary>
 
 | コマンド | 内容 |
 |---------|--------------|
@@ -231,9 +231,10 @@ oma install --preset frontend --yes
 | `/design` | デザインタスクのスコープを定め、oma-design を通じて指摘、DESIGN.md、またはトークンを提供 |
 | `/docs` | ドキュメントの壊れた参照を見つけ、diff が触れたドキュメントにパッチを提案 |
 | `/explain` | diff、PR、ブランチ、トピックを自己完結型のインタラクティブ HTML 解説に変換 |
+| `/oma-mode` | 目標を受け取ってルートを選び、実行し、目標を達成するか上限に達するまで続行（persistent） |
 | `/orchestrate` | エージェントを並列実行し、ファイル状態で連携させ、結果を検証（persistent） |
 | `/plan` | 機能を API コントラクト付きの優先度付きタスクに分解 |
-| `/ralph` | 別途 spawn した judge で `/ultrawork` を最大 5 回繰り返す（persistent） |
+| `/ralph` | `/oma-mode` の非推奨エイリアス（persistent） |
 | `/recap` | 1 日または期間内の AI 会話履歴を要約 |
 | `/review` | セキュリティ（OWASP Top 10）、パフォーマンス、アクセシビリティ（WCAG 2.2 AA）、コード品質をレビュー |
 | `/schedule` | 定期的な間隔で実行するエージェントジョブを登録 |
@@ -338,7 +339,7 @@ oma install --preset frontend --yes
 
 | Hook | 内容 | オフにする方法 / 上限 |
 |---|---|---|
-| キーワード起動 | 普通の依頼が `/orchestrate`、`/work`、`/ultrawork`、`/ralph` のいずれかを名前で挙げたとき、そのワークフローを始めます | 質問、貼り付けたテキスト、コードブロックはスキップ |
+| キーワード起動 | 普通の依頼が `/oma-mode`、`/orchestrate`、`/work`、`/ultrawork`、`/ralph` のいずれかを名前で挙げたとき、そのワークフローを始めます | 質問、貼り付けたテキスト、コードブロックはスキップ |
 | スキルインジェクター | プロンプトに合ったスキルをエージェントに示します | persistent workflow が動いている間は一時停止 |
 | Stop ゲート | persistent workflow を作業に戻します。`oma goal set --gate test` を設定すると、そのスクリプトが 25 秒以内に 0 で終了したときに終了を許可します | 「workflow done」と言う。5 回のブロックまたは 2 時間でも解除 |
 | リファクタガード | 終了時に、500 行を超える編集済みファイルを `refactor-engineer` 向けにフラグ付けします | オプトイン: `refactor_guard.enabled` |

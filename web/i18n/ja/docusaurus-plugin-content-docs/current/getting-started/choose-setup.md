@@ -46,11 +46,11 @@ oma doctor
 | `frontend` | 設定ページを計画し、そのフォームを実装する | `/plan`、`/design`、`/review`、`/debug` |
 | `backend` | 認証付き API エンドポイントを計画する | `/plan`、`/architecture`、`/review`、`/debug` |
 | `research` | 論文を探し、その証拠を比較する | 引用付きの文献検索を依頼する |
-| `all` | UI、API、データの横断で機能を調整する | `/orchestrate`、`/work`、`/ultrawork`、`/ralph` |
+| `all` | UI、API、データの横断で機能を調整する | `/oma-mode`、`/orchestrate`、`/work`、`/ultrawork` |
 
 [`名前付きプリセット`](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets)は `--preset` が受け付けます。未知の名前、空の値、`custom` はインストール前に拒否されます。個別のスキルを選ぶには、`oma install` を対話式で実行し、Custom を選びます。`--preset` がない無人の `--yes` や CI のセットアップは `all` を選びます。
 
-frontend プリセットは 8 個のスキルを選びます。プリセットが選ぶのはスキルの内容です。インストーラーは共有ファイル、すべてのワークフローとエージェント定義、フック、プロバイダーもセットアップします。ドメインプリセットの外のスキルが必要なワークフローがあります。使う前に[ワークフローの依存](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)を確認するか、すべてのワークフローには `all` を選んでください。既存のインストールでより小さいプリセットを選んでも、他のスキルは削除されません。
+frontend プリセットは 9 個のスキルを選びます。プリセットが選ぶのはスキルの内容です。インストーラーは共有ファイル、すべてのワークフローとエージェント定義、フック、プロバイダーもセットアップします。ドメインプリセットの外のスキルが必要なワークフローがあります。使う前に[ワークフローの依存](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)を確認するか、すべてのワークフローには `all` を選んでください。既存のインストールでより小さいプリセットを選んでも、他のスキルは削除されません。
 
 プロバイダーの選択はプリセットとは独立です。たとえば、プロジェクトに意味メモリのサービスが不要なら `--semantic-memory none` を追加します。ランタイムが設定する他のファイルと統合は、[インストール時の効果](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default)を参照してください。
 

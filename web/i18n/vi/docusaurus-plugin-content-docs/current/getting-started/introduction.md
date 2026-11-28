@@ -7,7 +7,7 @@ description: Tổng quan toàn diện về oh-my-agent, framework điều phối
 
 oh-my-agent là framework điều phối đa agent dành cho IDE và công cụ CLI có AI. Thay vì dựa vào một trợ lý AI duy nhất cho mọi việc, oh-my-agent phân phối công việc qua 32 gói skill và 13 vai trò dispatch chuẩn. Mười hai tệp định nghĩa subagent được kiểm soát trong repository cung cấp các persona có thể tái sử dụng cho triển khai, review, lập kế hoạch, gỡ lỗi, tài liệu, nghiên cứu và hạ tầng. `research-explorer.md` ánh xạ tới vai trò chuẩn `explore`; `orchestrator` là vai trò điều phối ở runtime và không có tệp định nghĩa riêng.
 
-OMA cung cấp các kiểm tra cơ học khi bạn gọi chúng hoặc chọn workflow có chứa chúng. `oma verify agent <agent-type>` chạy các kiểm tra cho loại agent đã chọn; `/ralph` thêm xác minh dựa trên artifact và vòng [judge](./glossary.md#judge); Stop hook của vendor đang bật ([stop gate](./glossary.md#stop-gate)) có thể giữ workflow mở trong khi các kiểm tra đã cấu hình chạy. Chỉ tải skill không tạo thành điều kiện chấp nhận, và prompt thông thường không tự động chạy mọi cổng kiểm tra của workflow. Hãy dùng tiêu chí chấp nhận của workflow và các tệp kết quả để quyết định việc gì đã hoàn tất.
+OMA cung cấp các kiểm tra cơ học khi bạn gọi chúng hoặc chọn workflow có chứa chúng. `oma verify agent <agent-type>` chạy các kiểm tra cho loại agent đã chọn; `/oma-mode` thêm vòng [judge](./glossary.md#judge) trên các tiêu chí hoàn thành; Stop hook của vendor đang bật ([stop gate](./glossary.md#stop-gate)) có thể giữ workflow mở trong khi các kiểm tra đã cấu hình chạy. Chỉ tải skill không tạo thành điều kiện chấp nhận, và prompt thông thường không tự động chạy mọi cổng kiểm tra của workflow. Hãy dùng tiêu chí chấp nhận của workflow và các tệp kết quả để quyết định việc gì đã hoàn tất.
 
 Toàn bộ hệ thống nằm trong thư mục di động `.agents/` bên trong dự án. Bạn có thể chuyển giữa Claude Code, Codex CLI, Antigravity CLI hoặc IDE, Cursor, OpenCode và các công cụ được hỗ trợ khác, còn cấu hình agent đi cùng mã nguồn.
 
@@ -35,13 +35,13 @@ OMA gán domain cho skill và định tuyến công việc của task tới agen
 
 ---
 
-## Danh mục hiện tại: 32 skill, 12 định nghĩa, 20 workflow
+## Danh mục hiện tại: 32 skill, 12 định nghĩa, 21 workflow
 
 Danh mục tách riêng ba khái niệm dễ nhầm:
 
 - **[Skill](./glossary.md#skill)** là 32 gói kiến thức domain dưới `.agents/skills/*/SKILL.md`. Chúng định tuyến từ ý định trong ngôn ngữ tự nhiên và tải tài nguyên theo từng lớp.
 - **[Định nghĩa agent](./glossary.md#agent-definition)** là 12 tệp dưới `.agents/agents/`. Chúng cung cấp persona subagent theo vendor và tham chiếu tới một hoặc nhiều skill.
-- **[Workflow](./glossary.md#workflow)** là 20 định nghĩa quy trình dưới `.agents/workflows/`. Bốn workflow là [liên tục](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` và `ralph`); các workflow còn lại chạy tới báo cáo rồi không giữ chế độ liên tục.
+- **[Workflow](./glossary.md#workflow)** là 21 định nghĩa quy trình dưới `.agents/workflows/`. Năm workflow là [liên tục](./glossary.md#persistent-workflow) (`oma-mode`, `orchestrate`, `work`, `ultrawork` và `ralph`); các workflow còn lại chạy tới báo cáo rồi không giữ chế độ liên tục.
 
 Các phần dưới đây giữ lại danh mục skill chi tiết. Khi tên hoặc mô tả thay đổi, frontmatter của `SKILL.md` đang chạy là nguồn có thẩm quyền.
 
@@ -167,7 +167,7 @@ Mọi thứ oh-my-agent cần đều nằm trong thư mục `.agents/`:
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -211,18 +211,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Nguồn: `.agents/hooks/core/keyword-detector.ts` (bỏ qua slash command, khớp tên mode tường minh), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` và các tệp workflow dưới `.agents/workflows/`. Không phải workflow nào cũng có mọi cổng kiểm tra: `/orchestrate` chạy verify script, `/review` chạy QA review, còn `/ralph` thêm [judge](./glossary.md#judge).
+Nguồn: `.agents/hooks/core/keyword-detector.ts` (bỏ qua slash command, khớp tên mode tường minh), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` và các tệp workflow dưới `.agents/workflows/`. Không phải workflow nào cũng có mọi cổng kiểm tra: `/orchestrate` chạy verify script, `/review` chạy QA review, còn `/oma-mode` thêm [judge](./glossary.md#judge).
 
 ---
 
@@ -266,7 +266,7 @@ HUD được cung cấp bởi `.claude/hooks/hud.ts`, dùng tính năng hook `st
 Một lệnh slash sẽ khởi động workflow. Với yêu cầu thông thường, hệ thống hook của oh-my-agent quét input theo các bảng từ khóa trong `.agents/hooks/core/triggers.json` (được inline vào binary `oma` và dùng chung cho mọi vendor), hỗ trợ 11 ngôn ngữ (English, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, Russian, Dutch, Polish).
 
 - **Gợi ý skill** (ví dụ “run a security audit”) → skill injector nêu tối đa ba skill phù hợp; ghi chú này mang tính tham khảo và không khởi động workflow nào
-- **Workflow liên tục** (`orchestrate`, `work`, `ultrawork`, `ralph`) → chỉ khởi động từ văn bản thường khi prompt dùng tên tường minh của workflow đó (ví dụ `ultrawork: add rate limiting`)
+- **Workflow liên tục** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → chỉ khởi động từ văn bản thường khi prompt dùng tên tường minh của workflow đó (ví dụ `ultrawork: add rate limiting`)
 - **Mọi workflow khác** → chỉ khởi động từ `/command` của nó
 - **Input mang tính thông tin** (ví dụ “what is orchestrate?”) → bị lọc, không kích hoạt workflow
 - **`/command` rõ ràng** → hook bỏ qua detection để tránh trùng lặp
@@ -303,5 +303,5 @@ Thư mục `.agents/` vẫn là nguồn sự thật. Việc cài đặt link ho�
 - **[Cài đặt](./installation.md)**: Ba phương pháp cài đặt, preset, thiết lập CLI và xác minh
 - **[Các agent](/docs/core-concepts/agents)**: Tìm hiểu sâu 32 skill, 13 vai trò dispatch và chính sách ủy quyền và làm rõ
 - **[Skill](/docs/core-concepts/skills)**: Giải thích kiến trúc hai lớp
-- **[Các workflow](/docs/core-concepts/workflows)**: Toàn bộ 20 workflow cùng trigger và phase
+- **[Các workflow](/docs/core-concepts/workflows)**: Toàn bộ 21 workflow cùng trigger và phase
 - **[Hướng dẫn sử dụng](/docs/guide/usage)**: Ví dụ thực tế từ task đơn lẻ tới orchestration đầy đủ

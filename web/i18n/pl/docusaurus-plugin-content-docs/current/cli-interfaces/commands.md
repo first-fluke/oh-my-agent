@@ -73,7 +73,6 @@ Użyj `--help` danej rodziny albo `oma describe <path>`, aby poznać dokładną 
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
-| `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
@@ -792,7 +791,7 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set {#goal-set}
 
-Dołącza kontrakt celu do aktywnego trwałego workflow (orchestrate, ultrawork, work, ralph). Kontrakt jest mechanicznie egzekwowany przez hook Stop trybu trwałego, więc ukończenie nie jest już oceną modelu.
+Dołącza kontrakt celu do aktywnego trwałego workflow (oma-mode, orchestrate, ultrawork, work, ralph). Kontrakt jest mechanicznie egzekwowany przez hook Stop trybu trwałego, więc ukończenie nie jest już oceną modelu.
 
 ```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]

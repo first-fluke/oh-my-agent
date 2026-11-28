@@ -61,13 +61,14 @@ describe("install manifest summary", () => {
 
     const summary = inspectInstallManifests(f.root, selected, f.workflows());
 
-    expect(summary.selectedSkills).toHaveLength(8);
-    expect(summary.installedSkills).toHaveLength(8);
+    expect(summary.selectedSkills).toEqual(selected);
+    expect(summary.installedSkills).toEqual([...selected].sort());
     expect(summary.unavailableSelectedSkills).toEqual([]);
+    // Presets with PM and QA carry oma-orchestration, so /orchestrate runs.
     expect(
       summary.workflows.find((item) => item.name === "orchestrate")
-        ?.missingSkills,
-    ).toContain("oma-orchestration");
+        ?.availability,
+    ).toMatchObject({ available: true });
     expect(
       summary.workflows.find((item) => item.name === "docs")?.missingSkills,
     ).toContain("oma-docs");
@@ -77,24 +78,21 @@ describe("install manifest summary", () => {
     ).toContain("oma-refactor");
     const lines = renderInstallManifestSummary(summary);
     expect(lines).toContain(
-      "Installed skill manifests: 8 (selected and retained)",
+      `Installed skill manifests: ${selected.length} (selected and retained)`,
     );
-    expect(
-      lines.some((line) => line.startsWith("/orchestrate: missing ")),
-    ).toBe(true);
+    expect(lines.some((line) => line.startsWith("/docs: missing "))).toBe(true);
     expect(
       lines.filter((line) => line.startsWith("Run oma doctor")),
     ).toHaveLength(1);
     expect(lines.join("\n")).toContain("conditional branches");
     expect(
-      summary.workflows.find((item) => item.name === "orchestrate")
-        ?.availability,
+      summary.workflows.find((item) => item.name === "docs")?.availability,
     ).toMatchObject({
       available: false,
-      missingRequired: expect.arrayContaining(["oma-orchestration"]),
+      missingRequired: expect.arrayContaining(["oma-docs"]),
     });
     expect(lines.join("\n")).toContain(
-      "/orchestrate disabled: install or repair required skills oma-orchestration",
+      "/docs disabled: install or repair required skills oma-docs",
     );
     // Regression: /work depended on a skill that only carried shared rules,
     // so a single-domain preset with PM and QA could not run it.
@@ -109,18 +107,13 @@ describe("install manifest summary", () => {
   it("counts retained skill manifests and clears their gaps without expanding the selection", () => {
     const f = fixture(true);
     const selected = PRESETS.frontend ?? [];
-    for (const name of [
-      ...selected,
-      "oma-orchestration",
-      "oma-docs",
-      "oma-refactor",
-    ])
-      f.skill(name);
+    const retained = ["oma-docs", "oma-refactor"];
+    for (const name of [...selected, ...retained]) f.skill(name);
 
     const summary = inspectInstallManifests(f.root, selected, f.workflows());
 
-    expect(summary.selectedSkills).toHaveLength(8);
-    expect(summary.installedSkills).toHaveLength(11);
+    expect(summary.selectedSkills).toEqual(selected);
+    expect(summary.installedSkills).toEqual([...selected, ...retained].sort());
     expect(
       summary.workflows.find((item) => item.name === "orchestrate")
         ?.missingSkills,

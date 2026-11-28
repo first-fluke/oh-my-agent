@@ -87,13 +87,13 @@ Chọn preset khớp với công việc mà repository cần. Tên skill bên d�
 | Preset | Chọn khi project là | Skill bao gồm | Số lượng |
 |--------|-------------------------------|-----------------|-------|
 | **all** | Bất kỳ project nào, hoặc khi bạn muốn mọi workflow hoạt động ngay | Mọi skill trong registry | 32 |
-| **fullstack** | Client web và mobile có backend và hạ tầng Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | Web frontend có backend và database | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | Ứng dụng mobile có backend và database | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | Chỉ web UI | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | API hoặc service có database | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | Chỉ ứng dụng mobile | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | Công việc hạ tầng, CI/CD và observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | Client web và mobile có backend và hạ tầng Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | Web frontend có backend và database | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | Ứng dụng mobile có backend và database | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | Chỉ web UI | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | API hoặc service có database | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | Chỉ ứng dụng mobile | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | Công việc hạ tầng, CI/CD và observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | Quét bảo mật, review mã và khắc phục | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Paper, nghiên cứu thị trường và chuyển đổi PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Design asset, hình ảnh, giọng nói và nội dung viết | design, image, voice, academic-writing, translation, scm | 6 |
@@ -112,12 +112,13 @@ Sau khi cài, hãy đọc danh sách skill đã chọn và báo cáo workflow c�
 
 ### Workflow cần skill nằm ngoài preset {#workflows-that-need-skills-outside-a-preset}
 
-Mọi preset đều sao chép định nghĩa workflow và agent. Command và prompt chỉ được đưa ra cho workflow có đủ skill bắt buộc. Ví dụ, bản cài frontend mới để `/orchestrate` không dùng được vì thiếu `oma-orchestration`, trong khi `/work`, `/ultrawork` và `/ralph` vẫn dùng được: skill PM và QA của preset đã đáp ứng yêu cầu đầu vào của chúng. Installer báo skill còn thiếu mà không chuyển sang `all`.
+Mọi preset đều sao chép định nghĩa workflow và agent. Command và prompt chỉ được đưa ra cho workflow có đủ skill bắt buộc. Ví dụ, bản cài frontend mới để `/docs` không dùng được vì thiếu `oma-docs`, trong khi `/orchestrate`, `/work` và `/ultrawork` vẫn dùng được: skill PM, QA và orchestration của preset đã đáp ứng yêu cầu đầu vào của chúng. Installer báo skill còn thiếu mà không chuyển sang `all`.
 
 | Workflow | Skill đầu vào bắt buộc | Preset có các skill đó |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | không có | mọi preset |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -142,7 +143,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-Các entry domain chứa 8 skill frontend, 6 skill security hoặc 8 skill research, cùng một lựa chọn native agent tương ứng. Bootstrap session của chúng truyền preset đó cho installer runtime. Thiết lập runtime dùng chung và các skill đã cài hiện có tuân theo hành vi installer mô tả ở trên. Entry `oma` giữ nguyên plugin đầy đủ. Cùng các root domain đó được khai báo trong catalog marketplace Codex được sinh ra, và trong catalog Grok Build cùng ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` trên cây đã emit hoặc asset release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode và Kimi Code (`/plugins install`) mỗi cái đọc manifest được sinh riêng; xem [Host plugin tương thích Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) để biết bước chính xác theo từng host.
+Các entry domain chứa 9 skill frontend, 6 skill security hoặc 8 skill research, cùng một lựa chọn native agent tương ứng. Bootstrap session của chúng truyền preset đó cho installer runtime. Thiết lập runtime dùng chung và các skill đã cài hiện có tuân theo hành vi installer mô tả ở trên. Entry `oma` giữ nguyên plugin đầy đủ. Cùng các root domain đó được khai báo trong catalog marketplace Codex được sinh ra, và trong catalog Grok Build cùng ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` trên cây đã emit hoặc asset release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode và Kimi Code (`/plugins install`) mỗi cái đọc manifest được sinh riêng; xem [Host plugin tương thích Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) để biết bước chính xác theo từng host.
 
 Các job CI của host được ghim đăng ký marketplace cục bộ trên runner mới, cài entry domain và kiểm tra inventory thu được. Các kiểm tra này chạy không gọi model. Credential runtime, provider bên ngoài và task đầu tiên thành công vẫn cần xác minh riêng. Kiểm tra release cũng yêu cầu cả hai manifest trong mỗi root domain khớp phiên bản CLI và có updater phiên bản của Release Please.
 

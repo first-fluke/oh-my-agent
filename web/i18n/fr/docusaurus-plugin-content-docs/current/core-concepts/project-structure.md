@@ -190,10 +190,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -225,7 +226,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -300,7 +301,7 @@ C'est ici que se trouve l'expertise des compétences. Le catalogue actuel compre
 - un protocole d'exécution étape par étape
 - les définitions de portes (pour les workflows persistants)
 
-Workflows persistants : `orchestrate.md`, `work.md`, `ultrawork.md` et `ralph.md`.
+Workflows persistants : `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md` et `ralph.md`.
 Les workflows non persistants comprennent `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` et `video.md`.
 
 ### agents/ {#agents}
@@ -490,7 +491,7 @@ Les agents y écrivent leur progression pendant les sessions d'orchestration. Il
 | `lessons-{sessionId}.md` | Orchestrator | Leçons étayées par des preuves d'expérience (conditionnel) |
 | `session-work.md` | Workflow Work | État de session propre à Work |
 | `session-ultrawork.md` | Workflow Ultrawork | Suivi des phases propre à Ultrawork |
-| `session-ralph-{sessionId}.md` | Workflow Ralph | Critères, historique des itérations et résultats du juge pour un run Ralph |
+| `session-oma-mode-{sessionId}.md` | Workflow oma-mode | Critères, historique des itérations et résultats du juge pour un run |
 | `session-cost-{sessionId}.md` | Système | Télémétrie des coûts par session |
 | `archive/metrics-{date}.md` | Système | Métriques archivées (rétention de 30 jours) |
 

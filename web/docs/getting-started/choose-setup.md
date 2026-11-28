@@ -57,14 +57,14 @@ the runtime dependencies before interactive setup.
 | `frontend` | Plan a settings page, then implement its form | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Plan an authenticated API endpoint | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Find papers and compare their evidence | Ask for a cited literature search |
-| `all` | Coordinate a feature across UI, API, and data | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Coordinate a feature across UI, API, and data | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 The [named presets](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) are accepted by `--preset`.
 An unknown name, an empty value, or `custom` is rejected before installation.
 To select individual skills, run `oma install` interactively and choose Custom.
 Without `--preset`, unattended `--yes`/CI setup selects `all`.
 
-The frontend preset selects eight skills. Presets select skill content; the
+The frontend preset selects nine skills. Presets select skill content; the
 installer still sets up shared files, all workflow and agent definitions, hooks,
 and providers. Some workflows need skills outside a domain preset. Check
 [workflow dependencies](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)

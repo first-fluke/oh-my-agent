@@ -73,7 +73,6 @@ Dùng `--help` của từng nhóm hoặc `oma describe <path>` để xem cú ph�
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
-| `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
@@ -792,7 +791,7 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set
 
-Gắn một goal contract vào workflow liên tục đang hoạt động (orchestrate, ultrawork, work, ralph). Contract được Stop hook của chế độ liên tục thực thi một cách cơ học — việc hoàn tất không còn phụ thuộc vào phán đoán của model.
+Gắn một goal contract vào workflow liên tục đang hoạt động (oma-mode, orchestrate, ultrawork, work, ralph). Contract được Stop hook của chế độ liên tục thực thi một cách cơ học — việc hoàn tất không còn phụ thuộc vào phán đoán của model.
 
 ```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]

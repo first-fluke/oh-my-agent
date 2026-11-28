@@ -284,7 +284,7 @@ Identyfikatory sesji określają:
 
 6. **Iteruj przez ponowne uruchomienia.** Jeśli wynik agenta wymaga dopracowania, uruchom go ponownie z pierwotnym zadaniem i kontekstem korekty. Nie rozpoczynaj nowej sesji.
 
-7. **Zacznij od `/work`, jeśli nie masz pewności.** Workflow work prowadzi przez proces krok po kroku i wymaga potwierdzenia użytkownika na każdej bramce.
+7. **Zacznij od `/oma-mode`, jeśli nie masz pewności.** Wybiera trasę na podstawie Twojego celu. Wybierz `/work`, gdy chcesz przepływu prowadzonego przez PM z jednym przebiegiem QA dla całego wyniku.
 
 ### Nie rób {#do-not}
 

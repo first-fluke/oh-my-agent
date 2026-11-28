@@ -88,13 +88,13 @@ bunx oh-my-agent@latest
 | プリセット | 選ぶ場面（プロジェクトの種類） | 含まれるスキル | 数 |
 |--------|-------------------------------|-----------------|-------|
 | **all** | 任意のプロジェクト、またはすべてのワークフローをそのまま使いたい場合 | レジストリ内のすべてのスキル | 32 |
-| **fullstack** | バックエンドと Terraform インフラを持つ Web とモバイルのクライアント | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | バックエンドとデータベースを持つ Web フロントエンド | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | バックエンドとデータベースを持つモバイルアプリ | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | Web UI のみ | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | データベースを持つ API またはサービス | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | モバイルアプリのみ | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | インフラ、CI/CD、オブザーバビリティの作業 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | バックエンドと Terraform インフラを持つ Web とモバイルのクライアント | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | バックエンドとデータベースを持つ Web フロントエンド | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | バックエンドとデータベースを持つモバイルアプリ | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | Web UI のみ | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | データベースを持つ API またはサービス | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | モバイルアプリのみ | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | インフラ、CI/CD、オブザーバビリティの作業 | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | セキュリティスキャン、コードレビュー、修正 | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | 論文、市場調査、PDF/HWP の変換 | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | デザインアセット、画像、音声、文章コンテンツ | design, image, voice, academic-writing, translation, scm | 6 |
@@ -113,12 +113,13 @@ oma install --preset frontend --yes
 
 ### プリセット外のスキルが必要なワークフロー {#workflows-that-need-skills-outside-a-preset}
 
-どのプリセットもワークフローとエージェント定義をすべてコピーします。ただし、コマンドやプロンプトが公開されるのは、必要なスキルが利用可能なワークフローだけです。たとえば、新規の `frontend` インストールでは `oma-orchestration` がないため `/orchestrate` は利用できません。一方、`/work`、`/ultrawork`、`/ralph` は、プリセットに含まれる PM スキルと QA スキルがエントリー要件を満たすため利用できます。インストーラーは `all` へ切り替えずに、その不足スキルを報告します。
+どのプリセットもワークフローとエージェント定義をすべてコピーします。ただし、コマンドやプロンプトが公開されるのは、必要なスキルが利用可能なワークフローだけです。たとえば、新規の `frontend` インストールでは `oma-docs` がないため `/docs` は利用できません。一方、`/orchestrate`、`/work`、`/ultrawork` は、プリセットに含まれる PM、QA、orchestration の各スキルがエントリー要件を満たすため利用できます。インストーラーは `all` へ切り替えずに、その不足スキルを報告します。
 
 | ワークフロー | 必須のエントリースキル | それらを含むプリセット |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | なし | すべてのプリセット |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -143,7 +144,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-ドメインエントリーにはそれぞれ frontend 用 8 個、security 用 6 個、research 用 8 個のスキルと、対応するネイティブエージェント選択が含まれます。セッションのブートストラップはそのプリセットをランタイムインストーラーへ渡します。共有ランタイムのセットアップと既存のインストール済みスキルは、上述のインストーラーの動作に従います。`oma` エントリーには引き続きフルプラグインが含まれます。同じドメインルートは、生成された Codex マーケットプレイスカタログおよび Grok Build、ZCode のカタログでも宣言されています。Antigravity CLI（生成されたツリーまたはリリースアセット `oma-antigravity-plugin.tar.gz` に対して `agy plugin install ./antigravity-plugin`）、Grok Build CLI、ZCode、Kimi Code（`/plugins install`）はそれぞれ独自に生成されたマニフェストを読み込みます。ホスト別の正確な手順は [Claude 互換プラグインホスト](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) を参照してください。
+ドメインエントリーにはそれぞれ frontend 用 9 個、security 用 6 個、research 用 8 個のスキルと、対応するネイティブエージェント選択が含まれます。セッションのブートストラップはそのプリセットをランタイムインストーラーへ渡します。共有ランタイムのセットアップと既存のインストール済みスキルは、上述のインストーラーの動作に従います。`oma` エントリーには引き続きフルプラグインが含まれます。同じドメインルートは、生成された Codex マーケットプレイスカタログおよび Grok Build、ZCode のカタログでも宣言されています。Antigravity CLI（生成されたツリーまたはリリースアセット `oma-antigravity-plugin.tar.gz` に対して `agy plugin install ./antigravity-plugin`）、Grok Build CLI、ZCode、Kimi Code（`/plugins install`）はそれぞれ独自に生成されたマニフェストを読み込みます。ホスト別の正確な手順は [Claude 互換プラグインホスト](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) を参照してください。
 
 固定されたホスト CI ジョブは、クリーンなランナー上にローカルマーケットプレイスを登録してドメインエントリーをインストールし、結果のインベントリを検査します。これらのチェックはモデル呼び出しなしで実行されます。ランタイム認証情報、外部プロバイダー、最初のタスクの成功については別途確認が必要です。リリースチェックでは、すべてのドメインルートの両マニフェストが CLI バージョンと一致し、Release Please のバージョンアップデーターを持つことも求められます。
 

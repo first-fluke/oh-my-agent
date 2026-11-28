@@ -22,7 +22,8 @@ Workflow-specific materials do not belong in `_shared/`.
 
 - `ultrawork/resources/phase-gates.md`
 - `ultrawork/resources/multi-review-protocol.md`
-- `ralph/resources/judge-protocol.md`
+- `oma-mode/resources/judge-protocol.md`
+- `oma-mode/resources/open-ended-protocol.md`
 
 ## Load Classes
 

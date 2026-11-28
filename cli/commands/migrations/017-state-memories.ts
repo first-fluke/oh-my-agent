@@ -48,10 +48,10 @@ const COORDINATION_PATTERNS = [
 
 /**
  * Retarget `.agents/mcp.json → memoryConfig` when it still carries the old
- * Serena default. The basePath override is honored by resolveMemoryBasePath
- * (artifact-verifier) and by agents following memory-protocol.md, so leaving
- * `.serena/memories` there would point them at the legacy dir after the file
- * move below. Custom (non-default) configs are left untouched.
+ * Serena default. The basePath override is honored by agents following
+ * memory-protocol.md, so leaving `.serena/memories` there would point them at
+ * the legacy dir after the file move below. Custom (non-default) configs are
+ * left untouched.
  */
 function retargetMcpMemoryConfig(cwd: string): string[] {
   const mcpPath = join(cwd, ".agents", "mcp.json");

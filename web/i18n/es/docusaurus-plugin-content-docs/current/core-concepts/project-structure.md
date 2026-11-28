@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ Aquí vive la experiencia de las habilidades. En el catálogo actual hay 32 dire
 - protocolo de ejecución paso a paso.
 - definiciones de puertas (para flujos de trabajo persistentes).
 
-Flujos de trabajo persistentes: `orchestrate.md`, `work.md`, `ultrawork.md` y `ralph.md`.
+Flujos de trabajo persistentes: `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md` y `ralph.md`.
 Los flujos de trabajo no persistentes incluyen `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` y `video.md`.
 
 ### agents/
@@ -489,7 +490,7 @@ Aquí escriben los agentes su progreso durante las sesiones de orquestación. Es
 | `lessons-{sessionId}.md` | Orquestador | Lecciones respaldadas por evidencia de experimentos (condicional). |
 | `session-work.md` | Flujo de trabajo Work | Estado específico de la sesión de Work. |
 | `session-ultrawork.md` | Flujo de trabajo Ultrawork | Seguimiento de fases específico de Ultrawork. |
-| `session-ralph-{sessionId}.md` | Flujo de trabajo Ralph | Criterios, registros de iteración y resultados del juez de una ejecución de Ralph. |
+| `session-oma-mode-{sessionId}.md` | Flujo de trabajo oma-mode | Criterios, registros de iteración y resultados del juez de una ejecución. |
 | `session-cost-{sessionId}.md` | Sistema | Telemetría de coste de spawns por sesión. |
 | `archive/metrics-{date}.md` | Sistema | Métricas de sesión archivadas (retención de 30 días). |
 

@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ Há 20 arquivos Markdown que definem o comportamento dos comandos slash. Cada ar
 - protocolo de execução passo a passo
 - definições de gate (para workflows persistentes)
 
-Workflows persistentes: `orchestrate.md`, `work.md`, `ultrawork.md` e `ralph.md`.
+Workflows persistentes: `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md` e `ralph.md`.
 Workflows não persistentes incluem `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` e `video.md`.
 
 ### agents/
@@ -489,7 +490,7 @@ Definições de subagentes formatadas para a ferramenta Agent do Claude Code, ge
 | `lessons-{sessionId}.md` | Orquestrador | Lições respaldadas por evidências de experimentos (condicional) |
 | `session-work.md` | Workflow Work | Estado específico da sessão do workflow Work |
 | `session-ultrawork.md` | Workflow Ultrawork | Acompanhamento de fases específico do Ultrawork |
-| `session-ralph-{sessionId}.md` | Workflow Ralph | Critérios, registros de iteração e resultados do juiz de uma execução do Ralph |
+| `session-oma-mode-{sessionId}.md` | Workflow oma-mode | Critérios, registros de iteração e resultados do juiz de uma execução |
 | `session-cost-{sessionId}.md` | Sistema | Telemetria de custo por sessão |
 | `archive/metrics-{date}.md` | Sistema | Métricas de sessão arquivadas (retenção de 30 dias) |
 

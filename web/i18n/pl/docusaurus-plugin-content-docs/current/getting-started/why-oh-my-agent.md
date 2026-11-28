@@ -12,7 +12,7 @@ oh-my-agent dodaje warstwę należącą do repozytorium wokół CLI agentów, kt
 OMA pasuje do projektu, gdy potrzebujesz jednej lub kilku z tych rzeczy:
 
 - **Kilku hostów lub dostawców agentów.** `model_preset: auto` używa natywnej konfiguracji bieżącego runtime'u. Stałe i niestandardowe presety mogą kierować role do innych dostawców; `oma agent spawn` obsługuje dispatch nienatywny.
-- **Powtarzalnego workflowu zespołowego.** `/work` obsługuje jedno ograniczone zadanie, `/orchestrate` koordynuje delegowaną pracę, `/ultrawork` uruchamia pracę równoległą z etapami review, a `/ralph` powtarza zadanie z jawną fazą sędziego.
+- **Powtarzalnego workflowu zespołowego.** `/oma-mode` przyjmuje cel, wybiera trasę i zleca niezależnemu sędziemu sprawdzenie wyniku, `/work` planuje, buduje i przegląda funkcję obejmującą wiele domen, `/ultrawork` dodaje odizolowany przegląd na każdym etapie, a `/orchestrate` wykonuje istniejący plan z weryfikacją każdego zadania.
 - **Instrukcji należących do repozytorium.** Umiejętności, workflowy, reguły i definicje agentów leżą obok kodu. `oma link` projektuje wybrane pliki do formatów obsługiwanych przez dostawców.
 - **Mechanicznych kontroli i trwałych wyników.** Uruchomienia agentów mogą zapisywać ustrukturyzowane potwierdzenia statusu i wyniku, a `oma verify agent <agent-type>` i `oma docs verify` dostarczają jawnych kontroli.
 
@@ -22,7 +22,7 @@ Jeśli projekt używa jednego hosta i nie potrzebuje współdzielonych umiejętn
 
 Uruchom `oma verify agent <agent-type> --workspace <path>`, gdy chcesz wykonać kontrole dla roli backendowej, frontendowej, mobilnej, QA, debugowania lub planowania. Weryfikator łączy inspekcje statyczne ze skonfigurowanymi poleceniami, takimi jak testy, kontrola typów, kontrole SQL lub `flutter analyze`; zobacz [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). Raport pokazuje wynik każdej kontroli. Przejście tych kontroli nie dowodzi, że funkcja spełnia wymagania produktu lub domeny, dlatego kryteria akceptacji zadania nadal wymagają przeglądu.
 
-`/ralph` dodaje osobną fazę [sędziego](./glossary.md#judge), gdy wybierzesz ten workflow. Ponownie sprawdza zadeklarowane kryteria w kolejnych iteracjach i zapisuje artefakty workflowu; nie jest bramką uruchamianą dla każdego zwykłego promptu. Samo załadowanie umiejętności także nie uruchamia każdego workflowu ani polecenia weryfikacji.
+`/oma-mode` dodaje osobny krok [sędziego](./glossary.md#judge), gdy wybierzesz ten workflow. Ponownie sprawdza zadeklarowane kryteria po każdej iteracji; nie jest bramką uruchamianą dla każdego zwykłego promptu. Samo załadowanie umiejętności także nie uruchamia każdego workflowu ani polecenia weryfikacji.
 
 ## Dispatch pozostaje widoczny {#dispatch-remains-visible}
 
@@ -43,5 +43,5 @@ Oryginalną dyskusję o pozycjonowaniu znajdziesz w [issue #155](https://github.
 - [Szybki start](./quick-start.md): zainstaluj, sprawdź konfigurację i uruchom jedno zadanie o ograniczonym zakresie
 - [Ważne wartości domyślne](./important-defaults.md): co instalator włącza i jak to zmienić
 - [Instalacja](./installation.md#presets): wybierz preset umiejętności obejmujący workflowy, których zamierzasz używać
-- [Workflowy](../core-concepts/workflows.md): kiedy używać `/work`, `/orchestrate`, `/ultrawork` i `/ralph`
+- [Workflowy](../core-concepts/workflows.md): kiedy używać `/oma-mode`, `/work`, `/ultrawork` i `/orchestrate`
 - [Rozwiązywanie problemów](../guide/troubleshooting.md): poprawki problemów z instalacją, dostawcami i hookami

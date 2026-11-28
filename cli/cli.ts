@@ -135,7 +135,6 @@ async function registerFullCli(): Promise<void> {
     import("./commands/state/command.js").then((m) => m.registerState),
     import("./commands/profile/command.js").then((m) => m.registerProfile),
     import("./commands/home/command.js").then((m) => m.registerHome),
-    import("./commands/ralph/command.js").then((m) => m.registerRalph),
     import("./commands/goal/command.js").then((m) => m.registerGoal),
     import("./commands/stats/command.js").then((m) => m.registerStats),
     import("./commands/retro/command.js").then((m) => m.registerRetro),

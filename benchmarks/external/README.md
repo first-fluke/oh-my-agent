@@ -14,6 +14,7 @@ separate and link the methodology instead of merging scores.
 | Harness² external | Agent task success on JobBench / LAB / WorkBuddy-Bench via OpenCode or Codex | [`harness2/README.md`](harness2/README.md) |
 | SkillsBench | All 87 v1.1 tasks with OMA/Codex; resumable per-task grading | [`skillsbench/README.md`](skillsbench/README.md) |
 | WorkBuddy-Bench | All 260 Code / Office / Web / Security tasks with OMA/Codex | [`workbuddy/README.md`](workbuddy/README.md) |
+| Paired Harbor | Bare Codex vs Codex + OMA on Terminal-Bench 4.1.0 through the canonical runner; the only track with a control arm | [`harbor-paired/README.md`](harbor-paired/README.md) |
 
 External tracks are opt-in and manual. They are not release gates and do not
 auto-update any README.

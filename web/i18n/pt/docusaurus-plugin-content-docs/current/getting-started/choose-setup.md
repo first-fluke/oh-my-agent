@@ -57,14 +57,14 @@ as dependências do runtime antes da configuração interativa.
 | `frontend` | Planejar uma página de configurações e depois implementar o formulário | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Planejar um endpoint de API autenticado | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Encontrar artigos e comparar suas evidências | Peça uma busca de literatura com citações |
-| `all` | Coordenar uma funcionalidade entre UI, API e dados | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Coordenar uma funcionalidade entre UI, API e dados | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 Os [presets nomeados](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) são aceitos por `--preset`.
 Um nome desconhecido, um valor vazio ou `custom` é rejeitado antes da instalação.
 Para selecionar skills individuais, execute `oma install` de forma interativa e escolha Custom.
 Sem `--preset`, a configuração sem supervisão com `--yes`/CI seleciona `all`.
 
-O preset frontend seleciona oito skills. Os presets selecionam o conteúdo das skills; o
+O preset frontend seleciona nove skills. Os presets selecionam o conteúdo das skills; o
 instalador ainda configura arquivos compartilhados, todas as definições de workflows e agentes, hooks
 e providers. Alguns workflows precisam de skills fora de um preset de domínio. Confira as
 [dependências dos workflows](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset)

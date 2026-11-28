@@ -12,7 +12,7 @@ oh-my-agent ergänzt die Agenten-CLIs Ihres Teams um eine vom Repository verwalt
 OMA passt gut, wenn Sie mindestens eines dieser Ziele haben:
 
 - **Mehrere Agenten-Hosts oder Vendors.** `model_preset: auto` verwendet die native Konfiguration der aktuellen Laufzeit. Feste und benutzerdefinierte Presets können Rollen an andere Vendors weiterleiten; `oma agent spawn` übernimmt nicht nativen Dispatch.
-- **Einen wiederholbaren Team-Workflow.** `/work` bearbeitet eine abgegrenzte Aufgabe, `/orchestrate` koordiniert delegierte Arbeit, `/ultrawork` führt parallele Arbeit mit Review-Schritten aus und `/ralph` wiederholt eine Aufgabe mit einer ausdrücklichen Judge-Phase.
+- **Einen wiederholbaren Team-Workflow.** `/oma-mode` nimmt ein Ziel entgegen, wählt die Route und lässt das Ergebnis von einem unabhängigen Judge prüfen, `/work` plant, baut und prüft ein domänenübergreifendes Feature, `/ultrawork` ergänzt in jeder Phase ein isoliertes Review, und `/orchestrate` führt einen bestehenden Plan mit Verifikation pro Aufgabe aus.
 - **Vom Repository verwaltete Anweisungen.** Skills, Workflows, Regeln und Agentendefinitionen liegen neben dem Code. `oma link` überträgt die ausgewählten Dateien in unterstützte Vendor-Formate.
 - **Mechanische Prüfungen und dauerhafte Ergebnisse.** Agentenläufe können strukturierte Status- und Ausführungsbelege schreiben, während `oma verify agent <agent-type>` und `oma docs verify` ausdrückliche Prüfungen bereitstellen.
 
@@ -22,7 +22,7 @@ Wenn ein Projekt nur einen Host verwendet und keine gemeinsamen Skills, Workflow
 
 Führen Sie `oma verify agent <agent-type> --workspace <path>` aus, wenn Sie die Prüfungen für eine Backend-, Frontend-, Mobile-, QA-, Debug- oder Planungsrolle benötigen. Der Verifizierer verbindet statische Inspektionen mit konfigurierten Befehlen wie Tests, Typprüfungen, SQL-Prüfungen oder `flutter analyze`. Einzelheiten stehen in [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). Der Bericht zeigt das Ergebnis jeder Prüfung. Bestehende Prüfungen beweisen allein nicht, dass ein Feature seine Produkt- oder Domänenanforderungen erfüllt; die Akzeptanzkriterien der Aufgabe müssen weiterhin geprüft werden.
 
-`/ralph` fügt eine eigene [Judge](./glossary.md#judge)-Phase hinzu, wenn Sie diesen Workflow auswählen. Er prüft die erklärten Kriterien über mehrere Iterationen erneut und zeichnet die Workflow-Artefakte auf. Er ist kein Gate, das bei jeder gewöhnlichen Eingabe ausgeführt wird. Auch das Laden eines Skills startet nicht automatisch jeden Workflow oder jeden Verifikationsbefehl.
+`/oma-mode` fügt einen eigenen [Judge](./glossary.md#judge)-Schritt hinzu, wenn Sie diesen Workflow auswählen. Er prüft die erklärten Kriterien nach jeder Iteration erneut; er ist kein Gate, das bei jeder gewöhnlichen Eingabe ausgeführt wird. Auch das Laden eines Skills startet nicht automatisch jeden Workflow oder jeden Verifikationsbefehl.
 
 ## Dispatch bleibt sichtbar
 
@@ -43,5 +43,5 @@ Die ursprüngliche Diskussion zur Positionierung finden Sie in [Issue #155](http
 - [Schnellstart](./quick-start.md): installieren, die Einrichtung prüfen und eine abgegrenzte Aufgabe ausführen
 - [Wichtige Standardwerte](./important-defaults.md): was der Installer aktiviert und wie Sie es ändern
 - [Installation](./installation.md#presets): ein Skill-Preset wählen, das die geplanten Workflows abdeckt
-- [Workflows](../core-concepts/workflows.md): wann Sie `/work`, `/orchestrate`, `/ultrawork` und `/ralph` verwenden
+- [Workflows](../core-concepts/workflows.md): wann Sie `/oma-mode`, `/work`, `/ultrawork` und `/orchestrate` verwenden
 - [Fehlerbehebung](../guide/troubleshooting.md): Lösungen für Probleme mit Installation, Vendors und Hooks

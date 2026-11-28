@@ -355,7 +355,7 @@ describe("real-host smoke control logic (fake CLI responses; no local host insta
       "frontend",
     );
     expect(inventory.agentFiles).toHaveLength(5);
-    expect(inventory.skills).toHaveLength(8);
+    expect(inventory.skills).toHaveLength(9);
     expect(inventory.bootstrapCommand).toContain(
       'plugin-bootstrap.sh" frontend',
     );

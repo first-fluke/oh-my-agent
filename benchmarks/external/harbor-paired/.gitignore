@@ -1,0 +1,5 @@
+__pycache__/
+results/**
+!results/*/
+!results/*/plan.json
+!results/*/summary.json

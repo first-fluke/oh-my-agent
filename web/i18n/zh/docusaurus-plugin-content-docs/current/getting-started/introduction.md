@@ -7,7 +7,7 @@ description: 全面介绍 oh-my-agent。这个多智能体编排框架把 AI 编
 
 oh-my-agent 是面向 AI IDE 和 CLI 工具的多智能体编排框架。它不把所有工作都交给同一个 AI 助手，而是把工作路由到 32 个技能包和 13 个规范调度角色。12 个已纳入版本控制的子智能体定义文件提供可复用的实现、审查、规划、调试、文档、研究和基础设施角色。`research-explorer.md` 映射到规范的 `explore` 角色；`orchestrator` 是运行时协调角色，没有单独的定义文件。
 
-只有在主动调用机械检查，或选择包含这些检查的工作流时，OMA 才会运行它们。`oma verify agent <agent-type>` 会运行选定智能体类型的检查；`/ralph` 会加入有产物支撑的验证和[judge](./glossary.md#judge) 循环；启用的供应商 Stop 钩子（即[停止关卡](./glossary.md#stop-gate)）可以在配置的检查运行期间保持工作流打开。仅加载技能并不代表已通过验收，普通提示也不会自动运行每个工作流关卡。请依据工作流的验收标准和生成的文件判断任务是否完成。
+只有在主动调用机械检查，或选择包含这些检查的工作流时，OMA 才会运行它们。`oma verify agent <agent-type>` 会运行选定智能体类型的检查；`/oma-mode` 会加入围绕完成标准的 [judge](./glossary.md#judge) 循环；启用的供应商 Stop 钩子（即[停止关卡](./glossary.md#stop-gate)）可以在配置的检查运行期间保持工作流打开。仅加载技能并不代表已通过验收，普通提示也不会自动运行每个工作流关卡。请依据工作流的验收标准和生成的文件判断任务是否完成。
 
 整个系统位于项目内可移植的 `.agents/` 目录中。你可以在 Claude Code、Codex CLI、Antigravity CLI 或 IDE、Cursor、OpenCode 以及其他受支持工具之间切换，智能体配置会随代码一起迁移。
 
@@ -35,13 +35,13 @@ OMA 把领域分配给技能，并把任务工作路由给智能体：
 
 ---
 
-## 当前目录：32 个技能、12 个定义、20 个工作流 {#the-current-catalog-32-skills-12-definitions-20-workflows}
+## 当前目录：32 个技能、12 个定义、21 个工作流 {#the-current-catalog-32-skills-12-definitions-21-workflows}
 
 该目录将三个容易混淆的概念分开：
 
 - **[技能](./glossary.md#skill)**是 `.agents/skills/*/SKILL.md` 下的 32 个领域知识包。它们根据自然语言意图路由，并逐步加载资源。
 - **[智能体定义](./glossary.md#agent-definition)**是 `.agents/agents/` 下的 12 个文件。它们提供供应商原生的子智能体角色，并引用一个或多个技能。
-- **[工作流](./glossary.md#workflow)**是 `.agents/workflows/` 下的 20 个流程定义。其中四个是[持久化工作流](./glossary.md#persistent-workflow)（`orchestrate`、`work`、`ultrawork` 和 `ralph`），其余工作流只生成报告，不会保持持久化模式。
+- **[工作流](./glossary.md#workflow)**是 `.agents/workflows/` 下的 21 个流程定义。其中五个是[持久化工作流](./glossary.md#persistent-workflow)（`oma-mode`、`orchestrate`、`work`、`ultrawork` 和 `ralph`），其余工作流只生成报告，不会保持持久化模式。
 
 以下各节保留详细的技能目录。名称或描述发生变化时，以实时 `SKILL.md` 前置元数据为准。
 
@@ -169,7 +169,7 @@ oh-my-agent 所需的一切都位于 `.agents/` 目录中：
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -212,18 +212,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-来源：`.agents/hooks/core/keyword-detector.ts`（跳过斜杠命令、显式匹配模式名称）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`，以及 `.agents/workflows/` 下的工作流文件。并非每个工作流都具备所有关卡：`/orchestrate` 运行验证脚本，`/review` 运行 QA 审查，`/ralph` 加入[judge](./glossary.md#judge)。
+来源：`.agents/hooks/core/keyword-detector.ts`（跳过斜杠命令、显式匹配模式名称）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`，以及 `.agents/workflows/` 下的工作流文件。并非每个工作流都具备所有关卡：`/orchestrate` 运行验证脚本，`/review` 运行 QA 审查，`/oma-mode` 加入[judge](./glossary.md#judge)。
 
 ---
 
@@ -266,7 +266,7 @@ HUD 由 `.claude/hooks/hud.ts` 提供，使用 Claude Code 的 `statusLine` 钩�
 斜杠命令会启动工作流。对于普通请求，oh-my-agent 的钩子系统会对照 `.agents/hooks/core/triggers.json` 中的关键词表扫描输入（这些表被内联到 `oma` 二进制文件，并由所有供应商共享），覆盖 11 种语言（英语、韩语、日语、中文、西班牙语、法语、德语、葡萄牙语、俄语、荷兰语和波兰语）。
 
 - **技能提示**（例如“运行安全审计”）：技能注入器最多列出三个匹配的技能；这条提示只是建议，不会启动工作流
-- **持久化工作流**（`orchestrate`、`work`、`ultrawork`、`ralph`）只有在提示使用该工作流的显式名称时，才会从纯文本启动（例如 `ultrawork: add rate limiting`）
+- **持久化工作流**（`oma-mode`、`orchestrate`、`work`、`ultrawork`、`ralph`）只有在提示使用该工作流的显式名称时，才会从纯文本启动（例如 `ultrawork: add rate limiting`）
 - **其他所有工作流**只能通过各自的 `/command` 启动
 - **信息性输入**（例如“orchestrate 是什么？”）会被过滤，不触发工作流
 - **显式 `/command`** 会跳过检测，避免重复
@@ -303,5 +303,5 @@ oh-my-agent 不局限于 Claude Code。支持钩子的供应商共享 `oma hook 
 - **[安装](./installation.md)**：三种安装方式、预设、CLI 设置和验证
 - **[智能体](/docs/core-concepts/agents)**：深入了解 32 个技能、13 个调度角色以及授权与澄清策略
 - **[技能](/docs/core-concepts/skills)**：了解两层架构
-- **[工作流](/docs/core-concepts/workflows)**：了解全部 20 个工作流及其触发器和阶段
+- **[工作流](/docs/core-concepts/workflows)**：了解全部 21 个工作流及其触发器和阶段
 - **[使用指南](/docs/guide/usage)**：从单项任务到完整编排的真实示例

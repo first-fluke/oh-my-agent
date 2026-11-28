@@ -1,0 +1,317 @@
+{
+  "plan": {
+    "dataset": "terminal-bench/terminal-bench@4.1.0",
+    "dataset_tree_sha256": "91976563780617c655713b0d80b7852a90e4e3f2c37ed5e9f6457831e578c8fa",
+    "harbor_version": "0.27.0",
+    "model": "openai/gpt-6.2-sol",
+    "reasoning_effort": "codex-default",
+    "codex_version": "0.172.0",
+    "oma_version": "21.2.0",
+    "attempts_per_task": 1,
+    "seed": 20261125
+  },
+  "tasks_in_dataset": 66,
+  "eligibility": {
+    "max_cpus": 4,
+    "max_memory_mb": 4096,
+    "max_gpus": 0
+  },
+  "eligible_tasks": 33,
+  "ineligible_tasks": [
+    "biped-contact-dynamics",
+    "cad-model",
+    "ctr-optimization",
+    "cumulative-layout-shift",
+    "data-anonymization",
+    "distributed-dedup",
+    "formal-crypto",
+    "fp8-rmsnorm-gemm",
+    "hof-topology-interpenetration",
+    "html-js-filter",
+    "intrastat-meldung",
+    "jax-speedrun-gpu",
+    "ks-solver-cpp",
+    "lake-temp-glm",
+    "layout-config-recreation",
+    "layout-config-recreation2",
+    "legacy-utility-triage",
+    "live-database-cutover",
+    "math-eval-grader",
+    "medical-claims-processing",
+    "payments-pipeline-fix",
+    "pretrain-shard-corruption",
+    "protein-autointerp-disulfide",
+    "satb-audio-transcription",
+    "sglang-qwen-burst",
+    "shadow-relay",
+    "takens-embedding-lean",
+    "telecom-entity-resolution",
+    "uefi-bootkit",
+    "vba-userform-port",
+    "vf2-speedup-networkx",
+    "vpp-loss-divergence",
+    "wdm-design"
+  ],
+  "trials": 20,
+  "primary": {
+    "paired_tasks": 4,
+    "control_pass_rate": 0.0,
+    "control_pass_ci95": [
+      0.0,
+      0.4899
+    ],
+    "treatment_pass_rate": 0.5,
+    "treatment_pass_ci95": [
+      0.15,
+      0.85
+    ],
+    "delta_pass_rate": 0.5,
+    "delta_pass_ci95_bootstrap": [
+      0.0,
+      1.0
+    ],
+    "delta_mean_reward": 0.5,
+    "both_pass": 0,
+    "both_fail": 2,
+    "control_only_pass": [],
+    "treatment_only_pass": [
+      "fin-saccr-rwa",
+      "music-harmony"
+    ],
+    "exact_p_two_sided": 0.5
+  },
+  "oma_setup_failure_as_fail": {
+    "paired_tasks": 4,
+    "control_pass_rate": 0.0,
+    "control_pass_ci95": [
+      0.0,
+      0.4899
+    ],
+    "treatment_pass_rate": 0.5,
+    "treatment_pass_ci95": [
+      0.15,
+      0.85
+    ],
+    "delta_pass_rate": 0.5,
+    "delta_pass_ci95_bootstrap": [
+      0.0,
+      1.0
+    ],
+    "delta_mean_reward": 0.5,
+    "both_pass": 0,
+    "both_fail": 2,
+    "exact_p_two_sided": 0.5
+  },
+  "by_difficulty": {
+    "None": {
+      "paired_tasks": 4,
+      "control_pass_rate": 0.0,
+      "treatment_pass_rate": 0.5,
+      "delta_pass_rate": 0.5
+    }
+  },
+  "by_category": {
+    "Media": {
+      "paired_tasks": 1,
+      "control_pass_rate": 0.0,
+      "treatment_pass_rate": 1.0,
+      "delta_pass_rate": 1.0
+    },
+    "Operations": {
+      "paired_tasks": 2,
+      "control_pass_rate": 0.0,
+      "treatment_pass_rate": 0.5,
+      "delta_pass_rate": 0.5
+    },
+    "Software": {
+      "paired_tasks": 1,
+      "control_pass_rate": 0.0,
+      "treatment_pass_rate": 0.0,
+      "delta_pass_rate": 0.0
+    }
+  },
+  "economics": {
+    "control": {
+      "trials": 4,
+      "mean_test_fraction": 0.9371,
+      "mean_agent_seconds": 224.5368,
+      "median_agent_seconds": 202.2565,
+      "mean_setup_seconds": 197.4983,
+      "mean_cost_usd": 0.2277,
+      "total_cost_usd": 0.91,
+      "mean_input_tokens": 528869.75,
+      "mean_output_tokens": 8144.25
+    },
+    "treatment": {
+      "trials": 4,
+      "mean_test_fraction": 0.761,
+      "mean_agent_seconds": 293.5707,
+      "median_agent_seconds": 299.4666,
+      "mean_setup_seconds": 253.8756,
+      "mean_cost_usd": 0.3099,
+      "total_cost_usd": 1.24,
+      "mean_input_tokens": 1034093.0,
+      "mean_output_tokens": 8768.0
+    }
+  },
+  "treatment_activation": {
+    "scored_trials": 4,
+    "agents_md_loaded": 4,
+    "session_hook_ran": 4,
+    "read_at_least_one_skill": 3,
+    "made_serena_call": 2,
+    "skills_read": {
+      "oma-pdf": 1,
+      "oma-db": 1,
+      "oma-frontend": 1
+    }
+  },
+  "invalid_trials": [
+    {
+      "task": "retro-console-soc",
+      "arm": "control",
+      "invalid_reason": "RewardFileNotFoundError",
+      "exception_type": "RewardFileNotFoundError"
+    },
+    {
+      "task": "retro-console-soc",
+      "arm": "treatment",
+      "invalid_reason": "RewardFileNotFoundError",
+      "exception_type": "RewardFileNotFoundError"
+    },
+    {
+      "task": "bun-sourcemap-leak",
+      "arm": "control",
+      "invalid_reason": "RewardFileNotFoundError",
+      "exception_type": "RewardFileNotFoundError"
+    },
+    {
+      "task": "freecad-impeller",
+      "arm": "control",
+      "invalid_reason": "RewardFileNotFoundError",
+      "exception_type": "RewardFileNotFoundError"
+    },
+    {
+      "task": "gsea-proteomics",
+      "arm": "control",
+      "invalid_reason": "model_quota",
+      "exception_type": "NonZeroAgentExitCodeError"
+    },
+    {
+      "task": "photonic-waveguide-routing",
+      "arm": "control",
+      "invalid_reason": "model_quota",
+      "exception_type": "NonZeroAgentExitCodeError"
+    },
+    {
+      "task": "rs-archive-clone",
+      "arm": "control",
+      "invalid_reason": "model_quota",
+      "exception_type": "NonZeroAgentExitCodeError"
+    },
+    {
+      "task": "bun-sourcemap-leak",
+      "arm": "treatment",
+      "invalid_reason": "RewardFileNotFoundError",
+      "exception_type": "RewardFileNotFoundError"
+    },
+    {
+      "task": "freecad-impeller",
+      "arm": "treatment",
+      "invalid_reason": "RewardFileNotFoundError",
+      "exception_type": "RewardFileNotFoundError"
+    },
+    {
+      "task": "gsea-proteomics",
+      "arm": "treatment",
+      "invalid_reason": "model_quota",
+      "exception_type": "NonZeroAgentExitCodeError"
+    },
+    {
+      "task": "photonic-waveguide-routing",
+      "arm": "treatment",
+      "invalid_reason": "model_quota",
+      "exception_type": "NonZeroAgentExitCodeError"
+    },
+    {
+      "task": "rs-archive-clone",
+      "arm": "treatment",
+      "invalid_reason": "model_quota",
+      "exception_type": "NonZeroAgentExitCodeError"
+    }
+  ],
+  "per_task": {
+    "fin-saccr-rwa": {
+      "control": {
+        "rewards": [
+          0.0
+        ],
+        "test_fractions": [
+          0.958
+        ]
+      },
+      "treatment": {
+        "rewards": [
+          1.0
+        ],
+        "test_fractions": [
+          1.0
+        ]
+      }
+    },
+    "music-harmony": {
+      "control": {
+        "rewards": [
+          0.0
+        ],
+        "test_fractions": [
+          0.846
+        ]
+      },
+      "treatment": {
+        "rewards": [
+          1.0
+        ],
+        "test_fractions": [
+          1.0
+        ]
+      }
+    },
+    "production-planning": {
+      "control": {
+        "rewards": [
+          0.0
+        ],
+        "test_fractions": [
+          0.95
+        ]
+      },
+      "treatment": {
+        "rewards": [
+          0.0
+        ],
+        "test_fractions": [
+          0.05
+        ]
+      }
+    },
+    "react-lead-form": {
+      "control": {
+        "rewards": [
+          0.0
+        ],
+        "test_fractions": [
+          0.994
+        ]
+      },
+      "treatment": {
+        "rewards": [
+          0.0
+        ],
+        "test_fractions": [
+          0.994
+        ]
+      }
+    }
+  }
+}

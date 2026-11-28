@@ -9,11 +9,11 @@ description: Usage guide for OMA, covering reader-first task selection, single-s
 ## Quick start
 
 1. Open your project in a selected AI-powered IDE or CLI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen, or another supported host)
-2. The selected host can load [skills](../getting-started/glossary.md#skill) from `.agents/skills/`; enabled hooks add skill hints from natural-language keywords, and start a [workflow](../getting-started/glossary.md#workflow) only from its slash command or, for the four persistent modes, its name
+2. The selected host can load [skills](../getting-started/glossary.md#skill) from `.agents/skills/`; enabled hooks add skill hints from natural-language keywords, and start a [workflow](../getting-started/glossary.md#workflow) only from its slash command or, for the five persistent modes, its name
 3. Describe what you want in natural language. The host or selected workflow routes the task to the relevant skill
 4. For multi-agent work, use `/work` or `/orchestrate`
 
-Single-domain tasks need no special syntax. Use the [skill and workflow selection guide](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) to choose between a single skill, `/work`, `/orchestrate`, `/ultrawork`, and `/ralph`. See [Quick Start](../getting-started/quick-start.md) for setup and [Important Defaults](../getting-started/important-defaults.md) before changing providers.
+Single-domain tasks need no special syntax. Use the [skill and workflow selection guide](/docs/core-concepts/workflows#choosing-a-skill-or-workflow) to choose between a single skill, `/oma-mode`, `/work`, `/ultrawork`, `/ralph`, and `/orchestrate`. See [Quick Start](../getting-started/quick-start.md) for setup and [Important Defaults](../getting-started/important-defaults.md) before changing providers.
 
 ## Pick a guide
 
@@ -245,8 +245,9 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 
 | Command | Type | What It Does | When to Use |
 |---------|------|-------------|-------------|
+| `/oma-mode` | Persistent | Takes a goal, selects the route, runs it, and continues until the finish condition holds or a limit is reached | When you want to hand over a goal instead of choosing a workflow |
 | `/orchestrate` | Persistent | Loads or creates a plan, then delegates parallel execution with monitoring and verification | Independent tasks suited to automated parallel coordination |
-| `/work` | Persistent | Step-by-step multi-domain planning, implementation, and QA within the authorized scope | Features spanning multiple domains that need coordinated delivery |
+| `/work` | Persistent | PM plan, parallel implementation, and one QA pass over the whole result, within the authorized scope | Features spanning multiple domains when you want the PM-led flow |
 | `/ultrawork` | Persistent | 5-phase, 17-step quality workflow with 12 isolated review checkpoints | Maximum quality delivery, production-critical code |
 | `/plan` | Non-persistent | PM-driven task breakdown, API contracts, and tracked plan artifacts in `docs/plans/work/` (sequential `NNN-name.md`, Status field for lifecycle) | Before any complex multi-agent work; complex features needing tracked progress and decision logs |
 | `/brainstorm` | Non-persistent | Approach exploration with 2-3 proposals and a draft in `docs/decisions/` | Before committing to an implementation approach |
@@ -264,13 +265,13 @@ Cross-vendor tasks and `model_preset: free` use `oma agent spawn`. Native dispat
 | `/recap` | Non-persistent | Summarize work across supported AI tool histories | Daily or period retrospectives |
 | `/schedule` | Non-persistent | Register recurring agent jobs | Nightly recaps, scans, or housekeeping |
 | `/video` | Non-persistent | Compose reproducible videos from scripts, narration, and visuals | Shorts, explainers, and demos |
-| `/ralph` | Persistent | Repeated ultrawork execution with a prompted judge and loop safeguards | Explicit requests to repeat execution until mechanical completion criteria pass |
+| `/ralph` | Persistent | Deprecated alias of `/oma-mode` | `/oma-mode` |
 
 ---
 
 ## Auto-detection examples
 
-The keyword hook starts only four persistent modes, and only when the prompt names the mode. Other workflows start from their slash command.
+The keyword hook starts only five persistent modes, and only when the prompt names the mode. Other workflows start from their slash command.
 
 | You Type | Detected Workflow | Language |
 |----------|------------------|----------|
@@ -435,7 +436,7 @@ Common problems are below. For error messages, run-result failures, schedules, a
 | Dashboard shows "No agents detected yet" | Agents have not written to memory yet, or the dashboard watches another directory | Wait for the first progress file; run from the project root or pass `--project-root <path>` |
 | `oma dashboard web` exits with "port 9847 is already in use" | Another process holds the port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA report has 50+ issues | Normal for first review of large codebases | Focus on CRITICAL and HIGH severity first. Document MEDIUM/LOW for future sprints. |
-| A persistent mode starts when you only mentioned its name | The prompt names `orchestrate`, `ultrawork`, `work mode`, or `ralph` outside a question or code block | Say "workflow done" to release it. Report false triggers for improvement. |
+| A persistent mode starts when you only mentioned its name | The prompt names `oma-mode`, `orchestrate`, `ultrawork`, `work mode`, or `ralph` outside a question or code block | Say "workflow done" to release it. Report false triggers for improvement. |
 | Persistent workflow will not stop | State file still exists | Say "workflow done" in the chat, or manually delete the state file from `.agents/state/` |
 | Agent blocked on HIGH clarification | Requirements too ambiguous | Provide the specific answers the agent requested, then re-run |
 | MCP tools not working | Serena not configured or not running | Run `oma doctor` to verify MCP config |

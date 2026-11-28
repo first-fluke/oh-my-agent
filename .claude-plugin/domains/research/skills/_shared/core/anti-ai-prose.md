@@ -1,7 +1,8 @@
 # Shared prose diagnostics
 
-Load for academic prose audits and translation style reviews, together with the
-owning skill's domain rules. Meaning, evidence, required structure, and target-language
+Load for academic prose audits, translation style reviews, and user-facing
+reports or deliverables in `/oma-mode`, together with the owning skill's or
+workflow's rules. Meaning, evidence, required structure, and target-language
 conventions take precedence over these style diagnostics.
 
 ## Editing and review contract

@@ -74,7 +74,6 @@ sidebar_label: CLI 命令
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
-| `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
@@ -757,7 +756,7 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set（设置目标） {#goal-set}
 
-为处于活动状态的持久化工作流（orchestrate、ultrawork、work、ralph）附加目标契约。契约由持久化模式的 Stop 钩子以机械方式强制执行，是否完成不再由模型自行判断。
+为处于活动状态的持久化工作流（oma-mode、orchestrate、ultrawork、work、ralph）附加目标契约。契约由持久化模式的 Stop 钩子以机械方式强制执行，是否完成不再由模型自行判断。
 
 ```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]

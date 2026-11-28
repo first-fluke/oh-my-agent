@@ -283,7 +283,7 @@ Session ID quyết định:
 
 6. **Lặp lại bằng spawn lại.** Nếu output agent cần tinh chỉnh, spawn lại với task gốc và ngữ cảnh sửa. Không bắt đầu session mới.
 
-7. **Bắt đầu bằng `/work` nếu chưa chắc.** Workflow work hướng dẫn từng bước với xác nhận người dùng ở mỗi cổng.
+7. **Bắt đầu bằng `/oma-mode` nếu chưa chắc.** Nó chọn route từ mục tiêu của bạn. Chọn `/work` khi bạn muốn luồng do PM dẫn dắt với một lượt QA trên toàn bộ kết quả.
 
 ### Không nên
 

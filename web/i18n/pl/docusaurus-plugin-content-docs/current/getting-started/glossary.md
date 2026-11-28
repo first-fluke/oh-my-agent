@@ -33,7 +33,7 @@ Preset modelu to wartość `model_preset` w `.agents/oma-config.yaml` (lub `.cue
 
 ### Workflow trwały {#persistent-workflow}
 
-Workflow trwały działa przez kolejne tury, dopóki jego praca nie zostanie ukończona albo dopóki go nie dezaktywujesz. Workflowy trwałe to `/orchestrate`, `/work`, `/ultrawork` i `/ralph`, a tryb trwały aktywuje wyłącznie jawne wywołanie. Gdy taki workflow jest aktywny, hook ponownie wstrzykuje `[OMA PERSISTENT MODE: ...]` przy każdym prompcie, a hook Stop nie pozwala zakończyć sesji, dopóki nie zostanie osiągnięty limit wzmocnień albo timeout nieaktualności. Powiedz `workflow done`, aby go dezaktywować. Zobacz [Mechanika trybu trwałego](../core-concepts/workflows.md#persistent-mode-mechanics).
+Workflow trwały działa przez kolejne tury, dopóki jego praca nie zostanie ukończona albo dopóki go nie dezaktywujesz. Workflowy trwałe to `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` i przestarzały alias `/ralph`, a tryb trwały aktywuje wyłącznie jawne wywołanie. Gdy taki workflow jest aktywny, hook ponownie wstrzykuje `[OMA PERSISTENT MODE: ...]` przy każdym prompcie, a hook Stop nie pozwala zakończyć sesji, dopóki nie zostanie osiągnięty limit wzmocnień albo timeout nieaktualności. Powiedz `workflow done`, aby go dezaktywować. Zobacz [Mechanika trybu trwałego](../core-concepts/workflows.md#persistent-mode-mechanics).
 
 ### Bramka zatrzymania (stop gate) {#stop-gate}
 
@@ -70,7 +70,7 @@ Dziennik zdarzeń to zapis sesji OMA, do którego można tylko dopisywać, przec
 
 ### Sędzia (judge) {#judge}
 
-„Sędzia” ma dwa znaczenia. W `/ralph` sędzia to faza po każdej iteracji ultrawork, która sprawdza każde kryterium ukończenia wobec rzeczywistego stanu projektu i zapisuje PASS, FAIL, REGRESSED lub BLOCKED. Wykonuje ją osobno uruchomiony agent ze świeżym kontekstem, więc orchestrator nie ocenia własnej pracy. W ewaluacji i optymalizacji umiejętności `judge` to domyślny typ checkera: model ocenia wynik danego wariantu według rubryki i zwraca PASS albo FAIL. Zobacz [/ralph](../core-concepts/workflows.md#ralph) oraz [checker judge](../guide/skill-eval.md#judge-default).
+„Sędzia” ma dwa znaczenia. W `/oma-mode` sędzia to krok po każdej iteracji, który sprawdza każde kryterium ukończenia wobec rzeczywistego stanu projektu i zapisuje PASS, FAIL, REGRESSED lub BLOCKED. Wykonuje go osobno uruchomiony agent ze świeżym kontekstem, więc sesja, która wykonała pracę, sama jej nie ocenia. W ewaluacji i optymalizacji umiejętności `judge` to domyślny typ checkera: model ocenia wynik danego wariantu według rubryki i zwraca PASS albo FAIL. Zobacz [/oma-mode](../core-concepts/workflows.md#oma-mode) oraz [checker judge](../guide/skill-eval.md#judge-default).
 
 ### Przegląd międzykontekstowy (CCR) {#cross-context-review-ccr}
 

@@ -41,11 +41,10 @@ export class PixelleVisualProvider implements VisualProvider {
   }
 
   async produce(scene: Scene, opts: VisualOpts): Promise<VisualAsset> {
-    // TODO(oma-deferred): pixelle — connect Pixelle-MCP at
-    // http://localhost:9004/pixelle/mcp (after consent), submit the scene
-    // prompt to a RunningHub workflow, poll for the clip, and localize it into
-    // runDir/visuals. The live MCP transport is not wired in this process, so
-    // until then we emit a deterministic placeholder.
+    // The live Pixelle-MCP transport (http://localhost:9004/pixelle/mcp, a
+    // RunningHub workflow, and localizing the clip into runDir/visuals) is not
+    // wired in this process, so a selected Pixelle scene gets a deterministic
+    // placeholder.
     return writePlaceholder(scene, opts, this.id);
   }
 }

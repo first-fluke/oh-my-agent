@@ -1,6 +1,6 @@
 ---
-description: Ralph - persistent self-referential execution loop wrapping
-  ultrawork with a spawned independent judge
+description: Deprecated alias of oma-mode. Repeats work until an independent
+  judge passes every completion criterion
 ---
 
 <!-- oma:generated -->

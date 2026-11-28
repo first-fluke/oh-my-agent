@@ -87,13 +87,13 @@ bunx oh-my-agent@latest
 | Пресет | Выбирайте, если проект — это | Включённые навыки | Количество |
 |--------|-------------------------------|-----------------|-------|
 | **all** | Любой проект, или вы хотите, чтобы все рабочие процессы работали сразу | Все навыки из реестра | 32 |
-| **fullstack** | Веб- и мобильные клиенты с backend и инфраструктурой Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | Веб-frontend с backend и базой данных | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | Мобильное приложение с backend и базой данных | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | Только веб-интерфейс | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | API или сервис с базой данных | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | Только мобильное приложение | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | Работа с инфраструктурой, CI/CD и observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | Веб- и мобильные клиенты с backend и инфраструктурой Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | Веб-frontend с backend и базой данных | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | Мобильное приложение с backend и базой данных | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | Только веб-интерфейс | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | API или сервис с базой данных | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | Только мобильное приложение | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | Работа с инфраструктурой, CI/CD и observability | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | Сканирование безопасности, ревью кода и исправления | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Научные статьи, исследование рынка и конвертация PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Дизайн-ассеты, изображения, голос и текстовый контент | design, image, voice, academic-writing, translation, scm | 6 |
@@ -112,12 +112,13 @@ oma install --preset frontend --yes
 
 ### Рабочие процессы, которым нужны навыки вне пресета {#workflows-that-need-skills-outside-a-preset}
 
-Каждый пресет копирует определения рабочих процессов и агентов. Команды и prompt открываются только для рабочих процессов, чьи требуемые навыки доступны. Например, свежая установка frontend оставляет `/orchestrate` недоступным, потому что в ней нет `oma-orchestration`, тогда как `/work`, `/ultrawork` и `/ralph` доступны: навыки PM и QA из пресета удовлетворяют их требованиям входа. Установщик сообщает о недостающем навыке и не переключается на `all`.
+Каждый пресет копирует определения рабочих процессов и агентов. Команды и prompt открываются только для рабочих процессов, чьи требуемые навыки доступны. Например, свежая установка frontend оставляет `/docs` недоступным, потому что в ней нет `oma-docs`, тогда как `/orchestrate`, `/work` и `/ultrawork` доступны: навыки PM, QA и orchestration из пресета удовлетворяют их требованиям входа. Установщик сообщает о недостающем навыке и не переключается на `all`.
 
 | Рабочий процесс | Навыки, обязательные для входа | Пресеты, которые их включают |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | нет | все пресеты |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -142,7 +143,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-Предметные точки входа содержат 8 навыков frontend, 6 навыков security или 8 навыков research и соответствующий набор нативных агентов. Их session bootstrap передаёт этот пресет установщику runtime. Общая настройка runtime и уже установленные навыки следуют поведению установщика, описанному выше. Запись `oma` сохраняет полный плагин. Те же предметные корни объявлены в сгенерированном каталоге marketplace Codex и в каталогах Grok Build и ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` на сгенерированном дереве или архив релиза `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode и Kimi Code (`/plugins install`) читают каждый свой сгенерированный манифест; точные шаги для каждого хоста см. в разделе [Хосты плагинов, совместимые с Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts).
+Предметные точки входа содержат 9 навыков frontend, 6 навыков security или 8 навыков research и соответствующий набор нативных агентов. Их session bootstrap передаёт этот пресет установщику runtime. Общая настройка runtime и уже установленные навыки следуют поведению установщика, описанному выше. Запись `oma` сохраняет полный плагин. Те же предметные корни объявлены в сгенерированном каталоге marketplace Codex и в каталогах Grok Build и ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` на сгенерированном дереве или архив релиза `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode и Kimi Code (`/plugins install`) читают каждый свой сгенерированный манифест; точные шаги для каждого хоста см. в разделе [Хосты плагинов, совместимые с Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts).
 
 Закреплённые CI-задания хостов регистрируют локальный marketplace на чистых runner, устанавливают предметные точки входа и проверяют получившийся инвентарь. Эти проверки выполняются без вызовов модели. Учётные данные runtime, внешние провайдеры и успешная первая задача всё ещё нуждаются в собственной проверке. Проверки релиза также требуют, чтобы оба манифеста в каждом предметном корне совпадали с версией CLI и имели updater версии Release Please.
 

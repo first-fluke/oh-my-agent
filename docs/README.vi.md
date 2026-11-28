@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 [Hướng dẫn cài cho agent](./agent-install.md) trình bày thiết lập không tương tác và cách xác minh. Nếu bạn là agent, hãy đọc hướng dẫn đó và thực hiện cài đặt.
 
-Sau đó mở agent và gõ `/orchestrate build a TODO app with login`.
+Sau đó mở agent và gõ `/oma-mode build a TODO app with login`.
 
 oh-my-agent (`oma`) biến Claude Code, Codex CLI, Cursor và 11 coding agent khác thành một đội. Một planner chia việc, các kỹ sư xây dựng song song, một reviewer kiểm tra kết quả, và một debugger sửa nguyên nhân gốc.
 
@@ -43,7 +43,7 @@ Chọn một task. Tải một skill vào agent bạn đang dùng, hoặc cài c
 | [Thiết kế một màn admin](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
 | [Sửa một test đang thất bại](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | Review ranh giới hệ thống | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
-| Chạy cả đội | [Cài oma](#install) | `/orchestrate add login to this app` |
+| Chạy cả đội | [Cài oma](#install) | `/oma-mode add login to this app` |
 
 Chạy lệnh `skills use` trong terminal của agent. Nó tải đúng skill đó. Để có cả đội cùng workflow, [cài oma](#install). Các lựa chọn khác có trong [Chọn cách thiết lập](../web/docs/getting-started/choose-setup.md).
 
@@ -58,8 +58,8 @@ Sau khi cài, chạy `oma doctor`. [5 phút đầu tiên](#your-first-5-minutes)
 
 | | Mang lại gì cho bạn | Thử ngay |
 |---|---|---|
-| **12 vai trò chuyên gia** | PM, kiến trúc sư, kỹ sư backend, frontend, mobile, database và infra, QA reviewer, debugger, refactorer, docs curator, researcher ([gặp gỡ họ](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **20 workflow** | Slash command từ `/brainstorm` và `/plan` đến `/review`, `/debug` và `/scm`. Bốn chế độ đa agent cũng khởi động khi một yêu cầu thông thường gọi tên chúng | "ultrawork: add rate limiting" |
+| **12 vai trò chuyên gia** | PM, kiến trúc sư, kỹ sư backend, frontend, mobile, database và infra, QA reviewer, debugger, refactorer, docs curator, researcher ([gặp gỡ họ](#meet-the-team)) | `/oma-mode build a TODO app with login` |
+| **21 workflow** | Slash command từ `/brainstorm` và `/plan` đến `/review`, `/debug` và `/scm`. Năm chế độ persistent cũng khởi động khi một yêu cầu thông thường gọi tên chúng | "ultrawork: add rate limiting" |
 | **32 skill** | Kiến thức chuyên môn chỉ được tải khi task cần: UI, API, schema, Terraform, CI, bảo mật, git, observability | tự tải, ví dụ "add a Terraform S3 bucket" |
 | **File bạn có thể mở** | Kế hoạch, design doc, API contract, ADR, ghi chú bug, kết quả theo từng agent, bằng chứng bảo mật, tài liệu giải thích HTML, bản tóm tắt | `ls .agents/results` |
 | **Nghiên cứu và nội dung** | Tìm kiếm có trích dẫn, nghiên cứu thị trường, bài báo khoa học, slide deck, video MP4, hình ảnh, giọng nói cục bộ, PDF/HWP sang Markdown | `/video`, `/convert` |
@@ -98,7 +98,7 @@ Chọn preset tường minh khi bạn muốn skill của một domain:
 oma install --preset frontend --yes
 ```
 
-Lệnh này chọn tám skill của preset frontend. Installer vẫn cấu hình runtime, provider và file workflow dùng chung, đồng thời giữ các skill đã cài trước đó. Lựa chọn Custom có trong installer tương tác. Xem [giá trị preset](../web/docs/getting-started/installation.md#presets) và [dependency của workflow](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
+Lệnh này chọn chín skill của preset frontend. Installer vẫn cấu hình runtime, provider và file workflow dùng chung, đồng thời giữ các skill đã cài trước đó. Lựa chọn Custom có trong installer tương tác. Xem [giá trị preset](../web/docs/getting-started/installation.md#presets) và [dependency của workflow](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 <details>
 <summary>Những việc installer cũng làm theo mặc định</summary>
@@ -125,18 +125,18 @@ Lệnh này chọn tám skill của preset frontend. Installer vẫn cấu hình
 | Preset | Skill |
 |--------|--------|
 | **All** | **Toàn bộ 32 skill** (khuyến nghị) |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack, bỏ mobile và tf-infra |
 | Fullstack Mobile | Fullstack, bỏ frontend và tf-infra |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | Tự chọn từng skill |
 
-Trong các preset có tên, chỉ `All` mới bao gồm coordination, orchestration, docs, security, refactor, explanation, recap, video, slide và skill-creation (hoặc chọn chúng trong `Custom`). Research và Content thiếu các skill đứng sau `/plan`, `/review`, `/debug`, `/architecture` và `/brainstorm`. Xem [Workflow cần skill nằm ngoài preset](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
+Trong các preset có tên, chỉ `All` mới bao gồm docs, security, refactor, explanation, recap, video, slide và skill-creation (hoặc chọn chúng trong `Custom`). Research và Content thiếu các skill đứng sau `/plan`, `/review`, `/debug`, `/architecture` và `/brainstorm`. Xem [Workflow cần skill nằm ngoài preset](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 </details>
 
@@ -159,7 +159,7 @@ Trong các preset có tên, chỉ `All` mới bao gồm coordination, orchestrat
 
 4. **Kiểm tra kết quả.** Nhánh và các thay đổi được báo phải khớp output của Git. Việc tải hướng dẫn hoặc hoàn tất cài đặt không chứng minh task này đã chạy.
 
-Với công việc lớn hơn, hãy chọn một workflow mà các skill được tham chiếu đã được cài. Bắt đầu bằng `/plan` khi skill lập kế hoạch của nó có mặt, rồi tiếp tục với `/work` hoặc `/orchestrate` khi dependency của chúng có sẵn.
+Với công việc lớn hơn, hãy chọn một workflow mà các skill được tham chiếu đã được cài. `/oma-mode` nhận một mục tiêu diễn đạt bằng lời thường và chọn workflow thay bạn; [Đội ngũ phối hợp thế nào](#how-the-team-works-together) so sánh các workflow của đội.
 
 <a id="meet-the-team"></a>
 ## Gặp gỡ đội ngũ
@@ -183,7 +183,7 @@ Chính agent của bạn dẫn dắt đội ngũ. Trong `/work`, `/orchestrate` 
 | **Docs curator** (`docs-curator`) | oma-docs | `/docs`, hoặc "verify docs" | `docs/generated/doc-refs.json` và các bản vá tài liệu bạn duyệt |
 | **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | một yêu cầu nghiên cứu | Nguồn có trích dẫn kèm xuất xứ của chúng; báo cáo thị trường trong `.agents/results/market/` |
 
-Kỹ sư infra (`tf-infra-engineer`) được dặn phải hỏi trước khi chạy bất kỳ `apply` hoặc `destroy` nào mang tính phá hủy hoặc trên production. Các skill còn lại (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, nội dung và media) không có vai trò riêng. Agent của bạn tự tải chúng, và với hầu hết trong số đó, skill injector sẽ gợi ý đúng skill dựa trên prompt của bạn.
+Kỹ sư infra (`tf-infra-engineer`) được dặn phải hỏi trước khi chạy bất kỳ `apply` hoặc `destroy` nào mang tính phá hủy hoặc trên production. Các skill còn lại (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, orchestration, skill-creation, nội dung và media) không có vai trò riêng. Agent của bạn tự tải chúng, và với hầu hết trong số đó, skill injector sẽ gợi ý đúng skill dựa trên prompt của bạn.
 
 </details>
 
@@ -194,7 +194,7 @@ Kỹ sư infra (`tf-infra-engineer`) được dặn phải hỏi trước khi ch
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -205,21 +205,21 @@ Mỗi bước chuyển một file cho bước tiếp theo. `/brainstorm` lưu m�
 
 | Bạn muốn | Chạy | Kết thúc ra sao |
 |---|---|---|
+| Nêu mục tiêu và để oma tự lo | `/oma-mode` | Chọn route, chạy mà không hỏi nên dùng cái nào, và tiếp tục cho đến khi một trọng tài có ngữ cảnh mới đánh pass mọi tiêu chí hoàn thành; dừng kèm báo cáo dở dang khi tiêu chí bị chặn hoặc sau 5 iteration |
 | Chỉ cần một kế hoạch | `/plan` | Một file kế hoạch cho công việc nhiều mảng, hoặc một khuyến nghị trực tiếp cho việc nhỏ |
-| Một lần build do PM dẫn dắt mà bạn theo dõi từng bước | `/work` | PM, rồi các kỹ sư theo từng tầng, rồi QA. Các phát hiện CRITICAL và HIGH đi vào vòng sửa lỗi (tối đa 5 vòng) |
-| Một lần build song song không cần bạn can thiệp | `/orchestrate` | Chỉ task nào pass kiểm tra mới được tính là xong; mỗi task có tối đa 3 lần thử, sau đó được đánh dấu là partial hoặc failed |
-| Workflow năm phase | `/ultrawork` | Năm phase có gate (PLAN, IMPL, VERIFY, REFINE, SHIP); mỗi lượt review chạy trong một phiên reviewer mới |
-| "Đừng dừng cho đến khi thật sự xong" | `/ralph` | Lặp lại `/ultrawork` với một trọng tài được spawn riêng, có ngữ cảnh mới, cho đến khi mọi tiêu chí đều pass; dừng kèm báo cáo dở dang khi tiêu chí bị chặn hoặc sau 5 iteration |
+| Một tính năng trải trên nhiều mảng, được lập kế hoạch, build và review trong một lần chạy | `/work` | PM viết kế hoạch và trình cho bạn xem, các kỹ sư build song song theo từng tầng, rồi QA review toàn bộ cùng lúc. Các phát hiện CRITICAL và HIGH đi vào vòng sửa lỗi (tối đa 5 vòng) |
+| Cũng lần build đó nhưng có review ở mọi giai đoạn | `/ultrawork` | Năm phase có gate (PLAN, IMPL, VERIFY, REFINE, SHIP) với 12 lượt review; mỗi lượt review chạy trong một phiên reviewer mới |
+| Chạy một kế hoạch bạn đã có sẵn | `/orchestrate` | Chạy kế hoạch từ `/plan` đúng như đã viết và kiểm tra riêng từng task. Chỉ task nào pass kiểm tra mới được tính là xong; mỗi task có tối đa 3 lần thử, sau đó được đánh dấu là partial hoặc failed |
 | Đội ngũ chạy theo lịch | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Một log Markdown cho mỗi lần chạy, trong `~/.oma/schedule/runs/<id>/` |
 
 Slash command khởi động một workflow. Yêu cầu thông thường thì không, nhưng trên các runtime có prompt hook, nó vẫn nhận được một gợi ý skill: bộ từ khóa cho tối đa 11 ngôn ngữ được so khớp với prompt và chỉ cho agent của bạn các skill tương ứng ("run a security audit" kéo `oma-qa` vào). Gợi ý này chỉ mang tính tham khảo, và từ khóa bên trong code block sẽ bị bỏ qua.
 
-`/orchestrate`, `/work`, `/ultrawork` và `/ralph` là **persistent** khi bạn gọi chúng bằng tên, dưới dạng slash command hoặc văn bản thường ("ultrawork: add rate limiting"). Khi đó agent sẽ bị đưa quay lại làm việc mỗi khi nó cố dừng sớm (tối đa 5 lần hoặc 2 giờ) cho đến khi bạn nói **"workflow done"**. Đây là bốn workflow duy nhất mà một câu thông thường có thể khởi động, và chỉ khi gọi bằng tên.
+`/oma-mode`, `/work`, `/ultrawork`, `/ralph` và `/orchestrate` là **persistent** khi bạn gọi chúng bằng tên, dưới dạng slash command hoặc văn bản thường ("ultrawork: add rate limiting"). Khi đó agent sẽ bị đưa quay lại làm việc mỗi khi nó cố dừng sớm (tối đa 5 lần hoặc 2 giờ) cho đến khi bạn nói **"workflow done"**. Đây là năm workflow duy nhất mà một câu thông thường có thể khởi động, và chỉ khi gọi bằng tên.
 
 **Đã đo, kèm lưu ý.** Trong [benchmark](../benchmarks/README.md) (một prompt, Claude Code với năm cấu hình add-on khác nhau, kể cả bản thuần, `claude-opus-4-6`, mỗi cấu hình build một lần), oma đạt 80.6 so với 70.7 của Claude Code thuần, với chi phí gấp 1.7 lần ($4.04 so với $2.37) và thời gian gấp 1.8 lần.
 
 <details>
-<summary>Toàn bộ 20 workflow</summary>
+<summary>Toàn bộ 21 workflow</summary>
 
 | Lệnh | Chức năng |
 |---------|--------------|
@@ -231,9 +231,10 @@ Slash command khởi động một workflow. Yêu cầu thông thường thì kh
 | `/design` | Xác định phạm vi của một task thiết kế và bàn giao các phát hiện, DESIGN.md hoặc token thông qua oma-design |
 | `/docs` | Tìm tham chiếu tài liệu bị hỏng và đề xuất bản vá cho những tài liệu mà một diff chạm tới |
 | `/explain` | Biến diff, PR, nhánh hoặc một chủ đề thành tài liệu giải thích HTML tương tác độc lập |
+| `/oma-mode` | Nhận một mục tiêu, chọn route, chạy nó và tiếp tục cho đến khi đạt mục tiêu hoặc chạm một giới hạn (persistent) |
 | `/orchestrate` | Chạy các agent song song, điều phối chúng qua trạng thái file và kiểm chứng kết quả (persistent) |
 | `/plan` | Phân tách tính năng thành các task được ưu tiên, kèm API contract |
-| `/ralph` | Lặp lại `/ultrawork` với một trọng tài được spawn riêng, tối đa 5 iteration (persistent) |
+| `/ralph` | Alias đã ngừng khuyến nghị của `/oma-mode` (persistent) |
 | `/recap` | Tóm tắt lịch sử hội thoại AI của bạn trong một ngày hoặc một khoảng thời gian |
 | `/review` | Review bảo mật (OWASP Top 10), hiệu suất, accessibility (WCAG 2.2 AA) và chất lượng code |
 | `/schedule` | Đăng ký một job agent chạy theo chu kỳ lặp lại |
@@ -338,7 +339,7 @@ Các pipeline này báo rõ khi thiếu nguồn hoặc key của vendor thay vì
 
 | Hook | Chức năng | Cách tắt / giới hạn |
 |---|---|---|
-| Khởi động bằng từ khóa | Khởi động `/orchestrate`, `/work`, `/ultrawork` hoặc `/ralph` khi một yêu cầu thông thường gọi tên workflow đó | Bỏ qua câu hỏi, văn bản dán vào và code block |
+| Khởi động bằng từ khóa | Khởi động `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` hoặc `/ralph` khi một yêu cầu thông thường gọi tên workflow đó | Bỏ qua câu hỏi, văn bản dán vào và code block |
 | Skill injector | Chỉ cho agent đúng skill cho prompt | Tạm dừng khi có persistent workflow đang hoạt động |
 | Stop gate | Đưa persistent workflow quay lại làm việc; với `oma goal set --gate test`, việc dừng được cho phép khi script đó thoát với mã 0 trong vòng 25 giây | Nói "workflow done"; nó cũng tự gỡ sau 5 lần chặn hoặc 2 giờ |
 | Refactor guard | Khi dừng, đánh dấu các file đã sửa dài quá 500 dòng cho `refactor-engineer` | Phải bật thủ công: `refactor_guard.enabled` |

@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ Where skill expertise lives. There are 32 skill directories plus `_shared` resou
 - Step-by-step execution protocol
 - Gate definitions (for persistent workflows)
 
-Persistent workflows: `orchestrate.md`, `work.md`, `ultrawork.md`, and `ralph.md`.
+Persistent workflows: `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md`, and `ralph.md`.
 Non-persistent workflows include `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md`, and `video.md`.
 
 ### agents/
@@ -489,7 +490,7 @@ Where agents write their progress during orchestration sessions. This is the can
 | `lessons-{sessionId}.md` | Orchestrator | Lessons backed by experiment evidence (conditional) |
 | `session-work.md` | Work workflow | Work-specific session state |
 | `session-ultrawork.md` | Ultrawork workflow | Ultrawork-specific phase tracking |
-| `session-ralph-{sessionId}.md` | Ralph workflow | Criteria, iteration records, and judge results for one Ralph run |
+| `session-oma-mode-{sessionId}.md` | oma-mode workflow | Criteria, iteration records, and judge results for one run |
 | `session-cost-{sessionId}.md` | System | Per-session spawn cost telemetry |
 | `archive/metrics-{date}.md` | System | Archived session metrics (30-day retention) |
 

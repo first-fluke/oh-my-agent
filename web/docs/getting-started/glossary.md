@@ -33,7 +33,7 @@ The model preset is the `model_preset` value in `.agents/oma-config.yaml` (or `.
 
 ### Persistent workflow
 
-A persistent workflow keeps running across turns until its work is done or you deactivate it. The persistent workflows are `/orchestrate`, `/work`, `/ultrawork`, and `/ralph`, and only an explicit invocation activates persistent mode. While one is active, a hook re-injects `[OMA PERSISTENT MODE: ...]` on each prompt, and the Stop hook blocks the session from ending until a reinforcement limit or staleness timeout is reached. Say `workflow done` to deactivate it. See [Persistent mode mechanics](../core-concepts/workflows.md#persistent-mode-mechanics).
+A persistent workflow keeps running across turns until its work is done or you deactivate it. The persistent workflows are `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork`, and the deprecated alias `/ralph`, and only an explicit invocation activates persistent mode. While one is active, a hook re-injects `[OMA PERSISTENT MODE: ...]` on each prompt, and the Stop hook blocks the session from ending until a reinforcement limit or staleness timeout is reached. Say `workflow done` to deactivate it. See [Persistent mode mechanics](../core-concepts/workflows.md#persistent-mode-mechanics).
 
 ### Stop gate
 
@@ -70,7 +70,7 @@ The event log is the append-only record of an OMA session, stored as `events.jso
 
 ### Judge
 
-"Judge" has two meanings. In `/ralph`, the judge is the phase after each ultrawork iteration that checks every completion criterion against the actual project state and records PASS, FAIL, REGRESSED, or BLOCKED. A separately spawned agent with fresh context runs it, so the orchestrator does not grade its own work. In skill evaluation and optimization, `judge` is the default checker type: a model grades an arm's output against a rubric and returns PASS or FAIL. See [/ralph](../core-concepts/workflows.md#ralph) and [the judge checker](../guide/skill-eval.md#judge-default).
+"Judge" has two meanings. In `/oma-mode`, the judge is the step after each iteration that checks every completion criterion against the actual project state and records PASS, FAIL, REGRESSED, or BLOCKED. A separately spawned agent with fresh context runs it, so the session that did the work does not grade it. In skill evaluation and optimization, `judge` is the default checker type: a model grades an arm's output against a rubric and returns PASS or FAIL. See [/oma-mode](../core-concepts/workflows.md#oma-mode) and [the judge checker](../guide/skill-eval.md#judge-default).
 
 ### Cross-context review (CCR)
 

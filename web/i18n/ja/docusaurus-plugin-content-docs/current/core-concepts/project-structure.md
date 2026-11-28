@@ -190,10 +190,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -225,7 +226,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -300,7 +301,7 @@ your-project/
 - 手順ごとの実行プロトコル
 - 永続ワークフローのゲート定義
 
-永続ワークフローは `orchestrate.md`、`work.md`、`ultrawork.md`、`ralph.md` です。非永続ワークフローには `plan.md`、`brainstorm.md`、`architecture.md`、`deepinit.md`、`review.md`、`security.md`、`debug.md`、`design.md`、`scm.md`、`stack-set.md`、`convert.md`、`docs.md`、`explain.md`、`recap.md`、`schedule.md`、`video.md` があります。
+永続ワークフローは `oma-mode.md`、`orchestrate.md`、`work.md`、`ultrawork.md`、`ralph.md` です。非永続ワークフローには `plan.md`、`brainstorm.md`、`architecture.md`、`deepinit.md`、`review.md`、`security.md`、`debug.md`、`design.md`、`scm.md`、`stack-set.md`、`convert.md`、`docs.md`、`explain.md`、`recap.md`、`schedule.md`、`video.md` があります。
 
 ### agents/
 
@@ -489,7 +490,7 @@ Claude Code の Agent tool 用に整形されたサブエージェント定義�
 | `lessons-{sessionId}.md` | オーケストレーター | 実験の証拠に裏づけられた教訓（条件付き） |
 | `session-work.md` | Work ワークフロー | Work ワークフローのセッション状態 |
 | `session-ultrawork.md` | Ultrawork ワークフロー | Ultrawork 固有のフェーズ追跡 |
-| `session-ralph-{sessionId}.md` | Ralph ワークフロー | 1 回の Ralph 実行の基準、イテレーション記録、judge の結果 |
+| `session-oma-mode-{sessionId}.md` | oma-mode ワークフロー | 1 回の実行の基準、イテレーション記録、judge の結果 |
 | `session-cost-{sessionId}.md` | システム | セッションごとのコストテレメトリー |
 | `archive/metrics-{date}.md` | システム | アーカイブしたセッション指標（30日保持） |
 

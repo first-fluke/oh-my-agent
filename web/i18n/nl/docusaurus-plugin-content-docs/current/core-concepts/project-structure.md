@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ Hier staat de skillkennis. De huidige catalogus bevat 32 skilldirectories plus g
 - Een stapsgewijs uitvoeringsprotocol
 - Gate-definities (voor persistente workflows)
 
-Persistente workflows: `orchestrate.md`, `work.md`, `ultrawork.md` en `ralph.md`.
+Persistente workflows: `oma-mode.md`, `orchestrate.md`, `work.md`, `ultrawork.md` en `ralph.md`.
 Niet-persistente workflows zijn `plan.md`, `brainstorm.md`, `architecture.md`, `deepinit.md`, `review.md`, `security.md`, `debug.md`, `design.md`, `scm.md`, `stack-set.md`, `convert.md`, `docs.md`, `explain.md`, `recap.md`, `schedule.md` en `video.md`.
 
 ### agents/
@@ -490,7 +491,7 @@ Hier schrijven agenten hun voortgang tijdens orchestratiesessies. Dit is de cano
 | `lessons-{sessionId}.md` | Orchestrator | Lessen onderbouwd met experiment-evidence (conditioneel) |
 | `session-work.md` | Work-workflow | Sessiestatus voor Work |
 | `session-ultrawork.md` | Ultrawork-workflow | Fasebewaking voor Ultrawork |
-| `session-ralph-{sessionId}.md` | Ralph-workflow | Criteria, iteratieverslagen en judge-resultaten voor één Ralph-run |
+| `session-oma-mode-{sessionId}.md` | oma-mode-workflow | Criteria, iteratieverslagen en judge-resultaten voor één run |
 | `session-cost-{sessionId}.md` | Systeem | Kostenregistratie voor spawns in de sessie |
 | `archive/metrics-{date}.md` | Systeem | Gearchiveerde sessiemetrics (bewaartermijn 30 dagen) |
 

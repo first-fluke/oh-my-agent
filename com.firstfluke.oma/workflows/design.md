@@ -4,7 +4,6 @@ description: Design workflow that scopes a design task, selects the applicable d
 disable-model-invocation: true
 ---
 
-- **Response language: the user's prompt language first, then `language` in `.agents/oma-config.yaml`, then English.**
 - Follow `.agents/skills/_shared/core/execution-policy.md` for authorization, clarification, verification, and completion. Execute required steps on the selected path in dependency order; apply documented branch and skip conditions.
 - **Do NOT write implementation code.** This workflow produces findings, DESIGN.md, design tokens, and design guidance; implementation is handed to `oma-frontend` or `oma-mobile`.
 - Follow `.agents/skills/_shared/core/code-intelligence.md`: discover the configured provider’s tools; use native search only for paths outside this project or ignored paths when unavailable or timed out. Do not install a provider or track a repository automatically.

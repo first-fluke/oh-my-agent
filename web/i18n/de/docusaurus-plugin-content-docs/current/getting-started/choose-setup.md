@@ -45,11 +45,11 @@ Eine vorhandene CLI-Installation kann beim zweiten Befehl beginnen. Verwenden Si
 | `frontend` | Eine Einstellungsseite planen und dann ihr Formular implementieren | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Einen authentifizierten API-Endpunkt planen | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Arbeiten finden und ihre Belege vergleichen | Bitten Sie um eine Literaturrecherche mit Quellenangaben |
-| `all` | Ein Feature über UI, API und Daten koordinieren | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Ein Feature über UI, API und Daten koordinieren | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 `--preset` akzeptiert die [benannten Presets](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets). Ein unbekannter Name, ein leerer Wert oder `custom` wird vor der Installation abgelehnt. Um einzelne Skills auszuwählen, führen Sie `oma install` interaktiv aus und wählen Sie Custom. Ohne `--preset` wählt die unbeaufsichtigte Einrichtung mit `--yes` oder in CI `all`.
 
-Das Frontend-Preset wählt acht Skills. Presets wählen Skill-Inhalt; der Installer richtet weiterhin gemeinsame Dateien, alle Workflow- und Agentendefinitionen, Hooks und Provider ein. Manche Workflows brauchen Skills außerhalb eines Domänen-Presets. Prüfen Sie die [Workflow-Abhängigkeiten](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset), bevor Sie sie verwenden, oder wählen Sie `all` für jeden Workflow. Ein kleineres Preset auf einer bestehenden Installation entfernt andere Skills nicht.
+Das Frontend-Preset wählt neun Skills. Presets wählen Skill-Inhalt; der Installer richtet weiterhin gemeinsame Dateien, alle Workflow- und Agentendefinitionen, Hooks und Provider ein. Manche Workflows brauchen Skills außerhalb eines Domänen-Presets. Prüfen Sie die [Workflow-Abhängigkeiten](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset), bevor Sie sie verwenden, oder wählen Sie `all` für jeden Workflow. Ein kleineres Preset auf einer bestehenden Installation entfernt andere Skills nicht.
 
 Die Provider-Auswahl ist unabhängig von Presets. Fügen Sie zum Beispiel `--semantic-memory none` hinzu, wenn das Projekt keinen Dienst für semantisches Memory braucht. Siehe [Auswirkungen der Installation](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default) für die weiteren Dateien und Integrationen, die die Laufzeit konfiguriert.
 

@@ -11,6 +11,7 @@
     "./skills/oma-debug",
     "./skills/oma-design",
     "./skills/oma-frontend",
+    "./skills/oma-orchestration",
     "./skills/oma-pm",
     "./skills/oma-qa",
     "./skills/oma-scm"

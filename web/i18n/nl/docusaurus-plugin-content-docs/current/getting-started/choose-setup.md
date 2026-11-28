@@ -57,14 +57,14 @@ bereidt ook de runtime-afhankelijkheden voor vóór de interactieve setup.
 | `frontend` | Plan een instellingenpagina en implementeer daarna het formulier | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Plan een geauthenticeerd API-endpoint | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Zoek papers en vergelijk hun evidence | Vraag om een literatuurzoekopdracht met bronvermelding |
-| `all` | Coördineer een feature over UI, API en data | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Coördineer een feature over UI, API en data | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 De [benoemde presets](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets) worden door `--preset` geaccepteerd.
 Een onbekende naam, een lege waarde of `custom` wordt vóór de installatie geweigerd.
 Om afzonderlijke skills te kiezen voer je `oma install` interactief uit en kies je Custom.
 Zonder `--preset` kiest een onbeheerde `--yes`-/CI-setup `all`.
 
-De frontend-preset selecteert acht skills. Presets selecteren skillinhoud; de
+De frontend-preset selecteert negen skills. Presets selecteren skillinhoud; de
 installer zet nog steeds gedeelde bestanden, alle workflow- en agentdefinities,
 hooks en providers op. Sommige workflows hebben skills buiten een domeinpreset
 nodig. Controleer de

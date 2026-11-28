@@ -8,7 +8,7 @@ description: 32個のスキルパッケージ、12個のサブエージェント
 
 oh-my-agent は、AI 搭載 IDE と CLI ツール向けのマルチエージェント・オーケストレーションフレームワークです。1つの AI アシスタントにすべてを任せるのではなく、32個のスキルパッケージと13個の標準ディスパッチロールに作業を振り分けます。12個のリポジトリ内サブエージェント定義ファイルが、実装、レビュー、計画、デバッグ、ドキュメント、リサーチ、インフラの役割を再利用できる形で提供します。`research-explorer.md` は標準の `explore` ロールに対応し、`orchestrator` は個別の定義ファイルを持たないランタイム調整ロールです。
 
-OMA は、明示的に呼び出したとき、またはそのチェックを含むワークフローを選んだときに機械的なチェックを実行します。`oma verify agent <agent-type>` は選択したエージェント種別のチェックを実行し、`/ralph` は成果物を使った検証と [judge](./glossary.md#judge) ループを追加します。有効なベンダーの Stop フック（[停止ゲート](./glossary.md#stop-gate)）は、設定されたチェックが実行される間、ワークフローを継続できます。スキルを読み込んだだけでは受入は成立せず、通常のプロンプトだけで全ワークフローのゲートが自動実行されるわけでもありません。ワークフローの受入基準と生成されたファイルを使って、完了を判断してください。
+OMA は、明示的に呼び出したとき、またはそのチェックを含むワークフローを選んだときに機械的なチェックを実行します。`oma verify agent <agent-type>` は選択したエージェント種別のチェックを実行し、`/oma-mode` は完了基準に対する [judge](./glossary.md#judge) ループを追加します。有効なベンダーの Stop フック（[停止ゲート](./glossary.md#stop-gate)）は、設定されたチェックが実行される間、ワークフローを継続できます。スキルを読み込んだだけでは受入は成立せず、通常のプロンプトだけで全ワークフローのゲートが自動実行されるわけでもありません。ワークフローの受入基準と生成されたファイルを使って、完了を判断してください。
 
 システム全体は、プロジェクト内の可搬な `.agents/` ディレクトリに保存されます。Claude Code、Codex CLI、Antigravity CLI または IDE、Cursor、OpenCode など、サポート対象のツールを切り替えても、エージェント設定はコードと一緒に移動します。
 
@@ -34,13 +34,13 @@ OMA はスキルにドメインを割り当て、タスクをエージェント�
 
 ---
 
-## 現在のカタログ: 32スキル、12定義、20ワークフロー
+## 現在のカタログ: 32スキル、12定義、21ワークフロー
 
 カタログでは、混同しやすい3つを分けています。
 
 - **[スキル](./glossary.md#skill)**は `.agents/skills/*/SKILL.md` にある32個のドメイン知識パッケージです。自然言語の意図からルーティングし、リソースを段階的に読み込みます。
 - **[エージェント定義](./glossary.md#agent-definition)**は `.agents/agents/` にある12個のファイルです。ベンダーのネイティブなサブエージェント人格を提供し、1つ以上のスキルを参照します。
-- **[ワークフロー](./glossary.md#workflow)**は `.agents/workflows/` にある20個のプロセス定義です。4つ（`orchestrate`、`work`、`ultrawork`、`ralph`）が[永続的](./glossary.md#persistent-workflow)で、残りはレポートまで実行して永続モードを維持しません。
+- **[ワークフロー](./glossary.md#workflow)**は `.agents/workflows/` にある21個のプロセス定義です。5つ（`oma-mode`、`orchestrate`、`work`、`ultrawork`、`ralph`）が[永続的](./glossary.md#persistent-workflow)で、残りはレポートまで実行して永続モードを維持しません。
 
 以下では詳細なスキルカタログを保持します。名前や説明が変わった場合は、各 `SKILL.md` のフロントマターが最新の基準です。
 
@@ -166,7 +166,7 @@ oh-my-agent に必要なものはすべて `.agents/` ディレクトリにあ�
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -209,18 +209,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-出典：`.agents/hooks/core/keyword-detector.ts`（スラッシュコマンドのスキップ、明示的なモード名の照合）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`、および `.agents/workflows/` 配下のワークフローファイル。すべてのワークフローがすべてのゲートを持つわけではありません。`/orchestrate` は検証スクリプトを、`/review` は QA レビューを実行し、`/ralph` は [judge](./glossary.md#judge) を追加します。
+出典：`.agents/hooks/core/keyword-detector.ts`（スラッシュコマンドのスキップ、明示的なモード名の照合）、`.agents/hooks/core/skill-injector.ts`、`.agents/hooks/core/persistent-mode.ts`、および `.agents/workflows/` 配下のワークフローファイル。すべてのワークフローがすべてのゲートを持つわけではありません。`/orchestrate` は検証スクリプトを、`/review` は QA レビューを実行し、`/oma-mode` は [judge](./glossary.md#judge) を追加します。
 
 ---
 
@@ -264,7 +264,7 @@ HUD は Claude Code の `statusLine` フック機能を使う `.claude/hooks/hud
 ワークフローを起動するのはスラッシュコマンドです。通常のリクエストでは、oh-my-agent のフックシステムが `.agents/hooks/core/triggers.json`（`oma` バイナリにインライン化され、すべてのベンダーで共有されます）のキーワードテーブルに対して入力をスキャンします。対応言語は11言語（英語、韓国語、日本語、中国語、スペイン語、フランス語、ドイツ語、ポルトガル語、ロシア語、オランダ語、ポーランド語）です。
 
 - **スキルヒント**（例: 「run a security audit」）→ スキルインジェクターが一致するスキルを最大3つ挙げます。この注記は参考情報であり、ワークフローは開始しません
-- **永続ワークフロー**（`orchestrate`、`work`、`ultrawork`、`ralph`）→ 通常のテキストからは、プロンプトにワークフローの明示的な名前が含まれる場合のみ開始します（例: `ultrawork: add rate limiting`）
+- **永続ワークフロー**（`oma-mode`、`orchestrate`、`work`、`ultrawork`、`ralph`）→ 通常のテキストからは、プロンプトにワークフローの明示的な名前が含まれる場合のみ開始します（例: `ultrawork: add rate limiting`）
 - **その他のワークフロー** → 該当する `/command` からのみ開始します
 - **情報を尋ねる入力**（例: 「orchestrate とは？」）→ フィルターリングされ、ワークフローは起動しません
 - **明示的な `/command`** → 重複を避けるため、フックは検出をスキップします
@@ -301,5 +301,5 @@ oh-my-agent は Claude Code に限定されません。フック対応ベンダ�
 - **[インストール](./installation.md):** 3つのインストール方法、プリセット、CLI 設定、検証
 - **[エージェント](/docs/core-concepts/agents):** 32個のスキル、13個のディスパッチロール、承認と明確化のポリシーの詳細
 - **[スキル](/docs/core-concepts/skills):** 2層アーキテクチャの説明
-- **[ワークフロー](/docs/core-concepts/workflows):** トリガーとフェーズを含む20個のワークフロー
+- **[ワークフロー](/docs/core-concepts/workflows):** トリガーとフェーズを含む21個のワークフロー
 - **[使い方ガイド](/docs/guide/usage):** 単一タスクから完全なオーケストレーションまでの実例

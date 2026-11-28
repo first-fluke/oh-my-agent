@@ -45,11 +45,11 @@ Una instalación de CLI existente puede empezar por el segundo comando. Usa `oma
 | `frontend` | Planifica una página de ajustes y después implementa su formulario | `/plan`, `/design`, `/review`, `/debug` |
 | `backend` | Planifica un endpoint de API autenticado | `/plan`, `/architecture`, `/review`, `/debug` |
 | `research` | Encuentra artículos y compara su evidencia | Pide una búsqueda bibliográfica con citas |
-| `all` | Coordina una funcionalidad entre UI, API y datos | `/orchestrate`, `/work`, `/ultrawork`, `/ralph` |
+| `all` | Coordina una funcionalidad entre UI, API y datos | `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` |
 
 `--preset` acepta los [presets con nombre](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#presets). Un nombre desconocido, un valor vacío o `custom` se rechaza antes de la instalación. Para seleccionar habilidades individuales, ejecuta `oma install` de forma interactiva y elige Custom. Sin `--preset`, la configuración desatendida con `--yes` o CI selecciona `all`.
 
-El preset de frontend selecciona ocho habilidades. Los presets seleccionan contenido de habilidades; el instalador sigue configurando los archivos compartidos, todas las definiciones de flujos de trabajo y agentes, los hooks y los proveedores. Algunos flujos de trabajo necesitan habilidades fuera de un preset de dominio. Comprueba las [dependencias de los flujos de trabajo](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) antes de usarlos, o selecciona `all` para todos los flujos de trabajo. Un preset más pequeño en una instalación existente no elimina las demás habilidades.
+El preset de frontend selecciona nueve habilidades. Los presets seleccionan contenido de habilidades; el instalador sigue configurando los archivos compartidos, todas las definiciones de flujos de trabajo y agentes, los hooks y los proveedores. Algunos flujos de trabajo necesitan habilidades fuera de un preset de dominio. Comprueba las [dependencias de los flujos de trabajo](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#workflows-that-need-skills-outside-a-preset) antes de usarlos, o selecciona `all` para todos los flujos de trabajo. Un preset más pequeño en una instalación existente no elimina las demás habilidades.
 
 Las elecciones de proveedor son independientes de los presets. Por ejemplo, añade `--semantic-memory none` cuando el proyecto no necesite un servicio de memoria semántica. Consulta los [efectos de la instalación](https://firstfluke.com/oh-my-agent/docs/getting-started/installation/#what-the-installer-also-does-by-default) para los demás archivos e integraciones que configura el runtime.
 

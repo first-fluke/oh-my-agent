@@ -7,7 +7,7 @@ description: Подробный обзор oh-my-agent — фреймворка 
 
 oh-my-agent — это фреймворк оркестрации нескольких агентов для IDE и CLI с поддержкой AI; он распределяет работу между 32 пакетами навыков и 13 каноническими ролями dispatch. Двенадцать хранимых в репозитории файлов определений субагентов предоставляют повторно используемые роли для реализации, ревью, планирования, отладки, документации, исследований и инфраструктуры. `research-explorer.md` сопоставляется с канонической ролью `explore`; `orchestrator` — это runtime-роль координации без отдельного файла определения.
 
-OMA выполняет механические проверки, когда вы вызываете их или выбираете рабочий процесс, в который они входят. `oma verify agent <agent-type>` запускает проверки для выбранного типа агента; `/ralph` добавляет проверку на основе артефактов и цикл [judge](./glossary.md#judge); включённые Stop-хуки вендора ([stop gate](./glossary.md#stop-gate)) могут удерживать рабочий процесс открытым, пока выполняются его настроенные проверки. Одной загрузки навыка недостаточно для приёмки, а обычный prompt не запускает автоматически все шлюзы рабочего процесса. Определяйте завершённость по критериям приёмки рабочего процесса и созданным файлам.
+OMA выполняет механические проверки, когда вы вызываете их или выбираете рабочий процесс, в который они входят. `oma verify agent <agent-type>` запускает проверки для выбранного типа агента; `/oma-mode` добавляет цикл [judge](./glossary.md#judge) по критериям завершения; включённые Stop-хуки вендора ([stop gate](./glossary.md#stop-gate)) могут удерживать рабочий процесс открытым, пока выполняются его настроенные проверки. Одной загрузки навыка недостаточно для приёмки, а обычный prompt не запускает автоматически все шлюзы рабочего процесса. Определяйте завершённость по критериям приёмки рабочего процесса и созданным файлам.
 
 Вся система находится в переносимом каталоге `.agents/` внутри проекта. Можно переключаться между Claude Code, Codex CLI, Antigravity CLI или IDE, Cursor, OpenCode и другими поддерживаемыми инструментами, сохраняя конфигурацию агента вместе с кодом.
 
@@ -35,13 +35,13 @@ OMA назначает области навыкам и направляет р�
 
 ---
 
-## Текущий каталог: 32 навыка, 12 определений, 20 рабочих процессов
+## Текущий каталог: 32 навыка, 12 определений, 21 рабочий процесс
 
 Каталог разделяет три вещи, которые легко перепутать:
 
 - **[Навыки](./glossary.md#skill)** — 32 пакета знаний предметных областей в `.agents/skills/*/SKILL.md`. Они маршрутизируются по намерению, выраженному естественным языком, и постепенно загружают ресурсы.
 - **[Определения агентов](./glossary.md#agent-definition)** — 12 файлов в `.agents/agents/`. Они предоставляют нативные для вендоров роли субагентов и ссылаются на один или несколько навыков.
-- **[Рабочие процессы](./glossary.md#workflow)** — 20 определений процессов в `.agents/workflows/`. Четыре процесса [постоянные](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` и `ralph`); остальные завершаются отчётом и не сохраняют постоянный режим.
+- **[Рабочие процессы](./glossary.md#workflow)** — 21 определение процессов в `.agents/workflows/`. Пять процессов [постоянные](./glossary.md#persistent-workflow) (`oma-mode`, `orchestrate`, `work`, `ultrawork` и `ralph`); остальные завершаются отчётом и не сохраняют постоянный режим.
 
 Ниже сохранён подробный каталог навыков. Если имя или описание меняется, авторитетным источником служит frontmatter актуального `SKILL.md`.
 
@@ -167,7 +167,7 @@ oh-my-agent использует двухслойную архитектуру �
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -210,18 +210,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Источники: `.agents/hooks/core/keyword-detector.ts` (пропуск slash-команд, сопоставление явного имени режима), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` и файлы рабочих процессов в `.agents/workflows/`. Не в каждом рабочем процессе есть все шлюзы: `/orchestrate` запускает скрипт проверки, `/review` — ревью QA, а `/ralph` добавляет [judge](./glossary.md#judge).
+Источники: `.agents/hooks/core/keyword-detector.ts` (пропуск slash-команд, сопоставление явного имени режима), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` и файлы рабочих процессов в `.agents/workflows/`. Не в каждом рабочем процессе есть все шлюзы: `/orchestrate` запускает скрипт проверки, `/review` — ревью QA, а `/oma-mode` добавляет [judge](./glossary.md#judge).
 
 ---
 
@@ -264,7 +264,7 @@ HUD работает через `.claude/hooks/hud.ts`, используя во�
 Рабочий процесс запускает slash-команда. Для обычного запроса система хуков oh-my-agent сканирует ввод по таблицам ключевых слов в `.agents/hooks/core/triggers.json` (они встроены в бинарный файл `oma` и общие для всех вендоров), охватывающим 11 языков (английский, корейский, японский, китайский, испанский, французский, немецкий, португальский, русский, нидерландский и польский).
 
 - **Подсказки навыков** (например, «run a security audit») → инжектор навыков называет до трёх подходящих навыков; эта заметка носит рекомендательный характер и не запускает рабочий процесс
-- **Постоянные рабочие процессы** (`orchestrate`, `work`, `ultrawork`, `ralph`) → запускаются из обычного текста, только если запрос использует явное имя рабочего процесса (например, `ultrawork: add rate limiting`)
+- **Постоянные рабочие процессы** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → запускаются из обычного текста, только если запрос использует явное имя рабочего процесса (например, `ultrawork: add rate limiting`)
 - **Любой другой рабочий процесс** → запускается только по своей `/command`
 - **Информационный ввод** (например, «what is orchestrate?») → отфильтровывается, рабочий процесс не запускается
 - **Явный `/command`** → хук пропускает обнаружение, чтобы избежать дублирования
@@ -301,5 +301,5 @@ oh-my-agent не ограничен Claude Code. Вендоры с поддер�
 - **[Установка](./installation.md)**: три способа установки, пресеты, настройка CLI и проверка
 - **[Агенты](/docs/core-concepts/agents)**: подробный разбор 32 навыков, 13 ролей dispatch и политики авторизации и уточнений
 - **[Навыки](/docs/core-concepts/skills)**: объяснение двухслойной архитектуры
-- **[Рабочие процессы](/docs/core-concepts/workflows)**: все 20 рабочих процессов с триггерами и фазами
+- **[Рабочие процессы](/docs/core-concepts/workflows)**: все 21 рабочий процесс с триггерами и фазами
 - **[Руководство по использованию](/docs/guide/usage)**: реальные примеры — от одной задачи до полной оркестрации

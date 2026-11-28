@@ -20,15 +20,16 @@ export const WORKFLOW_DEPENDENCIES: Readonly<
   design: { required: ["oma-design"], conditional: ["oma-image"] },
   docs: { required: ["oma-docs"], conditional: [] },
   explain: { required: ["oma-explanation"], conditional: [] },
+  // The router has no entry prerequisite: it falls back to whichever routes
+  // the selected preset can run, so it must be exposed in every install.
+  "oma-mode": { required: [], conditional: ["oma-qa"] },
   orchestrate: {
     required: ["oma-orchestration", "oma-qa"],
     conditional: ["oma-pm", "oma-refactor"],
   },
   plan: { required: ["oma-pm"], conditional: [] },
-  ralph: {
-    required: ["oma-pm", "oma-qa"],
-    conditional: ["oma-refactor", "oma-scm"],
-  },
+  // Deprecated alias of oma-mode; it shares the router's (empty) entry set.
+  ralph: { required: [], conditional: ["oma-qa"] },
   recap: { required: ["oma-recap"], conditional: [] },
   review: { required: ["oma-qa"], conditional: [] },
   schedule: { required: [], conditional: [] },

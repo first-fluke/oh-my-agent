@@ -107,7 +107,7 @@ State plainly to the user: **"Demo capture is performed by a human."** Then:
 |-----------|--------|
 | No provider for a required capability | Exit 5, print `Run: oma video doctor` |
 | HyperFrames or MPT toolchain not bootstrapped | Exit 1 + `oma video doctor` remediation; retain render-spec and authored composition for recovery |
-| No speech backend reachable (Voicebox / VoiceStudio) | Fall back to estimated timing; still emit captions (whisper.cpp hop deferred: `TODO(oma-deferred): whisper-cpp`) |
+| No speech backend reachable (Voicebox / VoiceStudio) | Fall back to estimated timing; still emit captions (no whisper.cpp hop is wired) |
 | `--visual stock` / `--visual aigc` with the key absent | Skip provider; fall through to oma-image stills; annotate coverage in `warnings` |
 | `demo` with no capture + no Cap | Guided protocol (Step 4b); stop without rendering |
 | `--capture` outside `$PWD` or wrong format | Exit 4 with the path/format problem |

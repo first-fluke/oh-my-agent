@@ -9,11 +9,11 @@ description: "Nutzungsanleitung für OMA mit aufgabenorientierter Auswahl, Einze
 ## Schnellstart
 
 1. Öffne dein Projekt in einer ausgewählten KI-IDE oder CLI (Claude Code, Codex CLI, Cursor, Antigravity, OpenCode, Kimi, Kiro, Qwen oder einem anderen unterstützten Host).
-2. Der ausgewählte Host kann [Skills](../getting-started/glossary.md#skill) aus `.agents/skills/` laden; aktivierte Hooks ergänzen anhand natürlichsprachlicher Keywords Skill-Hinweise und starten einen [Workflow](../getting-started/glossary.md#workflow) nur über seinen Slash-Befehl oder, bei den vier persistenten Modi, über seinen Namen.
+2. Der ausgewählte Host kann [Skills](../getting-started/glossary.md#skill) aus `.agents/skills/` laden; aktivierte Hooks ergänzen anhand natürlichsprachlicher Keywords Skill-Hinweise und starten einen [Workflow](../getting-started/glossary.md#workflow) nur über seinen Slash-Befehl oder, bei den fünf persistenten Modi, über seinen Namen.
 3. Beschreibe in natürlicher Sprache, was du brauchst. Der Host oder der ausgewählte Workflow routet die Aufgabe an den passenden Skill.
 4. Für Multi-Agenten-Arbeit verwende `/work` oder `/orchestrate`.
 
-Aufgaben in einer einzelnen Domäne brauchen keine besondere Syntax. Nutze die [Auswahlhilfe für Skills und Workflows](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), um zwischen einem einzelnen Skill, `/work`, `/orchestrate`, `/ultrawork` und `/ralph` zu wählen. Siehe [Schnellstart](../getting-started/quick-start.md) für die Einrichtung und [Wichtige Defaults](../getting-started/important-defaults.md), bevor du Anbieter änderst.
+Aufgaben in einer einzelnen Domäne brauchen keine besondere Syntax. Nutze die [Auswahlhilfe für Skills und Workflows](/docs/core-concepts/workflows#choosing-a-skill-or-workflow), um zwischen einem einzelnen Skill, `/oma-mode`, `/work`, `/ultrawork`, `/ralph` und `/orchestrate` zu wählen. Siehe [Schnellstart](../getting-started/quick-start.md) für die Einrichtung und [Wichtige Defaults](../getting-started/important-defaults.md), bevor du Anbieter änderst.
 
 ## Leitfaden wählen
 
@@ -245,8 +245,9 @@ Cross-Vendor-Aufgaben und `model_preset: free` verwenden `oma agent spawn`. Der 
 
 | Befehl | Typ | Zweck | Wann verwenden |
 |---------|------|-------------|-------------|
+| `/oma-mode` | Persistent | Ziel entgegennehmen, Route wählen, sie ausführen und weitermachen, bis die Abschlussbedingung erfüllt oder ein Limit erreicht ist | Wenn du ein Ziel übergeben möchtest, statt einen Workflow auszuwählen |
 | `/orchestrate` | Persistent | Plan laden oder erstellen und parallele Ausführung mit Überwachung und Verifikation delegieren | Unabhängige Aufgaben für automatisierte Koordination |
-| `/work` | Persistent | Schrittweise Multi-Domain-Planung, Implementierung und QA im autorisierten Umfang | Features über mehrere Domänen mit Koordinationsbedarf |
+| `/work` | Persistent | PM-Plan, parallele Implementierung und ein QA-Durchlauf über das Gesamtergebnis, im autorisierten Umfang | Features über mehrere Domänen, wenn du den PM-geführten Ablauf möchtest |
 | `/ultrawork` | Persistent | Qualitätsworkflow mit 5 Phasen, 17 Schritten und 12 isolierten Review-Prüfpunkten | Maximale Qualität bei produktionskritischem Code |
 | `/plan` | Nicht-persistent | PM-gesteuerte Aufgabenzerlegung, API-Verträge und nachverfolgte Plan-Artefakte in `docs/plans/work/` (fortlaufendes `NNN-name.md`, Feld `Status`) | Vor komplexer Multi-Agenten-Arbeit oder bei benötigten Entscheidungsprotokollen |
 | `/brainstorm` | Nicht-persistent | Design-first-Ideenfindung mit 2–3 Ansätzen | Vor der Festlegung auf einen Implementierungsansatz |
@@ -264,13 +265,13 @@ Cross-Vendor-Aufgaben und `model_preset: free` verwenden `oma agent spawn`. Der 
 | `/recap` | Nicht-persistent | Arbeit über unterstützte KI-Tool-Historien zusammenfassen | Tages- oder Zeitraum-Retrospektiven |
 | `/schedule` | Nicht-persistent | Wiederkehrende Agentenjobs registrieren | Nächtliche Recaps, Scans oder Wartung |
 | `/video` | Nicht-persistent | Reproduzierbare Videos aus Skripten, Narration und Visuals erstellen | Shorts, Erklär- und Demo-Videos |
-| `/ralph` | Persistent | Ultrawork wiederholt ausführen, mit per Prompt gesteuertem Judge und Schleifenschutz | Ausdrückliche Aufträge, die Ausführung zu wiederholen, bis mechanische Abschlusskriterien bestehen |
+| `/ralph` | Persistent | Veralteter Alias von `/oma-mode` | `/oma-mode` |
 
 ---
 
 ## Beispiele für Auto-Erkennung
 
-Der Keyword-Hook startet nur vier persistente Modi, und nur, wenn der Prompt den Modus beim Namen nennt. Andere Workflows starten über ihren Slash-Befehl.
+Der Keyword-Hook startet nur fünf persistente Modi, und nur, wenn der Prompt den Modus beim Namen nennt. Andere Workflows starten über ihren Slash-Befehl.
 
 | Eingabe | Erkannter Workflow | Sprache |
 |----------|------------------|----------|
@@ -435,7 +436,7 @@ Häufige Probleme stehen unten. Für Fehlermeldungen, fehlgeschlagene Laufergebn
 | Dashboard zeigt „No agents detected yet“ | Agenten haben noch nicht ins Memory geschrieben, oder das Dashboard überwacht ein anderes Verzeichnis | Auf die erste Fortschrittsdatei warten; aus dem Projektstamm ausführen oder `--project-root <path>` übergeben |
 | `oma dashboard web` beendet sich mit „port 9847 is already in use“ | Ein anderer Prozess belegt den Port | `DASHBOARD_PORT=8080 oma dashboard web` |
 | QA-Bericht enthält mehr als 50 Befunde | Für das erste Review einer großen Codebasis normal | Zuerst CRITICAL und HIGH bearbeiten; MEDIUM/LOW für spätere Sprints dokumentieren |
-| Ein persistenter Modus startet, obwohl du nur seinen Namen erwähnt hast | Der Prompt nennt `orchestrate`, `ultrawork`, `work mode` oder `ralph` außerhalb einer Frage oder eines Codeblocks | „workflow done“ sagen, um ihn freizugeben. Fehltrigger melden, damit die Erkennung verbessert werden kann. |
+| Ein persistenter Modus startet, obwohl du nur seinen Namen erwähnt hast | Der Prompt nennt `oma-mode`, `orchestrate`, `ultrawork`, `work mode` oder `ralph` außerhalb einer Frage oder eines Codeblocks | „workflow done“ sagen, um ihn freizugeben. Fehltrigger melden, damit die Erkennung verbessert werden kann. |
 | Persistenter Workflow stoppt nicht | Zustandsdatei existiert noch | Im Chat „workflow done“ sagen oder Zustandsdatei manuell aus `.agents/state/` löschen |
 | Agent bei HIGH-Klärung blockiert | Anforderungen zu unklar | Angeforderte Antworten geben und anschließend erneut ausführen |
 | MCP-Tools funktionieren nicht | Serena nicht konfiguriert oder nicht gestartet | `oma doctor` zur Prüfung der MCP-Konfiguration ausführen |

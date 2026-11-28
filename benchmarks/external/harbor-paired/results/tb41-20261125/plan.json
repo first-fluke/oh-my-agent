@@ -1,0 +1,737 @@
+{
+  "created_at_utc": "2026-11-25T12:47:56Z",
+  "dataset": "terminal-bench/terminal-bench@4.1.0",
+  "dataset_tree_sha256": "91976563780617c655713b0d80b7852a90e4e3f2c37ed5e9f6457831e578c8fa",
+  "dataset_path": "~/.cache/oma-benchmarks/harbor-paired/tb41-20261125/dataset/terminal-bench",
+  "harbor_version": "0.27.0",
+  "model": "openai/gpt-6.2-sol",
+  "reasoning_effort": "codex-default",
+  "codex_version": "0.172.0",
+  "oma_version": "21.2.0",
+  "attempts_per_task": 1,
+  "concurrency_per_arm": 1,
+  "agent_setup_timeout_multiplier": 3.0,
+  "seed": 20261125,
+  "batch_size": 5,
+  "eligibility": {
+    "max_cpus": 4,
+    "max_memory_mb": 4096,
+    "max_gpus": 0
+  },
+  "eligible_tasks": 33,
+  "arms": {
+    "control": "codex",
+    "treatment": "oma_agent:OmaCodex"
+  },
+  "tasks": [
+    {
+      "name": "atrx-vep-crispr",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "batched-eval-parity",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "biped-contact-dynamics",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "bun-sourcemap-leak",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "cad-model",
+      "difficulty": null,
+      "category": "Hardware",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "cargo-flight-dispatch",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "coq-block-bound",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "ctr-optimization",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "cumulative-layout-shift",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "data-anonymization",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "distributed-dedup",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 8,
+      "memory_mb": 16384,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "embedding-drift-monitor",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "fin-saccr-rwa",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "foodstuff-beta-activity",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "formal-crypto",
+      "difficulty": null,
+      "category": "Security",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 8,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "fp8-rmsnorm-gemm",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 16384,
+      "gpus": 1,
+      "eligible": false
+    },
+    {
+      "name": "freecad-impeller",
+      "difficulty": null,
+      "category": "Hardware",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "freecad-platform-drawing",
+      "difficulty": null,
+      "category": "Hardware",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "freecad-spring-clip",
+      "difficulty": null,
+      "category": "Hardware",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "freight-dispatch-shift",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "glycan-ms2-elucidation",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "gsea-proteomics",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "heat-pump-warranty",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "hof-topology-interpenetration",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "html-js-filter",
+      "difficulty": null,
+      "category": "Security",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "interleaved-vigenere",
+      "difficulty": null,
+      "category": "Security",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "intrastat-meldung",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "jax-speedrun-gpu",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 16,
+      "memory_mb": 32768,
+      "gpus": 1,
+      "eligible": false
+    },
+    {
+      "name": "ks-solver-cpp",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "kv-live-surgery",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "lake-temp-glm",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 8,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "layout-config-recreation",
+      "difficulty": null,
+      "category": "Media",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "layout-config-recreation2",
+      "difficulty": null,
+      "category": "Media",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "legacy-utility-triage",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "live-database-cutover",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 16,
+      "memory_mb": 16384,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "math-eval-grader",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 8,
+      "memory_mb": 16384,
+      "gpus": 1,
+      "eligible": false
+    },
+    {
+      "name": "medical-claims-processing",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 16384,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "mp-checkpoint-consolidation",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "music-harmony",
+      "difficulty": null,
+      "category": "Media",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "mvcc-lsm-compaction",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "nextjs-performance",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "ontology-kg-querying",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "payments-pipeline-fix",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "photonic-waveguide-routing",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "pretrain-shard-corruption",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "production-planning",
+      "difficulty": null,
+      "category": "Operations",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "protein-autointerp-disulfide",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "react-lead-form",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "retro-console-soc",
+      "difficulty": null,
+      "category": "Hardware",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "risk-scorer-replay",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "roy-polymorph-cn",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "rs-archive-clone",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "satb-audio-transcription",
+      "difficulty": null,
+      "category": "Media",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "session-window-debug",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "sglang-qwen-burst",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "shadow-relay",
+      "difficulty": null,
+      "category": "Security",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 8,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "sound-change-cascade",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "takens-embedding-lean",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 4,
+      "memory_mb": 16384,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "telecom-entity-resolution",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "uefi-bootkit",
+      "difficulty": null,
+      "category": "Security",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 16384,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "vba-userform-port",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "vf2-speedup-networkx",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "vllm-deepseek-streaming",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "vpp-loss-divergence",
+      "difficulty": null,
+      "category": "ML",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 8192,
+      "gpus": 0,
+      "eligible": false
+    },
+    {
+      "name": "wal-recovery-ordering",
+      "difficulty": null,
+      "category": "Software",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 2,
+      "memory_mb": 4096,
+      "gpus": 0,
+      "eligible": true
+    },
+    {
+      "name": "wdm-design",
+      "difficulty": null,
+      "category": "Science",
+      "agent_timeout_sec": 28800.0,
+      "cpus": 8,
+      "memory_mb": 16384,
+      "gpus": 0,
+      "eligible": false
+    }
+  ],
+  "batches": [
+    [
+      "retro-console-soc",
+      "fin-saccr-rwa",
+      "music-harmony",
+      "react-lead-form",
+      "production-planning"
+    ],
+    [
+      "freecad-impeller",
+      "rs-archive-clone",
+      "photonic-waveguide-routing",
+      "bun-sourcemap-leak",
+      "gsea-proteomics"
+    ],
+    [
+      "freecad-spring-clip",
+      "freight-dispatch-shift",
+      "coq-block-bound",
+      "risk-scorer-replay",
+      "wal-recovery-ordering"
+    ],
+    [
+      "session-window-debug",
+      "vllm-deepseek-streaming",
+      "roy-polymorph-cn",
+      "sound-change-cascade",
+      "mvcc-lsm-compaction"
+    ],
+    [
+      "freecad-platform-drawing",
+      "cargo-flight-dispatch",
+      "interleaved-vigenere",
+      "ontology-kg-querying",
+      "embedding-drift-monitor"
+    ],
+    [
+      "glycan-ms2-elucidation",
+      "kv-live-surgery",
+      "batched-eval-parity",
+      "foodstuff-beta-activity",
+      "mp-checkpoint-consolidation"
+    ],
+    [
+      "heat-pump-warranty",
+      "nextjs-performance",
+      "atrx-vep-crispr"
+    ]
+  ]
+}

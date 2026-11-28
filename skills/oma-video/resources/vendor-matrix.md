@@ -9,12 +9,12 @@ chain falls through to a key-free default.
 
 ## Capabilities -> providers
 
-| Capability | order (config) | real (key/resource) | key-free fallback | marker |
+| Capability | order (config) | real (key/resource) | key-free fallback | not wired |
 |------------|----------------|---------------------|-------------------|--------|
 | script | `[agent-script]` | agent-authored script (agent-as-key) | — | — |
 | voice | `[oma-voice]` | Voicebox MCP or VoiceStudio REST TTS + STT timing (`voice.backend`) | estimated timing (no wav) | — |
-| visual | by `--visual` and mode (see Visual chain) | oma-slide frame · Pexels stock · Pixelle AIGC | static oma-image stills, else a placeholder | `TODO(oma-deferred): pixelle` |
-| caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | `TODO(oma-deferred): oma-translation` |
+| visual | by `--visual` and mode (see Visual chain) | oma-slide frame · Pexels stock · Pixelle AIGC | static oma-image stills, else a placeholder | Pixelle live call |
+| caption | `[oma-captions]` | oma-translation for non-source locale | source-locale text from timing | oma-translation call |
 | capture | Cap / guided capture | Human-recorded video ingestion | guided protocol + `--capture <path>` | — |
 | compositor | `[hyperframes, mpt]` | HyperFrames live render (wired, default) · MPT custom-script | none: missing toolchain, failed render, or invalid output fails with diagnostics | — |
 
@@ -60,7 +60,7 @@ chain falls through to a key-free default.
 | Synthesize | MCP `voicebox_speak{text, profile, language}` -> `generation_id` (REST `POST /speak` fallback) |
 | Retrieve wav | REST `GET /audio/{generation_id}` (MCP has no save-to-disk) |
 | Timing (real) | MCP `voicebox_transcribe{audio_path}` on the wav -> `source: voicebox-stt` (REST `POST /transcribe` fallback) |
-| Timing (fallback) | `estimated` (no wav written, `audio` field empty); a whisper.cpp hop is reserved but not wired (`TODO(oma-deferred): whisper-cpp`) |
+| Timing (fallback) | `estimated` (no wav written, `audio` field empty); a whisper.cpp hop is reserved but not wired |
 | Side effect | Narration plays on the speakers during synthesis |
 
 ### VoiceStudio backend
@@ -115,7 +115,7 @@ through. Any live failure degrades to estimated timing with a warning.
 | Auth | `RUNNINGHUB_API_KEY` env var; cost gates on RunningHub credits via `--max-usd` |
 | Enabled | the key is present and Pixelle leads the chain (`--visual aigc`); never auto-connects |
 | Fallback | absent/declined -> oma-image stills |
-| Marker | `TODO(oma-deferred): pixelle` on the real-call branch: the live MCP call is not wired, so a selected Pixelle scene gets a placeholder |
+| Status | The live MCP call is not wired, so a selected Pixelle scene gets a placeholder |
 
 ## Cap (CaptureProvider, demo) — Tier 3 guided
 

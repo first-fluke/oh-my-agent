@@ -33,7 +33,7 @@ description: oh-my-agent 术语的简短定义，涵盖技能、工作流、预�
 
 ### 持久化工作流 {#persistent-workflow}
 
-持久化工作流会跨轮次持续运行，直到工作完成或你将其停用。持久化工作流包括 `/orchestrate`、`/work`、`/ultrawork` 和 `/ralph`，只有显式调用才会激活持久化模式。工作流处于活动状态时，钩子会在每条提示中重新注入 `[OMA PERSISTENT MODE: ...]`，Stop 钩子会阻止会话结束，直到达到强化次数上限或过期超时。说 `workflow done` 即可停用。参见[持久化模式机制](../core-concepts/workflows.md#persistent-mode-mechanics)。
+持久化工作流会跨轮次持续运行，直到工作完成或你将其停用。持久化工作流包括 `/oma-mode`、`/orchestrate`、`/work`、`/ultrawork` 以及已弃用别名 `/ralph`，只有显式调用才会激活持久化模式。工作流处于活动状态时，钩子会在每条提示中重新注入 `[OMA PERSISTENT MODE: ...]`，Stop 钩子会阻止会话结束，直到达到强化次数上限或过期超时。说 `workflow done` 即可停用。参见[持久化模式机制](../core-concepts/workflows.md#persistent-mode-mechanics)。
 
 ### 停止关卡 {#stop-gate}
 
@@ -70,7 +70,7 @@ flowchart LR
 
 ### Judge {#judge}
 
-“Judge”有两种含义。在 `/ralph` 中，judge 是每次 ultrawork 迭代后的阶段，它对照项目实际状态检查每个完成标准，并记录 PASS、FAIL、REGRESSED 或 BLOCKED。该阶段由另行启动、使用全新上下文的智能体执行，因此编排器不会给自己的工作打分。在技能评估和优化中，`judge` 是默认的检查器类型：由模型依据评分标准给某个分支的输出打分，并返回 PASS 或 FAIL。参见 [/ralph](../core-concepts/workflows.md#ralph) 和 [judge 检查器](../guide/skill-eval.md#judge-default)。
+“Judge”有两种含义。在 `/oma-mode` 中，judge 是每次迭代后的步骤，它对照项目实际状态检查每个完成标准，并记录 PASS、FAIL、REGRESSED 或 BLOCKED。该步骤由另行启动、使用全新上下文的智能体执行，因此执行工作的会话不会给自己的工作打分。在技能评估和优化中，`judge` 是默认的检查器类型：由模型依据评分标准给某个分支的输出打分，并返回 PASS 或 FAIL。参见 [/oma-mode](../core-concepts/workflows.md#oma-mode) 和 [judge 检查器](../guide/skill-eval.md#judge-default)。
 
 ### 跨上下文审查（CCR） {#cross-context-review-ccr}
 

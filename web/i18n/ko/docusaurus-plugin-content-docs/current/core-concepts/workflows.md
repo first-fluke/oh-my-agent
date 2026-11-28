@@ -1,22 +1,23 @@
 ---
 title: 워크플로우
-description: OMA의 20개 워크플로우 레퍼런스입니다. 슬래시 명령, 지속·비지속 모드, 11개 언어의 트리거 키워드, 단계, 읽기·쓰기 파일, triggers.json과 keyword-detector.ts를 통한 자동 감지, 정보성 패턴 필터링, 지속 모드 상태 관리를 다룹니다.
+description: OMA의 21개 워크플로우 레퍼런스입니다. 슬래시 명령, 지속·비지속 모드, 11개 언어의 트리거 키워드, 단계, 읽기·쓰기 파일, triggers.json과 keyword-detector.ts를 통한 자동 감지, 정보성 패턴 필터링, 지속 모드 상태 관리를 다룹니다.
 ---
 
 # 워크플로우
 
-워크플로우는 슬래시 명령으로 시작하는 구조화된 다단계 프로세스이며, 지속 모드 네 가지는 평범한 요청에서 그 이름을 부를 때도 시작됩니다. 단일 단계 유틸리티부터 복잡한 5단계 품질 게이트까지 에이전트가 태스크에서 어떻게 협업하는지 정의합니다.
+워크플로우는 슬래시 명령으로 시작하는 구조화된 다단계 프로세스이며, 지속 모드 다섯 가지는 평범한 요청에서 그 이름을 부를 때도 시작됩니다. 단일 단계 유틸리티부터 복잡한 5단계 품질 게이트까지 에이전트가 태스크에서 어떻게 협업하는지 정의합니다.
 
-20개의 워크플로우가 있으며, 그 중 4개는 [지속](../getting-started/glossary.md#persistent-workflow) 워크플로우입니다(상태를 유지하며 실수로 중단할 수 없습니다).
+21개의 워크플로우가 있으며, 그 중 5개는 [지속](../getting-started/glossary.md#persistent-workflow) 워크플로우입니다(상태를 유지하며 실수로 중단할 수 없습니다).
 
 ## 워크플로우 한눈에 보기
 
 | 워크플로우 | 용도 | 지속 |
 |---|---|---|
-| [`/orchestrate`](#orchestrate) | 계획에 따른 자동 병렬 에이전트 실행과 검증 루프 | 예 |
-| [`/work`](#work) | 계획, 구현, QA, 수정으로 이어지는 단계별 멀티 도메인 조율 | 예 |
+| [`/oma-mode`](#oma-mode) | 자율 모드: 목표를 말하면 경로를 고르고 실행하며, 목표를 달성할 때까지 계속 진행 | 예 |
+| [`/work`](#work) | 한 번의 실행으로 끝내는 멀티 도메인 구축: PM 계획, 병렬 구현, 전체 결과 QA, 수정 루프 | 예 |
 | [`/ultrawork`](#ultrawork) | 12개의 격리된 리뷰 스텝을 포함한 5단계 품질 워크플로우 | 예 |
-| [`/ralph`](#ralph) | 기계적으로 검증 가능한 기준을 통과할 때까지 ultrawork 반복 | 예 |
+| [`/ralph`](#ralph) | 사용 중단된 `/oma-mode` 별칭 | 예 |
+| [`/orchestrate`](#orchestrate) | 기존 계획 실행: 병렬 디스패치와 태스크별 검증 | 예 |
 | [`/plan`](#plan) | 의존성과 API 컨트랙트를 포함한 PM 태스크 분해 | 아니오 |
 | [`/brainstorm`](#brainstorm) | 기획 전 디자인 우선 아이디어 탐색 | 아니오 |
 | [`/architecture`](#architecture) | 아키텍처 결정, 리뷰, ADR | 아니오 |
@@ -43,14 +44,14 @@ description: OMA의 20개 워크플로우 레퍼런스입니다. 슬래시 명�
 | 작업에 필요한 것 | 선택 | 예시 |
 |---|---|---|
 | 에이전트 간 조율이 필요 없는 단일 도메인 작업 | [단일 스킬](/docs/guide/single-skill) | API 엔드포인트를 추가하고 유효성 검사를 테스트 |
-| 여러 도메인에 걸친 단계별 계획, 구현, QA | `/work` | API 변경과 웹, 모바일 클라이언트 수정을 조율 |
-| 독립적인 태스크의 자동 위임과 병렬 실행 | `/orchestrate` | 의존성을 정리한 뒤 백엔드와 프론트엔드 태스크를 병렬로 구현 |
+| 워크플로우를 고르지 않고 완료까지 맡기고 싶은 목표 | `/oma-mode` | 이 앱에 로그인을 추가하고 검사를 통과할 때까지 계속 진행 |
+| 여러 도메인에 걸친 작업을 한 번의 실행으로 계획, 구현, 리뷰 | `/work` | API 변경과 웹, 모바일 클라이언트 수정을 조율 |
 | 명시적으로 요청한 종합 품질 검토 절차 | `/ultrawork` | 계획, 구현, 검증, 개선, 출시 준비 상태를 모두 리뷰 |
-| 기계적으로 검증 가능한 기준을 통과할 때까지 반복 실행하라는 명시적 요청 | `/ralph` | 안전장치가 허용하는 범위에서 지정한 회귀 검사를 통과할 때까지 구현과 judge 검증을 반복 |
+| 작성된 그대로 실행하고 태스크마다 따로 검증해야 하는 계획 | `/orchestrate` | `/plan`의 태스크를 병렬로 실행하고 태스크별로 completed, partial, failed 상태를 확인 |
 
-`/orchestrate`는 사용할 수 있는 계획을 불러오거나, 에이전트를 실행하기 전에 `/plan`으로 계획을 직접 생성합니다. 사용자가 `/plan`을 먼저 실행할 필요는 없습니다. 따라서 기존 계획의 유무가 아니라 작업을 어떻게 조율할지에 따라 `/work`와 `/orchestrate`를 선택합니다. 두 워크플로우 모두 독립적인 태스크를 병렬로 실행할 수 있습니다.
+`/work`와 `/orchestrate`는 모두 독립적인 태스크를 병렬로 실행합니다. 두 워크플로우는 계획을 어디서 가져오는지와 결과를 어떻게 확인하는지가 다릅니다. `/work`에서는 PM이 새 계획을 작성해 제시하고, 구현이 끝나면 QA가 전체 결과를 리뷰하며, CRITICAL과 HIGH 발견 사항은 수정 루프로 보냅니다. `/orchestrate`는 사용할 수 있는 계획을 불러오고, 계획이 없으면 `/plan`으로 생성하므로 사용자가 `/plan`을 먼저 실행할 필요는 없습니다. 첫 디스패치 시점에 그 계획을 고정하고 태스크를 하나씩 따로 검증하며, 시도 횟수를 모두 쓴 태스크는 partial 또는 failed로 보고합니다. 어느 쪽을 쓸지 확실하지 않으면 `/oma-mode`로 시작합니다. `/oma-mode`는 이 경로들 가운데 하나를 대신 선택합니다. PM이 주도하고 QA가 전체 결과를 한 번에 리뷰하는 흐름을 원하면 `/work`를, 계획이 이미 확정되어 있으면 `/orchestrate`를 직접 선택합니다.
 
-단일 스킬 작업에도 인수 기준을 두고 필요한 테스트를 실행합니다. 이것만으로 `/ralph`를 선택할 이유가 되지는 않습니다. Ralph는 매 반복마다 ultrawork 전체 절차와 judge 검증을 실행하므로, 이러한 검증 루프를 반복하고 싶을 때 선택합니다. 안전장치가 적용되면 미완료되거나 차단된 작업을 남긴 채 종료할 수 있습니다.
+단일 스킬 작업에도 인수 기준과 테스트가 들어갑니다. `/oma-mode`는 이를 완료 기준으로 기록하고, 각 반복 뒤에 독립적인 judge가 모든 기준을 다시 확인하게 합니다. 한도가 적용되면 미완료되거나 차단된 작업을 남긴 채 멈출 수 있습니다.
 
 이 표는 선택 가이드이며 자동 워크플로우 라우터가 아닙니다. 호스트 에이전트가 적절한 방식을 추천할 수 있지만, 워크플로우를 추천하거나 설명하는 것만으로 실행을 시작하지는 않습니다. 슬래시 명령으로 워크플로우를 명시적으로 선택할 수 있습니다. 키워드 감지 훅이 활성화된 환경에서는 설정된 키워드나 패턴이 일치하면 정보성 질문 필터를 거쳐 워크플로우가 활성화될 수도 있습니다. 감지기는 도메인 수를 분류하거나 계획의 실행 준비 상태를 확인하지 않으며, 이 표를 우선순위 알고리즘으로 적용하지도 않습니다.
 
@@ -62,62 +63,34 @@ description: OMA의 20개 워크플로우 레퍼런스입니다. 슬래시 명�
 
 지속 워크플로우는 모든 태스크가 완료될 때까지 계속 실행됩니다. `.agents/state/`에 상태를 유지하고, 명시적으로 비활성화될 때까지 매 사용자 메시지에 `[OMA PERSISTENT MODE: ...]` 컨텍스트를 재주입합니다.
 
-지속 모드는 **명시적 호출**, 즉 워크플로우의 슬래시 커맨드(`/ultrawork`, 또는 `/oma:ultrawork` 같은 네임스페이스 형식)나 평문으로 쓴 워크플로우 자체의 이름으로 호출할 때만 시작됩니다(`triggers.json`의 `explicit` 목록: "orchestrate"와 그 번역어, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). 키워드 훅은 그 밖의 문장으로는 워크플로우를 열지 않습니다.
+지속 모드는 **명시적 호출**, 즉 워크플로우의 슬래시 커맨드(`/ultrawork`, 또는 `/oma:ultrawork` 같은 네임스페이스 형식)나 평문으로 쓴 워크플로우 자체의 이름으로 호출할 때만 시작됩니다(`triggers.json`의 `explicit` 목록: "oma-mode", "orchestrate"와 그 번역어, "ultrawork"/"ulw", "work mode"/"work workflow", "ralph"/"랄프"). 키워드 훅은 그 밖의 문장으로는 워크플로우를 열지 않습니다.
 
-### /orchestrate
+### /oma-mode
 
-**설명:** 자동화된 CLI 기반 병렬 에이전트 실행. CLI로 서브에이전트를 스폰하고, 파일로 보존되는 실행 상태와 실행 기록으로 조율하며, 진행 상황을 모니터링하고, 검증 루프를 실행합니다.
+**설명:** 자율 모드. 사용자가 목표를 말하면 경로를 선택하고, 어떤 워크플로우를 쓸지 묻지 않고 실행하며, 독립적인 judge가 모든 완료 기준을 통과로 판정하거나 한도에 도달할 때까지 계속 진행합니다.
 
-**지속:** 예. 상태 파일: `.agents/state/orchestrate-state-{sessionId}.json`.
+**지속:** 예. 상태 파일: `.agents/state/oma-mode-state-{sessionId}.json`.
 
 **트리거 키워드:**
 | 언어 | 키워드 |
 |----------|----------|
-| 명시적 호출 (지속) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
-
-"do everything", "전부 해줘", "앱 만들어줘" 같은 문장은 이 워크플로우를 시작하지 않습니다.
+| 명시적 호출 (지속) | "oma-mode" |
 
 **단계:**
-1. **Step 0 (준비):** 코디네이션 스킬, 컨텍스트 로딩 가이드, 메모리 프로토콜 읽기. 벤더 감지.
-2. **Step 1 (계획 로딩/생성):** `.agents/results/plan-{sessionId}.json`을 확인하고, 없으면 가장 최근의 `plan-*.json`을 확인합니다. 계획이 없거나 태스크별 에이전트, 우선순위, 의존성, 인수 기준이 빠져 있으면 같은 세션 ID로 `/plan`을 실행해 계획을 생성합니다. 계획을 제시하고 기존 승인을 적용하며, 위임 전에 중요한 미결정 사항이나 새로운 승인이 필요한 경우에만 확인합니다.
-3. **Step 2 (세션 초기화):** `oma-config.yaml`을 로딩하고 CLI 매핑 테이블을 표시합니다. 계획 생성 시 사용한 세션 ID를 재사용하거나 새 ID(`session-YYYYMMDD-HHMMSS`)를 생성합니다. 태스크마다 설치된 스킬의 인텐트 시그니처와 태스크를 대조해 필요한 스킬 레퍼런스를 선택합니다. 확실하게 일치하는 스킬 하나면 충분합니다. 설정된 메모리 저장소에 `orchestrator-session-{sessionId}.md`와 `task-board-{sessionId}.md`를 만들고, 태스크별로 선택한 레퍼런스와 선택 이유를 거기에 기록합니다. 이 기록은 코디네이터 메모이며, 런처가 강제하지는 않습니다.
-4. **Step 3 (에이전트 스폰):** 각 우선순위 티어(낮은 번호부터: 티어 1, 그다음 티어 2 순)마다 벤더에 맞는 방법으로 에이전트를 스폰합니다(현재 런타임과 대상 벤더가 일치하면 네이티브 서브에이전트, 외부 또는 다른 벤더 작업에는 `oma agent spawn`). 각 에이전트는 자신의 태스크, API 컨트랙트, 로딩 조건이 붙은 선택된 레퍼런스를 받습니다. MAX_PARALLEL(기본값 3)을 초과하지 않습니다.
-5. **Step 4 (모니터링):** `oma agent status`로 프로세스 상태를 확인합니다. 호스트의 완료 알림을 우선 사용하고, 없으면 실행 범위가 지정된 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 파일 가운데 변경된 것을 상한이 있는 백오프로 폴링합니다. 구조화된 실행 기록을 읽고 태스크 보드를 업데이트합니다. 완료, 실패, 크래시를 감시합니다.
-6. **Step 5 (검증):** 완료된 에이전트마다 기계적 자체 검사(lint, 타입 검사, 테스트, diff 범위 확인. 최대 3사이클)를 실행한 뒤 `verify.sh {agent-type} {workspace}`(backend, frontend, mobile, qa, debug, pm 대상이며 나머지 에이전트 유형은 `SKIP`으로 기록)를 실행하고, 이어서 QA 교차 리뷰를 진행합니다. verify가 실패하면 에러 컨텍스트와 함께 재스폰합니다. 반복되는 실패는 대안 가설을 검토할 이유가 될 수 있지만, 원래 시도와 각 재시도, 각 가설은 모두 같은 복구 예산 총량(`max_attempts`, 원래 시도를 포함해 기본 3회)을 소비합니다. 예산으로 비교 라운드를 감당할 수 없으면 해결되지 않은 증거를 보존합니다.
-7. **Step 6 (수집):** 실행 범위가 지정된 결과 파일과 구조화된 클레임을 읽고 요약을 정리합니다.
-8. **Step 7 (최종 보고서):** 세션 요약 제시. 실험을 실행한 경우 증거와 결정을 요약하고, 재사용 가능한 원인이 규명된 경우에만 교훈을 남깁니다.
+1. **Step 1 (목표 읽기):** 원하는 결과, 명시적인 선택이나 한도, 그리고 종료 조건을 파악합니다. 종료 조건은 각각 judge가 실행할 수 있는 검증을 담은 완료 기준(사용자가 지정한 검사, 없으면 설명한 동작에서 도출한 검사)으로 작성하며, 첫 경로를 실행하기 전에 고정합니다.
+2. **Step 2 (경로 선택):** 처음으로 일치하는 행을 적용합니다. 이름으로 지정한 워크플로우나 스킬, 질문에는 읽기 전용 답변, 잘못된 동작에는 `/debug`, 리뷰에는 `/review`, 계획만 필요하면 `/plan`, 해당 결과를 담당하는 다른 워크플로우, 명시적으로 요청한 경우에만 `/ultrawork`, 미지수가 많아 사전 계획을 믿고 밀기 어려운 대규모·횡단 변경에는 **Open-ended**(`open-ended-protocol.md`로 가장 위험한 미지수 우선 검증, 검증 하네스 선구축, 독립 착지 단위 분해), 에이전트 하나로 끝낼 수 있는 변경에는 담당자 하나(담당 스킬의 스페셜리스트 서브에이전트, 해당 역할이 없으면 이 세션), 여러 스페셜리스트가 각자 독립적으로 만들 수 있는 부분으로 나뉘거나 단일 에이전트 컨텍스트에 담기지 않는 변경에는 `/orchestrate` 순입니다. `oma-orchestration`이 설치되어 있지 않으면 변경은 `/work`로 보내고, `/work`도 사용할 수 없으면 담당 스킬로 보냅니다.
+3. **Step 3 (알림과 기록):** `Route:` 줄 하나를 출력하고 선택 내용을 라우팅 결정으로 기록합니다. 확인을 기다리지 않습니다.
+4. **Step 4 (실행):** 선택한 워크플로우, Open-ended 시퀀스 또는 스킬을 변경 없이 그대로 따릅니다. 작업이 다른 행에 해당하는 것으로 드러나면 새 `Route:` 줄을 출력하고 경로를 바꿉니다. 경로의 각 단계나 단위는 이름 그대로 task list에 복사되고, 완료 또는 사유를 붙인 건너뜀으로 표시됩니다.
+5. **Step 5 (판정과 계속):** 새 컨텍스트로 별도 디스패치된 judge가 모든 기준의 검증을 실행하고 PASS, FAIL, REGRESSED 또는 BLOCKED를 기록합니다. 모두 PASS이면 실행을 마칩니다. FAIL이나 REGRESSED 기준이 있으면 남은 작업만 대상으로 다음 반복을 시작합니다. 실행은 5회 반복 뒤, 또는 경로가 자체 시도 예산, 비용 한도, 기한에 도달하면 멈춥니다. 이 모드는 그 한도를 넘기려고 다른 경로를 시작하지 않습니다.
+6. **Step 6 (보고):** 거친 경로, 변경 사항, 각 기준의 최종 상태와 judge의 근거, 남은 작업을 `anti-ai-prose.md` 기준에 맞춰 군더더기 없는 직접적인 문장으로 보고합니다. 그런 다음 세션이 멈출 수 있도록 지속 모드를 종료합니다.
 
-```mermaid
-flowchart TD
-  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
-  S1 -->|yes| S2
-  MK --> S2["Step 2: session ID, task references, task board"]
-  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
-  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
-  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
-  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
-  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
-  QA -->|"FAIL: findings back to the agent"| SC
-  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
-  S6 --> S7(["Step 7: final report"])
-  VS -->|FAIL| CL{"classify the failure"}
-  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
-  CL -->|product| BG{"attempts left in max_attempts?"}
-  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
-  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
-  QA -.->|"review limit reached"| STOP
-```
-
-**읽는 파일:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, 실행 범위 진행·결과 파일, 구조화된 실행 기록.
-**쓰는 파일:** 설정된 메모리 저장소의 세션·태스크 보드 상태, 구조화된 실행 기록과 클레임, 최종 보고서.
-
-**사용 시기:** 자동화된 조율과 최대 병렬성이 필요한 대규모 프로젝트.
+**사용 시기:** 워크플로우를 고르는 대신 목표를 맡기고 싶을 때 사용합니다. 네이티브 `/goal` 루프가 있는 호스트(Claude Code, Codex CLI 등)에서는 종료 조건을 `/oma-mode` judge 보고서가 모든 기준을 통과하는 상태로 지정해 `/goal`로 바깥쪽 재시도를 구동할 수 있습니다. 게시, 배포, 파괴적 작업, 명시한 예산을 넘는 지출, 빌드에는 여전히 사용자의 승인이 필요합니다.
 
 ---
 
 ### /work
 
-**설명:** 단계별 멀티 도메인 조율. PM이 먼저 계획하고, 승인된 범위 안에서 에이전트가 실행한 후, QA 리뷰와 이슈 수정이 이어집니다.
+**설명:** 멀티 도메인 작업을 위한 팀 워크플로우. PM이 먼저 계획하고, 승인된 범위 안에서 에이전트가 실행한 후, QA 리뷰와 이슈 수정이 이어집니다.
 
 **지속:** 예. 상태 파일: `.agents/state/work-state-{sessionId}.json`.
 
@@ -139,7 +112,7 @@ flowchart TD
 8. **Step 6.1 (측정)** (조건부): 정의된 비교가 필요할 때 기준선을 기록합니다.
 9. **Step 7 (반복):** CRITICAL/HIGH 이슈 발견 시 담당 에이전트 재스폰. 2회 시도 후에도 같은 이슈 지속 시 Exploration Loop 활성화.
 
-**사용 시기:** 계획, 구현, QA를 단계별로 조율하려는 멀티 도메인 기능.
+**사용 시기:** 여러 도메인에 걸친 기능에서 PM이 주도하는 흐름을 원할 때 사용합니다. 한 번의 실행으로 계획하고, 병렬로 구축하고, 전체 결과를 리뷰합니다.
 
 ---
 
@@ -212,7 +185,7 @@ flowchart TD
 
 ### /ralph
 
-**설명:** 지속적 자기 참조 실행 루프. ultrawork를 매 반복마다 완료 기준을 확인하는 [judge](../getting-started/glossary.md#judge)로 감쌉니다. 모든 기준이 통과하면 전체 완료를, 통과하거나 차단된 기준만 남으면 부분 완료를 보고하며, 안전장치가 작동하면 중단합니다.
+**설명:** 사용 중단된 [`/oma-mode`](#oma-mode) 별칭입니다. 더 이상 `/ultrawork`를 감싸지 않습니다. 기존에 담당하던 완료 기준, 독립적인 [judge](../getting-started/glossary.md#judge), 5회 반복 한도는 이제 `/oma-mode`의 일부입니다.
 
 **지속:** 예. 상태 파일: `.agents/state/ralph-state-{sessionId}.json`.
 
@@ -221,40 +194,60 @@ flowchart TD
 |------|--------|
 | 명시적 호출 (지속) | "ralph", "랄프" |
 
-단독으로 쓴 재개 표현("keep going", "carry on", "계속해", "続けて", "продолжай", …)과 완료 표현("don't stop", "끝까지 해")은 이 워크플로우를 시작하지 않습니다.
+**동작 방식:** 두 가지 설정을 고정한 채 `/oma-mode`를 실행합니다. 첫 경로를 실행하기 전에 완료 기준을 항상 정의하고, 단일 지정 편집을 포함해 프로젝트를 변경한 모든 반복에 대해 judge 검증을 실행합니다.
+
+**사용 시기:** 대신 `/oma-mode`를 사용하세요. 이 변경으로 `oma ralph verify` 명령과 해당 명령이 실행하던 ultrawork 산출물 게이트는 제거되었습니다.
+
+---
+
+### /orchestrate
+
+**설명:** 자동화된 CLI 기반 병렬 에이전트 실행. CLI로 서브에이전트를 스폰하고, 파일로 보존되는 실행 상태와 실행 기록으로 조율하며, 진행 상황을 모니터링하고, 검증 루프를 실행합니다.
+
+**지속:** 예. 상태 파일: `.agents/state/orchestrate-state-{sessionId}.json`.
+
+**트리거 키워드:**
+| 언어 | 키워드 |
+|----------|----------|
+| 명시적 호출 (지속) | "orchestrate", "オーケストレート", "orquestar", "orchestrer", "orchestrieren", "orquestrar", "оркестровать", "orkestreren", "orkiestrować" |
+
+"do everything", "전부 해줘", "앱 만들어줘" 같은 문장은 이 워크플로우를 시작하지 않습니다.
 
 **단계:**
-1. **Phase 0 (INIT):** 사전 조건 로드(context-loading, 메모리 프로토콜, judge 프로토콜). 테스트 단언, 산출물을 생성하지 않는 타입 검사, 종료 코드, 파일 존재 여부처럼 기계적으로 검증 가능한 완료 기준을 정의하고 기록합니다. 빌드 검사는 명시적으로 요청한 경우에만 포함합니다. 기준을 제시하고 승인된 범위 안에서 계속 진행합니다. `max_iterations: 5` 초기화.
-2. **Phase 1 (EXEC):** Ralph의 세션 ID로 ultrawork(PLAN → IMPL → VERIFY → REFINE → SHIP)를 1회 반복으로 실행합니다. 이어서 산출물 게이트 `oma ralph verify --json --session-id <sessionId> --newer-than <iteration start>`를 실행합니다. 게이트가 실패하면 해당 반복은 수행되지 않은 것으로 간주됩니다. Ralph는 위반을 기록하고 작업을 보완한 뒤 게이트를 다시 실행합니다.
-3. **Phase 2 (JUDGE):** judge가 각 완료 기준을 실제 프로젝트 상태와 대조 확인합니다(승인된 검사 실행과 파일 존재 검증). 워크플로우 프롬프트는 오케스트레이터에게 기준만 전달받은 새 컨텍스트의 별도 에이전트로 judge를 스폰하라고 지시합니다. 스폰 여부를 기계적으로 확인하지는 않으며, 서브에이전트를 스폰할 수 없는 런타임은 인라인으로 판정하고 `ralph.judge-inline-fallback`을 기록하도록 지시받습니다. 근거와 함께 PASS, FAIL, REGRESSED, BLOCKED 등 기준별 상태를 기록합니다.
-4. **결정 게이트:** 모든 기준이 PASS이면 전체 완료를 보고합니다. PASS와 BLOCKED만 남으면 부분 완료를 보고합니다. FAIL이나 REGRESSED가 있으면 안전장치가 허용하는 범위에서 실패 컨텍스트를 다음 반복에 전달합니다.
-5. **Phase 3 (REPLAN):** 다음 반복을 FAIL 항목과 REGRESSED 항목으로 좁히고(diff 기반 진단), BLOCKED 항목은 건너뛰며, PASS 기준도 judge의 확인 범위에 남겨 둡니다. Phase 1로 돌아갑니다.
-6. **안전장치:** `current_iteration >= max_iterations`(기본 5)에 도달하면 루프를 중단합니다. 같은 기준이 같은 근본 원인으로 3회 연속 실패하면 BLOCKED가 되어 더 이상 재시도하지 않습니다(멈춤 감지).
+1. **Step 0 (준비):** 코디네이션 스킬, 컨텍스트 로딩 가이드, 메모리 프로토콜 읽기. 벤더 감지.
+2. **Step 1 (계획 로딩/생성):** `.agents/results/plan-{sessionId}.json`을 확인하고, 없으면 가장 최근의 `plan-*.json`을 확인합니다. 계획이 없거나 태스크별 에이전트, 우선순위, 의존성, 인수 기준이 빠져 있으면 같은 세션 ID로 `/plan`을 실행해 계획을 생성합니다. 계획을 제시하고 기존 승인을 적용하며, 위임 전에 중요한 미결정 사항이나 새로운 승인이 필요한 경우에만 확인합니다.
+3. **Step 2 (세션 초기화):** `oma-config.yaml`을 로딩하고 CLI 매핑 테이블을 표시합니다. 계획 생성 시 사용한 세션 ID를 재사용하거나 새 ID(`session-YYYYMMDD-HHMMSS`)를 생성합니다. 태스크마다 설치된 스킬의 인텐트 시그니처와 태스크를 대조해 필요한 스킬 레퍼런스를 선택합니다. 확실하게 일치하는 스킬 하나면 충분합니다. 설정된 메모리 저장소에 `orchestrator-session-{sessionId}.md`와 `task-board-{sessionId}.md`를 만들고, 태스크별로 선택한 레퍼런스와 선택 이유를 거기에 기록합니다. 이 기록은 코디네이터 메모이며, 런처가 강제하지는 않습니다.
+4. **Step 3 (에이전트 스폰):** 각 우선순위 티어(낮은 번호부터: 티어 1, 그다음 티어 2 순)마다 벤더에 맞는 방법으로 에이전트를 스폰합니다(현재 런타임과 대상 벤더가 일치하면 네이티브 서브에이전트, 외부 또는 다른 벤더 작업에는 `oma agent spawn`). 각 에이전트는 자신의 태스크, API 컨트랙트, 로딩 조건이 붙은 선택된 레퍼런스를 받습니다. MAX_PARALLEL(기본값 3)을 초과하지 않습니다.
+5. **Step 4 (모니터링):** `oma agent status`로 프로세스 상태를 확인합니다. 호스트의 완료 알림을 우선 사용하고, 없으면 실행 범위가 지정된 `progress-{agentId}-{taskId}-{runId}-{sessionId}.md` 파일 가운데 변경된 것을 상한이 있는 백오프로 폴링합니다. 구조화된 실행 기록을 읽고 태스크 보드를 업데이트합니다. 완료, 실패, 크래시를 감시합니다.
+6. **Step 5 (검증):** 완료된 에이전트마다 기계적 자체 검사(lint, 타입 검사, 테스트, diff 범위 확인. 최대 3사이클)를 실행한 뒤 `verify.sh {agent-type} {workspace}`(backend, frontend, mobile, qa, debug, pm 대상이며 나머지 에이전트 유형은 `SKIP`으로 기록)를 실행하고, 이어서 QA 교차 리뷰를 진행합니다. verify가 실패하면 에러 컨텍스트와 함께 재스폰합니다. 반복되는 실패는 대안 가설을 검토할 이유가 될 수 있지만, 원래 시도와 각 재시도, 각 가설은 모두 같은 복구 예산 총량(`max_attempts`, 원래 시도를 포함해 기본 3회)을 소비합니다. 예산으로 비교 라운드를 감당할 수 없으면 해결되지 않은 증거를 보존합니다.
+7. **Step 6 (수집):** 실행 범위가 지정된 결과 파일과 구조화된 클레임을 읽고 요약을 정리합니다.
+8. **Step 7 (최종 보고서):** 세션 요약 제시. 실험을 실행한 경우 증거와 결정을 요약하고, 재사용 가능한 원인이 규명된 경우에만 교훈을 남깁니다.
 
 ```mermaid
 flowchart TD
-  INIT["Phase 0 INIT: define verifiable criteria, max_iterations = 5"] --> EXEC["Phase 1 EXEC: run the full ultrawork workflow"]
-  EXEC --> GATE{"oma ralph verify: plan, QA, and refactor evidence current?"}
-  GATE -->|"no: iteration not performed"| REPAIR["Record the violation, emit gate.failed, repair the work"]
-  REPAIR --> GATE
-  GATE -->|yes| JUDGE["Phase 2 JUDGE: judge re-checks every criterion, including earlier passes"]
-  JUDGE --> VERDICT{"verdict"}
-  VERDICT -->|"COMPLETED: all PASS"| DONE(["Full completion report"])
-  VERDICT -->|"PARTIAL: only PASS and BLOCKED"| PART(["Partial completion report"])
-  VERDICT -->|"FAIL: any FAIL or REGRESSED"| LIMIT{"current_iteration >= max_iterations?"}
-  LIMIT -->|yes| SAFE(["Safeguard report"])
-  LIMIT -->|no| REPLAN["Phase 3 REPLAN: FAIL and REGRESSED items only; skip BLOCKED"]
-  REPLAN --> EXEC
+  S1{"Step 1: usable plan JSON?"} -->|no| MK["Create the plan inline with /plan, same session ID"]
+  S1 -->|yes| S2
+  MK --> S2["Step 2: session ID, task references, task board"]
+  S2 --> S3["Step 3: dispatch by priority tier, tier 1 first; native subagent or oma agent spawn --task-id"]
+  S3 --> S4["Step 4: monitor with oma agent status and progress files"]
+  S4 --> SC["Step 5: mechanical self-check, up to 3 cycles"]
+  SC --> VS{"verify.sh, or SKIP for unsupported agent types"}
+  VS -->|"PASS or SKIP"| QA{"QA cross-review"}
+  QA -->|"FAIL: findings back to the agent"| SC
+  QA -->|PASS| S6["Step 6: collect claims; emit and verify the QA verdict"]
+  S6 --> S7(["Step 7: final report"])
+  VS -->|FAIL| CL{"classify the failure"}
+  CL -->|"workflow evidence"| EV(["one metadata-only repair, then partial handoff if it still fails"])
+  CL -->|product| BG{"attempts left in max_attempts?"}
+  BG -->|"yes: retry with error context or a 2-3 hypothesis round"| S3
+  BG -->|no| STOP(["preserve partial evidence; report partial or failed"])
+  QA -.->|"review limit reached"| STOP
 ```
 
-judge 노드는 Phase 2에서 설명한 프롬프트 기반 judge입니다. 워크플로우는 오케스트레이터에게 새 컨텍스트로 judge를 스폰하라고 지시하며, 서브에이전트를 스폰할 수 없는 런타임은 인라인으로 판정하고 폴백을 기록합니다.
+**읽는 파일:** `.agents/results/plan-{sessionId}.json`, `.agents/oma-config.yaml`, 실행 범위 진행·결과 파일, 구조화된 실행 기록.
+**쓰는 파일:** 설정된 메모리 저장소의 세션·태스크 보드 상태, 구조화된 실행 기록과 클레임, 최종 보고서.
 
-**/ultrawork와의 차이:** ultrawork는 5단계 절차를 실행하며, 단계별 게이트에서 실패하면 해당 작업을 재시도합니다. ralph는 ultrawork를 재시도 루프로 감싸고, 프롬프트 기반 judge가 모든 기준을 프로젝트 증거와 대조해 다시 검증합니다. 루프는 전체 완료, 차단된 작업이 있는 부분 완료, 또는 안전장치에 따른 종료 보고로 끝납니다.
-
-**읽는 파일:** `.agents/workflows/ralph/resources/judge-protocol.md`, 모든 ultrawork 파일.
-**쓰는 파일:** `session-ralph-{sessionId}.md`(메모리), 반복 로그, 최종 보고서.
-
-**사용 시기:** 기계적인 완료 기준에 따라 반복 실행과 judge 재검증을 명시적으로 원할 때 사용합니다. 테스트가 있다는 이유만으로 Ralph를 선택할 필요는 없습니다. 매 반복에서 ultrawork 전체 절차를 실행한다는 점과 안전장치를 고려합니다.
+**사용 시기:** 이미 확정된 계획을 실행할 때 사용하며, 보통 `/plan` 직후입니다. 태스크를 하나씩 따로 검증하고 태스크별 상태를 받고 싶을 때 적합합니다. 전체 결과에 대한 QA 리뷰 없이 끝나므로, 필요하면 이후에 `/review`를 실행합니다.
 
 ---
 
@@ -515,7 +508,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 |--------|--------|-----------|
 | **정의** | 에이전트 전문성 (에이전트가 아는 것) | 오케스트레이션 프로세스 (에이전트가 협업하는 방법) |
 | **위치** | `.agents/skills/oma-{name}/` | `.agents/workflows/{name}.md` |
-| **활성화** | 호스트가 스킬 이름과 설명을 맞추고, skill injector가 힌트를 더할 수 있음 | 슬래시 명령. `orchestrate`, `ultrawork`, `work`, `ralph`는 프롬프트가 모드 이름을 말할 때도 시작 |
+| **활성화** | 호스트가 스킬 이름과 설명을 맞추고, skill injector가 힌트를 더할 수 있음 | 슬래시 명령. `oma-mode`, `orchestrate`, `ultrawork`, `work`, `ralph`는 프롬프트가 모드 이름을 말할 때도 시작 |
 | **범위** | 단일 도메인 실행 | 다단계, 종종 멀티 에이전트 |
 | **예시** | "React 컴포넌트 만들어줘" | "기능 계획 -> 구현 -> 리뷰 -> 커밋" |
 
@@ -527,7 +520,7 @@ Cloudflare 감사 방법론은 독립 검증과 로컬 샌드박스 재현에 �
 
 oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `UserPromptSubmit` 훅을 사용합니다. 벤더 설정은 `<hookDir>/oma-hook.sh --vendor <v> --event <e>` 항목 하나를 등록하고, 이 항목이 인프로세스 핸들러 체인이 실행되는 `oma hook run`으로 연결됩니다. 체인은 다음으로 구성됩니다:
 
-1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, `oma` 바이너리에 인라인됨): `workflows` 표는 `orchestrate`, `ultrawork`, `work`, `ralph`만 키워드로 라우팅하고, 각 모드의 명시적 이름만 사용합니다. 같은 파일의 skill 키워드 힌트는 그대로입니다.
+1. **`triggers.json`** (`.agents/hooks/core/triggers.json`, `oma` 바이너리에 인라인됨): `workflows` 표는 `oma-mode`, `orchestrate`, `ultrawork`, `work`, `ralph`만 키워드로 라우팅하고, 각 모드의 명시적 이름만 사용합니다. 같은 파일의 skill 키워드 힌트는 그대로입니다.
 2. **`keyword-detector.ts`** (`.agents/hooks/core/keyword-detector.ts`): 사용자 입력에서 그 명시적 이름을 찾아 워크플로우 활성화 컨텍스트를 주입하는 TypeScript 로직.
 3. **`persistent-mode.ts`** (`.agents/hooks/core/persistent-mode.ts`): 활성 상태 파일을 확인하고 워크플로우 컨텍스트를 다시 주입해 지속 워크플로우 실행을 강제합니다.
 
@@ -535,7 +528,7 @@ oh-my-agent은 각 사용자 메시지가 처리되기 전에 실행되는 `User
 
 1. 사용자가 프롬프트를 입력합니다.
 2. 훅이 프롬프트가 `/command`로 시작하는지 확인합니다. 그러면 키워드 주입을 건너뛰고 명령이 워크플로우를 로드합니다. 지속 모드의 슬래시 명령은 그 모드의 상태 파일을 기록합니다.
-3. 훅이 입력을 정제(코드 블록, 인용 문자열, 붙여넣은 시스템 에코 블록 제거)한 뒤 `.agents/hooks/core/triggers.json`의 `workflows` 키워드 목록을 스캔합니다. 그 목록에는 `orchestrate`, `ultrawork`, `work`, `ralph`의 명시적 이름만 있습니다. 강화 가드는 동일 워크플로우가 최근 60초 내에 2회 이상 발동된 경우 재트리거를 억제합니다.
+3. 훅이 입력을 정제(코드 블록, 인용 문자열, 붙여넣은 시스템 에코 블록 제거)한 뒤 `.agents/hooks/core/triggers.json`의 `workflows` 키워드 목록을 스캔합니다. 그 목록에는 `oma-mode`, `orchestrate`, `ultrawork`, `work`, `ralph`의 명시적 이름만 있습니다. 강화 가드는 동일 워크플로우가 최근 60초 내에 2회 이상 발동된 경우 재트리거를 억제합니다.
 4. 매칭이 발견되면, 입력이 정보성 패턴에 해당하는지 확인합니다.
 5. 정보성이면 필터링되며(예: "what is orchestrate?"), 워크플로우는 트리거되지 않습니다.
 6. 명시적 이름이 일치하면 `[OMA WORKFLOW: {workflow-name}]`를 주입하고 그 워크플로우를 바로 시작하라고 알립니다. 여러 명시적 이름이 일치하면 더 긴 키워드가 우선하고, 그다음이 선언 순서입니다.
@@ -598,7 +591,7 @@ detector는 워크플로우 `patterns` 필드를 여전히 컴파일할 수 있�
 
 ### 키워드 훅이 열지 않는 워크플로우
 
-`orchestrate`, `ultrawork`, `work`, `ralph`를 제외한 모든 워크플로우는 슬래시 명령으로 시작합니다. 절차 파일은 `.agents/workflows/`에 그대로 있습니다. `excludedWorkflows`에는 `stack-set`, `schedule`, `convert`가 있어서, 나중에 키워드 은행을 추가해도 이 셋은 라우팅되지 않습니다. `/explain`은 "explain"이 일상 어휘라서 슬래시로만 시작합니다. 같은 파일의 skill 키워드 힌트는 별개이며 계속 skill 컨텍스트를 주입합니다.
+`oma-mode`, `orchestrate`, `ultrawork`, `work`, `ralph`를 제외한 모든 워크플로우는 슬래시 명령으로 시작합니다. 절차 파일은 `.agents/workflows/`에 그대로 있습니다. `excludedWorkflows`에는 `stack-set`, `schedule`, `convert`가 있어서, 나중에 키워드 은행을 추가해도 이 셋은 라우팅되지 않습니다. `/explain`은 "explain"이 일상 어휘라서 슬래시로만 시작합니다. 같은 파일의 skill 키워드 힌트는 별개이며 계속 skill 컨텍스트를 주입합니다.
 
 ---
 
@@ -606,10 +599,11 @@ detector는 워크플로우 `patterns` 필드를 여전히 컴파일할 수 있�
 
 ### 상태 파일
 
-지속 워크플로우(orchestrate, ultrawork, work, ralph)는 명시적으로 호출되면 `.agents/state/`에 상태 파일을 생성합니다([지속 워크플로우](#persistent-workflows) 참조):
+지속 워크플로우(oma-mode, orchestrate, ultrawork, work, ralph)는 명시적으로 호출되면 `.agents/state/`에 상태 파일을 생성합니다([지속 워크플로우](#persistent-workflows) 참조):
 
 ```text
 .agents/state/
+├── oma-mode-state-{sessionId}.json
 ├── orchestrate-state-{sessionId}.json
 ├── ultrawork-state-{sessionId}.json
 ├── work-state-{sessionId}.json
@@ -647,13 +641,13 @@ detector는 워크플로우 `patterns` 필드를 여전히 컴파일할 수 있�
 | 목표 | 시퀀스 |
 |------|----------|
 | 단일 도메인 기능 | 작업 설명 → 관련 스킬 → 구현 → 범위를 좁힌 검증 |
+| 처음부터 끝까지 맡기는 목표 | `/oma-mode` → 경로 선택 → 종료 조건이 충족될 때까지 계속 → 보고 |
 | 복잡한 멀티 도메인 프로젝트 | `/work` → PM 계획 → 승인된 범위 내 리뷰 → 에이전트 스폰 → QA 리뷰 → 이슈 수정 → 보고 |
-| 자동 병렬 구현 | `/orchestrate` → 계획 로드 또는 생성 → 의존성 해결 → 독립 태스크 스폰 → 검증 → 보고 |
+| 확정된 계획 실행 | `/plan` → 태스크 분해 → `/orchestrate` → 의존성 해결 → 독립 태스크 스폰 → 태스크별 검증 → 보고 |
 | 최대 품질 제공 | `/ultrawork` → PLAN (계획 + 리뷰 3회) → IMPL → VERIFY (리뷰 3회) → REFINE (리뷰 2회 + 리팩터 작업 3회) → SHIP (리뷰 4회) |
 | 버그 조사 | `/debug` → 재현 → 근본 원인 → 최소 수정 → 회귀 테스트 → 유사 패턴 스캔 |
 | 디자인에서 구현까지 | `/brainstorm` → 설계 문서 → `/plan` → 태스크 분해 → `/orchestrate` → 병렬 구현 → `/review` → `/scm` |
 | 새 코드베이스 설정 | `/deepinit` → AGENTS.md + ARCHITECTURE.md + `docs/` |
-| judge 검증을 포함한 반복 실행 | `/ralph` → 기준 정의 → ultrawork → 산출물 게이트 → judge → 필요 시 반복 → 완료, 부분 완료, 또는 안전장치 보고 |
 
 ---
 

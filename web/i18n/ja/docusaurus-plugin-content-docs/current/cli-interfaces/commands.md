@@ -73,7 +73,6 @@ description: oh-my-agent CLIの全コマンドを対象に、構文、オプシ�
 | `auth` | `auth`, `auth status` |
 | `hook` | `hook`, `hook run`, `hook probe` |
 | `state` | `state`, `state emit`, `state migrate`, `state get`, `state list`, `state repair`, `state verify`, `state decisions`, `state decisions list`, `state inject-log`, `state inject-log list`, `state inject-log get`, `state summary`, `state trajectory`, `state heal-check`, `state activate`, `state archive`, `state purge` |
-| `ralph` | `ralph`, `ralph verify` |
 | `goal` | `goal`, `goal set` |
 | `stats` | `stats`, `stats get`, `stats reset` |
 | `agent` | `agent`, `agent context`, `agent resume`, `agent begin`, `agent verify`, `agent finish`, `agent spawn`, `agent status`, `agent parallel`, `agent review` |
@@ -785,7 +784,7 @@ oma agent review --vendor qwen -w ./apps/web --no-uncommitted
 
 ### goal set {#goal-set}
 
-アクティブな永続ワークフロー（orchestrate、ultrawork、work、ralph）にゴール契約を付加します。契約は persistent-mode の Stop フックが機械的に適用するため、完了判定をモデルの判断に委ねません。
+アクティブな永続ワークフロー（oma-mode、orchestrate、ultrawork、work、ralph）にゴール契約を付加します。契約は persistent-mode の Stop フックが機械的に適用するため、完了判定をモデルの判断に委ねません。
 
 ```text
 oma goal set [--workflow <name>] [--session-id <id>] [--gate <keyword>] [--budget-minutes <n>] [--description <text>]

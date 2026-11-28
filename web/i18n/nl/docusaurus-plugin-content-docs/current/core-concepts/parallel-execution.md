@@ -283,7 +283,7 @@ Sessie-ID's bepalen:
 
 6. **Itereer met respawns.** Als output verfijning nodig heeft, spawn je de agent opnieuw met de oorspronkelijke taak plus correctiecontext. Begin geen nieuwe sessie.
 
-7. **Start bij twijfel met `/work`.** De work-workflow begeleidt je stap voor stap, met gebruikersbevestiging bij elke gate.
+7. **Start bij twijfel met `/oma-mode`.** De modus kiest de route op basis van je doel. Kies `/work` wanneer je de door de PM geleide flow met één QA-ronde over het hele resultaat wilt.
 
 ### Niet doen
 

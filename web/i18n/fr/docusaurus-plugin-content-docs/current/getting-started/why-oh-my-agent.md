@@ -13,7 +13,7 @@ oh-my-agent ajoute une couche gérée par le dépôt autour des CLI d'agents que
 OMA convient lorsque vous avez besoin d'au moins l'un des éléments suivants :
 
 - **Plusieurs hôtes ou fournisseurs d'agents.** `model_preset: auto` utilise la configuration native du runtime courant. Les presets fixes et personnalisés peuvent router les rôles vers d'autres fournisseurs ; `oma agent spawn` prend en charge le dispatch non natif.
-- **Un workflow d'équipe reproductible.** `/work` gère une tâche délimitée, `/orchestrate` coordonne le travail délégué, `/ultrawork` exécute le travail en parallèle avec des étapes de revue et `/ralph` répète une tâche avec une phase de juge explicite.
+- **Un workflow d'équipe reproductible.** `/oma-mode` prend un objectif, choisit la route et fait vérifier le résultat par un juge indépendant, `/work` planifie, construit et revoit une fonctionnalité multi-domaines, `/ultrawork` ajoute une revue isolée à chaque étape et `/orchestrate` exécute un plan existant avec une vérification par tâche.
 - **Des instructions détenues par le dépôt.** Les compétences, workflows, règles et définitions d'agents vivent à côté du code. `oma link` projette les fichiers sélectionnés dans les formats pris en charge par les fournisseurs.
 - **Des vérifications mécaniques et des résultats durables.** Les exécutions d'agents peuvent écrire des reçus structurés d'état et de résultat, tandis que `oma verify agent <agent-type>` et `oma docs verify` fournissent des vérifications explicites.
 
@@ -23,7 +23,7 @@ Si un projet utilise un seul hôte et n'a pas besoin de compétences, de workflo
 
 Exécutez `oma verify agent <agent-type> --workspace <path>` lorsque vous voulez les vérifications associées à un rôle backend, frontend, mobile, QA, debug ou planification. Le vérificateur combine des inspections statiques avec les commandes configurées, comme les tests, les vérifications de types, les contrôles SQL ou `flutter analyze` ; voir [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). Le rapport affiche le résultat de chaque vérification. La réussite de ces contrôles ne prouve pas qu'une fonctionnalité respecte ses exigences produit ou métier ; les critères d'acceptation de la tâche doivent donc toujours être examinés.
 
-`/ralph` ajoute une phase de [juge](./glossary.md#judge) distincte lorsque vous choisissez ce workflow. Elle revérifie les critères déclarés à chaque itération et enregistre les artefacts du workflow ; ce n'est pas une porte qui s'exécute pour chaque prompt ordinaire. Le chargement d'une compétence ne lance pas non plus tous les workflows ni toutes les commandes de vérification.
+`/oma-mode` ajoute une étape de [juge](./glossary.md#judge) distincte lorsque vous choisissez ce workflow. Elle revérifie les critères déclarés après chaque itération ; ce n'est pas une porte qui s'exécute pour chaque prompt ordinaire. Le chargement d'une compétence ne lance pas non plus tous les workflows ni toutes les commandes de vérification.
 
 ## Le dispatch reste visible {#dispatch-remains-visible}
 
@@ -44,5 +44,5 @@ Pour la discussion de positionnement d'origine, voir [l'issue #155](https://gith
 - [Démarrage rapide](./quick-start.md) : installer, vérifier la configuration et exécuter une tâche délimitée
 - [Valeurs par défaut importantes](./important-defaults.md) : ce que l'installateur active et comment le modifier
 - [Installation](./installation.md#presets) : choisir un preset de compétences qui couvre les workflows que vous prévoyez d'utiliser
-- [Workflows](../core-concepts/workflows.md) : quand utiliser `/work`, `/orchestrate`, `/ultrawork` et `/ralph`
+- [Workflows](../core-concepts/workflows.md) : quand utiliser `/oma-mode`, `/work`, `/ultrawork` et `/orchestrate`
 - [Dépannage](../guide/troubleshooting.md) : solutions aux problèmes d'installation, de fournisseurs et de hooks

@@ -33,7 +33,7 @@ description: 스킬, 워크플로우, 프리셋, OMA 세션과 벤더 세션, �
 
 ### 지속 워크플로우 {#persistent-workflow}
 
-지속 워크플로우는 작업이 끝나거나 사용자가 비활성화할 때까지 여러 턴에 걸쳐 계속 실행됩니다. 지속 워크플로우는 `/orchestrate`, `/work`, `/ultrawork`, `/ralph`이며, 명시적으로 호출했을 때만 지속 모드가 활성화됩니다. 지속 워크플로우가 활성인 동안에는 훅이 프롬프트마다 `[OMA PERSISTENT MODE: ...]`를 다시 주입하고, Stop 훅은 강화 한도나 상태 만료(staleness) 타임아웃에 도달할 때까지 세션 종료를 막습니다. 비활성화하려면 `workflow done`이라고 말하세요. [지속 모드 메커니즘](../core-concepts/workflows.md#persistent-mode-mechanics)을 참고하세요.
+지속 워크플로우는 작업이 끝나거나 사용자가 비활성화할 때까지 여러 턴에 걸쳐 계속 실행됩니다. 지속 워크플로우는 `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork`, 그리고 사용 중단된 별칭인 `/ralph`이며, 명시적으로 호출했을 때만 지속 모드가 활성화됩니다. 지속 워크플로우가 활성인 동안에는 훅이 프롬프트마다 `[OMA PERSISTENT MODE: ...]`를 다시 주입하고, Stop 훅은 강화 한도나 상태 만료(staleness) 타임아웃에 도달할 때까지 세션 종료를 막습니다. 비활성화하려면 `workflow done`이라고 말하세요. [지속 모드 메커니즘](../core-concepts/workflows.md#persistent-mode-mechanics)을 참고하세요.
 
 ### 정지 게이트 {#stop-gate}
 
@@ -70,7 +70,7 @@ flowchart LR
 
 ### Judge {#judge}
 
-"judge"에는 두 가지 뜻이 있습니다. `/ralph`에서 judge는 매 ultrawork 반복 뒤에 오는 단계로, 모든 완료 기준을 실제 프로젝트 상태와 대조해 PASS, FAIL, REGRESSED, BLOCKED를 기록합니다. 새 컨텍스트로 별도 스폰된 에이전트가 이 단계를 실행하므로 오케스트레이터가 자기 작업을 스스로 채점하지 않습니다. 스킬 평가와 최적화에서 `judge`는 기본 체커 유형으로, 모델이 루브릭에 따라 각 arm의 출력을 채점하고 PASS 또는 FAIL을 반환합니다. [/ralph](../core-concepts/workflows.md#ralph)와 [judge 체커](../guide/skill-eval.md#judge-default)를 참고하세요.
+"judge"에는 두 가지 뜻이 있습니다. `/oma-mode`에서 judge는 매 반복 뒤에 오는 단계로, 모든 완료 기준을 실제 프로젝트 상태와 대조해 PASS, FAIL, REGRESSED, BLOCKED를 기록합니다. 새 컨텍스트로 별도 스폰된 에이전트가 이 단계를 실행하므로 작업을 수행한 세션이 자기 작업을 스스로 채점하지 않습니다. 스킬 평가와 최적화에서 `judge`는 기본 체커 유형으로, 모델이 루브릭에 따라 각 arm의 출력을 채점하고 PASS 또는 FAIL을 반환합니다. [/oma-mode](../core-concepts/workflows.md#oma-mode)와 [judge 체커](../guide/skill-eval.md#judge-default)를 참고하세요.
 
 ### 교차 컨텍스트 리뷰 (CCR) {#cross-context-review-ccr}
 

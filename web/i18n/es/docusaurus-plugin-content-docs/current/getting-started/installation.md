@@ -88,13 +88,13 @@ Elige el preset que se ajuste al trabajo que necesita el repositorio. Los nombre
 | Preset | Elígelo cuando el proyecto sea | Habilidades incluidas | Número |
 |--------|-------------------------------|-----------------|-------|
 | **all** | Cualquier proyecto, o quieres que todos los flujos de trabajo funcionen desde el principio | Todas las habilidades del registro | 32 |
-| **fullstack** | Clientes web y móviles con un backend e infraestructura de Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, debug, scm, tf-infra, dev-workflow | 13 |
-| **fullstack-web** | Un frontend web con un backend y una base de datos | architecture, brainstorm, design, frontend, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **fullstack-mobile** | Una app móvil con un backend y una base de datos | architecture, brainstorm, design, mobile, backend, db, pm, qa, debug, scm, dev-workflow | 11 |
-| **frontend** | Solo una interfaz web | architecture, brainstorm, design, frontend, pm, qa, debug, scm | 8 |
-| **backend** | Una API o un servicio con una base de datos | architecture, brainstorm, backend, db, pm, qa, debug, scm, dev-workflow | 9 |
-| **mobile** | Solo una app móvil | architecture, brainstorm, mobile, pm, qa, debug, scm | 7 |
-| **devops** | Trabajo de infraestructura, CI/CD y observabilidad | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, debug, scm | 9 |
+| **fullstack** | Clientes web y móviles con un backend e infraestructura de Terraform | architecture, brainstorm, design, frontend, backend, mobile, db, pm, qa, orchestration, debug, scm, tf-infra, dev-workflow | 14 |
+| **fullstack-web** | Un frontend web con un backend y una base de datos | architecture, brainstorm, design, frontend, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **fullstack-mobile** | Una app móvil con un backend y una base de datos | architecture, brainstorm, design, mobile, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 12 |
+| **frontend** | Solo una interfaz web | architecture, brainstorm, design, frontend, pm, qa, orchestration, debug, scm | 9 |
+| **backend** | Una API o un servicio con una base de datos | architecture, brainstorm, backend, db, pm, qa, orchestration, debug, scm, dev-workflow | 10 |
+| **mobile** | Solo una app móvil | architecture, brainstorm, mobile, pm, qa, orchestration, debug, scm | 8 |
+| **devops** | Trabajo de infraestructura, CI/CD y observabilidad | architecture, brainstorm, tf-infra, dev-workflow, observability, pm, qa, orchestration, debug, scm | 10 |
 | **security** | Escaneo de seguridad, revisión de código y remediación | security, architecture, qa, debug, refactor, scm | 6 |
 | **research** | Artículos académicos, estudios de mercado y conversión de PDF/HWP | scholar, market, pdf, hwp, academic-writing, search, translation, scm | 8 |
 | **content** | Recursos de diseño, imágenes, voz y contenido escrito | design, image, voice, academic-writing, translation, scm | 6 |
@@ -113,12 +113,13 @@ Después de la instalación, lee la lista de habilidades seleccionadas y el info
 
 ### Flujos de trabajo que necesitan habilidades fuera de un preset {#workflows-that-need-skills-outside-a-preset}
 
-Todos los presets copian las definiciones de flujos de trabajo y agentes. Los comandos y prompts se exponen únicamente para los flujos de trabajo cuyas habilidades requeridas están disponibles. Por ejemplo, una instalación nueva de frontend deja `/orchestrate` no disponible porque le falta `oma-orchestration`, mientras que `/work`, `/ultrawork` y `/ralph` sí están disponibles: las habilidades de PM y QA del preset satisfacen sus requisitos de entrada. El instalador informa de la habilidad ausente sin cambiar a `all`.
+Todos los presets copian las definiciones de flujos de trabajo y agentes. Los comandos y prompts se exponen únicamente para los flujos de trabajo cuyas habilidades requeridas están disponibles. Por ejemplo, una instalación nueva de frontend deja `/docs` no disponible porque le falta `oma-docs`, mientras que `/orchestrate`, `/work` y `/ultrawork` sí están disponibles: las habilidades de PM, QA y orquestación del preset satisfacen sus requisitos de entrada. El instalador informa de la habilidad ausente sin cambiar a `all`.
 
 | Flujo de trabajo | Habilidades de entrada requeridas | Presets que las incluyen |
 |----------|-------------|-------------------------|
-| `/work`, `/ultrawork`, `/ralph` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
-| `/orchestrate` | oma-orchestration, oma-qa | all |
+| `/oma-mode`, `/ralph` | ninguna | todos los presets |
+| `/work`, `/ultrawork` | oma-pm, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
+| `/orchestrate` | oma-orchestration, oma-qa | all, fullstack, fullstack-web, fullstack-mobile, frontend, backend, mobile, devops |
 | `/docs` | oma-docs | all |
 | `/explain` | oma-explanation | all |
 | `/security` | oma-security | all, security |
@@ -143,7 +144,7 @@ claude plugin install oma-frontend@oh-my-agent
 # Alternatives: oma-security@oh-my-agent, oma-research@oh-my-agent
 ```
 
-Las entradas de dominio contienen 8 habilidades de frontend, 6 de seguridad o 8 de investigación y una selección de agentes nativos correspondiente. Su arranque de sesión pasa ese preset al instalador del runtime. La configuración compartida del runtime y las habilidades ya instaladas siguen el comportamiento del instalador descrito arriba. La entrada `oma` conserva el plugin completo. Las mismas raíces de dominio se declaran en el catálogo generado del marketplace de Codex y en los catálogos de Grok Build y ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` en el árbol emitido o el asset de release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode y Kimi Code (`/plugins install`) leen cada uno su propio manifiesto generado; consulta [Hosts de plugins compatibles con Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) para los pasos exactos por host.
+Las entradas de dominio contienen 9 habilidades de frontend, 6 de seguridad o 8 de investigación y una selección de agentes nativos correspondiente. Su arranque de sesión pasa ese preset al instalador del runtime. La configuración compartida del runtime y las habilidades ya instaladas siguen el comportamiento del instalador descrito arriba. La entrada `oma` conserva el plugin completo. Las mismas raíces de dominio se declaran en el catálogo generado del marketplace de Codex y en los catálogos de Grok Build y ZCode. Antigravity CLI (`agy plugin install ./antigravity-plugin` en el árbol emitido o el asset de release `oma-antigravity-plugin.tar.gz`), Grok Build CLI, ZCode y Kimi Code (`/plugins install`) leen cada uno su propio manifiesto generado; consulta [Hosts de plugins compatibles con Claude](../guide/vendor-capabilities.md#claude-compatible-plugin-hosts) para los pasos exactos por host.
 
 Los jobs fijados en CI del host registran el marketplace local en runners frescos, instalan entradas de dominio e inspeccionan el inventario resultante. Estas comprobaciones se ejecutan sin llamadas a modelos. Las credenciales del runtime, los proveedores externos y una primera tarea satisfactoria siguen necesitando su propia verificación. Las comprobaciones de release también exigen que ambos manifiestos en cada raíz de dominio coincidan con la versión de la CLI y tengan un actualizador de versión de Release Please.
 

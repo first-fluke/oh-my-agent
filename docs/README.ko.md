@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 [에이전트용 설치 안내](./agent-install.md)에는 비대화형 설치와 확인 절차가 있습니다. 이 문서를 읽는 에이전트는 해당 안내에 따라 설치를 진행하세요.
 
-그다음 에이전트를 열고 `/orchestrate build a TODO app with login`을 입력하세요.
+그다음 에이전트를 열고 `/oma-mode build a TODO app with login`을 입력하세요.
 
 oh-my-agent(`oma`)는 Claude Code, Codex CLI, Cursor와 다른 코딩 에이전트 11개를 팀으로 바꿉니다. 플래너가 작업을 나누고, 엔지니어가 병렬로 만들고, 리뷰어가 결과를 확인하며, 디버거가 근본 원인을 고칩니다.
 
@@ -42,7 +42,7 @@ oh-my-agent(`oma`)는 Claude Code, Codex CLI, Cursor와 다른 코딩 에이전�
 | [어드민 화면 설계](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "우리 어드민 페이지의 위계와 테이블 밀도를 검토해 줘." |
 | [실패하는 테스트 수정](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "이 테스트 실패를 재현하고 원인을 고친 뒤, 영향받는 검사를 실행해 줘." |
 | 시스템 경계 검토 | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "API와 워커의 경계를 검토해 줘." |
-| 팀 전체 실행 | [oma 설치](#install) | `/orchestrate add login to this app` |
+| 팀 전체 실행 | [oma 설치](#install) | `/oma-mode add login to this app` |
 
 에이전트 터미널에서 `skills use` 명령을 실행하세요. 스킬 하나를 불러옵니다. 워크플로우까지 포함한 팀 전체가 필요하면 [oma를 설치](#install)하세요. 다른 선택지는 [설정 선택](../web/docs/getting-started/choose-setup.md)에 있습니다.
 
@@ -56,8 +56,8 @@ oh-my-agent(`oma`)는 Claude Code, Codex CLI, Cursor와 다른 코딩 에이전�
 
 | | 제공하는 것 | 써 보기 |
 |---|---|---|
-| **전문 역할 12개** | PM, 아키텍트, 백엔드·프런트엔드·모바일·데이터베이스·인프라 엔지니어, QA 리뷰어, 디버거, 리팩터러, 문서 큐레이터, 리서처([팀 소개](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **워크플로우 20개** | `/brainstorm`, `/plan`부터 `/review`, `/debug`, `/scm`까지의 슬래시 커맨드. 멀티 에이전트 모드 네 가지는 평범한 요청에서 이름을 부르는 것으로도 시작됩니다 | "ultrawork: add rate limiting" |
+| **전문 역할 12개** | PM, 아키텍트, 백엔드·프런트엔드·모바일·데이터베이스·인프라 엔지니어, QA 리뷰어, 디버거, 리팩터러, 문서 큐레이터, 리서처([팀 소개](#meet-the-team)) | `/oma-mode build a TODO app with login` |
+| **워크플로우 21개** | `/brainstorm`, `/plan`부터 `/review`, `/debug`, `/scm`까지의 슬래시 커맨드. persistent 모드 다섯 가지는 평범한 요청에서 이름을 부르는 것으로도 시작됩니다 | "ultrawork: add rate limiting" |
 | **스킬 32개** | 태스크에 필요할 때만 불러오는 도메인 노하우: UI, API, 스키마, Terraform, CI, 보안, git, 관측성 | 저절로 불러옴. 예: "add a Terraform S3 bucket" |
 | **직접 열어 볼 수 있는 파일** | 계획, 설계 문서, API 계약, ADR, 버그 노트, 에이전트별 결과, 보안 증거, HTML 설명서, 리캡 | `ls .agents/results` |
 | **리서치와 콘텐츠** | 출처가 달린 검색, 시장 조사, 논문, 슬라이드 덱, MP4 영상, 이미지, 로컬 음성, PDF/HWP를 Markdown으로 변환 | `/video`, `/convert` |
@@ -95,7 +95,7 @@ Windows에서는 설치 프로그램이 Antigravity, Hermes, Kimi를 숨기고, 
 oma install --preset frontend --yes
 ```
 
-이 명령은 프런트엔드 프리셋의 스킬 8개를 선택합니다. 런타임·프로바이더·공통 워크플로우 파일 설정은 그대로 진행하며, 기존 스킬도 남겨 둡니다. 개별 스킬 선택은 대화형 설치의 Custom에서 할 수 있습니다. [프리셋 값](../web/docs/getting-started/installation.md#presets)과 [워크플로우 의존성](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)을 확인하세요.
+이 명령은 프런트엔드 프리셋의 스킬 9개를 선택합니다. 런타임·프로바이더·공통 워크플로우 파일 설정은 그대로 진행하며, 기존 스킬도 남겨 둡니다. 개별 스킬 선택은 대화형 설치의 Custom에서 할 수 있습니다. [프리셋 값](../web/docs/getting-started/installation.md#presets)과 [워크플로우 의존성](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)을 확인하세요.
 
 <details>
 <summary>설치 프로그램이 기본으로 함께 하는 일</summary>
@@ -122,18 +122,18 @@ oma install --preset frontend --yes
 | 프리셋 | 스킬 |
 |--------|--------|
 | **All** | **스킬 32개 전체** (권장) |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack에서 mobile, tf-infra 제외 |
 | Fullstack Mobile | Fullstack에서 frontend, tf-infra 제외 |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | 스킬을 하나씩 직접 선택 |
 
-이름이 붙은 프리셋 중에서 coordination, orchestration, docs, security, refactor, explanation, recap, video, slide, skill-creation을 포함하는 것은 `All`뿐입니다(또는 `Custom`에서 직접 고르세요). Research와 Content에는 `/plan`, `/review`, `/debug`, `/architecture`, `/brainstorm`이 쓰는 스킬이 없습니다. [프리셋 밖의 스킬이 필요한 워크플로우](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)를 참고하세요.
+이름이 붙은 프리셋 중에서 docs, security, refactor, explanation, recap, video, slide, skill-creation을 포함하는 것은 `All`뿐입니다(또는 `Custom`에서 직접 고르세요). Research와 Content에는 `/plan`, `/review`, `/debug`, `/architecture`, `/brainstorm`이 쓰는 스킬이 없습니다. [프리셋 밖의 스킬이 필요한 워크플로우](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)를 참고하세요.
 
 </details>
 
@@ -156,7 +156,7 @@ oma install --preset frontend --yes
 
 4. **결과를 확인합니다.** 보고한 브랜치와 변경 내역이 실제 Git 출력과 일치해야 합니다. 지침을 불러왔거나 설치가 끝났다는 사실만으로 작업 실행이 확인되지는 않습니다.
 
-더 큰 작업에는 필요한 스킬이 설치된 워크플로우를 선택하세요. 계획 스킬이 있으면 `/plan`으로 시작하고, 해당 의존성을 사용할 수 있을 때 `/work`나 `/orchestrate`로 이어 갈 수 있습니다.
+더 큰 작업에는 필요한 스킬이 설치된 워크플로우를 선택하세요. `/oma-mode`는 평범한 문장으로 적은 목표를 받아 워크플로우를 대신 골라 줍니다. [팀이 함께 일하는 방식](#how-the-team-works-together)에서 팀 워크플로우를 비교합니다.
 
 <a id="meet-the-team"></a>
 ## 팀 소개
@@ -180,7 +180,7 @@ oma install --preset frontend --yes
 | **문서 큐레이터** (`docs-curator`) | oma-docs | `/docs`, 또는 "verify docs" | `docs/generated/doc-refs.json`과 승인한 문서 패치 |
 | **리서처** (`research-explorer`) | oma-search, oma-market, oma-scholar | 리서치 요청 | 어디서 어떻게 얻었는지가 표시된 출처, `.agents/results/market/`의 시장 브리프 |
 
-인프라 엔지니어(`tf-infra-engineer`)는 파괴적이거나 프로덕션을 대상으로 하는 `apply`, `destroy`를 실행하기 전에 먼저 묻도록 지시받습니다. 나머지 스킬(brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, 콘텐츠와 미디어)에는 전담 역할이 없습니다. 에이전트가 직접 불러오며, 대부분은 스킬 인젝터가 프롬프트를 보고 알맞은 스킬을 제안합니다.
+인프라 엔지니어(`tf-infra-engineer`)는 파괴적이거나 프로덕션을 대상으로 하는 `apply`, `destroy`를 실행하기 전에 먼저 묻도록 지시받습니다. 나머지 스킬(brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, orchestration, skill-creation, 콘텐츠와 미디어)에는 전담 역할이 없습니다. 에이전트가 직접 불러오며, 대부분은 스킬 인젝터가 프롬프트를 보고 알맞은 스킬을 제안합니다.
 
 </details>
 
@@ -191,7 +191,7 @@ oma install --preset frontend --yes
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -202,21 +202,21 @@ oma install --preset frontend --yes
 
 | 원하는 것 | 실행 | 끝나는 방식 |
 |---|---|---|
+| 목표만 말하고 진행은 oma에 맡기기 | `/oma-mode` | 경로를 고른 뒤 어느 것을 쓸지 묻지 않고 실행하고, 새 컨텍스트의 judge가 모든 완료 기준을 통과로 판정할 때까지 계속 진행. 기준이 막히거나 5회 iteration이 지나면 부분 보고서를 내고 멈춤 |
 | 계획만 | `/plan` | 여러 영역에 걸친 작업이면 계획 파일, 작은 작업이면 바로 권고안 |
-| 단계별로 따라가는 PM 주도 구축 | `/work` | PM, 이어서 티어별 엔지니어, 그다음 QA. CRITICAL과 HIGH 발견 사항은 수정 루프로 들어감(최대 5사이클) |
-| 손을 떼고 맡기는 병렬 구축 | `/orchestrate` | 체크를 통과한 태스크만 완료로 인정. 각 태스크는 최대 3번 시도한 뒤 partial 또는 failed로 표시 |
-| 5단계 워크플로우 | `/ultrawork` | 게이트가 있는 다섯 phase(PLAN, IMPL, VERIFY, REFINE, SHIP). 모든 리뷰는 새 리뷰어 세션에서 실행 |
-| "정말 끝날 때까지 멈추지 마" | `/ralph` | 별도로 띄운 새 컨텍스트의 judge가 모든 기준을 통과로 판정할 때까지 `/ultrawork`를 반복. 기준이 막히거나 5회 iteration이 지나면 부분 보고서를 내고 멈춤 |
+| 여러 영역에 걸친 기능을 한 번의 실행으로 계획·구축·리뷰 | `/work` | PM이 계획을 써서 보여 주고, 엔지니어가 티어별로 병렬 구축한 뒤, QA가 전체를 한꺼번에 리뷰. CRITICAL과 HIGH 발견 사항은 수정 루프로 들어감(최대 5사이클) |
+| 같은 구축에 단계마다 리뷰를 더한 것 | `/ultrawork` | 게이트가 있는 다섯 phase(PLAN, IMPL, VERIFY, REFINE, SHIP)와 리뷰 12회. 모든 리뷰는 새 리뷰어 세션에서 실행 |
+| 이미 있는 계획 실행 | `/orchestrate` | `/plan`의 계획을 쓰인 그대로 실행하고 태스크를 하나씩 따로 확인. 체크를 통과한 태스크만 완료로 인정. 각 태스크는 최대 3번 시도한 뒤 partial 또는 failed로 표시 |
 | 정해진 주기로 일하는 팀 | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 실행마다 `~/.oma/schedule/runs/<id>/`에 Markdown 로그 하나 |
 
 워크플로우는 슬래시 커맨드로 시작합니다. 평범한 요청은 워크플로우를 시작하지 않지만, 프롬프트 hook이 있는 런타임에서는 스킬 힌트를 받습니다. 최대 11개 언어의 키워드 뱅크가 프롬프트와 일치하는 키워드를 찾아 에이전트에 맞는 스킬을 알려 줍니다("run a security audit"은 `oma-qa`를 불러옵니다). 힌트는 권고일 뿐이며, 코드 블록 안의 키워드는 무시됩니다.
 
-`/orchestrate`, `/work`, `/ultrawork`, `/ralph`는 슬래시 커맨드로든 평문으로든("ultrawork: add rate limiting") 이름으로 호출하면 **persistent** 워크플로우가 됩니다. 이때 에이전트가 일찍 멈추려 하면 "**workflow done**"이라고 말할 때까지 다시 작업으로 돌려보냅니다(최대 5회 또는 2시간). 평범한 문장으로 시작할 수 있는 워크플로우는 이 넷뿐이며, 그것도 이름으로 호출할 때만 시작됩니다.
+`/oma-mode`, `/work`, `/ultrawork`, `/ralph`, `/orchestrate`는 슬래시 커맨드로든 평문으로든("ultrawork: add rate limiting") 이름으로 호출하면 **persistent** 워크플로우가 됩니다. 이때 에이전트가 일찍 멈추려 하면 "**workflow done**"이라고 말할 때까지 다시 작업으로 돌려보냅니다(최대 5회 또는 2시간). 평범한 문장으로 시작할 수 있는 워크플로우는 이 다섯뿐이며, 그것도 이름으로 호출할 때만 시작됩니다.
 
 **측정 결과와 유의사항.** [벤치마크](../benchmarks/README.md)(프롬프트 하나, 아무것도 더하지 않은 구성을 포함해 애드온 구성이 서로 다른 Claude Code 다섯 개, `claude-opus-4-6`, 구성당 빌드 1회)에서 oma는 80.6점으로 순수 Claude Code의 70.7점보다 높았지만, 비용은 1.7배($4.04 대 $2.37), 시간은 1.8배가 들었습니다.
 
 <details>
-<summary>워크플로우 20개 전체</summary>
+<summary>워크플로우 21개 전체</summary>
 
 | 커맨드 | 하는 일 |
 |---------|--------------|
@@ -228,9 +228,10 @@ oma install --preset frontend --yes
 | `/design` | 디자인 태스크의 범위를 정하고 oma-design으로 발견 사항, DESIGN.md, 토큰을 전달 |
 | `/docs` | 깨진 문서 참조를 찾고 diff가 건드린 문서에 대한 패치를 제안 |
 | `/explain` | diff, PR, 브랜치, 주제를 self-contained 인터랙티브 HTML 설명서로 변환 |
+| `/oma-mode` | 목표를 받아 경로를 고르고 실행한 뒤, 목표를 달성하거나 한도에 이를 때까지 계속 진행 (persistent) |
 | `/orchestrate` | 에이전트를 병렬로 실행하고 파일 상태로 조율한 뒤 결과를 검증 (persistent) |
 | `/plan` | 기능을 API 계약이 포함된 우선순위 태스크로 분해 |
-| `/ralph` | 별도로 띄운 judge와 함께 `/ultrawork`를 최대 5회 반복 (persistent) |
+| `/ralph` | 사용 중단된 `/oma-mode` 별칭 (persistent) |
 | `/recap` | 하루 또는 기간 단위로 AI 대화 이력을 요약 |
 | `/review` | 보안(OWASP Top 10), 성능, 접근성(WCAG 2.2 AA), 코드 품질을 리뷰 |
 | `/schedule` | 정해진 주기로 반복 실행되는 에이전트 작업을 등록 |
@@ -335,7 +336,7 @@ oma install --preset frontend --yes
 
 | Hook | 하는 일 | 끄는 방법 / 한도 |
 |---|---|---|
-| 키워드 시작 | 평범한 요청이 `/orchestrate`, `/work`, `/ultrawork`, `/ralph`를 이름으로 부르면 그 워크플로우를 시작합니다 | 질문, 붙여 넣은 텍스트, 코드 블록은 건너뜀 |
+| 키워드 시작 | 평범한 요청이 `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork`, `/ralph`를 이름으로 부르면 그 워크플로우를 시작합니다 | 질문, 붙여 넣은 텍스트, 코드 블록은 건너뜀 |
 | 스킬 인젝터 | 프롬프트에 맞는 스킬을 에이전트에 알려 줍니다 | persistent workflow가 활성 상태인 동안 일시 중지 |
 | Stop 게이트 | persistent workflow를 다시 작업으로 돌려보냅니다. `oma goal set --gate test`를 설정하면 그 스크립트가 25초 안에 0으로 종료될 때 종료를 허용합니다 | "workflow done"이라고 말하기. 5번 차단되거나 2시간이 지나도 풀림 |
 | 리팩터 가드 | 종료 시점에 500줄이 넘는 수정 파일을 `refactor-engineer`용으로 표시합니다 | 옵트인: `refactor_guard.enabled` |

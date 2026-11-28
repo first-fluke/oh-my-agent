@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 De [installatiegids voor agenten](./agent-install.md) behandelt niet-interactieve setup en verificatie. Ben je de agent, lees die gids dan en voer de installatie uit.
 
-Open daarna je agent en typ `/orchestrate build a TODO app with login`.
+Open daarna je agent en typ `/oma-mode build a TODO app with login`.
 
 oh-my-agent (`oma`) maakt van Claude Code, Codex CLI, Cursor en 11 andere coding agents een team. Een planner deelt het werk op, engineers bouwen parallel, een reviewer controleert het resultaat en een debugger pakt de root cause aan.
 
@@ -42,7 +42,7 @@ Kies een taak. Laad één skill in de agent die je al gebruikt, of installeer he
 | [Een adminscherm ontwerpen](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
 | [Een falende test repareren](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | Systeemgrenzen reviewen | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
-| Het hele team laten draaien | [oma installeren](#install) | `/orchestrate add login to this app` |
+| Het hele team laten draaien | [oma installeren](#install) | `/oma-mode add login to this app` |
 
 Voer het `skills use`-commando uit in de terminal van je agent. Het laadt die ene skill. Voor het volledige team met workflows, [installeer oma](#install). Andere opties staan in [Een setup kiezen](../web/docs/getting-started/choose-setup.md).
 
@@ -56,8 +56,8 @@ Draai na de installatie `oma doctor`. [Je eerste 5 minuten](#your-first-5-minute
 
 | | Wat het je geeft | Probeer het |
 |---|---|---|
-| **12 specialistische rollen** | PM, architect, backend-, frontend-, mobile-, database- en infra-engineers, QA-reviewer, debugger, refactorer, docs-curator, researcher ([maak kennis](#meet-the-team)) | `/orchestrate build a TODO app with login` |
-| **20 workflows** | Slash commands van `/brainstorm` en `/plan` tot `/review`, `/debug` en `/scm`. De vier multi-agentmodi starten ook wanneer een gewoon verzoek ze bij naam noemt | "ultrawork: add rate limiting" |
+| **12 specialistische rollen** | PM, architect, backend-, frontend-, mobile-, database- en infra-engineers, QA-reviewer, debugger, refactorer, docs-curator, researcher ([maak kennis](#meet-the-team)) | `/oma-mode build a TODO app with login` |
+| **21 workflows** | Slash commands van `/brainstorm` en `/plan` tot `/review`, `/debug` en `/scm`. De vijf persistente modi starten ook wanneer een gewoon verzoek ze bij naam noemt | "ultrawork: add rate limiting" |
 | **32 skills** | Domeinkennis die alleen laadt wanneer een taak die nodig heeft: UI, API's, schema's, Terraform, CI, beveiliging, git, observability | laadt vanzelf, bijv. "add a Terraform S3 bucket" |
 | **Bestanden die je kunt openen** | Plannen, ontwerpdocumenten, API-contracten, ADR's, bugnotities, resultaten per agent, beveiligingsbewijs, HTML-uitleg, recaps | `ls .agents/results` |
 | **Onderzoek en content** | Zoeken met bronvermelding, marktonderzoek, papers, slidedecks, MP4-video's, afbeeldingen, lokale spraak, PDF/HWP naar Markdown | `/video`, `/convert` |
@@ -95,7 +95,7 @@ Kies een preset expliciet wanneer je de skills van een domein wilt:
 oma install --preset frontend --yes
 ```
 
-Dit selecteert de acht skills van de frontend-preset. De installer configureert nog steeds de runtime, de providers en de gedeelde workflowbestanden, en behoudt eerder geïnstalleerde skills. Een eigen selectie is beschikbaar in de interactieve installer. Zie [presetwaarden](../web/docs/getting-started/installation.md#presets) en [workflowafhankelijkheden](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
+Dit selecteert de negen skills van de frontend-preset. De installer configureert nog steeds de runtime, de providers en de gedeelde workflowbestanden, en behoudt eerder geïnstalleerde skills. Een eigen selectie is beschikbaar in de interactieve installer. Zie [presetwaarden](../web/docs/getting-started/installation.md#presets) en [workflowafhankelijkheden](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 <details>
 <summary>Wat de installer standaard nog meer doet</summary>
@@ -122,18 +122,18 @@ Dit selecteert de acht skills van de frontend-preset. De installer configureert 
 | Preset | Skills |
 |--------|--------|
 | **All** | **Alle 32 skills** (aanbevolen) |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack zonder mobile en tf-infra |
 | Fullstack Mobile | Fullstack zonder frontend en tf-infra |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | Kies skills één voor één |
 
-Van de benoemde presets bevat alleen `All` coordination, orchestration, docs, security, refactor, explanation, recap, video, slide en skill-creation (of kies ze onder `Custom`). Research en Content missen de skills achter `/plan`, `/review`, `/debug`, `/architecture` en `/brainstorm`. Zie [Workflows die skills buiten een preset nodig hebben](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
+Van de benoemde presets bevat alleen `All` docs, security, refactor, explanation, recap, video, slide en skill-creation (of kies ze onder `Custom`). Research en Content missen de skills achter `/plan`, `/review`, `/debug`, `/architecture` en `/brainstorm`. Zie [Workflows die skills buiten een preset nodig hebben](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset).
 
 </details>
 
@@ -156,7 +156,7 @@ Van de benoemde presets bevat alleen `All` coordination, orchestration, docs, se
 
 4. **Controleer het resultaat.** De gerapporteerde branch en wijzigingen moeten overeenkomen met de Git-uitvoer. Het laden van instructies of het afronden van de installatie bewijst niet dat deze taak heeft gedraaid.
 
-Voor groter werk kies je een workflow waarvan de skills waarnaar die verwijst geïnstalleerd zijn. Begin met `/plan` wanneer de planningsskill aanwezig is, en ga daarna verder met `/work` of `/orchestrate` wanneer hun afhankelijkheden beschikbaar zijn.
+Voor groter werk kies je een workflow waarvan de skills waarnaar die verwijst geïnstalleerd zijn. `/oma-mode` neemt een doel in gewone taal aan en kiest de workflow voor je; [Hoe het team samenwerkt](#how-the-team-works-together) vergelijkt de teamworkflows.
 
 <a id="meet-the-team"></a>
 ## Maak kennis met het team
@@ -180,7 +180,7 @@ Je eigen agent leidt het team. In `/work`, `/orchestrate` en `/ultrawork` geeft 
 | **Docs-curator** (`docs-curator`) | oma-docs | `/docs`, of "verify docs" | `docs/generated/doc-refs.json` en de doc-patches die je goedkeurt |
 | **Researcher** (`research-explorer`) | oma-search, oma-market, oma-scholar | een onderzoeksverzoek | Geciteerde bronnen met hun herkomst; marktbriefings in `.agents/results/market/` |
 
-De infra-engineer (`tf-infra-engineer`) heeft de instructie om het eerst te vragen vóór elke destructieve of productie-`apply` of -`destroy`. De overige skills (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, coordination, orchestration, skill-creation, content en media) hebben geen eigen rol. Je agent laadt ze zelf, en voor de meeste stelt de skill-injector op basis van je prompt de juiste voor.
+De infra-engineer (`tf-infra-engineer`) heeft de instructie om het eerst te vragen vóór elke destructieve of productie-`apply` of -`destroy`. De overige skills (brainstorm, security, scm, dev-workflow, observability, explanation, recap, translation, orchestration, skill-creation, content en media) hebben geen eigen rol. Je agent laadt ze zelf, en voor de meeste stelt de skill-injector op basis van je prompt de juiste voor.
 
 </details>
 
@@ -191,7 +191,7 @@ De infra-engineer (`tf-infra-engineer`) heeft de instructie om het eerst te vrag
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -202,21 +202,21 @@ Elke stap geeft een bestand door aan de volgende. `/brainstorm` slaat een ontwer
 
 | Je wilt | Draai | Hoe het eindigt |
 |---|---|---|
+| Een doel opgeven en oma laten sturen | `/oma-mode` | Kiest de route, voert die uit zonder te vragen welke het moet gebruiken, en gaat door totdat een judge met verse context elk voltooiingscriterium goedkeurt; stopt met een gedeeltelijk rapport wanneer criteria geblokkeerd zijn of na 5 iteraties |
 | Alleen een plan | `/plan` | Een planbestand voor werk over meerdere gebieden, of een direct advies voor klein werk |
-| Een door de PM geleide build die je stap voor stap volgt | `/work` | PM, daarna engineers laag voor laag, daarna QA. CRITICAL- en HIGH-bevindingen gaan een fix-loop in (maximaal 5 cycli) |
-| Een parallelle build zonder omkijken | `/orchestrate` | Alleen taken waarvan de checks slagen tellen als klaar; elke taak krijgt maximaal 3 pogingen en wordt daarna als gedeeltelijk of mislukt gemarkeerd |
-| Workflow in vijf fasen | `/ultrawork` | Vijf fasen met gates (PLAN, IMPL, VERIFY, REFINE, SHIP); elke review draait in een verse reviewer-sessie |
-| "Stop pas als het echt klaar is" | `/ralph` | Herhaalt `/ultrawork` met een apart gespawnde judge met verse context tot elk criterium slaagt; stopt met een gedeeltelijk rapport wanneer criteria geblokkeerd zijn of na 5 iteraties |
+| Een feature over meerdere gebieden, in één run gepland, gebouwd en gereviewd | `/work` | De PM schrijft een plan en laat het je zien, engineers bouwen laag voor laag parallel, daarna reviewt QA alles samen. CRITICAL- en HIGH-bevindingen gaan een fix-loop in (maximaal 5 cycli) |
+| Dezelfde build met een review in elke fase | `/ultrawork` | Vijf fasen met gates (PLAN, IMPL, VERIFY, REFINE, SHIP) en 12 reviews; elke review draait in een verse reviewer-sessie |
+| Een plan uitvoeren dat je al hebt | `/orchestrate` | Voert het plan uit `/plan` uit zoals het is geschreven en controleert elke taak afzonderlijk. Alleen taken waarvan de checks slagen tellen als klaar; elke taak krijgt maximaal 3 pogingen en wordt daarna als gedeeltelijk of mislukt gemarkeerd |
 | Het team op een timer | `oma schedule create qa-reviewer "review open PRs" --every 2h` | Eén Markdown-log per run in `~/.oma/schedule/runs/<id>/` |
 
 Een slash command start een workflow. Een gewoon verzoek doet dat niet, maar krijgt op runtimes met een prompt-hook wel een skill-hint: keywordbanken in maximaal 11 talen matchen de prompt en wijzen je agent op de bijbehorende skills ("run a security audit" haalt `oma-qa` erbij). De hint is adviserend, en keywords binnen codeblokken worden genegeerd.
 
-`/orchestrate`, `/work`, `/ultrawork` en `/ralph` zijn **persistent** wanneer je ze bij naam aanroept, als slash command of in gewone tekst ("ultrawork: add rate limiting"). De agent wordt dan weer aan het werk gezet als hij te vroeg probeert te stoppen (maximaal 5 keer of 2 uur), totdat je **"workflow done"** zegt. Deze vier zijn de enige workflows die een gewone zin kan starten, en alleen bij naam.
+`/oma-mode`, `/work`, `/ultrawork`, `/ralph` en `/orchestrate` zijn **persistent** wanneer je ze bij naam aanroept, als slash command of in gewone tekst ("ultrawork: add rate limiting"). De agent wordt dan weer aan het werk gezet als hij te vroeg probeert te stoppen (maximaal 5 keer of 2 uur), totdat je **"workflow done"** zegt. Deze vijf zijn de enige workflows die een gewone zin kan starten, en alleen bij naam.
 
 **Gemeten, met kanttekeningen.** In de [benchmark](../benchmarks/README.md) (één prompt, Claude Code met vijf verschillende add-on-opstellingen waaronder kaal, `claude-opus-4-6`, één build per opstelling) scoorde oma 80.6 tegenover 70.7 voor kale Claude Code, bij 1.7x de kosten ($4.04 vs $2.37) en 1.8x de tijd.
 
 <details>
-<summary>Alle 20 workflows</summary>
+<summary>Alle 21 workflows</summary>
 
 | Commando | Wat het doet |
 |---------|--------------|
@@ -228,9 +228,10 @@ Een slash command start een workflow. Een gewoon verzoek doet dat niet, maar kri
 | `/design` | Bakent een designtaak af en levert via oma-design bevindingen, DESIGN.md of tokens op |
 | `/docs` | Vindt kapotte verwijzingen in docs en stelt patches voor voor docs die een diff heeft geraakt |
 | `/explain` | Zet een diff, PR, branch of onderwerp om in een zelfstandige, interactieve HTML-uitleg |
+| `/oma-mode` | Neemt een doel aan, kiest de route, voert die uit en gaat door tot het doel is gehaald of een limiet is bereikt (persistent) |
 | `/orchestrate` | Draait agents parallel, coördineert ze via state in bestanden en verifieert het resultaat (persistent) |
 | `/plan` | Splitst een feature op in geprioriteerde taken met API-contracten |
-| `/ralph` | Herhaalt `/ultrawork` met een apart gespawnde judge, tot 5 iteraties (persistent) |
+| `/ralph` | Verouderde alias van `/oma-mode` (persistent) |
 | `/recap` | Vat je AI-gespreksgeschiedenis van een dag of periode samen |
 | `/review` | Reviewt beveiliging (OWASP Top 10), performance, toegankelijkheid (WCAG 2.2 AA) en codekwaliteit |
 | `/schedule` | Registreert een agent-job die met een terugkerend interval draait |
@@ -335,7 +336,7 @@ Deze pijplijnen melden een ontbrekende bron of vendor-sleutel in plaats van stil
 
 | Hook | Wat het doet | Uitschakelen / limiet |
 |---|---|---|
-| Keyword-start | Start `/orchestrate`, `/work`, `/ultrawork` of `/ralph` wanneer een gewoon verzoek die bij naam noemt | Vragen, geplakte tekst en codeblokken worden overgeslagen |
+| Keyword-start | Start `/oma-mode`, `/orchestrate`, `/work`, `/ultrawork` of `/ralph` wanneer een gewoon verzoek die bij naam noemt | Vragen, geplakte tekst en codeblokken worden overgeslagen |
 | Skill-injector | Wijst je agent op de juiste skills voor de prompt | Gepauzeerd zolang een persistente workflow actief is |
 | Stop-gate | Zet een persistente workflow weer aan het werk; met `oma goal set --gate test` is stoppen toegestaan zodra dat script binnen 25 s met 0 eindigt | Zeg "workflow done"; hij stopt ook met blokkeren na 5 blokkades of 2 uur |
 | Refactor-guard | Markeert bij het stoppen bewerkte bestanden van meer dan 500 regels voor `refactor-engineer` | Opt-in: `refactor_guard.enabled` |

@@ -12,7 +12,7 @@ oh-my-agent añade una capa propiedad del repositorio alrededor de las CLIs de a
 OMA encaja cuando necesitas una o varias de estas capacidades:
 
 - **Varios hosts o proveedores de agentes.** `model_preset: auto` usa la configuración nativa del runtime actual. Los presets fijos y personalizados pueden dirigir roles a otros proveedores; `oma agent spawn` gestiona el despacho no nativo.
-- **Un flujo de trabajo de equipo repetible.** `/work` gestiona una tarea acotada, `/orchestrate` coordina trabajo delegado, `/ultrawork` ejecuta trabajo paralelo con pasos de revisión y `/ralph` repite una tarea con una fase de juez explícita.
+- **Un flujo de trabajo de equipo repetible.** `/oma-mode` recibe un objetivo, elige la ruta y hace que un juez independiente compruebe el resultado, `/work` planifica, construye y revisa una funcionalidad multidominio, `/ultrawork` añade una revisión aislada en cada etapa y `/orchestrate` ejecuta un plan existente con verificación por tarea.
 - **Instrucciones propiedad del repositorio.** Las habilidades, flujos de trabajo, reglas y definiciones de agentes viven junto al código. `oma link` proyecta los archivos seleccionados a los formatos compatibles de cada proveedor.
 - **Comprobaciones mecánicas y resultados duraderos.** Las ejecuciones de agentes pueden escribir estados y registros de resultados estructurados, mientras `oma verify agent <agent-type>` y `oma docs verify` ofrecen comprobaciones explícitas.
 
@@ -22,7 +22,7 @@ Si un proyecto usa un solo host y no necesita habilidades compartidas, flujos de
 
 Ejecuta `oma verify agent <agent-type> --workspace <path>` cuando quieras las comprobaciones correspondientes a un rol de backend, frontend, móvil, QA, depuración o planificación. El verificador combina inspecciones estáticas con comandos configurados, como pruebas, comprobaciones de tipos, comprobaciones SQL o `flutter analyze`; consulta [`cli/commands/verify/report.ts`](https://github.com/first-fluke/oh-my-agent/blob/main/cli/commands/verify/report.ts). El informe muestra el resultado de cada comprobación. Superar estas comprobaciones no demuestra que una funcionalidad cumpla sus requisitos de producto o dominio, por lo que los criterios de aceptación de la tarea también necesitan revisión.
 
-`/ralph` añade una fase de [juez](./glossary.md#judge) separada cuando eliges ese flujo de trabajo. Vuelve a comprobar los criterios declarados entre iteraciones y registra los artefactos del flujo de trabajo; no es una puerta que se ejecute en cada prompt normal. Cargar una habilidad tampoco inicia todos los flujos de trabajo ni todos los comandos de verificación.
+`/oma-mode` añade un paso de [juez](./glossary.md#judge) separado cuando eliges ese flujo de trabajo. Vuelve a comprobar los criterios declarados después de cada iteración; no es una puerta que se ejecute en cada prompt normal. Cargar una habilidad tampoco inicia todos los flujos de trabajo ni todos los comandos de verificación.
 
 ## El despacho permanece visible
 
@@ -43,5 +43,5 @@ Para la discusión de posicionamiento original, consulta el [issue #155](https:/
 - [Inicio rápido](./quick-start.md): instala, comprueba la configuración y ejecuta una tarea acotada
 - [Valores predeterminados importantes](./important-defaults.md): qué activa el instalador y cómo cambiarlo
 - [Instalación](./installation.md#presets): elige un preset de habilidades que cubra los flujos de trabajo que piensas usar
-- [Flujos de trabajo](../core-concepts/workflows.md): cuándo usar `/work`, `/orchestrate`, `/ultrawork` y `/ralph`
+- [Flujos de trabajo](../core-concepts/workflows.md): cuándo usar `/oma-mode`, `/work`, `/ultrawork` y `/orchestrate`
 - [Solución de problemas](../guide/troubleshooting.md): soluciones para problemas de instalación, proveedores y hooks

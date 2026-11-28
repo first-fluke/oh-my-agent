@@ -90,6 +90,7 @@ import { migrateRemoveToolsWorkflow } from "./034-remove-tools-workflow.js";
 import { migrateRemoveMcpToolGroups } from "./035-remove-mcp-tool-groups.js";
 import { migrateRemoveUnscopedRules } from "./036-remove-unscoped-rules.js";
 import { migrateRemoveCoordinationSkill } from "./037-remove-coordination-skill.js";
+import { migrateRemoveRalphJudgeProtocol } from "./038-remove-ralph-judge-protocol.js";
 
 const migrations: Migration[] = [
   migrateToAgents,
@@ -128,6 +129,7 @@ const migrations: Migration[] = [
   migrateRemoveMcpToolGroups,
   migrateRemoveUnscopedRules,
   migrateRemoveCoordinationSkill,
+  migrateRemoveRalphJudgeProtocol,
 ];
 
 export function runMigrations(

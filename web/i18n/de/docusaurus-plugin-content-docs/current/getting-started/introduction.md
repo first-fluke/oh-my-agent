@@ -7,7 +7,7 @@ description: "Ein umfassender Überblick über oh-my-agent: das Multi-Agenten-Or
 
 oh-my-agent ist ein Multi-Agenten-Orchestrierungsframework für KI-gestützte IDEs und CLI-Tools. Statt sich für alles auf einen einzelnen KI-Assistenten zu verlassen, verteilt oh-my-agent die Arbeit auf 32 Skill-Pakete und 13 kanonische Dispatch-Rollen. Zwölf eingecheckte Subagent-Definitionsdateien stellen wiederverwendbare Personas für Implementierung, Review, Planung, Debugging, Dokumentation, Recherche und Infrastruktur bereit. `research-explorer.md` ist der kanonischen Rolle `explore` zugeordnet; `orchestrator` ist eine reine Laufzeitrolle für die Koordination ohne eigene Definitionsdatei.
 
-OMA führt mechanische Prüfungen aus, wenn Sie sie aufrufen oder einen Workflow mit solchen Prüfungen auswählen. `oma verify agent <agent-type>` prüft den ausgewählten Agententyp; `/ralph` ergänzt artefaktbasierte Verifikation und eine [Judge](./glossary.md#judge)-Schleife; aktivierte Vendor-Stop-Hooks (das [Stop-Gate](./glossary.md#stop-gate)) können einen Workflow offenhalten, während seine konfigurierten Prüfungen laufen. Das Laden eines Skills begründet allein noch keine Abnahme, und ein einfacher Prompt führt nicht automatisch jedes Workflow-Gate aus. Entscheiden Sie anhand der Akzeptanzkriterien des Workflows und der erzeugten Dateien, was abgeschlossen ist.
+OMA führt mechanische Prüfungen aus, wenn Sie sie aufrufen oder einen Workflow mit solchen Prüfungen auswählen. `oma verify agent <agent-type>` prüft den ausgewählten Agententyp; `/oma-mode` ergänzt eine [Judge](./glossary.md#judge)-Schleife über Abschlusskriterien; aktivierte Vendor-Stop-Hooks (das [Stop-Gate](./glossary.md#stop-gate)) können einen Workflow offenhalten, während seine konfigurierten Prüfungen laufen. Das Laden eines Skills begründet allein noch keine Abnahme, und ein einfacher Prompt führt nicht automatisch jedes Workflow-Gate aus. Entscheiden Sie anhand der Akzeptanzkriterien des Workflows und der erzeugten Dateien, was abgeschlossen ist.
 
 Das gesamte System liegt in einem portablen `.agents/`-Verzeichnis innerhalb Ihres Projekts. Sie können zwischen Claude Code, Codex CLI, Antigravity CLI oder IDE, Cursor, OpenCode und anderen unterstützten Tools wechseln; Ihre Agentenkonfiguration bleibt bei Ihrem Code.
 
@@ -33,13 +33,13 @@ oh-my-agent löst das durch Spezialisierung:
 
 ---
 
-## Der aktuelle Katalog: 32 Skills, 12 Definitionen, 20 Workflows {#the-current-catalog-32-skills-12-definitions-20-workflows}
+## Der aktuelle Katalog: 32 Skills, 12 Definitionen, 21 Workflows {#the-current-catalog-32-skills-12-definitions-21-workflows}
 
 Der Katalog trennt drei Dinge, die leicht verwechselt werden:
 
 - **[Skills](./glossary.md#skill)** sind die 32 Domänenwissenspakete unter `.agents/skills/*/SKILL.md`. Sie routen anhand der natürlichsprachlichen Absicht und laden Ressourcen schrittweise.
 - **[Agentendefinitionen](./glossary.md#agent-definition)** sind die 12 Dateien unter `.agents/agents/`. Sie stellen Vendor-native Subagent-Personas bereit und verweisen auf einen oder mehrere Skills.
-- **[Workflows](./glossary.md#workflow)** sind die 20 Prozessdefinitionen unter `.agents/workflows/`. Vier davon sind [persistent](./glossary.md#persistent-workflow) (`orchestrate`, `work`, `ultrawork` und `ralph`); die übrigen erstellen einen Bericht und halten den persistenten Modus nicht aktiv.
+- **[Workflows](./glossary.md#workflow)** sind die 21 Prozessdefinitionen unter `.agents/workflows/`. Fünf davon sind [persistent](./glossary.md#persistent-workflow) (`oma-mode`, `orchestrate`, `work`, `ultrawork` und `ralph`); die übrigen erstellen einen Bericht und halten den persistenten Modus nicht aktiv.
 
 Die folgenden Abschnitte bewahren den detaillierten Skill-Katalog. Wenn sich ein Name oder eine Beschreibung ändert, ist das Frontmatter der aktuellen `SKILL.md` maßgeblich.
 
@@ -165,7 +165,7 @@ Alles, was oh-my-agent benötigt, befindet sich im Verzeichnis `.agents/`:
 ├── skills/           # 32 skill directories + _shared resources
 │   ├── _shared/      # Core resources used by all agents
 │   └── oma-{skill}/  # Per-skill SKILL.md + resources/variants
-├── workflows/        # 20 workflow definitions
+├── workflows/        # 21 workflow definitions
 ├── agents/           # 12 subagent definitions
 ├── hooks/            # Hook sources, including core/triggers.json
 ├── rules/            # Project rules projected into vendor files
@@ -208,18 +208,18 @@ flowchart TD
   P["User prompt"] --> SL{"Starts with a /command?"}
   SL -->|yes| WF["Workflow: .agents/workflows/name.md"]
   SL -->|no| KD["Keyword hook checks triggers.json"]
-  KD -->|"explicit name of orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
+  KD -->|"explicit name of oma-mode, orchestrate, ultrawork, work, or ralph"| CTX["Inject OMA WORKFLOW context"]
   CTX --> WF
   KD -->|"then, unless a persistent workflow is active"| SI["Skill injector adds up to 3 skill hints"]
   SI --> HOST["Host picks skills by name and description"]
   WF --> SK["Skills: .agents/skills/*/SKILL.md"]
   HOST --> SK
   WF --> AG["Agents: native subagent or oma agent spawn"]
-  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, ralph judge"]
+  AG --> GATE["Workflow gates: oma state verify checkpoints, verify script, QA review, oma-mode judge"]
   GATE --> STOP["Stop hook keeps a persistent workflow open until done or 'workflow done'"]
 ```
 
-Quellen: `.agents/hooks/core/keyword-detector.ts` (Überspringen von Slash-Befehlen, Trigger-Abgleich, persistenter Vorschlag), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` und die Workflow-Dateien unter `.agents/workflows/`. Nicht jeder Workflow hat jedes Gate: `/orchestrate` führt das Verify-Skript aus, `/review` das QA-Review, und `/ralph` ergänzt den [Judge](./glossary.md#judge).
+Quellen: `.agents/hooks/core/keyword-detector.ts` (Überspringen von Slash-Befehlen, Trigger-Abgleich, persistenter Vorschlag), `.agents/hooks/core/skill-injector.ts`, `.agents/hooks/core/persistent-mode.ts` und die Workflow-Dateien unter `.agents/workflows/`. Nicht jeder Workflow hat jedes Gate: `/orchestrate` führt das Verify-Skript aus, `/review` das QA-Review, und `/oma-mode` ergänzt den [Judge](./glossary.md#judge).
 
 ---
 
@@ -262,7 +262,7 @@ Das HUD wird von `.claude/hooks/hud.ts` über die Claude-Code-Funktion `statusLi
 Ein Slash-Befehl startet einen Workflow. Bei einer einfachen Anfrage gleicht das Hook-System von oh-my-agent die Eingabe mit den Keyword-Tabellen in `.agents/hooks/core/triggers.json` ab (in die `oma`-Binärdatei eingebettet und von jedem Vendor gemeinsam verwendet), die 11 Sprachen abdecken (Englisch, Koreanisch, Japanisch, Chinesisch, Spanisch, Französisch, Deutsch, Portugiesisch, Russisch, Niederländisch und Polnisch).
 
 - **Skill-Hinweise** (z. B. „run a security audit“) → der Skill-Injector nennt bis zu drei passende Skills; der Hinweis ist unverbindlich und startet keinen Workflow.
-- **Persistente Workflows** (`orchestrate`, `work`, `ultrawork`, `ralph`) → starten aus Klartext nur, wenn der Prompt den expliziten Namen des Workflows verwendet (zum Beispiel `ultrawork: add rate limiting`).
+- **Persistente Workflows** (`oma-mode`, `orchestrate`, `work`, `ultrawork`, `ralph`) → starten aus Klartext nur, wenn der Prompt den expliziten Namen des Workflows verwendet (zum Beispiel `ultrawork: add rate limiting`).
 - **Jeder andere Workflow** → startet nur über seinen `/command`.
 - **Informative Eingabe** (z. B. „what is orchestrate?“) → wird herausgefiltert, kein Workflow wird ausgelöst.
 - **Expliziter `/command`** → der Hook überspringt die Erkennung, damit nichts doppelt ausgelöst wird.
@@ -299,5 +299,5 @@ Das Verzeichnis `.agents/` bleibt die Wahrheitsquelle. Die Installation verlinkt
 - **[Installation](./installation.md):** Drei Installationsmethoden, Presets, CLI-Einrichtung und Verifikation
 - **[Agenten](/docs/core-concepts/agents):** Vertiefung in die 32 Skills, 13 Dispatch-Rollen und die Richtlinie zu Autorisierung und Klärung
 - **[Skills](/docs/core-concepts/skills):** Erklärung der Zwei-Schichten-Architektur
-- **[Workflows](/docs/core-concepts/workflows):** Alle 20 Workflows mit Triggern und Phasen
+- **[Workflows](/docs/core-concepts/workflows):** Alle 21 Workflows mit Triggern und Phasen
 - **[Nutzungsleitfaden](/docs/guide/usage):** Praxisbeispiele von Einzelaufgaben bis zur vollständigen Orchestrierung

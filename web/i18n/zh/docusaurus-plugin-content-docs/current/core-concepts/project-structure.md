@@ -189,10 +189,11 @@ your-project/
 │   │           └── ...
 │   │
 │   ├── workflows/                    ← 20 process definitions
+│   │   ├── oma-mode.md                ← Persistent: autonomous mode with a judge
 │   │   ├── orchestrate.md             ← Persistent: automated parallel execution
 │   │   ├── work.md                    ← Persistent: step-by-step coordination
 │   │   ├── ultrawork.md               ← Persistent: 5-phase quality workflow
-│   │   ├── ralph.md                   ← Persistent: repeated execution + judge
+│   │   ├── ralph.md                   ← Deprecated alias of oma-mode
 │   │   ├── plan.md / brainstorm.md / architecture.md
 │   │   ├── deepinit.md / review.md / security.md / debug.md / design.md
 │   │   ├── scm.md / stack-set.md / convert.md
@@ -224,7 +225,7 @@ your-project/
 │   │       ├── lessons-{sessionId}.md     ← Lessons from actual experiments (conditional)
 │   │       ├── session-work.md            ← Work workflow session state
 │   │       ├── session-ultrawork.md       ← Ultrawork workflow session state
-│   │       ├── session-ralph-{sessionId}.md ← Ralph workflow session state
+│   │       ├── session-oma-mode-{sessionId}.md ← oma-mode session state
 │   │       ├── session-cost-{sessionId}.md ← Per-session spawn cost telemetry
 │   │       └── archive/
 │   │           └── metrics-{date}.md      ← Archived session metrics
@@ -299,7 +300,7 @@ your-project/
 - 分步执行协议
 - 关卡定义（适用于持久化工作流）
 
-持久化工作流：`orchestrate.md`、`work.md`、`ultrawork.md` 和 `ralph.md`。
+持久化工作流：`oma-mode.md`、`orchestrate.md`、`work.md`、`ultrawork.md` 和 `ralph.md`。
 非持久化工作流包括 `plan.md`、`brainstorm.md`、`architecture.md`、`deepinit.md`、`review.md`、`security.md`、`debug.md`、`design.md`、`scm.md`、`stack-set.md`、`convert.md`、`docs.md`、`explain.md`、`recap.md`、`schedule.md` 和 `video.md`。
 
 ### agents/
@@ -489,7 +490,7 @@ echo '{"cwd":"/path/to/project"}' \
 | `lessons-{sessionId}.md` | 编排器 | 有实验证据支撑的经验教训（条件性） |
 | `session-work.md` | work 工作流 | work 专用会话状态 |
 | `session-ultrawork.md` | ultrawork 工作流 | ultrawork 专用阶段跟踪 |
-| `session-ralph-{sessionId}.md` | ralph 工作流 | 单次 Ralph 运行的标准、迭代记录和 judge 结果 |
+| `session-oma-mode-{sessionId}.md` | oma-mode 工作流 | 单次运行的标准、迭代记录和 judge 结果 |
 | `session-cost-{sessionId}.md` | 系统 | 每个会话的启动成本遥测 |
 | `archive/metrics-{date}.md` | 系统 | 归档的会话指标（保留 30 天） |
 

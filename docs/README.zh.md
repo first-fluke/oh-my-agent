@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/first-fluke/oh-my-agent/main/docs/agent-instal
 
 [agent 安装指南](./agent-install.md)涵盖非交互式设置和验证。如果你就是那个 agent，请阅读该指南并完成安装。
 
-然后打开你的 agent，输入 `/orchestrate build a TODO app with login`。
+然后打开你的 agent，输入 `/oma-mode build a TODO app with login`。
 
 oh-my-agent（`oma`）把 Claude Code、Codex CLI、Cursor 以及其他 11 个编码 agent 变成一支团队。规划者拆解工作，工程师并行构建，审查者检查结果，调试者修复根因。
 
@@ -43,7 +43,7 @@ oh-my-agent（`oma`）把 Claude Code、Codex CLI、Cursor 以及其他 11 个�
 | [设计管理界面](../web/docs/tasks/design-admin-ui.md) | `bunx skills use first-fluke/oh-my-agent@oma-design` | "Review the hierarchy and table density of our admin page." |
 | [修复失败的测试](../web/docs/tasks/debug-failing-tests.md) | `bunx skills use first-fluke/oh-my-agent@oma-debug` | "Reproduce this test failure, fix its cause, and run the affected checks." |
 | 审查系统边界 | `bunx skills use first-fluke/oh-my-agent@oma-architecture` | "Review the boundary between our API and worker." |
-| 运行整支团队 | [安装 oma](#install) | `/orchestrate add login to this app` |
+| 运行整支团队 | [安装 oma](#install) | `/oma-mode add login to this app` |
 
 在 agent 的终端里运行 `skills use` 命令。它会加载那一个技能。需要带工作流的整支团队时，[安装 oma](#install)。其他选择见[选择设置](../web/docs/getting-started/choose-setup.md)。
 
@@ -57,8 +57,8 @@ oh-my-agent（`oma`）把 Claude Code、Codex CLI、Cursor 以及其他 11 个�
 
 | | 能给你什么 | 试一试 |
 |---|---|---|
-| **12 个专家角色** | PM、架构师、后端、前端、移动端、数据库和基础设施工程师、QA 审查者、调试者、重构者、文档管理员、研究员（[认识他们](#meet-the-team)） | `/orchestrate build a TODO app with login` |
-| **20 个工作流** | 斜杠命令，从 `/brainstorm`、`/plan` 到 `/review`、`/debug` 和 `/scm`。四种多 agent 模式在普通请求点名时也会启动 | “ultrawork: add rate limiting” |
+| **12 个专家角色** | PM、架构师、后端、前端、移动端、数据库和基础设施工程师、QA 审查者、调试者、重构者、文档管理员、研究员（[认识他们](#meet-the-team)） | `/oma-mode build a TODO app with login` |
+| **21 个工作流** | 斜杠命令，从 `/brainstorm`、`/plan` 到 `/review`、`/debug` 和 `/scm`。五种持久型模式在普通请求点名时也会启动 | “ultrawork: add rate limiting” |
 | **32 个技能** | 只在任务需要时加载的领域知识：UI、API、schema、Terraform、CI、安全、git、可观测性 | 自动加载，例如“add a Terraform S3 bucket” |
 | **能打开的文件** | 计划、设计文档、API 契约、ADR、bug 笔记、各 agent 的结果、安全证据、HTML 讲解文档、回顾总结 | `ls .agents/results` |
 | **研究与内容** | 带引用的搜索、市场研究、论文、幻灯片、MP4 视频、图像、本地语音、PDF/HWP 转 Markdown | `/video`、`/convert` |
@@ -97,7 +97,7 @@ oma
 oma install --preset frontend --yes
 ```
 
-这会选中 frontend 预设的八个技能。安装器仍会配置运行时、提供商和共享工作流文件，并保留先前安装的技能。交互式安装器里可以自定义选择。参见[预设取值](../web/docs/getting-started/installation.md#presets)和[工作流依赖](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)。
+这会选中 frontend 预设的九个技能。安装器仍会配置运行时、提供商和共享工作流文件，并保留先前安装的技能。交互式安装器里可以自定义选择。参见[预设取值](../web/docs/getting-started/installation.md#presets)和[工作流依赖](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)。
 
 <details>
 <summary>安装器默认还会做的事</summary>
@@ -124,18 +124,18 @@ oma install --preset frontend --yes
 | 预设 | 技能 |
 |--------|--------|
 | **All** | **全部 32 个技能**（推荐） |
-| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, pm, qa, scm, tf-infra |
+| Fullstack | architecture, backend, brainstorm, db, debug, design, dev-workflow, frontend, mobile, orchestration, pm, qa, scm, tf-infra |
 | Fullstack Web | Fullstack 去掉 mobile 和 tf-infra |
 | Fullstack Mobile | Fullstack 去掉 frontend 和 tf-infra |
-| Frontend | architecture, brainstorm, debug, design, frontend, pm, qa, scm |
-| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, pm, qa, scm |
-| Mobile | architecture, brainstorm, debug, mobile, pm, qa, scm |
-| DevOps | architecture, brainstorm, debug, dev-workflow, observability, pm, qa, scm, tf-infra |
+| Frontend | architecture, brainstorm, debug, design, frontend, orchestration, pm, qa, scm |
+| Backend | architecture, backend, brainstorm, db, debug, dev-workflow, orchestration, pm, qa, scm |
+| Mobile | architecture, brainstorm, debug, mobile, orchestration, pm, qa, scm |
+| DevOps | architecture, brainstorm, debug, dev-workflow, observability, orchestration, pm, qa, scm, tf-infra |
 | Research | academic-writing, hwp, market, pdf, scholar, scm, search, translation |
 | Content | academic-writing, design, image, scm, translation, voice |
 | Custom | 逐个挑选技能 |
 
-在这些具名预设中，只有 `All` 包含 coordination、orchestration、docs、security、refactor、explanation、recap、video、slide 和 skill-creation（也可以在 `Custom` 中单独挑选）。Research 和 Content 缺少 `/plan`、`/review`、`/debug`、`/architecture` 和 `/brainstorm` 所依赖的技能。参见[需要预设之外技能的工作流](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)。
+在这些具名预设中，只有 `All` 包含 docs、security、refactor、explanation、recap、video、slide 和 skill-creation（也可以在 `Custom` 中单独挑选）。Research 和 Content 缺少 `/plan`、`/review`、`/debug`、`/architecture` 和 `/brainstorm` 所依赖的技能。参见[需要预设之外技能的工作流](../web/docs/getting-started/installation.md#workflows-that-need-skills-outside-a-preset)。
 
 </details>
 
@@ -158,7 +158,7 @@ oma install --preset frontend --yes
 
 4. **检查结果。** 报告的分支和变更应与 Git 输出一致。加载指令或完成安装并不能证明这项任务已经运行。
 
-对于更大的工作，选择一个所引用技能已经安装的工作流。规划技能存在时从 `/plan` 开始，依赖可用时再继续 `/work` 或 `/orchestrate`。
+对于更大的工作，选择一个所引用技能已经安装的工作流。`/oma-mode` 接收用平常话描述的目标，并替你选好工作流；[团队如何协作](#how-the-team-works-together)比较了各个团队工作流。
 
 <a id="meet-the-team"></a>
 ## 认识团队
@@ -182,7 +182,7 @@ oma install --preset frontend --yes
 | **文档管理员**（`docs-curator`） | oma-docs | `/docs`，或“verify docs” | `docs/generated/doc-refs.json`，以及你批准的文档补丁 |
 | **研究员**（`research-explorer`） | oma-search, oma-market, oma-scholar | 一个研究请求 | 注明出处的引用来源；`.agents/results/market/` 中的市场简报 |
 
-基础设施工程师（`tf-infra-engineer`）被要求在任何破坏性或生产环境的 `apply` 或 `destroy` 之前先征求你的同意。其余技能（brainstorm、security、scm、dev-workflow、observability、explanation、recap、translation、coordination、orchestration、skill-creation，以及内容与媒体类技能）没有专属角色。你的 agent 会自行加载它们，其中大多数还会由技能注入器根据你的 prompt 推荐合适的那个。
+基础设施工程师（`tf-infra-engineer`）被要求在任何破坏性或生产环境的 `apply` 或 `destroy` 之前先征求你的同意。其余技能（brainstorm、security、scm、dev-workflow、observability、explanation、recap、translation、orchestration、skill-creation，以及内容与媒体类技能）没有专属角色。你的 agent 会自行加载它们，其中大多数还会由技能注入器根据你的 prompt 推荐合适的那个。
 
 </details>
 
@@ -193,7 +193,7 @@ oma install --preset frontend --yes
  THINK   /brainstorm ......................... docs/decisions/<NNN>-<feature>.md
  PLAN    /plan · /architecture ............... plan JSON, API contracts, ADR
  DESIGN  /design ............................. DESIGN.md + tokens
- BUILD   /work · /orchestrate · /ultrawork ... code + result-<agent> files, engineers in parallel
+ BUILD   /work · /ultrawork · /orchestrate ... code + result-<agent> files, engineers in parallel
  CHECK   /review · /security · /debug ........ findings, security evidence, regression test
  SHIP    /scm · /docs ........................ Conventional Commits, doc fixes
 ```
@@ -204,21 +204,21 @@ oma install --preset frontend --yes
 
 | 你想要 | 运行 | 结果如何 |
 |---|---|---|
+| 说出目标，交给 oma 推进 | `/oma-mode` | 选定路由，不问该用哪个就直接运行，并持续到拥有全新上下文的 judge 通过每条完成标准；当标准受阻或满 5 轮后停止，并给出部分完成报告 |
 | 只要一份计划 | `/plan` | 跨领域工作得到一份计划文件，小型工作得到一条直接建议 |
-| 由 PM 主导、你一步步跟进的构建 | `/work` | 先 PM，再按层级依次交给工程师，最后 QA。CRITICAL 和 HIGH 级发现会进入修复循环（最多 5 轮） |
-| 放手不管的并行构建 | `/orchestrate` | 只有检查通过的任务才算完成；每个任务最多尝试 3 次，之后标记为 partial 或 failed |
-| 五阶段工作流 | `/ultrawork` | 五个带门禁的阶段（PLAN、IMPL、VERIFY、REFINE、SHIP）；每次审查都在全新的审查者会话中进行 |
-| “真正做完之前别停” | `/ralph` | 搭配单独 spawn、拥有全新上下文的 judge 反复运行 `/ultrawork`，直到每条标准都通过；当标准受阻或满 5 轮后停止，并给出部分完成报告 |
+| 横跨多个领域的功能，一次运行完成规划、构建和审查 | `/work` | PM 写出计划并展示给你，工程师按层级并行构建，然后 QA 统一审查全部结果。CRITICAL 和 HIGH 级发现会进入修复循环（最多 5 轮） |
+| 同样的构建，但每个阶段都有审查 | `/ultrawork` | 五个带门禁的阶段（PLAN、IMPL、VERIFY、REFINE、SHIP），共 12 次审查；每次审查都在全新的审查者会话中进行 |
+| 执行一份已有的计划 | `/orchestrate` | 原样执行 `/plan` 产出的计划，并逐个检查每个任务。只有检查通过的任务才算完成；每个任务最多尝试 3 次，之后标记为 partial 或 failed |
 | 定时运行的团队 | `oma schedule create qa-reviewer "review open PRs" --every 2h` | 每次运行在 `~/.oma/schedule/runs/<id>/` 中留下一份 Markdown 日志 |
 
 斜杠命令会启动工作流。普通请求不会，但在支持 prompt hook 的运行时上，它仍会得到一条技能提示：最多覆盖 11 种语言的关键词库会匹配 prompt，并为你的 agent 指出匹配的技能（“run a security audit”会带入 `oma-qa`）。这条提示只是建议，代码块中的关键词会被忽略。
 
-`/orchestrate`、`/work`、`/ultrawork` 和 `/ralph` 在你按名称调用时（斜杠命令或纯文本，如“ultrawork: add rate limiting”）是**持久型**的。此后 agent 每次想提前停下，都会被送回去继续工作（最多 5 次或 2 小时），直到你说 **“workflow done”**。只有这四个工作流能由一句普通的话启动，而且必须点名。
+`/oma-mode`、`/work`、`/ultrawork`、`/ralph` 和 `/orchestrate` 在你按名称调用时（斜杠命令或纯文本，如“ultrawork: add rate limiting”）是**持久型**的。此后 agent 每次想提前停下，都会被送回去继续工作（最多 5 次或 2 小时），直到你说 **“workflow done”**。只有这五个工作流能由一句普通的话启动，而且必须点名。
 
 **实测数据，附带说明。** 在[基准测试](../benchmarks/README.md)中（一个 prompt；Claude Code 搭配五种不同的附加配置，含纯 Claude Code；`claude-opus-4-6`；每种各构建一次），oma 得分 80.6，纯 Claude Code 为 70.7；成本是后者的 1.7 倍（$4.04 对 $2.37），耗时是后者的 1.8 倍。
 
 <details>
-<summary>全部 20 个工作流</summary>
+<summary>全部 21 个工作流</summary>
 
 | 命令 | 作用 |
 |---------|--------------|
@@ -230,9 +230,10 @@ oma install --preset frontend --yes
 | `/design` | 界定设计任务的范围，并通过 oma-design 交付发现、DESIGN.md 或设计 token |
 | `/docs` | 找出失效的文档引用，并为 diff 涉及的文档提出补丁 |
 | `/explain` | 把 diff、PR、分支或主题做成自包含的交互式 HTML 讲解文档 |
+| `/oma-mode` | 接收目标、选定路由并运行，持续到目标达成或触及上限（持久型） |
 | `/orchestrate` | 并行运行多个 agent，通过文件状态协调它们，并验证结果（持久型） |
 | `/plan` | 把功能拆成按优先级排序、带 API 契约的任务 |
-| `/ralph` | 搭配单独 spawn 的 judge 反复运行 `/ultrawork`，最多 5 轮（持久型） |
+| `/ralph` | `/oma-mode` 的已弃用别名（持久型） |
 | `/recap` | 总结你某一天或某段时间的 AI 对话历史 |
 | `/review` | 审查安全（OWASP Top 10）、性能、无障碍（WCAG 2.2 AA）和代码质量 |
 | `/schedule` | 注册一个按固定周期运行的 agent 任务 |
@@ -337,7 +338,7 @@ oma install --preset frontend --yes
 
 | Hook | 作用 | 关闭方式 / 限制 |
 |---|---|---|
-| 关键词启动 | 普通请求点名 `/orchestrate`、`/work`、`/ultrawork` 或 `/ralph` 时启动它 | 会跳过提问、粘贴的文本和代码块 |
+| 关键词启动 | 普通请求点名 `/oma-mode`、`/orchestrate`、`/work`、`/ultrawork` 或 `/ralph` 时启动它 | 会跳过提问、粘贴的文本和代码块 |
 | 技能注入器 | 根据 prompt 为 agent 指出合适的技能 | 持久型工作流运行期间暂停 |
 | Stop 门禁 | 把持久型工作流送回去继续工作；设置了 `oma goal set --gate test` 时，只有该脚本在 25 秒内以 0 退出才允许停止 | 说“workflow done”；阻止 5 次或 2 小时后也会自动解除 |
 | 重构守卫 | 停止时标出超过 500 行的已编辑文件，交给 `refactor-engineer` | 需手动开启：`refactor_guard.enabled` |

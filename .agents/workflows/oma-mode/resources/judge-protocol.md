@@ -1,6 +1,6 @@
 # JUDGE Protocol: Independent Verifier
 
-This protocol governs how the JUDGE phase operates in the ralph workflow.
+This protocol governs how the judge verifies completion criteria in the `oma-mode` workflow, and in `ralph`, its alias.
 The verifier MUST be independent from the implementer; evaluate only evidence, not intent.
 
 ---
@@ -16,12 +16,12 @@ The verifier MUST be independent from the implementer; evaluate only evidence, n
 
 ## Judge Execution Mode
 
-The judge runs as a **spawned subagent with fresh context** (see ralph.md Step 2.1). It receives only the criteria table, the verification cache records, and this protocol — never the implementer's narration or claims about what was fixed. Independence is structural, not a prompt-level role-play.
+The judge runs as a **spawned subagent with fresh context** (see `oma-mode.md` Step 5). It receives only the criteria table, the verification cache records, and this protocol — never the implementer's narration or claims about what was fixed. Independence is structural, not a prompt-level role-play.
 
 - **Input**: judge brief (criteria + cache records + output format)
 - **Output**: write the JUDGE result (format below) to memory as `result-judge-{sessionId}-iter{N}.md`
 - **Model**: verification is mechanical (run command, check exit code/output); a lower-cost model tier is acceptable where the runtime supports per-agent model selection
-- **Inline fallback**: when subagent spawning is unavailable, ralph runs this protocol inline and records the independence downgrade (`ralph.judge-inline-fallback` event). The protocol applies identically in both modes.
+- **Inline fallback**: when subagent spawning is unavailable, the coordinator runs this protocol inline and records the independence downgrade (`oma-mode.judge-inline-fallback` event). The protocol applies identically in both modes.
 
 ---
 
@@ -91,7 +91,7 @@ means completed.
 
 ## Remaining Items (on FAIL verdict)
 
-When verdict is FAIL, output remaining work for REPLAN:
+When verdict is FAIL, output the remaining work for the next iteration:
 
 ```markdown
 remaining:
@@ -127,7 +127,7 @@ A regression is detected when a criterion that was `PASS` in an earlier iteratio
 
 ### Why this matters
 
-Ralph's EXEC phase delegates implementation to ultrawork, which freely modifies shared code (utilities, configs, migrations, dependencies). A PASS in iteration N can be silently invalidated by a change ultrawork makes while fixing other criteria in iteration N+1. Re-verifying every criterion every iteration, and labeling PASS → FAIL transitions explicitly, closes this gap.
+Each iteration's route freely modifies shared code (utilities, configs, migrations, dependencies). A PASS in iteration N can be silently invalidated by a change made while fixing other criteria in iteration N+1. Re-verifying every criterion every iteration, and labeling PASS → FAIL transitions explicitly, closes this gap.
 
 The PASS-to-REGRESSED transition is defined in Criterion State Transitions above.
 
@@ -139,7 +139,7 @@ When emitting a REGRESSED entry, the evidence cell MUST include:
 2. The current verification output showing failure
 3. A summary of files modified between the last PASS iteration and now (use `git diff --name-only HEAD~{iterations_since_pass} HEAD`, scoped to the project root)
 
-This gives the REPLAN phase enough context to dispatch a diff-aware diagnosis rather than a from-scratch reimplementation.
+This gives the next iteration enough context to dispatch a diff-aware diagnosis rather than a from-scratch reimplementation.
 
 ---
 
@@ -153,7 +153,7 @@ A verification is eligible for caching when ALL of:
 
 1. The verification is one of the `Yes (heavy)` or `Yes (medium)` types in the verification table
 2. The criterion's previous result was PASS
-3. The criterion declares an `affected_paths` glob list (added at criterion definition time, see Step 0.2)
+3. The criterion declares an `affected_paths` glob list (added at criterion definition time, see `oma-mode.md` Step 1)
 4. No file matching `affected_paths` was modified since the last PASS
 
 ### Cache invalidation
@@ -166,7 +166,7 @@ The cache for criterion C is invalidated when ANY of:
 
 ### Cache record format
 
-Maintain in `session-ralph-{sessionId}.md`:
+Maintain in `session-oma-mode-{sessionId}.md`:
 
 ```markdown
 verification_cache:
@@ -187,7 +187,7 @@ Always re-execute (never cache) when:
 
 - Verification type is `file exists` (always fast, no point caching)
 - The criterion is REGRESSED or FAIL in the current snapshot (must re-verify after the fix attempt)
-- Caching is disabled for the session: the user's request explicitly asks for full re-verification (e.g., "no cache", "always re-verify"). (A `ralph.judge_cache: false` config key in `.agents/oma-config.yaml` is planned but not yet implemented.) Record the disable reason in `session-ralph-{sessionId}.md`.
+- Caching is disabled for the session: the user's request explicitly asks for full re-verification (e.g., "no cache", "always re-verify"). Record the disable reason in `session-oma-mode-{sessionId}.md`.
 
 ### Cost-benefit guideline
 

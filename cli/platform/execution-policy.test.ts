@@ -48,7 +48,18 @@ describe("shared execution policy", () => {
     const judge = readFileSync(
       join(
         root,
-        "com.firstfluke.oma/workflows/ralph/resources/judge-protocol.md",
+        "com.firstfluke.oma/workflows/oma-mode/resources/judge-protocol.md",
+      ),
+      "utf8",
+    );
+    const omaMode = readFileSync(
+      join(root, "com.firstfluke.oma/workflows/oma-mode.md"),
+      "utf8",
+    );
+    const openEnded = readFileSync(
+      join(
+        root,
+        "com.firstfluke.oma/workflows/oma-mode/resources/open-ended-protocol.md",
       ),
       "utf8",
     );
@@ -68,6 +79,10 @@ describe("shared execution policy", () => {
     expect(orchestrate).toContain("partial` or `failed");
     expect(judge).toContain("`COMPLETED`: every criterion is PASS.");
     expect(judge).toContain("`PARTIAL`");
+    expect(omaMode).toContain("open-ended-protocol.md");
+    expect(omaMode).toContain("anti-ai-prose.md");
+    expect(openEnded).toContain("Riskiest unknowns first");
+    expect(openEnded).toContain("Build the verification harness first");
     expect(intelligence).toContain(
       "native search only for paths outside this project or ignored paths",
     );
