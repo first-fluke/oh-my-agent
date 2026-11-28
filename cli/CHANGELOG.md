@@ -1,5 +1,12 @@
 # Changelog
 
+## [23.0.2](https://github.com/first-fluke/oh-my-agent/compare/cli-v23.0.1...cli-v23.0.2) (2026-11-28)
+
+
+### Bug Fixes
+
+* **vendors:** record native skill discovery for kimi and zcode ([297b464](https://github.com/first-fluke/oh-my-agent/commit/297b46499c9c26ac3da3f7dc498db5a03fe7efde))
+
 ## [23.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v23.0.0...cli-v23.0.1) (2026-11-28)
 
 
