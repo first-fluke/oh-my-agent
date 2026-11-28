@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v14.0.0...web-v14.0.1) (2026-11-28)
+
+
+### Bug Fixes
+
+* **serena:** recover unresponsive shared daemons and add fallback GC watcher ([28f675b](https://github.com/first-fluke/oh-my-agent/commit/28f675bbd8f67a942b9085b2b1ee2e1d396c7ff4))
+
 ## [14.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v13.0.0...web-v14.0.0) (2026-11-28)
 
 
