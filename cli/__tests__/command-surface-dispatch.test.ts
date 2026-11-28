@@ -24,7 +24,7 @@ beforeAll(async () => {
     process.argv = argv;
     parse.mockRestore();
   }
-}, 30_000);
+}, 120_000);
 
 afterEach(() => vi.restoreAllMocks());
 

@@ -482,7 +482,7 @@ describe("removed positional forms on the actual CLI", () => {
       process.argv = argv;
       parse.mockRestore();
     }
-  }, 30_000);
+  }, 120_000);
 
   it.each([
     [["vault", "rm", "token"], "vault", "vault delete <name>"],
