@@ -698,16 +698,29 @@ const KO_INTERROGATIVE_WORD =
   /(?:왜|어째서|어떻게|무슨|무엇|뭐|뭘|뭔|뭣|어디|언제|누가|누구|어느)/;
 const KO_QUESTION_ENDING =
   /(?:는데|은데|인데|건데|뭔데|한데|된데|거야|거임|건가|인가|인가요|인지|냐|냐고|나요|까요|가요|을까|ㄹ까)\s*$/;
+// Korean confirmation/copula question endings ask *about* a subject without an
+// explicit wh-word ("oma-mode는 초보자용으로 쓸 수 있는 거죠?"). Polite request
+// forms ("ultrawork로 해줄래?", "고쳐줄 수 있나요?") are intentionally excluded.
+const KO_CONFIRMATION_ENDING_WITH_Q =
+  /(?:거죠|거지|거예요|거에요|건가요|건가|인가요|인가|맞죠|맞나요|맞아요|맞지|되나요|되죠)\s*$/;
+const KO_CONFIRMATION_ENDING_BARE =
+  /(?:거죠|건가요|건가|인가요|인가|맞죠|맞나요|맞지)\s*$/;
 
 function isKoreanQuestionSentence(sentence: string): boolean {
   const trimmed = sentence.trim();
   return (
-    KO_INTERROGATIVE_WORD.test(trimmed) && KO_QUESTION_ENDING.test(trimmed)
+    (KO_INTERROGATIVE_WORD.test(trimmed) && KO_QUESTION_ENDING.test(trimmed)) ||
+    KO_CONFIRMATION_ENDING_BARE.test(trimmed)
   );
 }
 
 function isInterrogativeSentence(line: string): boolean {
-  return /\?\s*$/.test(line) && INTERROGATIVE_WORD.test(line);
+  const trimmed = line.trim();
+  if (!/\?\s*$/.test(trimmed)) return false;
+  const body = trimmed.replace(/\?\s*$/, "");
+  return (
+    INTERROGATIVE_WORD.test(body) || KO_CONFIRMATION_ENDING_WITH_Q.test(body)
+  );
 }
 
 // Sentence terminators in NFKC-normalized text. A '?' or '.' glued to the next
@@ -748,7 +761,10 @@ export function isInsideInterrogativeSentence(
     if (end.index < tokenEnd) continue;
     const sentence = text.slice(start, end.index);
     if (end[0] === "?") {
-      return INTERROGATIVE_WORD.test(sentence);
+      return (
+        INTERROGATIVE_WORD.test(sentence) ||
+        KO_CONFIRMATION_ENDING_WITH_Q.test(sentence.trim())
+      );
     }
     return isKoreanQuestionSentence(sentence);
   }

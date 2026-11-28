@@ -2307,6 +2307,10 @@ memory was written by Serena into its internal store.
       "How is ralph different from ultrawork? Asking before I pick one",
       "랄프 베리파이가 뭘 베리파이하는데",
       "ultrawork는 뭐가 다른 거야",
+      "그럼 oma-mode 는 이제 초보자용으로 아무생각없이 쓸수있는거죠?",
+      "그럼 oma-mode 는 이제 초보자용으로 아무생각없이 쓸수있는거죠",
+      "ralph는 이제 안 써도 되나요?",
+      "oma-mode가 기본 진입점 맞죠?",
     ];
     for (const prompt of questionsAboutAMode) {
       it(`a question about a mode does not start it: ${prompt}`, async () => {
