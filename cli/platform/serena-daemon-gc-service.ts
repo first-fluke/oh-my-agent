@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import {
   closeSync,
   existsSync,
@@ -11,6 +11,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { isDaemonGcWatcherRunning } from "../io/serena-daemon.js";
 import { omaHome } from "../utils/oma-home.js";
 import {
   currentOmaInvocation,
@@ -42,7 +43,11 @@ type Runner = (bin: string, args: string[]) => boolean;
 
 function defaultRunner(bin: string, args: string[]): boolean {
   return (
-    spawnSync(bin, args, { stdio: "ignore", timeout: 10_000 }).status === 0
+    spawnSync(bin, args, {
+      stdio: "ignore",
+      timeout: 10_000,
+      windowsHide: true,
+    }).status === 0
   );
 }
 
@@ -138,17 +143,64 @@ ExecStart=${systemdExecStart(invocation, boundGcArgs(homeDir))}
 
 export function renderDaemonGcWindowsTaskXml(
   invocation: readonly string[] = currentOmaInvocation(),
+  homeDir?: string,
 ): string {
-  const exec = windowsTaskExec(invocation, boundGcArgs());
-  return `<?xml version="1.0" encoding="UTF-8"?>
+  const exec = windowsTaskExec(invocation, boundGcArgs(homeDir));
+  return `<?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo><Description>OMA Serena idle daemon cleanup</Description></RegistrationInfo>
   <Triggers><TimeTrigger><Repetition><Interval>PT5M</Interval><StopAtDurationEnd>false</StopAtDurationEnd></Repetition><StartBoundary>2000-01-01T00:00:00</StartBoundary><Enabled>true</Enabled></TimeTrigger></Triggers>
   <Principals><Principal id="Author"><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals>
-  <Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><StartWhenAvailable>true</StartWhenAvailable></Settings>
+  <Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><StartWhenAvailable>true</StartWhenAvailable><ExecutionTimeLimit>PT5M</ExecutionTimeLimit></Settings>
   <Actions Context="Author"><Exec><Command>${exec.command}</Command><Arguments>${exec.arguments}</Arguments></Exec></Actions>
 </Task>
 `;
+}
+
+const WINDOWS_SCHTASKS_TR_MAX_CHARS = 261;
+
+function quoteWindowsArg(arg: string): string {
+  return /[\s"]/.test(arg)
+    ? `"${arg.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/, "$1$1")}"`
+    : arg;
+}
+
+/** Command line for `schtasks /create /sc minute /mo 5 /tr ...` fallback. */
+function windowsSimpleTaskRun(
+  invocation: readonly string[],
+  homeDir: string,
+): string {
+  const [command = "oma", ...rest] = invocation;
+  return [
+    quoteWindowsArg(command),
+    ...rest.map((arg) => quoteWindowsArg(arg)),
+    ...boundGcArgs(homeDir).map((arg) => quoteWindowsArg(arg)),
+  ].join(" ");
+}
+
+function writeServiceFile(
+  file: string,
+  content: string,
+  platform: NodeJS.Platform,
+): void {
+  if (platform === "win32" && file.endsWith(".xml")) {
+    // schtasks /create /xml expects UTF-16LE with BOM when encoding="UTF-16".
+    const bom = Buffer.from([0xff, 0xfe]);
+    writeFileSync(file, Buffer.concat([bom, Buffer.from(content, "utf16le")]));
+    return;
+  }
+  writeFileSync(file, content);
+}
+
+function readServiceFile(file: string, platform: NodeJS.Platform): string {
+  if (platform === "win32" && file.endsWith(".xml")) {
+    const raw = readFileSync(file);
+    if (raw.length >= 2 && raw[0] === 0xff && raw[1] === 0xfe) {
+      return raw.subarray(2).toString("utf16le");
+    }
+    return raw.toString("utf8");
+  }
+  return readFileSync(file, "utf8");
 }
 
 /** Every file the service consists of, with the content it should have. */
@@ -170,13 +222,16 @@ function serviceFiles(
       ],
     ];
   }
-  return [[path, renderDaemonGcWindowsTaskXml(invocation)]];
+  return [[path, renderDaemonGcWindowsTaskXml(invocation, homeDir)]];
 }
 
-function filesCurrent(files: Array<[string, string]>): boolean {
+function filesCurrent(
+  files: Array<[string, string]>,
+  platform: NodeJS.Platform,
+): boolean {
   return files.every(([file, content]) => {
     try {
-      return readFileSync(file, "utf8") === content;
+      return readServiceFile(file, platform) === content;
     } catch {
       return false;
     }
@@ -201,13 +256,10 @@ export function ensureSerenaDaemonGcService(
   const runner = options.runner ?? defaultRunner;
   const path = daemonGcServicePath(homeDir, platform);
   if (!path) return false;
-  const files = serviceFiles(
-    path,
-    homeDir,
-    platform,
-    options.invocation ?? currentOmaInvocation(),
-  );
-  if (filesCurrent(files) && serviceActive(platform, runner)) return true;
+  const invocation = options.invocation ?? currentOmaInvocation();
+  const files = serviceFiles(path, homeDir, platform, invocation);
+  if (filesCurrent(files, platform) && serviceActive(platform, runner))
+    return true;
 
   mkdirSync(dirname(path), { recursive: true });
   const lockPath = `${path}.lock`;
@@ -234,7 +286,8 @@ export function ensureSerenaDaemonGcService(
 
   try {
     if (existsSync(path)) {
-      if (filesCurrent(files) && serviceActive(platform, runner)) return true;
+      if (filesCurrent(files, platform) && serviceActive(platform, runner))
+        return true;
       // A loaded launchd job keeps its old arguments and refuses a second
       // bootstrap, so unload it before writing the replacement.
       if (platform === "darwin" && serviceActive(platform, runner)) {
@@ -242,7 +295,9 @@ export function ensureSerenaDaemonGcService(
       }
       removeFiles();
     }
-    for (const [file, content] of files) writeFileSync(file, content);
+    for (const [file, content] of files) {
+      writeServiceFile(file, content, platform);
+    }
 
     if (platform === "darwin") {
       const bootstrapped = runner("launchctl", ["bootstrap", domain, path]);
@@ -271,6 +326,26 @@ export function ensureSerenaDaemonGcService(
     if (runner("schtasks", ["/create", "/tn", TASK_NAME, "/xml", path, "/f"])) {
       return true;
     }
+    // Non-elevated Windows shells often reject XML import with <Principals>;
+    // retry with the plain minute trigger when the command fits schtasks' /tr cap.
+    const tr = windowsSimpleTaskRun(invocation, homeDir);
+    if (
+      tr.length <= WINDOWS_SCHTASKS_TR_MAX_CHARS &&
+      runner("schtasks", [
+        "/create",
+        "/sc",
+        "minute",
+        "/mo",
+        "5",
+        "/tn",
+        TASK_NAME,
+        "/tr",
+        tr,
+        "/f",
+      ])
+    ) {
+      return true;
+    }
     removeFiles();
     return false;
   } catch {
@@ -280,4 +355,52 @@ export function ensureSerenaDaemonGcService(
     closeSync(lock);
     rmSync(lockPath, { force: true });
   }
+}
+
+export type WatcherSpawner = (
+  command: string,
+  args: readonly string[],
+) => boolean;
+
+function defaultWatcherSpawner(
+  command: string,
+  args: readonly string[],
+): boolean {
+  try {
+    const child = spawn(command, [...args], {
+      detached: true,
+      stdio: "ignore",
+      windowsHide: true,
+    });
+    child.once("error", () => {});
+    if (typeof child.pid !== "number") return false;
+    child.unref();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fallback for machines where the OS scheduler is unavailable or blocked:
+ * launch a single detached, self-terminating `oma serena daemon gc --watch`
+ * process that sweeps idle daemons every 5 minutes and exits once none remain.
+ */
+export function ensureSerenaDaemonGcWatcher(
+  options: {
+    homeDir?: string;
+    invocation?: readonly string[];
+    isRunning?: () => boolean;
+    spawnWatcher?: WatcherSpawner;
+  } = {},
+): boolean {
+  const isRunning = options.isRunning ?? isDaemonGcWatcherRunning;
+  if (isRunning()) return true;
+
+  const homeDir = options.homeDir ?? homedir();
+  const [command, ...prefixArgs] = options.invocation ?? currentOmaInvocation();
+  if (!command) return false;
+  const args = [...prefixArgs, ...boundGcArgs(homeDir), "--watch"];
+  const spawnWatcher = options.spawnWatcher ?? defaultWatcherSpawner;
+  return spawnWatcher(command, args);
 }

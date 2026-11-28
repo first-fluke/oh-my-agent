@@ -101,9 +101,11 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
       );
     }
     console.error(
-      daemon.started
-        ? `[Bridge] Started shared serena for ${root} on port ${daemon.port}`
-        : `[Bridge] Reusing shared serena for ${root} on port ${daemon.port}`,
+      daemon.recoveredFromPid !== undefined
+        ? `[Bridge] Restarted unresponsive shared serena for ${root} (replaced pid ${daemon.recoveredFromPid}) on port ${daemon.port}`
+        : daemon.started
+          ? `[Bridge] Started shared serena for ${root} on port ${daemon.port}`
+          : `[Bridge] Reusing shared serena for ${root} on port ${daemon.port}`,
     );
     MCP_URL = daemon.url;
     attachedKey = daemonKey(root, context);
@@ -111,11 +113,16 @@ export async function bridge(mcpUrlArg?: string, opts: BridgeOptions = {}) {
     // The shared server survives this bridge. Keep its idle cleanup scheduled
     // even when every bridge process has exited.
     try {
-      const { ensureSerenaDaemonGcService } = await import(
-        "../../platform/serena-daemon-gc-service.js"
-      );
+      const { ensureSerenaDaemonGcService, ensureSerenaDaemonGcWatcher } =
+        await import("../../platform/serena-daemon-gc-service.js");
       if (!ensureSerenaDaemonGcService()) {
-        console.error("[Bridge] Serena daemon cleanup timer is unavailable.");
+        if (ensureSerenaDaemonGcWatcher()) {
+          console.error(
+            "[Bridge] OS cleanup timer unavailable; started background Serena daemon cleanup watcher.",
+          );
+        } else {
+          console.error("[Bridge] Serena daemon cleanup timer is unavailable.");
+        }
       }
     } catch (err) {
       console.error(

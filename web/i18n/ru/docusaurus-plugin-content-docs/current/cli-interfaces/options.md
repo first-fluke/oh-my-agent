@@ -721,7 +721,7 @@ oma describe "agent spawn" | jq '.command.options[] | {flags, description}'
 | `search trust` | `<domain>` | `--pretty` | Resolve trust level / score for a domain |
 | `search web` | `<query>` | `--provider <id>`, `--limit <n>` (default: `10`), `--timeout <duration>` (default: `15s`), `--json`, `--pretty` | Search with the selected web provider (Brave and Exa have CLI adapters) |
 | `serena check` | — | `--project <path>` (default: `apps/mobile`), `--dart-sdk <path>`, `--timeout <duration>` (default: `60s`), `--staged` | Analyze a Dart package using the managed shared Serena LSP |
-| `serena daemon gc` | — | `--quiet` | Stop shared Serena daemons with no clients after the idle grace period |
+| `serena daemon gc` | — | `--quiet`, `--watch`, `--interval-ms <ms>` | Stop shared Serena daemons with no clients after the idle grace period |
 | `serena reap` | — | `--dry-run`, `--quiet` | Kill idle Serena LSP children to reclaim memory (Serena self-heals on next tool call) |
 | `serena reaper disable` | — | `--dry-run` | Uninstall the periodic Serena Reaper scheduled task |
 | `serena reaper enable` | — | `--dry-run` | Install the periodic Serena Reaper scheduled task (runs every 5 minutes) |

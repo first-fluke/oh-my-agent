@@ -19,9 +19,11 @@ import {
   attachClient,
   DAEMON_IDLE_GRACE_MS,
   DAEMON_LOG_MAX_BYTES,
+  daemonGcWatcherPidPath,
   daemonKey,
   detachClient,
   ensureSerenaDaemon,
+  isDaemonGcWatcherRunning,
   isUnservableProjectRoot,
   listRunningDaemons,
   omaStateDir,
@@ -32,6 +34,8 @@ import {
   readRegistry,
   reclaimIdleDaemons,
   resolveProjectRoot,
+  runSerenaDaemonGcWatch,
+  UNRESPONSIVE_DAEMON_MIN_AGE_MS,
 } from "./serena-daemon.js";
 
 let home: string;
@@ -1138,6 +1142,192 @@ describe("ensureSerenaDaemon — a registered daemon that is alive but not answe
     expect(readRegistry()[daemonKey("/proj", "ide")]?.port).toBe(first?.port);
   });
 
+  it("restarts a verified long-lived unresponsive daemon even when stuck clients remain", async () => {
+    const key = daemonKey("/proj", "oma");
+    const port = preferredPort(key);
+    mkdirSync(omaStateDir(), { recursive: true });
+    writeFileSync(
+      join(omaStateDir(), "serena-daemons.json"),
+      JSON.stringify({
+        [key]: {
+          root: "/proj",
+          context: "oma",
+          port,
+          pid: process.pid,
+          startedAt: new Date(
+            Date.now() - UNRESPONSIVE_DAEMON_MIN_AGE_MS - 60_000,
+          ).toISOString(),
+          runtimeRevision: "v1",
+          clients: [process.ppid],
+        },
+      }),
+    );
+
+    const stopped: number[] = [];
+    let restarted = false;
+    const spawnDaemon = vi.fn(() => {
+      restarted = true;
+      return process.pid;
+    });
+
+    const handle = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 5_000,
+      busyWaitMs: 20,
+      pollIntervalMs: 5,
+      listDaemons: () => [
+        { pid: process.pid, port, root: "/proj", context: "oma" },
+      ],
+      stopDaemon: async (pid) => {
+        stopped.push(pid);
+      },
+      spawnDaemon,
+      probe: async (p) => restarted && p === port,
+    });
+
+    expect(stopped).toEqual([process.pid]);
+    expect(spawnDaemon).toHaveBeenCalledTimes(1);
+    expect(handle).toEqual({
+      url: `http://127.0.0.1:${port}/mcp`,
+      port,
+      started: true,
+      recoveredFromPid: process.pid,
+    });
+  });
+
+  it("restarts an idle unresponsive verified daemon immediately after busyWaitMs", async () => {
+    const key = daemonKey("/proj", "oma");
+    const port = preferredPort(key);
+    mkdirSync(omaStateDir(), { recursive: true });
+    writeFileSync(
+      join(omaStateDir(), "serena-daemons.json"),
+      JSON.stringify({
+        [key]: {
+          root: "/proj",
+          context: "oma",
+          port,
+          pid: process.pid,
+          startedAt: new Date().toISOString(),
+          runtimeRevision: "v1",
+          clients: [],
+          idleSince: new Date().toISOString(),
+        },
+      }),
+    );
+
+    const stopped: number[] = [];
+    let restarted = false;
+    const handle = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "oma",
+      runtimeRevision: "v1",
+      timeoutMs: 5_000,
+      busyWaitMs: 20,
+      pollIntervalMs: 5,
+      listDaemons: () => [
+        { pid: process.pid, port, root: "/proj", context: "oma" },
+      ],
+      stopDaemon: async (pid) => {
+        stopped.push(pid);
+      },
+      spawnDaemon: () => {
+        restarted = true;
+        return process.pid;
+      },
+      probe: async (p) => restarted && p === port,
+    });
+
+    expect(stopped).toEqual([process.pid]);
+    expect(handle?.started).toBe(true);
+    expect(handle?.recoveredFromPid).toBe(process.pid);
+  });
+
+  it("never kills an unresponsive daemon whose process identity cannot be verified", async () => {
+    const key = daemonKey("/proj", "oma");
+    const port = preferredPort(key);
+    mkdirSync(omaStateDir(), { recursive: true });
+    writeFileSync(
+      join(omaStateDir(), "serena-daemons.json"),
+      JSON.stringify({
+        [key]: {
+          root: "/proj",
+          context: "oma",
+          port,
+          pid: process.pid,
+          startedAt: new Date(
+            Date.now() - UNRESPONSIVE_DAEMON_MIN_AGE_MS - 60_000,
+          ).toISOString(),
+          clients: [],
+        },
+      }),
+    );
+
+    const stopDaemon = vi.fn();
+    const spawnDaemon = vi.fn();
+    const handle = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "oma",
+      timeoutMs: 5_000,
+      busyWaitMs: 20,
+      pollIntervalMs: 5,
+      listDaemons: () => [
+        { pid: process.pid, port, root: "/other-project", context: "oma" },
+      ],
+      stopDaemon,
+      spawnDaemon,
+      probe: async () => false,
+    });
+
+    expect(handle).toBeNull();
+    expect(stopDaemon).not.toHaveBeenCalled();
+    expect(spawnDaemon).not.toHaveBeenCalled();
+    expect(readRegistry()[key]?.pid).toBe(process.pid);
+  });
+
+  it("does not spawn a duplicate daemon when stopping an unresponsive daemon fails", async () => {
+    const key = daemonKey("/proj", "oma");
+    const port = preferredPort(key);
+    mkdirSync(omaStateDir(), { recursive: true });
+    writeFileSync(
+      join(omaStateDir(), "serena-daemons.json"),
+      JSON.stringify({
+        [key]: {
+          root: "/proj",
+          context: "oma",
+          port,
+          pid: process.pid,
+          startedAt: new Date(
+            Date.now() - UNRESPONSIVE_DAEMON_MIN_AGE_MS - 60_000,
+          ).toISOString(),
+          clients: [],
+        },
+      }),
+    );
+
+    const spawnDaemon = vi.fn();
+    const handle = await ensureSerenaDaemon({
+      root: "/proj",
+      context: "oma",
+      timeoutMs: 5_000,
+      busyWaitMs: 20,
+      pollIntervalMs: 5,
+      listDaemons: () => [
+        { pid: process.pid, port, root: "/proj", context: "oma" },
+      ],
+      stopDaemon: async () => {
+        throw new Error("EPERM");
+      },
+      spawnDaemon,
+      probe: async () => false,
+    });
+
+    expect(handle).toBeNull();
+    expect(spawnDaemon).not.toHaveBeenCalled();
+    expect(readRegistry()[key]?.pid).toBe(process.pid);
+  });
+
   it("only forgets a startup casualty while the registration is still its own", async () => {
     // While our spawn is dying, a peer registers a live daemon under the same
     // key. The prune must leave that record alone.
@@ -1468,5 +1658,44 @@ describe("reclaimIdleDaemons — daemon logs", () => {
     );
 
     expect(existsSync(other)).toBe(true);
+  });
+});
+
+describe("runSerenaDaemonGcWatch", () => {
+  it("sweeps periodically until no live daemons remain and cleans up its PID file", async () => {
+    let remainingChecks = 2;
+    const reclaim = vi.fn(() => []);
+    const sleep = vi.fn(async () => {});
+
+    const sweeps = await runSerenaDaemonGcWatch({
+      intervalMs: 100,
+      reclaim,
+      hasLiveDaemons: () => {
+        remainingChecks--;
+        return remainingChecks > 0;
+      },
+      sleep,
+    });
+
+    expect(sweeps).toBe(2);
+    expect(reclaim).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledExactlyOnceWith(100);
+    expect(existsSync(daemonGcWatcherPidPath())).toBe(false);
+    expect(isDaemonGcWatcherRunning()).toBe(false);
+  });
+
+  it("exits immediately when another live watcher already holds the PID file", async () => {
+    mkdirSync(omaStateDir(), { recursive: true });
+    writeFileSync(daemonGcWatcherPidPath(), `${process.ppid}\n`);
+    const reclaim = vi.fn(() => []);
+
+    const sweeps = await runSerenaDaemonGcWatch({
+      reclaim,
+      hasLiveDaemons: () => true,
+    });
+
+    expect(sweeps).toBe(0);
+    expect(reclaim).not.toHaveBeenCalled();
+    expect(isDaemonGcWatcherRunning()).toBe(true);
   });
 });

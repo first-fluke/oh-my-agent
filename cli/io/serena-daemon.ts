@@ -5,9 +5,11 @@ import {
   mkdirSync,
   openSync,
   readdirSync,
+  readFileSync,
   rmSync,
   statSync,
   truncateSync,
+  writeFileSync,
 } from "node:fs";
 import http from "node:http";
 import { homedir } from "node:os";
@@ -196,6 +198,16 @@ export interface EnsureDaemonOptions {
  */
 export const BUSY_DAEMON_WAIT_MS = 20_000;
 
+/**
+ * Minimum age before an unresponsive daemon with live clients is considered
+ * wedged rather than cold-starting. Covers slow Python/uv cold starts on
+ * Windows while still recovering long-lived hung daemons automatically.
+ */
+export const UNRESPONSIVE_DAEMON_MIN_AGE_MS = 60_000;
+
+/** Default sweep interval for the fallback background GC watcher. */
+export const GC_WATCHER_INTERVAL_MS = 5 * 60_000;
+
 type WaitOutcome = "up" | "died" | "unresponsive";
 
 async function waitForRegisteredDaemon(
@@ -217,6 +229,8 @@ export interface DaemonHandle {
   port: number;
   /** True when this call started the daemon rather than reusing one. */
   started: boolean;
+  /** Previous PID terminated when recovering an unresponsive daemon. */
+  recoveredFromPid?: number;
 }
 
 /** Launch a detached serena HTTP server. Returns its pid, or null if spawn failed. */
@@ -268,9 +282,22 @@ function spawnDaemonProcess(
 export function terminateDaemonTree(
   pid: number,
   platform: NodeJS.Platform = process.platform,
+  signal: NodeJS.Signals = "SIGTERM",
 ): void {
   if (platform !== "win32") {
-    process.kill(pid, "SIGTERM");
+    // Detached daemons are process-group leaders on POSIX; signalling -pid
+    // takes down wedged language-server children too, falling back to pid when
+    // the daemon is not its own group leader.
+    try {
+      process.kill(-pid, signal);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ESRCH" || code === "EPERM") {
+        process.kill(pid, signal);
+      } else {
+        throw error;
+      }
+    }
     return;
   }
   const result = spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
@@ -285,13 +312,55 @@ export function terminateDaemonTree(
 }
 
 async function stopStaleDaemon(pid: number): Promise<void> {
-  terminateDaemonTree(pid);
+  terminateDaemonTree(pid, process.platform, "SIGTERM");
   const deadline = Date.now() + 5000;
   while (isAlive(pid) && Date.now() < deadline) {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
+  if (isAlive(pid) && process.platform !== "win32") {
+    try {
+      terminateDaemonTree(pid, process.platform, "SIGKILL");
+    } catch {
+      // already gone
+    }
+    const killDeadline = Date.now() + 2000;
+    while (isAlive(pid) && Date.now() < killDeadline) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
   if (isAlive(pid))
     throw new Error("Stale Serena daemon did not stop; retry after it exits");
+}
+
+function matchesRunningDaemon(
+  record: Pick<DaemonRecord, "pid" | "root" | "context" | "port">,
+  proc: RunningDaemon,
+): boolean {
+  const rootMatches =
+    proc.root === record.root ||
+    (process.platform === "win32" &&
+      proc.root.toLowerCase() === record.root.toLowerCase());
+  return (
+    proc.pid === record.pid &&
+    rootMatches &&
+    proc.context === record.context &&
+    proc.port === record.port
+  );
+}
+
+/**
+ * True when an unresponsive registered daemon may be verified and restarted:
+ * either it has no live attached clients, or it is past the startup window
+ * (so a 20s HTTP timeout means a wedged process rather than a cold start).
+ */
+function isEligibleForUnresponsiveRecovery(
+  record: DaemonRecord,
+  nowMs: number,
+): boolean {
+  if (!(record.clients ?? []).some(isAlive)) return true;
+  const startedMs = Date.parse(record.startedAt);
+  if (Number.isNaN(startedMs)) return false;
+  return nowMs - startedMs >= UNRESPONSIVE_DAEMON_MIN_AGE_MS;
 }
 
 /**
@@ -316,6 +385,8 @@ export async function ensureSerenaDaemon(
   const busyWaitMs = opts.busyWaitMs ?? BUSY_DAEMON_WAIT_MS;
   const key = daemonKey(root, context);
   const deadline = Date.now() + timeoutMs;
+  const recoveredPids = new Set<number>();
+  let recoveredFromPid: number | undefined;
 
   const urlFor = (port: number) => `http://127.0.0.1:${port}/mcp`;
   const reuse = (port: number): DaemonHandle => {
@@ -341,14 +412,12 @@ export async function ensureSerenaDaemon(
       return reuse(known.port);
 
     // Registered, alive, not answering: still starting (another session
-    // spawned it moments ago) or busy (its main thread pinned by a long tool
-    // call, so the 2s probe timed out). Either way it IS this project's daemon,
-    // so wait for it. The invariant is one live daemon process per key: a
-    // rival used to be started here, on the very same port because the probe
-    // said it was free, die with "address already in use", and take the live
-    // daemon's registration with it when pruned as "died during startup". The
-    // survivor then ran on unregistered — never reclaimed — and every later
-    // session, seeing no record and an occupied port, started yet another one.
+    // spawned it moments ago), busy (main thread pinned by a long tool call),
+    // or wedged. Wait boundedly first; if it remains unresponsive AND is
+    // eligible for recovery (idle or past startup grace), verify its exact
+    // process identity under the lock and restart only this project's daemon
+    // tree instead of leaving every subsequent session stuck forever.
+    let unresponsivePid: number | undefined;
     if (
       known &&
       isAlive(known.pid) &&
@@ -363,9 +432,18 @@ export async function ensureSerenaDaemon(
         pollIntervalMs,
       );
       if (outcome === "up" && !opts.runtimeRevision) return reuse(known.port);
-      // Leave the live daemon registered so a later connection can reuse it.
-      if (outcome === "unresponsive") return null;
-      // "died": fall through and start a fresh one.
+      if (outcome === "unresponsive") {
+        if (
+          !recoveredPids.has(known.pid) &&
+          isEligibleForUnresponsiveRecovery(known, Date.now())
+        ) {
+          unresponsivePid = known.pid;
+        } else {
+          // Leave a fresh/busy daemon registered so a later connection can reuse it.
+          return null;
+        }
+      }
+      // "died" (or eligible unresponsive): fall through under lock.
     }
 
     const release = await waitForLock(Math.min(timeoutMs, 30_000));
@@ -385,10 +463,7 @@ export async function ensureSerenaDaemon(
         if (isAlive(current.pid)) {
           const matches = (opts.listDaemons ?? listRunningDaemons)().some(
             (proc) =>
-              proc.pid === current?.pid &&
-              proc.root === root &&
-              proc.context === context &&
-              proc.port === current?.port,
+              current !== undefined && matchesRunningDaemon(current, proc),
           );
           if (!matches)
             throw new Error(
@@ -412,8 +487,31 @@ export async function ensureSerenaDaemon(
       // Someone else registered a live daemon while we waited for the lock;
       // go around and wait on it instead of racing it for the port.
       if (current && isAlive(current.pid)) {
-        if (current.pid === known?.pid) return null;
-        continue;
+        if (
+          unresponsivePid !== undefined &&
+          current.pid === unresponsivePid &&
+          !recoveredPids.has(current.pid) &&
+          isEligibleForUnresponsiveRecovery(current, Date.now())
+        ) {
+          const matches = (opts.listDaemons ?? listRunningDaemons)().some(
+            (proc) =>
+              current !== undefined && matchesRunningDaemon(current, proc),
+          );
+          if (!matches) return null;
+          recoveredPids.add(current.pid);
+          try {
+            await (opts.stopDaemon ?? stopStaleDaemon)(current.pid);
+          } catch {
+            return null;
+          }
+          recoveredFromPid = current.pid;
+          delete registry[key];
+          writeRegistry(registry);
+          current = undefined;
+        } else {
+          if (current.pid === known?.pid) return null;
+          continue;
+        }
       }
 
       // Pick a free port, skipping ones another key owns or anything already bound.
@@ -461,7 +559,12 @@ export async function ensureSerenaDaemon(
 
     while (Date.now() < deadline) {
       if (await probe(spawned.port)) {
-        return { url: urlFor(spawned.port), port: spawned.port, started: true };
+        return {
+          url: urlFor(spawned.port),
+          port: spawned.port,
+          started: true,
+          ...(recoveredFromPid !== undefined ? { recoveredFromPid } : {}),
+        };
       }
       if (!isAlive(spawned.pid)) {
         // Died during startup (bad project.yml, missing binary, port race).
@@ -780,12 +883,8 @@ export function reclaimIdleDaemons(
 
       // A stale registry PID may have been reused by an unrelated process.
       // A periodic task must verify the current command before signalling it.
-      const sameDaemon = running.some(
-        (proc) =>
-          proc.pid === record.pid &&
-          proc.port === record.port &&
-          proc.root === record.root &&
-          proc.context === record.context,
+      const sameDaemon = running.some((proc) =>
+        matchesRunningDaemon(record, proc),
       );
       if (!sameDaemon) continue;
 
@@ -801,6 +900,77 @@ export function reclaimIdleDaemons(
     sweepDaemonLogs(registry, running, nowMs);
     return reclaimed;
   });
+}
+
+export function daemonGcWatcherPidPath(): string {
+  return join(omaStateDir(), "serena-daemon-gc-watcher.pid");
+}
+
+/** True when another live GC watcher already holds the watcher PID file. */
+export function isDaemonGcWatcherRunning(): boolean {
+  try {
+    const raw = readFileSync(daemonGcWatcherPidPath(), "utf8").trim();
+    const pid = Number.parseInt(raw, 10);
+    return Number.isSafeInteger(pid) && pid > 0 && isAlive(pid);
+  } catch {
+    return false;
+  }
+}
+
+/** True when the registry still tracks at least one live Serena daemon. */
+export function hasLiveRegisteredDaemons(): boolean {
+  return Object.values(readRegistry()).some((record) => isAlive(record.pid));
+}
+
+export interface WatchDaemonGcOptions {
+  intervalMs?: number;
+  reclaim?: () => DaemonRecord[];
+  hasLiveDaemons?: () => boolean;
+  sleep?: (ms: number) => Promise<void>;
+  maxTicks?: number;
+}
+
+/**
+ * Fallback idle-daemon cleanup loop for machines where the OS scheduler
+ * (Task Scheduler / launchd / systemd) is unavailable.
+ *
+ * Keeps at most one watcher per state directory and exits automatically as
+ * soon as no live shared Serena daemons remain in the registry.
+ */
+export async function runSerenaDaemonGcWatch(
+  opts: WatchDaemonGcOptions = {},
+): Promise<number> {
+  const pidFile = daemonGcWatcherPidPath();
+  if (isDaemonGcWatcherRunning()) return 0;
+
+  mkdirSync(omaStateDir(), { recursive: true });
+  writeFileSync(pidFile, `${process.pid}\n`);
+
+  const intervalMs = opts.intervalMs ?? GC_WATCHER_INTERVAL_MS;
+  const reclaim = opts.reclaim ?? (() => reclaimIdleDaemons());
+  const hasLiveDaemons = opts.hasLiveDaemons ?? hasLiveRegisteredDaemons;
+  const sleep =
+    opts.sleep ??
+    ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+
+  let sweeps = 0;
+  try {
+    for (;;) {
+      reclaim();
+      sweeps++;
+      if (!hasLiveDaemons()) break;
+      if (opts.maxTicks !== undefined && sweeps >= opts.maxTicks) break;
+      await sleep(intervalMs);
+    }
+    return sweeps;
+  } finally {
+    try {
+      const recorded = readFileSync(pidFile, "utf8").trim();
+      if (recorded === String(process.pid)) rmSync(pidFile, { force: true });
+    } catch {
+      // best-effort cleanup
+    }
+  }
 }
 
 /**

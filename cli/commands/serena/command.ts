@@ -1,8 +1,9 @@
-import type { Command } from "commander";
+import { type Command, Option } from "commander";
 import {
   daemonPidsWithLiveClients,
   pruneRegistry,
   reclaimIdleDaemons,
+  runSerenaDaemonGcWatch,
 } from "../../io/serena-daemon.js";
 import { runAction } from "../../utils/cli-framework.js";
 
@@ -67,8 +68,31 @@ export function registerSerenaCommands(program: Command): void {
       "Stop shared Serena daemons with no clients after the idle grace period",
     )
     .option("--quiet", "Suppress output for the periodic cleanup task")
+    .addOption(
+      new Option(
+        "--watch",
+        "Sweep periodically until no live shared daemons remain",
+      ).hideHelp(),
+    )
+    .addOption(
+      new Option(
+        "--interval-ms <ms>",
+        "Sweep interval in milliseconds for --watch",
+      ).hideHelp(),
+    )
     .action(
       runAction(async (options) => {
+        if (options.watch) {
+          const parsedInterval = options.intervalMs
+            ? Number.parseInt(String(options.intervalMs), 10)
+            : undefined;
+          await runSerenaDaemonGcWatch({
+            ...(parsedInterval && parsedInterval > 0
+              ? { intervalMs: parsedInterval }
+              : {}),
+          });
+          return;
+        }
         const reclaimed = reclaimIdleDaemons();
         if (!options.quiet) {
           console.log(`Reclaimed ${reclaimed.length} idle Serena daemon(s).`);

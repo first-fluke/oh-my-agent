@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   daemonGcServicePath,
   ensureSerenaDaemonGcService,
+  ensureSerenaDaemonGcWatcher,
   renderDaemonGcLaunchdPlist,
   renderDaemonGcSystemdService,
   renderDaemonGcSystemdTimer,
@@ -236,5 +237,73 @@ describe("Serena daemon cleanup schedule", () => {
       "--now",
       "oma-serena-daemon-gc.timer",
     ]);
+  });
+
+  it("writes Windows Task Scheduler XML as UTF-16LE with BOM and falls back to /sc minute when XML import fails", () => {
+    const runner = vi.fn(
+      (_bin: string, args: string[]) =>
+        args.includes("/sc") && args.includes("minute"),
+    );
+
+    expect(
+      ensureSerenaDaemonGcService({
+        homeDir,
+        platform: "win32",
+        runner,
+        invocation: ["C:\\node.exe", "C:\\oma\\cli.js"],
+      }),
+    ).toBe(true);
+
+    const xmlPath = daemonGcServicePath(homeDir, "win32") ?? "";
+    const raw = readFileSync(xmlPath);
+    expect(raw[0]).toBe(0xff);
+    expect(raw[1]).toBe(0xfe);
+    const decoded = raw.subarray(2).toString("utf16le");
+    expect(decoded).toContain('<?xml version="1.0" encoding="UTF-16"?>');
+    expect(decoded).toContain(
+      "<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>",
+    );
+    expect(runner).toHaveBeenCalledWith(
+      "schtasks",
+      expect.arrayContaining(["/create", "/xml", xmlPath, "/f"]),
+    );
+    expect(runner).toHaveBeenCalledWith(
+      "schtasks",
+      expect.arrayContaining(["/create", "/sc", "minute", "/mo", "5", "/f"]),
+    );
+  });
+
+  it("spawns a detached fallback GC watcher only when none is already running", () => {
+    const spawnWatcher = vi.fn(() => true);
+
+    expect(
+      ensureSerenaDaemonGcWatcher({
+        homeDir,
+        invocation,
+        isRunning: () => false,
+        spawnWatcher,
+      }),
+    ).toBe(true);
+    expect(spawnWatcher).toHaveBeenCalledWith("/opt/node/bin/node", [
+      "/opt/oma/bin/cli.js",
+      "--oma-home",
+      home,
+      "serena",
+      "daemon",
+      "gc",
+      "--quiet",
+      "--watch",
+    ]);
+
+    spawnWatcher.mockClear();
+    expect(
+      ensureSerenaDaemonGcWatcher({
+        homeDir,
+        invocation,
+        isRunning: () => true,
+        spawnWatcher,
+      }),
+    ).toBe(true);
+    expect(spawnWatcher).not.toHaveBeenCalled();
   });
 });
