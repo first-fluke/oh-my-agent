@@ -1,5 +1,13 @@
 # Changelog
 
+## [23.0.1](https://github.com/first-fluke/oh-my-agent/compare/cli-v23.0.0...cli-v23.0.1) (2026-11-28)
+
+
+### Bug Fixes
+
+* **hooks:** suppress Korean confirmation questions about persistent modes ([2c09e1a](https://github.com/first-fluke/oh-my-agent/commit/2c09e1ae624c21a36e076c298f7d391346a397f0))
+* **serena:** recover unresponsive shared daemons and add fallback GC watcher ([28f675b](https://github.com/first-fluke/oh-my-agent/commit/28f675bbd8f67a942b9085b2b1ee2e1d396c7ff4))
+
 ## [23.0.0](https://github.com/first-fluke/oh-my-agent/compare/cli-v22.0.0...cli-v23.0.0) (2026-11-28)
 
 
