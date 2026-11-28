@@ -18,14 +18,14 @@ description: Skillontdekking, agentdefinities, hooks en pakketformaten bij de OM
 | Grok | — | `.grok/agents` | Settings | `.grok-plugin/plugin.json` |
 | Hermes | Nee | — | — | `plugin.json` (Agent Plugins-pakket) |
 | Kilo Code | Ja | `.kilo/agents` | Extensie | `opencode-package/package.json` |
-| Kimi | Nee | — | Settings | `.kimi-plugin/plugin.json` |
+| Kimi | Ja | — | Settings | `.kimi-plugin/plugin.json` |
 | Kiro | Nee | `.kiro/agents` | Settings | `plugin.json` (Agent Plugins-pakket) |
 | OpenCode | Nee | `.opencode/agents` | Extensie | `opencode-package/package.json` |
 | Pi | Ja | — | Extensie | `pi-package/package.json` |
 | Qwen Code | Ja | `.qwen/agents` | Settings | `plugin.json` (Agent Plugins-pakket) |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | Ja | — | — | `.zcode-plugin/plugin.json` |
 
-"Zonder vendorlinks" betekent dat OMA gedeelde ontdekking in beide installatiemodi kan gebruiken. Alleen de projectscan van Kimi vervangt de bestaande globale skillprojectie niet. Een hookbrug of een agentmap betekent niet dat er een subprocess-runtimeadapter is. Gemini is geen OMA-vendor; Antigravity CLI heeft een eigen integratie.
+"Zonder vendorlinks" betekent dat OMA gedeelde ontdekking (`.agents/skills` in projectmodus en `~/.agents/skills` in globale modus) in beide installatiemodi kan gebruiken. Een hookbrug of een agentmap betekent niet dat er een subprocess-runtimeadapter is. Gemini is geen OMA-vendor; Antigravity CLI heeft een eigen integratie.
 
 ## Agent Plugins-pakket {#agent-plugins-package}
 

@@ -18,14 +18,14 @@ description: Skill-Erkennung, Agentendefinitionen, Hooks und Paketformate über 
 | Grok | — | `.grok/agents` | Einstellungen | `.grok-plugin/plugin.json` |
 | Hermes | Nein | — | — | `plugin.json` (Agent Plugins package) |
 | Kilo Code | Ja | `.kilo/agents` | Erweiterung | `opencode-package/package.json` |
-| Kimi | Nein | — | Einstellungen | `.kimi-plugin/plugin.json` |
+| Kimi | Ja | — | Einstellungen | `.kimi-plugin/plugin.json` |
 | Kiro | Nein | `.kiro/agents` | Einstellungen | `plugin.json` (Agent Plugins package) |
 | OpenCode | Nein | `.opencode/agents` | Erweiterung | `opencode-package/package.json` |
 | Pi | Ja | — | Erweiterung | `pi-package/package.json` |
 | Qwen Code | Ja | `.qwen/agents` | Einstellungen | `plugin.json` (Agent Plugins package) |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | Ja | — | — | `.zcode-plugin/plugin.json` |
 
-„Ohne Vendor-Links“ bedeutet, dass OMA die gemeinsame Erkennung in beiden Installationsmodi nutzen kann. Die reine Projektsuche von Kimi ersetzt nicht die bestehende globale Skill-Projektion. Eine Hook-Bridge oder ein Agentenverzeichnis bedeutet keinen Subprozess-Laufzeitadapter. Gemini ist kein OMA-Vendor; die Antigravity CLI hat eine eigene Integration.
+„Ohne Vendor-Links“ bedeutet, dass OMA die gemeinsame Erkennung (`.agents/skills` im Projektmodus und `~/.agents/skills` im globalen Modus) in beiden Installationsmodi nutzen kann. Eine Hook-Bridge oder ein Agentenverzeichnis bedeutet keinen Subprozess-Laufzeitadapter. Gemini ist kein OMA-Vendor; die Antigravity CLI hat eine eigene Integration.
 
 ## Agent-Plugins-Paket {#agent-plugins-package}
 

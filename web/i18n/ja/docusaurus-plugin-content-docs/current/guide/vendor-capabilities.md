@@ -19,14 +19,14 @@ description: OMA の各ベンダーにおけるスキルの発見、エージェ
 | Grok | なし | `.grok/agents` | 設定 | `.grok-plugin/plugin.json` |
 | Hermes | いいえ | なし | なし | `plugin.json`（Agent Plugins パッケージ） |
 | Kilo Code | はい | `.kilo/agents` | 拡張 | `opencode-package/package.json` |
-| Kimi | いいえ | なし | 設定 | `.kimi-plugin/plugin.json` |
+| Kimi | はい | なし | 設定 | `.kimi-plugin/plugin.json` |
 | Kiro | いいえ | `.kiro/agents` | 設定 | `plugin.json`（Agent Plugins パッケージ） |
 | OpenCode | いいえ | `.opencode/agents` | 拡張 | `opencode-package/package.json` |
 | Pi | はい | なし | 拡張 | `pi-package/package.json` |
 | Qwen Code | はい | `.qwen/agents` | 設定 | `plugin.json`（Agent Plugins パッケージ） |
-| ZCode | なし | なし | なし | `.zcode-plugin/plugin.json` |
+| ZCode | はい | なし | なし | `.zcode-plugin/plugin.json` |
 
-「ベンダーリンクなし」は、両方のインストールモードで共有の発見を使えるという意味です。Kimi のプロジェクトスキャンだけでは、既存のグローバルなスキル投影を置き換えません。フックブリッジやエージェントディレクトリがあっても、サブプロセスのランタイムアダプターがあることにはなりません。Gemini は OMA のベンダーではありません。Antigravity CLI には独自の統合があります。
+「ベンダーリンクなし」は、両方のインストールモードで共有の発見（プロジェクトモードでは `.agents/skills`、グローバルモードでは `~/.agents/skills`）を使えるという意味です。フックブリッジやエージェントディレクトリがあっても、サブプロセスのランタイムアダプターがあることにはなりません。Gemini は OMA のベンダーではありません。Antigravity CLI には独自の統合があります。
 
 ## Agent Plugins パッケージ {#agent-plugins-package}
 

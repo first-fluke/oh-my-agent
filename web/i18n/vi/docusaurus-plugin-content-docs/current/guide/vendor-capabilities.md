@@ -18,14 +18,14 @@ description: Khám phá skill, định nghĩa agent, hook và định dạng pac
 | Grok | Không có | `.grok/agents` | Settings | `.grok-plugin/plugin.json` |
 | Hermes | Không | Không có | Không có | `plugin.json` (package Agent Plugins) |
 | Kilo Code | Có | `.kilo/agents` | Extension | `opencode-package/package.json` |
-| Kimi | Không | Không có | Settings | `.kimi-plugin/plugin.json` |
+| Kimi | Có | Không có | Settings | `.kimi-plugin/plugin.json` |
 | Kiro | Không | `.kiro/agents` | Settings | `plugin.json` (package Agent Plugins) |
 | OpenCode | Không | `.opencode/agents` | Extension | `opencode-package/package.json` |
 | Pi | Có | Không có | Extension | `pi-package/package.json` |
 | Qwen Code | Có | `.qwen/agents` | Settings | `plugin.json` (package Agent Plugins) |
-| ZCode | Không có | Không có | Không có | `.zcode-plugin/plugin.json` |
+| ZCode | Có | Không có | Không có | `.zcode-plugin/plugin.json` |
 
-“Không có vendor link” nghĩa là OMA có thể dùng khám phá dùng chung ở cả hai chế độ cài. Riêng việc quét project của Kimi không thay thế chiếu skill global hiện có. Một cầu nối hook hoặc một thư mục agent không có nghĩa là đã có adapter runtime dạng subprocess. Gemini không phải vendor OMA; Antigravity CLI có tích hợp riêng.
+“Không có vendor link” nghĩa là OMA có thể dùng khám phá dùng chung (`.agents/skills` ở chế độ project và `~/.agents/skills` ở chế độ global) ở cả hai chế độ cài. Một cầu nối hook hoặc một thư mục agent không có nghĩa là đã có adapter runtime dạng subprocess. Gemini không phải vendor OMA; Antigravity CLI có tích hợp riêng.
 
 ## Package Agent Plugins {#agent-plugins-package}
 

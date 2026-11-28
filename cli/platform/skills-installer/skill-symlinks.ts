@@ -38,8 +38,8 @@ function pruneDanglingSymlinks(linkRootDir: string): string[] {
   return removed;
 }
 
-/** Qwen discovers shared skills directly; retire only OMA's old projections. */
-function pruneQwenSkillSymlinks(
+/** Vendors with native `.agents/skills` discovery retire only OMA's old projections. */
+function pruneNativeVendorSkillSymlinks(
   installRoot: string,
   linkRootDir: string,
 ): string[] {
@@ -112,7 +112,7 @@ export function createVendorSymlinks(
 
     if (getVendorCapabilities(cli)?.skills.native) {
       removed.push(
-        ...pruneQwenSkillSymlinks(installRoot, linkRootDir).map(
+        ...pruneNativeVendorSkillSymlinks(installRoot, linkRootDir).map(
           (name) => `${skillsDir}/${name}`,
         ),
       );

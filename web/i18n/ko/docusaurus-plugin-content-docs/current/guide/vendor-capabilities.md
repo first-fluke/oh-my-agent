@@ -19,14 +19,14 @@ description: OMA 벤더별 스킬 탐색, 에이전트 정의, 훅, 패키지 �
 | Grok | — | `.grok/agents` | 설정 | `.grok-plugin/plugin.json` |
 | Hermes | 아니오 | — | — | `plugin.json`(Agent Plugins 패키지) |
 | Kilo Code | 예 | `.kilo/agents` | 확장 | `opencode-package/package.json` |
-| Kimi | 아니오 | — | 설정 | `.kimi-plugin/plugin.json` |
+| Kimi | 예 | — | 설정 | `.kimi-plugin/plugin.json` |
 | Kiro | 아니오 | `.kiro/agents` | 설정 | `plugin.json`(Agent Plugins 패키지) |
 | OpenCode | 아니오 | `.opencode/agents` | 확장 | `opencode-package/package.json` |
 | Pi | 예 | — | 확장 | `pi-package/package.json` |
 | Qwen Code | 예 | `.qwen/agents` | 설정 | `plugin.json`(Agent Plugins 패키지) |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | 예 | — | — | `.zcode-plugin/plugin.json` |
 
-"벤더 링크 없이"는 두 설치 모드 모두에서 OMA가 공유 탐색을 쓸 수 있다는 뜻입니다. Kimi의 프로젝트 스캔만으로는 기존의 글로벌 스킬 프로젝션을 대체하지 않습니다. 훅 브리지나 에이전트 디렉토리가 있다고 해서 서브프로세스 런타임 어댑터가 있는 것은 아닙니다. Gemini는 OMA 벤더가 아니며, Antigravity CLI는 별도의 통합을 갖습니다.
+"벤더 링크 없이"는 두 설치 모드 모두에서 OMA가 공유 탐색(프로젝트 모드 `.agents/skills`, 글로벌 모드 `~/.agents/skills`)을 쓸 수 있다는 뜻입니다. 훅 브리지나 에이전트 디렉토리가 있다고 해서 서브프로세스 런타임 어댑터가 있는 것은 아닙니다. Gemini는 OMA 벤더가 아니며, Antigravity CLI는 별도의 통합을 갖습니다.
 
 ## Agent Plugins 패키지 {#agent-plugins-package}
 

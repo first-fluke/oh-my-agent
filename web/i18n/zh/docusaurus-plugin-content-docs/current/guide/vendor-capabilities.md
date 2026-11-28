@@ -18,14 +18,14 @@ description: 各 OMA 供应商的技能发现、智能体定义、钩子和包�
 | Grok | — | `.grok/agents` | 设置 | `.grok-plugin/plugin.json` |
 | Hermes | 否 | — | — | `plugin.json`（Agent Plugins 包） |
 | Kilo Code | 是 | `.kilo/agents` | 扩展 | `opencode-package/package.json` |
-| Kimi | 否 | — | 设置 | `.kimi-plugin/plugin.json` |
+| Kimi | 是 | — | 设置 | `.kimi-plugin/plugin.json` |
 | Kiro | 否 | `.kiro/agents` | 设置 | `plugin.json`（Agent Plugins 包） |
 | OpenCode | 否 | `.opencode/agents` | 扩展 | `opencode-package/package.json` |
 | Pi | 是 | — | 扩展 | `pi-package/package.json` |
 | Qwen Code | 是 | `.qwen/agents` | 设置 | `plugin.json`（Agent Plugins 包） |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | 是 | — | — | `.zcode-plugin/plugin.json` |
 
-“不经供应商链接”表示两种安装模式都可以使用共享发现。仅靠 Kimi 的项目扫描，不能代替它现有的全局技能投影。有钩子桥接或智能体目录，并不表示有子进程运行时适配器。Gemini 不是 OMA 供应商；Antigravity CLI 有自己的集成。
+“不经供应商链接”表示两种安装模式都可以使用共享发现（项目模式为 `.agents/skills`，全局模式为 `~/.agents/skills`）。有钩子桥接或智能体目录，并不表示有子进程运行时适配器。Gemini 不是 OMA 供应商；Antigravity CLI 有自己的集成。
 
 ## Agent Plugins 包 {#agent-plugins-package}
 

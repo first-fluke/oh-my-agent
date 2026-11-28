@@ -41,7 +41,12 @@ describe("vendor capabilities", () => {
     });
     expect(getVendorCapabilities("hermes")?.hooks.kind).toBe("none");
     expect(getVendorCapabilities("grok")?.skills.projectDir).toBeNull();
-    expect(getVendorCapabilities("zcode")?.skills.projectDir).toBeNull();
+    expect(getVendorCapabilities("zcode")?.skills).toEqual({
+      native: true,
+      projectDir: ".agents/skills",
+      globalDir: ".agents/skills",
+    });
+    expect(getVendorCapabilities("kimi")?.skills.native).toBe(true);
   });
 
   it("treats kilo as an opencode-family extension host with native skills", () => {

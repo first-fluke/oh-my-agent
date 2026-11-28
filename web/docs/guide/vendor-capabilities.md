@@ -18,14 +18,14 @@ description: Skill discovery, agent definitions, hooks, and package formats acro
 | Grok | — | `.grok/agents` | Settings | `.grok-plugin/plugin.json` |
 | Hermes | No | — | — | `plugin.json` (Agent Plugins package) |
 | Kilo Code | Yes | `.kilo/agents` | Extension | `opencode-package/package.json` |
-| Kimi | No | — | Settings | `.kimi-plugin/plugin.json` |
+| Kimi | Yes | — | Settings | `.kimi-plugin/plugin.json` |
 | Kiro | No | `.kiro/agents` | Settings | `plugin.json` (Agent Plugins package) |
 | OpenCode | No | `.opencode/agents` | Extension | `opencode-package/package.json` |
 | Pi | Yes | — | Extension | `pi-package/package.json` |
 | Qwen Code | Yes | `.qwen/agents` | Settings | `plugin.json` (Agent Plugins package) |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | Yes | — | — | `.zcode-plugin/plugin.json` |
 
-“Without vendor links” means OMA can use shared discovery in both install modes. Kimi's project scanning alone does not replace its existing global skill projection. A hook bridge or an agent directory does not imply a subprocess runtime adapter. Gemini is not an OMA vendor; Antigravity CLI has its own integration.
+“Without vendor links” means OMA can use shared discovery (`.agents/skills` in project mode and `~/.agents/skills` in global mode) in both install modes. A hook bridge or an agent directory does not imply a subprocess runtime adapter. Gemini is not an OMA vendor; Antigravity CLI has its own integration.
 
 ## Agent Plugins package
 

@@ -18,14 +18,14 @@ description: Découverte des compétences, définitions d’agents, hooks et for
 | Grok | — | `.grok/agents` | Paramètres | `.grok-plugin/plugin.json` |
 | Hermes | Non | — | — | `plugin.json` (paquet Agent Plugins) |
 | Kilo Code | Oui | `.kilo/agents` | Extension | `opencode-package/package.json` |
-| Kimi | Non | — | Paramètres | `.kimi-plugin/plugin.json` |
+| Kimi | Oui | — | Paramètres | `.kimi-plugin/plugin.json` |
 | Kiro | Non | `.kiro/agents` | Paramètres | `plugin.json` (paquet Agent Plugins) |
 | OpenCode | Non | `.opencode/agents` | Extension | `opencode-package/package.json` |
 | Pi | Oui | — | Extension | `pi-package/package.json` |
 | Qwen Code | Oui | `.qwen/agents` | Paramètres | `plugin.json` (paquet Agent Plugins) |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | Oui | — | — | `.zcode-plugin/plugin.json` |
 
-« Sans liens fournisseur » signifie qu’OMA peut utiliser la découverte partagée dans les deux modes d’installation. Le seul scan de projet de Kimi ne remplace pas sa projection globale de compétences existante. Un pont de hooks ou un répertoire d’agents n’implique pas un adaptateur de runtime en sous-processus. Gemini n’est pas un fournisseur OMA ; Antigravity CLI a sa propre intégration.
+« Sans liens fournisseur » signifie qu’OMA peut utiliser la découverte partagée (`.agents/skills` en mode projet et `~/.agents/skills` en mode global) dans les deux modes d’installation. Un pont de hooks ou un répertoire d’agents n’implique pas un adaptateur de runtime en sous-processus. Gemini n’est pas un fournisseur OMA ; Antigravity CLI a sa propre intégration.
 
 ## Paquet Agent Plugins {#agent-plugins-package}
 

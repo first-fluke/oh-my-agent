@@ -6,6 +6,7 @@ import {
   OPENCODE_FAMILY_HOSTS,
   OPENCODE_FAMILY_VENDORS,
 } from "../../constants/opencode-family.js";
+import { getVendorCapabilities } from "../../constants/vendor-capabilities.js";
 import { EXTENSION_VENDORS, VENDORS } from "../../constants/vendors.js";
 import { ensureCoAuthorGuardHook, OMA_HOOKS_DIR } from "../../io/git-hooks.js";
 import { ensureOmaProjectGitignore } from "../../io/gitignore.js";
@@ -616,7 +617,7 @@ export function link(opts: LinkOptions = {}): LinkResult {
           record(
             vendorSkillsDir(cli, root),
             "link",
-            cli === "qwen"
+            getVendorCapabilities(cli)?.skills.native
               ? `native .agents/skills discovery; remove legacy skill links, ${workflowNames.length} workflows`
               : `${skillNames.length} skills, ${workflowNames.length} workflows`,
           );

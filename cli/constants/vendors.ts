@@ -67,10 +67,11 @@ export const INSTALL_ONLY_VENDORS = ["hermes"] as const;
  * `CliVendor`.
  *
  * `zcode` (Z.ai ZCode) reads workspace slash-commands as flat `.md` files under
- * `.zcode/commands/` (user-level: `~/.zcode/commands`). It is deliberately kept
- * OUT of `VENDORS`, `CliTool`, and `CLI_SKILLS_DIR`: it has no skills concept,
- * so its workflows are exposed via flat command symlinks
- * (`installZcodeWorkflowCommands`) rather than `<skills>/<name>/SKILL.md`.
+ * `.zcode/commands/` (user-level: `~/.zcode/commands`), and natively merges
+ * `.agents/skills` and `~/.agents/skills` alongside `.zcode/skills`. It is
+ * kept OUT of `VENDORS`, `CliTool`, and `CLI_SKILLS_DIR` because it needs no
+ * vendor skill symlink projection or hook bridge — only flat command symlinks
+ * (`installZcodeWorkflowCommands`).
  */
 export const WORKFLOW_ONLY_VENDORS = ["zcode"] as const;
 export type WorkflowOnlyVendor = (typeof WORKFLOW_ONLY_VENDORS)[number];
@@ -140,11 +141,10 @@ export const CLI_SKILLS_DIR: Record<CliTool, SkillTargetSpec> & {
   },
   kimi: {
     // Kimi's hooks are global-only (~/.kimi-code/config.toml), so selecting Kimi
-    // always entails a HOME write. requiresHomeConsent keeps the explicit
-    // HOME-write consent prompt that also gates those hooks, and parks the skill
-    // symlinks in the user-tier `~/.kimi-code/skills/`. Kimi additionally scans
-    // the project's SSOT `.agents/skills/` natively, so skills resolve
-    // project-wide regardless. (MCP, which needs no HOME write, stays
+    // always entails a HOME write. Kimi Code natively scans both project
+    // `.agents/skills/` and user `~/.agents/skills/`, so `vendor-capabilities`
+    // marks Kimi `skills.native: true` (retiring legacy OMA symlinks under
+    // `~/.kimi-code/skills/` without creating new ones). (MCP stays
     // project-scoped — see cli/vendors/kimi/mcp.ts.)
     projectPath: ".kimi-code/skills",
     homePath: ".kimi-code/skills",

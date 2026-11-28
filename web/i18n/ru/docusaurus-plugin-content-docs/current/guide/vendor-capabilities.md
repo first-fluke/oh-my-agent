@@ -18,14 +18,14 @@ description: Обнаружение навыков, определения аг�
 | Grok | — | `.grok/agents` | Settings | `.grok-plugin/plugin.json` |
 | Hermes | Нет | — | — | `plugin.json` (пакет Agent Plugins) |
 | Kilo Code | Да | `.kilo/agents` | Extension | `opencode-package/package.json` |
-| Kimi | Нет | — | Settings | `.kimi-plugin/plugin.json` |
+| Kimi | Да | — | Settings | `.kimi-plugin/plugin.json` |
 | Kiro | Нет | `.kiro/agents` | Settings | `plugin.json` (пакет Agent Plugins) |
 | OpenCode | Нет | `.opencode/agents` | Extension | `opencode-package/package.json` |
 | Pi | Да | — | Extension | `pi-package/package.json` |
 | Qwen Code | Да | `.qwen/agents` | Settings | `plugin.json` (пакет Agent Plugins) |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | Да | — | — | `.zcode-plugin/plugin.json` |
 
-«Без ссылок вендора» значит, что OMA может использовать общее обнаружение в обоих режимах установки. Одно только сканирование проекта у Kimi не заменяет существующую глобальную проекцию навыков. Мост хуков или каталог агентов не означают адаптер runtime подпроцесса. Gemini не является вендором OMA; у Antigravity CLI своя интеграция.
+«Без ссылок вендора» значит, что OMA может использовать общее обнаружение (`.agents/skills` в проектном режиме и `~/.agents/skills` в глобальном) в обоих режимах установки. Мост хуков или каталог агентов не означают адаптер runtime подпроцесса. Gemini не является вендором OMA; у Antigravity CLI своя интеграция.
 
 ## Пакет Agent Plugins {#agent-plugins-package}
 

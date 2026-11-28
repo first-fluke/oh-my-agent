@@ -18,14 +18,14 @@ description: Odkrywanie umiejętności, definicje agentów, hooki i formaty paki
 | Grok | — | `.grok/agents` | Settings | `.grok-plugin/plugin.json` |
 | Hermes | Nie | — | — | `plugin.json` (pakiet Agent Plugins) |
 | Kilo Code | Tak | `.kilo/agents` | Extension | `opencode-package/package.json` |
-| Kimi | Nie | — | Settings | `.kimi-plugin/plugin.json` |
+| Kimi | Tak | — | Settings | `.kimi-plugin/plugin.json` |
 | Kiro | Nie | `.kiro/agents` | Settings | `plugin.json` (pakiet Agent Plugins) |
 | OpenCode | Nie | `.opencode/agents` | Extension | `opencode-package/package.json` |
 | Pi | Tak | — | Extension | `pi-package/package.json` |
 | Qwen Code | Tak | `.qwen/agents` | Settings | `plugin.json` (pakiet Agent Plugins) |
-| ZCode | — | — | — | `.zcode-plugin/plugin.json` |
+| ZCode | Tak | — | — | `.zcode-plugin/plugin.json` |
 
-„Bez dowiązań dostawcy” oznacza, że OMA może używać współdzielonego odkrywania w obu trybach instalacji. Samo skanowanie projektu przez Kimi nie zastępuje istniejącej globalnej projekcji umiejętności. Mostek hooków albo katalog agentów nie oznacza adaptera runtime'u podprocesu. Gemini nie jest dostawcą OMA; Antigravity CLI ma własną integrację.
+„Bez dowiązań dostawcy” oznacza, że OMA może używać współdzielonego odkrywania (`.agents/skills` w trybie projektu i `~/.agents/skills` w trybie globalnym) w obu trybach instalacji. Mostek hooków albo katalog agentów nie oznacza adaptera runtime'u podprocesu. Gemini nie jest dostawcą OMA; Antigravity CLI ma własną integrację.
 
 ## Pakiet Agent Plugins {#agent-plugins-package}
 

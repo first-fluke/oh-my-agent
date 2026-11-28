@@ -119,9 +119,10 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     plugins: { manifest: "opencode-package/package.json" },
   },
   kimi: {
-    // Project SSOT scanning does not establish global discovery; retain the
-    // existing HOME skill projection and its install-mode handling.
-    skills: skills("kimi"),
+    // Kimi Code (`MoonshotAI/kimi-code` skillRoots.ts) scans both
+    // `<project>/.agents/skills` and `~/.agents/skills` natively alongside
+    // `.kimi-code/skills` and `$KIMI_CODE_HOME/skills`.
+    skills: skills("kimi", true),
     agents: { dir: null },
     hooks: settings("kimi"),
     // Install: `/plugins install <clone path | github url>` inside Kimi Code
@@ -171,7 +172,14 @@ export const VENDOR_CAPABILITIES: Record<CliVendor, VendorCapabilities> = {
     plugins: { manifest: "plugin.json" },
   },
   zcode: {
-    skills: { native: false, projectDir: null, globalDir: null },
+    // ZCode (`zai-org/ZCode` adapters/src/skills/roots.ts) merges
+    // `.zcode/skills` and `.agents/skills` in both project and user (`~`)
+    // scopes, so no vendor skill projection is needed.
+    skills: {
+      native: true,
+      projectDir: ".agents/skills",
+      globalDir: ".agents/skills",
+    },
     agents: { dir: null },
     hooks: { kind: "none", variant: null },
     // Install: Settings -> Plugins -> Create -> Add marketplace (GitHub

@@ -1,5 +1,7 @@
+import { dirname } from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { getVendorCapabilities } from "../../constants/vendor-capabilities.js";
 import {
   CLI_SKILLS_DIR,
   type ExtensionVendor,
@@ -239,7 +241,7 @@ export async function promptVendors(
           {
             value: "kimi" as const,
             label: "Kimi Code CLI",
-            hint: "hooks + skills — HOME-shared (~/.kimi-code/) + project Serena MCP",
+            hint: "hooks — HOME (~/.kimi-code/) + native .agents/skills + project Serena MCP",
           },
         ]
       : []),
@@ -247,7 +249,7 @@ export async function promptVendors(
     {
       value: "zcode",
       label: "ZCode",
-      hint: "workflow slash-commands + browser MCP",
+      hint: "workflow slash-commands + native .agents/skills + browser MCP",
     },
   ];
 
@@ -451,8 +453,12 @@ export async function selectClisWithConsent(
         );
         continue;
       }
+      const nativeSkills = getVendorCapabilities(cli)?.skills.native === true;
+      const homeTarget = nativeSkills
+        ? `~/${dirname(CLI_SKILLS_DIR[cli].homePath)}`
+        : getVendorDisplayPath(cli);
       const consent = await p.confirm({
-        message: `${cli} export writes to HOME (${pc.cyan(getVendorDisplayPath(cli))}). Proceed?`,
+        message: `${cli} ${nativeSkills ? "hooks write" : "export writes"} to HOME (${pc.cyan(homeTarget)}). Proceed?`,
         initialValue: false,
       });
       if (p.isCancel(consent)) {

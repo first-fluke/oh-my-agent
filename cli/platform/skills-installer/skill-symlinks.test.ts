@@ -282,4 +282,32 @@ describe("createVendorSymlinks (real fs)", () => {
       ),
     ).toContain("name: oma-test");
   });
+
+  it("lets kimi use native .agents/skills discovery while retiring legacy HOME skill links", () => {
+    setupSsotSkill(root, "oma-test");
+    recordManagedSkills(root, ["oma-test"]);
+    testHome.path = join(root, "home");
+    setInstallContext({ installRoot: root, mode: "global" });
+    createGlobalSkillDiscoveryLinks(root);
+    const kimiSkills = join(testHome.path, ".kimi-code", "skills");
+    mkdirSync(kimiSkills, { recursive: true });
+    const legacyLink = join(kimiSkills, "oma-test");
+    symlinkSync(
+      join(root, ".agents", "skills", "oma-test"),
+      legacyLink,
+      "junction",
+    );
+    const userSkill = join(kimiSkills, "my-custom");
+    mkdirSync(userSkill, { recursive: true });
+    writeFileSync(join(userSkill, "SKILL.md"), "user skill");
+
+    const result = createVendorSymlinks(root, ["kimi"], ["oma-test"]);
+
+    expect(result.created).toEqual([]);
+    expect(result.removed).toEqual(["~/.kimi-code/skills/oma-test"]);
+    expect(() => lstatSync(legacyLink)).toThrow();
+    expect(readFileSync(join(userSkill, "SKILL.md"), "utf8")).toBe(
+      "user skill",
+    );
+  });
 });
