@@ -1,5 +1,12 @@
 # Changelog
 
+## [14.0.2](https://github.com/first-fluke/oh-my-agent/compare/web-v14.0.1...web-v14.0.2) (2026-11-28)
+
+
+### Bug Fixes
+
+* **vendors:** record native skill discovery for kimi and zcode ([297b464](https://github.com/first-fluke/oh-my-agent/commit/297b46499c9c26ac3da3f7dc498db5a03fe7efde))
+
 ## [14.0.1](https://github.com/first-fluke/oh-my-agent/compare/web-v14.0.0...web-v14.0.1) (2026-11-28)
 
 
