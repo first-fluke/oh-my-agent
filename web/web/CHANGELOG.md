@@ -1,5 +1,16 @@
 # Changelog
 
+## [14.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v13.0.0...web-v14.0.0) (2026-11-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **oma-mode:** add oma-mode with judge, open-ended protocol, and deprecate ralph
+
+### Features
+
+* **oma-mode:** add oma-mode with judge, open-ended protocol, and deprecate ralph ([171def3](https://github.com/first-fluke/oh-my-agent/commit/171def3b33faabc6dd71dc66648fc3043a3730a7))
+
 ## [13.0.0](https://github.com/first-fluke/oh-my-agent/compare/web-v12.1.0...web-v13.0.0) (2026-11-26)
 
 
